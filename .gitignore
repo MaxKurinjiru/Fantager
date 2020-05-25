@@ -1,0 +1,5 @@
+app/config/local.neon
+vendor/
+temp/
+log/
+.remote-sync.json
