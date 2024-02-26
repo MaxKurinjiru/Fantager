@@ -1,0 +1,11 @@
+<div class="card text-center bg-color-5 border-1 border-color-1">
+  <div class="card-body p-0">
+    <div class="card-title fs-6 mb-0 text-nowrap color-1 border-bottom border-color-1"><small>{_$title}</small></div>
+    <div class="card-text fs-5 color-3">
+        {$value}
+        {ifset $bonus}
+            <span class="badge bg-secondary">{$bonus}</span>
+        {/ifset}
+    </div>
+  </div>
+</div>

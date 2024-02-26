@@ -1,0 +1,23 @@
+// https://coolors.co/2b5228-f55414-004e66-33226d-271e16-dacbbe-181411
+
+$color-first: #2B5228;
+$color-second: #F55414;
+$color-third: #004E66;
+$color-fourth: #33226D;
+$color-light: #DACBBE;
+$color-dark: #271E16;
+$color-black: #181411;
+
+
+$colors-defined: (
+	"first": $color-first,
+	"second": $color-second,
+	"third": $color-third,
+	"fourth": $color-fourth,
+	"light": $color-light,
+	"dark": $color-dark,
+	"black": $color-black
+);
+
+// back compatibility
+@import '../cmp/var';

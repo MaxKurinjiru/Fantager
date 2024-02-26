@@ -1,0 +1,17 @@
+<ul class="nav nav-tabs border-bottom-0">
+    <li class="nav-item">
+        <a n:href="Arena:default" class="nav-link data-loader {if $presenterAction == 'default'}active{/if}" type="button" aria-selected="{if $presenterAction == 'default'}true{else}false{/if}">
+            {_'system.arena.title'}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a n:href="Arena:staff" class="nav-link data-loader {if $presenterAction == 'staff'}active{/if}" type="button" aria-selected="{if $presenterAction == 'staff'}true{else}false{/if}">
+            {_'system.arena.staff.title'}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a n:href="Arena:junior" class="nav-link data-loader {if $presenterAction == 'junior'}active{/if}" type="button" aria-selected="{if $presenterAction == 'junior'}true{else}false{/if}">
+            {_'system.arena.junior.title'}
+        </a>
+    </li>
+</ul>

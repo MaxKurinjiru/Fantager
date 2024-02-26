@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="{$locale}">
+{include __TEMPLATES__ . '/head.latte'}
+
+<body class="loader">
+	<div class="body-content">
+		{include content}
+	</div>
+
+	{include __TEMPLATES__ . '/confirm.latte'}
+
+	{block scripts}
+		{include __TEMPLATES__ . '/scripts.latte'}
+	{/block}
+
+	<a class="bg-loader" href="/">
+		<img src="/images/loader.svg" alt="">
+	</a>
+</body>
+</html>

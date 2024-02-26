@@ -1,0 +1,52 @@
+{form form, class=>'w-100'}
+
+	<div class="w-100">
+
+		<div class="row mb-1">
+			<div class="col">
+				<h2 class="color-3 font-uniq">Zapomenuté heslo</h2>
+			</div>
+		</div>
+
+		{if $presenter->getParameter('id') == 'sent'}
+
+			<div class="row mb-3 mt-3">
+				<div class="col text-start">
+					<div class="alert alert-success">
+						Email pro obnovení hesla byl úspěšně odeslán. Zkontrolujte email a pokračujte k nastavení nového hesla
+					</div>
+				</div>
+			</div>
+
+		{else}
+
+			<div class="row mb-1">
+				<div class="col">
+					<p class="pt-4 pb-3">
+						Pro obnovení hesla zadejte svoji registrační emailovou adresu, na kterou dorazí email s odkazem k obnovení hesla.
+					</p>
+				</div>
+			</div>
+
+			<div class="row mb-3" n:if="$form->hasErrors()">
+				<div class="col text-start">
+					{include __CONTROLS__ . '/forms/templates/err.latte', form=>$form}
+				</div>
+			</div>
+
+			<div class="row mb-3">
+				<div class="col-12 col-lg-6 text-start">
+					{include __CONTROLS__ . '/forms/templates/default.latte', form=>$form, key=>'email'}
+				</div>
+			</div>
+
+			<div class="row mt-4 pt-3">
+				<div class="col">
+					{input $form['send'] class=>'btn btn-primary font-uniq'}
+				</div>
+			</div>
+
+		{/if}
+
+	</div>
+{/form}

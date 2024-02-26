@@ -1,102 +1,45 @@
-Fantager
-=================
+# Fantager
+> Fantasy arena manager - browser game
+
+## environment
+> PHP | SQL | JS | SCSS
+> Nette
+> jQuery
+> Bootstrap
+
+## project install
+```
+composer i
+npm i
+```
+## project run
+```
+gulp watch
+```
+
+### Discord
+https://discord.gg/upRVsbv
+
+### MindMeister
+https://mm.tt/map/2138174856?t=DgA7lbwqoj
+
+### Trello
+https://trello.com/b/meYETnzh
 
 
-Hráč - uživatel
------------------
-Každý hráč vlastní a může max. jeden team. 
+### comments kinda important keywords
+```
+deprecated
+deprecation
+todo
+discutable
+temporarily
+```
 
-
-Team
------------------
-Team je skupina hrdinů - postav, které se v dané skupině / lize utkávají v soubojích s ostatními teamy jiných hráčů ve stejné skupině / lize.
-V Teamu může být mnoho hrdinů, ale aktivně v souboji pouze 6 ve dvou řadách po třech.
-
-
-Aréna
------------------
-Souboje probíhají v aréně hostujícího hráče, kde team získává finance z prodaných lístků.
-
-
-Hrdinové
------------------
-Hrdinové vynikají mnoha vlastnostmi a schopnostmi.
-- Rasa
-- Pohlavý
-- Věk
-- Únava
-- Úroveň
-- Jméno
-- forma?
-- hodnota?
-- plat?
-- poznámka
-
-Primární vlastnosti
-- Síla
-- Obratnost
-- Konstituce
-- Inteligence
-Sekundární vlastnosti
-- Rychlost
-- Charisma
-- Síla vůle
-- Štěstí
-
-Hodnoty pro souboj
-- fyz. útok
-- fyz. obrana
-- mag. útok
-- mag. obrana
-
-Ovládání zbraní
-- meč
-- sekera
-- kopí
-- kladivo
-- luk
-- kuše
-
-Magie
-- život
-- smrt
-- chaos
-- řád
-- příroda
-
-životy
-mana
-zkušenosti
-
-Statistiky
-- zabití celkem
-- zabití za sezonu
-- smrt celkem
-- smrt za sezonu
-- odehráno zápasů
-
-
-Rasy
------------------
- - Člověk
- - Elf
- - Trpaslík
-
-Vlastnosti
------------------
-
-
-Vybavení
------------------
-
-
-Souboje
------------------
-
-
-Liga / Skupina
------------------
-
-
-Kalendář
------------------
+### Deleting Your Commit History?
+Step 1: Check out to a temporary branch.
+Step 2: Add all files.
+Step 3: Commit the changes.
+Step 4: Delete the main branch.
+Step 5: Rename the temporary branch to main.
+Step 6: Force update to our repository.

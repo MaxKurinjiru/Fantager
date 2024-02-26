@@ -1,5 +1,10 @@
 app/config/local.neon
+app/config/test.neon
+app/config/live.neon
 vendor/
-temp/
-log/
-.remote-sync.json
+node_modules/
+deploy/
+temp/**
+log/**
+**/.remote-sync.json
+.gitignore

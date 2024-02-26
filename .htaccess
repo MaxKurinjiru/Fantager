@@ -1,8 +1,10 @@
-Require all granted
+RewriteEngine on
 
-<IfModule mod_rewrite.c>
-	RewriteEngine On
-	# RewriteBase /
+RewriteCond %{HTTP_HOST} ^fantager\.cz$
+RewriteRule (.*) /www/$1 [L]
 
-	RewriteRule (.*) www/$1 [L]
-</IfModule>
+RewriteCond %{HTTP_HOST} ^www\.fantager\.cz$
+RewriteRule (.*) /www/$1 [L]
+
+RewriteCond %{HTTP_HOST} ^fantager$
+RewriteRule (.*) /www/$1 [L]

@@ -1,0 +1,27 @@
+<div class="card mb-4 rounded-0 border-color-2 bg-color-5">
+    <div class="card-header py-3 border-color-2">
+        <h4 class="my-0 fw-normal text-start color-3">{_'system.arena.junior.title'}</h4>
+    </div>
+    <div class="card-body">
+        <p class="text-start color-1">
+            {_'system.arena.junior.info1'}
+        </p>
+        <p class="text-start color-1">
+            {_'system.arena.junior.info2'}
+        </p>
+        <p class="text-start color-1">
+            {_'system.arena.junior.info3'}
+        </p>
+    </div>
+    <div class="card-footer bg-color-5 border-color-2 color-1 d-flex justify-content-center align-items-center">
+        {if $arenaJuniorAvail}
+            <a type="button" href="{link junior!}" class="btn btn-success"
+                data-bs-toggle="modal" data-bs-target="#confirmModal"
+                data-confirm="{_'system.arena.confirm.junior'}">
+                {_'system.arena.junior.pull'}
+            </a>
+        {else}
+            <button type="button" class="btn btn-success disabled">{_'system.arena.junior.already_pulled'}</button>
+        {/if}
+    </div>
+</div>

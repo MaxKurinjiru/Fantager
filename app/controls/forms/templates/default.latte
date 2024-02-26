@@ -1,0 +1,51 @@
+{ifset $container}
+	{var $field = $form[$container][$key]}
+{else}
+	{var $field = $form[$key]}
+{/ifset}
+
+{var $errored = ''}
+{if $field->getError()}
+	{var $errored = ' is-invalid'}
+{/if}
+
+<div class="form-group{ifset $classGroup} {$classGroup}{/ifset}">
+{dump $field->getLabel()}
+	{if !empty($field->getLabel())}
+		{label $field class=> $field->required ? "form-label font-uniq required" : "form-label font-uniq" /}
+	{/if}
+	
+	{if $field instanceof Nette\Forms\Controls\CheckboxList}
+	<div>
+	{/if}
+
+	{ifset $datalist}
+		{input $field class=>'form-control' . $errored, autocomplete=>'off', list=>'datalistOptions' . $key, placeholder=>'Začni psát'}
+	{else}
+		{ifset $class}
+			{if $class=='remove-readonly'}
+			{input $field class=>'form-control ' . $class . $errored, autocomplete=>'off', readonly=>true}
+			{else}
+			{input $field class=>'form-control ' . $class . $errored, autocomplete=>'off'}
+			{/if}
+		{else}
+			{input $field class=>'form-control' . $errored, autocomplete=>'off'}
+		{/ifset}
+	{/ifset}
+
+	{ifset $datalist}
+		<datalist id="datalistOptions{$key}">
+		{foreach $datalist as $optionValue}
+			<option value="{$optionValue}">
+		{/foreach}
+		</datalist>
+	{/ifset}
+
+	{if $field instanceof Nette\Forms\Controls\CheckboxList}
+	</div>
+	{/if}
+
+	{if $field->getError()}
+		<div class="invalid-feedback">{$field->getError()}</div>
+	{/if}
+</div>

@@ -1,0 +1,169 @@
+<div class="">
+{foreach $heroes as $hero}
+	<div class="card w-100 mb-4 rounded-0 border-color-2 bg-color-5">
+		<div class="card-header border-color-2 d-flex justify-content-between">
+			<div class="d-flex align-items-center color-1">
+				<h4 class="my-0 text-start color-3 d-flex align-items-center">{$hero->name}</h4>
+				<small class="color-3 ps-4">{_'system.race.' . $hero->ref('race')->code . '.single'}</small>,&nbsp;
+				<small>
+				<span class="color-3">{\App\Helper\Format::formatAge($hero->age)}</span> {_'system.character.age_text'}
+				</small>
+			</div>
+
+			<small class="color-1">[id: {$hero->id}]</small>
+		</div>
+		<div class="card-body p-1 p-sm-3">
+
+		<div class="row">
+			<div class="col-12 col-sm-8">
+				<div class="d-flex justify-content-start flex-column flex-md-row px-0 color-1">
+					<span>
+						<span class="color-3">{_'system.race.' . $hero->ref('race')->code . '.single'}</span>,
+						<span class="color-3">{\App\Helper\Format::formatAge($hero->age)}</span> {_'system.character.age_text'},&nbsp;
+					</span>
+					<span>
+						{_'system.character.has_form'} <span class="color-3">{$hero->form}</span>
+						{_'system.character.and_fatigue'} <span class="color-3">{$hero->fatigue}</span>%
+					</span>
+				</div>
+				<div class="d-flex justify-content-start flex-column flex-md-row px-0 color-1">
+					<span>{_'system.character.has_level'} <span class="color-3">{$hero->level}</span>,&nbsp;</span>
+					<span>{_'system.character.has_exp'} <span class="color-3">{$hero->exp}</span>.</span>
+				</div>
+				<div class="d-flex justify-content-start flex-column flex-md-row px-0 color-1">
+					<span>{_'system.character.has_rating'} <span class="color-3">XXX</span> zl.&nbsp;</span>
+					<span>{_'system.character.get_sallary'} <span class="color-3">XXX</span> zl.</span>
+				</div>
+			</div>
+		</div>
+			
+			<div class="d-flex flex-column flex-lg-row justify-content-start align-items-start">
+				{* stats *}
+				<ul class="w-100 list-group list-group-flush border border-color-4 text-start">
+					<li class="list-group-item bg-color-4 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						{_'system.character.stats.title'}
+					</li>
+					{foreach $config['character']['stats'] as $stat}
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.stats.' . $stat}:</small>
+						<div class="d-flex">
+							<small class="color-2">{$hero[$stat]}</small>
+						</div>
+					</li>
+					{/foreach}
+				</ul>
+
+				{* weapons *}
+				<ul class="w-100 list-group list-group-flush border border-color-4 text-start mx-0 mx-lg-3 my-3 my-lg-0">
+					<li class="list-group-item bg-color-4 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						{_'system.character.weapon.title'}
+					</li>
+					{foreach $config['character']['weapon'] as $stat}
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.weapon.' . $stat}:</small>
+						<div class="d-flex">
+							<small class="color-2">{$hero['weapon_' . $stat]}</small>
+						</div>
+					</li>
+					{/foreach}
+				</ul>
+
+				{* magic *}
+				<ul class="w-100 list-group list-group-flush border border-color-4 text-start">
+					<li class="list-group-item bg-color-4 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						{_'system.character.magic.title'}
+					</li>
+					{foreach $config['character']['magic'] as $stat}
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.magic.' . $stat}:</small>
+						<div class="d-flex">
+							<small class="color-2">{$hero['magic_' . $stat]}</small>
+						</div>
+					</li>
+					{/foreach}
+				</ul>
+
+				{* hodnoty *}
+				<ul class="w-100 list-group list-group-flush border border-color-4 text-start ms-0 ms-lg-3 mt-3 mt-lg-0">
+					<li class="list-group-item bg-color-4 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						{_'system.character.power.title'}
+					</li>
+					{* hodnoty *}
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.power.attack'}:</small>
+						<div class="d-flex">
+							<small class="color-2">X</small>
+						</div>
+					</li>
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.power.defence'}:</small>
+						<div class="d-flex">
+							<small class="color-2">X</small>
+						</div>
+					</li>
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.power.m_attack'}:</small>
+						<div class="d-flex">
+							<small class="color-2">X</small>
+						</div>
+					</li>
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.power.m_defence'}:</small>
+						<div class="d-flex">
+							<small class="color-2">X</small>
+						</div>
+					</li>
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.power.armor'}:</small>
+						<div class="d-flex">
+							<small class="color-2">X</small>
+						</div>
+					</li>
+				</ul>
+
+				{* statistiky *}
+				<ul class="w-100 list-group list-group-flush border border-color-4 text-start ms-0 ms-lg-3 mt-3 mt-lg-0 flex-lg-fill">
+					<li class="list-group-item bg-color-4 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						{_'system.character.achieved.title'}
+					</li>
+					{* hodnoty *}
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.achieved.kills'}:</small>
+						<div class="d-flex ps-5">
+							<small class="color-2">X</small>
+						</div>
+					</li>
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.achieved.kills_total'}:</small>
+						<div class="d-flex ps-5">
+							<small class="color-2">X</small>
+						</div>
+					</li>
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.achieved.deaths'}:</small>
+						<div class="d-flex ps-5">
+							<small class="color-2">X</small>
+						</div>
+					</li>
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.achieved.deaths_total'}:</small>
+						<div class="d-flex ps-5">
+							<small class="color-2">X</small>
+						</div>
+					</li>
+					<li class="list-group-item bg-color-5 border-color-4 color-1 d-flex justify-content-between py-1 px-2">
+						<small>{_'system.character.achieved.matches'}:</small>
+						<div class="d-flex ps-5">
+							<small class="color-2">X</small>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="card-footer border-color-2">
+			<span class="color-1">{_'system.character.note'}:</span>
+			<span class="color-3">Tady poznámka</span>
+		</div>
+	</div>
+{/foreach}
+</div>

@@ -1,0 +1,89 @@
+{layout '../@design.latte'}
+
+{block content}
+
+			{* mailbox *}
+
+			<div class="nav nav-pills mb-3" >
+				<a type="button" class="nav-link mb-1 me-2 bg-success" n:href="Mail:new">
+					{_'system.mail.new'}
+				</a>
+
+				{foreach $mailList as $userID => $mails}
+					{var $active = ''}
+					{if empty($read) && $iterator->first}
+						{var $active = ' active'}
+					{elseif !empty($read) && $read == $userID}
+						{var $active = ' active'}
+					{/if}
+					<a type="button" class="nav-link data-loader mb-1 me-2 position-relative{$active}" n:href="Mail:default id=>$userID">
+						{$mails['nickname']}
+						{if !empty($mails['unread'])}
+						<span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+						{/if}
+					</a>
+				{/foreach}
+
+			</div>
+
+			{foreach $mailList as $userID => $mails}
+				{continueIf !empty($read) && $read != $userID}
+				<div class="">
+					<div class="d-flex flex-column align-items-start">
+						{foreach $mails['list'] as $mailRow}
+							{if $userID == 1}
+								{var $wid = 'w-100'}
+							{else}
+								{var $wid = 'w-75'}
+							{/if}
+
+							{if $mailRow->from == $userRow->id}
+								{var $classes = 'align-self-end text-end border-success'}
+							{else}
+								{var $classes = 'text-start border-color-2'}
+								{if empty($mailRow->read)}
+									{var $classes .= ' new-mail'}
+								{/if}
+							{/if}
+
+							{if $mailRow->from == $userRow->id}
+								{var $border = 'border-success'}
+							{else}
+								{var $border = 'border-color-2'}
+							{/if}
+
+							<div class="card {$wid} mb-3 color-1 bg-color-5 {$classes}">
+								<div class="card-header d-flex justify-content-between align-items-center px-2 px-lg-3 {$border}">
+									<small class="text-start">
+										{date("d.m.Y H:i", strtotime($mailRow->time))}
+										-
+										{if $mailRow->from == $userRow->id}
+											{$userRow->nickname}
+										{else}
+											{$mails['nickname']}
+										{/if}
+									</small>
+									{if $userID != 1}
+										<div class="d-flex flex-wrap justify-content-end">
+											<a n:href="Mail:new, write=>$mails['nickname']" class="btn btn-sm btn-success data-loader m-1 py-1">Napsat</a>
+											{*<a n:href="this, write=>$mails['nickname']" class="btn btn-sm btn-danger data-loader m-1 py-1">X</a>*}
+										</div>
+									{/if}
+								</div>
+								<div class="card-body">
+									<h5 class="card-title">
+										{$mailRow->title|noescape}
+									</h5>
+									<p class="card-text">
+										{$mailRow->text|noescape}
+									</p>
+								</div>
+							</div>
+						{/foreach}
+					</div>
+				</div>
+				{breakIf empty($read)}
+			{/foreach}
+
+
+{/block}

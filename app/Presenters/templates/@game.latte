@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="cs">
+{include __TEMPLATES__ . '/head.latte'}
+
+<body class="pb-5 mw-100 loader">
+	<div class="container body-content">
+
+		{* userPanel *}
+
+		{* userPanel *}
+
+		{* topBar *}
+		<div class="w-100 mw-100 d-flex justify-content-between mb-3">
+
+			{* left *}
+			<div class="d-flex flex-column align-items-start pt-2 mw-50">
+
+				<div class="w-100 d-flex justify-content-start align-items-center pb-2 color-4">
+				<small>{if !empty($teamRow)}{$teamRow->name}{/if}</small>
+				</div>
+
+				<div class="d-flex flex-column justify-content-center align-items-center">
+
+					<div class="d-flex justify-content-center align-items-center color-3 pb-2"
+						data-bs-toggle="tooltip" data-bs-placement="bottom" title="Herní měna">
+						<svg class="me-2" width="25" height="25" fill="currentColor">
+							{bs_icon cash-coin}
+						</svg>
+						<span class="color-1">{if !empty($teamRow)}{\App\Helper\Format::formatMoney($teamRow->money)}{/if}</span>
+					</div>
+
+					<div class="d-flex justify-content-center align-items-center color-3 pb-2"
+						data-bs-toggle="tooltip" data-bs-placement="bottom" title="Fanklub (nálada)">
+						<svg class="me-2" width="25" height="25" fill="currentColor">
+							{bs_icon person-lines-fill}
+						</svg>
+					<span class="color-1">{if !empty($teamRow)}{\App\Helper\Format::formatMoney($teamRow->fanclub)} ({round($teamRow->fanclub_mood / 10)}){/if}</span>
+					</div>
+
+					<div class="d-flex justify-content-center align-items-center color-3"
+						data-bs-toggle="tooltip" data-bs-placement="bottom" title="Příští zápas">
+						<svg class="me-2" width="25" height="25" fill="currentColor">
+							{bs_icon calendar-event}
+						</svg>
+						<span class="color-1">St 7.12.</span>
+					</div>
+
+				</div>
+
+			</div>
+			{* left *}
+
+			{* right *}
+			<div class="d-flex flex-column align-items-end pt-2 mw-50">
+
+				<div class="w-100 d-flex justify-content-end align-items-center pb-2">
+					<span class="color-4">{if !empty($userRow)}{$userRow->nickname}{/if}</span>
+					<svg class="ms-1 px-1" width="25" height="25" fill="currentColor">
+						{bs_icon person-circle}
+					</svg>
+				</div>
+
+				<div class="d-flex justify-content-center align-items-center">
+					<a class="font-uniq color-3 hover-color-2 d-flex justify-content-center align-items-center p-2 pt-0 ajax"
+						href="{plink readMails!}"
+						data-mark-emails="{plink readMails!}"
+						data-bs-toggle="modal"
+						data-bs-target="#mailModal"
+					>
+							<div class="" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{if !empty($newMail)}Nové zprávy: {$newMail}{else}Pošta{/if}">
+								<svg class="" width="25" height="25" fill="currentColor">
+									{if !empty($newMail)}
+										{bs_icon envelope-exclamation-fill}
+									{else}
+										{bs_icon envelope}
+									{/if}
+								</svg>
+							</div>
+					</a>
+					<a class="font-uniq color-3 hover-color-2 d-flex justify-content-center align-items-center p-2 pt-0" n:href="this"
+						data-bs-toggle="tooltip" data-bs-placement="bottom" title="Nastavení">
+						<svg class="" width="25" height="25" fill="currentColor">
+							{bs_icon gear}
+						</svg>
+					</a>
+					<a class="font-uniq color-3 hover-color-2 d-flex justify-content-center align-items-center p-2 pt-0" n:href="Help:default" target="_blank"
+						data-bs-toggle="tooltip" data-bs-placement="bottom" title="Nápověda">
+						<svg class="" width="25" height="25" fill="currentColor">
+							{bs_icon question-circle}
+						</svg>
+					</a>
+					<a class="font-uniq color-3 hover-color-2 d-flex justify-content-center align-items-center p-2 pt-0 data-loader" n:href="Sign:out"
+						data-bs-toggle="tooltip" data-bs-placement="bottom" title="Odhlásit">
+						<svg class="" width="25" height="25" fill="currentColor">
+							{bs_icon box-arrow-right}
+						</svg>
+					</a>
+				</div>
+
+			</div>
+			{* right *}
+
+		</div>
+		{* topBar *}
+
+		{* main menu *}
+		<div class="w-100 d-flex flex-row align-items-center justify-content-center">
+			<div class="btn-group w-100 d-flex flex-row" role="group" aria-label="Game menu">
+
+				<a n:href="Dashboard:default" type="button" class="btn color-3 border-color-3 bg-color-5 hover-color-2 hover-border-color-2 flex-fill flex- d-flex flex-column justify-content-center align-items-center data-loader">
+					<svg class="" width="25" height="25" fill="currentColor">
+						{bs_icon grid}
+					</svg>
+					<strong class="pt-3">Přehled</strong>
+				</a>
+
+				<a n:href="Team:default" type="button" class="btn color-3 border-color-3 bg-color-5 hover-color-2 hover-border-color-2 flex-fill d-flex flex-column justify-content-center align-items-center data-loader">
+					<svg class="" width="25" height="25" fill="currentColor">
+						{bs_icon people}
+					</svg>
+					<strong class="pt-3">Team</strong>
+				</a>
+
+				<a n:href="this" type="button" class="btn color-3 border-color-3 bg-color-5 hover-color-2 hover-border-color-2 flex-fill d-flex flex-column justify-content-center align-items-center data-loader disabled">
+					<svg class="" width="25" height="25" fill="currentColor">
+						{bs_icon basket}
+					</svg>
+					<strong class="pt-3">Trh</strong>
+				</a>
+
+				<a n:href="League:default" type="button" class="btn color-3 border-color-3 bg-color-5 hover-color-2 hover-border-color-2 flex-fill d-flex flex-column justify-content-center align-items-center data-loader">
+					<svg class="" width="25" height="25" fill="currentColor">
+						{bs_icon clipboard-data}
+					</svg>
+					<strong class="pt-3">Liga</strong>
+				</a>
+
+			</div>
+		</div>
+		{* main menu *}
+
+		{* content *}
+		<div class="w-100">
+			{include content}
+		</div>
+		{* content *}
+	</div>
+
+	{*include __TEMPLATES__ . '/mailModal.latte'*}
+
+
+		{include __TEMPLATES__ . '/flashes.latte'}
+
+	{block scripts}
+		{include __TEMPLATES__ . '/scripts.latte'}
+	{/block}
+
+	<a class="bg-loader" href="/">
+		<img src="/images/loader.svg" alt="">
+	</a>
+</body>
+</html>

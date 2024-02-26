@@ -1,0 +1,51 @@
+<div class="card mb-4 rounded-0 border-color-2 bg-color-5">
+    {* Finance week *}
+    <div class="card-header py-3 border-color-2 d-flex flex-row justify-content-between">
+        <h4 class="my-0 fw-normal text-start color-3">Finance</h4>
+        <small class="color-1 fs-6 text-end">
+            Týdenní odhad
+        </small>
+    </div>
+    <div class="card-body">
+        <div class="d-flex flex-column">
+            <div class="text-start color-1">
+                Aktuální stav: <span class="color-2">{\App\Helper\Format::formatMoney($teamRow->money)}</span>
+            </div>
+            <hr>
+            <div class="text-start color-1">
+                Údržba arény: <span class="color-2">-{\App\Helper\Format::formatMoney($arenaMaintenance)}</span>
+            </div>
+            <div class="text-start color-1">
+                Platy personálu: <span class="color-2">-{\App\Helper\Format::formatMoney($arenaStaffSalary)}</span>
+            </div>
+            <div class="text-start color-1">
+                Platy trenérů: <span class="color-2">-{\App\Helper\Format::formatMoney(0)}</span>
+            </div>
+            <div class="text-start color-1">
+                Platy hrdinů: <span class="color-2">-{\App\Helper\Format::formatMoney(0)}</span>
+            </div>
+            <div class="text-start color-1">
+                Juniorka: <span class="color-2">-{\App\Helper\Format::formatMoney(0)}</span>
+            </div>
+        </div>
+    </div>
+
+    {* Finance History *}
+    <div class="card-header pb-3 border-color-2 d-flex flex-row justify-content-between">
+        <h4 class="my-0 fw-normal text-start color-3"></h4>
+        <small class="color-1 fs-6 text-end">
+            Poslední aktivity
+        </small>
+    </div>
+    <div class="card-body">
+        {foreach $teamFinanceHistory as $financeRow}
+        <div class="d-flex flex-row justify-content-between">
+            <span class="color-2 text-start">
+                <span class="color-4">[{\App\Helper\Format::formatDateDB($financeRow->time, 'd.m. H:i')}]</span>
+                {$translator->translate($financeRow->action)}
+            </span>
+            <span class="color-3">{\App\Helper\Format::formatMoney($financeRow->value)}</span>
+        </div>
+        {/foreach}
+    </div>
+</div>

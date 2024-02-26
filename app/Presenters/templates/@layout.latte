@@ -1,25 +1,47 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width">
+{include __TEMPLATES__ . '/head.latte'}
 
-	<link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Courgette&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="style.css">
+<body class="pb-5">
 
-	<title>Fantager{ifset title} | {include title|stripHtml}{/ifset}</title>
-</head>
+		<div class="container">
 
-<body>
-	<div n:foreach="$flashes as $flash" n:class="flash, $flash->type">{$flash->message}</div>
+			{* header *}
+			<div class="row my-3 my-sm-5">
+				<div class="col">
+					<h1 class="mb-0 color-3 font-uniq">Fantager</h1>
+				</div>
+			</div>
+			{* header *}
+
+			{* content *}
+			<div class="row my-4 my-sm-5">
+
+				<div class="col">
+					<nav class="nav flex-column align-items-start mb-2">
+						<a class="nav-link font-uniq" n:href="Homepage:default">
+							<svg class="bi me-2 pb-1" width="25" height="25" fill="currentColor">
+								{bs_icon arrow-left}
+							</svg>
+							Zpět na homepage
+						</a>
+					</nav>
+
+					<div class="p-4 border border-color-4 bg-color-5 text-start">
+
+						{include content}
+
+					</div>
+				</div>
+			</div>
+			{* content *}
+		</div>
 
 
-		{include content}
-
+		{include __TEMPLATES__ . '/flashes.latte'}
 
 	{block scripts}
-	<script src="https://nette.github.io/resources/js/3/netteForms.min.js"></script>
-	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+		{include __TEMPLATES__ . '/scripts.latte'}
 	{/block}
 </body>
 </html>

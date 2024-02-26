@@ -1,0 +1,45 @@
+<div class="card mb-4 pb-3 rounded-0 border-color-2 bg-color-5">
+    <div class="card-header py-3 border-color-2">
+        <h4 class="my-0 fw-normal text-start color-3">{_'system.arena.staff.title'}</h4>
+    </div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush bg-color-5 text-start">
+            <li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+                <span>{_'system.arena.staff.sallary'}:</span>
+                <strong class="color-2">{\App\Helper\Format::formatMoney(\App\Helper\Config::getStaffSalary())}</strong>
+            </li>
+            <li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+                <span>{_'system.arena.staff.sallary_total'}:</span>
+                <strong class="color-2">{\App\Helper\Format::formatMoney($arenaStaffSalary)}</strong>
+            </li>
+            <li class="list-group-item bg-color-5 border-0 color-1 d-flex justify-content-end">
+                <span class="color-2">{_'system.arena.staff.change_info'}</span>
+            </li>
+            {foreach \App\Helper\Config::staffList() as $staffItem}
+                {var $staffTable = 'staff_' . $staffItem}
+
+                <li class="mt-3 list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+                    <span class="color-3">{_'system.arena.staff.' . $staffItem}:</span>
+                    <strong class="color-2">
+                        {$arenaRow->$staffTable}
+                        <span class="color-4">/100</span>
+                    </strong>
+                </li>
+                <li class="list-group-item bg-color-5 border-color-5 color-1 d-flex justify-content-end">
+                    <div class="btn-toolbar justify-content-center" role="toolbar">
+                        <div class="btn-group flex-fill px-1" role="group">
+                            <a href="{link staff!, count => $arenaRow->$staffTable + 1, staff => $staffItem}" class="btn btn-sm btn-outline-success{if $arenaRow->$staffTable + 1 > 100} disabled{/if} data-loader">+1</a>
+                            <a href="{link staff!, count => $arenaRow->$staffTable + 5, staff => $staffItem}" class="btn btn-sm btn-outline-success{if $arenaRow->$staffTable + 5 > 100} disabled{/if} data-loader">+5</a>
+                            <a href="{link staff!, count => $arenaRow->$staffTable + 10, staff => $staffItem}" class="btn btn-sm btn-outline-success{if $arenaRow->$staffTable + 10 > 100} disabled{/if} data-loader">+10</a>
+                        </div>
+                        <div class="btn-group flex-fill px-1" role="group">
+                            <a href="{link staff!, count => $arenaRow->$staffTable - 1, staff => $staffItem}" class="btn btn-sm btn-outline-danger{if $arenaRow->$staffTable - 1 < 0} disabled{/if} data-loader">-1</a>
+                            <a href="{link staff!, count => $arenaRow->$staffTable - 5, staff => $staffItem}" class="btn btn-sm btn-outline-danger{if $arenaRow->$staffTable - 5 < 0} disabled{/if} data-loader">-5</a>
+                            <a href="{link staff!, count => $arenaRow->$staffTable - 10, staff => $staffItem}" class="btn btn-sm btn-outline-danger{if $arenaRow->$staffTable - 10 < 0} disabled{/if} data-loader">-10</a>
+                        </div>
+                    </div>
+                </li>
+            {/foreach}
+        </ul>
+    </div>
+</div>

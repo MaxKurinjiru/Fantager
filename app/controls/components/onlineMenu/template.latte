@@ -1,0 +1,115 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom">
+    <div class="container-fluid">
+
+        <span class="navbar-brand mb-0 h1 color-3">Fantager</span>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainMenu" aria-controls="mainMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse mt-3 mt-lg-0" id="mainMenu">
+
+            {* left side *}
+            <div class="navbar-nav me-auto">
+                <a class="nav-link data-loader d-flex align-items-center ms-3" href="{plink Dashboard:default}">
+                    <svg class="me-2" width="17" height="17" fill="currentColor">
+                        {bs_icon grid}
+                    </svg>
+                    {_'system.dashboard.title'}
+                </a>
+                <a class="nav-link data-loader d-flex align-items-center ms-3" href="{plink Team:default}">
+                    <svg class="me-2" width="17" height="17" fill="currentColor">
+                        {bs_icon shield-shaded}
+                    </svg>
+                    {_'system.team.title'}
+                </a>
+                <a class="nav-link data-loader d-flex align-items-center ms-3" href="{plink Arena:default}">
+                    <svg class="me-2" width="17" height="17" fill="currentColor">
+                        {bs_icon bank}
+                    </svg>
+                    {_'system.arena.title'}
+                </a>
+                <a class="nav-link data-loader d-flex align-items-center ms-3" href="{plink League:default}">
+                    <svg class="me-2" width="17" height="17" fill="currentColor">
+                        {bs_icon trophy}
+                    </svg>
+                    {_'system.league.title'}
+                </a>
+                <a class="nav-link data-loader d-flex align-items-center ms-3 disabled" href="#">
+                    <svg class="me-2" width="17" height="17" fill="currentColor">
+                        {bs_icon handbag}
+                    </svg>
+                    {_'system.market.title'}
+                </a>
+            </div>
+            {* left side *}
+
+            {* Right side *}
+            <div class="navbar-nav dropdown ms-auto">
+                <a class="nav-link dropdown-toggle d-flex align-items-center justify-content-end color-1" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                {if !empty($userRow)}{$userRow->nickname}{/if}
+                    <svg class="mx-2" width="17" height="17" fill="currentColor">
+                        {bs_icon person-circle}
+                    </svg>
+                    {if !empty($newMail)}
+                        <svg class="" width="17" height="17" fill="#adc178">
+                        {bs_icon envelope-exclamation-fill}
+                        </svg>
+                    {/if}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdownMenuLink">
+                    {*
+                    <li>
+                        <a class="dropdown-item d-flex justify-content-start align-items-center" href="{plink Mail:default}">
+                            <svg class="me-3" width="17" height="17" fill="currentColor">
+                            {if !empty($newMail)}
+                                {bs_icon envelope-exclamation-fill}
+                            {else}
+                                {bs_icon envelope}
+                            {/if}
+                            </svg>
+                            {_'system.mail.title'}
+                        </a>
+                    </li>
+                    *}
+                    {*
+                    <li>
+                        <a class="dropdown-item d-flex justify-content-start align-items-center" href="#">
+                            <svg class="me-3" width="17" height="17" fill="currentColor">
+                                {bs_icon gear}
+                            </svg>
+                            {_'system.settings.title'}
+                        </a>
+                    </li>
+                    *}
+                    <li>
+                        <a class="dropdown-item d-flex justify-content-start align-items-center data-loader" href="{plink Player:default}">
+                            <svg class="me-3" width="17" height="17" fill="currentColor">
+                                {bs_icon person-square}
+                            </svg>
+                            {_'system.user.profile'}
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex justify-content-start align-items-center" href="{plink Help:default}" target="_blank">
+                            <svg class="me-3" width="17" height="17" fill="currentColor">
+                                {bs_icon question-circle}
+                            </svg>
+                            {_'system.help.title'}
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item d-flex justify-content-start align-items-center data-loader" href="{plink Sign:out}">
+                            <svg class="me-3" width="17" height="17" fill="currentColor">
+                                {bs_icon box-arrow-right}
+                            </svg>
+                            {_'system.confirm.logout'}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            {* Right side *}
+
+        </div>
+    </div>
+</nav>

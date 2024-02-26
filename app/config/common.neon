@@ -1,21 +1,158 @@
 parameters:
 
-
 application:
 	errorPresenter: Error
-	mapping:
-		*: App\*Module\Presenters\*Presenter
 
+	mapping:
+		*: App\Presenters\*\*Presenter
 
 session:
 	expiration: 14 days
 
+extensions:
+	translation: Contributte\Translation\DI\TranslationExtension
 
-database:
-	dsn: 'mysql:host=innodb.endora.cz;dbname=fantager'
-	user: fantager
-	password: Fantager123
+translation:
+	locales:
+		default: cs
+		fallback: [cs_CZ, cs]
+	dirs:
+		- %appDir%/lang
 
+latte:
+	macros:
+		- App\Macros\BootstrapIcon::install
 
 services:
 	router: App\Router\RouterFactory::createRouter
+
+	latte.templateFactory: Nette\Bridges\ApplicationLatte\TemplateFactory
+
+	security.passwords: Nette\Security\Passwords(::PASSWORD_BCRYPT, [cost: 12])
+
+	nette.latteFactory:
+		setup:
+			- addFunction('BSicon', @App\Filters\BSicon)
+
+	# helpers
+	- App\Helper\Config
+
+	# filters
+	- App\Filters\BSicon
+
+	# models
+	- App\Model\Authenticator
+	- App\Model\Mailer
+	- App\Model\Mail
+
+	# deprecated
+	- App\Model\Facade\Generate
+
+	# facade connection
+	facade.facades:
+		factory: App\Model\Facades
+		setup:
+			- addFacade('inMail', @facade.inmail)
+			- addFacade('activity', @facade.activity)
+			- addFacade('user', @facade.user)
+			- addFacade('league', @facade.league)
+			- addFacade('kingdom', @facade.kingdom)
+			- addFacade('team', @facade.team)
+			- addFacade('arena', @facade.arena)
+			- addFacade('race', @facade.race)
+			- addFacade('character', @facade.character)
+
+	# facades
+	facade.kingdom:
+		factory: App\Model\Facade\Kingdom
+		setup:
+			- addFacade('activity', @facade.activity)
+			- addFacade('user', @facade.user)
+
+	facade.inmail:
+		factory: App\Model\Facade\InMail
+	
+	facade.activity:
+		factory: App\Model\Facade\Activity
+	
+	facade.user:
+		factory: App\Model\Facade\User
+		setup:
+			- addPasswords(@security.passwords)
+			- addFacade('activity', @facade.activity)
+			- addFacade('inMail', @facade.inmail)
+	
+	facade.league:
+		factory: App\Model\Facade\League
+	
+	facade.team:
+		factory: App\Model\Facade\Team
+		setup:
+			- addFacade('activity', @facade.activity)
+			- addFacade('inMail', @facade.inmail)
+	
+	facade.arena:
+		factory: App\Model\Facade\Arena
+		setup:
+			- addFacade('activity', @facade.activity)
+			- addFacade('inMail', @facade.inmail)
+	
+	facade.character:
+		factory: App\Model\Facade\Character
+		setup:
+			- addFacade('race', @facade.race)
+			- addFacade('activity', @facade.activity)
+
+	facade.race:
+		factory: App\Model\Facade\Race
+
+	facade.cron:
+		factory: App\Model\Cron\Cron
+
+	
+	# models
+	- App\Model\Character
+
+	# sign forms
+	- App\Controls\Form\Sign\Factory
+	- App\Controls\Form\SignIn
+	- App\Controls\Form\SignUp
+	- App\Controls\Form\SignRecover
+	- App\Controls\Form\SignPassword
+
+	# controls
+	- App\Controls\OnlineMenu\Factory
+	- App\Controls\OnlineMenu
+
+	- App\Controls\OnlinePlayersStats\Factory
+	- App\Controls\OnlinePlayersStats
+
+	# dashboard
+	- App\Controls\Dashboard\Factory
+	- App\Controls\Dashboard\Finance
+
+	# player
+	- App\Controls\Player\Factory
+	- App\Controls\Player\Overview
+
+	# arena
+	- App\Controls\Arena\Factory
+	- App\Controls\Arena\Overview
+	- App\Controls\Arena\Staff
+	- App\Controls\Arena\Junior
+
+	# team
+	- App\Controls\Team\Factory
+	- App\Controls\Team\Overview
+	- App\Controls\Team\Characters
+
+	- App\Controls\League\Factory
+	- App\Controls\LeagueTable
+
+	# team forms
+	- App\Controls\Form\Team\Factory
+	- App\Controls\Form\Team\Rename
+
+	# Mails ingame
+	- App\Controls\Form\Message\Factory
+	- App\Controls\Form\Message

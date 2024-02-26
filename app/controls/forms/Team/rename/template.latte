@@ -1,0 +1,14 @@
+{form form, class=>'w-100'}
+<div class="row">
+	<div class="col text-start">
+		{input $form['name'] class=>'form-control'}
+	</div>
+	<div class="col text-start">
+		{input $form['send'] class=>'d-block btn btn-success'}
+	</div>
+
+	<div class="col text-start ms-3" n:if="$form->hasErrors()">
+		{include __CONTROLS__ . '/forms/templates/err.latte', form=>$form}
+	</div>
+</div>
+{/form}

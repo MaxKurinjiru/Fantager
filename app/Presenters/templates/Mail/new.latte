@@ -1,0 +1,28 @@
+{layout '../@design.latte'}
+
+{block content}
+
+			{* mailbox *}
+
+			<div class="nav nav-pills mb-3" >
+				<a type="button" class="nav-link mb-1 me-2 bg-success active" n:href="Mail:new">
+					{_'system.mail.new'}
+				</a>
+
+				{foreach $mailList as $userID => $mails}
+					<a type="button" class="nav-link data-loader mb-1 me-2 position-relative" n:href="Mail:default id=>$userID">
+						{$mails['nickname']}
+						{if !empty($mails['unread'])}
+						<span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+						{/if}
+					</a>
+				{/foreach}
+
+			</div>
+
+			<div class="">
+				{control newForm}
+			</div>
+
+
+{/block}

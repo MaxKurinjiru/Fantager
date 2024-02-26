@@ -1,0 +1,56 @@
+<div class="modal fade" id="mailModal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="mailModalTitle" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="mailModalTitle">Pošta</h5>
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
+			</div>
+			<div class="modal-body text-start">
+
+				{*  *}
+
+				<div class="accordion" id="accordionMails">
+
+					{foreach $myMailList as $mailRow}
+
+					{var $unread = false}
+					{if empty($mailRow['read'])}
+						{var $unread = true}
+					{/if}
+
+					<div class="accordion-item border-color-2 bg-color-5">
+						<h2 class="accordion-header" id="headingMail-{$mailRow['id']}">
+							<button
+								class="accordion-button {if !$unread}bg-color-4{else}bg-color-3{/if} color-5{if !$unread} collapsed{/if}"
+								type="button"
+								data-bs-toggle="collapse"
+								data-bs-target="#accordionMail-{$mailRow['id']}"
+								aria-expanded="{if !$unread}false{else}true{/if}"
+								aria-controls="accordionMail-{$mailRow['id']}"
+							>
+								[ {date("d.m.Y H:i", strtotime($mailRow['time']))} - {$mailRow['nickname']} ]&nbsp;<strong>{$mailRow['title']}</strong>
+							</button>
+						</h2>
+						<div
+							id="accordionMail-{$mailRow['id']}"
+							class="accordion-collapse collapse{if $unread} show{/if}"
+							aria-labelledby="headingMail-{$mailRow['id']}"
+						>
+							<div class="accordion-body rounded border-color-4 p-3">
+								{$mailRow['text']|noescape}
+							</div>
+						</div>
+					</div>
+					{/foreach}
+
+				</div>
+
+				{*  *}
+
+			</div>
+			<div class="modal-footer">
+
+			</div>
+		</div>
+	</div>
+</div>

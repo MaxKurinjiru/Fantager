@@ -1,0 +1,314 @@
+@import 'vars/colors';
+
+/**************************************************************************/
+
+html, body {
+	scroll-behavior: smooth;
+	overflow: auto;
+
+	// default font
+	font-family: 'Ubuntu', serif;
+	letter-spacing: 0.04em;
+	line-height: 150%;
+}
+
+body {
+	min-height: 100vh;
+	max-width: 100%;
+	margin: 0;
+	background: $color-black;
+	color: $color-light;
+	text-align: center;
+}
+
+body * {
+	box-sizing: border-box;
+
+	font-family: 'Ubuntu', serif;
+	letter-spacing: 0.04em;
+	line-height: 150%;
+}
+
+.font-uniq {
+	font-family: 'Eagle Lake', cursive;
+}
+
+/**************************************************************************/
+
+*::-webkit-scrollbar {
+	width: 10px;
+}
+
+*::-webkit-scrollbar-track {
+	box-shadow: none;
+	background: none;
+	width: 10px;
+}
+
+*::-webkit-scrollbar-track-piece {
+}
+
+*::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.1);
+	border-radius: 10px;
+	outline: none;
+	border: 3px solid transparent;
+	width: 10px;
+	min-height: 100px;
+
+	background-clip: content-box;
+}
+
+/**************************************************************************/
+
+.bg-loader {
+	z-index: 9999;
+	display: flex;
+	position: absolute;
+	opacity: 0;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	align-items: center;
+	justify-content: center;
+	background-color: $color-black;
+	transition: 500ms;
+
+	img {
+		width: 60px;
+	}
+}
+
+/**************************************************************************/
+
+body.loader {
+	.toast-container,
+	.body-content {
+		opacity: 0;
+	}
+	.bg-loader {
+		opacity: 1;
+		cursor: default;
+	}
+}
+body.loaded {
+	.body-content {
+		opacity: 1;
+	}
+	.bg-loader {
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+/**************************************************************************/
+
+.body-content {
+	margin: 0 auto;
+	padding: 0;
+	max-width: 1680px;
+	text-align: left;
+	padding-top: 57px;
+}
+
+.navbar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+}
+
+/**************************************************************************/
+
+.mw-50 {
+	max-width: 50%!important;
+}
+
+
+.color-light, .color-1 {
+	color: $color-1!important;
+}
+.color-2 {
+	color: $color-2!important;
+}
+.color-3 {
+	color: $color-3!important;
+}
+.color-4 {
+	color: $color-4!important;
+}
+.color-dark, .color-5 {
+	color: $color-5!important;
+}
+
+
+.bg-light, .bg-color-1 {
+ 	background-color: rgba(var(--color-1-rgb), var(--bs-bg-opacity)) !important;
+}
+.bg-color-2 {
+ 	background-color: rgba(var(--color-2-rgb), var(--bs-bg-opacity)) !important;
+}
+.bg-color-3 {
+ 	background-color: rgba(var(--color-3-rgb), var(--bs-bg-opacity)) !important;
+}
+.bg-color-4 {
+ 	background-color: rgba(var(--color-4-rgb), var(--bs-bg-opacity)) !important;
+}
+.bg-dark, .bg-color-5 {
+ 	background-color: rgba(var(--color-5-rgb), var(--bs-bg-opacity)) !important;
+}
+
+.border-light, .border-color-1 {
+	border-color: $color-1!important;
+}
+.border-color-2 {
+	border-color: $color-2!important;
+}
+.border-color-3 {
+	border-color: $color-3!important;
+}
+.border-color-4 {
+	border-color: $color-4!important;
+}
+.border-dark, .border-color-5 {
+	border-color: $color-5!important;
+}
+
+.btn-primary {
+	color: $color-3;
+	background-color: $color-5;
+	border-color: $color-3;
+
+	&:hover {
+		color: $color-3;
+		background-color: $color-5;
+		border-color: $color-2;
+	}
+
+	&.disabled {
+		color: $color-3;
+		background-color: $color-5;
+		border-color: $color-2;
+	}
+}
+
+.nav-tabs .nav-link,
+.nav-link {
+	color: $color-2;
+
+	&.active {
+		color: $color-3;
+		font-weight: 700;
+	}
+	&.disabled {
+		color: $color-4;
+	}
+	&:hover, &:focus, &:active {
+		color: $color-3;
+	}
+}
+
+.nav-tabs {
+	border-color: $color-2;
+}
+
+.nav-pills .nav-link,
+.nav-tabs .nav-link {
+	&.active {
+		background: $color-5;
+		border-color: $color-2;
+	}
+	&:hover, &:focus, &:active {
+		border-color: $color-2;
+		text-decoration: none;
+	}
+}
+
+.nav-pills .nav-link {
+	border: 1px solid;
+	border-color: $color-1;
+
+	&.active {
+		background: $color-3;
+		color: $color-5;
+	}
+}
+
+.new-mail {
+	background-color: rgba(255,255,255,0.1)!important;
+}
+
+@media (hover: hover) { /* when supported */
+	.hover {
+		&-bg-light:hover, &-bg-color-1:hover {
+		 	background-color: rgba(var(--color-1-rgb), var(--bs-bg-opacity)) !important;
+		}
+		&-bg-color-2:hover {
+		 	background-color: rgba(var(--color-2-rgb), var(--bs-bg-opacity)) !important;
+		}
+		&-bg-color-3:hover {
+		 	background-color: rgba(var(--color-3-rgb), var(--bs-bg-opacity)) !important;
+		}
+		&-bg-color-4:hover {
+		 	background-color: rgba(var(--color-4-rgb), var(--bs-bg-opacity)) !important;
+		}
+		&-bg-dark:hover, &-bg-color-5:hover {
+		 	background-color: rgba(var(--color-5-rgb), var(--bs-bg-opacity)) !important;
+		}
+
+		&-color-light:hover, &-color-1:hover {
+			color: $color-1!important;
+		}
+		&-color-2:hover {
+			color: $color-2!important;
+		}
+		&-color-3:hover {
+			color: $color-3!important;
+		}
+		&-color-4:hover {
+			color: $color-4!important;
+		}
+		&-color-dark:hover, &-color-5:hover {
+			color: $color-5!important;
+		}
+
+		&-border-light:hover, &-border-color-1:hover {
+			border-color: $color-1!important;
+		}
+		&-border-color-2:hover {
+			border-color: $color-2!important;
+		}
+		&-border-color-3:hover {
+			border-color: $color-3!important;
+		}
+		&-border-color-4:hover {
+			border-color: $color-4!important;
+		}
+		&-border-dark:hover, &-border-color-5:hover {
+			border-color: $color-5!important;
+		}
+	}
+}
+
+.form-control {
+	color: $color-3;
+	background-color: $color-5;
+	border-color: $color-4;
+
+	&:focus {
+		color: $color-3;
+		background-color: $color-5;
+		border-color: $color-4;
+
+		box-shadow: 0 0 0 0.25rem rgba(var(--color-4-rgb), 0.25);
+	}
+}
+
+.modal-content {
+	background: var(--color-5);
+	border: 1px solid $color-3;
+}
+
+
+@import 'vars/basic';

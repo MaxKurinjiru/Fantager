@@ -1,0 +1,86 @@
+confirm:
+	title: "Confirmation"
+	yes:	"Confirm"
+	cancel: "Cancel"
+
+race:
+	man:
+		single: "Man"
+		multi: "Men"
+	elf:
+		single: "Elf"
+		multi: "Elves"
+	dwarf:
+		single: "Dwarf"
+		multi: "Dwarves"
+	orc:
+		single: "Orc"
+		multi: "Orcs"
+	undead:
+		single: "Undead"
+		multi: "Undead"
+	giant:
+		single: "Giant"
+		multi: "Giants"
+	ent:
+		single: "Ent"
+		multi: "Ents"
+	jinn:
+		single: "Jinn"
+		multi: "Jinns"
+
+staff:
+	res: "Ressurecters"
+	heal: "Healers"
+	smith: "Smiths"
+	prop: "Propagators"
+
+	title: "Staff"
+	sallary: "Single salary"
+	sallary_total: "Total salary"
+	change_info: "Each hire/fire costs one week's salary."
+
+
+arena:
+	title: "Arena"
+	level: "Level"
+	next_level: "Next level"
+	max_level: "Arena is fully upgraded"
+	upgrade: "Upgrade"
+	seats: "Seats"
+	maintenance: "Maintenance"
+	price: "Price"
+	days: "Construction days"
+	days_left: "Days left"
+	race: "Customization"
+	change: "Customization in progress,"
+
+	confirm_upgrade: "Really upgrade arena to level %level%?<br>It will cost %price% and take %days% days"
+	confirm_change: "Really change arena customization for race %race%?"
+
+junior:
+	title: "Juniors"
+
+dashboard:
+	title: "Dashboard"
+
+team:
+	title: "Team"
+
+league:
+	title: "League"
+
+market:
+	title: "Market"
+
+mail:
+	title: "Mails"
+	new: "New message"
+	reply: "Reply"
+
+settings:
+	title: "Settings"
+	logout: "Log out"
+
+help:
+	title: "Help"

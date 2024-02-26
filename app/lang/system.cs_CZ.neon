@@ -1,0 +1,263 @@
+# race and related
+race:
+	title: "Rasa"
+	man:
+		single: "Člověk"
+		multi: "Lidé"
+	elf:
+		single: "Elf"
+		multi: "Elfové"
+	dwarf:
+		single: "Trpaslík"
+		multi: "Trpaslíci"
+	orc:
+		single: "Skřet"
+		multi: "Skřeti"
+	undead:
+		single: "Nemrtví"
+		multi: "Nemrtví"
+	giant:
+		single: "Obr"
+		multi: "Obři"
+	ent:
+		single: "Ent"
+		multi: "Enti"
+	jinn:
+		single: "Džin"
+		multi: "Džinové"
+
+# activity and logs
+activity:
+	team_assign: "Uživateli [ %name% ] byl přiřazen nový team"
+	team_junior_trained: "Uživatel [ %name% ] vytrénoval nového hrdinu: [ %heroid% - %heroname% ] [ %herostats% ]"
+	arena_upgrade_start: "[ %name% ] Začala práce pro vylepšení arény na %level% level"
+	arena_upgrade_finish: "[ %name% ] Aréna vylepšena na %level%. level"
+	arena_change_complete: "[ %name% ] Aréna předělána pro jinou rasu [ %racebefore% => %raceafter% ]"
+
+	finance_action:
+		arena_hire: "Najmutí personálu"
+		arena_fire: "Propuštění personálu"
+		arena_upgrade: "Vylepšení arény"
+		arena_maintenance: "Údržba arény"
+		arena_personal: "Platy personálu"
+		arena_ticket: "Příjmy za vstupenky"
+		gift_kingdom: "Dary od království"
+		gift_sponsor: "Dary od sponzorů"
+		interests: "Zisk z úroků"
+		team_heroes: "Výplaty hrdinů"
+		team_trainers: "Výplaty trenérů"
+
+# confirmations and actions
+confirm:
+	title: "Potvrzení"
+	yes: "Ano"
+	no:	"Ne"
+	cancel: "Zrušit"
+	login: "Přihlásit"
+	logout: "Odhlášení"
+	sign_up: "Zaregistrovat"
+	back_home: "Zpět na homepage"
+
+# sign texts
+sign:
+	in:
+		title: "Přihlášení"
+		email: "e-mail"
+		password: "heslo"
+		lost_password: "Zapomenuté heslo"
+
+	up:
+		title: "Registrace"
+		nickname: "Herní jméno"
+		password: "Heslo znovu (kontrolní)"
+	
+	recover:
+		title: "Zapomenuté heslo"
+		password: "Nové heslo"
+		text: "Pro obnovení hesla zadejte svoji registrační emailovou adresu, na kterou dorazí email s odkazem k obnovení hesla."
+		send: "Odeslat email"
+		complete: "Uložit heslo"
+
+# messages and other popups, etc.
+message:
+	noone_online: "Právě nikdo"
+	team_assign_title: "Přiřazení týmu"
+	team_assign_text: "Byl Vám přidělený tým. Pamatujte že dříve byl ovládán systémem a možná předtím patřil i jinému hráči."
+	wrong_credentials: "Neplatné přihlašovací údaje"
+	not_activated: "Email ještě nebyl ověřen"
+	has_ban: "Účet je zmražený - ban"
+
+	recovery_send: "Email pro obnovení hesla byl úspěšně odeslán. Zkontrolujte email a pokračujte k nastavení nového hesla"
+	recovery_complete: ""
+
+	arena_upgrade_finish_title: "Aréna vylepšena"
+	arena_upgrade_finish: "Aréna byla úspěšně vylepšena na %level%. level"
+	arena_change_complete_title: "Aréna upravena"
+	arena_change_complete: "Uzpůsobení arény z %racebefore% na %raceafter% bylo úspěšně dokončeno."
+
+	team_change_name_taken: "Tým s tímto jménem, nebo příliš podobným, již existuje"
+
+	required:
+		login_email: "Pro přihlášení je třeba email"
+		login_password: "Pro přihlášení je třeba heslo"
+
+		team_name: "Název týmu nesmí být prázdný"
+		team_name_min_length: "Název týmu musí mít alespoň %d znaků"
+		team_name_max_length: "Název týmu musí mít maximálně %d znaků"
+
+mail:
+	title: "Pošta"
+	new: "Nová zpráva"
+	reply: "Odpovědět"
+
+	notif_title: "Fantager - Nová zpráva ve hře"
+	
+# settings and options
+settings:
+	title: "Nastavení"
+
+# user and related
+user:
+	title: "Hráč"
+	profile: "Profil"
+	activated: "Registrace"
+	team: "Přiřazený tým"
+	last_online: "Naposledy online"
+
+# arena
+arena:
+	title: "Aréna"
+	seats: "Sedadla"
+	maintenance: "Údržba"
+	price: "Cena"
+	days: "Dní výstavby"
+	days_left: "Zbývá dní"
+	race: "Uzpůsobení"
+	change: "Probíhá úprava"
+
+	level:
+		title: "Úroveň"
+		upgrade: "Vylepšit"
+		next: "Další úroveň"
+		max: "Aréna je plně vylepšená"
+
+	staff:
+		res: "Křísitelé"
+		heal: "Léčitelé"
+		smith: "Kováři"
+		prop: "Propagátoři"
+		train: "Cvičitelé"
+
+		title: "Personál"
+		sallary: "Plat za jednoho"
+		sallary_total: "Platy celkem"
+		change_info: "Každé najmutí/propuštění peronálu stojí jeden za každého jeden jeho týdenní plat."
+
+	junior:
+		title: "Juniorka"
+		pull: "Převzít z juniorky"
+		already_pulled: "Tento týden již není možné"
+		info1: "Zde lze získat nového hrdinu k posílení týmu, či jako další možnost výdělku na prodej."
+		info2: "Vlastnosti nového hrdiny mají mnoho závislostí. Od úrovně a uzpůsobení arény, přes morálku týmu až po klasickou náhodu."
+		info3: "Nového hrdinu lze získat jen jednou za týden."
+
+	confirm:
+		upgrade: "Skutečně vylepšit arénu na level %level%?<br>Bude to stát %price% a trvat %days% dní"
+		change: "Skutečně změnit uzpůsobení arény pro rasu %race%?"
+		junior: "Skutečně převzít nového hrdinu z juniorky?"
+
+# dashboard and general overview
+dashboard:
+	title: "Přehled"
+
+# team and related
+team:
+	title: "Tým"
+	rename: "Změnit název"
+	league: "Skupina"
+	player: "Hráč"
+	money: "Rozpočet"
+	rating: "Hodnocení"
+	morale: "Morálka"
+	fanclub: "Fanklub"
+	isInsolventFor: "Tým je zadlužený již %day% dní. Pokud překročí %total% dní, bude hráči tým odebrán."
+
+	trainers:
+		title: "Trenéři"
+
+	heroes:
+		title: "Hrdinové"
+
+	equipment:
+		title: "Vybavení"
+# characters
+character:
+	name: "Jméno"
+	age: "Věk"
+	age_text: "let"
+	has_form: "má formu"
+	and_fatigue: "a únavu"
+	has_level: "Úroveň hrdiny je"
+	has_exp: "se zkušenostmi"
+	has_rating: "Hodnota je přibližně"
+	get_sallary: "Bere týdenní plat"
+	note: "Poznámka"
+
+	power:
+		title: "Schopnosti"
+		attack: "Útok"
+		defence: "Obrana"
+		m_attack: "Mag. útok"
+		m_defence: "Mag. obrana"
+		armor: "Brnění"
+
+	stats:
+		title: "Vlastnosti"
+		STR: "Síla"
+		DEX: "Obratnost"
+		CON: "Konstituce"
+		SPD: "Rychlost"
+		INT: "Inteligence"
+		WIL: "Síla vůle"
+		CHA: "Charisma"
+		LUC: "Štěstí"
+
+	weapon:
+		title: "Dovednosti"
+		cut: "Sekery"
+		thrust: "Meče"
+		blunt: "Drtící"
+		pole: "Kopí"
+		bow: "Luky"
+		crossbow: "Kuše"
+
+	magic:
+		title: "Magie"
+		life: "Život"
+		death: "Smrt"
+		chaos: "Chaos"
+		order: "Řád"
+		nature: "Příroda"
+	
+	achieved:
+		title: "Statistiky"
+		kills: "Zabítí za sezónu"
+		kills_total: "Zabítí celkem"
+		deaths: "Smrtí za sezónu"
+		deaths_total: "Smrtí celkem"
+		matches: "Celkem zápasů"
+
+
+# league and related
+league:
+	title: "Liga"
+	table: "Tabulka"
+	matches: "Zápasy"
+
+# market and shoping
+market:
+	title: "Tržiště"
+
+# help, i need somebody, help...
+help:
+	title: "Nápověda"

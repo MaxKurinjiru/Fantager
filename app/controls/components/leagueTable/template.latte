@@ -1,0 +1,88 @@
+{if !empty($league)}
+
+<div class="card mb-4 rounded-0 border-color-2 bg-color-5">
+	<div class="card-header p-0 border-color-2 d-flex align-items-start justify-content-between">
+		<div class="row">
+			<div class="col pt-2">
+				<div class="btn-toolbar px-2" role="toolbar" aria-label="Ligové skupiny v království">
+
+					{foreach $config['league']['list'] as $key => $value}
+						{var $chars = range('A', 'Z')}
+						<div class="btn-group d-flex flex-wrap me-2 mb-2" role="group" aria-label="Liga">
+							{for $i = 0; $i < $value['groups']; $i++}
+								{var $lshow = $chars[$i]}
+								<a href="{plink League:default, id => $key .'.'. $lshow}" type="button" class="btn btn-sm {if $league->league == $key && $league->group == $chars[$i]}btn-info{else}btn-secondary{/if} flex-grow-0 data-loader">{$key}.{$chars[$i]}</a>
+							{/for}
+						</div>
+					{/foreach}
+
+				</div>
+			</div>
+		</div>	
+	</div>
+	<div class="card-body p-0">
+
+		<table class="table table-sm mb-0">
+			<thead>
+				<tr>
+					<th scope="col" class="bg-color-4 color-3 py-2" style="width: 35px;"
+						data-bs-toggle="tooltip" data-bs-placement="top" title="Pořadí">#</th>
+					<th scope="col" class="bg-color-4 color-3 py-2 ps-3 text-start"
+						data-bs-toggle="tooltip" data-bs-placement="top" title="Název týmu a manažera">Team / Manager</th>
+					<th scope="col" class="bg-color-4 color-3 py-2"
+						data-bs-toggle="tooltip" data-bs-placement="top" title="Zabití / Smrtí">Z/S</th>
+					<th scope="col" class="bg-color-4 color-3 py-2" style="width: 60px;"
+						data-bs-toggle="tooltip" data-bs-placement="top" title="Získané body">Body</th>
+				</tr>
+			</thead>
+			<tbody>
+
+				{foreach $table as $row}
+					{var $team = $row->ref('team')}
+
+					{var $isPromote = false}
+					{var $isDemote = false}
+					{var $isMix = false}
+					{var $classes = 'color-1'}
+					{var $tooltip = ''}
+
+					{var $team_total = $config['league']['teams']}
+					{var $team_top = $config['league']['list'][$league->league]['top']}
+					{var $team_bottom = $config['league']['list'][$league->league]['bottom']}
+
+					{if $team_top && $iterator->counter <= $team_top}
+						{var $isPromote = true}
+						{var $classes = 'text-success'}
+						{var $tooltip = ' data-bs-toggle="tooltip" data-bs-placement="right" title="Postupuje do vyšší ligy"'}
+					{/if}
+					{if $team_bottom && $iterator->counter > ($team_total - $team_bottom)}
+						{var $isDemote = true}
+						{var $classes = 'text-danger'}
+						{var $tooltip = ' data-bs-toggle="tooltip" data-bs-placement="right" title="Sestupuje do nižší ligy"'}
+					{/if}
+
+				<tr {if $team->user == $presenter->getUser()->getIdentity()->id}class="bg-color-4 bg-opacity-50"{/if}>
+					<th scope="row" class="bg-color-5 {$classes}"{$tooltip|noescape}>{$iterator->counter}</th>
+					<td class="bg-color-5 color-1 text-start ps-3">
+						<a href="{plink Team:detail, id=>$team->id}" class="color-1 data-loader">{$team->name}</a>
+						<br>
+
+						{if !empty($team->user)}
+							{var $user = $team->ref('user')}
+							<a href="{plink Player:detail, id=>$user->id}" class="color-2 small data-loader">{$user->nickname}</a>
+						{else}
+							<small class="color-4">----</small>
+						{/if}
+					</td>
+					<td class="bg-color-5 color-1">0/0</td>
+					<td class="bg-color-5 color-1">0</td>
+				</tr>
+				{/foreach}
+
+			</tbody>
+		</table>
+	
+	</div>
+</div>
+
+{/if}

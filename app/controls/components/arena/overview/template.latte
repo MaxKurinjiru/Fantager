@@ -1,0 +1,108 @@
+<div class="card-group">
+
+	<div class="card mb-4 rounded-0 border-color-2 bg-color-5">
+		<div class="card-header py-3 border-color-2 d-flex align-items-start justify-content-between">
+			<h4 class="my-0 text-start color-3 d-flex align-items-center">
+				{*
+				<svg class="pb-1 me-3" width="25" height="25" fill="currentColor">
+					{bs_icon bank}
+				</svg>
+				*}
+				{_'system.arena.level.title'} {$arenaRow->level}
+				{if (!empty($upgrade_option) && !$arenaMaxed) || (!$arenaMaxed && !empty($arenaInProgress))}
+				-> {$arenaRow->level + 1}
+				{/if}
+			</h4>
+			{if !$arenaMaxed && empty($arenaInProgress) && empty($upgrade_option)}
+				<a type="button" href="{link upgradeInfo!}" class="d-block btn btn-success data-loader">
+					{_'system.arena.level.next'}
+				</a>
+			{/if}
+			{if !$arenaMaxed && !empty($arenaInProgress) }
+				<button type="button" class="d-block btn btn-success disabled">{_'system.arena.days_left'}: {$arenaInProgressLeft}</button>
+			{/if}
+		</div>
+		<div class="card-body">
+			<ul class="list-group list-group-flush bg-color-5 text-start">
+				<li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.arena.seats'}:</span>
+					<div class="d-flex">
+						<strong class="color-2">{\App\Helper\Format::formatMoney($arenaThisSeats)}</strong>
+						{if !empty($upgrade_option) && !$arenaMaxed}
+							<div class="px-2 px-md-4">-></div>
+							<strong class="color-2">{\App\Helper\Format::formatMoney($arenaNextLevelSeats)}</strong>
+						{/if}
+					</div>
+				</li>
+				<li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.arena.maintenance'}:</span>
+					<div class="d-flex">
+						<strong class="color-2">{\App\Helper\Format::formatMoney($arenaMaintenance)}</strong>
+						{if !empty($upgrade_option) && !$arenaMaxed}
+							<div class="px-2 px-md-4">-></div>
+							<strong class="color-2">{\App\Helper\Format::formatMoney($arenaNextLevelMaintenance)}</strong>
+						{/if}
+					</div>
+				</li>
+				{if !empty($upgrade_option) && !$arenaMaxed}
+					<li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between"></li>
+					<li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+						<span>{_'system.arena.price'}:</span>
+						<strong class="color-2">{\App\Helper\Format::formatMoney($arenaNextLevelPrice)}</strong>
+					</li>
+					<li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between"></li>
+					<li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+						<span>{_'system.arena.days'}:</span>
+						<strong class="color-2">{\App\Helper\Format::formatMoney($arenaNextLevelDays)}</strong>
+					</li>
+				{/if}
+			</ul>
+		</div>
+		<div class="card-footer bg-color-5 border-color-2 color-1 d-flex flex-column flex-md-row justify-content-between align-items-start">
+			<span>{if empty($upgrade_option)}{_'system.arena.race'}:{/if}</span>
+			
+			<div class="d-flex flex-column align-items-end pt-3 pt-md-0">
+				{if empty($upgrade_option)}
+					{if !empty($arenaRow->race_change)}
+						<button class="btn btn-success disabled" type="button">
+							{var $newRaceName = 'system.race.' . $arenaRow->ref('race_change')->code . '.multi'}
+							{var $oldRaceName = 'system.race.' . $arenaRow->ref('race')->code . '.multi'}
+							{_'system.arena.change'} {_$oldRaceName}&nbsp;>&nbsp;{_$newRaceName}
+						</button>
+					{else}
+						<div class="dropdown">
+							<button class="btn btn-success dropdown-toggle" type="button" id="dropdownRacePrefer" data-bs-toggle="dropdown" aria-expanded="false">
+								{var $racename = 'system.race.' . $arenaRow->ref('race')->code . '.multi'}
+								{_$racename}
+							</button>
+							<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownRacePrefer">
+								{foreach $raceList as $race}
+									{continueIf $race->id == $arenaRow->race}
+									{var $racename = 'system.race.'. $race->code .'.multi'}
+									{var $racename = $presenter->translator->translate($racename)}
+									<li>
+										<a class="dropdown-item" href="{link changeRace!, race => $race->id}"
+											data-bs-toggle="modal" data-bs-target="#confirmModal"
+											data-confirm="{_'system.arena.confirm.change', [race => $racename]|noescape}"
+										>
+											{$racename}
+										</a>
+									</li>
+								{/foreach}
+							</ul>
+						</div>
+					{/if}
+				{/if}
+
+				{if !$arenaMaxed && empty($arenaInProgress) && !empty($upgrade_option)}
+					<a type="button" href="{link upgradeStart!}" class="d-block btn btn-success"
+						data-bs-toggle="modal" data-bs-target="#confirmModal"
+						data-confirm="{_'system.arena.confirm.upgrade', [level => $arenaNextLevel, price => \App\Helper\Format::formatMoney($arenaNextLevelPrice), days => \App\Helper\Format::formatMoney($arenaNextLevelDays)]|noescape}">
+						{_'system.arena.level.upgrade'}
+					</a>
+				{/if}
+			</div>
+		</div>
+	</div>
+
+</div>

@@ -1,0 +1,12 @@
+<ul class="nav nav-tabs border-bottom-0">
+    <li class="nav-item">
+        <a n:href="League:default" class="nav-link data-loader {if $presenterAction == 'default'}active{/if}" type="button" aria-selected="{if $presenterAction == 'default'}true{else}false{/if}">
+            {_'system.league.table'}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a n:href="Team:matches" class="nav-link disabled data-loader {if $presenterAction == 'matches'}active{/if}" type="button" aria-selected="{if $presenterAction == 'matches'}true{else}false{/if}">
+            {_'system.league.matches'}
+        </a>
+    </li>
+</ul>

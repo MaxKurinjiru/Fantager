@@ -1,0 +1,19 @@
+{block content}
+	<div class="w-100">
+		<div class="row mb-3">
+			<div class="col">
+				<h2 class="color-3 font-uniq">Aktivace účtu</h2>
+			</div>
+		</div>
+
+		{if empty($activation_success)}
+			<div class="alert alert-danger">
+			Účet pro aktivaci neexistuje.
+			</div>
+		{else}
+			<div class="alert alert-success">
+			Účet byl úspěšně aktivován. Nyní se můžete přihlásit.
+			</div>
+		{/if}
+	</div>
+{/block}

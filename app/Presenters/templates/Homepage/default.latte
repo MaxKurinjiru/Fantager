@@ -1,8 +1,21 @@
-{* This is the welcome page, you can delete it *}
+{layout '../@offline.latte'}
 
 {block content}
-{ifset $online}
-{include 'online.latte'}
-{else}
-{include 'offline.latte'}
-{/ifset}
+
+	<p>
+	Fantager je online hra, ke které stačí pouze prohlížeč a přístup k internetu. V tomto fantasy světě je vaším úkolem sestavit kvalitní tým hrdinů a vést je v průběhu času k vítězství v soubojích s ostatními týmy.
+	</p>
+
+	<p>
+	Sestavte si tým snů. Hrdinové mají různé vlastnosti podle svojí rasy - je tedy na vás, kterou si zvolíte jako preferovanou. Můžete je i kombinovat ale opatrně, některé rasy mají v kominaci s ostatními bonusy, jiné zase postih.
+	</p>
+
+	<p class="text-center py-4">
+	<a class="text-center font-uniq color-3" n:href="Sign:up">Vytvořit účet</a>
+	</p>
+
+	<p class="pt-2">
+	Po registraci dostanete přiřazený již existující tým s aplikovaným nastavením. Do začátku tak máte o spoustu starostí méně s pořizováním nových hrdinů, vytvořením základní formace pro souboje atp. Pokud nebude cokoliv podle vašich představ, samozřejmě je úprava nastavení a starost o hrdiny na vás.
+	</p>
+
+{/block}

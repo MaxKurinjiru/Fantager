@@ -1,0 +1,31 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Dokončení registrace</title>
+	<style>
+		body {
+			background: rgb(24,20,17);
+			color: rgb(240,234,210);
+			width: 100%;
+			max-width: 650px;
+			padding: 30px;
+		}
+		.container {
+			width: 100%;
+			border: 1px solid rgb(173,193,120);
+			padding: 30px;
+		}
+		a {
+			color: rgb(173,193,120);
+			padding: 10px 20px;
+			border: 1px solid rgb(173,193,120);
+		}
+	</style>
+</head>
+<body>
+	<p>Vaše registrace proběhla v pořádku,<br>pokračujte kliknutím na odkaz níže pro potvrzení emailu a aktivaci účtu.</p>
+	<p>
+		<a n:href="Sign:activate id: $params->activation_token">{plink Sign:activate, id=>$params->activation_token}</a>
+	</p>
+</body>
+</html>

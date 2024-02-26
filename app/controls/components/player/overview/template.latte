@@ -1,0 +1,33 @@
+<div class="card-group">
+
+	<div class="card mb-4 rounded-0 border-color-2 bg-color-5">
+		<div class="card-header py-3 border-color-2 d-flex align-items-start justify-content-between">
+			<h4 class="my-0 text-start color-3 d-flex align-items-center">
+				{$userRow->nickname}
+			</h4>
+		</div>
+		<div class="card-body">
+			<ul class="list-group list-group-flush bg-color-5 text-start">
+				<li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.user.team'}:</span>
+					<div class="d-flex">
+						<a href="{plink Team:detail, id=>$teamRow->id}" class="color-3 data-loader">{$teamRow->name}</a>
+					</div>
+				</li>
+                <li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.user.activated'}:</span>
+					<div class="d-flex">
+						<span class="color-2">{\App\Helper\Format::getTime($userRow->activated)}</span>
+					</div>
+				</li>
+				<li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.user.last_online'}:</span>
+					<div class="d-flex">
+						<span class="color-2">{\App\Helper\Format::getTime($userRow->last_action)}</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</div>
+
+</div>

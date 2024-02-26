@@ -1,0 +1,60 @@
+
+@mixin fontColor($name, $color) {
+	&-color-#{$name} {
+		color: $color;
+		* {
+			color: $color;
+		}
+	}
+}
+
+@mixin backgroundColor($name, $color) {
+	&-color-#{$name} {
+		background-color: $color;
+	}
+}
+
+@mixin borderColor($name, $color) {
+	&-color-#{$name} {
+		border-color: $color;
+	}
+}
+
+.strong {
+	font-weight: 700;
+}
+.small {
+	font-size: 0.7em;
+}
+
+.data-loader {
+	text-decoration: none;
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+/**************************************************************************/
+
+// font color
+.font {
+	@each $name,$color in $colors-defined {
+		@include fontColor($name, $color);
+	}
+}
+
+// bg-color
+.bg {
+	@each $name,$color in $colors-defined {
+		@include backgroundColor($name, $color);
+	}
+}
+
+// border-color
+.border {
+	@each $name,$color in $colors-defined {
+		@include borderColor($name, $color);
+	}
+}
+
+/**************************************************************************/

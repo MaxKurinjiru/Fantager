@@ -1,0 +1,30 @@
+{form form, class=>'w-100'}
+
+	<div class="w-100">
+
+		<div class="row mb-3" n:if="$form->hasErrors()">
+			<div class="col text-start">
+				{include __CONTROLS__ . '/forms/templates/err.latte', form=>$form}
+			</div>
+		</div>
+
+		<div class="row mb-3">
+			<div class="col text-start">
+				{include __CONTROLS__ . '/forms/templates/default.latte', form=>$form, key=>'email'}
+			</div>
+		</div>
+
+		<div class="row mb-3">
+			<div class="col text-start">
+				{include __CONTROLS__ . '/forms/templates/default.latte', form=>$form, key=>'password'}
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col">
+				{input $form['send'] class=>'btn btn-primary font-uniq'}
+			</div>
+		</div>
+
+	</div>
+{/form}

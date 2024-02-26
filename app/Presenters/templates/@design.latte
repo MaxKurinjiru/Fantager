@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="{$locale}">
+{include __TEMPLATES__ . '/head.latte'}
+
+<body class="pb-5 mw-100 loader">
+	<div class="container body-content">
+
+		{* content *}
+		<div class="w-100 py-4 px-2 px-lg-4">
+			{include content}
+		</div>
+		{* content *}
+
+		{control onlineMenu}
+	</div>
+
+	{include __TEMPLATES__ . '/confirm.latte'}
+
+	{include __TEMPLATES__ . '/flashes.latte'}
+
+	{block scripts}
+		{include __TEMPLATES__ . '/scripts.latte'}
+	{/block}
+
+	<a class="bg-loader" href="/">
+		<img src="/images/loader.svg" alt="Loading">
+	</a>
+</body>
+</html>

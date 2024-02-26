@@ -1,0 +1,6 @@
+<div class="toast-container position-absolute top-0 end-0 p-3">
+	{foreach $flashes as $flash}
+		{dump $flash}
+		{include __TEMPLATES__ . '/toast.latte', message => $flash->message}
+	{/foreach}
+</div>

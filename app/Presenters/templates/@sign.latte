@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+{include __TEMPLATES__ . '/head.latte'}
+
+<body class="pt-4 pb-5">
+
+		<div class="container">
+
+			{* header *}
+			<div class="row my-3 my-sm-5">
+				<div class="col">
+					<h1 class="mb-0 color-3 font-uniq">Fantager</h1>
+				</div>
+			</div>
+			{* header *}
+
+			{* content *}
+			<div class="row my-4 my-sm-5">
+
+				<div class="col">
+					<nav class="nav flex-column align-items-start mb-2">
+						<a class="nav-link font-uniq" n:href="Homepage:default">
+							<svg class="bi me-2 pb-1" width="25" height="25" fill="currentColor">
+								{bs_icon arrow-left}
+							</svg>
+							Zpět na homepage
+						</a>
+					</nav>
+
+					<div class="p-4 border border-color-4 bg-color-5 text-start">
+
+						{include content}
+
+					</div>
+				</div>
+			</div>
+			{* content *}
+		</div>
+
+	{block scripts}
+		{include __TEMPLATES__ . '/scripts.latte'}
+	{/block}
+</body>
+</html>

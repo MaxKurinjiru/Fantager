@@ -1,0 +1,79 @@
+<div class="card-group">
+
+	<div class="card mb-4 rounded-0 border-color-2 bg-color-5">
+		<div class="card-header py-3 border-color-2 d-flex align-items-start justify-content-between">
+			{if empty($teamRow->renamed) && !empty($rename) && !empty($isMine)}
+				{control renameForm}
+			{else}
+				<h4 class="my-0 text-start color-3 d-flex align-items-center">
+					{$teamRow->name}
+				</h4>
+			{/if}
+
+			{if empty($teamRow->renamed) && empty($rename) && !empty($isMine)}
+				<a type="button" href="{link rename!}" class="d-block btn btn-success data-loader">
+					{_'system.team.rename'}
+				</a>
+			{/if}
+
+			
+		</div>
+		<div class="card-body">
+			<ul class="list-group list-group-flush bg-color-5 text-start">
+                <li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.team.player'}:</span>
+					<div class="d-flex">
+						
+                        {if $teamRow->ref('user')}
+							{var $user = $teamRow->ref('user')}
+							<a href="{plink Player:detail, id=>$user->id}" class="color-3 data-loader">{$user->nickname}</a>
+                        {else}
+                            <span class="color-2">-</span>
+                        {/if}
+					</div>
+				</li>
+				{if !empty($isMine)}
+                <li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.team.money'}:</span>
+					<div class="d-flex">
+						<span class="color-2">{\App\Helper\Format::formatMoney($teamRow->money)}</span>
+					</div>
+				</li>
+				{/if}
+                <li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.team.league'}:</span>
+					<div class="d-flex">
+						<a href="{plink League:default, id => $league->league .'.'. $league->group}" class="color-3 data-loader">{$league->league}.{$league->group}</a>
+					</div>
+				</li>
+                <li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.team.rating'}:</span>
+					<div class="d-flex">
+						<span class="color-2">{\App\Helper\Format::formatMoney($teamRow->rating)}</span>
+					</div>
+				</li>
+                <li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.team.morale'}:</span>
+					<div class="d-flex">
+						<span class="color-2">{\App\Helper\Format::formatMoney($teamRow->morale)}</span>
+					</div>
+				</li>
+                <li class="list-group-item bg-color-5 border-color-2 color-1 d-flex justify-content-between">
+					<span>{_'system.team.fanclub'}:</span>
+					<div class="d-flex">
+						<span class="color-2">{\App\Helper\Format::formatMoney($teamRow->fanclub)} ({$teamRow->fanclub_mood})</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+        
+        {if $teamRow->insolvent}
+		<div class="card-footer bg-color-5 border-color-2 color-1 d-flex flex-column flex-md-row justify-content-between align-items-start">
+            {if $teamRow->insolvent}
+                ! - {_'system.team.isInsolventFor', ['day' => $teamRow->insolvent, 'total' => $insolventDaysLimit]}
+            {/if}
+		</div>
+        {/if}
+	</div>
+
+</div>

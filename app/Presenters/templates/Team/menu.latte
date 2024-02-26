@@ -1,0 +1,22 @@
+<ul class="nav nav-tabs border-bottom-0">
+    <li class="nav-item">
+        <a n:href="Team:default" class="nav-link data-loader {if $presenterAction == 'default'}active{/if}" type="button" aria-selected="{if $presenterAction == 'default'}true{else}false{/if}">
+            {_'system.team.title'}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a n:href="Team:trainers" class="nav-link disabled data-loader {if $presenterAction == 'trainers'}active{/if}" type="button" aria-selected="{if $presenterAction == 'trainers'}true{else}false{/if}">
+            {_'system.team.trainers.title'}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a n:href="Team:heroes" class="nav-link data-loader {if $presenterAction == 'heroes'}active{/if}" type="button" aria-selected="{if $presenterAction == 'heroes'}true{else}false{/if}">
+            {_'system.team.heroes.title'}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a n:href="Team:equipment" class="nav-link disabled {if $presenterAction == 'equipment'}active{/if}" type="button" aria-selected="{if $presenterAction == 'equipment'}true{else}false{/if}">
+            {_'system.team.equipment.title'}
+        </a>
+    </li>
+</ul>

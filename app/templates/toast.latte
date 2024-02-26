@@ -1,0 +1,10 @@
+<div class="toast show" role="status" aria-live="polite" aria-atomic="true" data-bs-delay="2000" data-bs-autohide="true">
+	<div class="toast-header">
+		<img src="/favicon-16x16.png" class="rounded me-2" alt="{if !empty($title)}{$title}{else}System{/if}">
+		<strong class="me-auto">{if !empty($title)}{$title}{else}System{/if}</strong>
+		<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+	</div>
+	<div class="toast-body color-dark text-left">
+		{$message}
+	</div>
+</div>
