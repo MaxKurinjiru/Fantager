@@ -60,8 +60,24 @@ class SignRecover extends \App\Controls\Form\Base {
 
 		$userRow = $user->fetch();
 
-		if ( $recoverToken = $facadeUser->createRecoverToken($userRow) ) {
+		if (!$userRow->activated) {
+			$urlRoot = \App\Helper\Config::getFullURL();
+			$link = $urlRoot . '/sign/activate/' . $userRow->activation_token;
 
+			$body = '
+				<h3 class="font-uniq">Fantager</h3>
+				<h5>Potvrzení registrace</h5>
+				<p></p>
+				<p>Vaše registrace proběhla v pořádku,<br>pokračujte kliknutím na odkaz níže pro aktivaci účtu.</p>
+				<p>
+					<a href="' . $link . ' "> '. $link .' </a>
+				</p>
+			';
+
+			$values['done'] = 'activate';
+			$mail = $this->modelMail->createEmail($body, 'Potvrzení registrace');
+
+		} elseif ( $recoverToken = $facadeUser->createRecoverToken($userRow) ) {
 			$urlRoot = \App\Helper\Config::getFullURL();
 			$link = $urlRoot . '/sign/password/' . $recoverToken;
 
@@ -77,11 +93,14 @@ class SignRecover extends \App\Controls\Form\Base {
 			';
 
 			$mail = $this->modelMail->createEmail($body, 'Obnovení hesla');
-			$mail->addTo($userRow->email);
-			$this->modelMail->send($mail);
+			$values['done'] = 'recover';
 
-			$this->onSuccess($this, $form, $values);
 		}
+
+		$mail->addTo($userRow->email);
+		$this->modelMail->send($mail);
+
+		$this->onSuccess($this, $form, $values);
 	}
 
 	/**************************************************************************/
