@@ -52,7 +52,8 @@ final class SignPresenter extends BasePresenter
 		$self     = $this;
 
 		$signForm->onSuccess[] = function($cmp, $form, $values) use ($self) {
-			$self->redirect('Sign:recover', ['id' => 'sent']);
+
+			$self->redirect('Sign:recover', ['id' => $values['done']]);
 		};
 
 		return $signForm;

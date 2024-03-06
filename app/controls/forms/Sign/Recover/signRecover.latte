@@ -8,8 +8,7 @@
 			</div>
 		</div>
 
-		{if $presenter->getParameter('id') == 'sent'}
-
+		{if $presenter->getParameter('id') == 'recover'}
 			<div class="row mb-3 mt-3">
 				<div class="col text-start">
 					<div class="alert alert-success">
@@ -17,9 +16,15 @@
 					</div>
 				</div>
 			</div>
-
+		{elseif $presenter->getParameter('id') == 'activate'}
+			<div class="row mb-3">
+				<div class="col text-start">
+					<div class="alert alert-success">
+						Zkontrolujte email a pokračujte kliknutím na odkaz pro aktivaci účtu.
+					</div>
+				</div>
+			</div>
 		{else}
-
 			<div class="row mb-1">
 				<div class="col">
 					<p class="pt-4 pb-3">
@@ -45,7 +50,6 @@
 					{input $form['send'] class=>'btn btn-primary font-uniq'}
 				</div>
 			</div>
-
 		{/if}
 
 	</div>

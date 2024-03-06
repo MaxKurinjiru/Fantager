@@ -40,6 +40,11 @@ class Junior extends \App\Controls\Base {
 	/**************************************************************************/
 
 	public function handleJunior() {
+		// check if really can train new one
+		if (!$this->facades->getFacade('arena')->canTrainJunior($this->arenaRow)) {
+			$this->presenter->redirect('Arena:junior');
+		}
+
 		// todo: 
 		// check team limit character if can have one more
 		$juniorRow = $this->facades->getFacade('character')->newJunior(
