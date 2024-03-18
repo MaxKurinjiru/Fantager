@@ -22,7 +22,7 @@ gulp watch
 ```
 
 ### Website
-https://fantager.cz/
+https://fantager.cz
 
 ### Community
 https://discord.gg/upRVsbv
