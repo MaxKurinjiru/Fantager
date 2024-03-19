@@ -42,4 +42,15 @@ trait CronArena
 
 	/**************************************************************************/
 
+	// todo: kingdom lock
+	public function arenaJuniorBonus() {
+		$list = $this->facades->getFacade('arena')->getJuniorsStaffBonus();
+
+		foreach ($list as $row) {
+			$this->facades->getFacade('arena')->bonusJunior($row);
+		}
+	}
+
+	/**************************************************************************/
+
 }

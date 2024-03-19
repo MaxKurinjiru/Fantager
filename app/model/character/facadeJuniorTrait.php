@@ -31,45 +31,30 @@ trait JuniorCharacter
 		$teamRow,
 		$userRow
 	) {
-		/**
-		 * 
-		 * Arena level: 1-8
-		 * Junior trainers: 0-100 -> generate weekly bonus 0-600
-		 * Age
-		 * Race
-		 * Team morale
-		 * 
-		 * maximum stat level for new hero ?
-		 * 
-		 * ex: all set to min
-		 * arena 1, no jtrainers, bad race, no morale
-		 * 
-		 * - max should be fe. 3 ? 1-2 + arena(1)
-		 * 
-		 * ex: all max
-		 * arena 8, full trainers, right race, full morale
-		 * 
-		 * - max should be fe. 12 ? 1-2 + arena(8/2 = 4) + race(0-1) + morale(0-2) + train(0-3)
-		*/
-
 		$junior = [];
 		$points = 4;
 
 		$arenaLevel = $arenaRow->level;
+		$arenaLevelHalf = (int) ceil($arenaLevel / 2);
 		$newRaceRow = $arenaRow->ref('race');
 		$newRace = $arenaRace = $arenaRow->race;
 		$morale = $teamRow->morale;
 
 		// arena level
 		// +1 for ideal race (-2 for wrong instead -1 later for short else statement)
-		$points += (8 + 1) * ceil($arenaLevel / 2);	// max 9*8 = 72
+		$points += (8 + 1) * $arenaLevelHalf; // base by arenaHalf || + 9-36
 
-		// race selection (chance for another race 50:50)
+		// race selection (chance for another race cca 50:50)
+		// still could be ideal, cos it have 100 tolerance
 		if (mt_rand(0, 1) == 1) {
 			$newRaceRow = $this->getFacade('race')->table()->where('tolerance_' . $arenaRace .' >= 50')->order('RAND()')->limit(1)->fetch();
 			$newRace = $newRaceRow->id;
-			// not ideal race -2 instead of -1
-			$points -= 2 * mt_rand(1, $arenaLevel);
+		}
+
+		// not ideal race
+		if ($newRace !== $arenaRace) {
+			// points handicap for not ideal race
+			$points -= 2 * mt_rand(1, $arenaLevelHalf); // penalty || - 2-8
 		}
 
 		// age selection
@@ -84,57 +69,81 @@ trait JuniorCharacter
 
 		// half of young age over
 		if ($newAge >= $age_mid) {
-			$points += mt_rand(1, $arenaLevel); // max + 8 = 80
+			// points benefits for "longer" time in training
+			$points += mt_rand(1, $arenaLevelHalf); // random || + 1-4
 		}
 
-		// team morale
-		// each if statement can be valid
-		//      for morale > 90 can be only *1 instead *2
-		//      -> morale > 75 is applied too :-)
+		// team morale bonus/penalty points
+		// "each" if statement can be valid
 		if ($morale > 90) {
-			$points += mt_rand(1, $arenaLevel); // max + 8 = 88
+			$points += mt_rand(1, $arenaLevelHalf); // random || + 1-4
 		}
 		if ($morale > 75) {
-			$points += mt_rand(1, $arenaLevel);	// max + 8 = 96
+			$points += mt_rand(1, $arenaLevelHalf);	// random || + 1-4
 		}
-
+		// "each" if statement can be valid
 		if ($morale < 60) {
-			$points -= mt_rand(1, $arenaLevel);
+			$points -= mt_rand(1, $arenaLevelHalf); // random penalty || - 1-4
 		}
 		if ($morale < 40) {
-			$points -= mt_rand(1, $arenaLevel);
+			$points -= mt_rand(1, $arenaLevelHalf); // random penalty || - 1-4
+		}
+
+		// arena personal trainers value
+		$confJuniorBonus = $this->config['character']['junior_bonus'];
+		$arenaBonusAvail = $arenaRow->junior_bonus;
+		// have bonus for one more point at least
+		if ($arenaBonusAvail >= $confJuniorBonus) {
+			$juniorBonusSpend = 0;
+			$juniorBonus = 0;
+
+			// increasing value spent for each point
+			while($arenaBonusAvail >= $juniorBonusSpend) {
+				$juniorBonus++;
+				$juniorBonusPrice = (int) ceil(sqrt($juniorBonus) * $confJuniorBonus * sqrt($arenaLevelHalf));
+				$juniorBonusSpend += $juniorBonusPrice;
+			}
+
+			// todo: better calculating process to prevent this
+			// overtake last point
+			if ($arenaBonusAvail < $juniorBonusSpend) {
+				$juniorBonus--;
+				$juniorBonusSpend -= $juniorBonusPrice;
+			}
+
+			$points += $juniorBonus;
+			$arenaRow->update(['junior_bonus' => $arenaBonusAvail - $juniorBonusSpend]);
 		}
 
 		// name generation
 		$newName = \App\Model\Name::generate($newRaceRow->code);
-		//\Tracy\Debugger::barDump($newName, 'newName');
-
-		$rands = [];
-		for ($i = 1; $i < 8; $i++) {
-			$rands[] = mt_rand(1, 20);
-		}
 
 		// junior array colection
 		$junior['race'] = $newRace;
 		$junior['name'] = $newName;
 		$junior['age'] = $newAge;
-		// charisma & luck are always rand(1-20)
+
+		// randoms for luck and charisma
+		// make 8 possible random values and choose random two from them
+		$rands = [];
+		for ($i = 1; $i < 8; $i++) {
+			$rands[] = mt_rand(1, 20);
+		}
 		foreach (['CHA', 'LUC'] as $s) {
 			$r = array_rand($rands, 1);
 			$junior[$s] = $rands[$r];
 			unset($rands[$r]);
 		}
+		
 		// points distribution
-		//\Tracy\Debugger::barDump($points, 'points');
 		$stats = $this->statDistribution($points);
-		//\Tracy\Debugger::barDump($stats, 'stats');
 
 		// merge stats to junior
 		$junior = array_merge($junior, $stats);
 		// save junior
 		$juniorRow = $this->save($junior);
 		// assign to team
-		$this->assignCharacter($juniorRow, $teamRow, false, true);
+		$this->assignCharacter($juniorRow, $teamRow, $retire = false, $trained = true);
 
 		$arenaRow->update(['junior_pull' => \App\Helper\Format::getTimestamp()]);
 
@@ -145,7 +154,13 @@ trait JuniorCharacter
 				'name' => $userRow->nickname,
 				'heroname' => $juniorRow->name,
 				'heroid' => $juniorRow->id,
-				'herostats' => implode("|", $stats)
+				'herostats' => implode("|", $stats),
+				'points' => $points,
+				'jBonus' => $juniorBonus,
+				'arenaLevel' => $arenaLevel,
+				'morale' => $morale,
+				'age' => $newAge . '/' . $age_mid,
+				'racematch' => $newRace == $arenaRace,
 			])
 		]);
 

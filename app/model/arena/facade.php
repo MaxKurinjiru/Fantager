@@ -388,10 +388,30 @@ final class Arena extends DB
 
 	/**************************************************************************/
 
+	public function bonusJunior($arenaRow) {
+		$before = $arenaRow->junior_bonus;
+		$add = $arenaRow->staff_train * $this->config['staff']['junior_bonus'];
+		return $arenaRow->update(['junior_bonus' => $before + $add]);
+	}
+
+	/**************************************************************************/
+
 	public function getJuniorsReset() {
 		$list = [];
 
 		foreach ($this->table()->where('junior_pull IS NOT NULL') as $row) {
+			$list[] = $row;
+		}
+
+		return $list;
+	}
+
+	/**************************************************************************/
+
+	public function getJuniorsStaffBonus() {
+		$list = [];
+
+		foreach ($this->table()->where('staff_train > 0') as $row) {
 			$list[] = $row;
 		}
 

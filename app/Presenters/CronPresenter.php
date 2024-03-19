@@ -84,6 +84,15 @@ class CronPresenter extends BasePresenter
 	/*******************************************************/
 
 	// tuesday
+	public function actionArenaJuniorBonus() {
+		$this->checkKingdom();
+		$this->cron->arenaJuniorBonus();
+		$this->afterDone();
+	}
+
+	/*******************************************************/
+
+	// tuesday
 	public function actionJuniorReset() {
 		$this->checkKingdom();
 		$this->cron->arenaResetJunior();

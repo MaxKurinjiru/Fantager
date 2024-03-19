@@ -78,8 +78,10 @@ final class Config
 			]
 		],
 		'character' => [
-			'team_limit' => 20,
-			'limit_new' => 12,
+			'team_limit' => 20,       // limit of characters
+			'limit_new' => 12,        // limit of new character stat
+			'junior_bonus' => 10,     // value needed for 1 bonus-point to distibute
+			'junior_bonus_max' => 6,  // max bonus-points granted
 			'stats' => [
 				'STR', 'DEX', 'CON', 'SPD', 'INT', 'WIL', 'CHA', 'LUC'
 			],
@@ -92,6 +94,7 @@ final class Config
 		],
 		'staff' => [
 			'salary' => 60,
+			'junior_bonus' => 2, // point value per one arena trainer X*(1-100)
 			'list' => [
 				'res', 'heal', 'smith', 'prop', 'train'
 			]
