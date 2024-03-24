@@ -92,11 +92,12 @@ trait JuniorCharacter
 		// arena personal trainers value
 		$confJuniorBonus = $this->config['character']['junior_bonus'];
 		$arenaBonusAvail = $arenaRow->junior_bonus;
+		
+		$juniorBonusSpend = 0;
+		$juniorBonus = 0;
+		
 		// have bonus for one more point at least
 		if ($arenaBonusAvail >= $confJuniorBonus) {
-			$juniorBonusSpend = 0;
-			$juniorBonus = 0;
-
 			// increasing value spent for each point
 			while($arenaBonusAvail >= $juniorBonusSpend) {
 				$juniorBonus++;
