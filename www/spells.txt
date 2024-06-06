@@ -1,0 +1,66 @@
+Detaily kouzla Smrt
+Typ kouzla: Útočné
+Škola: Smrt
+Jméno: Smrt
+Hodnota: 1 500 mana
+Typ cíle: Jeden cíl
+Použitelné: Všechny rasy
+
+Inteligence min.: 20
+Úroveň min.: 17
+Vlastnost min.: 16
+Rychlost: 30
+Speciální efekct: Pokud je úspěšně seslána na nějakého hrdinu, proběhne test na jeho přežití, a pokud selže hrdina je okamžitě mrtev. Šance na zabití je 40%.
+
+
+
+Detaily kouzla Magická odlonost
+Typ kouzla: Podpůrné
+Škola: Chaos
+Jméno: Magická odlonost
+Hodnota: 55 ( 37 ) mana
+Typ cíle: Jeden cíl
+Trvání: 35 ( 45 )
+Šance na efekt: 0 ( 0 )
+Použitelné: Všechny rasy
+Magicá obrana: +20 ( +46.6 )
+Inteligence min.: 9
+Úroveň min.: 7 ( Hrdina má 6 )
+Vlastnost min.: 7
+Rychlost: 17 ( 10.4 )
+Šance na seslání: 68%
+
+
+Detaily kouzla Hromadná smůla
+Typ kouzla: Proklínací
+Škola: Chaos
+Jméno: Hromadná smůla
+Hodnota: 130 ( 74 ) mana
+Typ cíle: Všichni nepřátelé
+Trvání: 50 ( 69 )
+Šance na efekt: 0 ( 0 )
+Použitelné: Všechny rasy
+
+Štěstí: -8 ( -24.2 )
+Inteligence min.: 10
+Úroveň min.: 8
+Vlastnost min.: 8
+Rychlost: 14 ( 9.4 )
+Šance na seslání: 70%
+
+
+Detaily kouzla Fatamorgána
+Typ kouzla: Podpůrné
+Škola: Chaos
+Jméno: Fatamorgána
+Hodnota: 40 mana
+Typ cíle: Na sebe
+Trvání: 40
+Šance na efekt: 0
+Použitelné: Všechny rasy
+
+Obrana: +6
+Inteligence min.: 7
+Úroveň min.: 5
+Vlastnost min.: 6
+Rychlost: 13

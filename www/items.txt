@@ -1,0 +1,1557 @@
+( Vlastněný předmět )
+Typ: Helma
+Jméno: kožená přilba bystrého myšlení
+Kvalita: 100%
+Nevybaven
+Hodnota: 300zl
+Použitelné: Všechny rasy
+Minimální síla: 3
+
+Magický útok: -5%
+Brnění: +1.5
+Obratnost: -3.2125%
+Inteligence: +2
+
+
+( Vlastněný předmět )
+Typ: Brnění
+Jméno: Elementálovo mocné mitrilové brnění
+Kvalita: 100%
+Nevybaven
+Hodnota: 5 100zl
+Nepoužitelné: Ent
+Minimální síla: 14
+
+Magický útok: -36%
+Brnění: +17.5
+Obratnost: -17.05%
+Síla vůle: +3
+
+
+Typ: Štít
+Jméno: chitinový štít zlomené zbraně
+Kvalita: 100%
+Hrdina: Birlrak Virarmmrek
+Zaškolenost: 0%
+Hodnota: 750zl
+Použitelné: Všechny rasy
+Minimální síla: 4.8
+
+Obrana: +2.6 a +7.02%
+Magický útok: -20%
+Brnění: +6.4
+Obratnost: -4.08%
+
+
+Typ: Helma
+Jméno: železná přilba magického slova
+Kvalita: 100%
+Nevybaven
+Hodnota: 390zl
+Použitelné: Všechny rasy
+Minimální síla: 6.6
+
+Magický útok: +2 a -6%
+Brnění: +2.4
+Obratnost: -3.807%
+
+
+( Vlastněný předmět )
+Typ: Rukavice
+Jméno: těžké chitinové rukavice přitažlivosti
+Kvalita: 100%
+Nevybaven
+Hodnota: 562zl
+Použitelné: Všechny rasy
+Minimální síla: 6.4
+
+Magický útok: -20%
+Brnění: +3.3
+Obratnost: -4.008%
+Charisma: +1
+
+
+Typ: Prsten
+Jméno: mithril prsten výdrže
+Kvalita: 100%
+Nevybaven
+Hodnota: 340zl
+Použitelné: Všechny rasy
+
+Konstituce: +2
+
+
+( Vlastněný předmět )
+Typ: Brnění
+Jméno: těžké železné brnění konstituce
+Kvalita: 100%
+Nevybaven
+Hodnota: 975zl
+Nepoužitelné: Ent
+Minimální síla: 8.8
+
+Magický útok: -36%
+Brnění: +9.6
+Obratnost: -13.5%
+Konstituce: +1
+
+
+yp: Rukavice
+Jméno: Tvrzené lehké mithril rukavice
+Kvalita: 100%
+Nevybaven
+Hodnota: 170zl
+Použitelné: Všechny rasy
+Minimální síla: 5.6
+
+Magický útok: -4.5%
+Brnění: +4.3275
+Obratnost: -1.4696%
+
+
+Typ: Rukavice
+Jméno: Čarodějovy lehké stínové rukavice
+Kvalita: 100%
+Nevybaven
+Hodnota: 200zl
+Použitelné: Všechny rasy
+Minimální síla: 2
+
+Magický útok: -3.5%
+Brnění: +1.729
+Obratnost: +0.924%
+Inteligence: +2
+
+
+Typ: Štít
+Jméno: Čarodějův malý železný štít
+Kvalita: 100%
+Nevybaven
+Hodnota: 130zl
+Použitelné: Všechny rasy
+Minimální síla: 4.4
+
+Obrana: +1.35 a +3.6%
+Magický útok: -18%
+Brnění: +2.4
+Obratnost: -4.5%
+Inteligence: +2
+
+
+Typ: Prsten
+Jméno: Rytířův stínový prsten
+Kvalita: 100%
+Nevybaven
+Hodnota: 600zl
+Použitelné: Všechny rasy
+
+Obrana: +3
+
+
+Typ: Zbraň
+Druh zbraně: Kuše
+Jméno: dřevěná těžká kuše osvícení
+Kvalita: 100%
+Nevybaven
+Hodnota: 750zl
+Nepoužitelné: Ent
+Minimální síla: 5.4
+Útok: +8%
+Obrana: -10%
+Magický útok: -10%
+Inteligence: +3
+Rychlost: 18
+Dosah: 70
+Zranění: 2K6+1
+Obouruční
+
+
+Typ: Brnění
+Jméno: mocné mitrilové brnění železné kůže
+Kvalita: 100%
+Nevybaven
+Hodnota: 5 100zl
+Nepoužitelné: Ent
+Minimální síla: 14
+
+Obrana: +3
+Magický útok: -36%
+Brnění: +17.5
+Obratnost: -17.05%
+
+
+Typ: Štít
+Jméno: velký mitrilový štít přesnosti
+Kvalita: 100%
+Nevybaven
+Hodnota: 2 040zl
+Použitelné: Všechny rasy
+Minimální síla: 12.6
+
+Obrana: +3.6 a +8.4%
+Magický útok: -27%
+Brnění: +10.5
+Obratnost: +3 a -6.82%
+
+
+Typ: Brnění
+Jméno: železné brnění vůdcovství
+Kvalita: 100%
+Nevybaven
+Hodnota: 650zl
+Nepoužitelné: Ent
+Minimální síla: 6.6
+
+Magický útok: -24%
+Brnění: +7.2
+Obratnost: -9.9%
+Charisma: +2
+
+
+Typ: Zbraň
+Druh zbraně: Kopí
+Jméno: Masivní železná halapartna
+Kvalita: 100%
+Nevybaven
+Hodnota: 520zl
+Nepoužitelné: Ent
+Minimální síla: 7.7
+
+Útok: +11%
+Obrana: +2.7%
+Magický útok: -12%
+Konstituce: +2
+Rychlost: 9.8
+Dosah: 2
+Zranění: 1K10+5
+Obouruční
+
+
+Kvalita: 100%
+Nevybaven
+Hodnota: 1 700zl
+Nepoužitelné: Ent
+Minimální síla: 11.2
+
+Magický útok: -27%
+Brnění: +14
+Obratnost: -11.55%
+Inteligence: +2
+
+
+Typ: Helma
+Jméno: lehká mitrilová přilba bystrého myšlení
+Kvalita: 100%
+Hrdina: Birvan
+Zaškolenost: 0%
+Hodnota: 170zl
+Použitelné: Všechny rasy
+Minimální síla: 5.6
+
+Magický útok: -2.25%
+Brnění: +2.3275
+Obratnost: -1.4696%
+Inteligence: +2
+
+
+Typ: Štít
+Jméno: Lovcův železný štít
+Kvalita: 100%
+Nevybaven
+Hodnota: 650zl
+Použitelné: Všechny rasy
+Minimální síla: 6.6
+
+Obrana: +1.8 a +4.86%
+Magický útok: -24%
+Brnění: +4.8
+Obratnost: +2 a -5.76%
+
+
+Typ: Brnění
+Jméno: Čarodějovo těžké mitrilové brnění
+Kvalita: 100%
+Nevybaven
+Hodnota: 1 700zl
+Nepoužitelné: Ent
+Minimální síla: 11.2
+
+Magický útok: -27%
+Brnění: +14
+Obratnost: -11.55%
+Inteligence: +2
+
+
+Typ: Helma
+Jméno: lehká stínová přilba magického slova
+Kvalita: 100%
+Nevybaven
+Hodnota: 200zl
+Použitelné: Všechny rasy
+Minimální síla: 2
+
+Magický útok: +2 a -1.75%
+Brnění: +1.729
+Obratnost: +0.924%
+
+
+Typ: Zbraň
+Druh zbraně: Kopí
+Jméno: Masivní železná halapartna
+Kvalita: 100%
+Nevybaven
+Hodnota: 520zl
+Nepoužitelné: Ent
+Minimální síla: 7.7
+
+Útok: +11%
+Obrana: +2.7%
+Magický útok: -12%
+Konstituce: +2
+Rychlost: 9.8
+Dosah: 2
+Zranění: 1K10+5
+Obouruční
+
+
+Typ: Štít
+Jméno: velký mitrilový štít přesnosti
+Kvalita: 100%
+Nevybaven
+Hodnota: 2 040zl
+Použitelné: Všechny rasy
+Minimální síla: 12.6
+
+Obrana: +3.6 a +8.4%
+Magický útok: -27%
+Brnění: +10.5
+Obratnost: +3 a -6.82%
+
+
+Typ: Prsten
+Jméno: Svatý stínový prsten
+Kvalita: 100%
+Nevybaven
+Hodnota: 600zl
+Použitelné: Všechny rasy
+Magicá obrana: +3
+
+
+Typ: Boty
+Jméno: težké mitrilové boty zabíjení
+Kvalita: 100%
+Nevybaven
+Hodnota: 850zl
+Použitelné: Všechny rasy
+Minimální síla: 11.2
+
+Útok: +2
+Magický útok: -9%
+Brnění: +5.25
+Obratnost: -4.7696%
+
+
+Typ: Brnění
+Jméno: železné brnění vůle
+Kvalita: 100%
+Nevybaven
+Hodnota: 487zl
+Nepoužitelné: Ent
+Minimální síla: 6.6
+
+Magický útok: -24%
+Brnění: +7.2
+Obratnost: -9.9%
+Síla vůle: +1
+
+
+Typ: Brnění
+Jméno: kožené brnění síly
+Kvalita: 100%
+Nevybaven
+Hodnota: 375zl
+Nepoužitelné: Ent
+Minimální síla: 3
+
+Magický útok: -20%
+Brnění: +4.5
+Síla: +1
+Obratnost: -7.5%
+
+
+Typ: Rukavice
+Jméno: lehké kožené rukavice větru
+Kvalita: 100%
+Nevybaven
+Hodnota: 150zl
+Použitelné: Všechny rasy
+Minimální síla: 2
+
+Magický útok: -5%
+Brnění: +0.9975
+Obratnost: -1.4625%
+Rychlost: +3
+
+
+Typ: Rukavice
+Jméno: těžké mitrilové rukavice bystrého myšlení
+Kvalita: 100%
+Nevybaven
+Hodnota: 850zl
+Použitelné: Všechny rasy
+Minimální síla: 11.2
+
+Magický útok: -18%
+Brnění: +5.25
+Obratnost: -4.7696%
+Inteligence: +2
+
+
+Typ: Zbraň
+Druh zbraně: Kuše
+Jméno: dřevěná těžká kuše rychlosti
+Kvalita: 100%
+Nevybaven
+Hodnota: 375zl
+Nepoužitelné: Ent
+Minimální síla: 5.4
+
+Útok: +8%
+Obrana: -10%
+Magický útok: -10%
+Rychlost: +1
+Rychlost: 18
+Dosah: 70
+Zranění: 2K6+1
+
+
+Typ: Helma
+Jméno: mitrilová přilba tvrdé ruky
+Kvalita: 100%
+Nevybaven
+Hodnota: 510zl
+Použitelné: Všechny rasy
+Minimální síla: 8.4
+
+Magický útok: -4.5%
+Brnění: +3.5
+Síla: +2
+Obratnost: -3.0096%
+
+
+Typ: Štít
+Jméno: stínový štít větru
+Kvalita: 100%
+Nevybaven
+Hodnota: 1 500zl
+Použitelné: Všechny rasy
+Minimální síla: 3
+
+Obrana: +3 a +8.1%
+Magický útok: -14%
+Brnění: +5.2
+Obratnost: -1.82%
+Rychlost: +3
+
+
+Typ: Brnění
+Jméno: Bardovo mocné mitrilové brnění
+Kvalita: 100%
+Nevybaven
+Hodnota: 3 400zl
+Nepoužitelné: Ent
+Minimální síla: 14
+
+Magický útok: -36%
+Brnění: +17.5
+Obratnost: -17.05%
+Charisma: +2
+
+
+Typ: Helma
+Jméno: železná přilba síly
+Kvalita: 100%
+Nevybaven
+Hodnota: 292zl
+Použitelné: Všechny rasy
+Minimální síla: 6.6
+
+Magický útok: -6%
+Brnění: +2.4
+Síla: +1
+Obratnost: -3.807%
+
+
+Typ: Zbraň
+Druh zbraně: Sekera
+Jméno: železná malá sekera úspěchu
+Kvalita: 100%
+Nevybaven
+Hodnota: 273zl
+Nepoužitelné: Ent
+Minimální síla: 5.5
+
+Útok: +6.6%
+Obrana: +1.8%
+Magický útok: -6%
+Štěstí: +3
+Rychlost: 7.6
+Dosah: 1
+Zranění: 1K6+3
+
+
+Typ: Zbraň
+Druh zbraně: Kuše
+Jméno: Učedníkova dřevěná těžká kuše
+Kvalita: 100%
+Nevybaven
+Hodnota: 500zl
+Nepoužitelné: Ent
+Minimální síla: 5.4
+
+Útok: +8%
+Obrana: -10%
+Magický útok: +2 a -10%
+Rychlost: 18
+Dosah: 70
+Zranění: 2K6+1
+Obouruční
+
+
+Typ: Boty
+Jméno: mitrilové boty energie
+Kvalita: 100%
+Nevybaven
+Hodnota: 382zl
+Použitelné: Všechny rasy
+Minimální síla: 8.4
+
+Magický útok: +1 a -4.5%
+Brnění: +3.5
+Obratnost: -3.0096%
+
+
+Typ: Zbraň
+Druh zbraně: Sekera
+Jméno: Hrubá chitinová sekerka
+Kvalita: 100%
+Nevybaven
+Hodnota: 67zl
+Nepoužitelné: Ent
+Minimální síla: 2.4
+
+Útok: +5.5%
+Obrana: +2.6%
+Magický útok: -2%
+Brnění: +1
+Rychlost: 4.8
+Dosah: 1
+Zranění: 1K6
+
+
+Typ: Zbraň
+Druh zbraně: Luk
+Jméno: dřevěný krátký luk přesnosti
+Kvalita: 100%
+Nevybaven
+Hodnota: 300zl
+Nepoužitelné: Ent
+Minimální síla: 2.7
+
+Útok: +4%
+Obrana: -5%
+Magický útok: -5%
+Obratnost: +3
+Rychlost: 8
+Dosah: 70
+Zranění: 1K4+1
+Obouruční
+
+
+Jméno: Zaklínačovy težké stínové boty
+Kvalita: 100%
+Nevybaven
+Hodnota: 1 000zl
+Použitelné: Všechny rasy
+Minimální síla: 4
+
+Magický útok: -7%
+Brnění: +3.9
+Obratnost: -2.184%
+Síla vůle: +2
+
+
+Typ: Helma
+Jméno: Krásná lehká stínová přilba
+Kvalita: 100%
+Nevybaven
+Hodnota: 300zl
+Použitelné: Všechny rasy
+Minimální síla: 2
+
+Magický útok: -1.75%
+Brnění: +1.729
+Obratnost: +0.924%
+Charisma: +3
+
+
+Typ: Zbraň
+Druh zbraně: Meč
+Jméno: mitrilový krátký meč koncentrace
+Kvalita: 100%
+Nevybaven
+Hodnota: 170zl
+Nepoužitelné: Ent
+Minimální síla: 4.2
+
+Útok: +3.6%
+Obrana: +4.8%
+Magický útok: -1.8%
+Síla vůle: +2
+Rychlost: 4
+Dosah: 1
+Zranění: 2K4
+
+
+Typ: Rukavice
+Jméno: těžké kožené rukavice štěstí
+Kvalita: 100%
+Nevybaven
+Hodnota: 375zl
+Použitelné: Všechny rasy
+Minimální síla: 4
+
+Magický útok: -20%
+Brnění: +2.25
+Obratnost: -5.2125%
+Štěstí: +1
+
+
+Typ: Helma
+Jméno: lehká stínová přilba konstituce
+Kvalita: 100%
+Nevybaven
+Hodnota: 150zl
+Použitelné: Všechny rasy
+Minimální síla: 2
+
+Magický útok: -1.75%
+Brnění: +1.729
+Obratnost: +0.924%
+Konstituce: +1
+
+
+Detaily předmětu Zaklínačovo měsíční kopí
+( Vlastněný předmět )
+Typ: Zbraň
+Druh zbraně: Kopí
+Jméno: Zaklínačovo měsíční kopí
+Kvalita: 100%
+Nevybaven
+Hodnota: 360zl
+Nepoužitelné: Ent
+Minimální síla: 5
+
+Útok: +7.7%
+Obrana: +1.1%
+Magický útok: -0.5%
+Magicá obrana: +2.5%
+Síla vůle: +2
+Rychlost: 4.9
+Dosah: 1
+Zranění: 2K4+1
+
+
+Detaily předmětu Očarovaný malý mitrilový štít
+( Vlastněný předmět )
+Typ: Štít
+Jméno: Očarovaný malý mitrilový štít
+Kvalita: 100%
+Nevybaven
+Hodnota: 127zl
+Použitelné: Všechny rasy
+Minimální síla: 5.6
+
+Obrana: +1.8 a +4.8%
+Magický útok: -13.5%
+Magicá obrana: +1
+Brnění: +3.5
+Obratnost: -3.52%
+
+
+Detaily předmětu Pěkný ebenový prsten
+( Vlastněný předmět )
+Typ: Prsten
+Jméno: Pěkný ebenový prsten
+Kvalita: 100%
+Nevybaven
+Hodnota: 270zl
+Použitelné: Všechny rasy
+
+Charisma: +1
+
+
+Typ: Štít
+Jméno: železný štít šťastného zásahu
+Kvalita: 100%
+Nevybaven
+Hodnota: 650zl
+Použitelné: Všechny rasy
+Minimální síla: 6.6
+
+Obrana: +1.8 a +4.86%
+Magický útok: -24%
+Brnění: +4.8
+Obratnost: -5.76%
+Štěstí: +2
+
+
+Typ: Rukavice
+Jméno: těžké železné rukavice vůle
+Kvalita: 100%
+Nevybaven
+Hodnota: 487zl
+Použitelné: Všechny rasy
+Minimální síla: 8.8
+
+Magický útok: -24%
+Brnění: +3.6
+Obratnost: -5.247%
+Síla vůle: +1
+
+
+Druh zbraně: Sekera
+Jméno: železná válečná sekera
+Kvalita: 65%
+Zaškolenost: 100%
+Hodnota: 260zl
+Nepoužitelné: Ent
+Minimální síla: 8.8
+
+Útok: +9.9%
+Obrana: +3.6%
+Magický útok: -12%
+Rychlost: 8.8 ( 5.4 )
+Dosah: 1
+Zranění: 2K6+3 ( 6K6+3 )
+
+
+Druh zbraně: Kuše
+Jméno: dřevěná těžká kuše
+Kvalita: 40%
+Zaškolenost: 100%
+Hodnota: 250zl
+Nepoužitelné: Ent
+Minimální síla: 5.4
+
+Útok: +8%
+Obrana: -10%
+Magický útok: -10%
+Rychlost: 18 ( 7.8 )
+Dosah: 70
+Zranění: 2K6+1 ( 5K6+3 )
+Obouruční
+
+
+Typ: Brnění
+Jméno: těžké mitrilové brnění energie
+Kvalita: 100%
+Nevybaven
+Hodnota: 1 275zl
+Nepoužitelné: Ent
+Minimální síla: 11.2
+
+Magický útok: +1 a -27%
+Brnění: +14
+Obratnost: -11.55%
+
+
+Typ: Brnění
+Jméno: železné brnění ogřího hněvu
+Kvalita: 100%
+Nevybaven
+Hodnota: 975zl
+Nepoužitelné: Ent
+Minimální síla: 6.6
+
+Magický útok: -24%
+Brnění: +7.2
+Síla: +3
+Obratnost: -9.9%
+
+
+Typ: Zbraň
+Druh zbraně: Kopí
+Jméno: stínová halapartna vůle
+Kvalita: 100%
+Hodnota: 600zl
+Nepoužitelné: Ent
+Minimální síla: 3.5
+
+Útok: +14%
+Obrana: +4.5%
+Magický útok: -7%
+Síla vůle: +1
+Rychlost: 5.4
+Dosah: 2
+Zranění: 1K10+5
+
+
+Druh zbraně: Sekera
+Jméno: chitinová válečná sekera koncentrace
+Kvalita: 100%
+Nevybaven
+Hodnota: 600zl
+Nepoužitelné: Ent
+Minimální síla: 6.4
+
+Útok: +9.9%
+Obrana: +5.2%
+Magický útok: -10%
+Síla vůle: +2
+Rychlost: 6.4
+Dosah: 1
+Zranění: 2K6+2
+Obouruční
+
+
+Typ: Brnění
+Jméno: mocné mitrilové brnění přitažlivosti
+Kvalita: 100%
+Nevybaven
+Hodnota: 2 550zl
+Nepoužitelné: Ent
+Minimální síla: 14
+
+Magický útok: -36%
+Brnění: +17.5
+Obratnost: -17.05%
+Charisma: +1
+
+
+Typ: Brnění
+Jméno: Rytířovo mocné stínové brnění
+Kvalita: 99%
+Hrdina: Xovorgil
+Zaškolenost: 58%
+Hodnota: 6 000zl
+Nepoužitelné: Ent
+Minimální síla: 5
+
+Obrana: +3
+Magický útok: -28%
+Brnění: +13
+Obratnost: -9.75%
+
+
+Typ: Brnění
+Jméno: ebenová kůra čisté mysli
+Kvalita: 97%
+Nevybaven
+Hodnota: 10 800zl
+Použitelné: Ent
+Minimální síla: 1.3
+
+Brnění: +11.2
+Síla vůle: +3
+
+
+Detaily předmětu Štítonošova mitrilová halapartna
+( Vlastněný předmět )
+Typ: Zbraň
+Druh zbraně: Kopí
+Jméno: Štítonošova mitrilová halapartna
+Kvalita: 100%
+Nevybaven
+Hodnota: 1 020zl
+Nepoužitelné: Ent
+Minimální síla: 9.8
+
+Útok: +12%
+Obrana: +3.6%
+Magický útok: -9%
+Brnění: +3
+Rychlost: 8.1
+Dosah: 2
+Zranění: 2K10+2
+Obouruční
+
+
+Detaily předmětu železná sekerka síly
+( Vlastněný předmět )
+Typ: Zbraň
+Druh zbraně: Sekera
+Jméno: železná sekerka síly
+Kvalita: 100%
+Nevybaven
+Hodnota: 58zl
+Nepoužitelné: Ent
+Minimální síla: 3.3
+
+Útok: +5.5%
+Obrana: +1.8%
+Magický útok: -2.4%
+Síla: +1
+Rychlost: 6.5
+Dosah: 1
+Zranění: 1K6+1
+
+
+
+Detaily předmětu mitrilové brnění rezistence
+( Vlastněný předmět )
+Typ: Brnění
+Jméno: mitrilové brnění rezistence
+Kvalita: 100%
+Nevybaven
+Hodnota: 850zl
+Nepoužitelné: Ent
+Minimální síla: 8.4
+
+Magický útok: -18%
+Magicá obrana: +2
+Brnění: +10.5
+Obratnost: -7.15%
+
+
+Typ: Štít
+Jméno: železný štít zabíjení
+Kvalita: 100%
+Nevybaven
+Hodnota: 650zl
+Použitelné: Všechny rasy
+Minimální síla: 6.6
+
+Útok: +2
+Obrana: +1.8 a +4.86%
+Magický útok: -24%
+Brnění: +4.8
+Obratnost: -5.76%
+
+
+Typ: Brnění
+Jméno: Rytířovo mocné stínové brnění
+Kvalita: 97%
+Nevybaven
+Hodnota: 6 000zl
+Nepoužitelné: Ent
+Minimální síla: 5
+
+Obrana: +3
+Magický útok: -28%
+Brnění: +13
+Obratnost: -9.75%
+
+
+Typ: Helma
+Jméno: Novicova lehká mitrilová přilba
+Kvalita: 100%
+Nevybaven
+Hodnota: 127zl
+Použitelné: Všechny rasy
+Minimální síla: 5.6
+
+Magický útok: +1 a -2.25%
+Brnění: +2.3275
+Obratnost: -1.4696%
+
+
+Typ: Brnění
+Jméno: mocné kožené brnění výdrže
+Kvalita: 100%
+Nevybaven
+Hodnota: 2 000zl
+Nepoužitelné: Ent
+Minimální síla: 5
+
+Magický útok: -40%
+Brnění: +7.5
+Obratnost: -18.75%
+Konstituce: +2
+
+
+Typ: Brnění
+Jméno: mocné železné brnění
+Hodnota: 1300zl
+Nepoužitelné: Ent
+Minimální síla: 11
+
+Magický útok: -48%
+Brnění: +12
+Obratnost: -18%
+
+
+Typ: Boty
+Jméno: Bardovy stínové boty
+Kvalita: 100%
+Nevybaven
+Hodnota: 600zl
+Použitelné: Všechny rasy
+Minimální síla: 3
+
+Magický útok: -3.5%
+Brnění: +2.6
+Obratnost: -0.104%
+Charisma: +2
+
+
+Typ: Prsten
+Jméno: stínový prsten osvícení
+Kvalita: 100%
+Nevybaven
+Hodnota: 600zl
+Použitelné: Všechny rasy
+
+Inteligence: +3
+
+
+Typ: Brnění
+Jméno: Hrubé mocné železné brnění
+Kvalita: 80%
+Hrdina: Zoom
+Zaškolenost: 100%
+Hodnota: 1 950zl
+Nepoužitelné: Ent
+Minimální síla: 11
+
+Magický útok: -48%
+Brnění: +13
+Obratnost: -18%
+
+
+Jméno: ebenová kůra zabíjení
+Kvalita: 100%
+Nevybaven
+Hodnota: 7 200zl
+Použitelné: Ent
+Minimální síla: 1.3
+
+Útok: +2
+Brnění: +11.2
+
+
+Typ: Zbraň
+Druh zbraně: Drtící zbraně
+Jméno: mitrilové válečné kladivo tvrdosti
+Kvalita: 100%
+Nevybaven
+Hodnota: 382zl
+Nepoužitelné: Ent
+Minimální síla: 11.2
+
+Útok: +10.8%
+Obrana: +4.8%
+Magický útok: -9%
+Brnění: +1
+Rychlost: 7.1
+Dosah: 1
+Zranění: 3K6+2
+
+
+Typ: Brnění
+Jméno: Tvrzená tisová kůra
+Kvalita: 100%
+Nevybaven
+Hodnota: 5 600zl
+Použitelné: Ent
+Minimální síla: 1.1
+
+Brnění: +10.4
+
+
+Typ: Zbraň
+Druh zbraně: Sekera
+Jméno: mitrilová malá sekera útoku
+Kvalita: 100%
+Nevybaven
+Hodnota: 178zl
+Nepoužitelné: Ent
+Minimální síla: 7
+
+Útok: +1 a +7.2%
+Obrana: +2.4%
+Magický útok: -4.5%
+Rychlost: 6.3
+Dosah: 1
+Zranění: 2K6+1
+
+
+Typ: Zbraň
+Druh zbraně: Luk
+Jméno: Hrubý dřevěný dlouhý luk
+Kvalita: 100%
+Nevybaven
+Hodnota: 375zl
+Nepoužitelné: Ent
+Minimální síla: 4.5
+
+Útok: +8%
+Obrana: -10%
+Magický útok: -10%
+Brnění: +1
+Rychlost: 12
+Dosah: 70
+Zranění: 1K6+2
+Obouruční
+
+
+Typ: Štít
+Jméno: železný štít zabíjení
+Kvalita: 100%
+Nevybaven
+Hodnota: 650zl
+Použitelné: Všechny rasy
+Minimální síla: 6.6
+
+Útok: +2
+Obrana: +1.8 a +4.86%
+Magický útok: -24%
+Brnění: +4.8
+Obratnost: -5.76%
+
+
+Typ: Štít
+Jméno: mitrilový štít protekce
+Kvalita: 100%
+Nevybaven
+Hodnota: 850zl
+Použitelné: Všechny rasy
+Minimální síla: 8.4
+
+Obrana: +4.4 a +6.48%
+Magický útok: -18%
+Brnění: +7
+Obratnost: -5.06%
+
+
+Typ: Brnění
+Jméno: Novicovo mocné stínové brnění
+Kvalita: 100%
+Hrdina: Barur
+Zaškolenost: 0%
+Hodnota: 3 000zl
+Nepoužitelné: Ent
+Minimální síla: 5
+
+Magický útok: +1 a -28%
+Brnění: +13
+Obratnost: -9.75%
+
+
+Typ: Brnění
+Jméno: Antilopino mocné stínové brnění
+Kvalita: 100%
+Nevybaven
+Hodnota: 4 000zl
+Nepoužitelné: Ent
+Minimální síla: 5
+
+Magický útok: -28%
+Brnění: +13
+Obratnost: -9.75%
+Rychlost: +2
+
+
+Typ: Zbraň
+Druh zbraně: Kopí
+Jméno: Nepředvídatelné mitrilové kopí
+Kvalita: 100%
+Nevybaven
+Hodnota: 340zl
+Nepoužitelné: Ent
+Minimální síla: 7
+
+Útok: +8.4%
+Obrana: +1.2%
+Magický útok: -4.5%
+Štěstí: +2
+Rychlost: 4.9
+Dosah: 1
+Zranění: 2K4+2
+
+
+Typ: Zbraň
+Druh zbraně: Drtící zbraně
+Jméno: stínové válečné kladivo rezistence
+Kvalita: 100%
+Nevybaven
+Hodnota: 600zl
+Nepoužitelné: Ent
+Minimální síla: 4
+
+Útok: +12.6%
+Obrana: +6%
+Magický útok: -7%
+Magicá obrana: +2
+Rychlost: 4.8
+Dosah: 1
+Zranění: 2K6+3
+Obouruční
+
+
+Druh zbraně: Sekera
+Jméno: mitrilová válečná sekera krásy
+Kvalita: 100%
+Nevybaven
+Hodnota: 1 020zl
+Nepoužitelné: Ent
+Minimální síla: 11.2
+
+Útok: +10.8%
+Obrana: +4.8%
+Magický útok: -9%
+Charisma: +3
+Rychlost: 7.1
+Dosah: 1
+Zranění: 3K6+2
+Obouruční
+
+
+Typ: Zbraň
+Druh zbraně: Sekera
+Jméno: železná válečná sekera
+Kvalita: 94%
+Hrdina: Gah
+Zaškolenost: 100%
+Hodnota: 260zl
+Nepoužitelné: Ent
+Minimální síla: 8.8
+
+Útok: +9.9%
+Obrana: +3.6%
+Magický útok: -12%
+Rychlost: 8.8 ( 4.8 )
+Dosah: 1
+Zranění: 2K6+3 ( 7K6+3 )
+Obouruční
+
+
+Typ: Boty
+Jméno: Elementálovy težké železné boty
+Kvalita: 100%
+Nevybaven
+Hodnota: 975zl
+Použitelné: Všechny rasy
+Minimální síla: 8.8
+
+Magický útok: -12%
+Brnění: +3.6
+Obratnost: -5.247%
+Síla vůle: +3
+
+
+Typ: Rukavice
+Jméno: těžké mitrilové rukavice síly
+Kvalita: 100%
+Nevybaven
+Hodnota: 637zl
+Použitelné: Všechny rasy
+Minimální síla: 11.2
+
+Magický útok: -18%
+Brnění: +5.25
+Síla: +1
+Obratnost: -4.7696%
+
+
+Typ: Zbraň
+Druh zbraně: Sekera
+Jméno: železná válečná sekera tvrdé ruky
+Kvalita: 100%
+Nevybaven
+Hodnota: 520zl
+Nepoužitelné: Ent
+Minimální síla: 8.8
+
+Útok: +9.9%
+Obrana: +3.6%
+Magický útok: -12%
+Síla: +2
+Rychlost: 8.8
+Dosah: 1
+Zranění: 2K6+3
+
+
+Typ: Helma
+Jméno: stínová přilba šťastného zásahu
+Kvalita: 100%
+Nevybaven
+Hodnota: 600zl
+Použitelné: Všechny rasy
+Minimální síla: 3
+
+Magický útok: -3.5%
+Brnění: +2.6
+Obratnost: -0.104%
+Štěstí: +2
+
+
+Typ: Štít
+Jméno: Masivní velký stínový štít
+Kvalita: 100%
+Nevybaven
+Hodnota: 1 600zl
+Použitelné: Všechny rasy
+Minimální síla: 4.5
+
+Obrana: +4.5 a +10.5%
+Magický útok: -21%
+Brnění: +7.8
+Obratnost: -3.9%
+Konstituce: +2
+
+
+Typ: Prsten
+Jméno: Trpasličí dřevěný prsten
+Kvalita: 100%
+Nevybaven
+Hodnota: 300zl
+Použitelné: Všechny rasy
+
+Konstituce: +3
+
+
+Typ: Zbraň
+Druh zbraně: Luk
+Jméno: dřevěný dlouhý luk energie
+Kvalita: 100%
+Nevybaven
+Hodnota: 375zl
+Nepoužitelné: Ent
+Minimální síla: 4.5
+
+Útok: +8%
+Obrana: -10%
+Magický útok: +1 a -10%
+Rychlost: 12
+Dosah: 70
+Zranění: 1K6+2
+Obouruční
+
+
+Typ: Zbraň
+Druh zbraně: Meč
+Jméno: Antilopin mitrilový dlouhý meč
+Kvalita: 100%
+Nevybaven
+Hodnota: 340zl
+Nepoužitelné: Ent
+Minimální síla: 7
+
+Útok: +6%
+Obrana: +7.2%
+Magický útok: -4.5%
+Rychlost: +2
+Rychlost: 4.9
+Dosah: 1
+Zranění: 1K6+3
+
+
+Detaily předmětu Požehnaná stínová válečná sekera
+( Vlastněný předmět ) Typ: Zbraň
+Druh zbraně: Sekera
+Jméno: Požehnaná stínová válečná sekera
+Kvalita: 100%
+Nevybaven
+Hodnota: 800zl
+Nepoužitelné: Ent
+Minimální síla: 4
+
+Útok: +12.6%
+Obrana: +6%
+Magický útok: -7%
+Magická obrana: +2
+Rychlost: 4.8
+Dosah: 1
+Zranění: 2K6+3
+
+
+
+Detaily předmětu Masivní stínová válečná sekera
+( Vlastněný předmět ) Typ: Zbraň
+Druh zbraně: Sekera
+Jméno: Masivní stínová válečná sekera
+Kvalita: 100%
+Nevybaven
+Hodnota: 800zl
+Nepoužitelné: Ent
+Minimální síla: 4
+
+Útok: +12.6%
+Obrana: +6%
+Magický útok: -7%
+Konstituce: +2
+Rychlost: 4.8
+Dosah: 1
+Zranění: 2K6+3
+
+
+
+Detaily předmětu Jednorožcova bavlněná róba
+( Vlastněný předmět ) Typ: Brnění
+Jméno: Jednorožcova bavlněná róba
+Kvalita: 100%
+Nevybaven
+Hodnota: 150zl
+Nepoužitelné: Ent
+Minimální síla: 2
+
+Brnění: +2
+Obratnost: -1%
+Inteligence: +3
+
+
+Detaily předmětu Robustní mitrilové brnění
+( Vlastněný předmět ) Typ: Brnění
+Jméno: Robustní mitrilové brnění
+Kvalita: 100%
+Nevybaven
+Hodnota: 637zl
+Nepoužitelné: Ent
+Minimální síla: 8.4
+
+Magický útok: -18%
+Brnění: +10.5
+Obratnost: -7.15%
+Konstituce: +1
+
+
+Detaily předmětu Božské težké diamantové boty
+( Vlastněný předmět ) Typ: Boty
+Jméno: Božské težké diamantové boty
+Kvalita: 100%
+Nevybaven
+Hodnota: 2 625zl
+Použitelné: Všechny rasy
+Minimální síla: 12.8
+
+Magický útok: -7%
+Magická obrana: +4
+Brnění: +6.6
+Obratnost: -4.6056%
+
+
+Typ: Helma
+Jméno: Trolova kožená přilba
+Kvalita: 100%
+Nevybaven
+Hodnota: 300zl
+Použitelné: Všechny rasy
+Minimální síla: 3
+
+Magický útok: -5%
+Brnění: +1.5
+Síla: +2
+Obratnost: -3.2125%
+
+
+Typ: Boty
+Jméno: lehké železné boty ogřího hněvu
+Kvalita: 100%
+Nevybaven
+Hodnota: 195zl
+Použitelné: Všechny rasy
+Minimální síla: 4.4
+
+Magický útok: -3%
+Brnění: +1.596
+Síla: +3
+Obratnost: -2.547%
+
+
+Typ: Brnění
+Jméno: Nezničitelná ebenová kůra
+Kvalita: 100%
+Nevybaven
+Hodnota: 18 000zl
+Použitelné: Ent
+Minimální síla: 1.3
+
+Brnění: +11.2
+Konstituce: +4
+
+
+Typ: Štít
+Jméno: Rychlý velký mitrilový štít
+Kvalita: 100%
+Nevybaven
+Hodnota: 2 040zl
+Použitelné: Všechny rasy
+Minimální síla: 12.6
+
+Obrana: +3.6 a +8.4%
+Magický útok: -27%
+Brnění: +10.5
+Obratnost: -6.82%
+Rychlost: +3
+
+
+Typ: Rukavice
+Jméno: mitrilové rukavice čisté mysli
+Kvalita: 100%
+Nevybaven
+Hodnota: 765zl
+Použitelné: Všechny rasy
+Minimální síla: 8.4
+
+Magický útok: -9%
+Brnění: +3.5
+Obratnost: -3.0096%
+Síla vůle: +3
+
+
+Typ: Brnění
+Jméno: Hobití mocné stínové brnění
+Kvalita: 100%
+Nevybaven
+Hodnota: 3 000zl
+Nepoužitelné: Ent
+Minimální síla: 5
+
+Magický útok: -28%
+Brnění: +13
+Obratnost: +1 a -9.75%
+
+
+Typ: Prsten
+Jméno: Tvrzený měsíční prsten
+Kvalita: 100%
+Nevybaven
+Hodnota: 360zl
+Použitelné: Všechny rasy
+
+Magická obrana: +2.5%
+Brnění: +2
+
+
+Typ: Rukavice
+Jméno: Antilopiny těžké stínové rukavice
+Kvalita: 100%
+Nevybaven
+Hodnota: 1 000zl
+Použitelné: Všechny rasy
+Minimální síla: 4
+
+Magický útok: -14%
+Brnění: +3.9
+Obratnost: -2.184%
+Rychlost: +2
+
+
+Typ: Zbraň
+Druh zbraně: Kopí
+Jméno: měsíční kopí ogřího hněvu
+Kvalita: 100%
+Nevybaven
+Hodnota: 540zl
+Nepoužitelné: Ent
+Minimální síla: 5
+
+Útok: +7.7%
+Obrana: +1.1%
+Magický útok: -0.5%
+Magická obrana: +2.5%
+Síla: +3
+Rychlost: 4.9
+Dosah: 1
+Zranění: 2K4+1
