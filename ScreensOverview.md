@@ -2,6 +2,43 @@
 
 *This document serves as an overview of all game screens for detailed specifications to individual roles (frontend, backend, UX/UI designer, etc.).*
 
+## Summary
+- Purpose: Provide a single, role-friendly reference of every in-game screen to support frontend, backend, and design implementation.
+- Audience: Frontend engineers, backend engineers, UX/UI designers, product managers, and QA.
+- Coverage: 20 core screens covering team management, combat, economy, marketplace, HQ, training, and community features.
+- How to use: Use each screen section for UI specs; consult "Backend Requirements" for API needs and "Notes for Further Specification" for cross-cutting concerns.
+- Status: Draft — ready for review and role-specific breakdowns.
+
+---
+
+## Table of Contents
+
+- [Summary](#summary)
+- [1. Kingdom Selection Screen](#1-kingdom-selection-screen)
+- [2. Team Dashboard (Main Screen)](#2-team-dashboard-main-screen)
+- [3. Hero Roster Screen](#3-hero-roster-screen)
+- [4. Hero Detail Screen](#4-hero-detail-screen)
+- [5. Training Screen](#5-training-screen)
+- [6. Trainer Management Screen](#6-trainer-management-screen)
+- [7. Formation Setup Screen](#7-formation-setup-screen)
+- [8. Headquarters Screen](#8-headquarters-screen)
+- [9. Summoning Chamber Screen](#9-summoning-chamber-screen)
+- [10. Item/Equipment Screen](#10-itemequipment-screen)
+- [11. Spell Management Screen](#11-spell-management-screen)
+- [12. Combat/Battle Screen](#12-combatbattle-screen)
+- [13. League Screen](#13-league-screen)
+- [14. Calendar/Events Screen](#14-calendarevents-screen)
+- [15. Marketplace Screen](#15-marketplace-screen)
+- [16. Graveyard Screen](#16-graveyard-screen)
+- [17. Community Screen](#17-community-screen)
+- [18. Arena Management Screen (Optional/Extended Feature)](#18-arena-management-screen-optionalextended-feature)
+- [19. Player Profile & Settings Screen](#19-player-profile--settings-screen)
+- [20. Crafting Screen (if implemented)](#20-crafting-screen-if-implemented)
+- [Notes for Further Specification](#notes-for-further-specification)
+- [UX/UI Design Requirements](#uxui-design-requirements)
+- [Backend Requirements](#backend-requirements)
+- [Database Schema Implications](#database-schema-implications)
+
 ---
 
 ## 1. Kingdom Selection Screen
