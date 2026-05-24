@@ -17,4 +17,4 @@ This file summarizes the short list of known documentation issues discovered dur
 |11 | Training | Training speed semantics need clarification (time vs cost) | Low |
 
 Keep this file updated as fixes are applied.
-Dont mark resolved just remove from this list when fixed.
+Remove point(s) from this list when fixed.

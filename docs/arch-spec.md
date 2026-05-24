@@ -15,13 +15,13 @@ This document defines the basic backend architecture of the project. It serves a
 - Establish availability and data recovery requirements
 
 ## Required Technologies
+- Docker 20.10+ and docker-compose 2.0+ (containerization)
 - PHP 8.5
 - Symfony 7.4
 - MariaDB 11.4
-- Node.js 18+ (for Webpack Encore and frontend tooling)
-- npm 9+ or yarn 3+ (frontend package manager)
+- Node.js 24+ (for Webpack Encore and frontend tooling)
+- npm 11+ (frontend package manager)
 - Composer 2.5+ (PHP dependency manager)
-- Docker 20.10+ and docker-compose 2.0+ (containerization)
 
 > Note: This specification lists only the technologies approved above. All development must target these versions.
 
