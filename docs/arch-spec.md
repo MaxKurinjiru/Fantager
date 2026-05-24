@@ -15,7 +15,7 @@ This document defines the basic backend architecture of the project. It serves a
 - Establish availability and data recovery requirements
 
 ## Required Technologies
-- PHP 8.3
+- PHP 8.5
 - Symfony 7.4
 - MariaDB 11.4
 - Node.js 18+ (for Webpack Encore and frontend tooling)
@@ -184,42 +184,53 @@ The backend exposes **internal API routes** for Stimulus components and future e
 
 ## Technology Stack Checklist
 
-Use this checklist to verify all technologies are properly installed and configured:
+This repository follows a container-first development model. Developer tooling (PHP, Composer, Node, npm/yarn, build tools) is expected to run inside the local containers defined by `docker-compose.yml` to ensure consistent environments.
 
-### Backend
-- [ ] PHP 8.3 installed and set as default CLI version
-- [ ] Composer 2.5+ installed globally
-- [ ] Symfony CLI installed (optional but recommended)
-- [ ] MariaDB 11.4 running locally or via Docker
-- [ ] `.env.local` configured with `DATABASE_URL`
-- [ ] `composer install` completed; vendor/ present
-- [ ] `php bin/console doctrine:migrations:migrate` successful
+Use the `web` container (container name `fantager-web`) for PHP, Composer and frontend build tasks, and the `db` container (container name `fantager-db`) for database checks. Example commands:
 
-### Frontend
-- [ ] Node.js 18+ installed (`node --version`)
-- [ ] npm 9+ or yarn 3+ installed
-- [ ] `npm install` completed; node_modules/ present
+```
+docker compose up --build -d
+docker exec -it fantager-web composer install
+docker exec -it fantager-web npm install
+docker exec -it fantager-web npm run build
+docker exec -it fantager-web php bin/console doctrine:migrations:migrate
+```
+
+### Backend (container-first checks)
+- [ ] Run `docker exec -it fantager-web php -v` to confirm PHP 8.5 is available in the container
+- [ ] Run `docker exec -it fantager-web composer --version` to confirm Composer 2.5+ in-container
+- [ ] `.env.local` configured with `DATABASE_URL` (pointing to the `db` service when running in containers)
+- [ ] `docker exec -it fantager-web composer install` completed; `vendor/` present in the project volume
+- [ ] `docker exec -it fantager-web php bin/console doctrine:migrations:migrate` runs successfully against the `db` container
+
+### Frontend (container-first checks)
+- [ ] Node and npm/yarn available in the `fantager-web` container: `docker exec -it fantager-web node --version` and `docker exec -it fantager-web npm --version`
+- [ ] `docker exec -it fantager-web npm install` completed; `node_modules/` present (mounted in project volume)
 - [ ] Webpack Encore configured in `webpack.config.js`
-- [ ] `npm run build` produces output in `public/build/`
-- [ ] `npm run watch` works for development
+- [ ] `docker exec -it fantager-web npm run build` produces files in `public/build/`
+- [ ] `docker exec -it fantager-web npm run watch` works for development iterations
 
-### Development Tools
-- [ ] PHP-CS-Fixer installed (`composer cs-check`)
-- [ ] PHPStan installed (`composer phpstan`)
-- [ ] PHPUnit installed (`composer test`)
-- [ ] Playwright installed (`npm run test:e2e`)
+### Development Tools (run inside container when possible)
+- [ ] PHP-CS-Fixer available via Composer: `docker exec -it fantager-web composer cs-check`
+- [ ] PHPStan available via Composer: `docker exec -it fantager-web composer phpstan`
+- [ ] PHPUnit available via Composer: `docker exec -it fantager-web composer test`
+- [ ] Playwright available for E2E: run from the container or CI node with `npm run test:e2e`
 
 ### Local Environment (Docker)
-- [ ] Docker Desktop installed
-- [ ] `docker-compose up` starts PHP, Apache, MariaDB
-- [ ] Port 8000 (or configured port) accessible
-- [ ] Database accessible via MariaDB client
+- [ ] Docker Desktop / Docker Engine installed on host
+- [ ] `docker compose up -d` starts the `fantager-web` and `fantager-db` containers
+- [ ] Application reachable on the configured port (see `docker-compose.yml` and `apache` config)
+- [ ] Database accessible from the `fantager-web` container as `db`/`fantager-db` service
 
 ### CI/CD & Deployment
-- [ ] CI configuration (GitHub Actions, GitLab CI) defined
-- [ ] Deployment script or process documented
-- [ ] Environment variables for staging and production defined
-- [ ] Database backup strategy configured
+- [ ] CI configuration (GitHub Actions, GitLab CI) defined and uses container images or `docker compose` for reproducible builds
+- [ ] Deployment process documented; images/tags and secret management described
+- [ ] Database backup strategy and migration run policy documented for deployments
+
+### Notes & Tips
+- Prefer `docker exec -it` for iterative development tasks to avoid creating ephemeral containers unless isolation is needed (`docker compose run --rm`)
+- Keep sensitive configuration out of images; provide via `.env`, Docker secrets, or CI secret store
+- If developers prefer local installs, the container-first commands above are the canonical reference
 
 ## Security (requirements)
 - Enforce secure communication between client and server (HTTPS)
