@@ -1,6 +1,6 @@
 # Crafting System
 
-Reference: [game-summary.md](../game-summary.md#23-economy-system) and [docs/screens/20-crafting.md](../screens/20-crafting.md)
+Reference: [game-summary.md](../game-summary.md#23-economy-system) and [20-crafting.md](../screens/20-crafting.md)
 
 Purpose: Placeholder for crafting mechanics, recipes, success rates, and Essence usage.
 

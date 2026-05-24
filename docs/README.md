@@ -1,6 +1,10 @@
 # Project Docs Index
 
-This folder contains specification templates derived from [game-summary.md](docs/game-summary.md) and [screens-overview.md](docs/screens-overview.md).
+This folder contains specification templates derived from [game-summary.md](game-summary.md) and [screens-overview.md](screens-overview.md).
+
+**Architecture & Backend Design**
+- [Architectural Specification](arch-spec.md) — Core backend architecture with dual-layer design (Web + Internal API)
+- [API Design Guide](api-design.md) — Internal API structure, REST principles, service layer patterns, and future evolution roadmap
 
 **Systems**
 - [Kingdom System](systems/kingdom-system.md)
@@ -14,10 +18,13 @@ This folder contains specification templates derived from [game-summary.md](docs
 - [Item System](systems/item-system.md)
 - [Spell System](systems/spell-system.md)
 - [Combat System](systems/combat-system.md)
+- [Dungeon System](systems/dungeon-system.md)
 - [Marketplace System](systems/marketplace-system.md)
 - [League System](systems/league-system.md)
 - [Graveyard System](systems/graveyard-system.md)
 - [Community System](systems/community-system.md)
+- [Quest System](systems/quest-system.md)
+- [Crafting System](systems/crafting-system.md)
 
 **Screens**
 - [01 Kingdom Selection](screens/01-kingdom-selection.md)
