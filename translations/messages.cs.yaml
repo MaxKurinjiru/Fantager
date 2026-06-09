@@ -1,0 +1,417 @@
+# Czech translations (primary language)
+
+nav:
+  home: Domů
+  login: Přihlásit se
+  register: Registrace
+  logout: Odhlásit se
+  dashboard: Přehled
+  enter_game: Vstoupit do hry
+  wiki: Nápověda
+  news: Novinky
+  heroes: Hrdinové
+  summon: Vyvolávání
+  hq: Základna
+  training: Trénink
+  inventory: Vybavení
+  spells: Kouzla
+  formation: Formace
+  league: Liga
+  marketplace: Tržiště
+  graveyard: Hřbitov
+  settings: Nastavení
+
+modal:
+  close: Zavřít
+
+auth:
+  login_title: Přihlášení
+  register_title: Registrace
+  email: E-mail
+  password: Heslo
+  password_hint: "(min 8 znaků)"
+  password_confirm: Potvrzení hesla
+  display_name: Herní přezdívka
+  choose_kingdom: Vybrat království
+  kingdom_permanent_warn: "(trvalé — nelze změnit)"
+  kingdom_no_available: Žádná království nejsou k dispozici. Zkuste to brzy znovu.
+  kingdom_full: Plné
+  kingdom_language: "Jazyk:"
+  kingdom_speed: "Rychlost:"
+  kingdom_season: "Sezóna:"
+  kingdom_days: dní
+  kingdom_players: "Hráči:"
+  remember_me: Zapamatovat si mě
+  forgot_password: Zapomenuté heslo
+  submit_login: Přihlásit se
+  submit_register: Vytvořit účet
+  switch_to_login: Už máte účet? Přihlásit se
+  switch_to_register: Vytvořit nový účet
+  terms_agree: Souhlasím s podmínkami použití
+  back_to_login: Zpět na přihlášení
+  reset_password_title: Obnovení hesla
+  reset_password_email: E-mailová adresa
+  reset_password_submit: Odeslat odkaz pro reset
+  verify_email_title: Zkontrolujte e-mail
+  verify_email_body: Zaslali jsme ověřovací odkaz do vaší schránky. Klikněte na něj pro aktivaci účtu a začněte hrát. Odkaz vyprší za 24 hodin.
+  verify_email_no_email: "E-mail nedorazil?"
+  verify_email_resend: Znovu odeslat
+  reset_password_confirm_title: Nastavit nové heslo
+  reset_password_invalid_token: Neplatný nebo chybějící token pro obnovení hesla. Požádejte prosím o nový odkaz.
+  reset_password_confirm_new: Nové heslo
+  reset_password_confirm_confirm: Potvrdit nové heslo
+  reset_password_confirm_submit: Nastavit nové heslo
+
+homepage:
+  title: Fantager
+  description: Fantasy manažerská hra
+  tagline: "Sestav fantasy tým. Dobij ligu."
+  cta_play: Hrát zdarma
+  cta_login: Přihlásit se
+  news_archive_link: Archiv novinek
+
+flash:
+  login_success: Přihlášení bylo úspěšné.
+  register_success: Registrace byla úspěšná.
+  logout_success: Byli jste odhlášeni.
+  invalid_credentials: Neplatné přihlašovací údaje.
+
+dashboard:
+  treasury: Pokladnice
+  gold: Zlato
+  crystals: Krystaly
+  total_essence: Celková esence
+  edit_profile: Upravit profil
+  morale: Morálka týmu
+  morale_desc: Ovlivňuje efektivitu tréninku hrdinů a jejich bojovou vytrvalost.
+  chemistry: Chemie týmu
+  chemistry_desc: Určuje spouštění komb a synergické bonusy během zápasů.
+  quick_actions: Rychlé akce
+  stats: Statistiky týmu
+  reputation: Reputace týmu
+  total_heroes: Celkem hrdinů
+  available_heroes: Dostupní hrdinové
+  in_training: V tréninku
+  hq_level: Úroveň základny
+  hq_optimization: Optimalizace rasy základny
+  summons_cycle: Vyvolání v tomto cyklu
+  next_match: Příští ligový zápas
+  next_match_start: Ligové zápasy začínají v další fázi
+  no_matches: Zatím nejsou naplánovány žádné zápasy
+  none: Žádná
+  manager: Manažer
+  kingdom: Království
+
+settings:
+  title: Nastavení účtu
+  language: Jazyk hry
+  email:
+    title: Změna e-mailu
+    label: Nová e-mailová adresa
+    submit: Odeslat žádost
+  delete:
+    title: Nebezpečná zóna / Zrušení účtu
+    warning: Tato akce je trvalá a navždy smaže veškerý váš postup, hrdiny, předměty a nastavení.
+    btn: Zrušit účet
+    confirm_msg: Opravdu chcete zrušit účet? Na váš e-mail bude zaslán odkaz pro potvrzení zrušení.
+    confirm_yes: Ano, poslat odkaz
+    confirm_no: Ponechat účet
+
+sidebar:
+  future_content: Budoucí obsah
+  lock: Zamčeno
+
+team_profile:
+  title: Nastavení profilu týmu
+  name: Název týmu
+  emblem: Znak týmu
+  colors: Barvy týmu
+  color_primary: Primární barva (Hex)
+  color_secondary: Sekundární barva (Hex)
+  submit: Uložit profil
+
+heroes:
+  title: Roster hrdinů
+  subtitle: "Spravujte, filtrujte a prohlížejte hrdiny vašeho týmu."
+  summon_btn: Vyvolat hrdiny
+  all_races: Všechny rasy
+  all_statuses: Všechny stavy
+  sort_by: "Seřadit podle:"
+  sort_name: "Jména (A-Z)"
+  sort_level: "Úrovně (Sestupně)"
+  sort_age: "Věku (Vzestupně)"
+  sort_morale: "Morálky (Sestupně)"
+  sort_form: "Formy (Sestupně)"
+  sort_str: Síly
+  sort_dex: Obratnosti
+  sort_kon: Odolnosti
+  sort_spd: Rychlosti
+  sort_int: Inteligence
+  status_available: K dispozici
+  status_tired: Unavený
+  status_training: V tréninku
+  status_in_match: V zápase
+  status_injured: Zraněný
+  status_dead: Mrtvý
+  no_heroes: V rosteru nejsou žádní hrdinové
+  no_heroes_desc: Jděte do vyvolávací síně a naverbujte své první hrdiny.
+  go_summoning: Přejít k vyvolávání
+  back_roster: Zpět na Roster
+  rename_title: Přejmenovat hrdinu
+  save: Uložit
+  cancel: Zrušit
+  race: Rasa
+  race_human: Člověk
+  race_elf: Elf
+  race_dwarf: Trpaslík
+  race_orc: Ork
+  race_undead: Nemrtvý
+  race_giant: Obr
+  race_ent: Ent
+  race_genie: Džin
+  age: Věk
+  level: Úroveň
+  years: let
+  xp: Zkušenostní body
+  primary_attrs: Primární atributy
+  primary_attrs_desc: Základní atributy určují bojovou efektivitu.
+  status_condition: Stav a kondice
+  status_condition_desc: Aktuální fyzický stav a metriky zotavení.
+  combat_form: Bojová forma
+  fatigue: Úroveň únavy
+  morale_label: Morálka
+  equipped_gear: Vybavená výstroj
+  equipped_gear_desc: Výměna vybavení se provádí v inventáři.
+  manage_gear: Spravovat výstroj
+  spell_slots: Sloty na kouzla
+  spell_slots_limit: "Limit: %limit% slotů."
+  no_slots_unlocked: Nejsou odemčeny žádné sloty na kouzla
+  no_slots_desc: Vylepšete kapacitu magie v Tréninkovém centru.
+  equip: Vybavit
+  equipped: Vybaveno
+  school_mastery: Zvládnutí škol
+  school_mastery_desc: Požadavky na úroveň pro učení kouzel.
+  combat_stats: Bojové statistiky
+  combat_stats_desc: Historické výkonnostní metriky.
+  matches: Zápasy
+  win_rate: Míra výher
+  fallen: Padlí
+  trainings: Tréninky
+  recent_activity: Nedávná aktivita
+  recent_activity_desc: Poslední akce provedené tímto hrdinou.
+  no_activity: Nebyly zaznamenány žádné tréninkové aktivity.
+  details_title: Detaily hrdiny
+
+summoning:
+  title: Vyvolávací síň
+  subtitle: Obětujte zlato k vyvolání nového mladého hrdiny do vašeho týmu.
+  summons_used: Použitá vyvolání
+  cost_per_summon: Cena za vyvolání
+  summon_junior: Vyvolat mladého hrdiny
+  summon_junior_desc: "Nasměrujte své zlato k vyvolání nového hrdiny. Rasa vyvolaného hrdiny se volí na základě adaptace vaší Arény a rasových vztahů."
+  home_theme: Téma domácí arény
+  arena_theme_desc: "Rasy jsou losovány na základě tématu vaší arény a jejich vztahu/afinity (>= 50) k tématické rase."
+  potential_races: Potenciální vyvolatelné rasy
+  portal_title: Vyvolávací portál
+  portal_desc: Nasměrujte své zlato do portálu a přiveďte náhodného hrdinu kompatibilního s tématem vaší Arény.
+  portal_channeling: Kanálování portálu...
+  portal_channeling_desc: Vyvolávání mladého hrdiny z prázdnoty.
+  new_recruit: Nový rekrut
+  inspect_details: Prohlédnout detaily
+  summon_again: Vyvolat znovu
+  unavailable: Nedostupné
+
+hq:
+  title: Základna
+  subtitle: "Rozšiřte sídlo svého cechu a odemkněte pasivní bonusy, zvyšte limity a zvyšte efektivitu."
+  compound_level: Úroveň sídla
+  active_optimization: Aktivní optimalizace
+  roster_limit: Limit soupisky
+  facilities: Zařízení sídla
+  passive_effects: Pasivní účinky
+  upgrade_cost: Cena vylepšení
+  upgrade_btn: Vylepšit
+  settings: Nastavení cechu
+  race_opt_title: Optimalizace rasy
+  race_opt_desc: "Cílení na konkrétní rasu optimalizuje zařízení pro jejich fyzické potřeby, což snižuje únavu během tréninku a zvyšuje násobiče rychlosti."
+  race_opt_confirm: "Opravdu chcete změnit optimalizaci rasy? Tato naplánovaná změna se neprojeví ihned, ale bude aplikována až v neděli v 9:30."
+  select_race: Vyberte cílovou rasu
+  save_opt: Uložit optimalizaci
+  no_opt: "-- Bez optimalizace --"
+  race_opt_pending: "Naplánovaná změna na: %race% (aplikuje se v neděli v 9:30)"
+  race_opt_locked: "Optimalizace je uzamčena do další neděle 9:30"
+  race_opt_active: "Aktivní optimalizace: %race%"
+  insufficient_gold: Nedostatek zlata
+  facilities_list:
+    training:
+      name: Tréninkové centrum
+      desc: Zvyšuje efektivitu tréninku atributů hrdinů.
+    medical:
+      name: Lékařské křídlo
+      desc: Zrychluje regeneraci únavy hrdinů.
+    library:
+      name: Knihovna a akademie
+      desc: Zvyšuje rychlost získávání zkušenostních bodů hrdinů.
+    forge:
+      name: Kovárna a dílna
+      desc: Zvyšuje úspěšnost výroby předmětů a jejich odolnost.
+    treasury:
+      name: Pokladnice
+      desc: Zvyšuje násobiče pasivního příjmu zlata.
+    barracks:
+      name: Kasárny
+      desc: Zvyšuje maximální kapacitu seznamu hrdinů.
+    summoning_chamber:
+      name: Vyvolávací síň
+      desc: Zlepšuje základní kvalitu atributů vyvolaných hrdinů.
+    arena:
+      name: Domácí aréna
+      desc: Zvyšuje kapacitu stadionu pro domácí zápasy a tržby.
+  bonus_training_efficiency_pct: Efektivita tréninku
+  bonus_fatigue_reduction_pct: Snížení únavy
+  bonus_recovery_speed_pct: Rychlost zotavení
+  bonus_xp_gain_pct: Zisk zkušeností
+  bonus_crafting_success_pct: Úspěšnost výroby
+  bonus_item_durability_pct: Odolnost předmětů
+  bonus_gold_income_pct: Příjem zlata
+  bonus_roster_capacity: Kapacita soupisky
+  bonus_summon_base_stat_bonus: Bonus k zákl. atributům vyvolání
+  bonus_summon_stat_random_bonus: Náhodný bonus atributů vyvolání
+  bonus_summon_stat_total_cap: Limit atributů vyvolání
+  bonus_ticket_revenue_pct: Příjmy ze vstupného
+  bonus_arena_capacity: Kapacita arény
+
+training:
+  title: Tréninkové kolbiště
+  subtitle: Naplánujte tréninky ke zlepšení atributů, rozšíření slotů pro kouzla nebo snížení únavy.
+  scheduled_ticks: Naplánované týdenní vyhodnocení
+  ticks_schedule: Pátky v 10:00 UTC
+  select_trainee: Vyberte svěřence (Hrdinu)
+  choose_trainee_opt: "-- Vyberte svěřence --"
+  assign_trainer: Přiřadit trenéra (Volitelné)
+  no_trainer_opt: "-- Bez trenéra (Standardní sazba) --"
+  tab_attrs: Trénink atributů
+  tab_magic: Kapacita magie
+  tab_recovery: Zotavení a odpočinek
+  tab_queue: Aktivní fronta
+  cost_select_hero: "Cena: Vyberte hrdinu"
+  cost_val: "Cena: %cost%"
+  queue_training: Zařadit trénink
+  expand_capacity_title: Rozšířit kapacitu kouzel
+  expand_capacity_desc: "Trénujte mana kanály svého hrdiny a rozšiřte jejich kapacitu slotů na kouzla, což jim umožní vybavit více kouzel najednou (maximálně 5 slotů)."
+  expand_btn: "Rozšířit sloty na kouzla (+1 slot)"
+  recovery_title: Obnovení kondice
+  recovery_desc: "Pošlete svého hrdinu do lékařského křídla na fyzický odpočinek a rehabilitaci. Tím se okamžitě naplánuje lehké zotavovací cvičení obnovující +20 % bojové formy."
+  recovery_btn: "Obnovit bojovou formu (+20 % formy)"
+  queue_title: Fronta naplánovaných tréninků
+  time_remaining: Zbývající čas
+  cancel_btn: Zrušit
+  no_jobs: Nejsou naplánovány žádné tréninky
+  no_jobs_desc: Vyberte hrdinu, nakonfigurujte program a naplňte frontu.
+  type: Typ
+  type_attribute: Atribut
+  type_magic: Kapacita magie
+  type_form: Zotavení
+  trainer: Trenér
+  attr_label: Atribut
+  attr:
+    str: Síla
+    str_desc: Zvyšuje fyzickou sílu a poškození útokem.
+    dex: Obratnost
+    dex_desc: Zvyšuje přesnost zásahu a šanci na kritický zásah.
+    kon: Odolnost
+    kon_desc: Zvyšuje maximální zdraví a kapacitu brnění.
+    spd: Rychlost
+    spd_desc: Zvyšuje iniciativu a limity rychlosti kola.
+    int: Inteligence
+    int_desc: Zvyšuje poškození kouzly a škálování many.
+    wil: Vůle
+    wil_desc: Zlepšuje odolnost vůči magii a zkracuje cooldowny.
+    cha: Charisma
+    cha_desc: Zvyšuje synergické bonusy týmu a morálku.
+    lck: Štěstí
+    lck_desc: Zvyšuje šanci na vzácnou kořist a úhyb.
+
+inventory:
+  title: Zbrojnice a batoh
+  subtitle: Vybavte své hrdiny výstrojí, rozložte staré předměty na esenci nebo opravte jejich odolnost.
+  equip_manager: Správce vybavení
+  select_hero_opt: "-- Vyberte hrdinu k vybavení --"
+  paperdoll: Vybavená výstroj hrdiny
+  empty_slot: Prázdné
+  select_hero_manage: Vyberte hrdinu ke správě
+  select_hero_manage_desc: Vyberte hrdinu z rozbalovací nabídky výše a spravujte jeho aktivní sloty.
+  rucksack: Skladový batoh
+  durability: Odolnost
+  no_bonuses: Žádné pasivní bonusy atributů
+  repair: Opravit
+  dismantle: Rozložit
+  equip_slot_btn: Vybavit slot
+  rucksack_empty: Batoh je prázdný
+  rucksack_empty_desc: Nakupte zbraně nebo je vyrobte a naplňte sklad svého cechu.
+  slot_head: Hlava
+  slot_amulet: Amulet
+  slot_body: Zbroj
+  slot_hands: Rukavice
+  slot_main_hand: Hlavní ruka
+  slot_weapon: Zbraň
+  slot_off_hand: Druhá ruka
+  slot_ring: Prsten
+  slot_feet: Boty
+  rarity_common: Běžné
+  rarity_uncommon: Neobvyklé
+  rarity_rare: Vzácné
+  rarity_epic: Epické
+  rarity_legendary: Legendární
+  rarity_mythic: Mytické
+  equipped: Vybaveno
+  equipped_by: "Vybaveno hrdinou %hero%"
+  available: Volné
+  unequip: Sundat
+
+spells:
+  title: Kniha kouzel a akademie
+  subtitle: Učte své hrdiny svitky kouzel a spravujte jejich aktivní bojové sloty.
+  trainee_mage: Učeň mág
+  select_hero_opt: "-- Vyberte hrdinu ke správě --"
+  equipped_slots: Vybavené sloty
+  capacity_limit: "Kapacita: %current% / %max%"
+  select_hero_manage_desc: Vyberte hrdinu z rozbalovací nabídky výše a načtěte jeho aktivní kouzla a zvládnutí magie.
+  tab_learned: Naučená kouzla
+  tab_store: Obchod akademie
+  mana_cooldown: "Cena many: %mana% &bull; Cooldown: %cooldown% kol"
+  known: Naučeno
+  equip_slot_num: "Vybavit slot %slot%"
+  slots_full: Sloty plné
+  no_spells: Zatím nejsou naučena žádná kouzla
+  no_spells_desc: Zvolte "Obchod akademie" výše pro naučení nových svitků kouzel.
+  req_mastery: "Vyž: %school% T%tier%"
+  scroll_fee: Cena svitku
+  learn_spell: Naučit se kouzlo
+
+formation:
+  title: Formace a strategie
+  subtitle: Uspořádejte své startovní sestavy a vyberte taktiku zápasu.
+  create_new: "-- Vytvořit novou formaci --"
+  delete_btn: Smazat
+  starting_lineup: Startovní sestava
+  starting_lineup_desc: Rozmístěte 6 hrdinů na pozice na hřišti. Přetáhněte hrdiny z poolu nebo použijte rychlé přiřazení.
+  back_line: "Zadní řada (Obrana / Podpora)"
+  front_line: "Přední řada (Útok / Ofenzíva)"
+  match_strategy: Strategie zápasu
+  match_strategy_desc: Pojmenujte toto nastavení formace a vyberte předzápasový taktický přístup.
+  formation_name: Název formace
+  prematch_approach: Předzápasový přístup
+  set_default: Nastavit jako výchozí aktivní formaci
+  save_lineup: Uložit sestavu
+  mage_pool: Pool učňů mágů
+  assigned: Přiřazeno
+  no_trainees: V poolu sídla nejsou žádní učni.
+  tactics_aggressive: Agresivní taktika
+  tactics_aggressive_desc: Zaměření na rychlost úderu přední řady a kritické hodnocení.
+  tactics_balanced: Vyvážená pozice
+  tactics_balanced_desc: Rovnoměrné rozdělení bonusů pro obranu a útok.
+  tactics_defensive: Obranná pevnost
+  tactics_defensive_desc: Zvýšení rychlosti zotavení zadní řady a hodnocení blokování.
+
+

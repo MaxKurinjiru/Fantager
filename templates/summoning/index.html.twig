@@ -1,0 +1,76 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'summoning.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="summoning">
+    
+    {# --- Header Section --- #}
+    {% set right_content %}
+        {# Cooldown and Cycle Status Widget #}
+        <div class="bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 backdrop-blur-md flex items-center gap-4 text-sm shrink-0">
+            <div>
+                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'summoning.summons_used'|trans }}</span>
+                <span class="text-white font-extrabold">
+                    <span data-summoning-target="summonsUsed">{{ status.summons_used }}</span> / 
+                    <span data-summoning-target="summonsMax">{{ status.summons_max }}</span>
+                </span>
+            </div>
+            <div class="w-px h-8 bg-gray-800"></div>
+            <div>
+                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'summoning.cost_per_summon'|trans }}</span>
+                <span class="text-yellow-500 font-extrabold">🪙 {{ status.gold_cost|number_format(0, '.', ' ') }}</span>
+            </div>
+        </div>
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'summoning.title',
+        subtitle: 'summoning.subtitle',
+        right_content: right_content
+    } %}
+
+    {# --- Error Alert --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'summoning',
+        container_target: 'errorAlert',
+        message_target: 'errorMessage',
+        close_action: 'summoning#hideError',
+        type: 'error'
+    } %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {# LEFT COLUMN: Summon Selection Panel (2 Columns) #}
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white mb-1">{{ 'summoning.summon_junior'|trans }}</h2>
+                    <p class="text-xs text-gray-550">{{ 'summoning.summon_junior_desc'|trans }}</p>
+                </div>
+
+                {# Arena Theme / Adaptation widget & Potential races list #}
+                {% include 'components/summoning/compat_races.html.twig' with { arena_theme: arena_theme, compatible_races: compatible_races } %}
+
+                {# Summon CTA Button #}
+                <div class="border-t border-gray-800 pt-6 flex justify-end">
+                    <button data-summoning-target="summonBtn" data-action="click->summoning#summon" data-available="{{ status.available ? 'true' : 'false' }}"
+                            {% if not status.available %}disabled{% endif %}
+                            class="btn btn-primary px-8 py-3.5 shadow-lg shadow-emerald-950/20 font-bold uppercase tracking-wider text-sm disabled:bg-gray-800 disabled:text-gray-500 disabled:border-gray-800 disabled:cursor-not-allowed">
+                        {% if status.available %}
+                            🌀 {{ 'summoning.summon_junior'|trans }}
+                        {% else %}
+                            {{ status.reason ?: 'summoning.unavailable'|trans }}
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {# RIGHT COLUMN: Magic Portal & Reveal Area (1 Column) #}
+        <div class="lg:col-span-1">
+            {% include 'components/summoning/portal_chamber.html.twig' %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

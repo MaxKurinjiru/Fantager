@@ -1,0 +1,60 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'inventory.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+{% set selected_hero_id = app.request.query.get('hero_id') %}
+{% set selected_hero = null %}
+{% for h in heroes %}
+    {% if h.id == selected_hero_id %}
+        {% set selected_hero = h %}
+    {% endif %}
+{% endfor %}
+
+{% set equipped = {} %}
+{% if selected_hero %}
+    {% for item in items %}
+        {% if item.equippedHero and item.equippedHero.id == selected_hero.id %}
+            {% set equipped = equipped|merge({(item.equippedSlot.value): item}) %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="equipment">
+    
+    {# --- Header Section --- #}
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'inventory.title',
+        subtitle: 'inventory.subtitle'
+    } %}
+
+    {# --- Alert Box --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'equipment',
+        message_target: 'alertMessage',
+        close_action: 'equipment#hideAlert'
+    } %}
+
+    {# --- Main Inventory Layout --- #}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {# LEFT COLUMN: Hero Equipment Paperdoll (1 Column) #}
+        <div class="lg:col-span-1 space-y-6">
+            {% include 'components/item/equip_manager.html.twig' with {
+                selected_hero_id: selected_hero_id,
+                selected_hero: selected_hero,
+                heroes: heroes,
+                equipped: equipped
+            } %}
+        </div>
+
+        {# RIGHT COLUMN: Rucksack Items (2 Columns) #}
+        {% include 'components/item/rucksack_items.html.twig' with {
+            items: items,
+            selected_hero: selected_hero
+        } %}
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+# Race Definitions
+# Static game data — loaded via App\Config\RaceConfig service
+# Values derived from docs/game-summary.md §2.4
+#
+# stat_bonuses: flat integer adjustments applied to each rolled stat during hero generation.
+#   Human baseline = +1 per stat. Convention: round((multiplier - 0.9) * 10).
+#   e.g. 1.0x → +1, 1.1x → +2, 1.2x → +3, 0.9x → 0, 0.8x → -1, 0.7x → -2.
+
+races:
+  human:
+    name: Human
+    stat_bonuses: { str: 1, dex: 1, kon: 1, spd: 1, int: 1, wil: 1, cha: 1, lck: 1 }
+    training_speed_modifier: 1.0
+    age:
+      min: 16
+      max_junior: 20
+      prime_limit: 50
+      death_expectation: 80
+    combat_bonus: "Adaptable — +5% XP gain from victories"
+    equipment_restrictions: []
+
+  elf:
+    name: Elf
+    stat_bonuses: { str: 0, dex: 2, kon: 0, spd: 2, int: 2, wil: 1, cha: 2, lck: 1 }
+    training_speed_modifier: 0.6
+    age:
+      min: 50
+      max_junior: 80
+      prime_limit: 300
+      death_expectation: 800
+    combat_bonus: "+10% accuracy and dodge chance (natural grace)"
+    equipment_restrictions: []
+
+  dwarf:
+    name: Dwarf
+    stat_bonuses: { str: 2, dex: -1, kon: 2, spd: -1, int: 0, wil: 2, cha: 0, lck: 1 }
+    training_speed_modifier: 0.85
+    age:
+      min: 20
+      max_junior: 30
+      prime_limit: 100
+      death_expectation: 250
+    combat_bonus: "+15% armor effectiveness and critical resistance"
+    equipment_restrictions: []
+
+  orc:
+    name: Orc
+    stat_bonuses: { str: 3, dex: 0, kon: 1, spd: 1, int: -1, wil: 0, cha: -2, lck: 1 }
+    training_speed_modifier: 1.2
+    age:
+      min: 12
+      max_junior: 16
+      prime_limit: 35
+      death_expectation: 60
+    combat_bonus: "+20% melee damage against non-Orc enemies; -10% against Orc allies (bloodlust)"
+    equipment_restrictions: []
+
+  undead:
+    name: Undead
+    stat_bonuses: { str: 1, dex: 1, kon: 1, spd: 0, int: 2, wil: 1, cha: -2, lck: 0 }
+    training_speed_modifier: 0.6
+    age:
+      min: 50
+      max_junior: 80
+      prime_limit: 300
+      death_expectation: 800
+    combat_bonus: "Immune to poison and disease; 50% reduced external healing (use drain/curse instead)"
+    equipment_restrictions: []
+
+  giant:
+    name: Giant
+    stat_bonuses: { str: 3, dex: -1, kon: 3, spd: 0, int: -1, wil: 1, cha: 0, lck: 0 }
+    training_speed_modifier: 0.8
+    age:
+      min: 15
+      max_junior: 25
+      prime_limit: 60
+      death_expectation: 150
+    combat_bonus: "+10% damage with main-hand weapons; cannot use off-hand (size limitation)"
+    equipment_restrictions: [off_hand]
+
+  ent:
+    name: Ent
+    stat_bonuses: { str: 1, dex: -2, kon: 4, spd: -2, int: 2, wil: 2, cha: 1, lck: 0 }
+    training_speed_modifier: 0.5
+    age:
+      min: 30
+      max_junior: 50
+      prime_limit: 200
+      death_expectation: 1000
+    combat_bonus: "+20% Constitution defensive calculations; -20% speed-based actions (rooted nature)"
+    equipment_restrictions: [weapon, shield, armor]
+
+  genie:
+    name: Genie
+    stat_bonuses: { str: 0, dex: 2, kon: 0, spd: 2, int: 3, wil: 2, cha: 3, lck: 2 }
+    training_speed_modifier: 0.5
+    age:
+      min: 100
+      max_junior: 150
+      prime_limit: 500
+      death_expectation: 2000
+    combat_bonus: "+15% spell effectiveness and spell critical hit chance (magical essence)"
+    equipment_restrictions: []

@@ -1,0 +1,54 @@
+{% set route = route|default(app.request.attributes.get('_route') ?? '') %}
+<aside data-mobile-menu-target="menu" class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 border-r border-gray-800 p-4 flex flex-col justify-between transform -translate-x-full transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:flex shrink-0">
+    <div class="space-y-1">
+        {# Mobile Header & Close Button #}
+        <div class="flex items-center justify-between md:hidden mb-4 border-b border-gray-800 pb-3">
+            <span class="font-bold text-emerald-400">Fantager</span>
+            <button data-action="click->mobile-menu#close" class="text-gray-400 hover:text-white focus:outline-none p-1" aria-label="Close menu">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        {# Active Navigation Links #}
+        {% set nav_links = [
+            { route: 'app_dashboard', emoji: '📊', label: 'nav.dashboard', active_check: 'exact' },
+            { route: 'app_heroes', emoji: '👥', label: 'nav.heroes', active_check: 'starts_with' },
+            { route: 'app_summon', emoji: '🌀', label: 'nav.summon', active_check: 'exact' },
+            { route: 'app_hq', emoji: '🏰', label: 'nav.hq', active_check: 'exact' },
+            { route: 'app_training', emoji: '🏋️', label: 'nav.training', active_check: 'exact' },
+            { route: 'app_inventory', emoji: '🎒', label: 'nav.inventory', active_check: 'exact' },
+            { route: 'app_spells', emoji: '📖', label: 'nav.spells', active_check: 'exact' },
+            { route: 'app_formation', emoji: '🛡️', label: 'nav.formation', active_check: 'exact' }
+        ] %}
+
+        {% for link in nav_links %}
+            {% set is_active = (link.active_check == 'exact' and route == link.route) or (link.active_check == 'starts_with' and route starts with link.route) %}
+            {% include 'components/layout/sidebar_link.html.twig' with {
+                route: link.route,
+                emoji: link.emoji,
+                label: link.label,
+                is_active: is_active
+            } %}
+        {% endfor %}
+
+        <div class="h-px bg-gray-800 my-4"></div>
+
+        {# Future phases placeholders #}
+        <div class="text-[10px] uppercase font-bold text-gray-600 px-4 mb-2 tracking-wider">{{ 'sidebar.future_content'|trans }}</div>
+        
+        {% set locked_links = [
+            { emoji: '🏆', label: 'nav.league' },
+            { emoji: '⚖️', label: 'nav.marketplace' },
+            { emoji: '🪦', label: 'nav.graveyard' }
+        ] %}
+
+        {% for link in locked_links %}
+            {% include 'components/layout/sidebar_locked_link.html.twig' with {
+                emoji: link.emoji,
+                label: link.label
+            } %}
+        {% endfor %}
+    </div>
+</aside>

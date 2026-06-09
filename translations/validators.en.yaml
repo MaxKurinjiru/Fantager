@@ -1,0 +1,44 @@
+# English validation messages
+
+register:
+  email:
+    required: "Email is required."
+    invalid: "Enter a valid email address."
+    max_length: "Email must not exceed 180 characters."
+    taken: "This email is already registered."
+  password:
+    required: "Password is required."
+    min_length: "Password must be at least 8 characters."
+    max_length: "Password must not exceed 4096 characters."
+  password_confirm:
+    mismatch: "Passwords do not match."
+
+login:
+  invalid_credentials: "Invalid email or password."
+
+password_reset:
+  email:
+    required: "Email is required."
+    invalid: "Enter a valid email address."
+  password:
+    required: "Password is required."
+    min_length: "Password must be at least 8 characters."
+    max_length: "Password must not exceed 4096 characters."
+  password_confirm:
+    mismatch: "Passwords do not match."
+  token:
+    expired: "This reset link has expired. Please request a new one."
+    invalid: "This reset link is invalid."
+
+global:
+  rate_limit: "Too many attempts. Try again in %minutes% minutes."
+  csrf_expired: "Session expired. Please refresh and try again."
+  server_error: "Something went wrong. Please try again later."
+
+verification:
+  check_email: "Check your email to verify your account."
+  token_expired: "This verification link has expired. Please request a new one."
+  token_invalid: "This verification link is invalid."
+  already_verified: "Your account is already verified."
+  not_verified: "Please verify your email first."
+  resent: "Verification email has been resent."

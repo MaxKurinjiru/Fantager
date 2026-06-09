@@ -1,0 +1,9 @@
+{% extends 'layouts/public.html.twig' %}
+
+{% block title %}{{ 'auth.login_title'|trans }} — Fantager{% endblock %}
+
+{#
+  The login form lives in auth/_modal.html.twig.
+  The base template auto-opens the modal via open_modal variable passed by AuthController.
+#}
+{% block guest_body %}{% endblock %}

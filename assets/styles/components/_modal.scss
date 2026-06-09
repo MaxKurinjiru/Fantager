@@ -1,0 +1,68 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  MODAL — overlay backdrop, dialog box, close button
+// =============================================================================
+
+@layer components {
+  // ── Overlay backdrop ───────────────────────────────────────────────────────
+  .modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+    background-color: var(--modal-backdrop);
+    backdrop-filter: blur(var(--modal-blur));
+    transition: opacity var(--transition-base);
+  }
+
+  // ── Dialog box ─────────────────────────────────────────────────────────────
+  .modal-box {
+    @apply relative w-full max-w-lg rounded-xl shadow-2xl overflow-y-auto;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--modal-border);
+    max-height: 90vh;
+    transition: opacity var(--transition-base), transform var(--transition-base);
+  }
+
+  // Responsive inner padding (tighter on small screens)
+  .modal-box .p-8 {
+    padding: 1.5rem;
+
+    @media (min-width: 640px) {
+      padding: 2rem;
+    }
+  }
+
+  // ── Enter animation ────────────────────────────────────────────────────────
+  .modal-enter {
+    opacity: 0;
+    transform: translateY(6px) scale(0.995);
+  }
+
+  .modal-enter-active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  // ── Close button ───────────────────────────────────────────────────────────
+  .modal-close {
+    @apply absolute top-3 right-3 z-10 flex items-center justify-center w-9 h-9 rounded-full;
+    color: var(--color-text-secondary);
+    background-color: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+      background-color var(--transition-fast),
+      color            var(--transition-fast),
+      transform        var(--transition-fast);
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--color-success-text);
+      transform: scale(1.05);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring-color);
+      outline-offset: 2px;
+    }
+  }
+}

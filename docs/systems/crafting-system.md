@@ -1,21 +1,48 @@
 # Crafting System
 
-Reference: [game-summary.md](../game-summary.md#23-economy-system) and [20-crafting.md](../screens/20-crafting.md)
+Reference: [game-summary.md](../game-summary.md#217-crafting-system) and [20-crafting.md](../screens/20-crafting.md)
 
-Purpose: Placeholder for crafting mechanics, recipes, success rates, and Essence usage.
+Purpose: Detail crafting mechanics, recipes, and queue processing.
 
-Sections to fill:
-- Crafting recipe model and materials
-- Success rate calculations and RNG considerations
-- Dismantle rules and Essence return rates
-- Crafting queue processing and server tick interactions
-- Integration with Item System and Economy
+## Crafting Entities
 
-Example TODOs:
-- [ ] Define recipe data model and rarity scaling
-- [ ] Specify Essence yields for dismantling by rarity
-- [ ] Add DB schema for crafting queue and jobs
-- [ ] Document crafting API endpoints and failure handling
+The crafting system is powered by two main database entities: `CraftingRecipe` and `CraftingQueue`.
 
-Notes:
-- A Crafting *screen* exists; this file fills the missing Crafting *system* referenced elsewhere.
+### 1. CraftingRecipe Entity
+Defines the input requirements, cost, and outputs of crafting jobs.
+* **resultItemCategory** (`ItemCategory` enum): Weapon, Shield, Spell Accelerator, Armor, Accessory, or Material.
+* **resultItemRarity** (`ItemRarity` enum): Common, Uncommon, Rare, Epic, Legendary, or Mythic.
+* **requiredMaterials** (`json` array): List of materials and quantities required for the recipe.
+* **essenceCostType** (`ItemRarity` enum, nullable): The tier of essence consumed.
+* **essenceCostAmount** (`int`): Amount of essence required.
+* **goldCost** (`int`): Gold required to start crafting.
+* **successRateBase** (`decimal`): Chance of success (default `1.00`).
+* **craftingTime** (`int`): Time required for crafting in seconds.
+* **requiredForgeLevel** (`int`): Minimum Forge facility level required (default `1`).
+
+### 2. CraftingQueue Entity
+Manages the active crafting jobs scheduled by teams.
+* **team** (`Team` relation): The team executing the job.
+* **recipe** (`CraftingRecipe` relation): The recipe being crafted.
+* **status** (`CraftingStatus` enum): `pending`, `in_progress`, `completed`, `failed`, or `cancelled`.
+* **startedAt** (`DateTimeImmutable`): When the crafting job was initiated.
+* **completesAt** (`DateTimeImmutable`): When the crafting job will finish.
+
+---
+
+## Crafting Mechanics
+
+1. **Initiation**: Starting a job validates that the team owns the required materials, gold, and essence, and checks that their headquarters has the required Forge facility level.
+2. **Resource Consumption**: Gold, essence, and materials are deducted immediately upon starting.
+3. **Queue Processing**: Jobs run asynchronously based on `startedAt` and `completesAt`. A tick worker updates the job status on completion, executing a success check against `successRateBase`.
+4. **Resolution**: On success, the crafted item is added to the team's inventory. On failure, resources are lost.
+
+---
+
+## APIs (v1)
+
+* `GET /api/v1/crafting/recipes` — List available crafting recipes.
+* `POST /api/v1/crafting` — Start a crafting job.
+* `GET /api/v1/crafting/queue` — List active crafting jobs for the team.
+* `DELETE /api/v1/crafting/queue/{id}` — Cancel a queued crafting job (refunds materials based on refund policy).
+

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token('api') }}">
+    <title>{% block title %}Fantager{% endblock %}</title>
+    {{ encore_entry_link_tags('app') }}
+    {{ encore_entry_script_tags('app') }}
+</head>
+<body class="min-h-screen bg-gray-950 text-gray-100"
+      data-controller="auth-modal"
+      {% if open_modal is defined and open_modal %}data-auth-modal-open-value="{{ open_modal }}"{% endif %}>
+
+{% block layout_content %}{% endblock %}
+
+{% include 'auth/_modal.html.twig' %}
+
+</body>
+</html>

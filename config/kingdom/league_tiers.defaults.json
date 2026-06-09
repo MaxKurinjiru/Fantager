@@ -1,0 +1,39 @@
+{
+  "_comment": "Stored on Kingdom.league_tiers_config; capacity = sum(groups) × teams_per_group.",
+  "teams_per_group": 10,
+  "tiers": [
+    {
+      "name": "T1",
+      "groups": 1,
+      "promotion_slots": 0,
+      "relegation_slots": 2,
+      "rewards": {
+        "gold": 5000,
+        "crystals": 10,
+        "placeholder": true
+      }
+    },
+    {
+      "name": "T2",
+      "groups": 2,
+      "promotion_slots": 2,
+      "relegation_slots": 2,
+      "rewards": {
+        "gold": 2500,
+        "crystals": 5,
+        "placeholder": true
+      }
+    },
+    {
+      "name": "T3",
+      "groups": 3,
+      "promotion_slots": 2,
+      "relegation_slots": 0,
+      "rewards": {
+        "gold": 1000,
+        "crystals": 0,
+        "placeholder": true
+      }
+    }
+  ]
+}

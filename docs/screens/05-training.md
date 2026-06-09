@@ -13,13 +13,10 @@ Displayed Information:
 	- Magic Training (Spell Slots, School Mastery, Spell Learning)
 	- Form & Recovery
 - Attribute Training View:
-	- 8 primary attributes (STR-LCK)
-	- Current value
-	- Training cost (Gold)
-	- Expected increase
-	- Trainer cap (if assigned)
-	- Success rate (%)
-	- Estimated time (server tick cycles)
+	- Select **one primary attribute** to train
+	- Optional **Trainer** selection (shows cap = Trainer's value for that attribute)
+	- **Hero assignment** — one or more heroes for this job
+	- Per-hero: current value, training cost (Gold), expected increase, success rate (%), estimated time
 - Magic Training View:
 	- Spell Slot Expansion: current/max, cost, requirements
 	- School Mastery: 6 schools, current tier, upgrade cost (Gold + Essence), requirements
@@ -34,9 +31,8 @@ Displayed Information:
 	- Cancellation option
 
 Possible Actions/Buttons:
-- Start Training
+- Start Training (configure attribute + trainer + heroes)
 - Queue Multiple
-- Assign Trainer
 - Cancel Training
 - Buy Training Package
 

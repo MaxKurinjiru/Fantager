@@ -1,0 +1,997 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^PHPDoc tag @var for variable \$slots has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 2
+			path: src/Controller/Api/V1/FormationController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Controller/Api/V1/FormationController.php
+
+		-
+			message: '#^Parameter \#2 \$hero of method App\\Service\\Item\\ItemService\:\:equip\(\) expects App\\Entity\\Hero\\Hero, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/V1/ItemController.php
+
+		-
+			message: '#^Parameter \#2 \$hero of method App\\Service\\Item\\ItemService\:\:listByTeam\(\) expects App\\Entity\\Hero\\Hero\|null, object\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/V1/ItemController.php
+
+		-
+			message: '#^Property App\\Controller\\Api\\V1\\ItemController\:\:\$itemRepository is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Controller/Api/V1/ItemController.php
+
+		-
+			message: '#^Parameter \#1 \$hero of method App\\Service\\Spell\\SpellService\:\:learn\(\) expects App\\Entity\\Hero\\Hero, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/V1/SpellController.php
+
+		-
+			message: '#^Parameter \#1 \$hero of method App\\Service\\Spell\\SpellService\:\:listForHero\(\) expects App\\Entity\\Hero\\Hero, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/V1/SpellController.php
+
+		-
+			message: '#^Parameter \#1 \$heroSpell of method App\\Service\\Spell\\SpellService\:\:equip\(\) expects App\\Entity\\Hero\\HeroSpell, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/V1/SpellController.php
+
+		-
+			message: '#^Parameter \#1 \$heroSpell of method App\\Service\\Spell\\SpellService\:\:unequip\(\) expects App\\Entity\\Hero\\HeroSpell, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/V1/SpellController.php
+
+		-
+			message: '#^Parameter \#1 \$hs of method App\\Service\\Spell\\SpellService\:\:serializeHeroSpell\(\) expects App\\Entity\\Hero\\HeroSpell, object given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Controller/Api/V1/SpellController.php
+
+		-
+			message: '#^Parameter \#2 \$spell of method App\\Service\\Spell\\SpellService\:\:learn\(\) expects App\\Entity\\Spell\\Spell, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/V1/SpellController.php
+
+		-
+			message: '#^Parameter \#1 \$hero of method App\\Service\\Training\\TrainingService\:\:getOptions\(\) expects App\\Entity\\Hero\\Hero, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/V1/TrainingController.php
+
+		-
+			message: '#^Parameter \#1 \$hero of method App\\Service\\Training\\TrainingService\:\:queue\(\) expects App\\Entity\\Hero\\Hero, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/V1/TrainingController.php
+
+		-
+			message: '#^Parameter \#1 \$job of method App\\Service\\Training\\TrainingService\:\:cancel\(\) expects App\\Entity\\Training\\TrainingQueue, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/V1/TrainingController.php
+
+		-
+			message: '#^Method App\\Entity\\ActivityLog\\ActivityLog\:\:getData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ActivityLog/ActivityLog.php
+
+		-
+			message: '#^Method App\\Entity\\ActivityLog\\ActivityLog\:\:getSubjectParams\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ActivityLog/ActivityLog.php
+
+		-
+			message: '#^Method App\\Entity\\ActivityLog\\ActivityLog\:\:setData\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ActivityLog/ActivityLog.php
+
+		-
+			message: '#^Method App\\Entity\\ActivityLog\\ActivityLog\:\:setSubjectParams\(\) has parameter \$subjectParams with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ActivityLog/ActivityLog.php
+
+		-
+			message: '#^Property App\\Entity\\ActivityLog\\ActivityLog\:\:\$data type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ActivityLog/ActivityLog.php
+
+		-
+			message: '#^Property App\\Entity\\ActivityLog\\ActivityLog\:\:\$subjectParams type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/ActivityLog/ActivityLog.php
+
+		-
+			message: '#^Method App\\Entity\\Auth\\User\:\:getRoles\(\) should return list\<string\> but returns non\-empty\-array\<int\<0, max\>, string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Entity/Auth/User.php
+
+		-
+			message: '#^Method App\\Entity\\Auth\\User\:\:getUserIdentifier\(\) should return non\-empty\-string but returns string\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Entity/Auth/User.php
+
+		-
+			message: '#^Method App\\Entity\\Combat\\Battle\:\:getCombatLog\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Combat/Battle.php
+
+		-
+			message: '#^Method App\\Entity\\Combat\\Battle\:\:setCombatLog\(\) has parameter \$combatLog with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Combat/Battle.php
+
+		-
+			message: '#^Property App\\Entity\\Combat\\Battle\:\:\$combatLog type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Combat/Battle.php
+
+		-
+			message: '#^Method App\\Entity\\Community\\Achievement\:\:getUnlockCondition\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Community/Achievement.php
+
+		-
+			message: '#^Method App\\Entity\\Community\\Achievement\:\:setUnlockCondition\(\) has parameter \$unlockCondition with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Community/Achievement.php
+
+		-
+			message: '#^Property App\\Entity\\Community\\Achievement\:\:\$unlockCondition type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Community/Achievement.php
+
+		-
+			message: '#^Method App\\Entity\\Crafting\\CraftingRecipe\:\:getRequiredMaterials\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Crafting/CraftingRecipe.php
+
+		-
+			message: '#^Method App\\Entity\\Crafting\\CraftingRecipe\:\:setRequiredMaterials\(\) has parameter \$v with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Crafting/CraftingRecipe.php
+
+		-
+			message: '#^Property App\\Entity\\Crafting\\CraftingRecipe\:\:\$requiredMaterials type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Crafting/CraftingRecipe.php
+
+		-
+			message: '#^Method App\\Entity\\Dungeon\\DungeonRun\:\:getRewardsItems\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Dungeon/DungeonRun.php
+
+		-
+			message: '#^Method App\\Entity\\Dungeon\\DungeonRun\:\:setRewardsItems\(\) has parameter \$rewardsItems with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Dungeon/DungeonRun.php
+
+		-
+			message: '#^Property App\\Entity\\Dungeon\\DungeonRun\:\:\$rewardsItems type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Dungeon/DungeonRun.php
+
+		-
+			message: '#^Method App\\Entity\\Event\\Event\:\:getRewards\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Event/Event.php
+
+		-
+			message: '#^Method App\\Entity\\Event\\Event\:\:setRewards\(\) has parameter \$rewards with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Event/Event.php
+
+		-
+			message: '#^Property App\\Entity\\Event\\Event\:\:\$rewards type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Event/Event.php
+
+		-
+			message: '#^Method App\\Entity\\Formation\\FormationSlot\:\:getSpellPriorities\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Method App\\Entity\\Formation\\FormationSlot\:\:getStrategy\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Method App\\Entity\\Formation\\FormationSlot\:\:setSpellPriorities\(\) has parameter \$spellPriorities with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Method App\\Entity\\Formation\\FormationSlot\:\:setStrategy\(\) has parameter \$strategy with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Property App\\Entity\\Formation\\FormationSlot\:\:\$spellPriorities type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Property App\\Entity\\Formation\\FormationSlot\:\:\$strategy type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Method App\\Entity\\Graveyard\\GraveyardRecord\:\:getAchievements\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Graveyard/GraveyardRecord.php
+
+		-
+			message: '#^Method App\\Entity\\Graveyard\\GraveyardRecord\:\:getFinalStats\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Graveyard/GraveyardRecord.php
+
+		-
+			message: '#^Method App\\Entity\\Graveyard\\GraveyardRecord\:\:setAchievements\(\) has parameter \$achievements with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Graveyard/GraveyardRecord.php
+
+		-
+			message: '#^Method App\\Entity\\Graveyard\\GraveyardRecord\:\:setFinalStats\(\) has parameter \$finalStats with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Graveyard/GraveyardRecord.php
+
+		-
+			message: '#^Property App\\Entity\\Graveyard\\GraveyardRecord\:\:\$achievements type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Graveyard/GraveyardRecord.php
+
+		-
+			message: '#^Property App\\Entity\\Graveyard\\GraveyardRecord\:\:\$finalStats type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Graveyard/GraveyardRecord.php
+
+		-
+			message: '#^Method App\\Entity\\Item\\Item\:\:getBonuses\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Method App\\Entity\\Item\\Item\:\:getSpecialEffects\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Method App\\Entity\\Item\\Item\:\:setBonuses\(\) has parameter \$bonuses with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Method App\\Entity\\Item\\Item\:\:setSpecialEffects\(\) has parameter \$specialEffects with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Property App\\Entity\\Item\\Item\:\:\$bonuses type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Property App\\Entity\\Item\\Item\:\:\$specialEffects type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Method App\\Entity\\Kingdom\\Kingdom\:\:getLeagueTiersConfig\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Kingdom/Kingdom.php
+
+		-
+			message: '#^Method App\\Entity\\Kingdom\\Kingdom\:\:setLeagueTiersConfig\(\) has parameter \$leagueTiersConfig with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Kingdom/Kingdom.php
+
+		-
+			message: '#^Property App\\Entity\\Kingdom\\Kingdom\:\:\$leagueTiersConfig type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Kingdom/Kingdom.php
+
+		-
+			message: '#^Method App\\Entity\\League\\LeagueTier\:\:getRewards\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/League/LeagueTier.php
+
+		-
+			message: '#^Method App\\Entity\\League\\LeagueTier\:\:setRewards\(\) has parameter \$rewards with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/League/LeagueTier.php
+
+		-
+			message: '#^Property App\\Entity\\League\\LeagueTier\:\:\$rewards type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/League/LeagueTier.php
+
+		-
+			message: '#^Method App\\Entity\\Quest\\Quest\:\:getRequirements\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Quest/Quest.php
+
+		-
+			message: '#^Method App\\Entity\\Quest\\Quest\:\:getRewards\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Quest/Quest.php
+
+		-
+			message: '#^Method App\\Entity\\Quest\\Quest\:\:setRequirements\(\) has parameter \$requirements with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Quest/Quest.php
+
+		-
+			message: '#^Method App\\Entity\\Quest\\Quest\:\:setRewards\(\) has parameter \$rewards with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Quest/Quest.php
+
+		-
+			message: '#^Property App\\Entity\\Quest\\Quest\:\:\$requirements type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Quest/Quest.php
+
+		-
+			message: '#^Property App\\Entity\\Quest\\Quest\:\:\$rewards type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Quest/Quest.php
+
+		-
+			message: '#^Method App\\Entity\\Spell\\Spell\:\:getEffects\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Spell/Spell.php
+
+		-
+			message: '#^Method App\\Entity\\Spell\\Spell\:\:setEffects\(\) has parameter \$effects with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Spell/Spell.php
+
+		-
+			message: '#^Property App\\Entity\\Spell\\Spell\:\:\$effects type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Spell/Spell.php
+
+		-
+			message: '#^Method App\\Entity\\Team\\Team\:\:getColors\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/Team.php
+
+		-
+			message: '#^Method App\\Entity\\Team\\Team\:\:setColors\(\) has parameter \$colors with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/Team.php
+
+		-
+			message: '#^Property App\\Entity\\Team\\Team\:\:\$colors type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/Team.php
+
+		-
+			message: '#^Class App\\Repository\\ActivityLog\\ActivityLogRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/ActivityLog/ActivityLogRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Auth\\UserRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Auth/UserRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Auth\\VerificationTokenRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Auth/VerificationTokenRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Combat\\BattleRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Combat/BattleRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Community\\AchievementRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Community/AchievementRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Community\\ForumPostRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Community/ForumPostRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Community\\ForumThreadRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Community/ForumThreadRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Community\\MessageRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Community/MessageRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Community\\NewsArticleRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Community/NewsArticleRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Community\\TeamAchievementRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Community/TeamAchievementRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Crafting\\CraftingQueueRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Crafting/CraftingQueueRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Crafting\\CraftingRecipeRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Crafting/CraftingRecipeRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Dungeon\\DungeonRunRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Dungeon/DungeonRunRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Event\\EventParticipationRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Event/EventParticipationRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Event\\EventRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Event/EventRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Formation\\FormationRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Formation/FormationRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Formation\\FormationSlotRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Formation/FormationSlotRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Graveyard\\GraveyardRecordRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Graveyard/GraveyardRecordRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Headquarters\\FacilityRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Headquarters/FacilityRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Headquarters\\HeadquartersRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Headquarters/HeadquartersRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Hero\\HeroRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Hero/HeroRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Hero\\HeroSpellRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Hero/HeroSpellRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Hero\\SchoolMasteryRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Hero/SchoolMasteryRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Item\\ItemRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Item/ItemRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Kingdom\\KingdomRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Kingdom/KingdomRepository.php
+
+		-
+			message: '#^Class App\\Repository\\League\\LeagueFixtureRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/League/LeagueFixtureRepository.php
+
+		-
+			message: '#^Class App\\Repository\\League\\LeagueGroupRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/League/LeagueGroupRepository.php
+
+		-
+			message: '#^Class App\\Repository\\League\\LeagueSeasonRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/League/LeagueSeasonRepository.php
+
+		-
+			message: '#^Class App\\Repository\\League\\LeagueStandingRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/League/LeagueStandingRepository.php
+
+		-
+			message: '#^Class App\\Repository\\League\\LeagueTierRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/League/LeagueTierRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Marketplace\\MarketplaceBidRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Marketplace/MarketplaceBidRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Marketplace\\MarketplaceListingRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Marketplace/MarketplaceListingRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Marketplace\\TransactionRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Marketplace/TransactionRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Notification\\NotificationRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Notification/NotificationRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Quest\\PlayerQuestProgressRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Quest/PlayerQuestProgressRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Quest\\QuestRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Quest/QuestRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Spell\\SpellRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Spell/SpellRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Summoning\\SummonHistoryRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Summoning/SummonHistoryRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Team\\TeamRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Team/TeamRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Training\\TrainerRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Training/TrainerRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Training\\TrainingQueueRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Training/TrainingQueueRepository.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getEmail\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Auth/PasswordResetService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setUsedAt\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Auth/PasswordResetService.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Entity\\Auth\\VerificationToken\:\:setUser\(\) expects App\\Entity\\Auth\\User, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Auth/PasswordResetService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:isVerified\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setUsedAt\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Cannot call method getLanguage\(\) on object\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Parameter \#1 \$kingdom of method App\\Entity\\Auth\\User\:\:setKingdom\(\) expects App\\Entity\\Kingdom\\Kingdom\|null, object\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Parameter \#1 \$kingdom of method App\\Service\\Kingdom\\KingdomService\:\:hasCapacity\(\) expects App\\Entity\\Kingdom\\Kingdom, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Entity\\Auth\\VerificationToken\:\:setUser\(\) expects App\\Entity\\Auth\\User, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Service\\Auth\\RegistrationService\:\:sendVerificationEmail\(\) expects App\\Entity\\Auth\\User, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Parameter \#1 \$kingdomId of method App\\Repository\\Team\\TeamRepository\:\:findAvailableNpcTeam\(\) expects int, int\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Auth/VerificationService.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Service/Config/KingdomInitConfig.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setIsDefault\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Formation/FormationService.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: src/Service/Formation/FormationService.php
+
+		-
+			message: '#^Method App\\Service\\Formation\\FormationService\:\:findForTeam\(\) should return App\\Entity\\Formation\\Formation\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Formation/FormationService.php
+
+		-
+			message: '#^Method App\\Service\\Formation\\FormationService\:\:listByTeam\(\) should return list\<App\\Entity\\Formation\\Formation\> but returns array\<int, object\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Formation/FormationService.php
+
+		-
+			message: '#^Method App\\Service\\Formation\\FormationService\:\:save\(\) has parameter \$slotsData with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 2
+			path: src/Service/Formation/FormationService.php
+
+		-
+			message: '#^Offset ''position'' on array\{position\: string, hero_id\: int\|null, strategy\: array, spell_priorities\: array\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Service/Formation/FormationService.php
+
+		-
+			message: '#^Offset ''spell_priorities'' on array\{position\: string, hero_id\: int\|null, strategy\: array, spell_priorities\: array\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Service/Formation/FormationService.php
+
+		-
+			message: '#^Offset ''strategy'' on array\{position\: string, hero_id\: int\|null, strategy\: array, spell_priorities\: array\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Service/Formation/FormationService.php
+
+		-
+			message: '#^Parameter \#1 \$hero of method App\\Entity\\Formation\\FormationSlot\:\:setHero\(\) expects App\\Entity\\Hero\\Hero\|null, object\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Formation/FormationService.php
+
+		-
+			message: '#^Method App\\Service\\Headquarters\\HeadquartersService\:\:getForTeam\(\) should return App\\Entity\\Headquarters\\Headquarters but returns object\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Headquarters/HeadquartersService.php
+
+		-
+			message: '#^Method App\\Service\\Headquarters\\HeadquartersService\:\:initializeForTeam\(\) should return App\\Entity\\Headquarters\\Headquarters but returns object\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Headquarters/HeadquartersService.php
+
+		-
+			message: '#^Offset ''arena''\|''barracks''\|''forge''\|''library''\|''medical''\|''summoning_chamber''\|''training''\|''treasury'' on array\{training\: 500, medical\: 400, library\: 600, forge\: 700, treasury\: 450, barracks\: 350, summoning_chamber\: 800, arena\: 900\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Service/Headquarters/HeadquartersService.php
+
+		-
+			message: '#^Offset ''arena''\|''barracks''\|''forge''\|''library''\|''medical''\|''summoning_chamber''\|''training''\|''treasury'' on array\{training\: array\{training_efficiency_pct\: 5\.0\}, medical\: array\{fatigue_reduction_pct\: 8\.0, recovery_speed_pct\: 5\.0\}, library\: array\{xp_gain_pct\: 4\.0\}, forge\: array\{crafting_success_pct\: 5\.0, item_durability_pct\: 3\.0\}, treasury\: array\{gold_income_pct\: 4\.0\}, barracks\: array\{roster_capacity\: 2\.0\}, summoning_chamber\: array\{summon_cost_reduction_pct\: 3\.0\}, arena\: array\{ticket_revenue_pct\: 6\.0, arena_capacity\: 10\.0\}\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Service/Headquarters/HeadquartersService.php
+
+		-
+			message: '#^Method App\\Service\\Hero\\HeroService\:\:findForTeam\(\) should return App\\Entity\\Hero\\Hero\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Hero/HeroService.php
+
+		-
+			message: '#^Method App\\Service\\Hero\\HeroService\:\:listByTeam\(\) should return list\<App\\Entity\\Hero\\Hero\> but returns array\<int, object\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Hero/HeroService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setEquippedHero\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Item/ItemService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setEquippedSlot\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Item/ItemService.php
+
+		-
+			message: '#^Method App\\Service\\Item\\ItemService\:\:findForTeam\(\) should return App\\Entity\\Item\\Item\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Item/ItemService.php
+
+		-
+			message: '#^Method App\\Service\\Item\\ItemService\:\:listByTeam\(\) should return list\<App\\Entity\\Item\\Item\> but returns array\<int, object\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Item/ItemService.php
+
+		-
+			message: '#^Offset ''common''\|''epic''\|''legendary''\|''mythic''\|''rare''\|''uncommon'' on array\{common\: 2, uncommon\: 5, rare\: 10, epic\: 20, legendary\: 40, mythic\: 80\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: src/Service/Item/ItemService.php
+
+		-
+			message: '#^Offset ''common''\|''epic''\|''legendary''\|''mythic''\|''rare''\|''uncommon'' on array\{common\: 5, uncommon\: 5, rare\: 4, epic\: 3, legendary\: 2, mythic\: 1\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Service/Item/ItemService.php
+
+		-
+			message: '#^Method App\\Service\\Kingdom\\KingdomInitializationService\:\:createKingdom\(\) has parameter \$leagueConfig with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/Kingdom/KingdomInitializationService.php
+
+		-
+			message: '#^Method App\\Service\\Kingdom\\KingdomInitializationService\:\:createSeason\(\) has parameter \$seasonConfig with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/Kingdom/KingdomInitializationService.php
+
+		-
+			message: '#^Parameter \#1 \$passiveBonuses of method App\\Entity\\Headquarters\\Facility\:\:setPassiveBonuses\(\) expects array\<string, float\|int\>, array\<string, float\|int\|string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Kingdom/KingdomInitializationService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Kingdom/KingdomService.php
+
+		-
+			message: '#^Method App\\Service\\Kingdom\\KingdomService\:\:listWithCapacity\(\) should return list\<array\{kingdom\: App\\Entity\\Kingdom\\Kingdom, capacity\: int, playerCount\: int\}\> but returns list\<array\{kingdom\: object, capacity\: int, playerCount\: int\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Kingdom/KingdomService.php
+
+		-
+			message: '#^Parameter \#1 \$kingdom of method App\\Service\\Kingdom\\KingdomService\:\:calculateCapacity\(\) expects App\\Entity\\Kingdom\\Kingdom, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Kingdom/KingdomService.php
+
+		-
+			message: '#^Parameter \#1 \$kingdomId of method App\\Repository\\Team\\TeamRepository\:\:countPlayersByKingdom\(\) expects int, int\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Kingdom/KingdomService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Spell/SpellService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setIsEquipped\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Spell/SpellService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setSlotNumber\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Spell/SpellService.php
+
+		-
+			message: '#^Method App\\Service\\Spell\\SpellService\:\:getMasteryForSchool\(\) should return App\\Entity\\Hero\\SchoolMastery\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Spell/SpellService.php
+
+		-
+			message: '#^Method App\\Service\\Spell\\SpellService\:\:listForHero\(\) should return list\<App\\Entity\\Hero\\HeroSpell\> but returns array\<int, object\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Spell/SpellService.php
+
+		-
+			message: '#^Method App\\Service\\Spell\\SpellService\:\:listLibrary\(\) should return list\<App\\Entity\\Spell\\Spell\> but returns array\<int, object\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Spell/SpellService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getRaceOptimization\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Team/TeamService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getStatus\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Service/Team/TeamService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getTotalLevel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Team/TeamService.php
+
+		-
+			message: '#^Offset ''attribute''\|''form''\|''magic'' on array\{attribute\: 100, magic\: 150, form\: 80\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Service/Training/TrainingService.php
+
+		-
+			message: '#^Offset ''attribute''\|''form''\|''magic'' on array\{attribute\: 24, magic\: 48, form\: 12\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Service/Training/TrainingService.php
+
+		-
+			message: '#^Parameter \#1 \$trainer of method App\\Entity\\Training\\TrainingQueue\:\:setTrainer\(\) expects App\\Entity\\Training\\Trainer\|null, object\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Training/TrainingService.php

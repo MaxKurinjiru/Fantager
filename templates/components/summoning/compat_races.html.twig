@@ -1,0 +1,36 @@
+{# templates/components/summoning/compat_races.html.twig #}
+{# Arena Theme / Adaptation widget #}
+<div class="bg-emerald-950/20 border border-emerald-900/40 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="space-y-1">
+        <span class="block text-[10px] text-emerald-450 uppercase font-bold tracking-wider">{{ 'summoning.home_theme'|trans }}</span>
+        <div class="flex items-center gap-2">
+            {% if arena_theme %}
+                <span class="text-3xl">{{ race_icon(arena_theme) }}</span>
+                <span class="text-white font-extrabold capitalize text-base">{{ arena_theme.value }}</span>
+            {% else %}
+                <span class="text-white font-extrabold text-base">{{ 'dashboard.none'|trans }}</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="max-w-md">
+        <p class="text-xs text-gray-400 leading-relaxed">
+            {{ 'summoning.arena_theme_desc'|trans }}
+        </p>
+    </div>
+</div>
+
+{# Potential summonable races #}
+<div class="space-y-3">
+    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wide">{{ 'summoning.potential_races'|trans }}</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for race_info in compatible_races %}
+            <div class="bg-gray-955/40 border border-gray-800 p-4 rounded-xl flex items-start text-left gap-3.5 transition-all">
+                {% include 'components/hero/avatar.html.twig' with { race: race_info.race, text_size: 'text-4xl' } %}
+                <div class="space-y-1">
+                    <h3 class="font-bold text-white leading-none capitalize">{{ race_info.name }}</h3>
+                    <p class="text-[10px] text-gray-400 mt-1.5 leading-relaxed">{{ race_info.combat_bonus }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

@@ -1,0 +1,34 @@
+{# templates/components/hero/school_mastery.html.twig #}
+<div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
+    <div>
+        <h2 class="text-xl font-bold text-white mb-0.5">School Mastery</h2>
+        <p class="text-xs text-gray-500">Tier requirements to learn spells.</p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+        {% set schools = ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
+        {% for school in schools %}
+            {% set mastery_tier = 1 %}
+            {% for sm in hero.schoolMasteries %}
+                {% if sm.school.value == school %}
+                    {% set mastery_tier = sm.masteryTier %}
+                    {% endif %}
+            {% endfor %}
+            
+            <div class="bg-gray-950 p-2.5 rounded-xl border border-gray-850 flex items-center gap-2 justify-between">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-lg">
+                        {% if school == 'fire' %}🔥
+                        {% elseif school == 'water' %}💧
+                        {% elseif school == 'air' %}💨
+                        {% elseif school == 'earth' %}🪨
+                        {% elseif school == 'light' %}☀️
+                        {% else %}🌙{% endif %}
+                    </span>
+                    <span class="text-xs font-bold capitalize text-gray-300">{{ school }}</span>
+                </div>
+                <span class="text-[10px] font-extrabold bg-gray-900 border border-gray-800 text-gray-400 px-2 py-0.5 rounded">T{{ mastery_tier }}</span>
+            </div>
+        {% endfor %}
+    </div>
+</div>

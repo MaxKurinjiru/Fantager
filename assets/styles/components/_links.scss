@@ -1,0 +1,27 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  LINKS — default unstyled link styles
+// =============================================================================
+
+@layer components {
+
+    a {
+        text-decoration: none !important;
+    }
+
+    // .link class or bare <a> without a class → brand-coloured underlined link
+    a.link,
+    a:not([class]),
+    a:not([class]):visited {
+        color: var(--color-success-text); // brand-300 / emerald-300
+        transition: color var(--transition-fast);
+    }
+
+    a.link:hover,
+    a.link:focus-visible,
+    a:not([class]):hover,
+    a:not([class]):focus-visible {
+        color: var(--color-brand-500);
+    }
+}

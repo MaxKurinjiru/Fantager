@@ -1,0 +1,44 @@
+# Czech validation messages
+
+register:
+  email:
+    required: "E-mail je povinný."
+    invalid: "Zadejte platnou e-mailovou adresu."
+    max_length: "E-mail nesmí přesáhnout 180 znaků."
+    taken: "Tento e-mail je již zaregistrován."
+  password:
+    required: "Heslo je povinné."
+    min_length: "Heslo musí mít alespoň 8 znaků."
+    max_length: "Heslo nesmí přesáhnout 4096 znaků."
+  password_confirm:
+    mismatch: "Hesla se neshodují."
+
+login:
+  invalid_credentials: "Neplatný e-mail nebo heslo."
+
+password_reset:
+  email:
+    required: "E-mail je povinný."
+    invalid: "Zadejte platnou e-mailovou adresu."
+  password:
+    required: "Heslo je povinné."
+    min_length: "Heslo musí mít alespoň 8 znaků."
+    max_length: "Heslo nesmí přesáhnout 4096 znaků."
+  password_confirm:
+    mismatch: "Hesla se neshodují."
+  token:
+    expired: "Tento odkaz pro obnovu hesla vypršel. Požádejte prosím o nový."
+    invalid: "Tento odkaz pro obnovu hesla je neplatný."
+
+global:
+  rate_limit: "Příliš mnoho pokusů. Zkuste to znovu za %minutes% minut."
+  csrf_expired: "Relace vypršela. Obnovte prosím stránku a zkuste to znovu."
+  server_error: "Něco se pokazilo. Zkuste to prosím později."
+
+verification:
+  check_email: "Zkontrolujte svůj e-mail a potvrďte účet."
+  token_expired: "Tento ověřovací odkaz vypršel. Požádejte prosím o nový."
+  token_invalid: "Tento ověřovací odkaz je neplatný."
+  already_verified: "Váš účet je již ověřen."
+  not_verified: "Nejprve prosím potvrďte svůj e-mail."
+  resent: "Ověřovací e-mail byl znovu odeslán."

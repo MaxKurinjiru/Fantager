@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+// Minimal Symfony console front controller - requires composer install
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Dotenv\Dotenv;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+(new Dotenv())->bootEnv(__DIR__ . '/../.env');
+
+// bootstrap kernel
+$kernelClass = '\\App\\Kernel';
+if (!class_exists($kernelClass)) {
+    fwrite(STDERR, "Kernel class not found. Run composer install and create the Symfony Kernel.\n");
+    exit(1);
+}
+
+$env = $_SERVER['APP_ENV'] ?? $_ENV['APP_ENV'] ?? 'dev';
+$debug = (bool) ($_SERVER['APP_DEBUG'] ?? $_ENV['APP_DEBUG'] ?? ($env !== 'prod'));
+
+$kernel = new $kernelClass($env, $debug);
+$application = new Application($kernel);
+$application->run();

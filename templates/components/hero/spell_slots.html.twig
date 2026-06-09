@@ -1,0 +1,60 @@
+{# templates/components/hero/spell_slots.html.twig #}
+<div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-xl font-bold text-white mb-0.5">Spell Slots</h2>
+            <p class="text-xs text-gray-500">Limit: {{ hero.magicCapacity }} slots.</p>
+        </div>
+        <a href="{{ path('app_spells') }}?hero_id={{ hero.id }}" class="btn btn-outline btn--sm p-1.5" title="Manage Spellbook">
+            📖
+        </a>
+    </div>
+
+    <div class="space-y-3">
+        {# Filter equipped spells #}
+        {% set equipped_spells = [] %}
+        {% for hs in hero.heroSpells %}
+            {% if hs.isEquipped %}
+                {% set equipped_spells = equipped_spells|merge([hs]) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if hero.magicCapacity > 0 %}
+            {% for i in 1..hero.magicCapacity %}
+                {% set matching_hs = null %}
+                {% for hs in equipped_spells %}
+                    {% if hs.slotNumber == i %}
+                        {% set matching_hs = hs %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if matching_hs %}
+                    <div class="bg-gray-950 border border-gray-850 p-3 rounded-xl flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-2xl">✨</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-200">{{ matching_hs.spell.name }}</h4>
+                                <p class="text-[9px] text-gray-500 uppercase font-semibold">Tier {{ matching_hs.spell.tier }} &bull; {{ matching_hs.spell.school.value }}</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold text-purple-400 bg-purple-950/40 px-2 py-0.5 rounded border border-purple-900/40">Equipped</span>
+                    </div>
+                {% else %}
+                    <div class="bg-gray-950/40 border border-gray-950/85 border-dashed p-3 rounded-xl flex items-center justify-between select-none opacity-60">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-xl text-gray-700">🔮</span>
+                            <span class="text-xs text-gray-600 font-semibold">Slot {{ i }} Empty</span>
+                        </div>
+                        <a href="{{ path('app_spells') }}?hero_id={{ hero.id }}" class="text-[9px] font-bold uppercase hover:text-emerald-400 text-gray-500">Equip</a>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="bg-gray-950/20 border border-gray-850 border-dashed p-6 rounded-xl text-center select-none opacity-60">
+                <span class="text-2xl mb-1.5 block">🔒</span>
+                <h4 class="text-xs font-bold text-gray-300">No spell slots unlocked</h4>
+                <p class="text-[10px] text-gray-500 mt-1">Upgrade Magic Capacity in the Training center.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>

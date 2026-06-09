@@ -8,7 +8,7 @@ Displayed Information:
 - Match HUD:
 	- Opponent team name & logo
 	- Match type
-	- Scoreboard / win conditions
+	- Kill score (0–6 per team; forfeit: 3–0 or 0–0 draw)
 - Combat Area:
 	- Front/Back lines, hero avatars
 	- HP bars, mana/energy, status effects, morale indicators

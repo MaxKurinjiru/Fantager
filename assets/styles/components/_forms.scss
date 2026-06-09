@@ -1,0 +1,66 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  FORMS — reusable form field components
+//
+//  Usage in Twig/HTML:
+//    <label class="form-label">Email</label>
+//    <input type="email" class="form-input">
+//    <p class="form-error">Field is required.</p>
+//    <input class="form-input form-input--error"> (error state)
+// =============================================================================
+
+@layer components {
+  .form-label {
+    @apply block text-sm mb-1;
+    color: var(--color-text-secondary);
+  }
+
+  .form-input {
+    @apply w-full rounded px-3 py-2 text-sm;
+    max-width: 100%;
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-fast);
+
+    &::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-brand-400);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring-color);
+      outline-offset: 1px;
+    }
+
+    // Error state — add class .form-input--error when validation fails
+    &--error {
+      border-color: var(--color-error-border);
+    }
+  }
+
+  .form-error {
+    @apply text-xs mt-1;
+    color: var(--color-error-text);
+  }
+
+  .form-hint {
+    @apply text-xs mt-1;
+    color: var(--color-text-muted);
+  }
+
+  // Checkbox / radio label row
+  .form-check {
+    @apply flex items-center gap-2;
+
+    label {
+      @apply text-sm;
+      color: var(--color-text-secondary);
+    }
+  }
+}

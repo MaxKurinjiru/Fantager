@@ -1,0 +1,58 @@
+{# templates/components/hq/facility_card.html.twig #}
+{% set key = facility.type.value %}
+{% set facility_emojis = {
+    'training': '🏋️',
+    'medical': '🏥',
+    'library': '📚',
+    'forge': '🔨',
+    'treasury': '💰',
+    'barracks': '⛺',
+    'summoning_chamber': '🌀',
+    'arena': '🏟️'
+} %}
+{% set emoji = facility_emojis[key] ?? '🏰' %}
+{% set upgrade_cost = hq_upgrade_cost(facility.type, facility.level) %}
+
+<div data-facility-card class="bg-gray-900/40 border border-gray-800 hover:border-emerald-500/20 rounded-2xl p-5 flex flex-col justify-between backdrop-blur-md transition-all shadow-md">
+    <div class="space-y-4">
+        {# Card Header #}
+        <div class="flex justify-between items-start">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl select-none">{{ emoji }}</span>
+                <div>
+                    <h3 class="font-bold text-white leading-tight">{{ ('hq.facilities_list.' ~ key ~ '.name')|trans }}</h3>
+                    <p class="text-[10px] text-gray-550">{{ ('hq.facilities_list.' ~ key ~ '.desc')|trans }}</p>
+                </div>
+            </div>
+            <span data-facility-level class="text-[11px] font-extrabold bg-gray-950 px-2 py-0.5 border border-gray-800 text-gray-300 rounded-lg">
+                Lvl {{ facility.level }}
+            </span>
+        </div>
+
+        {# Current Bonuses #}
+        <div class="bg-gray-950/60 rounded-xl p-3 border border-gray-850">
+            <span class="block text-[9px] font-extrabold text-gray-500 uppercase tracking-wide mb-1.5">{{ 'hq.passive_effects'|trans }}</span>
+            <ul data-facility-bonuses class="space-y-1">
+                {% for name, value in facility.passiveBonuses %}
+                    <li class="flex justify-between text-xs text-gray-400">
+                        <span>{{ ('hq.bonus_' ~ name)|trans }}:</span>
+                        <span class="text-emerald-450 font-bold">+{{ value }}{{ name ends with '_pct' ? '%' : '' }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    {# Upgrade Button / Cost #}
+    <div class="border-t border-gray-850 mt-4 pt-4 flex items-center justify-between gap-4">
+        <div>
+            <span class="block text-[9px] font-bold text-gray-500 uppercase tracking-wider">{{ 'hq.upgrade_cost'|trans }}</span>
+            <span data-facility-cost class="text-xs font-bold text-yellow-500">🪙 {{ upgrade_cost|number_format(0, '.', ' ') }}</span>
+        </div>
+        <button data-action="click->hq#upgrade" data-facility="{{ key }}" data-cost="{{ upgrade_cost }}" data-cost-original="{{ upgrade_cost }}"
+                {% if team.gold < upgrade_cost %}disabled title="{{ 'hq.insufficient_gold'|trans }}"{% endif %}
+                class="btn btn-outline btn--sm px-4 py-2 font-bold uppercase tracking-wider text-[10px] disabled:opacity-40 disabled:cursor-not-allowed">
+            {{ 'hq.upgrade_btn'|trans }}
+        </button>
+    </div>
+</div>

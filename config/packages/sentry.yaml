@@ -1,0 +1,35 @@
+when@dev:
+    sentry:
+        dsn: '%env(SENTRY_DSN)%'
+        options:
+            # Enable logs to be sent to Sentry
+            enable_logs: true
+            before_send: 'App\Service\Sentry\SentryBeforeSendCallback'
+    services:
+        Sentry\Monolog\BreadcrumbHandler:
+            arguments:
+                $hub: '@Sentry\State\HubInterface'
+                $level: !php/const Monolog\Logger::INFO
+
+        Sentry\Monolog\Handler:
+            arguments:
+                $hub: '@Sentry\State\HubInterface'
+                $level: !php/const Monolog\Logger::ERROR
+
+when@prod:
+    sentry:
+        dsn: '%env(SENTRY_DSN)%'
+        options:
+            # Enable logs to be sent to Sentry
+            enable_logs: true
+            before_send: 'App\Service\Sentry\SentryBeforeSendCallback'
+    services:
+        Sentry\Monolog\BreadcrumbHandler:
+            arguments:
+                $hub: '@Sentry\State\HubInterface'
+                $level: !php/const Monolog\Logger::INFO
+
+        Sentry\Monolog\Handler:
+            arguments:
+                $hub: '@Sentry\State\HubInterface'
+                $level: !php/const Monolog\Logger::ERROR

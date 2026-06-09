@@ -1,0 +1,70 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}Hero Details — {{ hero.name }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="hero-rename" data-hero-rename-hero-id-value="{{ hero.id }}">
+    
+    {# --- Breadcrumbs & Back Link --- #}
+    <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+        <div class="flex items-center gap-2 text-sm text-gray-400">
+            <a href="{{ path('app_heroes') }}" class="hover:text-emerald-400 transition-colors">Roster</a>
+            <span>/</span>
+            <span class="text-gray-200 font-semibold">{{ hero.name }}</span>
+        </div>
+        <a href="{{ path('app_heroes') }}" class="btn btn-outline btn--sm gap-1.5">
+            <span>⬅️</span> Back to Roster
+        </a>
+    </div>
+
+    {# --- Error Alert --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'hero-rename',
+        message_target: 'alertMessage',
+        close_action: 'hero-rename#hideAlert',
+        type: 'error'
+    } %}
+
+    {# --- Hero Header Card --- #}
+    {% include 'components/hero/header_card.html.twig' with { hero: hero } %}
+
+    {# --- Main Layout Grid --- #}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {# LEFT COLUMN: Primary Attributes & Core Stats (1 Column) #}
+        <div class="space-y-8 lg:col-span-1">
+            {# Attributes Panel #}
+            {% include 'components/hero/attributes_panel.html.twig' with { hero: hero, statBonuses: statBonuses } %}
+
+            {# Secondary Attributes Panel #}
+            {% include 'components/hero/status_panel.html.twig' with { hero: hero } %}
+        </div>
+
+        {# RIGHT COLUMN: Equipment, Spells, Stats & History (2 Columns) #}
+        <div class="lg:col-span-2 space-y-8">
+            
+            {# Equipment Paperdoll Grid #}
+            {% include 'components/hero/equipped_gear.html.twig' with { hero: hero, equipped: equipped } %}
+
+            {# Spells & Magic Mastery #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {# Spell slots #}
+                {% include 'components/hero/spell_slots.html.twig' with { hero: hero } %}
+
+                {# Magic School Mastery levels #}
+                {% include 'components/hero/school_mastery.html.twig' with { hero: hero } %}
+            </div>
+
+            {# Statistics & History #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {# Stats summary card #}
+                {% include 'components/hero/combat_stats.html.twig' with { hero: hero, trainingHistory: trainingHistory } %}
+
+                {# History logs card #}
+                {% include 'components/hero/recent_activity.html.twig' with { hero: hero, trainingHistory: trainingHistory } %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

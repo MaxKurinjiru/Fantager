@@ -1,0 +1,59 @@
+{# templates/components/hero/equipped_gear.html.twig #}
+<div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-xl font-bold text-white mb-1">Equipped Gear</h2>
+            <p class="text-xs text-gray-500">Swapping equipment is handled inside inventory.</p>
+        </div>
+        <a href="{{ path('app_inventory') }}?hero_id={{ hero.id }}" class="btn btn-outline btn--sm gap-1">
+            🎒 Manage Gear
+        </a>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {% set slot_configs = [
+            {key: 'head', label: 'Head', emoji: '🪖'},
+            {key: 'amulet', label: 'Amulet', emoji: '📿'},
+            {key: 'body', label: 'Armor/Body', emoji: '🛡️'},
+            {key: 'hands', label: 'Gloves/Hands', emoji: '🧤'},
+            {key: 'main_hand', label: 'Main Hand', emoji: '⚔️'},
+            {key: 'off_hand', label: 'Off-Hand', emoji: '🛡️'},
+            {key: 'ring', label: 'Ring', emoji: '💍'},
+            {key: 'feet', label: 'Boots/Feet', emoji: '🥾'}
+        ] %}
+
+        {% for slot in slot_configs %}
+            {% set item = equipped[slot.key] ?? null %}
+            {% if item %}
+                {# Active Item Slot #}
+                <div class="bg-gray-950 border border-gray-800/80 hover:border-emerald-500/30 p-3 rounded-xl flex flex-col items-center justify-between text-center min-h-[110px] transition-all relative">
+                    <span class="text-[10px] font-bold uppercase text-gray-600 tracking-wider mb-1">{{ slot.label }}</span>
+                    <span class="text-3xl mb-1 select-none">
+                        {% if item.slotType.value == 'main_hand' or item.slotType.value == 'weapon' %}🗡️
+                        {% elseif item.slotType.value == 'head' %}🪖
+                        {% elseif item.slotType.value == 'body' %}🛡️
+                        {% elseif item.slotType.value == 'ring' %}💍
+                        {% else %}🎒{% endif %}
+                    </span>
+                    <span class="text-xs font-semibold text-gray-200 truncate w-full" title="{{ item.name }}">{{ item.name }}</span>
+                    <span class="text-[9px] mt-1 font-bold uppercase 
+                        {% if item.rarity.value == 'common' %}text-gray-400
+                        {% elseif item.rarity.value == 'uncommon' %}text-green-400
+                        {% elseif item.rarity.value == 'rare' %}text-blue-400
+                        {% elseif item.rarity.value == 'epic' %}text-purple-400
+                        {% elseif item.rarity.value == 'legendary' %}text-orange-400
+                        {% else %}text-red-400{% endif %}">
+                        {{ item.rarity.value }}
+                    </span>
+                </div>
+            {% else %}
+                {# Empty Slot Placeholder #}
+                <div class="bg-gray-950/40 border border-gray-950/80 border-dashed p-3 rounded-xl flex flex-col items-center justify-center text-center min-h-[110px] select-none opacity-50 hover:opacity-75 transition-opacity">
+                    <span class="text-[10px] font-bold uppercase text-gray-700 tracking-wider mb-1">{{ slot.label }}</span>
+                    <span class="text-2xl mb-1">{{ slot.emoji }}</span>
+                    <span class="text-[10px] text-gray-600 font-medium">Empty</span>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

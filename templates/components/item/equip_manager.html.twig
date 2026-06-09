@@ -1,0 +1,72 @@
+{# templates/components/item/equip_manager.html.twig #}
+<div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
+    <div>
+        <h2 class="text-xl font-bold text-white mb-2">{{ 'inventory.equip_manager'|trans }}</h2>
+        <select data-equipment-target="heroSelect" data-action="change->equipment#loadHeroEquipment"
+                class="w-full rounded-xl bg-gray-950 border border-gray-800 px-4 py-3 text-sm text-gray-350 focus:outline-none focus:border-emerald-500 font-medium">
+            <option value="">{{ 'inventory.select_hero_opt'|trans }}</option>
+            {% for h in heroes %}
+                <option value="{{ h.id }}" {% if selected_hero_id == h.id %}selected{% endif %}>
+                    {{ h.name }} ({{ 'heroes.level'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }})
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {# Paperdoll Grid #}
+    {% if selected_hero %}
+        <div class="space-y-4">
+            <span class="block text-[10px] font-extrabold text-gray-500 uppercase tracking-wide text-center">{{ 'inventory.paperdoll'|trans }}</span>
+            
+            <div class="grid grid-cols-2 gap-4">
+                {% set slots = [
+                    {key: 'head', emoji: '🪖'},
+                    {key: 'amulet', emoji: '📿'},
+                    {key: 'body', emoji: '🛡️'},
+                    {key: 'hands', emoji: '🧤'},
+                    {key: 'main_hand', emoji: '⚔️'},
+                    {key: 'off_hand', emoji: '🛡️'},
+                    {key: 'ring', emoji: '💍'},
+                    {key: 'feet', emoji: '🥾'}
+                ] %}
+
+                {% for slot in slots %}
+                    {% set item = equipped[slot.key] ?? null %}
+                    {% if item %}
+                        <div class="bg-gray-950 border border-emerald-500/25 p-3 rounded-xl flex flex-col items-center justify-between text-center min-h-[120px] transition-all relative">
+                            {# Unequip Button #}
+                            <button data-action="click->equipment#unequip" data-item-id="{{ item.id }}"
+                                    class="absolute right-1.5 top-1.5 w-5 h-5 bg-red-955/40 hover:bg-red-900 border border-red-900/30 text-red-400 hover:text-white rounded-full flex items-center justify-center text-[8px] font-extrabold transition-colors"
+                                    title="{{ 'inventory.unequip'|trans }}">
+                                ✕
+                            </button>
+
+                            <span class="text-[9px] font-bold uppercase text-gray-600 tracking-wider mb-1">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
+                            <span class="text-2xl mb-1 select-none">
+                                {% if slot.key == 'main_hand' %}🗡️
+                                {% elseif slot.key == 'head' %}🪖
+                                {% elseif slot.key == 'body' %}🛡️
+                                {% elseif slot.key == 'ring' %}💍
+                                {% else %}🎒{% endif %}
+                            </span>
+                            <span class="text-[11px] font-bold text-gray-200 truncate w-full" title="{{ item.name }}">{{ item.name }}</span>
+                            <span class="text-[8px] font-bold uppercase text-emerald-400 mt-1">{{ 'inventory.equipped'|trans }}</span>
+                        </div>
+                    {% else %}
+                        <div class="bg-gray-950/20 border border-gray-950/80 border-dashed p-3 rounded-xl flex flex-col items-center justify-center text-center min-h-[120px] opacity-45 select-none hover:opacity-60 transition-opacity">
+                            <span class="text-[9px] font-bold uppercase text-gray-755 tracking-wider mb-1">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
+                            <span class="text-2xl mb-1">{{ slot.emoji }}</span>
+                            <span class="text-[10px] text-gray-700 font-medium">{{ 'inventory.empty_slot'|trans }}</span>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-12 select-none border border-gray-855 border-dashed rounded-xl opacity-60">
+            <span class="text-5xl block mb-2">🧑</span>
+            <h4 class="text-xs font-bold text-gray-400">{{ 'inventory.select_hero_manage'|trans }}</h4>
+            <p class="text-[10px] text-gray-550 mt-1">{{ 'inventory.select_hero_manage_desc'|trans }}</p>
+        </div>
+    {% endif %}
+</div>

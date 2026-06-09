@@ -1,0 +1,114 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}Spellbook Management — Fantager{% endblock %}
+
+{% block body %}
+{% set selected_hero_id = app.request.query.get('hero_id') %}
+{% set selected_hero = null %}
+{% for h in heroes %}
+    {% if h.id == selected_hero_id %}
+        {% set selected_hero = h %}
+    {% endif %}
+{% endfor %}
+
+{% set equipped = {} %}
+{% set known_spell_ids = [] %}
+{% set masteries = {} %}
+
+{% if selected_hero %}
+    {% for hs in selected_hero.heroSpells %}
+        {% set known_spell_ids = known_spell_ids|merge([hs.spell.id]) %}
+        {% if hs.isEquipped %}
+            {% set equipped = equipped|merge({(hs.slotNumber): hs}) %}
+        {% endif %}
+    {% endfor %}
+
+    {% for sm in selected_hero.schoolMasteries %}
+        {% set masteries = masteries|merge({(sm.school.value): sm.masteryTier}) %}
+    {% endfor %}
+{% endif %}
+
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="spellbook">
+    
+    {# --- Header Section --- #}
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'Spellbook & Academy',
+        subtitle: 'Learn new spell scrolls for your heroes and manage their active combat slots.'
+    } %}
+
+    {# --- Alert Box --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'spellbook',
+        message_target: 'alertMessage',
+        close_action: 'spellbook#hideAlert'
+    } %}
+
+    {# --- Main Layout Grid --- #}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {# LEFT COLUMN: Hero Spell Slots & Mastery (1 Column) #}
+        <div class="lg:col-span-1 space-y-6">
+            {% include 'components/spell/trainee_manager.html.twig' with {
+                selected_hero_id: selected_hero_id,
+                selected_hero: selected_hero,
+                heroes: heroes,
+                equipped: equipped,
+                masteries: masteries
+            } %}
+        </div>
+
+        {# RIGHT COLUMN: Spellbook Tabs (2 Columns) #}
+        <div class="lg:col-span-2 space-y-6">
+            {# Sub-tab controls #}
+            <div class="flex border-b border-gray-850 gap-2 pb-px">
+                <button onclick="switchSubTab('learned-spells-tab', this)"
+                        class="subtab-btn px-4 py-2 border-b-2 border-emerald-500 text-emerald-450 font-bold text-xs uppercase tracking-wider transition-all">
+                    Learned Spells
+                </button>
+                <button onclick="switchSubTab('academy-store-tab', this)"
+                        class="subtab-btn px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-gray-250 font-semibold text-xs uppercase tracking-wider transition-all">
+                    Academy Store
+                </button>
+            </div>
+
+            {# ========================================== #}
+            {# SUB-TAB: LEARNED SPELLS                    #}
+            {# ========================================== #}
+            {% include 'components/spell/learned_spells.html.twig' with {
+                selected_hero: selected_hero,
+                equipped: equipped
+            } %}
+
+            {# ========================================== #}
+            {# SUB-TAB: ACADEMY STORE                     #}
+            {# ========================================== #}
+            {% include 'components/spell/academy_store.html.twig' with {
+                spells: spells,
+                known_spell_ids: known_spell_ids,
+                selected_hero: selected_hero,
+                masteries: masteries,
+                team: team
+            } %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{# Script for Client-side Sub-tab Switcher #}
+<script>
+    function switchSubTab(tabId, btn) {
+        document.querySelectorAll('.subtab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById(tabId).classList.remove('hidden');
+
+        document.querySelectorAll('.subtab-btn').forEach(b => {
+            b.classList.remove('border-emerald-500', 'text-emerald-455', 'font-bold');
+            b.classList.add('border-transparent', 'text-gray-400', 'font-semibold');
+        });
+
+        btn.classList.remove('border-transparent', 'text-gray-400', 'font-semibold');
+        btn.classList.add('border-emerald-500', 'text-emerald-455', 'font-bold');
+    }
+</script>
+{% endblock %}

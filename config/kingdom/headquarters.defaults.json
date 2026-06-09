@@ -1,0 +1,47 @@
+{
+  "_comment": "HQ + facilities created for every team at init; tune passive_bonuses when balance is defined.",
+  "total_level": 1,
+  "race_optimization": null,
+  "facilities": [
+    {
+      "type": "barracks",
+      "level": 1,
+      "passive_bonuses": { "roster_capacity": 10, "placeholder": true }
+    },
+    {
+      "type": "training",
+      "level": 1,
+      "passive_bonuses": { "training_efficiency_pct": 0, "placeholder": true }
+    },
+    {
+      "type": "medical",
+      "level": 1,
+      "passive_bonuses": { "fatigue_recovery_pct": 0, "placeholder": true }
+    },
+    {
+      "type": "library",
+      "level": 1,
+      "passive_bonuses": { "spell_mastery_pct": 0, "placeholder": true }
+    },
+    {
+      "type": "forge",
+      "level": 1,
+      "passive_bonuses": { "crafting_speed_pct": 0, "placeholder": true }
+    },
+    {
+      "type": "treasury",
+      "level": 1,
+      "passive_bonuses": { "gold_income_pct": 0, "placeholder": true }
+    },
+    {
+      "type": "summoning_chamber",
+      "level": 1,
+      "passive_bonuses": { "summon_base_stat_bonus": 0.4, "summon_stat_random_bonus": 1.0, "summon_stat_total_cap": 7.0 }
+    },
+    {
+      "type": "arena",
+      "level": 1,
+      "passive_bonuses": { "arena_revenue_pct": 0, "placeholder": true }
+    }
+  ]
+}

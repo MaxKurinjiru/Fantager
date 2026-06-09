@@ -1,0 +1,97 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'training.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="training">
+    
+    {# --- Header Section --- #}
+    {% set right_content %}
+        <div class="bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 backdrop-blur-md text-sm shrink-0 flex items-center gap-3">
+            <div>
+                <span class="block text-[10px] text-gray-555 uppercase font-bold tracking-wider">{{ 'training.scheduled_ticks'|trans }}</span>
+                <span class="text-white font-extrabold">{{ 'training.ticks_schedule'|trans }}</span>
+            </div>
+        </div>
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'training.title',
+        subtitle: 'training.subtitle',
+        right_content: right_content
+    } %}
+
+    {# --- Alert Box --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'training',
+        message_target: 'alertMessage',
+        close_action: 'training#hideAlert'
+    } %}
+
+    {# --- Multi-Tab Navigation --- #}
+    <div class="flex border-b border-gray-850 gap-2 overflow-x-auto pb-px">
+        <button onclick="switchTab('attributes-tab', this)" 
+                class="tab-btn px-5 py-3 border-b-2 border-emerald-500 text-emerald-450 font-bold text-sm leading-none whitespace-nowrap transition-all">
+            💪 {{ 'training.tab_attrs'|trans }}
+        </button>
+        <button onclick="switchTab('magic-tab', this)" 
+                class="tab-btn px-5 py-3 border-b-2 border-transparent text-gray-400 hover:text-gray-200 font-semibold text-sm leading-none whitespace-nowrap transition-all">
+            🔮 {{ 'training.tab_magic'|trans }}
+        </button>
+        <button onclick="switchTab('recovery-tab', this)" 
+                class="tab-btn px-5 py-3 border-b-2 border-transparent text-gray-400 hover:text-gray-200 font-semibold text-sm leading-none whitespace-nowrap transition-all">
+            🛌 {{ 'training.tab_recovery'|trans }}
+        </button>
+        <button onclick="switchTab('queue-tab', this)" 
+                class="tab-btn px-5 py-3 border-b-2 border-transparent text-gray-400 hover:text-gray-200 font-semibold text-sm leading-none whitespace-nowrap transition-all flex items-center gap-2">
+            📋 {{ 'training.tab_queue'|trans }} 
+            <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full font-bold border border-gray-700">{{ queue|length }}</span>
+        </button>
+    </div>
+
+    {# --- Hero & Trainer Selection Configuration --- #}
+    {% include 'components/training/config_panel.html.twig' with { heroes: heroes, trainers: trainers } %}
+
+    {# ========================================== #}
+    {# TAB 1: ATTRIBUTES TRAINING                 #}
+    {# ========================================== #}
+    {% include 'components/training/attributes_tab.html.twig' %}
+
+    {# ========================================== #}
+    {# TAB 2: MAGIC CAPACITY                      #}
+    {# ========================================== #}
+    {% include 'components/training/magic_tab.html.twig' %}
+
+    {# ========================================== #}
+    {# TAB 3: RECOVERY & REST                     #}
+    {# ========================================== #}
+    {% include 'components/training/recovery_tab.html.twig' %}
+
+    {# ========================================== #}
+    {# TAB 4: ACTIVE QUEUE                        #}
+    {# ========================================== #}
+    {% include 'components/training/queue_tab.html.twig' with { queue: queue } %}
+
+</div>
+
+{# Script for Client-side Tab Switcher #}
+<script>
+    function switchTab(tabId, btn) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        
+        // Show current tab content
+        document.getElementById(tabId).classList.remove('hidden');
+
+        // Reset all buttons styling
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('border-emerald-500', 'text-emerald-455', 'font-bold');
+            b.classList.add('border-transparent', 'text-gray-400', 'font-semibold');
+        });
+
+        // Set active styling on clicked button
+        btn.classList.remove('border-transparent', 'text-gray-400', 'font-semibold');
+        btn.classList.add('border-emerald-500', 'text-emerald-455', 'font-bold');
+    }
+</script>
+{% endblock %}

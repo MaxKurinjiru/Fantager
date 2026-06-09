@@ -10,9 +10,11 @@ Displayed Information:
 	- Summons Used this Cycle
 	- Max Summons per Cycle (based on HQ level)
 - Summon Parameters:
-	- Race selection (dropdown or race icons)
-	- Age range preview (Min Age - Max Junior Age for selected race)
-	- Expected stat range (based on race multipliers)
+	- Arena Theme Adaptation (displaying the theme race of the home Arena)
+	- Potential summonable races list (based on affinity and relations with theme race)
+	- Starting level: **1**
+	- Age range preview (Min Age - Max Junior Age for summonable races)
+	- Expected stat range (based on race flat bonuses and Summoning Chamber level)
 	- Summon Cost (Gold)
 - Recent Summons (history):
 	- Recently acquired heroes
@@ -20,8 +22,6 @@ Displayed Information:
 
 Possible Actions/Buttons:
 - Summon Hero
-- Select Race
-- Auto-Summon
 - View Summoned Hero
 - Buy Another Slot
 

@@ -1,0 +1,55 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'hq.title'|trans }} & {{ 'hq.facilities'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="hq">
+    
+    {# --- Header Section --- #}
+    {% set right_content %}
+        <div class="flex items-center gap-4 bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 backdrop-blur-md">
+            <div>
+                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'hq.compound_level'|trans }}</span>
+                <span class="text-white font-extrabold text-lg" data-hq-target="totalLevel">{{ hq.totalLevel }}</span>
+            </div>
+            <div class="w-px h-8 bg-gray-800"></div>
+            <div>
+                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'hq.active_optimization'|trans }}</span>
+                <span class="text-emerald-400 font-extrabold text-sm capitalize">{{ hq.raceOptimization ?: 'dashboard.none'|trans }}</span>
+            </div>
+            <div class="w-px h-8 bg-gray-800"></div>
+            <div>
+                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'hq.roster_limit'|trans }}</span>
+                <span class="text-white font-extrabold text-lg">{{ team_hero_count(team) }} / {{ team_roster_limit(team) }}</span>
+            </div>
+        </div>
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'hq.title',
+        subtitle: 'hq.subtitle',
+        right_content: right_content
+    } %}
+ 
+    {# --- Alert Box --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'hq',
+        message_target: 'alertMessage',
+        close_action: 'hq#closeAlert'
+    } %}
+
+    <div class="space-y-6">
+        <h2 class="text-xl font-bold text-white">{{ 'hq.facilities'|trans }}</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for facility in hq.facilities %}
+                {% include 'components/hq/facility_card.html.twig' with {
+                    facility: facility,
+                    team: team
+                } %}
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -15,6 +15,11 @@ Sections to fill:
 
 Validation rules:
 - Exactly 6 unique hero IDs required; each hero must belong to the team and be available (not in training/match).
+- Team must have ≥ 6 combat-ready heroes to participate in a match at all (see [combat-system.md](combat-system.md#match-eligibility)).
+
+Match lineup vs roster:
+- **Lineup:** 6 heroes in formation (3 front, 3 back)
+- **Roster minimum:** 10 heroes at team start; 6 combat-ready required to avoid automatic forfeit
 
 
 Summary:

@@ -1,0 +1,33 @@
+# VCS
+.git
+.gitignore
+
+# Dependencies and build artifacts
+node_modules/
+vendor/
+public/build/
+build/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Symfony runtime / caches / logs
+var/
+var/cache/
+var/log/
+var/sessions/
+
+# Docker overrides
+docker-compose.override.yml
+
+# Logs and debug
+npm-debug.log
+yarn-error.log
+
+# Editor / OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

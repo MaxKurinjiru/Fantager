@@ -50,7 +50,7 @@ Possible Actions/Buttons:
 
 Backend Requirements:
 - Formation GET/POST/PUT endpoints
-- Formation validation (6 heroes required, unique heroes)
+- Formation validation (6 heroes required, unique heroes; team must have ≥ 6 combat-ready heroes to enter matches)
 - Synergy calculation API
 - Formation simulation/testing
 

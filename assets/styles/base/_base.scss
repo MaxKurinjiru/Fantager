@@ -1,0 +1,46 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  BASE — element-level defaults (mobile-first, dark-theme)
+// =============================================================================
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    height: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    margin: 0;
+    background-color: var(--color-surface-page);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  // High-contrast keyboard focus ring (accessibility)
+  :focus-visible {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: 2px;
+  }
+
+  // Remove default browser focus ring when mouse is used
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-text-primary);
+  }
+}

@@ -1,0 +1,35 @@
+{% set wrapper_class = wrapper_class|default('grid grid-cols-4 gap-2 mb-6 text-xs text-center border-t border-gray-800/40 pt-4') %}
+<div class="{{ wrapper_class }}">
+    <div class="bg-gray-950/20 p-1 rounded">
+        <span class="block text-[9px] text-gray-500 uppercase">STR</span>
+        <span class="font-bold text-gray-300">{{ hero.str }}</span>
+    </div>
+    <div class="bg-gray-950/20 p-1 rounded">
+        <span class="block text-[9px] text-gray-500 uppercase">DEX</span>
+        <span class="font-bold text-gray-300">{{ hero.dex }}</span>
+    </div>
+    <div class="bg-gray-950/20 p-1 rounded">
+        <span class="block text-[9px] text-gray-500 uppercase">KON</span>
+        <span class="font-bold text-gray-300">{{ hero.kon }}</span>
+    </div>
+    <div class="bg-gray-950/20 p-1 rounded">
+        <span class="block text-[9px] text-gray-500 uppercase">SPD</span>
+        <span class="font-bold text-gray-300">{{ hero.spd }}</span>
+    </div>
+    <div class="bg-gray-950/20 p-1 rounded">
+        <span class="block text-[9px] text-gray-500 uppercase">INT</span>
+        <span class="font-bold text-gray-300">{{ hero.intel }}</span>
+    </div>
+    <div class="bg-gray-950/20 p-1 rounded">
+        <span class="block text-[9px] text-gray-500 uppercase">WIL</span>
+        <span class="font-bold text-gray-300">{{ hero.wil }}</span>
+    </div>
+    <div class="bg-gray-950/20 p-1 rounded">
+        <span class="block text-[9px] text-gray-500 uppercase">CHA</span>
+        <span class="font-bold text-gray-300">{{ hero.cha }}</span>
+    </div>
+    <div class="bg-gray-950/20 p-1 rounded">
+        <span class="block text-[9px] text-gray-500 uppercase">LCK</span>
+        <span class="font-bold text-gray-300">{{ hero.lck }}</span>
+    </div>
+</div>

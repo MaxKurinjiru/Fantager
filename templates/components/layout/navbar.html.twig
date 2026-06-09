@@ -1,0 +1,112 @@
+{% set is_guest = is_guest|default(not (app.user and app.user.team)) %}
+
+{% if not is_guest %}
+    <div class="sticky top-0 z-50">
+        {# Top Resource Bar #}
+        <div class="bg-gray-950 border-b border-gray-800/80 px-4 sm:px-6 py-1.5 flex items-center justify-end text-xs text-gray-400 gap-6">
+            <div class="flex items-center gap-1.5" title="Gold">
+                <span class="text-yellow-500 font-bold select-none">🪙</span>
+                <span class="font-bold text-gray-250">{{ app.user.team.gold|number_format(0, '.', ' ') }}</span>
+                <span class="text-[9px] sm:text-[10px] text-gray-550 uppercase tracking-wider font-bold ml-0.5">{{ 'dashboard.gold'|trans }}</span>
+            </div>
+            <div class="w-px h-3 bg-gray-800"></div>
+            <div class="flex items-center gap-1.5" title="Crystals">
+                <span class="text-cyan-400 font-bold select-none">💎</span>
+                <span class="font-bold text-gray-250">{{ app.user.team.crystals|number_format(0, '.', ' ') }}</span>
+                <span class="text-[9px] sm:text-[10px] text-gray-550 uppercase tracking-wider font-bold ml-0.5">{{ 'dashboard.crystals'|trans }}</span>
+            </div>
+        </div>
+
+        {# Top navigation bar #}
+        <nav class="border-b border-gray-800 bg-gray-900 px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2 sm:gap-6">
+                {# Hamburger Menu Button #}
+                <button data-action="click->mobile-menu#toggle" 
+                        class="md:hidden flex items-center justify-center w-10 h-10 rounded-lg border border-gray-800 bg-gray-950/40 hover:bg-gray-800 hover:text-emerald-400 text-gray-400 active:scale-95 transition-all focus:outline-none focus:ring-1 focus:ring-emerald-500/50 cursor-pointer" 
+                        aria-label="Toggle menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+
+                <a href="{{ path('app_dashboard') }}" class="text-lg sm:text-xl font-bold tracking-wide text-emerald-400 hover:text-emerald-300">Fantager</a>
+                <span class="text-xs text-gray-500 bg-gray-800 px-2.5 py-1 rounded-full border border-gray-700 hidden sm:inline-block">
+                    {{ app.user.team.kingdom.name }}
+                </span>
+            </div>
+
+            <div class="flex items-center gap-3 sm:gap-4">
+                {# Player Dropdown Menu #}
+                <div class="relative" data-controller="dropdown">
+                    <button data-action="click->dropdown#toggle" 
+                            class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-800 bg-gray-950/40 hover:bg-gray-800 hover:text-emerald-400 text-gray-300 transition-all focus:outline-none cursor-pointer">
+                        <span class="text-lg select-none">{{ app.user.team.emblem ?: '🛡️' }}</span>
+                        <span class="font-semibold text-xs sm:text-sm hidden sm:inline">{{ app.user.displayName }}</span>
+                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    {# Dropdown panel #}
+                    <div data-dropdown-target="menu" 
+                         class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-gray-800 bg-gray-900 p-2 shadow-2xl z-50">
+                        <div class="px-3 py-2 border-b border-gray-800 mb-1">
+                            <p class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Player</p>
+                            <p class="text-sm font-bold text-white truncate">{{ app.user.displayName }}</p>
+                            <p class="text-[10px] text-emerald-400 font-medium truncate">{{ app.user.team.name }}</p>
+                        </div>
+                        
+                        {# Links #}
+                        <a href="#" onclick="window.dispatchEvent(new CustomEvent('modal:open-account-settings')); return false;" 
+                           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs sm:text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+                            <span>⚙️</span> {{ 'nav.settings'|trans }}
+                        </a>
+
+                        <div class="border-t border-gray-800 my-1 pt-1"></div>
+
+                        <a href="{{ path('app_logout') }}" 
+                           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs sm:text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors font-semibold">
+                            <span>🚪</span> {{ 'nav.logout'|trans }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+{% else %}
+    {# Guest navigation bar #}
+    <nav class="border-b border-gray-800 px-6 py-3 flex items-center justify-between bg-gray-950">
+        <a href="{{ path('app_home') }}" class="text-xl font-bold tracking-wide text-emerald-400">Fantager</a>
+        <div class="flex items-center gap-4 text-sm">
+            {# Guest Language Switcher #}
+            <div class="flex items-center gap-1 border border-gray-800 bg-gray-900/60 rounded-lg p-0.5">
+                <a href="{{ path('app_change_locale', { locale: 'cs' }) }}" 
+                   class="flex items-center justify-center w-7 h-7 rounded {{ app.request.locale == 'cs' ? 'bg-emerald-500/10 text-emerald-400 font-semibold' : 'text-gray-500 hover:text-gray-300' }}" 
+                   title="Čeština">
+                    CS
+                </a>
+                <div class="w-px h-3 bg-gray-800"></div>
+                <a href="{{ path('app_change_locale', { locale: 'en' }) }}" 
+                   class="flex items-center justify-center w-7 h-7 rounded {{ app.request.locale == 'en' ? 'bg-emerald-500/10 text-emerald-400 font-semibold' : 'text-gray-500 hover:text-gray-300' }}" 
+                   title="English">
+                    EN
+                </a>
+            </div>
+
+            {% if app.user %}
+                <a href="{{ path('app_dashboard') }}"
+                   class="bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-semibold px-4 py-2 rounded">
+                    {{ 'nav.enter_game'|trans }}
+                </a>
+                <a href="{{ path('app_logout') }}" class="link hover:text-emerald-400 self-center">{{ 'nav.logout'|trans }}</a>
+            {% else %}
+                <a href="{{ path('app_login') }}"
+                    data-action="click->auth-modal#openLogin"
+                    class="link hover:text-emerald-400">{{ 'nav.login'|trans }}</a>
+                <a href="{{ path('app_register') }}"
+                    data-action="click->auth-modal#openRegister"
+                    class="link hover:text-emerald-400">{{ 'nav.register'|trans }}</a>
+            {% endif %}
+        </div>
+    </nav>
+{% endif %}

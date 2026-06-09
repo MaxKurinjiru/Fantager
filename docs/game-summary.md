@@ -21,6 +21,9 @@ Players take on the role of **arena managers** in a persistent fantasy world. Th
 - [2.12 League System](#212-league-system)
 - [2.13 Graveyard System](#213-graveyard-system)
 - [2.14 Community System](#214-community-system)
+- [2.15 Dungeon System](#215-dungeon-system)
+- [2.16 Quest System](#216-quest-system)
+- [2.17 Crafting System](#217-crafting-system)
 
 ## 2.1 Kingdom System & Server Split
 
@@ -38,7 +41,7 @@ Players take on the role of **arena managers** in a persistent fantasy world. Th
 | **Main Language** | Primary interface language for the kingdom/server |
 | **Time Zone** | Server time zone affecting event schedules and daily resets |
 | **Game Speed** | Adjusts tick rates for training, fatigue recovery, aging, and event duration |
-| **Starting Resources** | Initial gold, items, and heroes given to new players |
+| **Starting Resources** | Initial gold, items, and heroes given to new players *(default: **10 heroes** per team — see [2.6 Team System](#26-team-system))* |
 | **Marketplace Tax Rate** | Kingdom-wide transaction fee percentage |
 | **Season Length** | Duration of league seasons and event cycles |
 | **Max Player Capacity** | Server population cap for performance and community balance |
@@ -67,7 +70,7 @@ The game is driven by calendar events on **weekly cycles**. Each Kingdom/server 
 |:---|:---|
 | **Fatigue and form recovery** | Hero Maintenance |
 | **League match processing** | Competition |
-| **Dungeon matches** | PvE |
+| **Dungeon matches** (Future Feature) | PvE |
 | **Friendly matches** | Social |
 | **Update team morale** based on performance | Team Maintenance |
 | **Distribute arena ticket revenue** | Economy |
@@ -266,7 +269,7 @@ Each race has natural affinities and conflicts with other races, affecting **tea
 | **Undead** | 10 | 10 | 20 | 90 | 100 | 80 | 20 | 70 |
 | **Giant** | 30 | 20 | 30 | 70 | 80 | 100 | 40 | 60 |
 | **Ent** | 70 | 100 | 30 | 0 | 20 | 40 | 100 | 60 |
-| **Genie** | 80 | 80 | 60 | 60 | 70 | 70 | 60 | 100 |
+| **Genie** | 80 | 80 | 60 | 60 | 70 | 60 | 60 | 100 |
 
 ### Race Relationship Breakdown
 
@@ -277,7 +280,7 @@ Each race has natural affinities and conflicts with other races, affecting **tea
 - **Undead** — *Highly Positive:* Orc (90) | *Positive:* Giant (80), Genie (70) | *Hostile:* Dwarf (20), Ent (20), Human (10), Elf (10)
 - **Giant** — *Positive:* Orc (70), Undead (80) | *Neutral:* Genie (60) | *Negative:* Human (30), Dwarf (30), Ent (40) | *Hostile:* Elf (20)
 - **Ent** — *Highly Positive:* Elf (100) | *Positive:* Human (70) | *Neutral:* Genie (60) | *Negative:* Dwarf (30), Giant (40) | *Hostile:* Orc (0), Undead (20)
-- **Genie** — *Positive:* Human (80), Elf (80), Undead (70), Giant (70) | *Neutral:* Dwarf (60), Orc (60), Ent (60)
+- **Genie** — *Positive:* Human (80), Elf (80), Undead (70) | *Neutral:* Dwarf (60), Orc (60), Giant (60), Ent (60)
 
 > *Example: Pairing an Elf (90) with a Human on a team provides Highly Positive chemistry bonuses. Adding an Orc (0 with Elf) would create a Hostile relationship, severely impacting team morale.*
 
@@ -307,6 +310,8 @@ Each race has natural affinities and conflicts with other races, affecting **tea
 | Willpower | WIL | Resistance to status effects and morale |
 | Charisma | CHA | Leadership, trade efficiency, event influence |
 | Luck | LCK | Critical hits, loot drops, event outcomes |
+
+**Primary attribute range:** Each primary attribute has an integer value from **1 to 20** (inclusive). This applies to heroes and trainers. Race flat bonuses and training adjust values within this range; values above 20 are not supported in the current design.
 
 ### Secondary Attributes
 
@@ -432,22 +437,22 @@ Each race has unique restrictions, bonuses, and training modifiers that define t
 
 #### Race-Specific Stat Bonuses
 
-Races receive inherent bonus multipliers to primary attributes, reflecting their natural strengths:
+Races receive inherent **flat integer bonuses** to primary attributes (applied during hero generation). Human baseline = **+1** per stat. Positive values boost the stat floor; negative values reduce it.
 
 | Race | STR | DEX | KON | SPD | INT | WIL | CHA | LCK |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Human | 1.0x | 1.0x | 1.0x | 1.0x | 1.0x | 1.0x | 1.0x | 1.0x |
-| Elf | 0.9x | 1.15x | 0.9x | 1.1x | 1.1x | 1.0x | 1.05x | 1.0x |
-| Dwarf | 1.1x | 0.85x | 1.15x | 0.85x | 0.95x | 1.1x | 0.9x | 1.05x |
-| Orc | 1.2x | 0.95x | 1.05x | 1.0x | 0.85x | 0.9x | 0.8x | 1.0x |
-| Undead | 1.0x | 1.0x | 1.05x | 0.95x | 1.1x | 1.0x | 0.85x | 0.95x |
-| Giant | 1.25x | 0.8x | 1.2x | 0.9x | 0.85x | 1.0x | 0.95x | 0.9x |
-| Ent | 1.05x | 0.75x | **1.3x** | 0.7x | 1.15x | 1.15x | 1.05x | 0.9x |
-| Genie | 0.95x | 1.1x | 0.95x | 1.15x | 1.25x | 1.1x | 1.2x | 1.15x |
+| Human | +1 | +1 | +1 | +1 | +1 | +1 | +1 | +1 |
+| Elf | 0 | +2 | 0 | +2 | +2 | +1 | +2 | +1 |
+| Dwarf | +2 | −1 | +2 | −1 | 0 | +2 | 0 | +1 |
+| Orc | +3 | 0 | +1 | +1 | −1 | 0 | −2 | +1 |
+| Undead | +1 | +1 | +1 | 0 | +2 | +1 | −2 | 0 |
+| Giant | +3 | −1 | +3 | 0 | −1 | +1 | 0 | 0 |
+| Ent | +1 | −2 | **+4** | −2 | +2 | +2 | +1 | 0 |
+| Genie | 0 | +2 | 0 | +2 | +3 | +2 | +3 | +2 |
 
-**Ent Special Defensive Bonus:** Ents receive an additional **+15% Constitution bonus** due to their natural armor/bark, making their effective KON multiplier **1.3x** instead of the base calculation.
+**Ent KON +4:** Ents’ elevated Constitution bonus reflects their natural bark armor. This is the highest single-stat bonus in the game.
 
-> *The Ent’s 1.3x KON is an additive bonus (+0.15) applied on top of their base Constitution multiplier, reflecting their bark-like natural armor.*
+> *These flat values are the canonical source of truth — see `config/game/races.yaml`. During hero generation the bonus is added to each rolled stat (before capping).*
 
 #### Race-Specific Training Modifiers
 
@@ -467,10 +472,11 @@ Races have inherent training speed multipliers based on their lifespan. Long-liv
 **Training Modifier Impact:**
 
 - Modifier applies to **all attribute training**, magic mastery, and spell slot expansion
-- Affects gold and essence costs *(lower cost × lower gains = time tradeoff)*
+- **Cost-per-stat-point is identical across all races** — slow races pay *proportionally less gold per session* but also gain proportionally less stat, so the gold cost to raise a stat by 1 is the same for every race
+- The real penalty for slow races is **calendar time** (more weekly cycles needed to reach the same total), not higher gold expenditure
 - Does **NOT** affect XP from combat or events
 
-> *Example: An Elf training STR costs 60% of a Human's cost but gains 60% of the stat improvement per session — the cost-per-point is identical, but the Elf gains less per weekly cycle, extending their total progression timeline.*
+> *Example: An Elf (0.6x) and a Human (1.0x) both pay the same gold per stat-point gained in STR training. But the Elf gains 60% of what a Human gains per weekly cycle, so the Elf needs ~67% more weeks to hit the same total improvement. Slow races invest time; fast races pay the same gold in fewer cycles.*
 
 #### Race-Specific Combat Bonuses
 
@@ -502,7 +508,9 @@ Beyond equipment and training, races have tactical advantages in combat:
 | **XP Sources** | Heroes earn XP from all actions: training, battles, crafting, and events |
 | **Level-Up Gains** | Leveling increases primary stats incrementally |
 | **Progress Tracking** | XP progress tracked with `xp_to_next_level` field |
-| **Starting Stats** | Influenced by race multipliers; all heroes start at the same base level but with race-adjusted attributes |
+| **Starting Level** | Every newly created hero starts at **level 1** *(team initialization, summoning, NPC generation)* |
+| **Starting Stats** | Primary attributes influenced by **race flat bonuses** (see [Race-Specific Stat Bonuses](#race-specific-stat-bonuses)) at level 1; values within the 1–20 range |
+| **Starting Age** | Newly created heroes *(team initialization, summoning, NPC generation)* receive a random age between their race's **Min Age** and **Max Junior Age** *(inclusive)* — see [Age System](#age-system) |
 
 ---
 
@@ -579,17 +587,32 @@ Training is the primary method for improving hero attributes, learning new abili
 | **Frozen Stats** | Converted heroes retain their attribute values from the moment of transformation. Stats are permanently frozen — they **cannot be improved or degraded** after conversion |
 | **Role** | Trainers become non-combatant entities used exclusively for training purposes |
 
-> *Example: A Veteran Dwarf with STR 85 and KON 90 transforms into a Trainer. They can now train other heroes’ STR up to 85 and KON up to 90, but can never fight again.*
+> *Example: A Veteran Dwarf with STR 18 and KON 16 transforms into a Trainer. They retain both values but can never fight again. In a training setup targeting STR, heroes assigned to that session cannot train STR beyond 18 with this Trainer. A separate training setup targeting KON caps at 16.*
 
 #### Trainer Mechanics
 
 - **Trainer Acquisition** — Transform Veteran heroes into Trainers, or purchase Trainers from the marketplace using Gold
-- **Trainer Attributes** — Each Trainer has attribute values in all eight primary attributes (STR, DEX, KON, SPD, INT, WIL, CHA, LCK)
+- **Trainer Attributes** — Each Trainer retains frozen values for all eight primary attributes (1–20 range) at conversion
+- **No fixed specialty** — Trainers do **not** receive a permanent specialty at conversion. Which attribute they train is chosen **per training setup** (see Attribute Training below)
+- **Training cap** — When assigned to a training setup, the Trainer caps the target attribute at **their own frozen value** for that attribute *(e.g., STR 18 Trainer in a STR training session caps STR gains at 18)*
+- **One stat per setup** — Each attribute training setup trains **exactly one primary attribute**. The Trainer is selected for that setup; one or more heroes are assigned to it
 - **Trainer Aging** — Trainers age during each **training tick** (weekly cycle) by the same amount a hero would age from a combat death. This applies universally to **all races, including Undead** *(overrides the Undead race exception of aging only through combat deaths)*. Trainers who reach Death Expectation face escalating permanent death risk per training tick, identical to the combat mortality mechanic for active heroes
-- **Training Limitation** — Attribute training is **capped by the Trainer's value** for that attribute. Multiple Trainers can be used, each training different attributes up to their respective values
 - **Training as Calendar Event** — Training occurs during weekly server tick cycles. Multiple training actions can be queued and process sequentially
 
-> *Example: If your Trainer has STR 70, your hero cannot train STR beyond 70 with that Trainer. You’d need a different Trainer with higher STR to push further.*
+> *Example: A Trainer with STR 18 and KON 16 can lead a STR training session (cap 18) this week and a KON session (cap 16) next week. Heroes are assigned to each session via the training queue.*
+
+#### Attribute Training Setup
+
+When starting **primary attribute training**, the player configures a training job:
+
+| Step | Action |
+|:---|:---|
+| **1** | Select **one primary attribute** to train (STR, DEX, KON, SPD, INT, WIL, CHA, or LCK) |
+| **2** | Optionally assign a **Trainer** for that attribute |
+| **3** | Assign **one or more heroes** to the training job *(each hero gets a queue entry sharing the same attribute and Trainer)* |
+
+Validation: the Trainer's frozen value for the selected attribute is the cap for every hero in that job. Training without a Trainer is subject only to the global 1–20 attribute cap.
+
 
 #### Trainer Marketplace
 
@@ -694,11 +717,22 @@ Training is the primary method for improving hero attributes, learning new abili
 
 Each player manages a **single team** (1:1 player-to-team relationship) that serves as their primary game entity. The team is a persistent organization containing heroes, formations, and its own statistics.
 
+### Starting Roster & Match Eligibility
+
+| Rule | Description |
+|:---|:---|
+| **Starting heroes** | Every new team receives **10 heroes** at creation *(Kingdom `startingResources` or team initialization)*. Each hero starts at **level 1** with age random within **[Min Age, Max Junior Age]** for their race. This provides a full **6-hero match lineup** plus **4 reserves** for substitutions, injuries, and roster rotation |
+| **Minimum to play** | A team must have at least **6 combat-ready heroes** *(active status, not trainers, not permanently dead)* to participate in a match |
+| **Insufficient roster** | If a team cannot field 6 combat-ready heroes when a match is scheduled, the match is **not simulated** — that team **automatically loses**. The opponent is awarded a **3–0** kill score *(half of the maximum possible score of 6)* |
+| **Both sides insufficient** | If **neither** team can field 6 combat-ready heroes, the match ends as a **0–0 draw** with no simulation |
+
+> *Example: A team with only 5 available heroes before a league fixture automatically loses 0–3 (kill score from their perspective). If both teams are understaffed, the fixture is recorded as 0–0 and both teams receive league draw points.*
+
 ### Team Components
 
 | Component | Description |
 |:---|:---|
-| **Hero Roster** | Collection of all heroes recruited by the player |
+| **Hero Roster** | Collection of all heroes recruited by the player *(starting capacity: **10** — see Barracks in [2.7 Headquarters System](#27-headquarters-system))* |
 | **Formations** | Up to 2 saved formations with customizable positioning and strategy *(can set one as default)* |
 | **Team Identity** | Name, emblem, colors, and visual customization |
 | **Headquarters** | Team's base providing passive bonuses and upgrade options *(see [2.7 Headquarters System](#27-headquarters-system))* |
@@ -907,6 +941,7 @@ Players can save up to **2 named formations**. Each formation saves:
 | Category | Rules |
 |:---|:---|
 | **Slot Requirements** | All 6 lineup slots must be filled. Cannot use same hero twice. Cannot use heroes on multiple teams |
+| **Roster Requirement** | The team must have at least 6 combat-ready heroes to enter a match at all *(see [Starting Roster & Match Eligibility](#starting-roster--match-eligibility))* |
 | **Cooldowns & Restrictions** | No cooldown between matches. Cannot change formation during combat. Substitutions only on incapacitation |
 | **Resource Constraints** | HQ level determines available formations (base 2, expandable to 4–5 with upgrades). Advanced features unlock with player progression |
 
@@ -939,7 +974,7 @@ Each team has its own **Headquarters** serving as their base of operations, prov
 | **Library/Academy** | Enhances spell learning speed and magic school mastery gains |
 | **Forge/Workshop** | Improves crafting success rates and item durability |
 | **Treasury** | Increases passive gold generation and resource storage capacity |
-| **Barracks** | Expands hero roster capacity and improves team morale recovery |
+| **Barracks** | Hero roster capacity *(starting capacity: **10** heroes; upgrades expand beyond this)* and team morale recovery |
 | **Summoning Chamber** | Recruit junior heroes; time-limited *(e.g., 1 summon per week cycle)*; juniors aged between Min Age and Max Junior Age for their race; upgrading may reduce cooldown or improve quality |
 | **Arena** | Match venue with public seating; upgrading increases audience capacity, ticket revenue, and home advantage bonuses |
 
@@ -1068,10 +1103,23 @@ Spells provide tactical options based on hero **magic proficiency**.
 | Step | Description |
 |---:|:---|
 | **1** | Formation selection and setup *(each player can save up to 2 formations, set one as default, and manually select which to use)* |
-| **2** | Queue match in Redis |
-| **3** | PHP worker simulates turn-based combat |
-| **4** | XP, form, fatigue, and morale updates applied |
-| **5** | Result stored in `battles` table and broadcast via WebSocket |
+| **2** | **Roster eligibility check** — each team must have ≥ 6 combat-ready heroes; otherwise apply forfeit rules *(see below)* |
+| **3** | Queue match in Redis *(skipped for forfeit/draw outcomes)* |
+| **4** | PHP worker simulates turn-based combat *(when both teams are eligible)* |
+| **5** | XP, form, fatigue, and morale updates applied |
+| **6** | Result stored in `battles` table and broadcast via WebSocket |
+
+### Match Scoring
+
+Each **kill** (hero permanently removed from the opposing lineup during the match) awards **1 point** to the scoring team. The maximum possible score per team is **6** *(one kill per enemy lineup slot)*.
+
+| Outcome | Kill score | Simulation |
+|:---|:---|:---|
+| **Normal match** | 0–6 per team; higher score wins *(draw if tied)* | Full combat simulation |
+| **One team understaffed** (< 6 combat-ready heroes) | **3–0** for the eligible team | No simulation — automatic forfeit loss for the understaffed team |
+| **Both teams understaffed** | **0–0** | No simulation — automatic draw |
+
+> *League table points (Win = 3, Draw = 1, Loss = 0) are derived from the match winner/loser/draw outcome, not from the kill score directly. A 3–0 forfeit counts as a win for the eligible team.*
 
 ### Morale in Combat
 
@@ -1141,7 +1189,8 @@ Players **trade heroes and items** with other players within the same Kingdom.
 |:---|:---|
 | **Matchmaking** | Within groups; ensures fair competition based on tier and group assignment |
 | **Points System** | Win = **3 pts**, Draw = **1 pt**, Loss = **0 pts** |
-| **Match Outcomes** | Determined by heroes' primary stats, form, fatigue, level, age, and morale |
+| **Match Score** | Kill-based: 1 point per enemy hero killed; max 6 per team *(see [2.10 Combat System — Match Scoring](#match-scoring))* |
+| **Match Outcomes** | Simulated matches are determined by heroes' primary stats, form, fatigue, level, age, and morale. Understaffed teams forfeit without simulation *(3–0 or 0–0)* |
 | **Schedule** | Fixed schedule with rest days between matches for strategic management |
 | **Rewards** | Seasonal rewards based on final tier and group position |
 
@@ -1208,27 +1257,66 @@ Supports **player interaction**, strategy discussion, and **community building**
 
 ---
 
-## Known Issues & Open Questions
+## 2.15 Dungeon System
 
-| # | Category | Issue | Severity | Notes |
-|---:|:---|:---|:---|:---|
-| 1 | **Combat** | No combat formulas documented — HP, damage, defense, accuracy, dodge, critical hit, and status effect calculations are undefined | Important | Section 2.10 is high-level only |
-| 2 | **Morale** | "Base morale value" referenced in Marketplace (2.11) but never defined — unclear what value morale resets to when a hero changes teams | Important | Is it 50? 100? Race-specific? |
-| 3 | **Roster** | Base hero roster size never stated — Barracks "expands capacity" but starting capacity is unknown | Important | Section 2.7 |
-| 4 | **Onboarding** | Hero acquisition flow undocumented — how many starting heroes? What level/age? How does initial team setup work? | Important | Kingdom Settings mention "starting resources" but no details |
-| 5 | **Missing Systems** | Dungeon System referenced in tick schedule (2.2) and Crystal earning (2.3) but has no dedicated section | Important | Needs own section or removal from references |
-| 6 | **Missing Systems** | Crafting System referenced in tick schedule (2.2) and Economy (2.3) but undocumented | Important | Forge/Workshop facility exists but no crafting rules |
-| 7 | **Missing Systems** | Quest System referenced in Gold earning (2.3) but no quest mechanics documented | Important | "Daily login bonuses and quest completions" |
-| 8 | **Missing Systems** | Item Durability & Enchanting referenced in Essence spending (2.3) but not covered in Item System (2.8) | Important | Essence costs listed but no mechanics |
-| 9 | **Missing Systems** | Friendly Matches listed in tick schedule (2.2) but no rules or purpose documented | Minor | |
-| 10 | **Missing Systems** | Arena Match mechanics not documented — only arena as HQ facility with ticket revenue | Minor | No standalone combat mode rules |
-| 11 | **Balance** | Genie stat budget (8.85 total multiplier) is 10.6% higher than Human baseline (8.00) with no equipment restrictions | Design | Only tradeoff is 0.5x training speed and 2000yr lifespan — but lifespan is an advantage |
-| 12 | **Data** | Giant→Genie relationship is 60 (Neutral) but Genie→Giant is 70 (Positive) — only asymmetric pair in the entire matrix | Design | Intentional or typo? All other 27 pairs are symmetric |
-| 13 | **Clarity** | Ent KON base multiplier unclear — table shows 1.3x as final value but text says "additional +15% bonus on top of base" without stating the base (presumably 1.15x) | Minor | Table and explanation should agree |
-| 14 | **Clarity** | Training speed modifier actual penalty unclear — example says cost-per-point is identical across races, meaning the only penalty is calendar time, not gold efficiency | Minor | Should state explicitly that slow races pay time, not gold |
-| 15 | **Clarity** | "Death Expectation" naming is slightly misleading — sounds like expected age of death but actually means when mortality risk begins increasing; heroes commonly survive past it | Minor | Consider "Mortality Threshold" or add clarifying note |
-| 16 | **Race Data** | Race Relationship Breakdown has ~12 values assigned to wrong tier labels per defined ranges — e.g., values of 20 labeled "Negative" instead of "Hostile", values of 30 labeled "Neutral" instead of "Negative" | Minor | Tier ranges: 90–100 Highly Positive, 70–89 Positive, 50–69 Neutral, 21–49 Negative, 0–20 Hostile |
+> [!NOTE]
+> **Future Feature**: The Dungeon System is a future feature (Phase 7 of the implementation roadmap). It is not currently implemented or operational.
+
+### Concept
+
+- PvE encounters run via server tick processing
+- Teams enter dungeons for XP, Essence, and rare item rewards
+- Dungeon difficulty tiers scale with team level and progression
+
+### Key Mechanics (to be defined)
+
+- Dungeon types: solo, group, raid
+- Encounter generation and enemy scaling
+- Reward tables per tier and per kingdom settings
+- Fatigue/cooldown costs for participation
+- Integration with Event System calendar ticks
+
+> *See [systems/dungeon-system.md](systems/dungeon-system.md) for implementation details.*
+
+---
+
+## 2.16 Quest System
+
+### Concept
+
+- Daily, weekly, and story-driven quests provide structured progression goals
+- Quests reward Gold, Crystals, Essence, and items
+
+### Key Mechanics (to be defined)
+
+- Quest types: daily (reset each day), weekly (reset each week), story (one-time), repeatable
+- Quest generation rules and limits per player
+- Reward scaling with player level and kingdom settings
+- Expiration and auto-fail conditions
+
+> *See [systems/quest-system.md](systems/quest-system.md) for implementation details.*
+
+---
+
+## 2.17 Crafting System
+
+### Concept
+
+- Players craft items from materials using Essence
+- Success rates vary by recipe difficulty and player facilities
+- Dismantling unwanted items returns Essence
+
+### Key Mechanics (to be defined)
+
+- Recipe model: inputs (materials + Essence) → output (item of specific rarity)
+- Success rate calculations (affected by HQ Forge level, Crafting Boost kingdom setting)
+- Crafting queue processing via server ticks
+- Dismantle rules: Essence return rates by item rarity
+
+> *See [systems/crafting-system.md](systems/crafting-system.md) for implementation details.*
 
 ---
 
 **End of System Documentation**
+
+> For known documentation gaps, design questions, and open issues see [known-issues.md](known-issues.md).

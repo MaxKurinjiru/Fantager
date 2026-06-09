@@ -1,0 +1,70 @@
+{% set phase = hero_age_phase(hero) %}
+{% set p_icon = hero_age_phase_icon(hero) %}
+
+<div data-roster-filter-target="card"
+     data-name="{{ hero.name|lower }}"
+     data-race="{{ hero.race.value }}"
+     data-status="{{ hero.status.value }}"
+     data-level="{{ hero.level }}"
+     data-age="{{ hero.age }}"
+     data-morale="{{ hero.morale }}"
+     data-form="{{ hero.form }}"
+     data-str="{{ hero.str }}"
+     data-dex="{{ hero.dex }}"
+     data-kon="{{ hero.kon }}"
+     data-spd="{{ hero.spd }}"
+     data-int="{{ hero.intel }}"
+     class="relative bg-gray-900/60 backdrop-blur-md border border-gray-800 hover:border-emerald-500/20 rounded-xl p-5 flex flex-col justify-between shadow-lg hover:shadow-emerald-950/5 transition-all">
+    
+    <div>
+        {# Card Header #}
+        <div class="flex justify-between items-start gap-2 mb-4 pr-16">
+            <div class="flex items-center gap-3">
+                {% include 'components/hero/avatar.html.twig' with { race: hero.race } %}
+                <div>
+                    <h3 class="font-bold text-white leading-tight hover:text-emerald-400">
+                        <a href="{{ path('app_heroes_detail', {id: hero.id}) }}">{{ hero.name }}</a>
+                    </h3>
+                    <p class="text-xs text-gray-550 mt-0.5">Level {{ hero.level }} &bull; {{ hero.race.value|capitalize }}</p>
+                </div>
+            </div>
+        </div>
+
+        {# Status Badge #}
+        <div class="absolute top-4 right-4">
+            {% include 'components/hero/status_badge.html.twig' with { status: hero.status } %}
+        </div>
+
+        {# Secondary Attributes List #}
+        <div class="grid grid-cols-3 gap-3 bg-gray-950/60 border border-gray-800/60 p-3 rounded-lg mb-4 text-center">
+            <div>
+                <span class="block text-[10px] text-gray-500 uppercase font-semibold">Age</span>
+                <span class="text-sm font-bold text-gray-200" title="{{ phase }} Phase">{{ hero.age }} {{ p_icon }}</span>
+            </div>
+            <div>
+                <span class="block text-[10px] text-gray-500 uppercase font-semibold">Form</span>
+                <span class="text-sm font-bold text-gray-200">{{ hero.form }}%</span>
+            </div>
+            <div>
+                <span class="block text-[10px] text-gray-500 uppercase font-semibold">Fatigue</span>
+                <span class="text-sm font-bold text-gray-200">{{ hero.fatigue }}%</span>
+            </div>
+        </div>
+
+        {# Attributes Grid #}
+        {% include 'components/hero/compact_attributes.html.twig' with { hero: hero } %}
+    </div>
+
+    {# Actions #}
+    <div class="flex gap-2">
+        <a href="{{ path('app_heroes_detail', {id: hero.id}) }}" class="btn btn-outline btn--sm flex-1">
+            Inspect
+        </a>
+        <a href="{{ path('app_training') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="Train Hero">
+            🏋️
+        </a>
+        <a href="{{ path('app_inventory') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="Equip Hero">
+            🎒
+        </a>
+    </div>
+</div>

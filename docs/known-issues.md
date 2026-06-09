@@ -1,20 +1,20 @@
-# Known Issues (short table)
+# Known Issues & Open Questions
 
-This file summarizes the short list of known documentation issues discovered during the repo scan.
+This file is the single source of truth for documentation gaps, design questions, and known inconsistencies.
 
-| # | Area | Issue | Severity |
-|---:|---|---|---:|
-| 1 | Combat | No combat formulas documented (HP, damage, accuracy, crits) | High |
-| 2 | Morale | "Base morale value" undefined for hero transfers | High |
-| 3 | Roster | Starting hero roster size not specified | High |
-| 4 | Dungeon | Dungeon System placeholder exists, but encounter rules, rewards and tick processing are still undefined | High |
-| 5 | Quest | Quest System placeholder exists, but quest generation, limits and rewards are still undefined | High |
-| 6 | Crafting | Crafting System placeholder exists, but recipes, success rates and dismantle rules are still undefined | High |
-| 7 | Item System | Durability & enchanting mechanics referenced but undefined | High |
-| 8 | Balance | Genie stat budget appears higher than baseline (possible design issue) | Medium |
-| 9 | Clarity | Ent KON multiplier text/table inconsistent | Low |
-|10 | Terminology | "Death Expectation" ambiguous—consider renaming | Low |
-|11 | Training | Training speed semantics need clarification (time vs cost) | Low |
+| # | Area | Issue | Severity | Notes |
+|---:|---|---|---|---|
+| 1 | Combat | No combat formulas documented (HP, damage, defense, accuracy, dodge, crits, status effects) | High | Section 2.10 is high-level only |
+| 5 | Item System | Durability & enchanting mechanics referenced in Essence spending (2.3) but undefined in Item System (2.8) | High | Essence costs listed but no mechanics |
+| 6 | Dungeon | Dungeon System has placeholder section (2.15) but encounter rules, rewards and tick processing still undefined | Medium | Moved to Phase 7 (Future Feature) |
+| 7 | Quest | Quest System has placeholder section (2.16) but quest generation, limits and rewards still undefined | Medium | |
+| 8 | Crafting | Crafting System has placeholder section (2.17) but recipes, success rates and dismantle rules still undefined | Medium | |
+| 13 | Terminology | "Death Expectation" naming misleading — means when mortality risk begins, not expected death age | Low | Consider "Mortality Threshold" or add clarifying note |
+| 14 | Missing Mechanics | Friendly Matches listed in tick schedule (2.2) but no rules or purpose documented | Low | |
+| 15 | Missing Mechanics | Arena Match mechanics not documented — only arena as HQ facility with ticket revenue | Low | No standalone combat mode rules |
+| 16 | Public Section | Homepage content and layout not fully specified — news feed count, CMS vs static, SEO requirements | Medium | See [00-public-pages.md](screens/00-public-pages.md) |
+| 17 | Public Section | Wiki/Help system undocumented — content structure, categorization, search, static vs DB-driven | Medium | |
+| 19 | Auth UX | Modal login/register behavior not fully specified — animations, mobile responsiveness, deep-link support (e.g. `/login` opening modal) | Low | |
 
 Keep this file updated as fixes are applied.
 Remove point(s) from this list when fixed.

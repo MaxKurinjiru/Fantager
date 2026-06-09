@@ -1,0 +1,52 @@
+{# templates/components/hero/status_panel.html.twig #}
+<div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
+    <div>
+        <h2 class="text-xl font-bold text-white mb-1">Status & Condition</h2>
+        <p class="text-xs text-gray-550">Current physical state and recovery metrics.</p>
+    </div>
+
+    <div class="space-y-5">
+        {# Form #}
+        <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold">
+                <span class="text-gray-400">Combat Form</span>
+                <span class="text-gray-200">{{ hero.form }}%</span>
+            </div>
+            {% include 'components/ui/progress_bar.html.twig' with {
+                percentage: hero.form,
+                color_class: hero.form > 75 ? 'bg-green-500' : (hero.form > 40 ? 'bg-yellow-500' : 'bg-red-500')
+            } %}
+        </div>
+
+        {# Fatigue #}
+        <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold">
+                <span class="text-gray-400">Fatigue Level</span>
+                <span class="text-gray-200">{{ hero.fatigue }}%</span>
+            </div>
+            {% include 'components/ui/progress_bar.html.twig' with {
+                percentage: hero.fatigue,
+                color_class: hero.fatigue < 30 ? 'bg-green-500' : (hero.fatigue < 70 ? 'bg-yellow-500' : 'bg-red-500')
+            } %}
+        </div>
+
+        {# Morale #}
+        <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold">
+                <span class="text-gray-400">Morale</span>
+                <span class="text-gray-200 flex items-center gap-1">
+                    {{ hero.morale }}%
+                    {% if hero.morale >= 80 %}🥰
+                    {% elseif hero.morale >= 60 %}🙂
+                    {% elseif hero.morale >= 40 %}😐
+                    {% elseif hero.morale >= 20 %}🙁
+                    {% else %}😭{% endif %}
+                </span>
+            </div>
+            {% include 'components/ui/progress_bar.html.twig' with {
+                percentage: hero.morale,
+                color_class: 'bg-purple-500'
+            } %}
+        </div>
+    </div>
+</div>

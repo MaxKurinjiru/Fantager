@@ -1,0 +1,20 @@
+{% set percentage = percentage|default(0) %}
+{# Convert percentage to float manually since floatval filter may not exist depending on Twig environment #}
+{% set pct = (percentage + 0) %}
+{% if pct > 100 %}{% set pct = 100 %}{% endif %}
+{% if pct < 0 %}{% set pct = 0 %}{% endif %}
+
+{% set color_class = color_class|default('bg-emerald-500') %}
+{% set height_class = height_class|default('h-2') %}
+{% set bg_class = bg_class|default('bg-gray-950') %}
+{% set border_class = border_class|default('border-gray-800/80') %}
+
+{% set default_container = 'w-full ' ~ bg_class ~ ' rounded-lg ' ~ height_class ~ ' border ' ~ border_class ~ ' p-0.5' %}
+{% set container_class = container_class|default(default_container) %}
+
+{% set default_progress = color_class ~ ' h-1 rounded-full transition-all' %}
+{% set progress_class = progress_class|default(default_progress) %}
+
+<div class="{{ container_class }}">
+    <div class="{{ progress_class }}" style="width: {{ pct }}%"></div>
+</div>

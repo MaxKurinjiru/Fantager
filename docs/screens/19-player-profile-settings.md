@@ -8,7 +8,7 @@ Displayed Information:
 - Account Info: username, email, kingdom, member since, supporter tier
 - Notification Settings: email/in-game toggles and frequency
 - Privacy Settings: profile visibility, HQ visitor access, allow trade requests
-- Language & Display settings and accessibility options
+- **Language & Display**: interface language selector (Czech / English); selected locale is saved to `User.locale` and applied on every page load in the inside section
 
 Possible Actions/Buttons:
 - Edit Email

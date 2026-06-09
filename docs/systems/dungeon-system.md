@@ -1,22 +1,40 @@
 # Dungeon System
 
-Reference: [game-summary.md](../game-summary.md#22-event-system)
+> [!NOTE]
+> **Future Feature**: The Dungeon System is planned for a future release (Phase 7 of the roadmap). It is not implemented, active, or expected to function in the current version of the project. The entities and endpoints listed below are for architectural reference only.
 
-Purpose: Placeholder for dungeon mechanics, rewards, and server tick interactions.
+Reference: [game-summary.md](../game-summary.md#215-dungeon-system)
 
-Sections to fill:
-- Dungeon types and tiers
-- Enemy scaling and loot tables
-- Dungeon participation rules and rewards
-- Server tick processing and dungeon job handling
-- Integration with Event and Economy systems
-- Tests and performance considerations
+Purpose: Detail dungeon mechanics, rewards, and run processing.
 
-Example TODOs:
-- [ ] Define dungeon types (solo, group, raid)
-- [ ] Specify XP and Essence rewards per tier
-- [ ] Add DB schema for dungeon runs and rewards
-- [ ] Document API endpoints for dungeon entry/result
+## Dungeon Run Entity
 
-Notes:
-- This file is a placeholder created to surface the missing Dungeon System referenced in `game-summary.md`.
+Dungeon runs are represented and logged in the database using the `DungeonRun` entity.
+
+### DungeonRun Entity
+Tracks the state, configuration, and results of a dungeon encounter.
+* **kingdom** (`Kingdom` relation): The kingdom/server where the dungeon run takes place.
+* **team** (`Team` relation): The team executing the dungeon run.
+* **dungeonKey** (`string`): Reference key to the configuration of the specific dungeon (e.g., loaded from `config/game/dungeons/*.yaml`).
+* **formation** (`Formation` relation, nullable): The lineup configuration/formation used for the dungeon run.
+* **result** (`DungeonResult` enum): `win`, `loss`, or `abandoned`.
+* **rewardsXp** (`int`): Experience points awarded to participating heroes.
+* **rewardsEssence** (`int`): Rarity-specific essence awarded to the team's wallet.
+* **rewardsItems** (`json` array): List of item definitions awarded as loot.
+* **completedAt** (`DateTimeImmutable`, nullable): Timestamp when the run was completed or resolved.
+
+---
+
+## Dungeon Mechanics
+
+1. **Definitions**: Dungeons are defined in game configuration files (`config/game/dungeons/*.yaml`) containing enemy levels, scaling, and loot tables.
+2. **Participation**: A team selects a dungeon and a formation of combat-ready heroes to start the dungeon run.
+3. **Resolution**: Dungeon runs simulate battles against scaling enemy encounters. The final result resolves as `win` or `loss`, and rewards are credited to the team and heroes on completion.
+
+---
+
+## APIs (v1)
+
+* `POST /api/v1/dungeons/enter` — Start a dungeon run.
+* `GET /api/v1/dungeons/{runId}/result` — Get details of a completed dungeon run, including combat logs and rewards.
+

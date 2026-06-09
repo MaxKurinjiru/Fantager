@@ -1,0 +1,102 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}Formation Lineup & Tactics — Fantager{% endblock %}
+
+{% block body %}
+{% set selected_formation_id = app.request.query.get('formation_id') %}
+{% set selected_formation = null %}
+
+{% if selected_formation_id %}
+    {% for f in formations %}
+        {% if f.id == selected_formation_id %}
+            {% set selected_formation = f %}
+        {% endif %}
+    {% endfor %}
+{% else %}
+    {# Search default #}
+    {% for f in formations %}
+        {% if f.isDefault %}
+            {% set selected_formation = f %}
+        {% endif %}
+    {% endfor %}
+    {# Fallback to first #}
+    {% if not selected_formation and formations|length > 0 %}
+        {% set selected_formation = formations[0] %}
+    {% endif %}
+{% endif %}
+
+{% set current_slots = {} %}
+{% if selected_formation %}
+    {% for slot in selected_formation.slots %}
+        {% if slot.hero %}
+            {% set current_slots = current_slots|merge({(slot.position.value): slot.hero}) %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="formation">
+    
+    {# --- Header Section --- #}
+    {% set right_content %}
+        <div class="flex items-center gap-4 shrink-0 w-full md:w-auto">
+            <select data-formation-target="formationSelect" data-action="change->formation#changeFormation"
+                    class="rounded-xl bg-gray-900 border border-gray-800 px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-emerald-500 font-semibold w-full sm:min-w-[200px]">
+                <option value="">-- Create New Formation --</option>
+                {% for f in formations %}
+                    <option value="{{ f.id }}" {% if selected_formation and selected_formation.id == f.id %}selected{% endif %}>
+                        {{ f.name }} {% if f.isDefault %}(Default){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+            
+            {% if selected_formation %}
+                <button data-action="click->formation#delete" data-formation-id="{{ selected_formation.id }}"
+                        class="btn btn-outline border-red-950/40 text-red-400 hover:text-white hover:bg-red-900 px-4 py-2.5 text-xs font-bold uppercase tracking-wider">
+                    Delete
+                </button>
+            {% endif %}
+        </div>
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'Formation & Strategy',
+        subtitle: 'Organize your starting line-ups and select match tactics.',
+        right_content: right_content
+    } %}
+
+    {# --- Alert Box --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'formation',
+        message_target: 'alertMessage',
+        close_action: 'formation#closeAlert'
+    } %}
+
+    {# --- Main Grid Layout --- #}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {# LEFT & MIDDLE COLUMN: 3x3 Lineup Grid & Strategy Options (2 Columns) #}
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-8">
+                <div>
+                    <h2 class="text-xl font-bold text-white mb-1">Starting Lineup</h2>
+                    <p class="text-xs text-gray-550">Arrange 6 heroes on the field positions. Drag heroes from pool or use quick assigns.</p>
+                </div>
+
+                {# Visual Pitch Representation #}
+                {% include 'components/formation/pitch_grid.html.twig' with { current_slots: current_slots, heroes: heroes } %}
+            </div>
+        </div>
+
+        {# RIGHT COLUMN: Tactics Options & Hero Pool (1 Column) #}
+        <div class="lg:col-span-1 space-y-6">
+            {# Strategy Settings #}
+            {% include 'components/formation/strategy_settings.html.twig' with { selected_formation: selected_formation } %}
+
+            {# Roster Hero pool #}
+            {% include 'components/formation/hero_pool.html.twig' with { heroes: heroes } %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

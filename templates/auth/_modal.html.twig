@@ -1,0 +1,210 @@
+{#
+  Auth modal — login and register panels with JS-controlled tab switching.
+  Included in base.html.twig for all unauthenticated users.
+
+  Variables resolved with fallbacks so the modal works on any page:
+    - error / last_username  → passed by AuthController on /login error
+    - errors / form_data     → passed by RegisterController on /register error
+    - kingdoms               → passed by RegisterController; otherwise loaded via auth_kingdoms()
+#}
+{% if not app.user %}
+
+{# Resolve variables with safe fallbacks #}
+{% set modal_error         = error         is defined ? error         : null %}
+{% set modal_last_username = last_username is defined ? last_username : ''   %}
+{% set modal_errors        = errors        is defined ? errors        : {}   %}
+{% set modal_form_data     = form_data     is defined ? form_data     : {}   %}
+{% if kingdoms is defined %}
+    {% set modal_kingdoms = kingdoms %}
+{% else %}
+    {% set modal_kingdoms = auth_kingdoms() %}
+{% endif %}
+
+{# ── Overlay backdrop ──────────────────────────────────────────────────── #}
+<div data-auth-modal-target="overlay"
+    data-action="click->auth-modal#closeOverlay"
+    class="hidden modal-overlay"
+    aria-hidden="true">
+
+    {# ── Modal box ─────────────────────────────────────────────────────── #}
+        <div class="modal-box"
+            role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" tabindex="-1">
+
+        {# Close button #}
+        <button type="button"
+            data-action="click->auth-modal#close"
+            class="modal-close"
+            aria-label="{{ 'modal.close'|trans }}">
+            <span aria-hidden="true" class="text-xl leading-none">✕</span>
+            <span class="sr-only">{{ 'modal.close'|trans }}</span>
+        </button>
+
+        {# ══════════════════════════════════════════════════════════════════
+           LOGIN PANEL
+           ══════════════════════════════════════════════════════════════════ #}
+        <div data-auth-modal-target="loginPanel" class="p-8">
+            <h2 id="auth-modal-title" class="text-2xl font-bold text-emerald-400 mb-6">{{ 'auth.login_title'|trans }}</h2>
+
+            {% if modal_error %}
+                <div class="mb-4 rounded px-4 py-3 text-sm bg-red-900 text-red-200 border border-red-700">
+                    {{ modal_error.messageKey|trans(modal_error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{{ path('app_login') }}" class="space-y-4">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <div>
+                    <label for="modal_email" class="block text-sm text-gray-400 mb-1">{{ 'auth.email'|trans }}</label>
+                    <input type="email" id="modal_email" name="_username"
+                           value="{{ modal_last_username }}" required autofocus
+                           class="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-gray-100
+                                  focus:outline-none focus:border-emerald-400">
+                </div>
+
+                <div>
+                    <label for="modal_password" class="block text-sm text-gray-400 mb-1">{{ 'auth.password'|trans }}</label>
+                    <input type="password" id="modal_password" name="_password" required
+                           class="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-gray-100
+                                  focus:outline-none focus:border-emerald-400">
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="modal_remember_me" name="_remember_me" value="on" class="rounded">
+                    <label for="modal_remember_me" class="text-sm text-gray-400">{{ 'auth.remember_me'|trans }}</label>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-semibold py-2 rounded">
+                    {{ 'auth.submit_login'|trans }}
+                </button>
+            </form>
+
+            <div class="mt-4 text-sm text-gray-500 space-y-1">
+                <p>
+                        <button type="button"
+                            data-action="click->auth-modal#switchToRegister"
+                            class="text-emerald-400 hover:underline bg-transparent border-none cursor-pointer p-0">
+                        {{ 'auth.switch_to_register'|trans }}
+                    </button>
+                </p>
+                <p>
+                    <a href="{{ path('app_password_reset') }}" class="text-emerald-400 hover:underline">
+                        {{ 'auth.forgot_password'|trans }}
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        {# ══════════════════════════════════════════════════════════════════
+           REGISTER PANEL
+           ══════════════════════════════════════════════════════════════════ #}
+        <div data-auth-modal-target="registerPanel" class="hidden p-8">
+            <h2 id="auth-modal-title" class="text-2xl font-bold text-emerald-400 mb-6">{{ 'auth.register_title'|trans }}</h2>
+
+            <form method="POST" action="{{ path('app_register') }}" class="space-y-4">
+                <input type="hidden" name="_token" value="{{ csrf_token('register') }}">
+
+                {# Email #}
+                <div>
+                    <label for="modal_reg_email" class="block text-sm text-gray-400 mb-1">{{ 'auth.email'|trans }}</label>
+                          <input type="email" id="modal_reg_email" name="email" required maxlength="180"
+                              value="{{ modal_form_data.email ?? '' }}"
+                              class="w-full rounded bg-gray-800 border {{ modal_errors.email is defined ? 'border-red-500' : 'border-gray-700' }} px-3 py-2 text-gray-100 focus:outline-none focus:border-emerald-400">
+                    {% if modal_errors.email is defined %}
+                        <p class="text-red-400 text-xs mt-1">{{ modal_errors.email|trans }}</p>
+                    {% endif %}
+                </div>
+
+                {# Password #}
+                <div>
+                    <label for="modal_reg_password" class="block text-sm text-gray-400 mb-1">
+                        {{ 'auth.password'|trans }}
+                        <span class="text-gray-500">{{ 'auth.password_hint'|trans }}</span>
+                    </label>
+                    <input type="password" id="modal_reg_password" name="password" required minlength="8" maxlength="4096"
+                           class="w-full rounded bg-gray-800 border {{ modal_errors.password is defined ? 'border-red-500' : 'border-gray-700' }} px-3 py-2 text-gray-100 focus:outline-none focus:border-emerald-400">
+                    {% if modal_errors.password is defined %}
+                        <p class="text-red-400 text-xs mt-1">{{ modal_errors.password|trans }}</p>
+                    {% endif %}
+                </div>
+
+                {# Confirm password #}
+                <div>
+                    <label for="modal_reg_confirm" class="block text-sm text-gray-400 mb-1">{{ 'auth.password_confirm'|trans }}</label>
+                    <input type="password" id="modal_reg_confirm" name="confirm_password" required
+                           class="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-gray-100
+                                  focus:outline-none focus:border-emerald-400">
+                </div>
+
+                {# Nickname #}
+                <div>
+                    <label for="modal_display_name" class="block text-sm text-gray-400 mb-1">{{ 'auth.display_name'|trans }}</label>
+                    <input type="text" id="modal_display_name" name="display_name" required maxlength="50"
+                           value="{{ modal_form_data.display_name ?? '' }}"
+                           class="w-full rounded bg-gray-800 border {{ modal_errors.display_name is defined ? 'border-red-500' : 'border-gray-700' }} px-3 py-2 text-gray-100 focus:outline-none focus:border-emerald-400">
+                    {% if modal_errors.display_name is defined %}
+                        <p class="text-red-400 text-xs mt-1">{{ modal_errors.display_name|trans }}</p>
+                    {% endif %}
+                </div>
+
+                {# Kingdom selection #}
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">
+                        {{ 'auth.choose_kingdom'|trans }}
+                        <span class="text-gray-500">{{ 'auth.kingdom_permanent_warn'|trans }}</span>
+                    </label>
+                    {% if modal_errors.kingdom is defined %}
+                        <p class="text-red-400 text-xs mb-2">{{ modal_errors.kingdom|trans }}</p>
+                    {% endif %}
+
+                    {% if modal_kingdoms is empty %}
+                        <p class="text-yellow-400 text-sm">{{ 'auth.kingdom_no_available'|trans }}</p>
+                        <input type="hidden" name="kingdom_id" value="0">
+                    {% else %}
+                        <div class="space-y-2">
+                            {% for entry in modal_kingdoms %}
+                                {% set k    = entry.kingdom %}
+                                {% set full = entry.capacity > 0 and entry.playerCount >= entry.capacity %}
+                                <label class="flex items-start gap-3 p-3 rounded border cursor-pointer
+                                              {{ full ? 'border-gray-700 opacity-50 cursor-not-allowed' : 'border-gray-600 hover:border-emerald-400' }}
+                                              {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'border-emerald-400' : '' }}">
+                                                     <input type="radio" name="kingdom_id" value="{{ k.id }}"
+                                           {{ full ? 'disabled' : '' }}
+                                           {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'checked' : '' }}
+                                                         class="mt-1 accent-emerald-400">
+                                    <div>
+                                        <div class="font-semibold text-gray-200">{{ k.name }}</div>
+                                        <div class="text-xs text-gray-500">
+                                            {{ 'auth.kingdom_language'|trans }} {{ k.language }} &bull;
+                                            {{ 'auth.kingdom_speed'|trans }} {{ k.gameSpeed }}x &bull;
+                                            {{ 'auth.kingdom_season'|trans }} {{ k.seasonLength }} {{ 'auth.kingdom_days'|trans }} &bull;
+                                            {{ 'auth.kingdom_players'|trans }} {{ entry.playerCount }}{% if entry.capacity > 0 %}/{{ entry.capacity }}{% endif %}
+                                            {% if full %}&bull; <span class="text-red-400">{{ 'auth.kingdom_full'|trans }}</span>{% endif %}
+                                        </div>
+                                    </div>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-semibold py-2 rounded">
+                    {{ 'auth.submit_register'|trans }}
+                </button>
+            </form>
+
+            <p class="mt-4 text-sm text-gray-500">
+                <button type="button"
+                    data-action="click->auth-modal#switchToLogin"
+                    class="text-emerald-400 hover:underline bg-transparent border-none cursor-pointer p-0">
+                    {{ 'auth.switch_to_login'|trans }}
+                </button>
+            </p>
+        </div>
+
+    </div>{# /modal box #}
+</div>{# /overlay #}
+
+{% endif %}

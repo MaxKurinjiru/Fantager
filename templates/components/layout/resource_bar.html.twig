@@ -1,0 +1,14 @@
+{% set team = team|default(app.user.team ?? null) %}
+{% if team %}
+    {# Resource Bar #}
+    <div class="flex flex-col gap-0.5 bg-gray-950 px-2 sm:px-3 py-1 rounded-lg border border-gray-800 text-[10px] sm:text-xs">
+        <div class="flex items-center gap-1.5" title="Gold">
+            <span class="text-yellow-500 text-xs">🪙</span>
+            <span class="font-semibold text-gray-200 leading-none">{{ team.gold|number_format(0, '.', ' ') }}</span>
+        </div>
+        <div class="flex items-center gap-1.5" title="Crystals">
+            <span class="text-cyan-400 text-xs">💎</span>
+            <span class="font-semibold text-gray-200 leading-none">{{ team.crystals|number_format(0, '.', ' ') }}</span>
+        </div>
+    </div>
+{% endif %}

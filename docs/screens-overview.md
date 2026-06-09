@@ -11,9 +11,19 @@
 
 ---
 
+## Site Structure
+
+The site is divided into two main sections:
+
+- **Public section** (`/`) — Unauthenticated. Includes Homepage, wiki/help, news archive. Login/Register are modal windows on these pages. See [00-public-pages.md](screens/00-public-pages.md).
+- **Inside section** (authenticated) — Game content. Team Dashboard is the default landing page after login. All screens below belong to this section.
+
+---
+
 ## Table of Contents
 
 - [Summary](#summary)
+- [Site Structure](#site-structure)
 - [1. Kingdom Selection Screen](#1-kingdom-selection-screen)
 - [2. Team Dashboard (Main Screen)](#2-team-dashboard-main-screen)
 - [3. Hero Roster Screen](#3-hero-roster-screen)
@@ -113,7 +123,7 @@
   - Race (icon)
   - Level
   - Age (+ phase icon: Junior/Prime/Veteran/Elder)
-  - Primary stats (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) - compact display
+  - Primary stats (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) — values 1–20, compact display
   - Form (%)
   - Fatigue (%)
   - Morale (value + icon)
@@ -152,7 +162,7 @@
   - Level + XP progress bar
   - Age (+ milestone indicator)
 - **Primary Attributes:**
-  - STR, DEX, KON, SPD, INT, WIL, CHA, LCK (values + race multiplier tooltip)
+  - STR, DEX, KON, SPD, INT, WIL, CHA, LCK (values + race flat bonus tooltip)
 - **Secondary Attributes:**
   - Form (% + visual indicator)
   - Fatigue (% + visual indicator)
@@ -204,13 +214,10 @@
   - **Magic Training** (Spell Slots, School Mastery, Spell Learning)
   - **Form & Recovery**
 - **Attribute Training View:**
-  - 8 primary attributes (STR-LCK)
-  - Current value
-  - Training cost (Gold)
-  - Expected increase
-  - Trainer cap (if assigned)
-  - Success rate (%)
-  - Estimated time (server tick cycles)
+  - Select one primary attribute to train
+  - Optional Trainer (cap = Trainer's value for selected attribute)
+  - Assign one or more heroes to the job
+  - Per hero: current value, cost, expected increase, success rate, estimated time
 - **Magic Training View:**
   - **Spell Slot Expansion:** current/max, cost, requirements
   - **School Mastery:** 6 schools, current tier, upgrade cost (Gold + Essence), requirements
@@ -225,9 +232,8 @@
   - Cancellation option
 
 ### Possible Actions/Buttons:
-- **Start Training** - begin training session
-- **Queue Multiple** - add multiple sessions to queue
-- **Assign Trainer** - select available trainer for attribute training
+- **Start Training** - configure attribute, optional trainer, and heroes
+- **Queue Multiple** - add multiple jobs to queue
 - **Cancel Training** - cancel scheduled training
 - **Buy Training Package** - bulk training with discount (if implemented)
 - **View Trainer List** - navigate to Trainer Management
@@ -247,27 +253,25 @@
 - **Trainer List:**
   - Trainer name
   - Original race
-  - Attribute values (STR, DEX, KON, SPD, INT, WIL, CHA, LCK)
+  - Attribute values (STR–LCK, frozen at conversion, 1–20)
   - Age (+ Death Expectation warning)
   - Status (Active, Aging risk)
-  - Assigned to hero (if any)
 - **Trainer Detail (when selected):**
-  - Full stats
+  - Full stats and training history (jobs by target attribute)
   - Age progression timeline
-  - Training history
   - Cost (if on Marketplace)
 
 ### Possible Actions/Buttons:
-- **Assign to Hero** - assign trainer to hero for training
-- **Unassign** - remove assignment
 - **Sell on Marketplace** - list trainer
 - **Buy from Marketplace** - navigate to Marketplace filtered by Trainers
-- **Convert Hero to Trainer** - navigate to Hero Detail or quick modal
+- **Convert Hero to Trainer** - permanent conversion (no specialty; assign on Training Screen)
+
+Note: Trainer assignment happens on the **Training Screen** when configuring an attribute training job.
 
 ### Backend Requirements:
 - Trainers list endpoint
-- Trainer assignment/unassignment
 - Marketplace integration
+- Trainer conversion endpoint
 
 ---
 
@@ -340,7 +344,7 @@
   - **Library/Academy:** Level, Bonus (magic training %), Upgrade Cost
   - **Forge/Workshop:** Level, Bonus (crafting success %), Upgrade Cost
   - **Treasury:** Level, Bonus (passive income), Storage Capacity, Upgrade Cost
-  - **Barracks:** Level, Roster Capacity, Morale Recovery Bonus, Upgrade Cost
+  - **Barracks:** Level, Roster Capacity (starting: 10), Morale Recovery Bonus, Upgrade Cost
   - **Summoning Chamber:** Level, Cooldown (days), Summon Quality, Upgrade Cost, Next Available Summon (countdown)
   - **Arena:** Level, Seating Capacity, Ticket Revenue (per cycle), Home Advantage Bonus, Upgrade Cost
 - **Passive Bonuses Summary:**
@@ -372,9 +376,11 @@
   - Summons Used this Cycle
   - Max Summons per Cycle (based on HQ level)
 - **Summon Parameters:**
-  - Race selection (dropdown or race icons)
-  - Age range preview (Min Age - Max Junior Age for selected race)
-  - Expected stat range (based on race multipliers)
+  - Arena Theme Adaptation (displaying the theme race of the home Arena)
+  - Potential summonable races list (based on affinity and relations with theme race)
+  - Starting level: **1**
+  - Age range preview (Min Age - Max Junior Age for summonable races)
+  - Expected stat range (based on race flat bonuses and Summoning Chamber level)
   - Summon Cost (Gold)
 - **Recent Summons (history):**
   - Recently acquired heroes
@@ -382,8 +388,6 @@
 
 ### Possible Actions/Buttons:
 - **Summon Hero** - start summon process (animation, reveal)
-- **Select Race** - choose race before summon
-- **Auto-Summon** - random race (if no preference)
 - **View Summoned Hero** - after summon navigate to Hero Detail
 - **Buy Another Slot** (if Crystals support) - expand summon capacity
 
@@ -490,7 +494,7 @@
 - **Battle Header:**
   - Opponent Team Name & Logo
   - Match Type (League, Friendly, Dungeon, Arena)
-  - Team1 vs Team2 scoreboard
+  - Kill score (0–6 per team; e.g. 3–2). Forfeit: 3–0; double understaffed: 0–0
 - **Combat Area (visual representation):**
   - **Front Line vs Front Line** (hero positions)
   - **Back Line vs Back Line**

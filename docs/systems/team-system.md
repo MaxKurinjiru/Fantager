@@ -2,9 +2,41 @@
 
 Reference: [game-summary.md](../game-summary.md#26-team-system)
 
-Purpose: Document team entities, aggregation endpoints (dashboard), and team-related mechanics.
+Purpose: Document team entities, roster rules, aggregation endpoints (dashboard), and team-related mechanics.
 
-Sections to fill:
+## Starting Roster
+
+| Rule | Value |
+|------|-------|
+| **Heroes at team creation** | **10** (6 for match lineup + 4 reserves) |
+| **Starting Barracks capacity** | **10** heroes (expandable via HQ upgrades) |
+| **Minimum to play a match** | **6** combat-ready heroes |
+| **Starting level** | **1** (all newly created heroes) |
+| **Starting age** | Random within **[Min Age, Max Junior Age]** per race |
+
+New teams (including NPC teams at Kingdom initialization) receive 10 heroes at level 1 so they can always field a full 6-hero lineup with substitution depth.
+
+## Match Eligibility
+
+If a team has fewer than 6 combat-ready heroes when a fixture is processed:
+
+- The match is **not simulated**
+- The understaffed team **automatically loses** with kill score **0–3** (opponent receives 3–0)
+- If **both** teams are understaffed: **0–0 draw**
+
+See [combat-system.md](combat-system.md#match-eligibility) for full rules.
+
+## NPC Teams
+
+Every team in the system, including AI-controlled opponents, is represented by the same `Team` entity. NPC teams are distinguished by `is_npc = true` and `user_id = NULL`.
+
+- **Auto-created on Kingdom initialization**: All slots up to kingdom capacity are filled with NPC teams before any real player joins.
+- **Fully staffed**: Each NPC team is created with **10 heroes** and a default formation.
+- **Assigned to a real player on registration**: When a player verifies their email, a random unclaimed NPC team (`user_id IS NULL`) in their Kingdom is assigned to them (`user_id` set). The team keeps `is_npc = true` until the player customizes it (TBD).
+- **AI-controlled gameplay**: NPC matches are resolved by the combat engine automatically; NPC teams do not submit lineup changes unless an AI controller is implemented.
+
+## Sections to Fill
+
 - Team data model and relations
 - Dashboard aggregation endpoints
 - Team-level stats (morale, reputation)
@@ -12,13 +44,11 @@ Sections to fill:
 - Permissions & settings
 - Implementation notes
 
+## Summary
 
+Teams aggregate heroes, formations, HQ, and economic resources. Team-level stats include morale, chemistry, and reputation. Roster depth (10 heroes at start) ensures teams can field 6-hero lineups; understaffed teams forfeit matches automatically.
 
-Summary:
-- Teams aggregate heroes, formations, HQ, and economic resources. Team-level stats include morale, chemistry, and reputation.
-- Dashboard endpoints should aggregate per-team stats and recent activity for the main screen.
+## APIs
 
-APIs:
-- GET /api/teams/{id}/dashboard — aggregated data for Team Dashboard
-- POST /api/teams/{id}/settings — update team settings
-
+- `GET /api/teams/{id}/dashboard` — aggregated data for Team Dashboard
+- `POST /api/teams/{id}/settings` — update team settings

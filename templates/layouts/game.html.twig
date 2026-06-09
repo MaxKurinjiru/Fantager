@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block layout_content %}
+    <div data-controller="mobile-menu" class="min-h-screen flex flex-col">
+        {% include 'components/layout/navbar.html.twig' with { is_guest: false } %}
+
+        {# Sidebar + Main Layout #}
+        <div class="flex flex-1 relative min-h-[calc(100vh-53px)]">
+            {# Backdrop #}
+            <div data-mobile-menu-target="backdrop" data-action="click->mobile-menu#close" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden"></div>
+
+            {% include 'components/layout/sidebar.html.twig' %}
+
+            <main class="flex-1 bg-gray-950 p-4 md:p-8 overflow-y-auto w-full">
+                {% include 'components/ui/flash_messages.html.twig' with { is_guest: false } %}
+
+                {% block body %}{% endblock %}
+            </main>
+        </div>
+        {# Account Settings Modal #}
+        {% include 'components/layout/_account_settings_modal.html.twig' %}
+    </div>
+{% endblock %}

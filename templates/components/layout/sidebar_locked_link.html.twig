@@ -1,0 +1,7 @@
+{# templates/components/layout/sidebar_locked_link.html.twig #}
+{% set emoji = emoji|default('') %}
+{% set label = label|default('') %}
+
+<div class="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-600 cursor-not-allowed select-none">
+    <span class="select-none">{{ emoji }}</span> {{ label|trans }} <span class="text-[9px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded uppercase font-semibold">{{ 'sidebar.lock'|trans }}</span>
+</div>

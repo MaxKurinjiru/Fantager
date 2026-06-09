@@ -1,0 +1,46 @@
+{
+  "_comment": "NPC team identity placeholders; names are combined from pools per team index.",
+  "_comment_team_races": "Each NPC team is assigned one random race from this pool. Heroes are then generated only from races with >=50 affinity to the team race. Remove races to exclude them from NPC teams.",
+  "team_races": [
+    "human",
+    "elf",
+    "dwarf",
+    "orc",
+    "giant",
+    "ent",
+    "genie",
+    "undead"
+  ],
+  "name_prefixes": [
+    "Iron",
+    "Storm",
+    "Shadow",
+    "Golden",
+    "Crystal",
+    "Wild",
+    "Ancient",
+    "Frost",
+    "Ember",
+    "Silver"
+  ],
+  "name_suffixes": [
+    "Wolves",
+    "Dragons",
+    "Guard",
+    "Blades",
+    "Legion",
+    "Pride",
+    "Hammers",
+    "Ravens",
+    "Oath",
+    "Star"
+  ],
+  "emblem": null,
+  "colors_pool": [
+    { "primary": "#2563eb", "secondary": "#1e3a8a" },
+    { "primary": "#dc2626", "secondary": "#7f1d1d" },
+    { "primary": "#16a34a", "secondary": "#14532d" },
+    { "primary": "#9333ea", "secondary": "#581c87" },
+    { "primary": "#ca8a04", "secondary": "#713f12" }
+  ]
+}

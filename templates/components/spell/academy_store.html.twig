@@ -1,0 +1,61 @@
+{# templates/components/spell/academy_store.html.twig #}
+<div id="academy-store-tab" class="subtab-content hidden space-y-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for spell in spells %}
+            {% set is_learned = spell.id in known_spell_ids %}
+            
+            {# Check mastery requirement #}
+            {% set hero_mastery = selected_hero ? (masteries[spell.school.value] ?? 1) : 1 %}
+            {% set meets_requirement = hero_mastery >= spell.requiredMasteryTier %}
+            {% set has_funds = selected_hero and team.gold >= spell.learningCostGold and (spell.learningCostEssence == 0 or team.essenceCommon >= spell.learningCostEssence) %} {# Simple check #}
+
+            <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-4 flex flex-col justify-between backdrop-blur-md shadow-md min-h-[160px]">
+                <div class="space-y-3">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">📜</span>
+                            <div>
+                                <h3 class="font-bold text-white text-sm leading-tight">{{ spell.name }}</h3>
+                                <span class="text-[9px] font-bold uppercase tracking-wider text-gray-500">
+                                    Tier {{ spell.tier }} &bull; {{ spell.school.value }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border
+                            {% if meets_requirement %}bg-emerald-950/20 text-emerald-450 border-emerald-900/30
+                            {% else %}bg-red-950/25 text-red-400 border-red-900/30{% endif %}">
+                            Req: {{ spell.school.value|capitalize }} T{{ spell.requiredMasteryTier }}
+                        </span>
+                    </div>
+                    
+                    <p class="text-[10px] text-gray-400 leading-relaxed">
+                        Deals school-dependent spell effects in combat matches. Mana Cost: {{ spell.manaCost }} &bull; Cooldown: {{ spell.cooldown }} rounds.
+                    </p>
+                </div>
+
+                <div class="border-t border-gray-850 mt-4 pt-3 flex items-center justify-between gap-4">
+                    <div>
+                        <span class="block text-[8px] font-bold text-gray-550 uppercase tracking-wider">Scroll Fee</span>
+                        <span class="text-xs font-bold text-yellow-500">
+                            🪙 {{ spell.learningCostGold|number_format(0, '.', ' ') }} 
+                            {% if spell.learningCostEssence > 0 %}
+                                <span class="text-purple-400 font-bold">&bull; ✨ {{ spell.learningCostEssence }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {% if is_learned %}
+                        <span class="text-[10px] font-bold text-gray-500 bg-gray-955 px-2.5 py-1.5 rounded border border-gray-855">Learned</span>
+                    {% else %}
+                        <button data-action="click->spellbook#learn" data-spell-id="{{ spell.id }}" data-gold="{{ spell.learningCostGold }}"
+                                {% if not selected_hero or not meets_requirement or not has_funds %}disabled{% endif %}
+                                class="btn btn-outline btn--sm px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed">
+                            Learn Spell
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

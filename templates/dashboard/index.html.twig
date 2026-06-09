@@ -1,0 +1,149 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ team.name }} — {{ 'nav.dashboard'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="space-y-8 max-w-7xl mx-auto">
+    {# --- Header / Banner --- #}
+    <div class="relative bg-gradient-to-r from-emerald-950/30 to-slate-900/40 rounded-xl p-6 sm:p-8 border border-emerald-900/30 shadow-lg overflow-hidden flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <div class="absolute inset-0 bg-grid-white/[0.02] -z-10"></div>
+        
+        {# Logo/Emblem and Edit Profile Button stacked vertically #}
+        <div class="flex flex-col items-center gap-2.5 shrink-0">
+            <div class="w-20 h-20 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-4xl shadow-inner select-none">
+                {{ team.emblem ?: '🛡️' }}
+            </div>
+            <button onclick="window.dispatchEvent(new CustomEvent('modal:open-team-profile')); return false;" class="btn btn-outline btn--sm gap-1 py-1 px-2.5 cursor-pointer whitespace-nowrap text-[11px] leading-tight">
+                <span>⚙️</span> {{ 'dashboard.edit_profile'|trans }}
+            </button>
+        </div>
+
+        {# Team Details #}
+        <div class="text-center sm:text-left sm:mt-1.5">
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-1.5">{{ team.name }}</h1>
+            <p class="text-gray-400 text-sm flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 justify-center sm:justify-start">
+                <span>{{ 'dashboard.manager'|trans }}: <span class="text-emerald-400 font-medium">{{ user.displayName }}</span></span>
+                <span class="hidden sm:inline text-gray-600">•</span>
+                <span>{{ 'dashboard.kingdom'|trans }}: <span class="text-gray-300 font-medium">{{ team.kingdom.name }}</span></span>
+            </p>
+        </div>
+    </div>
+
+    {# --- Main Grid --- #}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {# --- Left Column: Team Status & Resource Widget --- #}
+        <div class="lg:col-span-2 space-y-8">
+            {# Morale & Chemistry Indicators #}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {# Morale Card #}
+                {% include 'components/dashboard/team_status_card.html.twig' with {
+                    label: 'dashboard.morale',
+                    emoji: '😊',
+                    value: team.morale,
+                    progress_color: 'emerald',
+                    desc: 'dashboard.morale_desc'
+                } %}
+
+                {# Chemistry Card #}
+                {% include 'components/dashboard/team_status_card.html.twig' with {
+                    label: 'dashboard.chemistry',
+                    emoji: '⚡',
+                    value: team.chemistry,
+                    progress_color: 'indigo',
+                    desc: 'dashboard.chemistry_desc'
+                } %}
+            </div>
+
+            {# Quick Actions Grid #}
+            {% include 'components/dashboard/quick_actions.html.twig' %}
+
+            {# Statistics Card #}
+            {% include 'components/dashboard/stats_card.html.twig' %}
+        </div>
+
+        {# --- Right Column: Team Statistics Widget --- #}
+        <div class="space-y-8">
+
+            {# Race Optimization Card #}
+            <div class="bg-gray-900/60 backdrop-blur-md rounded-xl p-6 border border-gray-800 space-y-6 relative overflow-hidden" data-controller="dashboard-optimization" data-dashboard-optimization-confirm-value="{{ 'hq.race_opt_confirm'|trans }}">
+                {# Glowing accent #}
+                <div class="absolute -right-16 -bottom-16 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="space-y-2">
+                    <h3 class="text-base font-bold text-white">{{ 'hq.race_opt_title'|trans }}</h3>
+                    <p class="text-xs text-gray-400">{{ 'hq.race_opt_desc'|trans }}</p>
+                </div>
+
+                {# Alert box #}
+                {% include 'components/ui/alert_box.html.twig' with {
+                    target: 'dashboard-optimization',
+                    message_target: 'alertMessage',
+                    close_action: 'dashboard-optimization#closeAlert',
+                    classes: 'text-xs mb-6'
+                } %}
+
+                <div class="space-y-4">
+                    {% set is_locked = dashboard.headquarters.is_optimization_locked %}
+                    {% set active_opt = dashboard.headquarters.race_optimization %}
+                    {% set pending_opt = dashboard.headquarters.pending_race_optimization %}
+
+                    <div class="space-y-2">
+                        {% if pending_opt %}
+                            <div class="rounded-lg bg-yellow-950/40 border border-yellow-900/50 px-3 py-2.5 text-xs text-yellow-350 flex items-center gap-2">
+                                <span>⏳</span>
+                                <span>
+                                    {{ 'hq.race_opt_pending'|trans({'%race%': ('heroes.race_' ~ pending_opt)|trans}) }}
+                                </span>
+                            </div>
+                        {% elseif is_locked %}
+                            <div class="rounded-lg bg-red-950/40 border border-red-900/50 px-3 py-2.5 text-xs text-red-350 flex items-center gap-2">
+                                <span>🔒</span>
+                                <span>{{ 'hq.race_opt_locked'|trans }}</span>
+                            </div>
+                        {% else %}
+                            <div class="rounded-lg bg-emerald-950/40 border border-emerald-900/50 px-3 py-2.5 text-xs text-emerald-350 flex items-center gap-2">
+                                <span>✅</span>
+                                <span>
+                                    {{ 'hq.race_opt_active'|trans({'%race%': active_opt ? ('heroes.race_' ~ active_opt)|trans : 'dashboard.none'|trans}) }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="race-optimize-dashboard" class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ 'hq.select_race'|trans }}</label>
+                        <select id="race-optimize-dashboard" data-dashboard-optimization-target="raceSelect"
+                                {% if is_locked %}disabled{% endif %}
+                                class="w-full rounded-xl bg-gray-950 border border-gray-800 px-4 py-3 text-sm text-gray-300 focus:outline-none focus:border-emerald-500 font-medium disabled:opacity-40 disabled:cursor-not-allowed">
+                            <option value="">{{ 'hq.no_opt'|trans }}</option>
+                            {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
+                                <option value="{{ race }}" {% if active_opt == race %}selected{% endif %}>{{ ('heroes.race_' ~ race)|trans }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="flex justify-end pt-2">
+                        <button data-dashboard-optimization-target="optimizeBtn" data-action="click->dashboard-optimization#optimize"
+                                {% if is_locked %}disabled{% endif %}
+                                class="btn btn-primary w-full sm:w-auto px-6 py-2.5 font-bold uppercase tracking-wider text-xs shadow-md shadow-emerald-950/10 disabled:opacity-40 disabled:cursor-not-allowed">
+                            {{ 'hq.save_opt'|trans }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {# Next Match Card (Stub) #}
+            <div class="bg-gray-900/60 backdrop-blur-md rounded-xl p-6 border border-gray-800">
+                <h3 class="text-lg font-bold text-white mb-4">{{ 'dashboard.next_match'|trans }}</h3>
+                <div class="bg-gray-950/60 rounded-lg p-4 text-center border border-gray-800">
+                    <p class="text-xs text-gray-550 uppercase tracking-widest mb-2">{{ 'dashboard.next_match_start'|trans }}</p>
+                    <div class="text-sm text-gray-400 italic">{{ 'dashboard.no_matches'|trans }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Team Profile Settings Modal #}
+{% include 'dashboard/_team_profile_modal.html.twig' %}
+{% endblock %}

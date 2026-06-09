@@ -1,0 +1,26 @@
+{# templates/components/dashboard/stats_card.html.twig #}
+{% set stats = [
+    { label: 'dashboard.reputation', value: team.reputation ~ ' ⭐' },
+    { label: 'dashboard.total_heroes', value: dashboard.heroes.total },
+    { label: 'dashboard.available_heroes', value: dashboard.heroes.available, class: 'text-emerald-400' },
+    { label: 'dashboard.in_training', value: dashboard.heroes.in_training, class: 'text-yellow-400' },
+    { label: 'dashboard.hq_level', value: dashboard.headquarters.total_level },
+    { 
+        label: 'dashboard.hq_optimization', 
+        value: dashboard.headquarters.race_optimization ? dashboard.headquarters.race_optimization : 'dashboard.none'|trans,
+        class: 'capitalize text-gray-200' 
+    },
+    { label: 'dashboard.summons_cycle', value: dashboard.summoning.summons_this_cycle }
+] %}
+
+<div class="bg-gray-900/60 backdrop-blur-md rounded-xl p-6 border border-gray-800">
+    <h3 class="text-lg font-bold text-white mb-6">{{ 'dashboard.stats'|trans }}</h3>
+    <div class="space-y-4">
+        {% for stat in stats %}
+            <div class="flex justify-between items-center py-2 {% if not loop.last %}border-b border-gray-800/60{% endif %}">
+                <span class="text-gray-400 text-sm">{{ stat.label|trans }}</span>
+                <span class="text-sm font-bold {{ stat.class|default('text-white') }}">{{ stat.value }}</span>
+            </div>
+        {% endfor %}
+    </div>
+</div>

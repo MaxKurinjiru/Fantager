@@ -1,0 +1,41 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  FLASH MESSAGES / ALERTS
+//
+//  Usage:
+//    <div class="alert alert-success">Saved successfully.</div>
+//    <div class="alert alert-error">Something went wrong.</div>
+//    <div class="alert alert-warning">Your session will expire soon.</div>
+//    <div class="alert alert-info">Maintenance at midnight.</div>
+// =============================================================================
+
+@layer components {
+  .alert {
+    @apply mb-4 rounded px-4 py-3 text-sm border;
+  }
+
+  .alert-success {
+    background-color: var(--color-success-bg);
+    border-color: var(--color-success-border);
+    color: var(--color-success-text);
+  }
+
+  .alert-error {
+    background-color: var(--color-error-bg);
+    border-color: var(--color-error-border);
+    color: var(--color-error-text);
+  }
+
+  .alert-warning {
+    background-color: var(--color-warning-bg);
+    border-color: var(--color-warning-border);
+    color: var(--color-warning-text);
+  }
+
+  .alert-info {
+    background-color: var(--color-info-bg);
+    border-color: var(--color-info-border);
+    color: var(--color-info-text);
+  }
+}

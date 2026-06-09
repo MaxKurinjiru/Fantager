@@ -1,0 +1,25 @@
+{% set bonus = bonus|default(0) %}
+{% set max_val = max_val|default(20) %}
+{% set stat_pct = (val / max_val) * 100 %}
+
+<div class="group relative">
+    <div class="flex justify-between items-center mb-1 text-xs font-semibold">
+        <span class="text-gray-400" title="{{ label }}">{{ label }}</span>
+        <div class="flex items-center gap-1.5">
+            <span class="text-white font-extrabold text-sm">{{ val }}</span>
+            {% if bonus != 0 %}
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase {{ bonus > 0 ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40' : 'bg-red-950/40 text-red-400 border border-red-900/40' }}"
+                      title="Race Flat Adjustment: {{ bonus > 0 ? '+' ~ bonus : bonus }}">
+                    {{ bonus > 0 ? '+' ~ bonus : bonus }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% include 'components/ui/progress_bar.html.twig' with {
+        percentage: stat_pct,
+        color_class: 'bg-emerald-500/80 group-hover:bg-emerald-400',
+        height_class: 'h-2',
+        border_class: 'border-gray-800/80'
+    } %}
+</div>

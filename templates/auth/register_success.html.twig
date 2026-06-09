@@ -1,0 +1,24 @@
+{% extends 'layouts/public.html.twig' %}
+
+{% block title %}{{ 'auth.verify_email_title'|trans }} — Fantager{% endblock %}
+
+{% block guest_body %}
+<div class="max-w-md mx-auto mt-8 text-center">
+    <div class="text-5xl mb-4">📬</div>
+    <h1 class="text-2xl font-bold text-emerald-400 mb-3">{{ 'auth.verify_email_title'|trans }}</h1>
+    <p class="text-gray-400 mb-6">{{ 'auth.verify_email_body'|trans }}</p>
+
+    <div class="text-sm text-gray-500">
+        <p class="mb-3">{{ 'auth.verify_email_no_email'|trans }}</p>
+        <form method="POST" action="{{ path('app_register_resend') }}" class="flex gap-2 justify-center">
+            <input type="hidden" name="_token" value="{{ csrf_token('register_resend') }}">
+                 <input type="email" name="email" required placeholder="your@email.com"
+                     class="rounded bg-gray-800 border border-gray-700 px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-emerald-400">
+            <button type="submit"
+                    class="bg-gray-700 hover:bg-gray-600 text-gray-200 text-sm px-4 py-2 rounded">
+                {{ 'auth.verify_email_resend'|trans }}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

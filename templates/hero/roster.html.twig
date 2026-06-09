@@ -1,0 +1,92 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}Hero Roster — {{ team.name }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="roster-filter">
+    {# --- Header Section --- #}
+    {% set right_content %}
+        <div class="flex gap-3">
+            <a href="{{ path('app_summon') }}" class="btn btn-primary gap-1.5 shadow-lg shadow-emerald-950/20">
+                <span>🌀</span> Summon Heroes
+            </a>
+        </div>
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'Hero Roster (' ~ (heroes|length) ~ ' / ' ~ team_roster_limit(team) ~ ')',
+        subtitle: 'Manage, filter, and inspect your team\'s heroes.',
+        right_content: right_content
+    } %}
+
+    {# --- Filters Bar --- #}
+    <div class="bg-gray-900/40 border border-gray-800 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between backdrop-blur-md">
+        <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
+            {# Text Search #}
+            <div class="relative min-w-[200px] w-full sm:w-auto">
+                <span class="absolute left-3 top-2.5 text-gray-500 text-sm">🔍</span>
+                <input type="text" data-roster-filter-target="search" data-action="input->roster-filter#filter"
+                       placeholder="Search hero..."
+                       class="w-full rounded-lg bg-gray-950 border border-gray-800 pl-9 pr-4 py-2 text-sm text-gray-300 focus:outline-none focus:border-emerald-500">
+            </div>
+
+            {# Race Filter #}
+            <div>
+                <select data-roster-filter-target="raceFilter" data-action="change->roster-filter#filter"
+                        class="rounded-lg bg-gray-950 border border-gray-800 px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-emerald-500">
+                    <option value="">All Races</option>
+                    {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
+                        <option value="{{ race }}">{{ race|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {# Status Filter #}
+            <div>
+                <select data-roster-filter-target="statusFilter" data-action="change->roster-filter#filter"
+                        class="rounded-lg bg-gray-950 border border-gray-800 px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-emerald-500">
+                    <option value="">All Statuses</option>
+                    <option value="available">Available</option>
+                    <option value="tired">Tired</option>
+                    <option value="training">Training</option>
+                    <option value="in_match">In Match</option>
+                    <option value="injured">Injured</option>
+                    <option value="dead">Dead</option>
+                </select>
+            </div>
+        </div>
+
+        {# Sort Selector #}
+        <div class="flex items-center gap-2 w-full md:w-auto justify-end border-t border-gray-800 md:border-none pt-3 md:pt-0">
+            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Sort by:</span>
+            <select data-roster-filter-target="sortBy" data-action="change->roster-filter#sort"
+                    class="rounded-lg bg-gray-950 border border-gray-800 px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-emerald-500">
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="level-desc">Level (High-Low)</option>
+                <option value="age-asc">Age (Youngest-Oldest)</option>
+                <option value="morale-desc">Morale (Highest)</option>
+                <option value="form-desc">Form (Highest)</option>
+                <option value="str-desc">Strength</option>
+                <option value="dex-desc">Dexterity</option>
+                <option value="kon-desc">Constitution</option>
+                <option value="spd-desc">Speed</option>
+                <option value="int-desc">Intelligence</option>
+            </select>
+        </div>
+    </div>
+
+    {# --- Heroes Grid --- #}
+    <div data-roster-filter-target="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for hero in heroes %}
+            {% include 'components/hero/card.html.twig' with { hero: hero } %}
+        {% else %}
+            <div class="col-span-full bg-gray-900/20 rounded-xl p-8 text-center border border-gray-800 border-dashed">
+                <span class="text-4xl mb-3 block select-none">📭</span>
+                <h3 class="font-bold text-white mb-1">No heroes in roster</h3>
+                <p class="text-gray-500 text-sm mb-4">Go to the summoning chamber to recruit your first heroes.</p>
+                <a href="{{ path('app_summon') }}" class="btn btn-primary btn--sm">Go to Summoning</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
