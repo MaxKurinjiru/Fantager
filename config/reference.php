@@ -78,6 +78,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     tags?: TagsType,
  *     resource_tags?: TagsType,
  *     decorates?: string,
+ *     decorates_tag?: string,
  *     decoration_inner_name?: string,
  *     decoration_priority?: int,
  *     decoration_on_invalid?: 'exception'|'ignore'|null,
@@ -118,6 +119,11 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     stack: list<DefinitionType|AliasType|PrototypeType|array<class-string, ArgumentsType|null>>,
  *     public?: bool,
  *     deprecated?: DeprecationType,
+ *     decorates?: string,
+ *     decorates_tag?: string,
+ *     decoration_inner_name?: string,
+ *     decoration_priority?: int,
+ *     decoration_on_invalid?: 'exception'|'ignore'|null,
  * }
  * @psalm-type ServicesConfig = array{
  *     _defaults?: DefaultsType,
@@ -727,7 +733,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     access_denied_url?: scalar|Param|null, // Default: null
  *     session_fixation_strategy?: "none"|"migrate"|"invalidate"|Param, // Default: "migrate"
  *     expose_security_errors?: \Symfony\Component\Security\Http\Authentication\ExposeSecurityLevel::None|\Symfony\Component\Security\Http\Authentication\ExposeSecurityLevel::AccountStatus|\Symfony\Component\Security\Http\Authentication\ExposeSecurityLevel::All|Param, // Default: "none"
- *     erase_credentials?: bool|Param, // Default: true
+ *     erase_credentials?: bool|Param, // Deprecated: Setting the "security.erase_credentials.erase_credentials" configuration option is deprecated. It will be removed in Symfony 9.0, as the "eraseCredentials()" method was removed in Symfony 8.0. // Default: true
  *     access_decision_manager?: array{
  *         strategy?: "affirmative"|"consensus"|"unanimous"|"priority"|Param,
  *         service?: scalar|Param|null,
@@ -799,7 +805,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             path?: scalar|Param|null, // Default: "/logout"
  *             target?: scalar|Param|null, // Default: "/"
  *             invalidate_session?: bool|Param, // Default: true
- *             clear_site_data?: string|list<"*"|"cache"|"cookies"|"storage"|"executionContexts"|Param>,
+ *             clear_site_data?: string|list<"*"|"cache"|"cookies"|"storage"|"clientHints"|"executionContexts"|"prefetchCache"|"prerenderCache"|Param>,
  *             delete_cookies?: string|array<string, array{ // Default: []
  *                 path?: scalar|Param|null, // Default: null
  *                 domain?: scalar|Param|null, // Default: null
@@ -957,6 +963,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *                         cache?: array{
  *                             id?: scalar|Param|null, // Cache service id to use to cache the OIDC discovery configuration.
  *                         },
+ *                         enforce_key_usage_verification?: bool|Param, // When enabled (default), only keys explicitly designated for signature (via "use":"sig" or a "key_ops" entry containing "sign"/"verify") are accepted. When disabled, keys without any usage designation are also accepted; keys explicitly restricted to encryption are still rejected. // Default: true
  *                     },
  *                     claim?: scalar|Param|null, // Claim which contains the user identifier (e.g.: sub, email..). // Default: "sub"
  *                     audience?: scalar|Param|null, // Audience set in the token, for validation purpose.
@@ -1081,7 +1088,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             servicename?: scalar|Param|null, // Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter for Oracle depending on the service parameter.
  *             sessionMode?: scalar|Param|null, // The session mode to use for the oci8 driver
  *             server?: scalar|Param|null, // The name of a running database server to connect to for SQL Anywhere.
- *             default_dbname?: scalar|Param|null, // Override the default database (postgres) to connect to for PostgreSQL connexion.
+ *             default_dbname?: scalar|Param|null, // Override the default database (postgres) to connect to for PostgreSQL connection.
  *             sslmode?: scalar|Param|null, // Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
  *             sslrootcert?: scalar|Param|null, // The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities.
  *             sslcert?: scalar|Param|null, // The path to the SSL client certificate file for PostgreSQL.
@@ -1127,7 +1134,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *                 servicename?: scalar|Param|null, // Overrules dbname parameter if given and used as SERVICE_NAME or SID connection parameter for Oracle depending on the service parameter.
  *                 sessionMode?: scalar|Param|null, // The session mode to use for the oci8 driver
  *                 server?: scalar|Param|null, // The name of a running database server to connect to for SQL Anywhere.
- *                 default_dbname?: scalar|Param|null, // Override the default database (postgres) to connect to for PostgreSQL connexion.
+ *                 default_dbname?: scalar|Param|null, // Override the default database (postgres) to connect to for PostgreSQL connection.
  *                 sslmode?: scalar|Param|null, // Determines whether or with what priority a SSL TCP/IP connection will be negotiated with the server for PostgreSQL.
  *                 sslrootcert?: scalar|Param|null, // The name of a file containing SSL certificate authority (CA) certificate(s). If the file exists, the server's certificate will be verified to be signed by one of these authorities.
  *                 sslcert?: scalar|Param|null, // The path to the SSL client certificate file for PostgreSQL.
@@ -1206,7 +1213,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *                     lock_path?: scalar|Param|null, // Default: "%kernel.cache_dir%/doctrine/orm/slc/filelock"
  *                     lock_lifetime?: scalar|Param|null, // Default: 60
  *                     type?: scalar|Param|null, // Default: "default"
- *                     lifetime?: scalar|Param|null, // Default: 0
+ *                     lifetime?: scalar|Param|null, // Default: null
  *                     service?: scalar|Param|null,
  *                     name?: scalar|Param|null,
  *                 }>,
@@ -1490,6 +1497,21 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         },
  *     }>,
  * }
+ * @psalm-type WebProfilerConfig = array{
+ *     toolbar?: bool|array{ // Profiler toolbar configuration
+ *         enabled?: bool|Param, // Default: false
+ *         ajax_replace?: bool|Param, // Replace toolbar on AJAX requests // Default: false
+ *     },
+ *     intercept_redirects?: bool|Param, // Default: false
+ *     excluded_ajax_paths?: scalar|Param|null, // Default: "^/((index|app(_[\\w]+)?)\\.php/)?_wdt"
+ * }
+ * @psalm-type DebugConfig = array{
+ *     max_items?: int|Param, // Max number of displayed items past the first level, -1 means no limit. // Default: 2500
+ *     min_depth?: int|Param, // Minimum tree depth to clone all the items, 1 is default. // Default: 1
+ *     max_string_length?: int|Param, // Max length of displayed strings, -1 means no limit. // Default: -1
+ *     dump_destination?: scalar|Param|null, // A stream URL where dumps should be written to. // Default: null
+ *     theme?: "dark"|"light"|Param, // Changes the color of the dump() output when rendered directly on the templating. "dark" (default) or "light". // Default: "dark"
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1517,6 +1539,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         doctrine_migrations?: DoctrineMigrationsConfig,
  *         sentry?: SentryConfig,
  *         monolog?: MonologConfig,
+ *         web_profiler?: WebProfilerConfig,
+ *         debug?: DebugConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1546,6 +1570,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         doctrine?: DoctrineConfig,
  *         doctrine_migrations?: DoctrineMigrationsConfig,
  *         monolog?: MonologConfig,
+ *         web_profiler?: WebProfilerConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

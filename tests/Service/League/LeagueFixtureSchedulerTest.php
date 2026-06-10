@@ -19,7 +19,7 @@ class LeagueFixtureSchedulerTest extends TestCase
     {
         // 1. Setup mock/dummy entities
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects($this->any())
+        $em->expects($this->exactly(90))
             ->method('persist')
             ->with($this->isInstanceOf(LeagueFixture::class));
 
@@ -30,9 +30,8 @@ class LeagueFixtureSchedulerTest extends TestCase
         /** @var list<Team> $teams */
         $teams = [];
         for ($i = 1; $i <= 10; $i++) {
-            $team = $this->createMock(Team::class);
-            $team->expects($this->any())
-                ->method('getId')
+            $team = $this->createStub(Team::class);
+            $team->method('getId')
                 ->willReturn($i);
             $teams[] = $team;
 

@@ -32,10 +32,9 @@ class Kernel extends BaseKernel
     public function getCacheDir(): string
     {
         if (file_exists('/.dockerenv')) {
-            return '/tmp/fantager/cache/' . $this->getEnvironment();
+            return '/tmp/fantager/cache/'.$this->getEnvironment();
         }
 
         return parent::getCacheDir();
     }
 }
-

@@ -1,47 +1,16 @@
 {
-  "_comment": "HQ + facilities created for every team at init; tune passive_bonuses when balance is defined.",
+  "_comment": "HQ + facilities created for every team at init. Only 'type' and 'level' are read — passive_bonuses are computed at runtime by FacilityType::getPassiveBonuses(). race_optimization is overridden by the assigned team race.",
+  "_comment_bonuses": "Level-1 passive bonuses (for reference only): barracks=roster_capacity*2; training=training_efficiency_pct*5; medical=fatigue_reduction_pct*8+recovery_speed_pct*5; library=xp_gain_pct*4; forge=crafting_success_pct*5+item_durability_pct*3; treasury=gold_income_pct*4; summoning_chamber=summon_base_stat_bonus*0.4+summon_stat_random_bonus*1.0+summon_stat_total_cap*7.0; arena=ticket_revenue_pct*6+arena_capacity*10",
   "total_level": 1,
   "race_optimization": null,
   "facilities": [
-    {
-      "type": "barracks",
-      "level": 1,
-      "passive_bonuses": { "roster_capacity": 10, "placeholder": true }
-    },
-    {
-      "type": "training",
-      "level": 1,
-      "passive_bonuses": { "training_efficiency_pct": 0, "placeholder": true }
-    },
-    {
-      "type": "medical",
-      "level": 1,
-      "passive_bonuses": { "fatigue_recovery_pct": 0, "placeholder": true }
-    },
-    {
-      "type": "library",
-      "level": 1,
-      "passive_bonuses": { "spell_mastery_pct": 0, "placeholder": true }
-    },
-    {
-      "type": "forge",
-      "level": 1,
-      "passive_bonuses": { "crafting_speed_pct": 0, "placeholder": true }
-    },
-    {
-      "type": "treasury",
-      "level": 1,
-      "passive_bonuses": { "gold_income_pct": 0, "placeholder": true }
-    },
-    {
-      "type": "summoning_chamber",
-      "level": 1,
-      "passive_bonuses": { "summon_base_stat_bonus": 0.4, "summon_stat_random_bonus": 1.0, "summon_stat_total_cap": 7.0 }
-    },
-    {
-      "type": "arena",
-      "level": 1,
-      "passive_bonuses": { "arena_revenue_pct": 0, "placeholder": true }
-    }
+    { "type": "barracks",          "level": 1 },
+    { "type": "training",          "level": 1 },
+    { "type": "medical",           "level": 1 },
+    { "type": "library",           "level": 1 },
+    { "type": "forge",             "level": 1 },
+    { "type": "treasury",          "level": 1 },
+    { "type": "summoning_chamber", "level": 1 },
+    { "type": "arena",             "level": 1 }
   ]
 }

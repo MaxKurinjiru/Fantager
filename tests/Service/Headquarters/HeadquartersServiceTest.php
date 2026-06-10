@@ -14,7 +14,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\AbstractQuery;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class HeadquartersServiceTest extends TestCase
 {
     private $hqRepositoryMock;
@@ -43,6 +45,7 @@ class HeadquartersServiceTest extends TestCase
         $hq->setHasPendingRaceOptimizationChange(true);
 
         $this->hqRepositoryMock
+            ->expects($this->once())
             ->method('findOneBy')
             ->with(['team' => $team])
             ->willReturn($hq);
@@ -60,6 +63,7 @@ class HeadquartersServiceTest extends TestCase
         $hq->setRaceOptimization('human');
 
         $this->hqRepositoryMock
+            ->expects($this->once())
             ->method('findOneBy')
             ->with(['team' => $team])
             ->willReturn($hq);
@@ -78,6 +82,7 @@ class HeadquartersServiceTest extends TestCase
         $hq->setRaceOptimization('human');
 
         $this->hqRepositoryMock
+            ->expects($this->once())
             ->method('findOneBy')
             ->with(['team' => $team])
             ->willReturn($hq);
@@ -97,6 +102,7 @@ class HeadquartersServiceTest extends TestCase
         $hq->setHasPendingRaceOptimizationChange(true);
 
         $this->hqRepositoryMock
+            ->expects($this->exactly(2))
             ->method('findByKingdom')
             ->with($kingdom)
             ->willReturn([$hq]);
@@ -118,6 +124,7 @@ class HeadquartersServiceTest extends TestCase
     {
         $team = new Team();
         $this->hqRepositoryMock
+            ->expects($this->once())
             ->method('findOneBy')
             ->with(['team' => $team])
             ->willReturn(null);
@@ -136,6 +143,7 @@ class HeadquartersServiceTest extends TestCase
         $hq->addFacility($facility);
 
         $this->hqRepositoryMock
+            ->expects($this->once())
             ->method('findOneBy')
             ->with(['team' => $team])
             ->willReturn($hq);

@@ -236,4 +236,3 @@ class HeadquartersService
         $this->em->flush();
     }
 }
-

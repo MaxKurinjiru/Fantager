@@ -10,6 +10,7 @@ use App\Enum\TrainingStatus;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
+use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\Training\TrainingQueueRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -20,6 +21,7 @@ class TeamService
         private readonly FormationRepository $formationRepository,
         private readonly HeadquartersRepository $hqRepository,
         private readonly TrainingQueueRepository $trainingQueueRepository,
+        private readonly LeagueFixtureRepository $leagueFixtureRepository,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -52,6 +54,8 @@ class TeamService
         ]);
 
         $formationCount = $this->formationRepository->count(['team' => $team]);
+
+        $nextFixture = $this->leagueFixtureRepository->findNextFixtureForTeam($team);
 
         return [
             'team' => [
@@ -95,6 +99,21 @@ class TeamService
                 'summons_this_cycle' => $team->getSummonsThisCycle(),
                 'last_summon_at' => $team->getLastSummonAt()?->format(\DateTimeInterface::ATOM),
             ],
+            'next_match' => $nextFixture ? [
+                'id' => $nextFixture->getId(),
+                'home_team' => [
+                    'id' => $nextFixture->getHomeTeam()->getId(),
+                    'name' => $nextFixture->getHomeTeam()->getName(),
+                    'emblem' => $nextFixture->getHomeTeam()->getEmblem(),
+                ],
+                'away_team' => [
+                    'id' => $nextFixture->getAwayTeam()->getId(),
+                    'name' => $nextFixture->getAwayTeam()->getName(),
+                    'emblem' => $nextFixture->getAwayTeam()->getEmblem(),
+                ],
+                'scheduled_at' => $nextFixture->getScheduledAt()->format(\DateTimeInterface::ATOM),
+                'group_name' => $nextFixture->getGroup()->getGroupName(),
+            ] : null,
         ];
     }
 

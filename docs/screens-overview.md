@@ -110,7 +110,7 @@ The site is divided into two main sections:
 
 ### Backend Requirements:
 - Dashboard aggregation endpoint (stats, notifications, recent activity)
-- Real-time notifications (WebSocket)
+- Real-time notifications (Server-Sent Events / SSE)
 
 ---
 
@@ -527,7 +527,7 @@ Note: Trainer assignment happens on the **Training Screen** when configuring an 
 
 ### Backend Requirements:
 - Combat simulation engine (PHP worker)
-- Combat state streaming (WebSocket or polling)
+- Combat state streaming (Server-Sent Events or polling)
 - Battle result endpoint
 - Post-battle updates (XP, form, fatigue, morale, age)
 
@@ -872,7 +872,7 @@ Note: Trainer assignment happens on the **Training Screen** when configuring an 
 
 ### Frontend Requirements:
 - Responsive design (desktop + mobile/tablet)
-- Real-time updates (WebSocket support for combat, notifications)
+- Real-time updates (Server-Sent Events / SSE support for combat, notifications)
 - Drag & Drop support (formation setup, equipment, spells)
 - Data visualization (stats charts, progress bars, morale indicators)
 - Filtering & sorting for all list views
@@ -882,7 +882,7 @@ Note: Trainer assignment happens on the **Training Screen** when configuring an 
 
 ### Backend Requirements:
 - RESTful API for all screen data
-- WebSocket server for real-time events
+- Server-Sent Events (SSE) / Mercure hub for real-time events
 - Server tick system (cron jobs) for scheduled processing
 - Transaction system (atomic operations for economy)
 - Combat simulation engine

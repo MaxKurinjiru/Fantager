@@ -41,7 +41,7 @@ See [known-issues.md](known-issues.md) for the full list. The ones below directl
 | 1 | **Auth System** — User entity, registration, login, sessions | — | ✅ Complete — login, register, verify email, password reset, rate limiting, CSRF, NPC team assignment |
 | 2 | **Kingdom System** — Kingdom entity, list endpoint, selection at registration | Auth | ✅ Complete — `/api/v1/kingdoms` endpoint, capacity calculation, KingdomService |
 | 3 | **Team System** — Team entity, auto-create on kingdom join | Auth, Kingdom | ✅ Complete — NPC team claimed on email verification, VerificationService::assignNpcTeam |
-| 4 | **Basic DB migrations** — Schema for User, Kingdom, Team | 1–3 | ✅ Complete — `Version20260529134348` generated; covers full schema across all phases (not just Phase 1 entities) |
+| 4 | **Basic DB migrations** — Schema for User, Kingdom, Team | 1–3 | ✅ Complete — `Version20260608160305` generated; covers full schema across all phases (not just Phase 1 entities) |
 
 **Exit criteria**: A player can register, choose a kingdom, and land on an empty dashboard.
 
@@ -153,16 +153,16 @@ A second Doctrine DBAL connection (`legacy`) is configured alongside the primary
 
 ## Status
 
-- Phase 1 (tasks 1–4): ✅ Complete — Auth, Kingdom, and Team systems implemented; full DB schema generated in `Version20260529134348` (covers all phases)
+- Phase 1 (tasks 1–4): ✅ Complete — Auth, Kingdom, and Team systems implemented; full DB schema generated in `Version20260608160305` (covers all phases)
 - Data Migration infrastructure: ✅ Complete — dual Doctrine connection configured (`default` + `legacy`)
-- Entity + repository layer: ✅ Complete for all phases — all 41 entities, all repositories, and all 30 PHP enums scaffolded
+- Entity + repository layer: ✅ Complete for all phases — all 43 entities, all repositories, and all 34 PHP enums scaffolded
 - Phase 2 (tasks 5–8): ✅ Complete — `HeroService` + `HeroGenerator`, `SummoningService`, `HeadquartersService`, `EconomyService` (including financial transaction logging and weekly seating ticket revenue distribution), `TrainingService` (including training tick processor) + all API controllers and commands implemented
 - Phase 3 (tasks 9–11): ✅ Complete — `ItemService`, `SpellService`, `FormationService` + API controllers implemented; `Api\TeamController` (dashboard + settings) also done
 - Phase 0 design blockers: Items #1 (combat formulas), #5 (item durability/enchanting), #8 (Friendly Matches), #9 (Arena Match mechanics) remain open; items #6 and #7 resolved
 - Phase 4 (tasks 12–20) frontend templates and Stimulus components: ✅ Complete — all 9 screens implemented (Dashboard, Hero Roster/Detail, Summoning, HQ, Training, Inventory, Spellbook, Formation); routes auto-discovered via `#[Route]` attributes; PHPStan passing at level 6 with 0 errors
-- Phase 5 (tasks 21–23): 🔄 Not started — `Battle` entity scaffolded ✅; `LeagueFixtureScheduler` partially done ✅; `Event`+`EventParticipation` entities scaffolded ✅; simulation engine, full matchmaking logic, and event triggers pending
-- Phase 6 (tasks 24–26): ⏳ Not started — all entities scaffolded ✅ (`MarketplaceListing`, `MarketplaceBid`, `Transaction`; `Message`, `ForumThread`, `ForumPost`, etc.; `GraveyardRecord`); services and controllers pending
-- Phase 7 (tasks 27–30): ⏳ Not started — all entities scaffolded ✅ (`DungeonRun`; `Quest`, `PlayerQuestProgress`; `CraftingRecipe`, `CraftingQueue`; `ArenaRevenueService` done ✅); encounter logic, reward logic, crafting service pending
+- Phase 5 (tasks 21–23): 🔄 Not started — `Battle` entity scaffolded ✅; `LeagueFixtureScheduler` partially done ✅; `Event`+`EventParticipation` entities scaffolded ✅; simulation engine, full matchmaking logic, and event triggers pending. Service directories `src/Service/Combat/` and `src/Service/League/` exist but contain only `.gitkeep` placeholders.
+- Phase 6 (tasks 24–26): ⏳ Not started — all entities scaffolded ✅ (`MarketplaceListing`, `MarketplaceBid`, `Transaction`; `Message`, `ForumThread`, `ForumPost`, etc.; `GraveyardRecord`); services and controllers pending. Service directories `src/Service/Marketplace/` and `src/Service/Team/` exist but contain only `.gitkeep` placeholders.
+- Phase 7 (tasks 27–30): ⏳ Not started — all entities scaffolded ✅ (`DungeonRun`; `Quest`, `PlayerQuestProgress`; `CraftingRecipe`, `CraftingQueue`; `ArenaRevenueService` done ✅); encounter logic, reward logic, crafting service pending. Service directory `src/Service/Crafting/` exists but contains only a `.gitkeep` placeholder.
 - Code quality tooling: PHPStan ✅ (level 6, 0 errors), PHP-CS-Fixer ✅, PHPUnit ✅ (19 tests, 1433 assertions all passing), Playwright ❌ not installed
 - Routing: ✅ Migrated to `#[Route]` attribute auto-discovery — 45 routes registered (20 web + 25 API)
 - CI/CD: ❌ No GitHub Actions workflows configured yet

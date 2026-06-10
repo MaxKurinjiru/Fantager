@@ -11,7 +11,9 @@ use App\Enum\FinancialRecordType;
 use App\Service\Economy\EconomyService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class EconomyServiceTest extends TestCase
 {
     private $entityManagerMock;

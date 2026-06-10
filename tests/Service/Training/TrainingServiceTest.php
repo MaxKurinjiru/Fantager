@@ -24,7 +24,9 @@ use App\Service\Economy\EconomyService;
 use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class TrainingServiceTest extends TestCase
 {
     private $queueRepositoryMock;

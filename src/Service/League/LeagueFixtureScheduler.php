@@ -55,7 +55,9 @@ class LeagueFixtureScheduler
         }
 
         // 4. Calculate calendar dates aligned to Monday of the next calendar week
-        $prepMonday = $startDate->modify('next monday')->setTime(0, 0, 0);
+        $prepMonday = (1 === (int) $startDate->format('N'))
+            ? $startDate->setTime(0, 0, 0)
+            : $startDate->modify('next monday')->setTime(0, 0, 0);
 
         for ($r = 0; $r < 18; ++$r) {
             $wPlay = (int) ($r / 2); // 0-indexed week of play (0 to 8)
@@ -69,7 +71,10 @@ class LeagueFixtureScheduler
             $pairings = $allRoundsPairings[$r];
             foreach ($pairings as $m => $pair) {
                 [$teamA, $teamB] = $pair;
-                $homeTeam = $assignments[$r][$m];
+                $homeTeam = $assignments[$r][$m] ?? null;
+                if (!$homeTeam instanceof Team) {
+                    throw new \RuntimeException('Home team assignment is missing or invalid.');
+                }
                 $awayTeam = ($homeTeam === $teamA) ? $teamB : $teamA;
 
                 $fixture = new LeagueFixture();
@@ -130,7 +135,7 @@ class LeagueFixtureScheduler
     /**
      * @param array<int, list<array{0: Team, 1: Team}>> $roundsPairings
      *
-     * @return array<int, array<int, Team>>|null Maps round -> match index -> home team
+     * @return array<int, array<int, Team|null>>|null Maps round -> match index -> home team
      */
     private function solveHomeAway(array $roundsPairings, int $N): ?array
     {
@@ -151,7 +156,6 @@ class LeagueFixtureScheduler
         $matchupHomeTeam = [];
 
         if ($this->backtrack($roundsPairings, $assignedHome, $teamHomeCountInWeek, $teamAwayCountInWeek, $matchupHomeTeam, 0, 0, $N)) {
-            /** @var array<int, array<int, Team>> $assignedHome */
             return $assignedHome;
         }
 

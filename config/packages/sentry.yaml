@@ -1,35 +1,54 @@
-when@dev:
-    sentry:
-        dsn: '%env(SENTRY_DSN)%'
-        options:
-            # Enable logs to be sent to Sentry
-            enable_logs: true
-            before_send: 'App\Service\Sentry\SentryBeforeSendCallback'
-    services:
-        Sentry\Monolog\BreadcrumbHandler:
-            arguments:
-                $hub: '@Sentry\State\HubInterface'
-                $level: !php/const Monolog\Logger::INFO
+when@dev: &sentry_config
+  sentry:
+    dsn: "%env(SENTRY_DSN)%"
+    options:
+      # Enable logs to be sent to Sentry
+      enable_logs: true
+      capture_silenced_errors: true
+      attach_stacktrace: true
+      context_lines: 5
+      send_default_pii: true
+      max_request_body_size: "always"
+      before_send: 'App\Service\Sentry\SentryBeforeSendCallback'
+      traces_sample_rate: 0.1
+      profiles_sample_rate: 0
+      ignore_exceptions:
+        - 'Symfony\Component\HttpKernel\Exception\NotFoundHttpException'
+        - 'Symfony\Component\HttpKernel\Exception\BadRequestHttpException'
+        - 'Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException'
+      ignore_transactions:
+        - '/\/_(wdt|profiler)/'
+      in_app_exclude:
+        - "%kernel.cache_dir%"
+        - "%kernel.project_dir%/vendor"
+        - "%kernel.project_dir%/var"
+      in_app_include:
+        - "%kernel.project_dir%"
 
-        Sentry\Monolog\Handler:
-            arguments:
-                $hub: '@Sentry\State\HubInterface'
-                $level: !php/const Monolog\Logger::ERROR
+    register_error_handler: true
+    register_error_listener: true
+
+    tracing:
+      enabled: true
+      cache:
+        enabled: false
+      twig:
+        enabled: true
+      dbal:
+        enabled: true
+        ignore_prepare_spans: false
+        connections: ["default"]
+
+  services:
+    Sentry\Monolog\BreadcrumbHandler:
+      arguments:
+        $hub: '@Sentry\State\HubInterface'
+        $level: !php/const Monolog\Logger::INFO
+
+    Sentry\Monolog\Handler:
+      arguments:
+        $hub: '@Sentry\State\HubInterface'
+        $level: !php/const Monolog\Logger::INFO
 
 when@prod:
-    sentry:
-        dsn: '%env(SENTRY_DSN)%'
-        options:
-            # Enable logs to be sent to Sentry
-            enable_logs: true
-            before_send: 'App\Service\Sentry\SentryBeforeSendCallback'
-    services:
-        Sentry\Monolog\BreadcrumbHandler:
-            arguments:
-                $hub: '@Sentry\State\HubInterface'
-                $level: !php/const Monolog\Logger::INFO
-
-        Sentry\Monolog\Handler:
-            arguments:
-                $hub: '@Sentry\State\HubInterface'
-                $level: !php/const Monolog\Logger::ERROR
+  <<: *sentry_config

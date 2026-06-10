@@ -112,7 +112,7 @@
                               value="{{ modal_form_data.email ?? '' }}"
                               class="w-full rounded bg-gray-800 border {{ modal_errors.email is defined ? 'border-red-500' : 'border-gray-700' }} px-3 py-2 text-gray-100 focus:outline-none focus:border-emerald-400">
                     {% if modal_errors.email is defined %}
-                        <p class="text-red-400 text-xs mt-1">{{ modal_errors.email|trans }}</p>
+                        <p class="text-red-400 text-xs mt-1">{{ modal_errors.email|trans([], 'validators') }}</p>
                     {% endif %}
                 </div>
 
@@ -125,7 +125,7 @@
                     <input type="password" id="modal_reg_password" name="password" required minlength="8" maxlength="4096"
                            class="w-full rounded bg-gray-800 border {{ modal_errors.password is defined ? 'border-red-500' : 'border-gray-700' }} px-3 py-2 text-gray-100 focus:outline-none focus:border-emerald-400">
                     {% if modal_errors.password is defined %}
-                        <p class="text-red-400 text-xs mt-1">{{ modal_errors.password|trans }}</p>
+                        <p class="text-red-400 text-xs mt-1">{{ modal_errors.password|trans([], 'validators') }}</p>
                     {% endif %}
                 </div>
 
@@ -144,7 +144,7 @@
                            value="{{ modal_form_data.display_name ?? '' }}"
                            class="w-full rounded bg-gray-800 border {{ modal_errors.display_name is defined ? 'border-red-500' : 'border-gray-700' }} px-3 py-2 text-gray-100 focus:outline-none focus:border-emerald-400">
                     {% if modal_errors.display_name is defined %}
-                        <p class="text-red-400 text-xs mt-1">{{ modal_errors.display_name|trans }}</p>
+                        <p class="text-red-400 text-xs mt-1">{{ modal_errors.display_name|trans([], 'validators') }}</p>
                     {% endif %}
                 </div>
 
@@ -155,7 +155,7 @@
                         <span class="text-gray-500">{{ 'auth.kingdom_permanent_warn'|trans }}</span>
                     </label>
                     {% if modal_errors.kingdom is defined %}
-                        <p class="text-red-400 text-xs mb-2">{{ modal_errors.kingdom|trans }}</p>
+                        <p class="text-red-400 text-xs mb-2">{{ modal_errors.kingdom|trans([], 'validators') }}</p>
                     {% endif %}
 
                     {% if modal_kingdoms is empty %}

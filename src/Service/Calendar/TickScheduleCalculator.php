@@ -19,8 +19,7 @@ class TickScheduleCalculator
         \DateTimeImmutable $toUtc,
         string $timezone,
         ?\DateTimeImmutable $seasonStartDate = null,
-    ): array
-    {
+    ): array {
         try {
             $tz = new \DateTimeZone($timezone);
         } catch (\Exception) {
@@ -86,7 +85,9 @@ class TickScheduleCalculator
                 if ($tTransition > $fromLocal && $tTransition <= $toLocal) {
                     $isWeek11 = false;
                     if (null !== $seasonStartDate) {
-                        $prepMonday = $seasonStartDate->modify('next monday')->setTime(0, 0, 0);
+                        $prepMonday = (1 === (int) $seasonStartDate->format('N'))
+                            ? $seasonStartDate->setTime(0, 0, 0)
+                            : $seasonStartDate->modify('next monday')->setTime(0, 0, 0);
                         // Monday of Week 11 is prepMonday + 10 weeks
                         $mondayWeek11 = $prepMonday->modify('+10 weeks');
                         // Sunday of Week 11 is prepMonday + 11 weeks - 1 second

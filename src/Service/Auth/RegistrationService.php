@@ -136,6 +136,8 @@ class RegistrationService
         $kingdom = $this->kingdomRepository->find($kingdomId);
         if (!$kingdom) {
             $errors['kingdom'] = 'register.kingdom.invalid';
+        } elseif (!$this->kingdomService->hasActiveSeason($kingdom)) {
+            $errors['kingdom'] = 'register.kingdom.no_active_season';
         } elseif (!$this->kingdomService->hasCapacity($kingdom)) {
             $errors['kingdom'] = 'register.kingdom.full';
         }

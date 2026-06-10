@@ -25,6 +25,10 @@ RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
 # Install Composer after node copy
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+COPY --link \
+    --from=ghcr.io/symfony-cli/symfony-cli:latest \
+    /usr/local/bin/symfony /usr/local/bin/symfony
+
 # PHP configuration
 COPY docker/php/php.ini /etc/php85/php.ini
 

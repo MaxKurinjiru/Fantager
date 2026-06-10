@@ -12,6 +12,14 @@ register:
     max_length: "Password must not exceed 4096 characters."
   password_confirm:
     mismatch: "Passwords do not match."
+  display_name:
+    required: "Nickname is required."
+    too_long: "Nickname must not exceed 50 characters."
+    taken: "This nickname is already taken."
+  kingdom:
+    invalid: "Selected kingdom is invalid."
+    full: "Selected kingdom is full."
+    no_active_season: "Selected kingdom does not have an active season."
 
 login:
   invalid_credentials: "Invalid email or password."

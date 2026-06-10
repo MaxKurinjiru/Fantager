@@ -281,21 +281,19 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | `TokenType`         | email_verify, password_reset, change_email_old, change_email_new, delete_account                                                                                                                                                                  |
 | `FacilityType`      | training, medical, library, forge, treasury, barracks, summoning_chamber, arena                                                                                                                                                                    |
 | `StatusEffect`      | burn, freeze, shock, petrify, blind, curse, stun, poison, shield, regeneration, haste, bless, fury, shadow_cloak, taunt, silence                                                                                                                  |
-| `TickType`          | daily_reset, fatigue_recovery, league_match, weekly_training, season_transition, weekly_reset                                                                                                                                                     |
-
-
-| `LeagueSeasonStatus` | scheduled, active, completed |
-| `LeagueFixtureStatus` | scheduled, in_progress, completed, cancelled |
-| `TrainerStatus` | active, retired, dead |
-| `TrainingStatus` | pending, in_progress, completed, cancelled |
-| `EventStatus` | scheduled, active, completed, cancelled |
-| `DungeonResult` | win, loss, abandoned |
-| `QuestProgressStatus` | in_progress, completed, failed, expired |
-| `CraftingStatus` | pending, in_progress, completed, failed, cancelled |
-| `TransactionType` | buy_now, auction_win |
-| `NotificationType` | battle_result, training_complete, league_update, marketplace_bid, marketplace_sold, achievement_unlocked, event_started, quest_expired, hero_died, season_ended |
+| `TickType`          | daily_reset, fatigue_recovery, league_match, weekly_training, season_transition, weekly_reset, race_optimization                                                                                                                                   |
+| `LeagueSeasonStatus` | scheduled, active, completed                                                                                                                                                                                                                      |
+| `LeagueFixtureStatus` | scheduled, in_progress, completed, cancelled                                                                                                                                                                                                     |
+| `TrainerStatus`     | active, retired, dead                                                                                                                                                                                                                             |
+| `TrainingStatus`    | pending, in_progress, completed, cancelled                                                                                                                                                                                                        |
+| `EventStatus`       | scheduled, active, completed, cancelled                                                                                                                                                                                                           |
+| `DungeonResult`     | win, loss, abandoned                                                                                                                                                                                                                              |
+| `QuestProgressStatus` | in_progress, completed, failed, expired                                                                                                                                                                                                         |
+| `CraftingStatus`    | pending, in_progress, completed, failed, cancelled                                                                                                                                                                                                |
+| `TransactionType`   | buy_now, auction_win                                                                                                                                                                                                                              |
+| `NotificationType`  | battle_result, training_complete, league_update, marketplace_bid, marketplace_sold, achievement_unlocked, event_started, quest_expired, hero_died, season_ended                                                                                   |
 | `FinancialRecordType` | league_reward, arena_revenue, training_cost, summon_fee, marketplace_sale, marketplace_purchase, marketplace_fee, quest_reward, dungeon_reward, crafting_cost, dismantle_gain, item_repair, spell_learning_cost, spell_slot_cost, hq_upgrade_cost, morale_restoration |
-| `FinancialRecordActor` | system, active, passive |
+| `FinancialRecordActor` | system, active, passive                                                                                                                                                                                                                        |
 
 ---
 

@@ -14,7 +14,9 @@ use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
 use App\Repository\Event\EventRepository;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class CalendarServiceTest extends TestCase
 {
     private $scheduleCalculatorMock;

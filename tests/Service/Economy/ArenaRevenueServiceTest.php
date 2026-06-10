@@ -16,7 +16,9 @@ use App\Service\Economy\ArenaRevenueService;
 use App\Service\Economy\EconomyService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ArenaRevenueServiceTest extends TestCase
 {
     private $teamRepositoryMock;
@@ -115,6 +117,7 @@ class ArenaRevenueServiceTest extends TestCase
         $team2->method('getReputation')->willReturn(50);
 
         $this->teamRepositoryMock
+            ->expects($this->once())
             ->method('findBy')
             ->with(['isNpc' => false])
             ->willReturn([$team1, $team2]);

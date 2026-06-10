@@ -29,12 +29,12 @@ doctrine:
                 connection: legacy
                 # Sem lze přidat mapování legacy entit, pokud je potřeba
 
-when@prod:
-    doctrine:
-        orm:
-            query_cache_driver:
-                type: pool
-                pool: doctrine.system_cache_pool
-            result_cache_driver:
-                type: pool
-                pool: doctrine.result_cache_pool
+#when@prod:
+#    doctrine:
+#        orm:
+#            query_cache_driver:
+#                type: pool
+#                pool: doctrine.system_cache_pool
+#            result_cache_driver:
+#                type: pool
+#                pool: doctrine.result_cache_pool

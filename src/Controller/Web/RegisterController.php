@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Web;
 
+use App\Exception\InactiveSeasonException;
 use App\Service\Auth\RegistrationService;
 use App\Service\Auth\VerificationService;
 use App\Service\Kingdom\KingdomService;
@@ -15,6 +16,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegisterController extends AbstractController
 {
@@ -25,6 +27,7 @@ class RegisterController extends AbstractController
         private readonly CsrfTokenManagerInterface $csrfTokenManager,
         private readonly RateLimiterFactoryInterface $registerLimiter,
         private readonly Security $security,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -101,15 +104,21 @@ class RegisterController extends AbstractController
         $rawToken = $request->query->getString('token');
 
         if ('' === $rawToken) {
-            $this->addFlash('error', 'Verification link is missing a token.');
+            $this->addFlash('error', $this->translator->trans('verification.token_invalid', [], 'validators'));
 
             return $this->redirectToRoute('app_login');
         }
 
-        $user = $this->verificationService->verify($rawToken);
+        try {
+            $user = $this->verificationService->verify($rawToken);
 
-        if (!$user) {
-            $this->addFlash('error', 'Verification link is invalid or has expired.');
+            if (!$user) {
+                $this->addFlash('error', $this->translator->trans('verification.token_expired', [], 'validators'));
+
+                return $this->redirectToRoute('app_login');
+            }
+        } catch (InactiveSeasonException) {
+            $this->addFlash('error', $this->translator->trans('register.kingdom.no_active_season', [], 'validators'));
 
             return $this->redirectToRoute('app_login');
         }

@@ -8,11 +8,11 @@ php bin/console app:kingdom:initialize "Kingdom Name"
 
 | File | Purpose |
 |------|---------|
-| `kingdom.defaults.json` | Kingdom entity settings (language, timezone, economy modifiers, …) |
-| `league_tiers.defaults.json` | `league_tiers_config` — tiers, groups, promotion/relegation, reward placeholders |
-| `season.defaults.json` | First `LeagueSeason` (number, start offset, status rules) |
-| `team.defaults.json` | Starting resources, hero count/races, default formation |
-| `npc_teams.defaults.json` | NPC team names, colors, emblem placeholder |
-| `headquarters.defaults.json` | HQ level and facility placeholders |
+| `kingdom.defaults.json` | Kingdom entity settings (language, timezone, game_speed, level_cap, xp_modifier, marketplace_tax_rate, crafting_boost, season_length) |
+| `league_tiers.defaults.json` | `league_tiers_config` — teams_per_group, 3 tiers (T1/T2/T3) with groups, promotion/relegation slots, reward placeholders |
+| `season.defaults.json` | First `LeagueSeason` (season_number, start_offset_days, status_when_started, status_when_future) |
+| `team.defaults.json` | NPC team starting state: resources (gold, crystals, essence tiers), morale, reputation, chemistry, heroes_per_team, roster_races, default formation |
+| `npc_teams.defaults.json` | NPC team identity: team_races pool, name prefix/suffix pools, emblem placeholder, colors pool |
+| `headquarters.defaults.json` | HQ total_level and 8 facilities (barracks, training, medical, library, forge, treasury, summoning_chamber, arena) each with level only — passive_bonuses are computed at runtime by `FacilityType::getPassiveBonuses(level)`, not stored here; race_optimization is overridden by the assigned team race |
 
 Keys prefixed with `_` (e.g. `_comment`) are stripped before use and are not stored in the database.

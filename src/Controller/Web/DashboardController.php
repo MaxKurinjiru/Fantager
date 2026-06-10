@@ -16,8 +16,7 @@ class DashboardController extends AbstractController
 {
     public function __construct(
         private readonly TeamService $teamService,
-    ) {
-    }
+    ) {}
 
     #[Route('/app/dashboard', name: 'app_dashboard')]
     public function index(): Response

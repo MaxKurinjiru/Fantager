@@ -9,7 +9,9 @@ use App\Entity\Team\Team;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class FinancialRecordTest extends TestCase
 {
     public function testFinancialRecordProperties(): void

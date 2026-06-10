@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Twig;
 
 use App\Entity\Hero\Hero;
+use App\Entity\Team\Team;
 use App\Enum\FacilityType;
 use App\Enum\Race;
-use App\Entity\Team\Team;
 use App\Repository\Hero\HeroRepository;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;

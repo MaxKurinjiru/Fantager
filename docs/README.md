@@ -62,13 +62,45 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 
 **Meta & Contributing**
 - [UI & CSS Design Guidelines](ui-guidelines.md) — Modal structure, close buttons, and style guides
+- [Legacy Database Migration](legacy-migration.md) — Accessing and migrating legacy database tables
 - [README.md](../README.md) — Project overview and dev setup
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — Contributor workflow and rules
 - [CHANGELOG.md](../CHANGELOG.md) — Release history and unreleased changes
 
 ---
 
-How to use
+## Current Implementation Status
+
+This table provides a snapshot of implemented features versus placeholders:
+
+| Feature / Area | Service Layer | Web UI / Controllers | API (V1) Endpoints | Status / Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **Authentication** | Fully Implemented | Implemented | N/A (Session-based) | Register, verification, login, password reset. |
+| **Kingdom & Locale**| Fully Implemented | Implemented | Implemented | Data loading from JSON, capacity calculations. Locale switcher (`/change-locale/{locale}`) implemented. |
+| **Team / Dashboard**| Fully Implemented | Implemented | Implemented | Dashboard, settings, economy (gold/essence), financial records. |
+| **Hero Roster** | Fully Implemented | Implemented | Implemented | Hero CRUD, rename, summoning chamber, `HeroGenerator`. |
+| **Summoning** | Fully Implemented | Implemented | Implemented | Race selection, cooldowns, `SummonHistory` logging. |
+| **Training** | Fully Implemented | Implemented | Implemented | Training calculations + automated tick processing. |
+| **Calendar & Ticks**| Fully Implemented | Dashboard integrated | Implemented | Scheduled tick generation and seasonal calendar. |
+| **Formations** | Fully Implemented | Implemented | Implemented | Formation CRUD, slot assignment, strategy JSON. |
+| **Headquarters** | Fully Implemented | Implemented | Implemented | Facility upgrades, race optimization, passive bonuses. |
+| **Items** | Fully Implemented | Implemented | Implemented | Inventory, equip/unequip, dismantle. |
+| **Spells** | Fully Implemented | Implemented | Implemented | Spell library, learning, slot equipping. |
+| **Leagues** | Partially Implemented | Not Implemented | Not Implemented | `LeagueFixtureScheduler` available; matchmaking and result processing pending (Phase 5). |
+| **Combat** | Not Implemented | Not Implemented | Not Implemented | Combat simulator, formulas, and results are missing (Phase 5). |
+| **Events / Calendar UI** | Not Implemented | Not Implemented | Not Implemented | Event triggers and participation pending (Phase 5). |
+| **Marketplace** | Not Implemented | Not Implemented | Not Implemented | Listings, bids, transactions pending (Phase 6). |
+| **Community** | Not Implemented | Not Implemented | Not Implemented | Messaging, forum, leaderboards pending (Phase 6). |
+| **Graveyard** | Not Implemented | Not Implemented | Not Implemented | Permanent death records pending (Phase 6). |
+| **Dungeons** | Not Implemented | Not Implemented | Not Implemented | PvE encounters and rewards pending (Phase 7). |
+| **Quests** | Not Implemented | Not Implemented | Not Implemented | Quest generation and rewards pending (Phase 7). |
+| **Crafting** | Not Implemented | Not Implemented | Not Implemented | Recipe crafting and queue pending (Phase 7). |
+| **Arena Management** | Not Implemented | Not Implemented | Not Implemented | Standalone arena match rules and revenue upgrades pending (Phase 7). |
+
+---
+
+## How to use
 - Each system/screen file is a template to fill with implementation details: data models, API routes, DTOs, services, and tests.
 - Link to existing docs rather than copying large sections.
 - Consult [known-issues.md](known-issues.md) for gaps that need resolution before implementation.
+

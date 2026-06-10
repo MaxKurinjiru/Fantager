@@ -34,7 +34,7 @@ Possible Actions/Buttons:
 
 Backend Requirements:
 - Dashboard aggregation endpoint (stats, notifications, recent activity)
-- Real-time notifications (WebSocket)
+- Real-time notifications (Server-Sent Events / SSE)
 
 
 Sections to fill:

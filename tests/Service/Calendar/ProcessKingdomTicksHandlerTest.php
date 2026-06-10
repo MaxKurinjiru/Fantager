@@ -17,7 +17,9 @@ use App\Service\Economy\ArenaRevenueService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ProcessKingdomTicksHandlerTest extends TestCase
 {
     private $kingdomRepositoryMock;

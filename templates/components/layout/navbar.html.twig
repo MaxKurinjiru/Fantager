@@ -7,13 +7,11 @@
             <div class="flex items-center gap-1.5" title="Gold">
                 <span class="text-yellow-500 font-bold select-none">🪙</span>
                 <span class="font-bold text-gray-250">{{ app.user.team.gold|number_format(0, '.', ' ') }}</span>
-                <span class="text-[9px] sm:text-[10px] text-gray-550 uppercase tracking-wider font-bold ml-0.5">{{ 'dashboard.gold'|trans }}</span>
             </div>
             <div class="w-px h-3 bg-gray-800"></div>
             <div class="flex items-center gap-1.5" title="Crystals">
                 <span class="text-cyan-400 font-bold select-none">💎</span>
                 <span class="font-bold text-gray-250">{{ app.user.team.crystals|number_format(0, '.', ' ') }}</span>
-                <span class="text-[9px] sm:text-[10px] text-gray-550 uppercase tracking-wider font-bold ml-0.5">{{ 'dashboard.crystals'|trans }}</span>
             </div>
         </div>
 

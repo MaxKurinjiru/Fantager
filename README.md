@@ -28,41 +28,28 @@ docker exec -it fantager-web composer test
 
 Or run the equivalent commands locally if you prefer not to use containers.
 
+## Database Seeding & Initialization
+
+After running the migrations, bootstrap your local development database with a default kingdom and a test player:
+
+```bash
+# 1. Initialize default kingdom (NPCs, heroes, league standings)
+docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom"
+
+# 2. Create and activate a test user, and assign them an NPC team in the kingdom
+docker exec -u apache fantager-web php bin/console app:user:create-test "Main Kingdom" user@example.com "Player Nickname" "password"
+```
+
 ## Where to look
 
-- Documentation: [docs/README.md](docs/README.md)
-- Architecture: [docs/arch-spec.md](docs/arch-spec.md)
-- API design: [docs/api-design.md](docs/api-design.md)
+- Documentation Index: [docs/README.md](docs/README.md)
+- Architecture Specification: [docs/arch-spec.md](docs/arch-spec.md)
+- API Design Guide: [docs/api-design.md](docs/api-design.md)
+- Legacy Database Migration: [docs/legacy-migration.md](docs/legacy-migration.md)
 - Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Notes
 
 - Prefer running developer tools inside the `fantager-web` container to avoid local version mismatches.
 - See `docker/` and `docker-compose.yml` for container configuration.
-
-
-
-<!-- data migration connection use -->
-service/etc use:
-
-<?php
-use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManagerInterface;
-
-// Přes DBAL (raw SQL - vhodné pro migraci)
-public function __construct(
-    #[\Symfony\Component\DependencyInjection\Attribute\Target('legacy')]
-    private Connection $legacyConnection,
-) {}
-
-// Nebo přes entity manager
-public function __construct(
-    #[\Symfony\Component\DependencyInjection\Attribute\Target('legacy')]
-    private EntityManagerInterface $legacyEntityManager,
-) {}
-
-or services.yaml:
-
-App\Service\MigrationService:
-    arguments:
-        $legacyConnection: '@doctrine.dbal.legacy_connection'
+- To execute any console tasks, make sure to prefix commands with `php` (e.g. `php bin/console <command>`).

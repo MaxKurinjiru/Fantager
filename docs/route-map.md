@@ -36,8 +36,18 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/verify-email` | Web\RegisterController | Verify email token, activate account, assign NPC team, auto-login |
 | POST | `/login` | (Symfony form_login) | Authenticate session |
 | GET | `/logout` | (Symfony logout) | Destroy session |
-| GET, POST | `/password-reset` | Web\PasswordResetController | Request password reset email |
-| GET, POST | `/password-reset/confirm` | Web\PasswordResetController | Validate token + submit new password |
+| GET | `/password-reset` | Web\PasswordResetController | Request password reset email |
+| POST | `/password-reset` | Web\PasswordResetController | Request password reset email |
+| GET | `/password-reset/confirm` | Web\PasswordResetController | Validate token + submit new password |
+| POST | `/password-reset/confirm` | Web\PasswordResetController | Validate token + submit new password |
+
+---
+
+## Locale
+
+| Method | Path | Controller | Purpose |
+|--------|------|-----------|------|
+| GET | `/change-locale/{locale}` | Web\LocaleController | Switch user locale (cs/en); persists to User entity if authenticated |
 
 ---
 
@@ -156,51 +166,63 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ## Combat
 
+> [!NOTE]
+> Not yet implemented — planned for Phase 5.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/battles/{id}` | Web\CombatController | Battle viewer page |
-| GET | `/api/v1/battles/{id}` | Api\CombatController | Battle result |
-| GET | `/api/v1/battles/{id}/log` | Api\CombatController | Combat log/replay |
-| POST | `/api/v1/combat/simulate` | Api\CombatController | Combat simulation |
+| GET | `/api/v1/battles/{id}` | Api\V1\CombatController | Battle result |
+| GET | `/api/v1/battles/{id}/log` | Api\V1\CombatController | Combat log/replay |
+| POST | `/api/v1/combat/simulate` | Api\V1\CombatController | Combat simulation |
 
 ---
 
 ## League
 
+> [!NOTE]
+> Not yet implemented — planned for Phase 5. `LeagueFixtureScheduler` (fixture generation) is partially available, but matchmaking and match processing are pending.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/league` | Web\LeagueController | League page |
-| GET | `/api/v1/league/standings` | Api\LeagueController | Current standings |
-| GET | `/api/v1/league/fixtures` | Api\LeagueController | Fixture schedule |
-| GET | `/api/v1/league/seasons` | Api\LeagueController | Season history |
-| POST | `/api/v1/league/rewards/claim` | Api\LeagueController | Claim rewards |
+| GET | `/api/v1/league/standings` | Api\V1\LeagueController | Current standings |
+| GET | `/api/v1/league/fixtures` | Api\V1\LeagueController | Fixture schedule |
+| GET | `/api/v1/league/seasons` | Api\V1\LeagueController | Season history |
+| POST | `/api/v1/league/rewards/claim` | Api\V1\LeagueController | Claim rewards |
 
 ---
 
 ## Marketplace
 
+> [!NOTE]
+> Not yet implemented — planned for Phase 6.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/marketplace` | Web\MarketplaceController | Marketplace page |
-| GET | `/api/v1/marketplace` | Api\MarketplaceController | Search listings |
-| POST | `/api/v1/marketplace/listings` | Api\MarketplaceController | Create listing |
-| DELETE | `/api/v1/marketplace/listings/{id}` | Api\MarketplaceController | Cancel listing |
-| POST | `/api/v1/marketplace/purchase` | Api\MarketplaceController | Buy listing |
-| POST | `/api/v1/marketplace/bid` | Api\MarketplaceController | Place auction bid |
-| GET | `/api/v1/marketplace/my-listings` | Api\MarketplaceController | Own active listings |
-| GET | `/api/v1/marketplace/history` | Api\MarketplaceController | Transaction history |
+| GET | `/api/v1/marketplace` | Api\V1\MarketplaceController | Search listings |
+| POST | `/api/v1/marketplace/listings` | Api\V1\MarketplaceController | Create listing |
+| DELETE | `/api/v1/marketplace/listings/{id}` | Api\V1\MarketplaceController | Cancel listing |
+| POST | `/api/v1/marketplace/purchase` | Api\V1\MarketplaceController | Buy listing |
+| POST | `/api/v1/marketplace/bid` | Api\V1\MarketplaceController | Place auction bid |
+| GET | `/api/v1/marketplace/my-listings` | Api\V1\MarketplaceController | Own active listings |
+| GET | `/api/v1/marketplace/history` | Api\V1\MarketplaceController | Transaction history |
 
 ---
 
 ## Event / Calendar
 
+> [!NOTE]
+> Not yet implemented — planned for Phase 5.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/calendar` | Web\EventController | Calendar page |
-| GET | `/api/v1/events` | Api\EventController | Active/upcoming events |
-| GET | `/api/v1/events/calendar` | Api\EventController | Full calendar feed |
+| GET | `/api/v1/events` | Api\V1\EventController | Active/upcoming events |
+| GET | `/api/v1/events/calendar` | Api\V1\EventController | Full calendar feed |
 | GET | `/api/v1/kingdom/{id}/calendar` | Api\V1\CalendarController | Full calendar feed for Kingdom |
-| POST | `/api/v1/events/{id}/participate` | Api\EventController | Join event |
+| POST | `/api/v1/events/{id}/participate` | Api\V1\EventController | Join event |
 
 ---
 
@@ -212,71 +234,86 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/dungeons` | Web\DungeonController | Dungeon selection page |
-| POST | `/api/v1/dungeons/enter` | Api\DungeonController | Start dungeon run |
-| GET | `/api/v1/dungeons/{runId}/result` | Api\DungeonController | Run result + rewards |
+| POST | `/api/v1/dungeons/enter` | Api\V1\DungeonController | Start dungeon run |
+| GET | `/api/v1/dungeons/{runId}/result` | Api\V1\DungeonController | Run result + rewards |
 
 ---
 
 ## Quest
 
+> [!NOTE]
+> Not yet implemented — planned for Phase 7.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/quests` | Web\QuestController | Quest page |
-| GET | `/api/v1/quests` | Api\QuestController | Available quests |
-| POST | `/api/v1/quests/{id}/accept` | Api\QuestController | Accept quest |
-| POST | `/api/v1/quests/{id}/claim` | Api\QuestController | Claim rewards |
+| GET | `/api/v1/quests` | Api\V1\QuestController | Available quests |
+| POST | `/api/v1/quests/{id}/accept` | Api\V1\QuestController | Accept quest |
+| POST | `/api/v1/quests/{id}/claim` | Api\V1\QuestController | Claim rewards |
 
 ---
 
 ## Crafting
 
+> [!NOTE]
+> Not yet implemented — planned for Phase 7.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/crafting` | Web\CraftingController | Crafting page |
-| GET | `/api/v1/crafting/recipes` | Api\CraftingController | Recipe list |
-| POST | `/api/v1/crafting` | Api\CraftingController | Start crafting |
-| GET | `/api/v1/crafting/queue` | Api\CraftingController | Active jobs |
-| DELETE | `/api/v1/crafting/queue/{id}` | Api\CraftingController | Cancel job |
+| GET | `/api/v1/crafting/recipes` | Api\V1\CraftingController | Recipe list |
+| POST | `/api/v1/crafting` | Api\V1\CraftingController | Start crafting |
+| GET | `/api/v1/crafting/queue` | Api\V1\CraftingController | Active jobs |
+| DELETE | `/api/v1/crafting/queue/{id}` | Api\V1\CraftingController | Cancel job |
 
 ---
 
 ## Community
 
+> [!NOTE]
+> Not yet implemented — planned for Phase 6.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/community` | Web\CommunityController | Community hub page |
-| GET | `/api/v1/leaderboards` | Api\CommunityController | Leaderboard rankings |
-| GET | `/api/v1/players/{id}/profile` | Api\CommunityController | Public player profile |
-| GET | `/api/v1/messages` | Api\MessageController | Inbox |
-| POST | `/api/v1/messages` | Api\MessageController | Send message |
-| GET | `/api/v1/messages/{id}` | Api\MessageController | Read message |
-| DELETE | `/api/v1/messages/{id}` | Api\MessageController | Delete message |
-| GET | `/api/v1/forum/threads` | Api\ForumController | Thread list |
-| POST | `/api/v1/forum/threads` | Api\ForumController | Create thread |
-| GET | `/api/v1/forum/threads/{id}` | Api\ForumController | Thread + posts |
-| POST | `/api/v1/forum/threads/{id}/posts` | Api\ForumController | Reply |
+| GET | `/api/v1/leaderboards` | Api\V1\CommunityController | Leaderboard rankings |
+| GET | `/api/v1/players/{id}/profile` | Api\V1\CommunityController | Public player profile |
+| GET | `/api/v1/messages` | Api\V1\MessageController | Inbox |
+| POST | `/api/v1/messages` | Api\V1\MessageController | Send message |
+| GET | `/api/v1/messages/{id}` | Api\V1\MessageController | Read message |
+| DELETE | `/api/v1/messages/{id}` | Api\V1\MessageController | Delete message |
+| GET | `/api/v1/forum/threads` | Api\V1\ForumController | Thread list |
+| POST | `/api/v1/forum/threads` | Api\V1\ForumController | Create thread |
+| GET | `/api/v1/forum/threads/{id}` | Api\V1\ForumController | Thread + posts |
+| POST | `/api/v1/forum/threads/{id}/posts` | Api\V1\ForumController | Reply |
 
 ---
 
 ## Graveyard
 
+> [!NOTE]
+> Not yet implemented — planned for Phase 6.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/graveyard` | Web\GraveyardController | Graveyard memorial page |
-| GET | `/api/v1/graveyard` | Api\GraveyardController | Fallen heroes list |
-| GET | `/api/v1/graveyard/{id}` | Api\GraveyardController | Fallen hero detail |
+| GET | `/api/v1/graveyard` | Api\V1\GraveyardController | Fallen heroes list |
+| GET | `/api/v1/graveyard/{id}` | Api\V1\GraveyardController | Fallen hero detail |
 
 ---
 
 ## Arena
 
+> [!NOTE]
+> Not yet implemented — planned for Phase 7.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/arena` | Web\ArenaController | Arena Management page |
-| GET | `/api/v1/arena` | Api\ArenaController | Arena status/revenue |
-| POST | `/api/v1/arena/upgrade` | Api\ArenaController | Upgrade arena |
-| PUT | `/api/v1/arena/ticket-price` | Api\ArenaController | Set ticket price |
-| POST | `/api/v1/arena/schedule-match` | Api\ArenaController | Schedule friendly match |
+| GET | `/api/v1/arena` | Api\V1\ArenaController | Arena status/revenue |
+| POST | `/api/v1/arena/upgrade` | Api\V1\ArenaController | Upgrade arena |
+| PUT | `/api/v1/arena/ticket-price` | Api\V1\ArenaController | Set ticket price |
+| POST | `/api/v1/arena/schedule-match` | Api\V1\ArenaController | Schedule friendly match |
 
 ---
 

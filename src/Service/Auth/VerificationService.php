@@ -7,8 +7,10 @@ namespace App\Service\Auth;
 use App\Entity\Auth\User;
 use App\Entity\Team\Team;
 use App\Enum\TokenType;
+use App\Exception\InactiveSeasonException;
 use App\Repository\Auth\VerificationTokenRepository;
 use App\Repository\Team\TeamRepository;
+use App\Service\Kingdom\KingdomService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class VerificationService
@@ -17,6 +19,7 @@ class VerificationService
         private readonly EntityManagerInterface $em,
         private readonly VerificationTokenRepository $tokenRepository,
         private readonly TeamRepository $teamRepository,
+        private readonly KingdomService $kingdomService,
     ) {
     }
 
@@ -29,6 +32,11 @@ class VerificationService
         }
 
         $user = $token->getUser();
+        $kingdom = $user->getKingdom();
+        if ($kingdom && !$this->kingdomService->hasActiveSeason($kingdom)) {
+            throw new InactiveSeasonException();
+        }
+
         $user->setIsVerified(true);
 
         $token->setUsedAt(new \DateTimeImmutable());

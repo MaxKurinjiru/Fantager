@@ -305,7 +305,7 @@ Use Docker for local development, CI and consistent deployment environment:
 ### Phase 2: Implementation ✅ Backend largely done
 - [x] Create Dockerfile and docker-compose.yml
 - [x] Set up Symfony project structure and routing
-- [x] Implement database migrations and schema (all phases covered in `Version20260529134348`)
+- [x] Implement database migrations and schema (all phases covered in `Version20260608160305`)
 - [x] Create Service layer foundation (Auth, Kingdom, Team, Hero, Summoning, Training, HQ, Economy, Item, Spell, Formation)
 - [x] Set up PHPUnit testing framework (1 test passing; coverage expansion pending)
 - [ ] Set up Playwright for E2E tests (not yet installed)

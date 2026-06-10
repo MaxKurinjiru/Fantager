@@ -10,6 +10,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -28,16 +29,19 @@ class InitializeKingdomCommand extends Command
 
     protected function configure(): void
     {
-        $this->addArgument('name', InputArgument::REQUIRED, 'Display name of the new kingdom (server)');
+        $this
+            ->addArgument('name', InputArgument::REQUIRED, 'Display name of the new kingdom (server)')
+            ->addOption('test', null, InputOption::VALUE_NONE, 'Set the season start date to last Monday for testing');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $name = (string) $input->getArgument('name');
+        $testMode = (bool) $input->getOption('test');
 
         try {
-            $result = $this->initializationService->initialize($name);
+            $result = $this->initializationService->initialize($name, $testMode);
         } catch (\DomainException $e) {
             $io->error($e->getMessage());
 

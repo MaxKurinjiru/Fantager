@@ -44,7 +44,7 @@ class KingdomInitializationService
      *
      * @throws \DomainException when kingdom name already exists or config is invalid
      */
-    public function initialize(string $name): array
+    public function initialize(string $name, bool $testMode = false): array
     {
         $name = trim($name);
         if ('' === $name) {
@@ -74,7 +74,7 @@ class KingdomInitializationService
         }
 
         $kingdom = $this->createKingdom($name, $kingdomSettings, $leagueConfig);
-        $season = $this->createSeason($kingdom, $kingdomSettings, $seasonConfig);
+        $season = $this->createSeason($kingdom, $kingdomSettings, $seasonConfig, $testMode);
 
         $teamIndex = 0;
         $heroTotal = 0;
@@ -150,14 +150,21 @@ class KingdomInitializationService
     }
 
     /** @param array<string, mixed> $kingdomSettings @param array<string, mixed> $seasonConfig */
-    private function createSeason(Kingdom $kingdom, array $kingdomSettings, array $seasonConfig): LeagueSeason
+    private function createSeason(Kingdom $kingdom, array $kingdomSettings, array $seasonConfig, bool $testMode): LeagueSeason
     {
         $offsetDays = (int) ($seasonConfig['start_offset_days'] ?? 0);
         $length = (int) $kingdomSettings['season_length'];
-        $start = new \DateTimeImmutable('today')->modify(sprintf('%+d days', $offsetDays));
 
-        // Align end date to the Sunday of Week 11 (based on first Monday after start)
-        $prepMonday = $start->modify('next monday');
+        // Align season start to the next Monday (or last Monday in test mode), modified by config offset
+        $baseDay = $testMode
+            ? new \DateTimeImmutable('today')->modify('last monday')
+            : new \DateTimeImmutable('today')->modify('next monday');
+        $start = $baseDay->modify(sprintf('%+d days', $offsetDays));
+
+        // Align end date to the Sunday of Week 11 (based on first Monday of the season)
+        $prepMonday = (1 === (int) $start->format('N'))
+            ? $start
+            : $start->modify('next monday');
         $end = $prepMonday->modify(sprintf('+%d days -1 day', max(1, $length)));
 
         $today = new \DateTimeImmutable('today');

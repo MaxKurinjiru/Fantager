@@ -132,13 +132,64 @@
                 </div>
             </div>
 
-            {# Next Match Card (Stub) #}
-            <div class="bg-gray-900/60 backdrop-blur-md rounded-xl p-6 border border-gray-800">
-                <h3 class="text-lg font-bold text-white mb-4">{{ 'dashboard.next_match'|trans }}</h3>
-                <div class="bg-gray-950/60 rounded-lg p-4 text-center border border-gray-800">
-                    <p class="text-xs text-gray-550 uppercase tracking-widest mb-2">{{ 'dashboard.next_match_start'|trans }}</p>
-                    <div class="text-sm text-gray-400 italic">{{ 'dashboard.no_matches'|trans }}</div>
-                </div>
+            {# Next Match Card #}
+            <div class="bg-gray-900/60 backdrop-blur-md rounded-xl p-6 border border-gray-800 relative overflow-hidden">
+                {# Glowing accent #}
+                <div class="absolute -right-16 -bottom-16 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                <h3 class="text-base font-bold text-white mb-4">{{ 'dashboard.next_match'|trans }}</h3>
+
+                {% if dashboard.next_match|default() is not empty %}
+                    {% set match = dashboard.next_match %}
+                    {% set is_home = (match.home_team.id == team.id) %}
+
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-3 items-center gap-2 py-2">
+                            {# Home Team #}
+                            <div class="flex flex-col items-center text-center space-y-1.5 min-w-0">
+                                <div class="w-12 h-12 rounded-lg bg-gray-950 border {% if is_home %}border-emerald-500/30 bg-emerald-500/5{% else %}border-gray-800{% endif %} flex items-center justify-center text-2xl shadow-inner select-none transition-colors duration-250 hover:border-emerald-500/20">
+                                    {{ match.home_team.emblem ?: '🛡️' }}
+                                </div>
+                                <span class="text-xs font-semibold {% if is_home %}text-emerald-400 font-bold{% else %}text-gray-350{% endif %} truncate w-full" title="{{ match.home_team.name }}">
+                                    {{ match.home_team.name }}
+                                </span>
+                            </div>
+
+                            {# VS #}
+                            <div class="flex flex-col items-center justify-center">
+                                <span class="px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest bg-gray-950 border border-gray-800 rounded-md text-gray-500 select-none">
+                                    VS
+                                </span>
+                            </div>
+
+                            {# Away Team #}
+                            <div class="flex flex-col items-center text-center space-y-1.5 min-w-0">
+                                <div class="w-12 h-12 rounded-lg bg-gray-950 border {% if not is_home %}border-emerald-500/30 bg-emerald-500/5{% else %}border-gray-800{% endif %} flex items-center justify-center text-2xl shadow-inner select-none transition-colors duration-250 hover:border-emerald-500/20">
+                                    {{ match.away_team.emblem ?: '🛡️' }}
+                                </div>
+                                <span class="text-xs font-semibold {% if not is_home %}text-emerald-400 font-bold{% else %}text-gray-350{% endif %} truncate w-full" title="{{ match.away_team.name }}">
+                                    {{ match.away_team.name }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-gray-800/60 pt-3 flex flex-col space-y-1.5 text-xs text-gray-400">
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-550 select-none">📅</span>
+                                <span class="font-medium text-gray-300">{{ match.scheduled_at|date('d. m. Y H:i') }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-550 select-none">🏆</span>
+                                <span class="font-medium text-gray-350">{{ match.group_name }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="bg-gray-950/60 rounded-lg p-4 text-center border border-gray-800">
+                        <p class="text-xs text-gray-550 uppercase tracking-widest mb-2">{{ 'dashboard.next_match_start'|trans }}</p>
+                        <div class="text-sm text-gray-400 italic">{{ 'dashboard.no_matches'|trans }}</div>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

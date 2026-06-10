@@ -33,10 +33,10 @@ The system tracks event lifecycles via the following entities:
 
 ---
 
-## Real-Time Notifications (WebSocket) & Fallback
+## Real-Time Notifications (Server-Sent Events) & Fallback
 
 Upon tick completion (e.g. Match resolution, crafting job done, or world event transition), the message handler dispatches notifications to players:
-- **WebSocket (Mercure)**: Pushes real-time state changes (e.g. gold changes, finished items) directly to the browser.
+- **Server-Sent Events (Mercure)**: Pushes real-time state changes (e.g. gold changes, finished items) directly to the browser.
 - **In-App Notification Fallback**: Persists `Notification` records in the database, which players fetch on dashboard updates or login.
 
 ---

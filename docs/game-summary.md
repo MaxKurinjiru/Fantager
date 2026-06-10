@@ -1107,7 +1107,7 @@ Spells provide tactical options based on hero **magic proficiency**.
 | **3** | Queue match in Redis *(skipped for forfeit/draw outcomes)* |
 | **4** | PHP worker simulates turn-based combat *(when both teams are eligible)* |
 | **5** | XP, form, fatigue, and morale updates applied |
-| **6** | Result stored in `battles` table and broadcast via WebSocket |
+| **6** | Result stored in `battles` table and broadcast via Server-Sent Events (SSE) |
 
 ### Match Scoring
 

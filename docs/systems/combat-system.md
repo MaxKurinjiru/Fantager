@@ -34,7 +34,7 @@ A team needs 6 combat-ready heroes to **enter** a match, independent of formatio
 3. Queue match for simulation (Redis) — skipped on forfeit/draw
 4. PHP worker runs deterministic turn-based simulation
 5. Apply post-match updates (XP, form, fatigue, morale, aging)
-6. Store result in `Battle` entity; broadcast via WebSocket
+6. Store result in `Battle` entity; broadcast via Server-Sent Events (SSE)
 
 ## Simulation (to be defined)
 

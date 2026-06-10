@@ -12,6 +12,14 @@ register:
     max_length: "Heslo nesmí přesáhnout 4096 znaků."
   password_confirm:
     mismatch: "Hesla se neshodují."
+  display_name:
+    required: "Přezdívka je povinná."
+    too_long: "Přezdívka nesmí přesáhnout 50 znaků."
+    taken: "Tato přezdívka je již obsazená."
+  kingdom:
+    invalid: "Vybrané království je neplatné."
+    full: "Vybrané království je plné."
+    no_active_season: "Vybrané království nemá aktivní sezónu."
 
 login:
   invalid_credentials: "Neplatný e-mail nebo heslo."
