@@ -13,6 +13,7 @@ use App\Repository\Training\TrainingQueueRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
 use App\Repository\Event\EventRepository;
+use App\Repository\Hero\HeroRepository;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
@@ -25,6 +26,7 @@ class CalendarServiceTest extends TestCase
     private $leagueFixtureRepositoryMock;
     private $eventRepositoryMock;
     private $seasonRepositoryMock;
+    private $heroRepositoryMock;
     private CalendarService $service;
 
     protected function setUp(): void
@@ -35,6 +37,7 @@ class CalendarServiceTest extends TestCase
         $this->leagueFixtureRepositoryMock = $this->createMock(LeagueFixtureRepository::class);
         $this->eventRepositoryMock = $this->createMock(EventRepository::class);
         $this->seasonRepositoryMock = $this->createMock(LeagueSeasonRepository::class);
+        $this->heroRepositoryMock = $this->createMock(HeroRepository::class);
 
         $this->service = new CalendarService(
             $this->scheduleCalculatorMock,
@@ -42,7 +45,8 @@ class CalendarServiceTest extends TestCase
             $this->trainingQueueRepositoryMock,
             $this->leagueFixtureRepositoryMock,
             $this->eventRepositoryMock,
-            $this->seasonRepositoryMock
+            $this->seasonRepositoryMock,
+            $this->heroRepositoryMock
         );
     }
 

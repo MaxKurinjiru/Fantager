@@ -8,75 +8,87 @@ Purpose: Document training queues, cost calculations, trainer assignment, and se
 
 All eight primary attributes (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) use an integer range of **1–20** (inclusive) for heroes and trainers.
 
-## Attribute Training Setup
+## Training Setup
 
-Primary attribute training is configured **per job**, not per Trainer conversion:
+Training is configured directly on the **Trainer** instead of individual training jobs. Each trainer acts as a training leader with a dynamic number of hero slots.
 
 | Step | Action |
 |------|--------|
-| 1 | Select **one primary attribute** to train |
-| 2 | Optionally assign a **Trainer** |
-| 3 | Assign **one or more heroes** to the job |
+| 1 | Configure the Trainer's training focus (Attribute, Magic, Form, or idle) |
+| 2 | Assign one or more heroes to the Trainer's slots |
 
-Each assigned hero creates a `TrainingQueue` row sharing the same `target_attribute` and `trainer_id`. There is no permanent specialty on the Trainer entity.
+### Trainer & Slot Limits
+
+- **Trainer Limit**: A team can have at most `2 + floor((trainingFacilityLevel - 1) / 2)` trainers.
+- **Hero Slot Limit**: Each trainer can have at most `3 + floor((trainingFacilityLevel - 1) / 2)` assigned heroes.
+
+### Lock Period
+
+To prevent last-minute manipulation before weekly ticks, training configurations and assignments are **locked** during the following period:
+- **Lock Start**: Wednesday at 12:00:00 (server local time)
+- **Lock End**: Friday at 10:00:00 (when the weekly tick processes)
+
+During the lock period, players cannot configure trainers, assign heroes, or unassign heroes.
 
 ## Trainer Rules
 
 | Rule | Detail |
 |------|--------|
-| **Per-job attribute** | Each training setup trains exactly one primary attribute |
-| **Cap** | With a Trainer assigned, the hero cannot exceed the Trainer's frozen value for **that job's target attribute** |
-| **Flexible reuse** | The same Trainer can lead different attribute jobs in different setups *(e.g., STR this week, KON next week)* |
-| **No trainer** | Training without a Trainer uses only the global 1–20 cap |
-| **Frozen stats** | Trainer attribute values are frozen at conversion and do not change |
-
-> *Example: Trainer with STR 18 and KON 16 leads a STR job — assigned heroes cap at STR 18. The same Trainer can later lead a KON job capped at 16.*
+| **Single Active Training** | A hero can be assigned to at most one Trainer. While assigned, the hero's status is set to `Training`. |
+| **Attribute Cap** | A hero cannot train a primary attribute beyond the Trainer's frozen value for that attribute. |
+| **No monetary cost** | Training has no Gold or Essence cost. It is instead balanced by a high fatigue load. |
+| **Trainer aging** | Trainers age during each weekly tick by the same amount a hero would age from a combat death (applies to all races, including Undead). |
 
 ## Hero Creation Age
 
-Newly created heroes *(starting roster, summoning, NPC generation)* start at **level 1** with age between their race's **Min Age** and **Max Junior Age** (inclusive). See [game-summary.md § Age System](../game-summary.md#age-system).
+Newly created heroes (starting roster, summoning, NPC generation) start at **level 1** with age between their race's **Min Age** and **Max Junior Age** (inclusive). See [game-summary.md § Age System](../game-summary.md#age-system).
 
 ## Internal Stat Scaling & Diversity
+
 Primary attributes (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) are scaled internally:
 - **Stored scale**: All stats are stored in the database scaled by 10 (range `10` to `200`).
 - **External scale**: Displayed stats and requirement checks are floored: `floor(raw / 10)` (range `1` to `20`).
 - **Diversity at roll**: Hero generator rolls 1-20 stats, multiplies them by 10, and adds a random offset `0-9` (capped at 200).
 
-## Training Effectiveness Formula
-Attribute training processes weekly (Friday at 10:00). Raw stat gains per tick are calculated:
+## Training Types & Weekly Tick Processing
 
-```
-Raw Gain (external scale) = ((Base Gain + Trainer Bonus + Difference Bonus) / Difficulty Factor) * (1 + Facility Efficiency) * Race Modifier
-```
+Every Friday at 10:00, the server processes the training tick for all trainers that have a configured training type.
 
-Where:
-- **Base Gain**: `1.0`
-- **Trainer Bonus**: `max(0, (TrainerStatExternal - 10) * 0.05)` (0 if no trainer)
-- **Difference Bonus**: `max(0, (TrainerStatExternal - HeroStatExternal) * 0.05)` (0 if no trainer)
-- **Difficulty Factor**: `1.0 + (HeroStatExternal / 5)^1.5`
-- **Facility Efficiency**: `FacilityLevel * 0.05` (from training facility)
-- **Race Modifier**: `training_speed_modifier` from `races.yaml`
+### 1. Attribute Training
+Trains a primary attribute (STR, DEX, KON, SPD, INT, WIL, CHA, LCK).
+- **Gain Calculation**:
+  `Raw Gain (external scale) = ((Base Gain + Trainer Bonus + Difference Bonus) / Difficulty Factor) * (1 + Facility Efficiency) * Race Modifier`
+  Where:
+  - **Base Gain**: `1.0`
+  - **Trainer Bonus**: `max(0, (TrainerStatExternal - 10) * 0.05)`
+  - **Difference Bonus**: `max(0, (TrainerStatExternal - HeroStatExternal) * 0.05)`
+  - **Difficulty Factor**: `1.0 + (HeroStatExternal / 5)^1.5`
+  - **Facility Efficiency**: `FacilityLevel * 0.05` (from training facility)
+  - **Race Modifier**: `training_speed_modifier` from `races.yaml`
+  
+  The final raw gain is:
+  `Raw Gain (internal scale) = min(9, round(Raw Gain (external scale) * 10))`
+  At least `1` raw point is gained if under the trainer's cap.
+- **Fatigue Impact**: Adds **+20 fatigue** (capped at 100).
 
-The final raw gain is:
-```
-Raw Gain (internal scale) = min(9, round(Raw Gain (external scale) * 10))
-```
-At least `1` raw point is always gained if under the cap.
+### 2. Magic Training
+Increases a hero's Magic Capacity by 1 (capped at a maximum of 5 slots).
+- **Fatigue Impact**: Adds **+20 fatigue** (capped at 100).
 
-The gain is capped at the trainer's raw stat (or `200` if no trainer is assigned).
+### 3. Form Training (Resting)
+Helps a hero recover physical conditioning and rest.
+- **Form Impact**: Increases form by **+20** (capped at 100).
+- **Fatigue Impact**: Decreases fatigue by **-20** (floor at 0).
 
-## Server Tick Processing
-Every Friday at 10:00, the tick processes all pending `training_queue` rows where `execute_at <= now`.
-- Marks job as `in_progress`.
-- Calculates and applies raw gains for:
-  - **Attribute**: applies formula, caps at trainer's raw stat, increases hero raw stat, logs `stat_gain`.
-  - **Magic**: increases magic capacity by 1 (max 5).
-  - **Form**: increases form (e.g. +20, max 100).
-- Sets job status to `completed` and `completed_at = now`.
-- Restores hero status to `available` if no other pending traning jobs.
+At the end of the tick, a historical `TrainingQueue` record with status `Completed` is persisted for logging purposes.
 
 ## APIs
-- `GET /api/training-queue` — list queued jobs
-- `POST /api/training-queue` — queue a training job (validates `heroRawStat < trainerRawStat`)
-- `DELETE /api/training-queue/{id}` — cancel a pending job
+
+All mutating routes validate the lock state.
+
+- `GET /api/v1/training/trainers` — List team's trainers, current configurations, hero slot occupancy, limits, and team lock status.
+- `POST /api/v1/training/trainers/{id}/configure` — Configure trainer focus (request parameters: `type`, `attribute`).
+- `POST /api/v1/training/trainers/{id}/assign` — Assign a hero to a trainer's slot (request parameter: `hero_id`).
+- `POST /api/v1/training/trainers/{id}/unassign` — Unassign a hero from a trainer (request parameter: `hero_id`).
+
 

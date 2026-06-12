@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Entity\Training;
 
 use App\Entity\Team\Team;
+use App\Entity\Hero\Hero;
 use App\Enum\Race;
 use App\Enum\TrainerStatus;
+use App\Enum\TrainingType;
 use App\Repository\Training\TrainerRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TrainerRepository::class)]
@@ -18,6 +22,21 @@ class Trainer
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(length: 15, nullable: true, enumType: TrainingType::class)]
+    private ?TrainingType $trainingType = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $targetAttribute = null;
+
+    /** @var Collection<int, Hero> */
+    #[ORM\OneToMany(targetEntity: Hero::class, mappedBy: 'trainer')]
+    private Collection $heroes;
+
+    public function __construct()
+    {
+        $this->heroes = new ArrayCollection();
+    }
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -354,6 +373,60 @@ class Trainer
     public function setOriginalHeroId(?int $originalHeroId): static
     {
         $this->originalHeroId = $originalHeroId;
+
+        return $this;
+    }
+
+    public function getTrainingType(): ?TrainingType
+    {
+        return $this->trainingType;
+    }
+
+    public function setTrainingType(?TrainingType $trainingType): static
+    {
+        $this->trainingType = $trainingType;
+
+        return $this;
+    }
+
+    public function getTargetAttribute(): ?string
+    {
+        return $this->targetAttribute;
+    }
+
+    public function setTargetAttribute(?string $targetAttribute): static
+    {
+        $this->targetAttribute = $targetAttribute;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Hero>
+     */
+    public function getHeroes(): Collection
+    {
+        return $this->heroes;
+    }
+
+    public function addHero(Hero $hero): static
+    {
+        if (!$this->heroes->contains($hero)) {
+            $this->heroes->add($hero);
+            $hero->setTrainer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHero(Hero $hero): static
+    {
+        if ($this->heroes->removeElement($hero)) {
+            // set the owning side to null (unless already changed)
+            if ($hero->getTrainer() === $this) {
+                $hero->setTrainer(null);
+            }
+        }
 
         return $this;
     }

@@ -18,3 +18,9 @@
 
 ### Fixed
  - Symfony 8.0 / 7.4 version mismatch - changed to Symfony 7.4.
+
+## [2026-06-12] - vX.Y.Z
+ - Added: Trainer-centric training schema and limits calculations.
+ - Changed: Reworked weekly tick processing, API controllers, and frontend logic to be trainer-centric.
+ - Docs: Updated training-system.md and game-summary.md to document the redesign.
+

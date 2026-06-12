@@ -518,7 +518,7 @@ Beyond equipment and training, races have tactical advantages in combat:
 
 ### Purpose
 
-Training is the primary method for improving hero attributes, learning new abilities, and maintaining peak performance. The system balances strategic progression with resource management and time investment.
+Training is the primary method for improving hero attributes, expanding magic capacity, and maintaining peak performance (form). The system is trainer-centric, meaning heroes train under a configured trainer. The system balances strategic setup, trainer assignment, slot limits, and time-locking constraints without direct gold or essence costs.
 
 ### Training Types
 
@@ -527,12 +527,11 @@ Training is the primary method for improving hero attributes, learning new abili
 | Aspect | Details |
 |:---|:---|
 | **Primary Stat Training** | Directly increases one of eight primary attributes (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) |
-| **Gold Cost** | Scales with hero level and current attribute value |
+| **Gold Cost** | None (Training is completely free of monetary costs) |
 | **XP Gain** | Grants XP toward hero leveling |
-| **Fatigue** | Accumulates based on training intensity |
-| **Form** | Improves or maintains form when below peak condition |
-| **Success Rate** | Affected by hero age, form, and facility level |
-| **Efficiency** | Higher attribute values require more sessions for equivalent gains |
+| **Fatigue** | Adds +20 fatigue per weekly tick (capped at 100) |
+| **Form** | Form is maintained or recovered depending on the focus |
+| **Efficiency** | Calculated using the trainer's attribute value, difference factors, difficulty scaling, facility efficiency, and race modifiers |
 
 **Age Impact on Training:**
 
@@ -540,39 +539,25 @@ Training is the primary method for improving hero attributes, learning new abili
 |:---|:---|
 | **Junior** | Bonus efficiency and faster gains |
 | **Prime** | Standard efficiency and consistent gains |
-| **Veteran / Elder** | Reduced efficiency, slower gains, higher costs |
+| **Veteran / Elder** | Reduced efficiency, slower gains |
 
 #### Magic Training
 
-**Spell Slot Expansion** — Increases Magic Capacity from 1 to maximum of **5 slots**:
+**Spell Capacity Expansion** — Increases Magic Capacity from 1 to a maximum of **5 slots**:
+- Configured by setting the Trainer's training focus to Magic.
+- Assigned heroes increase their Magic Capacity by 1 per weekly tick (up to 5).
+- Adds +20 fatigue per weekly tick (capped at 100).
+- No Gold or Essence cost.
 
-- Requires progressive training sessions at **Library/Academy**
-- Cost increases exponentially with each slot *(1→2 is cheapest, 4→5 is most expensive)*
-- Unlocked through hero level milestones and Intelligence threshold
+#### Form & Condition Training (Resting)
 
-**School Mastery Training** — Improves mastery in specific magic schools:
+**Form Restoration** — Restores a hero's physical conditioning:
+- Configured by setting the Trainer's training focus to Form.
+- Assigned heroes recover +20 form per weekly tick (capped at 100).
+- Decreases fatigue by -20 per weekly tick (floor at 0).
+- No Gold cost.
 
-- Each school has independent mastery levels *(Tier 1–10)*
-- Higher mastery unlocks access to more powerful spell tiers
-- Requires **Essence** and **Gold**; cost scales with mastery tier
-- Learning speed affected by Intelligence attribute and Library/Academy level
-
-**Spell Learning** — Teaches specific spells to heroes:
-
-- Requires minimum School Mastery level for the spell's tier
-- Consumes Essence and Gold
-- Available spell slots determine how many spells can be equipped simultaneously
-- Heroes can know **more spells than they have slots**, allowing strategic swapping
-
-> *Example: A hero with 3 spell slots might learn 6 spells total, swapping between Fire offense and Water healing loadouts depending on the upcoming match.*
-
-#### Form & Condition Training
-
-| Type | Description |
-|:---|:---|
-| **Form Restoration** | Returns hero to peak physical condition. Cost scales with form deficit and hero level. Medical Wing upgrades improve recovery speed |
-| **Conditioning** | Maintains peak form through regular activity. Active heroes sustain form naturally; inactive heroes lose form gradually |
-| **Recovery Training** | Light training that reduces fatigue while maintaining form. Lower intensity and lower cost — ideal for post-combat recovery |
+---
 
 ### Trainer System
 
@@ -591,35 +576,33 @@ Training is the primary method for improving hero attributes, learning new abili
 
 #### Trainer Mechanics
 
-- **Trainer Acquisition** — Transform Veteran heroes into Trainers, or purchase Trainers from the marketplace using Gold
-- **Trainer Attributes** — Each Trainer retains frozen values for all eight primary attributes (1–20 range) at conversion
-- **No fixed specialty** — Trainers do **not** receive a permanent specialty at conversion. Which attribute they train is chosen **per training setup** (see Attribute Training below)
-- **Training cap** — When assigned to a training setup, the Trainer caps the target attribute at **their own frozen value** for that attribute *(e.g., STR 18 Trainer in a STR training session caps STR gains at 18)*
-- **One stat per setup** — Each attribute training setup trains **exactly one primary attribute**. The Trainer is selected for that setup; one or more heroes are assigned to it
-- **Trainer Aging** — Trainers age during each **training tick** (weekly cycle) by the same amount a hero would age from a combat death. This applies universally to **all races, including Undead** *(overrides the Undead race exception of aging only through combat deaths)*. Trainers who reach Death Expectation face escalating permanent death risk per training tick, identical to the combat mortality mechanic for active heroes
-- **Training as Calendar Event** — Training occurs during weekly server tick cycles. Multiple training actions can be queued and process sequentially
+- **Trainer Acquisition** — Transform Veteran heroes into Trainers, or purchase Trainers from the marketplace using Gold.
+- **Trainer Attributes** — Each Trainer retains frozen values for all eight primary attributes (1–20 range) at conversion.
+- **No fixed specialty** — Trainers do **not** receive a permanent specialty at conversion. Which focus they train is configured **per trainer**.
+- **Training cap** — When assigned to an Attribute focus, the Trainer caps the target attribute at **their own frozen value** for that attribute.
+- **Trainer limits** — A team can have at most `2 + floor((trainingFacilityLevel - 1) / 2)` trainers.
+- **Hero slot limits** — Each trainer has a dynamic number of hero slots: `3 + floor((trainingFacilityLevel - 1) / 2)`.
+- **Single Active Training** — A hero can be assigned to at most one Trainer. While assigned, the hero status is set to `Training`.
+- **Trainer Aging** — Trainers age during each **training tick** (weekly cycle) by the same amount a hero would age from a combat death. This applies universally to **all races, including Undead** *(overrides the Undead race exception of aging only through combat deaths)*.
+- **Lock Period** — Training configurations and assignments are locked starting on **Wednesday at 12:00:00** (server local time) and ending when the weekly tick processes on **Friday at 10:00:00**. During this time, players cannot configure trainers or change hero assignments.
 
-> *Example: A Trainer with STR 18 and KON 16 can lead a STR training session (cap 18) this week and a KON session (cap 16) next week. Heroes are assigned to each session via the training queue.*
+#### Training Setup
 
-#### Attribute Training Setup
-
-When starting **primary attribute training**, the player configures a training job:
+To train heroes, a player configures a trainer:
 
 | Step | Action |
 |:---|:---|
-| **1** | Select **one primary attribute** to train (STR, DEX, KON, SPD, INT, WIL, CHA, or LCK) |
-| **2** | Optionally assign a **Trainer** for that attribute |
-| **3** | Assign **one or more heroes** to the training job *(each hero gets a queue entry sharing the same attribute and Trainer)* |
-
-Validation: the Trainer's frozen value for the selected attribute is the cap for every hero in that job. Training without a Trainer is subject only to the global 1–20 attribute cap.
-
+| **1** | Configure the Trainer's training focus (Attribute target, Magic, Form, or idle) |
+| **2** | Assign one or more heroes to the Trainer's slots (up to the slot limit) |
 
 #### Trainer Marketplace
 
-- Trainers can be listed and sold on the marketplace for **Gold**
-- Price reflects **attribute values** and **age** *(higher-valued or younger trainers cost more)*
-- Trainer ownership transfers with marketplace transaction
-- *Trainers age over time; purchasing an older Trainer provides less long-term utility*
+- Trainers can be listed and sold on the marketplace for **Gold**.
+- Price reflects **attribute values** and **age** *(higher-valued or younger trainers cost more)*.
+- Trainer ownership transfers with marketplace transaction.
+- *Trainers age over time; purchasing an older Trainer provides less long-term utility.*
+
+---
 
 ### Training Efficiency Modifiers
 
@@ -628,8 +611,6 @@ Validation: the Trainer's frozen value for the selected attribute is the cap for
 | Modifier | Effect |
 |:---|:---|
 | **Training Facilities** (HQ) | +5–25% efficiency (scales with upgrade level) |
-| **Library/Academy** (HQ) | +10–30% magic training speed |
-| **Medical Wing** (HQ) | +15–40% form restoration rate |
 | **Race Optimization** | Heroes of optimized race and positive relationship races gain +10–20% efficiency |
 | **High Morale** | +5–15% training effectiveness |
 | **Team Chemistry** | Training with compatible heroes (positive race relationships) grants efficiency bonus |
@@ -639,32 +620,24 @@ Validation: the Trainer's frozen value for the selected attribute is the cap for
 
 | Modifier | Effect |
 |:---|:---|
-| **High Fatigue** | –20% to –50% training efficiency |
 | **Low Form** | –10% to –30% gains |
 | **Low Morale** | –10% to –25% effectiveness |
 | **Age Penalties** | Veteran and Elder heroes face declining efficiency |
 | **Incompatible Races** | Training alongside hostile races may reduce efficiency |
-| **Overtraining** | Multiple consecutive sessions on same hero incur diminishing returns |
+
+---
 
 ### Training Costs & Time
 
 #### Cost Structure
-
-| Factor | Description |
-|:---|:---|
-| **Base Cost** | Determined by training type and hero level |
-| **Attribute Value** | Higher stats = higher cost |
-| **Hero Level** | Higher level = higher cost |
-| **Age** | Elder heroes cost more to train |
-| **Stat Rarity** | Some stats are naturally harder to improve |
-| **Currency** | Primary training uses Gold; magic training also requires Essence |
+- **Monetary Costs**: None. Training does not cost Gold or Essence.
+- **Fatigue Cost**: Standard training (Attribute/Magic) increases fatigue by +20 per tick. Recovery training (Form) decreases fatigue by -20 per tick.
 
 #### Time Investment
+- **Weekly Cycle**: Training runs in a weekly cycle, processed during the server tick every Friday at 10:00.
+- **Pre-tick Lock**: Setting changes and assignments are locked from Wednesday 12:00:00 to Friday 10:00:00 local time.
 
-- **Real-time Component** — Training sessions may have cooldowns or completion times
-- **Fatigue Cost** — Each training session adds fatigue, limiting consecutive training
-- **Batch Training** — Players can queue multiple training sessions *(with increasing fatigue)*
-- **No Pay-to-Skip** — Training time **cannot be bypassed** with currency; all players progress at the same rate
+---
 
 ### Training Strategy
 
@@ -672,10 +645,8 @@ Validation: the Trainer's frozen value for the selected attribute is the cap for
 
 | Approach | Focus | Advantage | Disadvantage |
 |:---|:---|:---|:---|
-| **Specialist** | 2–3 core attributes for specific roles | Excel in combat roles, cost-efficient | Limited versatility, vulnerable to counters |
+| **Specialist** | 2–3 core attributes for specific roles | Excel in combat roles, fast progression | Limited versatility, vulnerable to counters |
 | **Generalist** | Balanced distribution across multiple stats | Adaptable, well-rounded performance | Higher total investment, may not excel |
-
-> *Example: A specialist tank might focus on STR/KON only, becoming nearly unkillable but useless if the opponent targets backline. A generalist can fill multiple roles but won’t dominate any.*
 
 #### Age-Based Training Decisions
 
@@ -683,31 +654,28 @@ Validation: the Trainer's frozen value for the selected attribute is the cap for
 |:---|:---|
 | **Junior** | Invest heavily in core stats to build a strong foundation |
 | **Prime Age** | Balance training with active combat deployment |
-| **Veteran** | Selective training to maintain competitive stats; focus on experience |
+| **Veteran** | Selective training to maintain competitive stats |
 | **Elder** | Minimal training investment; leverage accumulated experience and strategic value |
 
-#### Formation-Oriented Training
-
-- Train heroes to complement **specific formation roles**
-- Coordinate training to create **synergistic stat combinations**
-- Consider **race relationships** when planning group training sessions
+---
 
 ### Training Limitations
 
 | Limitation | Details |
 |:---|:---|
-| **Daily/Weekly Caps** | Maximum training sessions per hero per day *(prevents excessive grinding)*. Caps increase with HQ upgrades |
-| **Fatigue Constraints** | Accumulated fatigue limits consecutive training. Heroes must rest or use recovery items. Over-fatigued heroes **cannot train or enter combat** |
-| **Resource Limitations** | Gold and Essence reserves limit volume. Higher-tier training requires rare Essence types |
-| **Form Requirements** | Heroes with very low form cannot train effectively. Must restore form before productive training resumes |
+| **Lock Period** | No trainer configuration or hero assignment changes can be made between Wednesday 12:00:00 and Friday 10:00:00. |
+| **Trainer Limits** | Maximum `2 + floor((trainingFacilityLevel - 1) / 2)` trainers per team. |
+| **Slot Limits** | Maximum `3 + floor((trainingFacilityLevel - 1) / 2)` heroes assigned per trainer. |
+| **Fatigue Constraints** | Standard training adds fatigue (+20). High fatigue (100) blocks further training gains until fatigue is reduced (e.g., via Form recovery focus or rest). |
+| **Hero Assignment** | A hero can be assigned to only one trainer at a time. |
 
 ### Training Rewards
 
 | Category | Rewards |
 |:---|:---|
-| **Direct Benefits** | Increased attribute values, XP gain toward hero leveling, improved combat performance, expanded magic capacity and mastery |
-| **Secondary Benefits** | Maintained/improved form, morale boost from productive activity, team chemistry improvements with compatible heroes, achievement unlocks |
-| **Long-term Progression** | Specialized heroes become more valuable on marketplace, well-trained rosters dominate league competition, strategic training creates competitive advantages |
+| **Direct Benefits** | Increased attribute values, XP gain toward hero leveling, improved combat performance, expanded magic capacity |
+| **Secondary Benefits** | Maintained/improved form, morale boost from productive activity, team chemistry improvements with compatible heroes |
+| **Long-term Progression** | Specialized heroes become more valuable on marketplace, well-trained rosters dominate league competition |
 
 ---
 

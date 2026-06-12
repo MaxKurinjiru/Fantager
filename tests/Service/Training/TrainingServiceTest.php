@@ -86,78 +86,152 @@ class TrainingServiceTest extends TestCase
         $this->assertSame('2026-06-12 10:00:00', $next->format('Y-m-d H:i:s'));
     }
 
-    public function testQueueValidationHeroStatEqualsTrainerStat(): void
+    public function testIsTrainingLockedDuringLockPeriod(): void
     {
-        $hero = new Hero();
-        $hero->setStatus(HeroStatus::Available);
-        $hero->setStrRaw(150); // raw stat = 150 (external 15)
-
-        $trainer = new Trainer();
-        $trainer->setStrRaw(150); // raw stat = 150 (external 15)
-
         $team = $this->createMock(Team::class);
         $kingdom = $this->createMock(Kingdom::class);
         $kingdom->method('getTimezone')->willReturn('UTC');
         $team->method('getKingdom')->willReturn($kingdom);
 
-        $this->trainerRepositoryMock
-            ->method('findOneBy')
-            ->willReturn($trainer);
-
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Hero stat is already equal to or higher than trainer stat.');
-
-        $this->trainingService->queue($hero, TrainingType::Attribute, 'str', 1, $team);
+        // Wednesday 15:00 UTC - lock starts at Wednesday 12:00 UTC
+        $now = new \DateTimeImmutable('2026-06-03 15:00:00');
+        $this->assertTrue($this->trainingService->isTrainingLockedForTeam($team, $now));
     }
 
-    public function testQueueSuccessfulWithTrainer(): void
+    public function testIsTrainingLockedOutsideLockPeriod(): void
     {
-        $hero = new Hero();
-        $hero->setStatus(HeroStatus::Available);
-        $hero->setStrRaw(140); // raw stat = 140 (external 14)
-
-        $trainer = new Trainer();
-        $trainer->setStrRaw(150); // raw stat = 150 (external 15)
-
         $team = $this->createMock(Team::class);
         $kingdom = $this->createMock(Kingdom::class);
-        $kingdom->method('getTimezone')->willReturn('Europe/Prague');
+        $kingdom->method('getTimezone')->willReturn('UTC');
         $team->method('getKingdom')->willReturn($kingdom);
 
-        $this->trainerRepositoryMock
-            ->method('findOneBy')
-            ->willReturn($trainer);
+        // Monday 10:00 UTC - unlocked
+        $now = new \DateTimeImmutable('2026-06-01 10:00:00');
+        $this->assertFalse($this->trainingService->isTrainingLockedForTeam($team, $now));
+    }
 
-        $this->economyServiceMock
-            ->expects($this->once())
-            ->method('deductGold');
+    public function testConfigureTrainerSuccessful(): void
+    {
+        $team = $this->createMock(Team::class);
+        $team->method('getId')->willReturn(1);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getTimezone')->willReturn('UTC');
+        $team->method('getKingdom')->willReturn($kingdom);
 
-        $this->entityManagerMock
-            ->expects($this->once())
-            ->method('persist')
-            ->with($this->isInstanceOf(TrainingQueue::class));
+        $trainer = new Trainer();
+        $trainer->setTeam($team);
 
-        $job = $this->trainingService->queue($hero, TrainingType::Attribute, 'str', 1, $team);
+        // Monday 10:00 UTC (unlocked)
+        $now = new \DateTimeImmutable('2026-06-01 10:00:00');
 
+        $this->trainingService->configureTrainer($trainer, TrainingType::Attribute, 'str', $team, $now);
+
+        $this->assertSame(TrainingType::Attribute, $trainer->getTrainingType());
+        $this->assertSame('str', $trainer->getTargetAttribute());
+    }
+
+    public function testConfigureTrainerLockedThrowsException(): void
+    {
+        $team = $this->createMock(Team::class);
+        $team->method('getId')->willReturn(1);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getTimezone')->willReturn('UTC');
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $trainer = new Trainer();
+        $trainer->setTeam($team);
+
+        // Thursday 10:00 UTC (locked)
+        $now = new \DateTimeImmutable('2026-06-04 10:00:00');
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Training configuration is currently locked.');
+
+        $this->trainingService->configureTrainer($trainer, TrainingType::Attribute, 'str', $team, $now);
+    }
+
+    public function testAssignHeroSuccessful(): void
+    {
+        $team = $this->createMock(Team::class);
+        $team->method('getId')->willReturn(1);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getTimezone')->willReturn('UTC');
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $trainer = new Trainer();
+        $trainer->setTeam($team);
+
+        $hero = new Hero();
+        $hero->setTeam($team);
+        $hero->setStatus(HeroStatus::Available);
+
+        // Monday 10:00 UTC (unlocked)
+        $now = new \DateTimeImmutable('2026-06-01 10:00:00');
+
+        $this->trainingService->assignHero($trainer, $hero, $team, $now);
+
+        $this->assertSame($trainer, $hero->getTrainer());
         $this->assertSame(HeroStatus::Training, $hero->getStatus());
-        $this->assertSame(TrainingStatus::Pending, $job->getStatus());
-        $this->assertSame($trainer, $job->getTrainer());
-        // Verify scheduled time ends with Friday 08:00:00 UTC (since Europe/Prague is UTC+2 in summer)
-        $this->assertSame('08:00:00', $job->getExecuteAt()->format('H:i:s'));
+        $this->assertTrue($trainer->getHeroes()->contains($hero));
+    }
+
+    public function testAssignHeroSlotLimitExceeded(): void
+    {
+        $team = $this->createMock(Team::class);
+        $team->method('getId')->willReturn(1);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getTimezone')->willReturn('UTC');
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $trainer = new Trainer();
+        $trainer->setTeam($team);
+
+        // Setup Training facility at level 1 -> gives 3 slots
+        $hq = new Headquarters();
+        $facility = new Facility();
+        $facility->setType(FacilityType::Training);
+        $facility->setLevel(1);
+        $hq->addFacility($facility);
+
+        $this->hqRepositoryMock
+            ->method('findOneBy')
+            ->willReturn($hq);
+
+        // Fill slots with 3 heroes
+        for ($i = 0; $i < 3; $i++) {
+            $h = new Hero();
+            $h->setTeam($team);
+            $trainer->addHero($h);
+        }
+
+        $newHero = new Hero();
+        $newHero->setTeam($team);
+        $newHero->setStatus(HeroStatus::Available);
+
+        $now = new \DateTimeImmutable('2026-06-01 10:00:00');
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Trainer does not have any available slots.');
+
+        $this->trainingService->assignHero($trainer, $newHero, $team, $now);
     }
 
     public function testProcessTrainingTickAttributeWithTrainer(): void
     {
+        $team = $this->createMock(Team::class);
         $hero = new Hero();
+        $hero->setTeam($team);
         $hero->setRace(Race::Human);
         $hero->setStatus(HeroStatus::Training);
         $hero->setStrRaw(142); // external 14
+        $hero->setFatigue(10);
 
         $trainer = new Trainer();
+        $trainer->setTeam($team);
+        $trainer->setTrainingType(TrainingType::Attribute);
+        $trainer->setTargetAttribute('str');
         $trainer->setStrRaw(155); // external 15
-
-        $team = $this->createMock(Team::class);
-        $hero->setTeam($team);
+        $trainer->addHero($hero);
 
         $hq = new Headquarters();
         $hq->setTeam($team);
@@ -174,22 +248,26 @@ class TrainingServiceTest extends TestCase
             ->method('getTrainingSpeedModifier')
             ->willReturn(1.0);
 
-        $job = new TrainingQueue();
-        $job->setHero($hero);
-        $job->setTrainingType(TrainingType::Attribute);
-        $job->setTargetAttribute('str');
-        $job->setTrainer($trainer);
-        $job->setStatus(TrainingStatus::Pending);
+        $this->trainerRepositoryMock
+            ->method('createQueryBuilder')
+            ->willReturnSelf();
+        $this->trainerRepositoryMock
+            ->method('join')
+            ->willReturnSelf();
+        $this->trainerRepositoryMock
+            ->method('where')
+            ->willReturnSelf();
+        $this->trainerRepositoryMock
+            ->method('getQuery')
+            ->willReturnSelf();
+        $this->trainerRepositoryMock
+            ->method('getResult')
+            ->willReturn([$trainer]);
 
-        // Directly return job for findPendingDue mock
-        $this->queueRepositoryMock
-            ->method('findPendingDue')
-            ->willReturn([$job]);
-
-        // Directly return 0 count for countPendingForHero mock
-        $this->queueRepositoryMock
-            ->method('countPendingForHero')
-            ->willReturn(0);
+        $this->entityManagerMock
+            ->expects($this->once())
+            ->method('persist')
+            ->with($this->isInstanceOf(TrainingQueue::class));
 
         $this->trainingService->processTrainingTick(new \DateTimeImmutable());
 
@@ -204,34 +282,47 @@ class TrainingServiceTest extends TestCase
         // Raw gain = round(0.240 * 10) = 2 raw points
         // Final raw stat = 142 + 2 = 144
         $this->assertSame(144, $hero->getStrRaw());
-        $this->assertSame(2, $job->getStatGain());
-        $this->assertSame(TrainingStatus::Completed, $job->getStatus());
-        $this->assertSame(HeroStatus::Available, $hero->getStatus());
+        
+        // Fatigue should increase by 20 -> 10 + 20 = 30
+        $this->assertSame(30, $hero->getFatigue());
     }
 
-    public function testProcessTrainingTickMagicCapped(): void
+    public function testProcessTrainingTickRecoveryRest(): void
     {
+        $team = $this->createMock(Team::class);
         $hero = new Hero();
-        $hero->setMagicCapacity(4);
+        $hero->setTeam($team);
+        $hero->setForm(70);
+        $hero->setFatigue(50);
+        $hero->setStatus(HeroStatus::Training);
 
-        $job = new TrainingQueue();
-        $job->setHero($hero);
-        $job->setTrainingType(TrainingType::Magic);
-        $job->setStatus(TrainingStatus::Pending);
+        $trainer = new Trainer();
+        $trainer->setTeam($team);
+        $trainer->setTrainingType(TrainingType::Form);
+        $trainer->addHero($hero);
 
-        // Directly return job for findPendingDue mock
-        $this->queueRepositoryMock
-            ->method('findPendingDue')
-            ->willReturn([$job]);
-
-        // Directly return 0 count for countPendingForHero mock
-        $this->queueRepositoryMock
-            ->method('countPendingForHero')
-            ->willReturn(0);
+        $this->trainerRepositoryMock
+            ->method('createQueryBuilder')
+            ->willReturnSelf();
+        $this->trainerRepositoryMock
+            ->method('join')
+            ->willReturnSelf();
+        $this->trainerRepositoryMock
+            ->method('where')
+            ->willReturnSelf();
+        $this->trainerRepositoryMock
+            ->method('getQuery')
+            ->willReturnSelf();
+        $this->trainerRepositoryMock
+            ->method('getResult')
+            ->willReturn([$trainer]);
 
         $this->trainingService->processTrainingTick(new \DateTimeImmutable());
 
-        $this->assertSame(5, $hero->getMagicCapacity());
-        $this->assertSame(1, $job->getStatGain());
+        // Form should increase by 20 -> 70 + 20 = 90
+        $this->assertSame(90, $hero->getForm());
+
+        // Fatigue should decrease by 20 -> 50 - 20 = 30
+        $this->assertSame(30, $hero->getFatigue());
     }
 }

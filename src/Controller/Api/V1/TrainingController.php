@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1;
 
 use App\Entity\Auth\User;
+use App\Entity\Training\Trainer;
 use App\Enum\TrainingType;
 use App\Repository\Hero\HeroRepository;
-use App\Repository\Training\TrainingQueueRepository;
+use App\Repository\Training\TrainerRepository;
 use App\Service\Training\TrainingService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,109 +21,170 @@ class TrainingController extends AbstractController
     public function __construct(
         private readonly TrainingService $trainingService,
         private readonly HeroRepository $heroRepository,
-        private readonly TrainingQueueRepository $queueRepository,
+        private readonly TrainerRepository $trainerRepository,
     ) {
     }
 
-    /** Training options (available types and costs for a given hero). */
-    #[Route('/training', name: 'api_training_options', methods: ['GET'])]
-    public function options(Request $request): JsonResponse
+    /** List team's trainers, their configured training focus, slots limit, assigned heroes, and lock status. */
+    #[Route('/training/trainers', name: 'api_training_trainers_list', methods: ['GET'])]
+    public function trainers(): JsonResponse
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
             return $this->json(['error' => 'No team assigned to your account.'], 422);
         }
 
-        $heroId = (int) $request->query->get('hero_id', 0);
-        if (0 === $heroId) {
-            return $this->json(['error' => 'Query parameter "hero_id" is required.'], 400);
+        $now = new \DateTimeImmutable();
+        $isLocked = $this->trainingService->isTrainingLockedForTeam($team, $now);
+        $trainers = $this->trainerRepository->findBy(['team' => $team]);
+
+        $data = [];
+        foreach ($trainers as $trainer) {
+            $heroes = [];
+            foreach ($trainer->getHeroes() as $hero) {
+                $heroes[] = [
+                    'id' => $hero->getId(),
+                    'name' => $hero->getName(),
+                    'level' => $hero->getLevel(),
+                    'race' => $hero->getRace()->value,
+                    'fatigue' => $hero->getFatigue(),
+                    'form' => $hero->getForm(),
+                ];
+            }
+
+            $data[] = [
+                'id' => $trainer->getId(),
+                'name' => $trainer->getName(),
+                'race' => $trainer->getRace()->value,
+                'training_type' => $trainer->getTrainingType()?->value,
+                'target_attribute' => $trainer->getTargetAttribute(),
+                'slots_limit' => $this->trainingService->getTrainerSlotsLimit($trainer),
+                'slots_occupied' => count($heroes),
+                'assigned_heroes' => $heroes,
+                'is_locked' => $isLocked,
+            ];
         }
 
-        $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
-        if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
-        }
-
-        return $this->json($this->trainingService->getOptions($hero));
+        return $this->json([
+            'trainers' => $data,
+            'is_locked' => $isLocked,
+            'next_tick' => $this->trainingService->getNextTrainingTime($now)->format(\DateTimeInterface::ATOM),
+        ]);
     }
 
-    /** List pending/in-progress training jobs for the current team. */
-    #[Route('/training-queue', name: 'api_training_queue_list', methods: ['GET'])]
-    public function queue(): JsonResponse
+    /** Configure trainer focus. */
+    #[Route('/training/trainers/{id}/configure', name: 'api_training_trainer_configure', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function configure(int $id, Request $request): JsonResponse
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
             return $this->json(['error' => 'No team assigned to your account.'], 422);
         }
 
-        $jobs = $this->trainingService->getQueueByTeam($team);
-
-        return $this->json(array_map($this->trainingService->serialize(...), $jobs));
-    }
-
-    /** Add a training job to the queue. */
-    #[Route('/training-queue', name: 'api_training_queue_add', methods: ['POST'])]
-    public function add(Request $request): JsonResponse
-    {
-        $team = $this->getPlayerTeam();
-        if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+        /** @var Trainer|null $trainer */
+        $trainer = $this->trainerRepository->findOneBy(['id' => $id, 'team' => $team]);
+        if (null === $trainer) {
+            return $this->json(['error' => 'Trainer not found.'], 404);
         }
 
         /** @var array<string, mixed> $body */
         $body = json_decode($request->getContent(), true) ?? [];
 
-        $heroId = (int) ($body['hero_id'] ?? 0);
-        if (0 === $heroId) {
-            return $this->json(['error' => 'Field "hero_id" is required.'], 400);
+        $typeValue = isset($body['type']) ? (string) $body['type'] : null;
+        $type = null;
+        if (null !== $typeValue && '' !== $typeValue) {
+            $type = TrainingType::tryFrom($typeValue);
+            if (null === $type) {
+                return $this->json(['error' => 'Invalid training type.'], 400);
+            }
         }
 
-        $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
-        if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
-        }
-
-        $typeValue = (string) ($body['type'] ?? '');
-        $type = TrainingType::tryFrom($typeValue);
-        if (null === $type) {
-            $valid = implode(', ', array_column(TrainingType::cases(), 'value'));
-
-            return $this->json(['error' => sprintf('Invalid training type. Valid values: %s.', $valid)], 400);
-        }
-
-        $attribute = isset($body['attribute']) ? (string) $body['attribute'] : null;
-        $trainerId = isset($body['trainer_id']) ? (int) $body['trainer_id'] : null;
+        $attribute = isset($body['attribute']) && '' !== trim((string) $body['attribute']) ? (string) $body['attribute'] : null;
 
         try {
-            $job = $this->trainingService->queue($hero, $type, $attribute, $trainerId, $team);
+            $this->trainingService->configureTrainer($trainer, $type, $attribute, $team, new \DateTimeImmutable());
         } catch (\DomainException|\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], 422);
         }
 
-        return $this->json($this->trainingService->serialize($job), 201);
+        return $this->json([
+            'message' => 'Trainer configured successfully.',
+            'training_type' => $trainer->getTrainingType()?->value,
+            'target_attribute' => $trainer->getTargetAttribute(),
+        ]);
     }
 
-    /** Cancel a pending training job (50% gold refund). */
-    #[Route('/training-queue/{id}', name: 'api_training_queue_cancel', methods: ['DELETE'], requirements: ['id' => '\d+'])]
-    public function cancel(int $id): JsonResponse
+    /** Assign hero to trainer. */
+    #[Route('/training/trainers/{id}/assign', name: 'api_training_trainer_assign', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function assign(int $id, Request $request): JsonResponse
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
             return $this->json(['error' => 'No team assigned to your account.'], 422);
         }
 
-        $job = $this->queueRepository->find($id);
-        if (null === $job) {
-            return $this->json(['error' => 'Training job not found.'], 404);
+        /** @var Trainer|null $trainer */
+        $trainer = $this->trainerRepository->findOneBy(['id' => $id, 'team' => $team]);
+        if (null === $trainer) {
+            return $this->json(['error' => 'Trainer not found.'], 404);
+        }
+
+        /** @var array<string, mixed> $body */
+        $body = json_decode($request->getContent(), true) ?? [];
+        $heroId = (int) ($body['hero_id'] ?? 0);
+
+        $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
+        if (null === $hero) {
+            return $this->json(['error' => 'Hero not found.'], 404);
         }
 
         try {
-            $this->trainingService->cancel($job, $team);
+            $this->trainingService->assignHero($trainer, $hero, $team, new \DateTimeImmutable());
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], 422);
         }
 
-        return $this->json(['message' => 'Training job cancelled. Partial refund applied.']);
+        return $this->json([
+            'message' => 'Hero assigned to trainer successfully.',
+            'hero_id' => $hero->getId(),
+            'trainer_id' => $trainer->getId(),
+        ]);
+    }
+
+    /** Remove hero from trainer. */
+    #[Route('/training/trainers/{id}/unassign', name: 'api_training_trainer_unassign', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function unassign(int $id, Request $request): JsonResponse
+    {
+        $team = $this->getPlayerTeam();
+        if (null === $team) {
+            return $this->json(['error' => 'No team assigned to your account.'], 422);
+        }
+
+        /** @var Trainer|null $trainer */
+        $trainer = $this->trainerRepository->findOneBy(['id' => $id, 'team' => $team]);
+        if (null === $trainer) {
+            return $this->json(['error' => 'Trainer not found.'], 404);
+        }
+
+        /** @var array<string, mixed> $body */
+        $body = json_decode($request->getContent(), true) ?? [];
+        $heroId = (int) ($body['hero_id'] ?? 0);
+
+        $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
+        if (null === $hero) {
+            return $this->json(['error' => 'Hero not found.'], 404);
+        }
+
+        try {
+            $this->trainingService->unassignHero($trainer, $hero, $team, new \DateTimeImmutable());
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], 422);
+        }
+
+        return $this->json([
+            'message' => 'Hero unassigned from trainer successfully.',
+            'hero_id' => $hero->getId(),
+        ]);
     }
 
     private function getPlayerTeam(): ?\App\Entity\Team\Team

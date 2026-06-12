@@ -11,6 +11,7 @@ use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
 use App\Repository\Training\TrainingQueueRepository;
+use App\Repository\Hero\HeroRepository;
 
 class CalendarService
 {
@@ -21,6 +22,7 @@ class CalendarService
         private readonly LeagueFixtureRepository $leagueFixtureRepository,
         private readonly EventRepository $eventRepository,
         private readonly LeagueSeasonRepository $seasonRepository,
+        private readonly HeroRepository $heroRepository,
     ) {
     }
 
@@ -219,6 +221,48 @@ class CalendarService
                         'attribute' => $job->getTargetAttribute(),
                     ],
                 ];
+            }
+
+            // Append virtual upcoming completed entries for currently assigned heroes
+            $activeTrainees = $this->heroRepository->createQueryBuilder('h')
+                ->where('h.team = :teamId')
+                ->andWhere('h.trainer IS NOT NULL')
+                ->setParameter('teamId', $teamId)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($activeTrainees as $hero) {
+                /** @var \App\Entity\Hero\Hero $hero */
+                $trainer = $hero->getTrainer();
+                if (null === $trainer || null === $trainer->getTrainingType()) {
+                    continue;
+                }
+
+                // For each WeeklyTraining tick in the period, add a scheduled entry
+                foreach ($occurrences as $occ) {
+                    if ($occ['type'] === TickType::WeeklyTraining) {
+                        $occTime = $occ['time'];
+                        $feed[] = [
+                            'id' => sprintf('active_training_%d_%s', $hero->getId(), $occTime->format('YmdHis')),
+                            'type' => 'training_queue',
+                            'title' => sprintf('Training complete: %s', $hero->getName()),
+                            'description' => sprintf(
+                                'Scheduled training for %s (%s)',
+                                $hero->getName(),
+                                $trainer->getTrainingType()->value.($trainer->getTargetAttribute() ? ': '.$trainer->getTargetAttribute() : '')
+                            ),
+                            'scheduledAt' => $occTime->format(\DateTimeInterface::ATOM),
+                            'visibility' => 'team_only',
+                            'status' => 'scheduled',
+                            'metadata' => [
+                                'queueId' => null,
+                                'heroId' => $hero->getId(),
+                                'trainingType' => $trainer->getTrainingType()->value,
+                                'attribute' => $trainer->getTargetAttribute(),
+                            ],
+                        ];
+                    }
+                }
             }
         }
 

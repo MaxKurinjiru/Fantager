@@ -27,13 +27,8 @@ class TrainingService
     private const BASE_COSTS = [
         TrainingType::Attribute->value => 100,
         TrainingType::Magic->value => 150,
-        TrainingType::Form->value => 80,
-    ];
-
     /** Trainable primary attribute names. */
     private const PRIMARY_ATTRIBUTES = ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'];
-
-    private const PARTIAL_REFUND_RATIO = 0.5;
 
     public function __construct(
         private readonly TrainingQueueRepository $queueRepository,
@@ -55,6 +50,129 @@ class TrainingService
         return $now->modify('next week Friday 10:00:00');
     }
 
+    public function isTrainingLockedForTeam(Team $team, \DateTimeImmutable $now): bool
+    {
+        $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
+        $nowLocal = $now->setTimezone($tz);
+        
+        $nextTickLocal = $this->getNextTrainingTime($nowLocal);
+        $lockStartLocal = $nextTickLocal->modify('-46 hours'); // Wednesday 12:00:00
+        
+        return $nowLocal >= $lockStartLocal && $nowLocal < $nextTickLocal;
+    }
+
+    public function getTrainerLimit(Team $team): int
+    {
+        /** @var \App\Entity\Headquarters\Headquarters|null $hq */
+        $hq = $this->hqRepository->findOneBy(['team' => $team]);
+        if (null === $hq) {
+            return 2;
+        }
+
+        $trainingLevel = 1;
+        foreach ($hq->getFacilities() as $facility) {
+            if (\App\Enum\FacilityType::Training === $facility->getType()) {
+                $trainingLevel = $facility->getLevel();
+                break;
+            }
+        }
+
+        return 2 + (int) floor(($trainingLevel - 1) / 2);
+    }
+
+    public function getTrainerSlotsLimit(Trainer $trainer): int
+    {
+        $team = $trainer->getTeam();
+        /** @var \App\Entity\Headquarters\Headquarters|null $hq */
+        $hq = $this->hqRepository->findOneBy(['team' => $team]);
+        if (null === $hq) {
+            return 3;
+        }
+
+        $trainingLevel = 1;
+        foreach ($hq->getFacilities() as $facility) {
+            if (\App\Enum\FacilityType::Training === $facility->getType()) {
+                $trainingLevel = $facility->getLevel();
+                break;
+            }
+        }
+
+        return 3 + (int) floor(($trainingLevel - 1) / 2);
+    }
+
+    public function configureTrainer(Trainer $trainer, ?TrainingType $type, ?string $attribute, Team $team, \DateTimeImmutable $now): void
+    {
+        if ($trainer->getTeam()->getId() !== $team->getId()) {
+            throw new \DomainException('Trainer does not belong to your team.');
+        }
+
+        if ($this->isTrainingLockedForTeam($team, $now)) {
+            throw new \DomainException('Training configuration is currently locked.');
+        }
+
+        if (null !== $type) {
+            if (TrainingType::Attribute === $type) {
+                if (null === $attribute || !in_array($attribute, self::PRIMARY_ATTRIBUTES, true)) {
+                    throw new \InvalidArgumentException(sprintf('Invalid attribute. Valid values: %s.', implode(', ', self::PRIMARY_ATTRIBUTES)));
+                }
+            } else {
+                $attribute = null; // for magic and form
+            }
+        } else {
+            $attribute = null; // idle
+        }
+
+        $trainer->setTrainingType($type);
+        $trainer->setTargetAttribute($attribute);
+        $this->em->flush();
+    }
+
+    public function assignHero(Trainer $trainer, Hero $hero, Team $team, \DateTimeImmutable $now): void
+    {
+        if ($trainer->getTeam()->getId() !== $team->getId() || $hero->getTeam()->getId() !== $team->getId()) {
+            throw new \DomainException('Trainer or Hero does not belong to your team.');
+        }
+
+        if ($this->isTrainingLockedForTeam($team, $now)) {
+            throw new \DomainException('Training assignments are currently locked.');
+        }
+
+        if ($hero->getTrainer() !== null) {
+            throw new \DomainException('Hero is already assigned to a trainer.');
+        }
+
+        if (\App\Enum\HeroStatus::Dead === $hero->getStatus()) {
+            throw new \DomainException('Dead heroes cannot be trained.');
+        }
+
+        if (count($trainer->getHeroes()) >= $this->getTrainerSlotsLimit($trainer)) {
+            throw new \DomainException('Trainer does not have any available slots.');
+        }
+
+        $trainer->addHero($hero);
+        $hero->setStatus(HeroStatus::Training);
+        $this->em->flush();
+    }
+
+    public function unassignHero(Trainer $trainer, Hero $hero, Team $team, \DateTimeImmutable $now): void
+    {
+        if ($trainer->getTeam()->getId() !== $team->getId() || $hero->getTeam()->getId() !== $team->getId()) {
+            throw new \DomainException('Trainer or Hero does not belong to your team.');
+        }
+
+        if ($this->isTrainingLockedForTeam($team, $now)) {
+            throw new \DomainException('Training assignments are currently locked.');
+        }
+
+        if ($hero->getTrainer()?->getId() !== $trainer->getId()) {
+            throw new \DomainException('Hero is not assigned to this trainer.');
+        }
+
+        $trainer->removeHero($hero);
+        $hero->setStatus(HeroStatus::Available);
+        $this->em->flush();
+    }
+
     /**
      * Returns available training options with calculated costs for a hero.
      *
@@ -62,8 +180,8 @@ class TrainingService
      */
     public function getOptions(Hero $hero): array
     {
+        // Simple list of attributes and options (free of cost)
         $options = [];
-
         $tzString = $hero->getTeam()->getKingdom()->getTimezone();
         $tz = new \DateTimeZone($tzString);
         $nowLocal = new \DateTimeImmutable('now', $tz);
@@ -72,13 +190,10 @@ class TrainingService
         $executeAtHours = (int) ceil($diffSeconds / 3600);
 
         foreach (self::PRIMARY_ATTRIBUTES as $attr) {
-            $currentValue = $this->getHeroStatByName($hero, $attr);
-            $cost = $this->computeCost($hero, TrainingType::Attribute, $attr, $currentValue);
-
             $options[] = [
                 'type' => TrainingType::Attribute->value,
                 'attribute' => $attr,
-                'gold_cost' => $cost,
+                'gold_cost' => 0,
                 'execute_at_hours' => $executeAtHours,
             ];
         }
@@ -86,14 +201,14 @@ class TrainingService
         $options[] = [
             'type' => TrainingType::Magic->value,
             'attribute' => null,
-            'gold_cost' => $this->computeCost($hero, TrainingType::Magic, null, $hero->getMagicCapacity()),
+            'gold_cost' => 0,
             'execute_at_hours' => $executeAtHours,
         ];
 
         $options[] = [
             'type' => TrainingType::Form->value,
             'attribute' => null,
-            'gold_cost' => $this->computeCost($hero, TrainingType::Form, null, $hero->getForm()),
+            'gold_cost' => 0,
             'execute_at_hours' => $executeAtHours,
         ];
 
@@ -101,163 +216,118 @@ class TrainingService
     }
 
     /**
-     * Queue a training job for a hero.
-     *
-     * @throws \DomainException          on validation failure or insufficient gold
-     * @throws \InvalidArgumentException on invalid attribute
+     * Process all active trainers and their assigned heroes for weekly training.
      */
-    public function queue(
-        Hero $hero,
-        TrainingType $type,
-        ?string $attribute,
-        ?int $trainerId,
-        Team $team,
-    ): TrainingQueue {
-        $this->validateForQueue($hero, $type, $attribute);
-
-        $currentValue = match ($type) {
-            TrainingType::Attribute => $this->getHeroStatByName($hero, $attribute ?? ''),
-            TrainingType::Magic => $hero->getMagicCapacity(),
-            TrainingType::Form => $hero->getForm(),
-        };
-
-        $trainer = null;
-        if (null !== $trainerId) {
-            /** @var Trainer|null $trainer */
-            $trainer = $this->trainerRepository->findOneBy(['id' => $trainerId, 'team' => $team]);
+    public function processTrainingTick(\DateTimeImmutable $now, ?\App\Entity\Kingdom\Kingdom $kingdom = null): void
+    {
+        $qb = $this->trainerRepository->createQueryBuilder('t')
+            ->join('t.team', 'team')
+            ->where('t.trainingType IS NOT NULL');
+        if (null !== $kingdom) {
+            $qb->andWhere('team.kingdom = :kingdom')
+               ->setParameter('kingdom', $kingdom);
         }
 
-        // Validate Cap limits before queueing
-        $heroRawStat = match ($type) {
-            TrainingType::Attribute => $this->getHeroRawStatByName($hero, $attribute ?? ''),
-            TrainingType::Magic => $hero->getMagicCapacity(),
-            TrainingType::Form => $hero->getForm(),
-        };
+        /** @var list<Trainer> $trainers */
+        $trainers = $qb->getQuery()->getResult();
 
-        $cap = match ($type) {
-            TrainingType::Attribute => null !== $trainer ? $this->getTrainerRawStatByName($trainer, $attribute ?? '') : 200,
-            TrainingType::Magic => 5,
-            TrainingType::Form => 100,
-        };
+        foreach ($trainers as $trainer) {
+            $type = $trainer->getTrainingType();
+            $attribute = $trainer->getTargetAttribute();
 
-        if ($heroRawStat >= $cap) {
-            if (TrainingType::Attribute === $type && null !== $trainer) {
-                throw new \DomainException('Hero stat is already equal to or higher than trainer stat.');
+            foreach ($trainer->getHeroes() as $hero) {
+                if ($hero->getStatus() === HeroStatus::Dead) {
+                    continue;
+                }
+
+                $gainRaw = 0;
+
+                if (TrainingType::Attribute === $type && null !== $attribute) {
+                    $heroStatExt = $this->getHeroStatByName($hero, $attribute);
+                    $heroStatRaw = $this->getHeroRawStatByName($hero, $attribute);
+                    $trainerStatExt = $this->getTrainerStatByName($trainer, $attribute);
+                    $trainerStatRaw = $this->getTrainerRawStatByName($trainer, $attribute);
+                    $cap = $trainerStatRaw;
+
+                    if ($heroStatRaw < $cap) {
+                        $baseGain = 1.0;
+                        $trainerFactor = max(0.0, ($trainerStatExt - 10) * 0.05);
+                        $diffFactor = max(0.0, ($trainerStatExt - $heroStatExt) * 0.05);
+                        $rawGainExt = $baseGain + $trainerFactor + $diffFactor;
+
+                        $difficultyFactor = 1.0 + (($heroStatExt / 5) ** 1.5);
+                        $baseGainScaled = $rawGainExt / $difficultyFactor;
+
+                        /** @var \App\Entity\Headquarters\Headquarters|null $hq */
+                        $hq = $this->hqRepository->findOneBy(['team' => $hero->getTeam()]);
+                        $facilityEfficiency = 0.0;
+                        if (null !== $hq) {
+                            foreach ($hq->getFacilities() as $fac) {
+                                if (\App\Enum\FacilityType::Training === $fac->getType()) {
+                                    $bonuses = $fac->getPassiveBonuses();
+                                    $facilityEfficiency = ($bonuses['training_efficiency_pct'] ?? 5.0) / 100.0;
+                                    break;
+                                }
+                            }
+                        }
+
+                        $raceMod = $this->raceConfig->getTrainingSpeedModifier($hero->getRace());
+                        $finalRawGainExt = $baseGainScaled * (1.0 + $facilityEfficiency) * $raceMod;
+
+                        $gainRaw = (int) round($finalRawGainExt * 10);
+                        $gainRaw = max(1, min(9, $gainRaw));
+
+                        if ($heroStatRaw + $gainRaw > $cap) {
+                            $gainRaw = max(0, $cap - $heroStatRaw);
+                        }
+
+                        $this->setHeroRawStatByName($hero, $attribute, $heroStatRaw + $gainRaw);
+                    }
+                    
+                    // Standard training adds +20 fatigue (capped at 100)
+                    $hero->setFatigue(min(100, $hero->getFatigue() + 20));
+
+                } elseif (TrainingType::Magic === $type) {
+                    $cap = $hero->getMagicCapacity();
+                    if ($cap < 5) {
+                        $hero->setMagicCapacity($cap + 1);
+                        $gainRaw = 1;
+                    }
+                    
+                    // Magic training adds +20 fatigue (capped at 100)
+                    $hero->setFatigue(min(100, $hero->getFatigue() + 20));
+
+                } elseif (TrainingType::Form === $type) {
+                    $form = $hero->getForm();
+                    if ($form < 100) {
+                        $recovery = 20;
+                        $newForm = min(100, $form + $recovery);
+                        $hero->setForm($newForm);
+                        $gainRaw = $newForm - $form;
+                    }
+                    
+                    // Recovery training reduces fatigue by 20 (floor at 0)
+                    $hero->setFatigue(max(0, $hero->getFatigue() - 20));
+                }
+
+                // Log a completed training history entry
+                $job = new TrainingQueue();
+                $job->setHero($hero);
+                $job->setTrainingType($type);
+                $job->setTargetAttribute($attribute);
+                $job->setTrainer($trainer);
+                $job->setGoldCost(0);
+                $job->setEssenceCost(0);
+                $job->setStatus(TrainingStatus::Completed);
+                $job->setStatGain($gainRaw);
+                $job->setExecuteAt($now);
+                $job->setCompletedAt($now);
+
+                $this->em->persist($job);
             }
-            throw new \DomainException('Hero has already reached the maximum value for this training.');
-        }
-
-        $cost = $this->computeCost($hero, $type, $attribute, $currentValue);
-        $this->economyService->deductGold(
-            $team,
-            $cost,
-            \App\Enum\FinancialRecordType::TrainingCost,
-            \App\Enum\FinancialRecordActor::Active,
-            ['hero_id' => $hero->getId(), 'training_type' => $type->value, 'target_attribute' => $attribute]
-        );
-
-        $tzString = $team->getKingdom()->getTimezone();
-        $tz = new \DateTimeZone($tzString);
-        $nowLocal = new \DateTimeImmutable('now', $tz);
-        $executeAtLocal = $this->getNextTrainingTime($nowLocal);
-        $executeAtUtc = $executeAtLocal->setTimezone(new \DateTimeZone('UTC'));
-
-        $job = new TrainingQueue();
-        $job->setHero($hero);
-        $job->setTrainingType($type);
-        $job->setTargetAttribute($attribute);
-        $job->setTrainer($trainer);
-        $job->setGoldCost($cost);
-        $job->setStatus(TrainingStatus::Pending);
-        $job->setExecuteAt($executeAtUtc);
-
-        $hero->setStatus(HeroStatus::Training);
-
-        $this->em->persist($job);
-        $this->em->flush();
-
-        return $job;
-    }
-
-    /**
-     * Cancel a pending training job. Refunds 50% of gold cost.
-     *
-     * @throws \DomainException if job cannot be cancelled
-     */
-    public function cancel(TrainingQueue $job, Team $team): void
-    {
-        if ($job->getHero()->getTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Training job does not belong to your team.');
-        }
-
-        if (TrainingStatus::Pending !== $job->getStatus()) {
-            throw new \DomainException('Only pending training jobs can be cancelled.');
-        }
-
-        $refund = (int) floor($job->getGoldCost() * self::PARTIAL_REFUND_RATIO);
-        $this->economyService->addGold(
-            $team,
-            $refund,
-            \App\Enum\FinancialRecordType::TrainingCost,
-            \App\Enum\FinancialRecordActor::Active,
-            ['hero_id' => $job->getHero()->getId(), 'cancelled_job_id' => $job->getId()]
-        );
-
-        $job->setStatus(TrainingStatus::Cancelled);
-        $job->setCompletedAt(new \DateTimeImmutable());
-
-        // Restore hero status if no other pending jobs
-        $pendingCount = $this->queueRepository->count([
-            'hero' => $job->getHero(),
-            'status' => TrainingStatus::Pending,
-        ]);
-
-        if ($pendingCount <= 1) {
-            $job->getHero()->setStatus(HeroStatus::Available);
         }
 
         $this->em->flush();
-    }
-
-    /**
-     * @return list<TrainingQueue>
-     */
-    public function getQueueByTeam(Team $team): array
-    {
-        return $this->queueRepository->createQueryBuilder('q')
-            ->join('q.hero', 'h')
-            ->where('h.team = :team')
-            ->andWhere('q.status IN (:statuses)')
-            ->setParameter('team', $team)
-            ->setParameter('statuses', [TrainingStatus::Pending, TrainingStatus::InProgress])
-            ->orderBy('q.executeAt', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /** @return array<string, mixed> */
-    public function serialize(TrainingQueue $job): array
-    {
-        return [
-            'id' => $job->getId(),
-            'hero_id' => $job->getHero()->getId(),
-            'hero_name' => $job->getHero()->getName(),
-            'type' => $job->getTrainingType()->value,
-            'attribute' => $job->getTargetAttribute(),
-            'gold_cost' => $job->getGoldCost(),
-            'status' => $job->getStatus()->value,
-            'execute_at' => $job->getExecuteAt()->format(\DateTimeInterface::ATOM),
-            'completed_at' => $job->getCompletedAt()?->format(\DateTimeInterface::ATOM),
-        ];
-    }
-
-    private function computeCost(Hero $hero, TrainingType $type, ?string $attribute, int $currentValue): int
-    {
-        $base = self::BASE_COSTS[$type->value] ?? 100;
-        $raw = $base * $hero->getLevel() * (1 + $currentValue / 10);
-
-        // Round to nearest 25
-        return (int) (round($raw / 25) * 25);
     }
 
     private function getHeroStatByName(Hero $hero, string $attr): int
@@ -341,146 +411,5 @@ class TrainingService
                 break;
             default: throw new \InvalidArgumentException(sprintf('Unknown attribute "%s".', $attr));
         }
-    }
-
-    private function validateForQueue(Hero $hero, TrainingType $type, ?string $attribute): void
-    {
-        if (HeroStatus::Dead === $hero->getStatus()) {
-            throw new \DomainException('Dead heroes cannot be trained.');
-        }
-
-        if (HeroStatus::InMatch === $hero->getStatus()) {
-            throw new \DomainException('Heroes in a match cannot be trained.');
-        }
-
-        if (TrainingType::Attribute === $type) {
-            if (null === $attribute || !in_array($attribute, self::PRIMARY_ATTRIBUTES, true)) {
-                throw new \InvalidArgumentException(sprintf('Invalid attribute. Valid values: %s.', implode(', ', self::PRIMARY_ATTRIBUTES)));
-            }
-        }
-    }
-
-    /**
-     * Process all pending training jobs scheduled up to $now.
-     */
-    public function processTrainingTick(\DateTimeImmutable $now, ?\App\Entity\Kingdom\Kingdom $kingdom = null): void
-    {
-        $jobs = $this->queueRepository->findPendingDue($now, $kingdom);
-
-        /** @var TrainingQueue $job */
-        foreach ($jobs as $job) {
-            $job->setStatus(TrainingStatus::InProgress);
-            $this->em->flush();
-
-            try {
-                $hero = $job->getHero();
-                $type = $job->getTrainingType();
-                $attribute = $job->getTargetAttribute();
-                $trainer = $job->getTrainer();
-
-                if (TrainingType::Attribute === $type && null !== $attribute) {
-                    $heroStatExt = $this->getHeroStatByName($hero, $attribute);
-                    $heroStatRaw = $this->getHeroRawStatByName($hero, $attribute);
-
-                    if (null !== $trainer) {
-                        $trainerStatExt = $this->getTrainerStatByName($trainer, $attribute);
-                        $trainerStatRaw = $this->getTrainerRawStatByName($trainer, $attribute);
-                        $cap = $trainerStatRaw;
-                    } else {
-                        $trainerStatExt = 0;
-                        $trainerStatRaw = 200;
-                        $cap = 200;
-                    }
-
-                    if ($heroStatRaw < $cap) {
-                        if (null !== $trainer) {
-                            $baseGain = 1.0;
-                            $trainerFactor = max(0.0, ($trainerStatExt - 10) * 0.05);
-                            $diffFactor = max(0.0, ($trainerStatExt - $heroStatExt) * 0.05);
-                            $rawGainExt = $baseGain + $trainerFactor + $diffFactor;
-                        } else {
-                            $rawGainExt = 1.0;
-                        }
-
-                        // Difficulty factor: 1.0 + (HeroStatExternal / 5)^1.5
-                        $difficultyFactor = 1.0 + (($heroStatExt / 5) ** 1.5);
-
-                        // Base gain divided by difficulty
-                        $baseGainScaled = $rawGainExt / $difficultyFactor;
-
-                        /** @var \App\Entity\Headquarters\Headquarters|null $hq */
-                        $hq = $this->hqRepository->findOneBy(['team' => $hero->getTeam()]);
-                        $facilityEfficiency = 0.0;
-                        if (null !== $hq) {
-                            foreach ($hq->getFacilities() as $fac) {
-                                if (\App\Enum\FacilityType::Training === $fac->getType()) {
-                                    $bonuses = $fac->getPassiveBonuses();
-                                    $facilityEfficiency = ($bonuses['training_efficiency_pct'] ?? 5.0) / 100.0;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Race training speed modifier
-                        $raceMod = $this->raceConfig->getTrainingSpeedModifier($hero->getRace());
-
-                        // Total Gain in external scale
-                        $finalRawGainExt = $baseGainScaled * (1.0 + $facilityEfficiency) * $raceMod;
-
-                        // Total Gain in internal (raw) scale: round and cap at 9
-                        $gainRaw = (int) round($finalRawGainExt * 10);
-                        if ($gainRaw < 1) {
-                            $gainRaw = 1;
-                        }
-                        if ($gainRaw > 9) {
-                            $gainRaw = 9;
-                        }
-
-                        // Cap to Trainer/global limit
-                        if ($heroStatRaw + $gainRaw > $cap) {
-                            $gainRaw = max(0, $cap - $heroStatRaw);
-                        }
-
-                        $this->setHeroRawStatByName($hero, $attribute, $heroStatRaw + $gainRaw);
-                        $job->setStatGain($gainRaw);
-                    } else {
-                        $job->setStatGain(0);
-                    }
-                } elseif (TrainingType::Magic === $type) {
-                    $cap = $hero->getMagicCapacity();
-                    if ($cap < 5) {
-                        $hero->setMagicCapacity($cap + 1);
-                        $job->setStatGain(1);
-                    } else {
-                        $job->setStatGain(0);
-                    }
-                } elseif (TrainingType::Form === $type) {
-                    $form = $hero->getForm();
-                    if ($form < 100) {
-                        $recovery = 20;
-                        $newForm = min(100, $form + $recovery);
-                        $hero->setForm($newForm);
-                        $job->setStatGain($newForm - $form);
-                    } else {
-                        $job->setStatGain(0);
-                    }
-                }
-
-                $job->setStatus(TrainingStatus::Completed);
-                $job->setCompletedAt($now);
-            } catch (\Throwable $e) {
-                $job->setStatus(TrainingStatus::Pending); // revert status on error
-                throw $e;
-            }
-
-            // Restore hero status if no other pending jobs
-            $pendingCount = $this->queueRepository->countPendingForHero($job->getHero());
-
-            if (0 === $pendingCount) {
-                $job->getHero()->setStatus(HeroStatus::Available);
-            }
-        }
-
-        $this->em->flush();
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity\Hero;
 
 use App\Entity\Team\Team;
+use App\Entity\Training\Trainer;
 use App\Enum\HeroStatus;
 use App\Enum\Race;
 use App\Repository\Hero\HeroRepository;
@@ -78,6 +79,10 @@ class Hero
 
     #[ORM\Column(length: 15, enumType: HeroStatus::class)]
     private HeroStatus $status = HeroStatus::Available;
+
+    #[ORM\ManyToOne(targetEntity: Trainer::class, inversedBy: 'heroes')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Trainer $trainer = null;
 
     /** @var Collection<int, SchoolMastery> */
     #[ORM\OneToMany(targetEntity: SchoolMastery::class, mappedBy: 'hero', cascade: ['persist'])]
@@ -430,6 +435,18 @@ class Hero
     public function setStatus(HeroStatus $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getTrainer(): ?Trainer
+    {
+        return $this->trainer;
+    }
+
+    public function setTrainer(?Trainer $trainer): static
+    {
+        $this->trainer = $trainer;
 
         return $this;
     }

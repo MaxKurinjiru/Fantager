@@ -358,6 +358,25 @@ training:
     cha_desc: Boosts team synergy bonuses & morale.
     lck: Luck
     lck_desc: Increases drop rarity rates and dodge.
+  trainer_limit: "Trainer limit: %count% / %limit%"
+  trainer_slots: "Hero slots: %occupied% / %limit%"
+  lock_warning: "Training configuration is currently locked before upcoming evaluation."
+  idle: "Idle"
+  training_focus: "Training Focus"
+  assign_hero: "Assign Hero"
+  unassign_hero: "Remove"
+  fatigue_change: "Fatigue Change"
+  form_change: "Form Change"
+  save_focus: "Save Focus"
+  no_trainer_heroes: "No heroes are training under this trainer."
+  active_trainees: "Active Trainees"
+  next_evaluation: "Next Evaluation"
+  hours_remaining: "hours remaining"
+  success_configure: "Trainer focus saved successfully."
+  success_assign: "Hero assigned to trainer successfully."
+  success_unassign: "Hero removed from trainer successfully."
+  tab_trainers: "Trainers"
+  tab_active: "Active Trainees"
 
 inventory:
   title: Armory & Rucksack

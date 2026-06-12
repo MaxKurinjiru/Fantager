@@ -356,6 +356,25 @@ training:
     cha_desc: Zvyšuje synergické bonusy týmu a morálku.
     lck: Štěstí
     lck_desc: Zvyšuje šanci na vzácnou kořist a úhyb.
+  trainer_limit: "Limit trenérů: %count% / %limit%"
+  trainer_slots: "Sloty pro hrdiny: %occupied% / %limit%"
+  lock_warning: "Tréninkové změny jsou uzamčeny před blížícím se vyhodnocením."
+  idle: "Neaktivní (Idle)"
+  training_focus: "Zaměření tréninku"
+  assign_hero: "Přiřadit hrdinu"
+  unassign_hero: "Odebrat"
+  fatigue_change: "Změna únavy"
+  form_change: "Změna formy"
+  save_focus: "Uložit focus"
+  no_trainer_heroes: "Žádný hrdina netrénuje pod tímto trenérem."
+  active_trainees: "Aktivní trénující hrdinové"
+  next_evaluation: "Příští vyhodnocení"
+  hours_remaining: "zbývá hodin"
+  success_configure: "Zaměření trenéra bylo úspěšně uloženo."
+  success_assign: "Hrdina byl úspěšně přiřazen trenérovi."
+  success_unassign: "Hrdina byl úspěšně odebrán z tréninku."
+  tab_trainers: "Trenéři"
+  tab_active: "Trénující hrdinové"
 
 inventory:
   title: Zbrojnice a batoh

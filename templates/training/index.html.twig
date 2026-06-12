@@ -4,22 +4,22 @@
 
 {% block body %}
 <div class="space-y-8 max-w-7xl mx-auto" data-controller="training"
-     data-training-success-queue-value="{{ 'js_flash.training.success_queue'|trans }}"
-     data-training-success-cancel-value="{{ 'js_flash.training.success_cancel'|trans }}"
+     data-training-success-configure-value="{{ 'training.success_configure'|trans }}"
+     data-training-success-assign-value="{{ 'training.success_assign'|trans }}"
+     data-training-success-unassign-value="{{ 'training.success_unassign'|trans }}"
      data-training-error-fetch-value="{{ 'js_flash.training.error_fetch'|trans }}"
      data-training-error-queue-value="{{ 'js_flash.training.error_queue'|trans }}"
      data-training-error-cancel-value="{{ 'js_flash.training.error_cancel'|trans }}"
-     data-training-text-queueing-value="{{ 'js_flash.training.text_queueing'|trans }}"
-     data-training-text-cancelling-value="{{ 'js_flash.training.text_cancelling'|trans }}"
      data-training-text-processing-value="{{ 'js_flash.training.text_processing'|trans }}"
+     data-training-is-locked-value="{{ isLocked ? 'true' : 'false' }}"
 >
     
     {# --- Header Section --- #}
     {% set right_content %}
         <div class="bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 backdrop-blur-md text-sm shrink-0 flex items-center gap-3">
             <div>
-                <span class="block text-[10px] text-gray-555 uppercase font-bold tracking-wider">{{ 'training.scheduled_ticks'|trans }}</span>
-                <span class="text-white font-extrabold">{{ 'training.ticks_schedule'|trans }}</span>
+                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'training.next_evaluation'|trans }}</span>
+                <span data-countdown-target="{{ nextTick|date('Y-m-d H:i:s') }}" class="text-white font-extrabold">--h --m --s</span>
             </div>
         </div>
     {% endset %}
@@ -37,61 +37,243 @@
         close_action: 'training#hideAlert'
     } %}
 
-    {# --- Multi-Tab Navigation — controlled by tab_controller.js §9.2 --- #}
+    {# --- Lock Warning --- #}
+    {% if isLocked %}
+        <div class="bg-red-950/40 border border-red-900/50 rounded-2xl p-5 flex items-start gap-4 text-red-200 shadow-md">
+            <span class="text-3xl select-none leading-none">🔒</span>
+            <div class="space-y-1">
+                <h4 class="font-bold text-white text-sm">{{ 'training.lock_warning'|trans }}</h4>
+                <p class="text-xs text-red-300/80">Od středy 12:00 do pátky 10:00 jsou tréninky uzamčeny a nelze měnit konfiguraci ani přiřazovat hrdiny.</p>
+            </div>
+        </div>
+    {% endif %}
+
+    {# --- Multi-Tab Navigation --- #}
     <div class="flex border-b border-gray-850 gap-2 overflow-x-auto pb-px" data-controller="tab">
         <button type="button"
                 data-tab-target="btn"
                 data-action="click->tab#switch"
-                data-tab="attributes-tab"
+                data-tab="trainers-tab"
                 class="tab-btn tab-btn--active">
-            💪 {{ 'training.tab_attrs'|trans }}
+            💼 {{ 'training.tab_trainers'|trans }}
         </button>
         <button type="button"
                 data-tab-target="btn"
                 data-action="click->tab#switch"
-                data-tab="magic-tab"
+                data-tab="active-tab"
                 class="tab-btn">
-            🔮 {{ 'training.tab_magic'|trans }}
-        </button>
-        <button type="button"
-                data-tab-target="btn"
-                data-action="click->tab#switch"
-                data-tab="recovery-tab"
-                class="tab-btn">
-            🛌 {{ 'training.tab_recovery'|trans }}
-        </button>
-        <button type="button"
-                data-tab-target="btn"
-                data-action="click->tab#switch"
-                data-tab="queue-tab"
-                class="tab-btn flex items-center gap-2">
-            📋 {{ 'training.tab_queue'|trans }}
-            <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full font-bold border border-gray-700">{{ queue|length }}</span>
+            🏋️ {{ 'training.tab_active'|trans }}
         </button>
     </div>
 
-    {# --- Hero & Trainer Selection Configuration --- #}
-    {% include 'components/training/config_panel.html.twig' with { heroes: heroes, trainers: trainers } %}
+    {# --- Content: Trainers Tab --- #}
+    <div id="trainers-tab" class="tab-content space-y-6">
+        <div class="flex items-center justify-between bg-gray-900/20 border border-gray-850 px-6 py-4 rounded-2xl">
+            <span class="text-xs font-bold text-gray-400">
+                {{ 'training.trainer_limit'|trans({'%count%': trainers|length, '%limit%': trainerLimit}) }}
+            </span>
+        </div>
 
-    {# ========================================== #}
-    {# TAB 1: ATTRIBUTES TRAINING                 #}
-    {# ========================================== #}
-    {% include 'components/training/attributes_tab.html.twig' %}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {% for trainer in trainers %}
+                {% set maxSlots = trainingService.getTrainerSlotsLimit(trainer) %}
+                {% set occupiedSlots = trainer.heroes|length %}
+                
+                <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6 flex flex-col justify-between">
+                    <div class="space-y-6">
+                        {# Trainer Identity #}
+                        <div class="flex items-start justify-between border-b border-gray-850 pb-4">
+                            <div class="flex gap-3 items-center">
+                                <span class="text-3xl select-none">👨‍🏫</span>
+                                <div>
+                                    <h3 class="font-extrabold text-white text-lg leading-tight">{{ trainer.name }}</h3>
+                                    <span class="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">
+                                        {{ trainer.race.value|capitalize }} &bull; {{ 'heroes.primary_attrs'|trans }} Průměr: T{{ (trainer.str + trainer.dex + trainer.kon + trainer.spd + trainer.intel + trainer.wil + trainer.cha + trainer.lck) // 8 }}
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="bg-emerald-950/40 border border-emerald-850 text-emerald-400 text-[9px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+                                {{ 'training.trainer_slots'|trans({'%occupied%': occupiedSlots, '%limit%': maxSlots}) }}
+                            </span>
+                        </div>
 
-    {# ========================================== #}
-    {# TAB 2: MAGIC CAPACITY                      #}
-    {# ========================================== #}
-    {% include 'components/training/magic_tab.html.twig' %}
+                        {# Focus Settings #}
+                        <div class="space-y-3">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ 'training.training_focus'|trans }}</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label text-[10px]">{{ 'training.type'|trans }}</label>
+                                    <select class="form-input text-xs font-medium" 
+                                            data-action="change->training#onFocusTypeChange"
+                                            data-trainer-id="{{ trainer.id }}"
+                                            {% if isLocked %}disabled{% endif %}>
+                                        <option value="" {% if trainer.trainingType is null %}selected{% endif %}>{{ 'training.idle'|trans }}</option>
+                                        <option value="attribute" {% if trainer.trainingType is not null and trainer.trainingType.value == 'attribute' %}selected{% endif %}>{{ 'training.type_attribute'|trans }}</option>
+                                        <option value="magic" {% if trainer.trainingType is not null and trainer.trainingType.value == 'magic' %}selected{% endif %}>{{ 'training.type_magic'|trans }}</option>
+                                        <option value="form" {% if trainer.trainingType is not null and trainer.trainingType.value == 'form' %}selected{% endif %}>{{ 'training.type_form'|trans }}</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="{% if trainer.trainingType is null or trainer.trainingType.value != 'attribute' %}hidden{% endif %}"
+                                     data-training-attr-select-container="{{ trainer.id }}">
+                                    <label class="form-label text-[10px]">{{ 'training.attr_label'|trans }}</label>
+                                    <select class="form-input text-xs font-medium"
+                                            data-trainer-id="{{ trainer.id }}"
+                                            {% if isLocked %}disabled{% endif %}>
+                                        {% for attrKey in ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'] %}
+                                            <option value="{{ attrKey }}" {% if trainer.targetAttribute == attrKey %}selected{% endif %}>
+                                                {{ ('training.attr.' ~ attrKey)|trans }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button type="button" 
+                                    data-action="click->training#saveTrainerFocus"
+                                    data-trainer-id="{{ trainer.id }}"
+                                    class="btn btn-outline btn--sm py-2 px-4 text-[10px] uppercase font-bold tracking-wider"
+                                    {% if isLocked %}disabled{% endif %}>
+                                💾 {{ 'training.save_focus'|trans }}
+                            </button>
+                        </div>
 
-    {# ========================================== #}
-    {# TAB 3: RECOVERY & REST                     #}
-    {# ========================================== #}
-    {% include 'components/training/recovery_tab.html.twig' %}
+                        {# Trainee Slot List #}
+                        <div class="space-y-3">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Svěřenci ve slotech</h4>
+                            <div class="space-y-2">
+                                {% for hero in trainer.heroes %}
+                                    <div class="bg-gray-955 border border-gray-850 px-4 py-3 rounded-xl flex items-center justify-between text-xs">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-xl select-none">💪</span>
+                                            <div>
+                                                <span class="font-bold text-white block">{{ hero.name }}</span>
+                                                <span class="text-[10px] text-gray-500 font-medium">
+                                                    {{ 'heroes.level'|trans }} {{ hero.level }} &bull; Únava: {{ hero.fatigue }}% &bull; Forma: {{ hero.form }}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <button type="button" 
+                                                data-action="click->training#unassignTrainee"
+                                                data-trainer-id="{{ trainer.id }}"
+                                                data-hero-id="{{ hero.id }}"
+                                                class="btn btn-outline btn--sm text-red-400 border-red-950/45 hover:border-red-500/20 text-[9px] uppercase tracking-wider py-1 px-2.5"
+                                                {% if isLocked %}disabled{% endif %}>
+                                            {{ 'training.unassign_hero'|trans }}
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-6 select-none border border-gray-850 border-dashed rounded-xl opacity-60 text-xs text-gray-500">
+                                        {{ 'training.no_trainer_heroes'|trans }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
 
-    {# ========================================== #}
-    {# TAB 4: ACTIVE QUEUE                        #}
-    {# ========================================== #}
-    {% include 'components/training/queue_tab.html.twig' with { queue: queue } %}
+                    {# Assign Hero to Available Slot #}
+                    {% if occupiedSlots < maxSlots and not isLocked %}
+                        <div class="border-t border-gray-850 pt-4 mt-4 space-y-2">
+                            <label class="form-label text-[10px]">{{ 'training.assign_hero'|trans }}</label>
+                            <select class="form-input text-xs font-medium"
+                                    data-action="change->training#assignTrainee"
+                                    data-trainer-id="{{ trainer.id }}">
+                                <option value="">-- Vyberte hrdinu k přiřazení --</option>
+                                {% for hero in heroes %}
+                                    {% if hero.status.value != 'dead' and hero.trainer is null %}
+                                        <option value="{{ hero.id }}">
+                                            {{ hero.name }} &bull; Lvl {{ hero.level }} (Únava: {{ hero.fatigue }}%)
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="text-center py-16 border border-gray-800 border-dashed rounded-2xl opacity-60 w-full col-span-2">
+                    <span class="text-5xl block mb-2">📭</span>
+                    <h3 class="font-bold text-white">Žádní trenéři</h3>
+                    <p class="text-xs text-gray-400">Váš tým momentálně nevlastní žádné trenéry.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# --- Content: Active Trainees Tab --- #}
+    <div id="active-tab" class="tab-content hidden space-y-6">
+        <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-4">
+            <h2 class="text-xl font-bold text-white">{{ 'training.active_trainees'|trans }}</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-500 uppercase tracking-wider text-[10px] font-bold">
+                            <th class="pb-3">{{ 'nav.heroes'|trans }}</th>
+                            <th class="pb-3">{{ 'training.trainer'|trans }}</th>
+                            <th class="pb-3">{{ 'training.type'|trans }}</th>
+                            <th class="pb-3 text-center">{{ 'heroes.fatigue'|trans }} (Předpověď)</th>
+                            <th class="pb-3 text-center">{{ 'heroes.combat_form'|trans }} (Předpověď)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-850">
+                        {% set totalActive = 0 %}
+                        {% for trainer in trainers %}
+                            {% for hero in trainer.heroes %}
+                                {% set totalActive = totalActive + 1 %}
+                                <tr>
+                                    <td class="py-4 font-bold text-white flex items-center gap-2">
+                                        <span>💪</span> {{ hero.name }} (Lvl {{ hero.level }})
+                                    </td>
+                                    <td class="py-4 text-gray-400">
+                                        {{ trainer.name }}
+                                    </td>
+                                    <td class="py-4 text-emerald-400 font-semibold">
+                                        {% if trainer.trainingType %}
+                                            {{ ('training.type_' ~ trainer.trainingType.value)|trans }}
+                                            {% if trainer.targetAttribute %}
+                                                - {{ ('training.attr.' ~ trainer.targetAttribute)|trans }}
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-gray-600">{{ 'training.idle'|trans }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-4 text-center">
+                                        {{ hero.fatigue }}% &rarr; 
+                                        {% if trainer.trainingType %}
+                                            {% if trainer.trainingType.value == 'form' %}
+                                                <span class="text-emerald-450">{{ max(0, hero.fatigue - 20) }}%</span>
+                                            {% else %}
+                                                <span class="text-red-450">{{ min(100, hero.fatigue + 20) }}%</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span>{{ hero.fatigue }}%</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-4 text-center">
+                                        {{ hero.form }}% &rarr; 
+                                        {% if trainer.trainingType and trainer.trainingType.value == 'form' %}
+                                            <span class="text-emerald-450 font-bold">{{ min(100, hero.form + 20) }}%</span>
+                                        {% else %}
+                                            <span>{{ hero.form }}%</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        
+                        {% if totalActive == 0 %}
+                            <tr>
+                                <td colspan="5" class="py-12 text-center text-gray-550 select-none">
+                                    Žádní hrdinové momentálně netrénují.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
 </div>
 

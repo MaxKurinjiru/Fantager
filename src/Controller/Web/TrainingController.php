@@ -38,13 +38,18 @@ class TrainingController extends AbstractController
 
         $heroes = $this->heroRepository->findBy(['team' => $team]);
         $trainers = $this->trainerRepository->findBy(['team' => $team]);
-        $queue = $this->trainingService->getQueueByTeam($team);
+        $isLocked = $this->trainingService->isTrainingLockedForTeam($team, new \DateTimeImmutable());
+        $nextTick = $this->trainingService->getNextTrainingTime(new \DateTimeImmutable());
+        $trainerLimit = $this->trainingService->getTrainerLimit($team);
 
         return $this->render('training/index.html.twig', [
             'team' => $team,
             'heroes' => $heroes,
             'trainers' => $trainers,
-            'queue' => $queue,
+            'isLocked' => $isLocked,
+            'nextTick' => $nextTick,
+            'trainerLimit' => $trainerLimit,
+            'trainingService' => $this->trainingService,
         ]);
     }
 }
