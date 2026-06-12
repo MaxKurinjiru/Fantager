@@ -21,9 +21,10 @@ Displayed Information:
 	- Their basic stats
 
 Possible Actions/Buttons:
-- Summon Hero
+- Summon Hero (pulls a random compatible race based on the team's HQ/Arena race optimization)
 - View Summoned Hero
 - Buy Another Slot
+
 
 Backend Requirements:
 - Summon availability check

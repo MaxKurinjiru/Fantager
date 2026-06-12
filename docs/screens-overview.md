@@ -110,7 +110,6 @@ The site is divided into two main sections:
 
 ### Backend Requirements:
 - Dashboard aggregation endpoint (stats, notifications, recent activity)
-- Real-time notifications (Server-Sent Events / SSE)
 
 ---
 
@@ -206,43 +205,28 @@ The site is divided into two main sections:
 **When:** Training hero attributes and skills
 
 ### Displayed Information:
-- **Hero Selection Panel:**
-  - Dropdown or quick-select from hero list
-  - Current Form, Fatigue, Morale of hero
-- **Training Options Tabs:**
-  - **Attribute Training**
-  - **Magic Training** (Spell Slots, School Mastery, Spell Learning)
-  - **Form & Recovery**
-- **Attribute Training View:**
-  - Select one primary attribute to train
-  - Optional Trainer (cap = Trainer's value for selected attribute)
-  - Assign one or more heroes to the job
-  - Per hero: current value, cost, expected increase, success rate, estimated time
-- **Magic Training View:**
-  - **Spell Slot Expansion:** current/max, cost, requirements
-  - **School Mastery:** 6 schools, current tier, upgrade cost (Gold + Essence), requirements
-  - **Spell Learning:** available spells (filtered by Mastery), cost (Gold + Essence)
-- **Form & Recovery View:**
-  - Current Form (%)
-  - Cost for Full Restoration
-  - Recovery Training Options (light training)
-- **Training Queue:**
-  - List of scheduled trainings
-  - Estimated completion time
-  - Cancellation option
+- **Trainers Overview Panel:**
+  - List of team's Trainers
+  - For each Trainer:
+    - Name, race, age
+    - Configuration: Focus type (Attribute, Magic, Form, or Idle) and target attribute
+    - Slots occupied vs. slots limit
+    - List of assigned heroes currently training under this Trainer
+- **Active Team Status:**
+  - Whether training assignments and focus changes are currently **locked** (from Wednesday 12:00 to Friday 10:00)
+  - Next training tick execution time (weekly Friday at 10:00)
 
 ### Possible Actions/Buttons:
-- **Start Training** - configure attribute, optional trainer, and heroes
-- **Queue Multiple** - add multiple jobs to queue
-- **Cancel Training** - cancel scheduled training
-- **Buy Training Package** - bulk training with discount (if implemented)
+- **Configure Trainer Focus** - change focus type (Attribute, Magic, Form, Idle) and target attribute
+- **Assign Hero to Trainer** - assign available hero to a trainer's training slot
+- **Unassign Hero from Trainer** - remove a hero from trainer's slot
 - **View Trainer List** - navigate to Trainer Management
 
 ### Backend Requirements:
-- Training options endpoint (costs, requirements, success rates)
-- Training queue endpoint (GET/POST/DELETE)
-- Training calculation/simulation
-- Server tick processing for completing trainings
+- GET `/api/v1/training/trainers` — List team's trainers, current configurations, hero slot occupancy, limits, and team lock status.
+- POST `/api/v1/training/trainers/{id}/configure` — Configure trainer focus (request parameters: `type`, `attribute`).
+- POST `/api/v1/training/trainers/{id}/assign` — Assign a hero to a trainer's slot (request parameter: `hero_id`).
+- POST `/api/v1/training/trainers/{id}/unassign` — Unassign a hero from a trainer (request parameter: `hero_id`).
 
 ---
 
@@ -257,7 +241,7 @@ The site is divided into two main sections:
   - Age (+ Death Expectation warning)
   - Status (Active, Aging risk)
 - **Trainer Detail (when selected):**
-  - Full stats and training history (jobs by target attribute)
+  - Full stats and training caps
   - Age progression timeline
   - Cost (if on Marketplace)
 
@@ -266,7 +250,7 @@ The site is divided into two main sections:
 - **Buy from Marketplace** - navigate to Marketplace filtered by Trainers
 - **Convert Hero to Trainer** - permanent conversion (no specialty; assign on Training Screen)
 
-Note: Trainer assignment happens on the **Training Screen** when configuring an attribute training job.
+Note: Trainers act as training leaders. Their training focus (Attribute, Magic, Form, or Idle) and hero assignments are configured on the Training Screen.
 
 ### Backend Requirements:
 - Trainers list endpoint
@@ -527,7 +511,7 @@ Note: Trainer assignment happens on the **Training Screen** when configuring an 
 
 ### Backend Requirements:
 - Combat simulation engine (PHP worker)
-- Combat state streaming (Server-Sent Events or polling)
+- Combat state streaming (polling/HTTP fetch)
 - Battle result endpoint
 - Post-battle updates (XP, form, fatigue, morale, age)
 
@@ -872,7 +856,7 @@ Note: Trainer assignment happens on the **Training Screen** when configuring an 
 
 ### Frontend Requirements:
 - Responsive design (desktop + mobile/tablet)
-- Real-time updates (Server-Sent Events / SSE support for combat, notifications)
+- Regular status updates/polling for combat and notifications
 - Drag & Drop support (formation setup, equipment, spells)
 - Data visualization (stats charts, progress bars, morale indicators)
 - Filtering & sorting for all list views
@@ -882,7 +866,6 @@ Note: Trainer assignment happens on the **Training Screen** when configuring an 
 
 ### Backend Requirements:
 - RESTful API for all screen data
-- Server-Sent Events (SSE) / Mercure hub for real-time events
 - Server tick system (cron jobs) for scheduled processing
 - Transaction system (atomic operations for economy)
 - Combat simulation engine

@@ -39,11 +39,16 @@ class HeadquartersController extends AbstractController
             $facilities[] = $this->hqService->serializeFacility($facility, $facility->getType());
         }
 
+        $upgradingType = $hq->getUpgradingFacility()?->getType()?->value;
+        $completedAt = $hq->getUpgradeCompletedAt()?->format(\DateTimeInterface::ATOM);
+
         return $this->json([
             'total_level' => $hq->getTotalLevel(),
             'race_optimization' => $hq->getRaceOptimization(),
             'pending_race_optimization' => $hq->getPendingRaceOptimization(),
             'is_optimization_locked' => ($hq->hasPendingRaceOptimizationChange() || $hq->isRaceOptimizationLockCycle()),
+            'upgrading_facility' => $upgradingType,
+            'upgrade_completed_at' => $completedAt,
             'facilities' => $facilities,
         ]);
     }
@@ -68,7 +73,8 @@ class HeadquartersController extends AbstractController
         }
 
         try {
-            $facility = $this->hqService->upgradeFacility($team, $type);
+            $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+            $facility = $this->hqService->upgradeFacility($team, $type, $now);
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], 422);
         }

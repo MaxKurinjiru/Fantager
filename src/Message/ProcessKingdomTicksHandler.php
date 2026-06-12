@@ -246,6 +246,9 @@ class ProcessKingdomTicksHandler
     {
         $this->logger->debug(sprintf('Executing DailyReset for Kingdom %s', $kingdom->getName()));
 
+        // Process pending facility upgrades
+        $this->hqService->processFacilityUpgradesTick($kingdom, $scheduledAt);
+
         // Check if we need to pre-create the next season (Option A: Monday of Week 11)
         // If scheduledAt is Monday (1)
         if (1 === (int) $scheduledAt->format('N')) {

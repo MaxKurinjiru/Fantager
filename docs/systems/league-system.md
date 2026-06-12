@@ -108,11 +108,14 @@ Let $R$ be the number of relegation slots for Tier $T$, and $G$ be the number of
 When comparing teams from different groups within the same tier (to resolve promotion or relegation slots), the following tie-breakers are applied in order to their regular season standings:
 1. **Total Points** (Win = 3, Draw = 1, Loss = 0)
 2. **Goal Difference** (Total kills scored - Total kills conceded)
-3. **Goals Scored** (Total kills scored)
-4. **Team Reputation** (In-game team attribute)
-5. **Random Draw / ID** (Ultimate fallback)
+3. **Wins** (Total matches won)
+4. **Team Type** (Real player `isNpc = false` is prioritized over NPC `isNpc = true`)
+5. **Team Reputation** (In-game team attribute)
+6. **Team Chemistry** (In-game team attribute)
+7. **Team ID** (Lowest ID / ASC - ultimate fallback)
 
-For relegation comparison, the ranking is inverted (lowest points/goal difference/goals scored/reputation is relegated first).
+For relegation comparison, the ranking is inverted (lowest points, goal difference, wins, etc. is relegated first; real players are prioritized for safety over NPCs).
+
 
 ### 5. Seeding and Group Assignment for the Next Season
 Once the set of teams for each Tier $T$ in the next season is finalized (containing remaining teams + promoted teams + relegated teams), they must be distributed into the groups of Tier $T$:

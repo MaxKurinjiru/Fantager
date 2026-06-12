@@ -24,7 +24,7 @@ When a new Kingdom is created (by an admin or automated setup), the following st
 3. **NPC teams are created and immediately seeded** into the league groups. Each team (`is_npc = true`, `user_id = NULL`) is created with generated name and emblem and placed directly into a `LeagueGroup`, and a `LeagueStanding` row is created for it. All groups are filled in one pass.
 4. **Heroes are generated and assigned** to each NPC team — **10 heroes per team**, fully staffed and functional before the Kingdom opens to players.
 
-When a real player verifies their email, one randomly selected NPC team (with `user_id IS NULL`) in that Kingdom is assigned to the player immediately and automatically — no extra action required from the player. The team's `user_id` is set; `is_npc` remains `true` until the player renames/customizes the team (TBD design decision).
+When a real player verifies their email, one randomly selected NPC team (with `user_id IS NULL`) in that Kingdom is assigned to the player immediately and automatically — no extra action required from the player. The team's `user_id` is set to the user, and `is_npc` is immediately set to `false` to reflect that it is now a player-managed team.
 
 Sections to fill:
 - Overview & purpose

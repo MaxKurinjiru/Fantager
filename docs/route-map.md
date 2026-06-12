@@ -84,26 +84,15 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ---
 
-## Training
+## Training & Trainer Management
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/training` | Web\TrainingController | Training page |
-| GET | `/api/v1/training` | Api\V1\TrainingController | Training options (costs, rates) |
-| GET | `/api/v1/training-queue` | Api\V1\TrainingController | Queued training jobs |
-| POST | `/api/v1/training-queue` | Api\V1\TrainingController | Add to queue |
-| DELETE | `/api/v1/training-queue/{id}` | Api\V1\TrainingController | Cancel training |
-
----
-
-## Trainer
-
-| Method | Path | Controller | Purpose |
-|--------|------|-----------|---------|
-| GET | `/app/trainers` | Web\TrainerController | Trainer Management page |
-| GET | `/api/v1/trainers` | Api\V1\TrainerController | List trainers |
-| POST | `/api/v1/trainers/{id}/assign` | Api\V1\TrainerController | Assign to hero |
-| POST | `/api/v1/trainers/{id}/unassign` | Api\V1\TrainerController | Remove assignment |
+| GET | `/app/training` | Web\TrainingController | Training & Trainer Management page |
+| GET | `/api/v1/training/trainers` | Api\V1\TrainingController | List team's trainers, their configured training focus, slots limit, assigned heroes, and lock status |
+| POST | `/api/v1/training/trainers/{id}/configure` | Api\V1\TrainingController | Configure trainer focus (type, target attribute) |
+| POST | `/api/v1/training/trainers/{id}/assign` | Api\V1\TrainingController | Assign hero to trainer |
+| POST | `/api/v1/training/trainers/{id}/unassign` | Api\V1\TrainingController | Remove assignment of hero from trainer |
 
 ---
 
@@ -126,7 +115,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/app/hq` | Web\HeadquartersController | HQ page |
 | GET | `/api/v1/hq` | Api\V1\HeadquartersController | Facility levels + bonuses |
 | POST | `/api/v1/hq/upgrade` | Api\V1\HeadquartersController | Upgrade facility |
-| POST | `/api/v1/hq/race-optimization` | Api\V1\HeadquartersController | Change race optimization |
+| POST | `/api/v1/hq/optimize` | Api\V1\HeadquartersController | Change race optimization |
 
 ---
 

@@ -1,51 +1,34 @@
 # Training Screen
 
-Reference: [screens-overview.md](../screens-overview.md#5-training-screen)
+Reference: [screens-overview.md](../screens-overview.md#5-training-screen), [training-system.md](../systems/training-system.md)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 
-Displayed Information:
-- Hero Selection Panel:
-	- Dropdown or quick-select from hero list
-	- Current Form, Fatigue, Morale of hero
-- Training Options Tabs:
-	- Attribute Training
-	- Magic Training (Spell Slots, School Mastery, Spell Learning)
-	- Form & Recovery
-- Attribute Training View:
-	- Select **one primary attribute** to train
-	- Optional **Trainer** selection (shows cap = Trainer's value for that attribute)
-	- **Hero assignment** — one or more heroes for this job
-	- Per-hero: current value, training cost (Gold), expected increase, success rate (%), estimated time
-- Magic Training View:
-	- Spell Slot Expansion: current/max, cost, requirements
-	- School Mastery: 6 schools, current tier, upgrade cost (Gold + Essence), requirements
-	- Spell Learning: available spells (filtered by Mastery), cost (Gold + Essence)
-- Form & Recovery View:
-	- Current Form (%)
-	- Cost for Full Restoration
-	- Recovery Training Options (light training)
-- Training Queue:
-	- List of scheduled trainings
-	- Estimated completion time
-	- Cancellation option
+## Displayed Information
 
-Possible Actions/Buttons:
-- Start Training (configure attribute + trainer + heroes)
-- Queue Multiple
-- Cancel Training
-- Buy Training Package
+- **Trainers Overview Panel:**
+  - List of team's Trainers
+  - For each Trainer:
+    - Name, race, age
+    - Configuration: Focus type (Attribute, Magic, Form, or Idle) and target attribute
+    - Slots occupied vs. slots limit
+    - List of assigned heroes currently training under this Trainer
+- **Active Team Status:**
+  - Whether training assignments and focus changes are currently **locked** (from Wednesday 12:00 to Friday 10:00)
+  - Next training tick execution time (weekly Friday at 10:00)
 
-Backend Requirements:
-- Training options endpoint (costs, requirements, success rates)
-- Training queue endpoint (GET/POST/DELETE)
-- Training calculation/simulation
-- Server tick processing
+## Possible Actions/Buttons
 
-Sections to fill:
-- Display data contract (fields returned by API)
-- Actions and API calls
-- Validation and server-side checks
-- UX notes and edge cases
-- Tests and mocks
-- Implementation notes
+- **Configure Trainer Focus:**
+  - Open a modal to change a Trainer's training focus type (Attribute, Magic, Form, or Idle) and select target attribute (if Attribute training type is chosen)
+- **Assign Hero to Trainer:**
+  - Select an available team hero and assign them to an empty slot on a Trainer
+- **Unassign Hero from Trainer:**
+  - Remove an assigned hero from a Trainer's slot, returning them to "Available" status
+
+## Backend Requirements
+
+- GET `/api/v1/training/trainers` — List team's trainers, current configurations, hero slot occupancy, limits, and team lock status.
+- POST `/api/v1/training/trainers/{id}/configure` — Configure trainer focus (request parameters: `type`, `attribute`).
+- POST `/api/v1/training/trainers/{id}/assign` — Assign a hero to a trainer's slot (request parameter: `hero_id`).
+- POST `/api/v1/training/trainers/{id}/unassign` — Unassign a hero from a trainer (request parameter: `hero_id`).

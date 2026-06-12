@@ -38,6 +38,13 @@ class Headquarters
     #[ORM\Column(options: ['default' => false])]
     private bool $raceOptimizationLockCycle = false;
 
+    #[ORM\ManyToOne(targetEntity: Facility::class)]
+    #[ORM\JoinColumn(name: 'upgrading_facility_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Facility $upgradingFacility = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $upgradeCompletedAt = null;
+
     /** @var Collection<int, Facility> */
     #[ORM\OneToMany(targetEntity: Facility::class, mappedBy: 'headquarters', cascade: ['persist'])]
     private Collection $facilities;
@@ -136,6 +143,30 @@ class Headquarters
             $this->facilities->add($facility);
             $facility->setHeadquarters($this);
         }
+
+        return $this;
+    }
+
+    public function getUpgradingFacility(): ?Facility
+    {
+        return $this->upgradingFacility;
+    }
+
+    public function setUpgradingFacility(?Facility $upgradingFacility): static
+    {
+        $this->upgradingFacility = $upgradingFacility;
+
+        return $this;
+    }
+
+    public function getUpgradeCompletedAt(): ?\DateTimeImmutable
+    {
+        return $this->upgradeCompletedAt;
+    }
+
+    public function setUpgradeCompletedAt(?\DateTimeImmutable $upgradeCompletedAt): static
+    {
+        $this->upgradeCompletedAt = $upgradeCompletedAt;
 
         return $this;
     }

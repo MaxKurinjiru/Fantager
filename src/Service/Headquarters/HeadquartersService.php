@@ -79,13 +79,18 @@ class HeadquartersService
     }
 
     /**
-     * Upgrade a specific facility. Deducts gold from the team.
+     * Upgrade a specific facility. Deducts gold from the team and schedules completion.
      *
-     * @throws \DomainException on insufficient gold or facility not found
+     * @throws \DomainException on insufficient gold, facility not found, or active upgrade
      */
-    public function upgradeFacility(Team $team, FacilityType $type): Facility
+    public function upgradeFacility(Team $team, FacilityType $type, ?\DateTimeImmutable $now = null): Facility
     {
+        $now = $now ?? new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
         $hq = $this->getForTeam($team);
+
+        if (null !== $hq->getUpgradingFacility()) {
+            throw new \DomainException('Another facility upgrade is already in progress.');
+        }
 
         $facility = null;
         foreach ($hq->getFacilities() as $f) {
@@ -108,15 +113,16 @@ class HeadquartersService
             ['facility_type' => $type->value, 'new_level' => $facility->getLevel() + 1]
         );
 
-        $newLevel = $facility->getLevel() + 1;
-        $facility->setLevel($newLevel);
-
-        // Recalculate HQ total level
-        $total = 0;
-        foreach ($hq->getFacilities() as $f) {
-            $total += $f->getLevel();
+        $targetLevel = $facility->getLevel() + 1;
+        $speed = (float) $team->getKingdom()->getGameSpeed();
+        if ($speed <= 0.0) {
+            $speed = 1.0;
         }
-        $hq->setTotalLevel($total);
+        $seconds = (int) round(($targetLevel * 24 * 3600) / $speed);
+        $completedAt = $now->modify(sprintf('+%d seconds', $seconds));
+
+        $hq->setUpgradingFacility($facility);
+        $hq->setUpgradeCompletedAt($completedAt);
 
         $this->em->flush();
 
@@ -230,6 +236,34 @@ class HeadquartersService
                 $hq->setRaceOptimizationLockCycle(true);
             } elseif ($hq->isRaceOptimizationLockCycle()) {
                 $hq->setRaceOptimizationLockCycle(false);
+            }
+        }
+
+        $this->em->flush();
+    }
+
+    public function processFacilityUpgradesTick(\App\Entity\Kingdom\Kingdom $kingdom, \DateTimeImmutable $now): void
+    {
+        $hqs = $this->hqRepository->findByKingdom($kingdom);
+
+        foreach ($hqs as $hq) {
+            /** @var Headquarters $hq */
+            $upgrading = $hq->getUpgradingFacility();
+            $completedAt = $hq->getUpgradeCompletedAt();
+
+            if (null !== $upgrading && null !== $completedAt && $now >= $completedAt) {
+                $newLevel = $upgrading->getLevel() + 1;
+                $upgrading->setLevel($newLevel);
+
+                $hq->setUpgradingFacility(null);
+                $hq->setUpgradeCompletedAt(null);
+
+                // Recalculate HQ total level
+                $total = 0;
+                foreach ($hq->getFacilities() as $f) {
+                    $total += $f->getLevel();
+                }
+                $hq->setTotalLevel($total);
             }
         }
 

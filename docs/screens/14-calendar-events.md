@@ -79,7 +79,6 @@ The calendar screen retrieves all entries via a unified JSON endpoint:
 
 - **Client Reminders**: Players can set local notifications or browser push notifications. The API provides a hook:
   `POST /api/v1/calendar/reminders` with payload `{ eventId: string, leadMinutes: int }`.
-- **System Server-Sent Events**: Ongoing events push state updates (e.g., transition from `scheduled` to `in_progress` to `complete`) to the client using Mercure.
 
 ---
 

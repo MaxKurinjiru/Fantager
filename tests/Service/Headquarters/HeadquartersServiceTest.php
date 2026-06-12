@@ -151,4 +151,87 @@ class HeadquartersServiceTest extends TestCase
         $limit = $this->service->getRosterLimit($team);
         $this->assertSame(14, $limit);
     }
+
+    public function testUpgradeFacilityCalculatesDurationAndSetsCompletedAt(): void
+    {
+        $team = new Team();
+        $kingdom = new Kingdom();
+        $kingdom->setGameSpeed('1.00');
+        $team->setKingdom($kingdom);
+
+        $hq = new Headquarters();
+        $facility = new \App\Entity\Headquarters\Facility();
+        $facility->setType(\App\Enum\FacilityType::Library);
+        $facility->setLevel(2);
+        $hq->addFacility($facility);
+
+        $this->hqRepositoryMock
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with(['team' => $team])
+            ->willReturn($hq);
+
+        $now = new \DateTimeImmutable('2026-06-12 12:00:00', new \DateTimeZone('UTC'));
+
+        $this->economyServiceMock
+            ->expects($this->once())
+            ->method('deductGold')
+            ->with($team, $this->anything(), $this->anything(), $this->anything(), $this->anything());
+
+        $result = $this->service->upgradeFacility($team, \App\Enum\FacilityType::Library, $now);
+
+        $this->assertSame($facility, $result);
+        $this->assertSame($facility, $hq->getUpgradingFacility());
+        $expectedCompletion = $now->modify('+259200 seconds');
+        $this->assertEquals($expectedCompletion, $hq->getUpgradeCompletedAt());
+    }
+
+    public function testUpgradeFacilityThrowsExceptionIfAnotherUpgradeInProgress(): void
+    {
+        $team = new Team();
+        $hq = new Headquarters();
+        $facility = new \App\Entity\Headquarters\Facility();
+        $facility->setType(\App\Enum\FacilityType::Library);
+        $facility->setLevel(1);
+        $hq->addFacility($facility);
+        $hq->setUpgradingFacility($facility);
+
+        $this->hqRepositoryMock
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with(['team' => $team])
+            ->willReturn($hq);
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Another facility upgrade is already in progress.');
+
+        $this->service->upgradeFacility($team, \App\Enum\FacilityType::Library);
+    }
+
+    public function testProcessFacilityUpgradesTickCompletesUpgrades(): void
+    {
+        $kingdom = new Kingdom();
+        $hq = new Headquarters();
+        $facility = new \App\Entity\Headquarters\Facility();
+        $facility->setType(\App\Enum\FacilityType::Library);
+        $facility->setLevel(2);
+        $hq->addFacility($facility);
+
+        $hq->setUpgradingFacility($facility);
+        $now = new \DateTimeImmutable('2026-06-12 12:00:00', new \DateTimeZone('UTC'));
+        $hq->setUpgradeCompletedAt($now);
+
+        $this->hqRepositoryMock
+            ->expects($this->once())
+            ->method('findByKingdom')
+            ->with($kingdom)
+            ->willReturn([$hq]);
+
+        $this->service->processFacilityUpgradesTick($kingdom, $now);
+
+        $this->assertSame(3, $facility->getLevel());
+        $this->assertNull($hq->getUpgradingFacility());
+        $this->assertNull($hq->getUpgradeCompletedAt());
+        $this->assertSame(3, $hq->getTotalLevel());
+    }
 }

@@ -12,9 +12,8 @@ Displayed Information:
 	- Age (+ Death Expectation warning)
 	- Status (Active, Aging risk)
 - Trainer Detail (when selected):
-	- Full stats (per-attribute training caps when used in a job)
+	- Full stats (per-attribute training caps)
 	- Age progression timeline
-	- Training history (jobs led, by target attribute)
 	- Cost (if on Marketplace)
 
 Possible Actions/Buttons:
@@ -22,7 +21,7 @@ Possible Actions/Buttons:
 - Buy from Marketplace
 - Convert Hero to Trainer (no specialty selection — stats frozen as-is)
 
-Note: Trainers are assigned to **training jobs** on the Training Screen (attribute + optional trainer + heroes), not configured here.
+Note: Trainers act as training leaders. Their training focus (Attribute, Magic, Form, or Idle) and hero assignments are configured on the Training Screen.
 
 Backend Requirements:
 - Trainers list endpoint
@@ -36,3 +35,4 @@ Sections to fill:
 - UX notes and edge cases
 - Tests and mocks
 - Implementation notes
+

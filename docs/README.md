@@ -77,7 +77,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Kingdom & Locale**| Fully Implemented | Implemented | Implemented | Data loading from JSON, capacity calculations. Locale switcher (`/change-locale/{locale}`) implemented. |
 | **Team / Dashboard**| Fully Implemented | Implemented | Implemented | Dashboard, settings, economy (gold/essence), financial records. |
 | **Hero Roster** | Fully Implemented | Implemented | Implemented | Hero CRUD, rename, summoning chamber, `HeroGenerator`. |
-| **Summoning** | Fully Implemented | Implemented | Implemented | Race selection, cooldowns, `SummonHistory` logging. |
+| **Summoning** | Fully Implemented | Implemented | Implemented | Summoning random compatible race based on Arena/HQ optimization, cooldowns, `SummonHistory` logging. |
 | **Training** | Fully Implemented | Implemented | Implemented | Training calculations + automated tick processing. |
 | **Calendar & Ticks**| Fully Implemented | Dashboard integrated | Implemented | Scheduled tick generation and seasonal calendar. |
 | **Formations** | Fully Implemented | Implemented | Implemented | Formation CRUD, slot assignment, strategy JSON. |
