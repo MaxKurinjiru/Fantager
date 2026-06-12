@@ -12,6 +12,12 @@ export default class extends Controller {
         'cancelError'
     ];
 
+    static values = {
+        textProcessing: String,
+        errorEmail: String,
+        errorCancel: String
+    };
+
     connect() {
         this.clearFeedback();
     }
@@ -33,7 +39,7 @@ export default class extends Controller {
 
         this.emailSubmitBtnTarget.disabled = true;
         const originalText = this.emailSubmitBtnTarget.textContent;
-        this.emailSubmitBtnTarget.textContent = 'Processing...';
+        this.emailSubmitBtnTarget.textContent = this.textProcessingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -51,7 +57,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to request email change.');
+                throw new Error(result.error || this.errorEmailValue);
             }
 
             this.emailSuccessTarget.textContent = result.message;
@@ -88,7 +94,7 @@ export default class extends Controller {
 
         this.cancelSubmitBtnTarget.disabled = true;
         const originalText = this.cancelSubmitBtnTarget.textContent;
-        this.cancelSubmitBtnTarget.textContent = 'Processing...';
+        this.cancelSubmitBtnTarget.textContent = this.textProcessingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -105,7 +111,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to request account cancellation.');
+                throw new Error(result.error || this.errorCancelValue);
             }
 
             this.cancelSuccessTarget.textContent = result.message;

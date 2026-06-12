@@ -1,13 +1,13 @@
 {# templates/components/spell/trainee_manager.html.twig #}
 <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
     <div>
-        <h2 class="text-xl font-bold text-white mb-2">Trainee Mage</h2>
+        <h2 class="text-xl font-bold text-white mb-2">{{ 'spells.trainee_mage'|trans }}</h2>
         <select data-spellbook-target="heroSelect" data-action="change->spellbook#changeHero"
                 class="w-full rounded-xl bg-gray-950 border border-gray-800 px-4 py-3 text-sm text-gray-300 focus:outline-none focus:border-emerald-500 font-medium">
-            <option value="">-- Select Hero to Manage --</option>
+            <option value="">{{ 'spells.select_hero_opt'|trans }}</option>
             {% for h in heroes %}
                 <option value="{{ h.id }}" {% if selected_hero_id == h.id %}selected{% endif %}>
-                    {{ h.name }} (Lvl {{ h.level }} &bull; {{ h.race.value|capitalize }})
+                    {{ h.name }} ({{ 'js_flash.hq.lvl_short'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }})
                 </option>
             {% endfor %}
         </select>
@@ -17,8 +17,8 @@
         {# Active Slots #}
         <div class="space-y-4">
             <div class="flex justify-between items-center">
-                <span class="text-[10px] font-extrabold text-gray-500 uppercase tracking-wide">Equipped Slots</span>
-                <span class="text-[10px] font-extrabold text-emerald-450 uppercase tracking-wide">Capacity: {{ selected_hero.magicCapacity }} / 5</span>
+                <span class="text-[10px] font-extrabold text-gray-550 uppercase tracking-wide">{{ 'spells.equipped_slots'|trans }}</span>
+                <span class="text-[10px] font-extrabold text-emerald-450 uppercase tracking-wide">{{ 'spells.capacity_limit'|trans({'%current%': selected_hero.magicCapacity, '%max%': 5}) }}</span>
             </div>
 
             <div class="space-y-3">
@@ -31,27 +31,27 @@
                                     <span class="text-2xl select-none">✨</span>
                                     <div>
                                         <h4 class="text-xs font-bold text-gray-200">{{ hs.spell.name }}</h4>
-                                        <p class="text-[9px] text-gray-500 uppercase font-semibold">Tier {{ hs.spell.tier }} &bull; {{ hs.spell.school.value }}</p>
+                                        <p class="text-[9px] text-gray-550 uppercase font-semibold">Tier {{ hs.spell.tier }} &bull; {{ ('school.' ~ hs.spell.school.value)|trans }}</p>
                                     </div>
                                 </div>
                                 
                                 <button data-action="click->spellbook#unequip" data-hero-spell-id="{{ hs.id }}"
                                         class="btn btn-outline btn--sm p-1.5 border-red-950/40 hover:border-red-500/30 text-red-400 hover:text-white rounded"
-                                        title="Unequip Spell">
+                                        title="{{ 'inventory.unequip'|trans }}">
                                     ✕
                                 </button>
                             </div>
                         {% else %}
                             <div class="bg-gray-950/25 border border-gray-950/80 border-dashed p-3 rounded-xl flex items-center justify-center select-none opacity-50">
-                                <span class="text-xs text-gray-650 font-bold">Slot {{ i }} Empty</span>
+                                <span class="text-xs text-gray-655 font-bold">{{ 'spells.slot_empty'|trans({'%slot%': i}) }}</span>
                             </div>
                         {% endif %}
                     {% endfor %}
                 {% else %}
                     <div class="bg-gray-950/25 border border-gray-950/80 border-dashed p-6 rounded-xl text-center select-none opacity-60">
                         <span class="text-3xl block mb-2">🔒</span>
-                        <h4 class="text-xs font-bold text-gray-400">No spell slots unlocked</h4>
-                        <p class="text-[10px] text-gray-550 mt-1">Upgrade Magic Capacity on the Training screen.</p>
+                        <h4 class="text-xs font-bold text-gray-400">{{ 'heroes.no_slots_unlocked'|trans }}</h4>
+                        <p class="text-[10px] text-gray-550 mt-1">{{ 'heroes.no_slots_desc'|trans }}</p>
                     </div>
                 {% endif %}
             </div>
@@ -59,13 +59,13 @@
 
         {# School Mastery #}
         <div class="border-t border-gray-850 pt-4 space-y-3">
-            <span class="block text-[10px] font-extrabold text-gray-500 uppercase tracking-wide">Mage School Mastery</span>
+            <span class="block text-[10px] font-extrabold text-gray-550 uppercase tracking-wide">{{ 'heroes.school_mastery'|trans }}</span>
             <div class="grid grid-cols-2 gap-3">
                 {% set schools = ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
                 {% for school in schools %}
                     {% set level = masteries[school] ?? 1 %}
                     <div class="bg-gray-950 p-2 border border-gray-850 rounded-lg flex items-center justify-between text-xs">
-                        <span class="capitalize text-gray-400 font-semibold">{{ school }}</span>
+                        <span class="text-gray-400 font-semibold">{{ ('school.' ~ school)|trans }}</span>
                         <span class="font-extrabold bg-gray-900 border border-gray-800 text-gray-300 px-1.5 py-0.5 rounded text-[10px]">T{{ level }}</span>
                     </div>
                 {% endfor %}
@@ -74,8 +74,8 @@
     {% else %}
         <div class="text-center py-12 select-none border border-gray-850 border-dashed rounded-xl opacity-60">
             <span class="text-5xl block mb-2">🧙</span>
-            <h4 class="text-xs font-bold text-gray-400">Select a Hero to Manage</h4>
-            <p class="text-[10px] text-gray-550 mt-1">Select a hero from the dropdown above to load their active spells and magic masteries.</p>
+            <h4 class="text-xs font-bold text-gray-400">{{ 'inventory.select_hero_manage'|trans }}</h4>
+            <p class="text-[10px] text-gray-550 mt-1">{{ 'spells.select_hero_manage_desc'|trans }}</p>
         </div>
     {% endif %}
 </div>

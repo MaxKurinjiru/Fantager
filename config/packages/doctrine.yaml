@@ -1,40 +1,40 @@
 doctrine:
-    dbal:
-        default_connection: default
-        connections:
-            default:
-                url: '%env(resolve:DATABASE_URL)%'
-                charset: utf8mb4
-                server_version: '11.4'
-            legacy:
-                url: '%env(resolve:DATABASE_LEGACY_URL)%'
-                charset: utf8mb4
-                server_version: '11.4'
+  dbal:
+    default_connection: default
+    connections:
+      default:
+        url: "%env(resolve:DATABASE_URL)%"
+        charset: utf8mb4
+        server_version: "11.4"
+      legacy:
+        url: "%env(resolve:DATABASE_LEGACY_URL)%"
+        charset: utf8mb4
+        server_version: "11.4"
 
+  orm:
+    default_entity_manager: default
+    entity_managers:
+      default:
+        connection: default
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+          App:
+            type: attribute
+            is_bundle: false
+            dir: "%kernel.project_dir%/src/Entity"
+            prefix: 'App\Entity'
+            alias: App
+      legacy:
+        connection: legacy
+        # Sem lze přidat mapování legacy entit, pokud je potřeba
+
+when@prod:
+  doctrine:
     orm:
-        default_entity_manager: default
-        entity_managers:
-            default:
-                connection: default
-                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
-                auto_mapping: true
-                mappings:
-                    App:
-                        type: attribute
-                        is_bundle: false
-                        dir: '%kernel.project_dir%/src/Entity'
-                        prefix: 'App\Entity'
-                        alias: App
-            legacy:
-                connection: legacy
-                # Sem lze přidat mapování legacy entit, pokud je potřeba
-
-#when@prod:
-#    doctrine:
-#        orm:
-#            query_cache_driver:
-#                type: pool
-#                pool: doctrine.system_cache_pool
-#            result_cache_driver:
-#                type: pool
-#                pool: doctrine.result_cache_pool
+      query_cache_driver:
+        type: pool
+        pool: doctrine.system_cache_pool
+      result_cache_driver:
+        type: pool
+        pool: doctrine.result_cache_pool

@@ -3,7 +3,7 @@ set -eu
 APP_DIR=/var/www/html
 
 mkdir -p "$APP_DIR/var"
-mkdir -p "$APP_DIR/var/cache" "$APP_DIR/var/log" "$APP_DIR/var/sessions"
+mkdir -p "$APP_DIR/var/cache" "$APP_DIR/var/log" "$APP_DIR/var/sessions" "$APP_DIR/var/share"
 
 # Symfony uses /tmp/fantager for profiler and other runtime storage
 mkdir -p /tmp/fantager/cache/dev/profiler

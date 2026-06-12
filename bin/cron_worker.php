@@ -16,11 +16,11 @@ declare(strict_types=1);
 chdir(dirname(__DIR__));
 
 passthru(
-    PHP_BINARY.' bin/console messenger:consume async'
-    .' --limit=100'        // max messages per run (safety cap)
-    .' --time-limit=270'   // stop after 270 s (cron interval is 300 s)
-    .' --memory-limit=128M'
-    .' -vv 2>&1',          // verbose output goes to server error log
+    PHP_BINARY.' bin/console messenger:consume async_high async_medium async_low'
+        .' --limit=200'        // max messages per run (safety cap)
+        .' --time-limit=270'   // stop after 270 s (cron interval is 300 s)
+        .' --memory-limit=128M'
+        .' -vv 2>&1',          // verbose output goes to server error log
     $exitCode
 );
 

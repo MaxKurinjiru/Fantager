@@ -9,5 +9,5 @@
     {% elseif val == 'in_match' %}bg-indigo-950/40 text-indigo-400 border-indigo-900/40
     {% elseif val == 'dead' %}bg-red-950/40 text-red-400 border-red-900/40
     {% else %}bg-gray-950 text-gray-400 border-gray-800{% endif %}">
-    {{ val|replace({'_': ' '}) }}
+    {{ ('heroes.status_' ~ val)|trans }}
 </span>

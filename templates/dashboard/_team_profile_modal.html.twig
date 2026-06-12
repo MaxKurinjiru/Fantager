@@ -18,7 +18,12 @@
                   <span>🛡️</span> {{ 'team_profile.title'|trans }}
               </h2>
 
-              <div class="space-y-6 overflow-y-auto pr-1 flex-1" data-controller="profile-settings" data-profile-settings-team-id-value="{{ team.id }}">
+              <div class="space-y-6 overflow-y-auto pr-1 flex-1" data-controller="profile-settings"
+                   data-profile-settings-team-id-value="{{ team.id }}"
+                   data-profile-settings-text-saving-value="{{ 'js_flash.team_profile.saving'|trans }}"
+                   data-profile-settings-error-save-value="{{ 'js_flash.team_profile.failed'|trans }}"
+                   data-profile-settings-success-save-value="{{ 'js_flash.team_profile.success'|trans }}"
+              >
                   {# Success and Error Alerts #}
                   {% include 'components/ui/alert_box.html.twig' with {
                       target: 'profile-settings',

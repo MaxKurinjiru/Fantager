@@ -20,7 +20,21 @@
     {% endfor %}
 {% endif %}
 
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="equipment">
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="equipment"
+     data-equipment-text-equipping-value="{{ 'js_flash.inventory.equipping'|trans }}"
+     data-equipment-error-equip-value="{{ 'js_flash.inventory.failed_equip'|trans }}"
+     data-equipment-success-equip-value="{{ 'js_flash.inventory.success_equip'|trans }}"
+     data-equipment-text-unequipping-value="{{ 'js_flash.inventory.unequipping'|trans }}"
+     data-equipment-error-unequip-value="{{ 'js_flash.inventory.failed_unequip'|trans }}"
+     data-equipment-success-unequip-value="{{ 'js_flash.inventory.success_unequip'|trans }}"
+     data-equipment-confirm-dismantle-value="{{ 'js_flash.inventory.confirm_dismantle'|trans }}"
+     data-equipment-text-dismantling-value="{{ 'js_flash.inventory.dismantling'|trans }}"
+     data-equipment-error-dismantle-value="{{ 'js_flash.inventory.failed_dismantle'|trans }}"
+     data-equipment-success-dismantle-value="{{ 'js_flash.inventory.success_dismantle'|trans }}"
+     data-equipment-text-repairing-value="{{ 'js_flash.inventory.repairing'|trans }}"
+     data-equipment-error-repair-value="{{ 'js_flash.inventory.failed_repair'|trans }}"
+     data-equipment-success-repair-value="{{ 'js_flash.inventory.success_repair'|trans }}"
+>
     
     {# --- Header Section --- #}
     {% include 'components/ui/page_header.html.twig' with {

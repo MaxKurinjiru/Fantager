@@ -27,6 +27,7 @@ class RegistrationService
         private readonly UserRepository $userRepository,
         private readonly VerificationTokenRepository $tokenRepository,
         private readonly SlugGenerator $slugGenerator,
+        private readonly string $mailerFrom,
     ) {
     }
 
@@ -148,6 +149,7 @@ class RegistrationService
     private function sendVerificationEmail(User $user, VerificationToken $token): void
     {
         $email = (new TemplatedEmail())
+            ->from($this->mailerFrom)
             ->to($user->getEmail())
             ->subject('Fantager — verify your email')
             ->htmlTemplate('email/verify_email.html.twig')

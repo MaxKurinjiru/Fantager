@@ -11,20 +11,20 @@
                                 <div>
                                     <h3 class="font-bold text-white text-sm leading-tight">{{ hs.spell.name }}</h3>
                                     <span class="text-[9px] font-bold uppercase tracking-wider text-purple-400">
-                                        Tier {{ hs.spell.tier }} &bull; {{ hs.spell.school.value }}
+                                        Tier {{ hs.spell.tier }} &bull; {{ ('school.' ~ hs.spell.school.value)|trans }}
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <p class="text-[10px] text-gray-400">Mana Cost: {{ hs.spell.manaCost }} &bull; Cooldown: {{ hs.spell.cooldown }} rounds</p>
+                        <p class="text-[10px] text-gray-400">{{ 'spells.mana_cooldown'|trans({'%mana%': hs.spell.manaCost, '%cooldown%': hs.spell.cooldown})|raw }}</p>
                     </div>
 
                     <div class="border-t border-gray-850 mt-3 pt-3 flex items-center justify-between gap-4">
                         <div class="text-[9px] font-bold text-gray-500">
                             {% if hs.isEquipped %}
-                                Equipped (Slot {{ hs.slotNumber }})
+                                {{ 'inventory.equipped'|trans }} (Slot {{ hs.slotNumber }})
                             {% else %}
-                                <span class="text-emerald-500">Known</span>
+                                <span class="text-emerald-500">{{ 'spells.known'|trans }}</span>
                             {% endif %}
                         </div>
 
@@ -42,10 +42,10 @@
                             {% if first_empty > 0 %}
                                 <button data-action="click->spellbook#equip" data-hero-spell-id="{{ hs.id }}" data-slot="{{ first_empty }}"
                                         class="btn btn-primary btn--sm px-3 py-1 text-[9px] font-bold uppercase tracking-wider">
-                                    Equip Slot {{ first_empty }}
+                                    {{ 'spells.equip_slot_num'|trans({'%slot%': first_empty}) }}
                                 </button>
                             {% else %}
-                                <span class="text-[9px] font-bold text-red-400">Slots Full</span>
+                                <span class="text-[9px] font-bold text-red-400">{{ 'spells.slots_full'|trans }}</span>
                             {% endif %}
                         {% endif %}
                     </div>
@@ -55,8 +55,8 @@
     {% else %}
         <div class="text-center py-12 select-none border border-gray-850 border-dashed rounded-xl opacity-60 bg-gray-900/10">
             <span class="text-4xl block mb-2">📭</span>
-            <h4 class="text-xs font-bold text-gray-455">No spells learned yet</h4>
-            <p class="text-[10px] text-gray-550 mt-1">Choose "Academy Academy Store" above to learn new spell scrolls.</p>
+            <h4 class="text-xs font-bold text-gray-455">{{ 'spells.no_spells'|trans }}</h4>
+            <p class="text-[10px] text-gray-550 mt-1">{{ 'spells.no_spells_desc'|trans }}</p>
         </div>
     {% endif %}
 </div>

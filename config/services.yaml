@@ -5,6 +5,8 @@ services:
     autowire: true
     autoconfigure: true
     public: false
+    bind:
+      $mailerFrom: '%env(MAILER_FROM)%'
 
   # Makes classes in src/ available to be used as services
   App\:

@@ -4,10 +4,10 @@
 
 {% if style == 'box' %}
     {% set size_class = size_class|default('w-24 h-24 sm:w-28 sm:h-28 text-5xl sm:text-6xl') %}
-    <div class="{{ size_class }} rounded-2xl bg-gray-950 border border-gray-800/80 flex items-center justify-center shadow-inner select-none shrink-0" title="{{ race_val|capitalize }}">
+    <div class="{{ size_class }} rounded-2xl bg-gray-950 border border-gray-800/80 flex items-center justify-center shadow-inner select-none shrink-0" title="{{ ('heroes.race_' ~ race_val)|trans }}">
         {{ icon }}
     </div>
 {% else %}
     {% set text_size = text_size|default('text-3xl') %}
-    <span class="{{ text_size }} select-none" title="{{ race_val|capitalize }}">{{ icon }}</span>
+    <span class="{{ text_size }} select-none" title="{{ ('heroes.race_' ~ race_val)|trans }}">{{ icon }}</span>
 {% endif %}

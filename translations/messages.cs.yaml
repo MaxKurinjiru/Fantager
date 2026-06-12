@@ -101,6 +101,13 @@ dashboard:
   none: Žádná
   manager: Manažer
   kingdom: Království
+  home_team: Domácí
+  away_team: Hosté
+  player: Hráč
+  npc: NPC
+  active_suffix: aktivní
+
+
 
 settings:
   title: Nastavení účtu
@@ -133,6 +140,17 @@ team_profile:
 heroes:
   title: Roster hrdinů
   subtitle: "Spravujte, filtrujte a prohlížejte hrdiny vašeho týmu."
+  search_placeholder: "Vyhledat hrdinu..."
+  race_adjustment: "Rasová korekce: %bonus%"
+  age_phase:
+    junior: Junior
+    prime: V rozkvětu
+    veteran: Veterán
+    elder: Starší
+    phase: "Fáze: %phase%"
+  inspect: Prohlédnout
+  train_hero: Trénovat hrdinu
+  equip_hero: Vybavit hrdinu
   summon_btn: Vyvolat hrdiny
   all_races: Všechny rasy
   all_statuses: Všechny stavy
@@ -284,6 +302,11 @@ hq:
 training:
   title: Tréninkové kolbiště
   subtitle: Naplánujte tréninky ke zlepšení atributů, rozšíření slotů pro kouzla nebo snížení únavy.
+  status:
+    completed: Hotovo
+    pending: Ve frontě
+    in_progress: Zpracovává se
+    cancelled: Zrušeno
   scheduled_ticks: Naplánované týdenní vyhodnocení
   ticks_schedule: Pátky v 10:00 UTC
   select_trainee: Vyberte svěřence (Hrdinu)
@@ -372,6 +395,8 @@ inventory:
 spells:
   title: Kniha kouzel a akademie
   subtitle: Učte své hrdiny svitky kouzel a spravujte jejich aktivní bojové sloty.
+  slot_empty: "Slot %slot% prázdný"
+  academy_desc: "V zápasech způsobuje efekty závislé na magické škole."
   trainee_mage: Učeň mág
   select_hero_opt: "-- Vyberte hrdinu ke správě --"
   equipped_slots: Vybavené sloty
@@ -393,6 +418,17 @@ formation:
   title: Formace a strategie
   subtitle: Uspořádejte své startovní sestavy a vyberte taktiku zápasu.
   create_new: "-- Vytvořit novou formaci --"
+  default: Výchozí
+  tactics_slot: Taktický slot
+  name_placeholder: Zadejte název formace...
+  assign: Přiřadit
+  slots:
+    back_1: Zadní levá
+    back_2: Zadní střed
+    back_3: Zadní pravá
+    front_1: Přední levá
+    front_2: Přední střed
+    front_3: Přední pravá
   delete_btn: Smazat
   starting_lineup: Startovní sestava
   starting_lineup_desc: Rozmístěte 6 hrdinů na pozice na hřišti. Přetáhněte hrdiny z poolu nebo použijte rychlé přiřazení.
@@ -413,5 +449,96 @@ formation:
   tactics_balanced_desc: Rovnoměrné rozdělení bonusů pro obranu a útok.
   tactics_defensive: Obranná pevnost
   tactics_defensive_desc: Zvýšení rychlosti zotavení zadní řady a hodnocení blokování.
+
+js_flash:
+  training:
+    success_queue: Trénink byl úspěšně zařazen do fronty.
+    success_cancel: Trénink byl zrušen. Bylo vráceno 50 % zlata.
+    error_fetch: Nepodařilo se načíst možnosti tréninku.
+    error_queue: Nepodařilo se zařadit trénink do fronty.
+    error_cancel: Nepodařilo se zrušit trénink.
+    text_queueing: Řazení...
+    text_cancelling: Rušení...
+    text_processing: Zpracování...
+  summoning:
+    failed: Vyvolávání selhalo.
+    limit_reached: Dosažen limit cyklu
+    level_label: Úroveň
+  spells:
+    learning: Učení...
+    failed_learn: Nepodařilo se naučit kouzlo.
+    success_learn: Kouzlo bylo úspěšně naučeno!
+    failed_equip: Nepodařilo se vybavit kouzlo.
+    success_equip: Kouzlo bylo vybaveno do slotu.
+    failed_unequip: Nepodařilo se sundat kouzlo.
+    success_unequip: Kouzlo bylo sundáno ze slotu.
+  team_profile:
+    saving: Ukládání...
+    failed: Nepodařilo se uložit nastavení.
+    success: Nastavení profilu bylo úspěšně uloženo.
+  hq:
+    upgrading: Vylepšování...
+    failed_upgrade: Nepodařilo se vylepšit zařízení.
+    success_upgrade: Zařízení bylo úspěšně vylepšeno na úroveň %level%!
+    saving: Ukládání...
+    failed_optimize: Nepodařilo se aktualizovat optimalizaci.
+    success_optimize: Optimalizace rasy základny byla úspěšně aktualizována.
+    lvl_short: Lvl
+    gold_format: 🪙 %gold% Zlata
+  heroes:
+    name_empty: Jméno nemůže být prázdné.
+    failed_rename: Nepodařilo se přejmenovat hrdinu.
+  formation:
+    name_empty: Název formace nemůže být prázdný.
+    assign_hero: Musíte k formaci přiřadit alespoň jednoho hrdinu.
+    saving: Ukládání...
+    failed_save: Nepodařilo se uložit formaci.
+    success_save: Sestava a taktika formace byly úspěšně uloženy.
+    confirm_delete: Opravdu chcete tuto formaci smazat?
+    deleting: Mazání...
+    failed_delete: Nepodařilo se smazat formaci.
+    success_delete: Formace byla úspěšně smazána.
+    lvl_short: Lvl
+  inventory:
+    equipping: Vybavování...
+    failed_equip: Nepodařilo se vybavit předmět.
+    success_equip: Předmět byl úspěšně vybaven.
+    unequipping: Sundávání...
+    failed_unequip: Nepodařilo se sundat předmět.
+    success_unequip: Předmět byl sundán.
+    confirm_dismantle: Opravdu chcete tento předmět rozložit? Bude trvale zničen.
+    dismantling: Rozkládání...
+    failed_dismantle: Nepodařilo se rozložit předmět.
+    success_dismantle: "Předmět byl rozložen! Získáno %essence% esence."
+    repairing: Opravování...
+    failed_repair: Nepodařilo se opravit předmět.
+    success_repair: "Předmět byl opraven! Cena: 🪙 %gold%."
+  settings:
+    processing: Zpracování...
+    failed_email: Nepodařilo se požádat o změnu e-mailu.
+    failed_cancel: Nepodařilo se požádat o zrušení účtu.
+  dashboard:
+    saving: Ukládání...
+    failed: Nepodařilo se aktualizovat optimalizaci.
+    success: Změna optimalizace byla úspěšně naplánována. Projeví se příští neděli v 09:30.
+
+school:
+  fire: Oheň
+  water: Voda
+  air: Vzduch
+  earth: Země
+  light: Světlo
+  dark: Temnota
+
+races:
+  combat_bonus:
+    human: "Adaptivní — +5% k zisku XP z vítězství"
+    elf: "+10% šance na přesnost a úhyb (přirozená elegance)"
+    dwarf: "+15% efektivita zbroje a odolnost proti kritickým zásahům"
+    orc: "+20% poškození zblízka proti ne-orkským nepřátelům; -10% proti orkským spojencům (krvežíznivost)"
+    undead: "Imunní vůči jedu a chorobám; o 50% snížené vnější léčení (použijte sání/kletbu)"
+    giant: "+10% poškození jednoručními zbraněmi; nelze použít druhou ruku (omezení velikosti)"
+    ent: "+20% k obranným výpočtům Odolnosti; -20% k akcím založeným na rychlosti (zakořenění)"
+    genie: "+15% efektivita kouzel a šance na kritický zásah kouzlem (magická esence)"
 
 

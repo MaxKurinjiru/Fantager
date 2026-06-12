@@ -3,7 +3,22 @@
 {% block title %}{{ 'summoning.title'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="summoning">
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="summoning"
+     data-summoning-gold-cost-value="{{ status.gold_cost }}"
+     data-summoning-error-failed-value="{{ 'js_flash.summoning.failed'|trans }}"
+     data-summoning-limit-reached-value="{{ 'js_flash.summoning.limit_reached'|trans }}"
+     data-summoning-level-label-value="{{ 'js_flash.summoning.level_label'|trans }}"
+     data-summoning-races-value="{{ {
+         human: 'heroes.race_human'|trans,
+         elf: 'heroes.race_elf'|trans,
+         dwarf: 'heroes.race_dwarf'|trans,
+         orc: 'heroes.race_orc'|trans,
+         undead: 'heroes.race_undead'|trans,
+         giant: 'heroes.race_giant'|trans,
+         ent: 'heroes.race_ent'|trans,
+         genie: 'heroes.race_genie'|trans
+     }|json_encode }}"
+>
     
     {# --- Header Section --- #}
     {% set right_content %}

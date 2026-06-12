@@ -3,27 +3,27 @@
     <div class="absolute -right-16 -top-16 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
     <div class="space-y-2">
-        <h3 class="text-base font-bold text-white">Match Strategy</h3>
-        <p class="text-xs text-gray-550">Name this formation setup and choose the pre-match tactical approach.</p>
+        <h3 class="text-base font-bold text-white">{{ 'formation.match_strategy'|trans }}</h3>
+        <p class="text-xs text-gray-555">{{ 'formation.match_strategy_desc'|trans }}</p>
     </div>
 
     {# Formation Name Input #}
     <div class="space-y-2">
-        <label for="formation-name" class="block text-[10px] font-extrabold text-gray-550 uppercase tracking-wide">Formation Name</label>
+        <label for="formation-name" class="block text-[10px] font-extrabold text-gray-555 uppercase tracking-wide">{{ 'formation.formation_name'|trans }}</label>
         <input type="text" id="formation-name" data-formation-target="nameInput"
-               value="{{ selected_formation ? selected_formation.name : 'Tactics Slot' }}"
-               placeholder="Enter formation name..."
+               value="{{ selected_formation ? selected_formation.name : 'formation.tactics_slot'|trans }}"
+               placeholder="{{ 'formation.name_placeholder'|trans }}"
                class="w-full rounded-xl bg-gray-950 border border-gray-800 px-4 py-3 text-sm text-gray-300 focus:outline-none focus:border-emerald-500 font-semibold">
     </div>
 
     {# Tactical Approach Radio Group #}
     <div class="space-y-3">
-        <span class="block text-[10px] font-extrabold text-gray-555 uppercase tracking-wide">Pre-Match Approach</span>
+        <span class="block text-[10px] font-extrabold text-gray-555 uppercase tracking-wide">{{ 'formation.prematch_approach'|trans }}</span>
         <div class="space-y-2">
             {% set approaches = [
-                {key: 'aggressive', label: 'Aggressive Tactics', desc: 'Focus on front line strike speed and critical rating.'},
-                {key: 'balanced', label: 'Balanced Position', desc: 'Equal distribution of defense and attack bonuses.'},
-                {key: 'defensive', label: 'Defensive Fort', desc: 'Increase back line recovery speed and block rating.'}
+                {key: 'aggressive', label: 'formation.tactics_aggressive'|trans, desc: 'formation.tactics_aggressive_desc'|trans},
+                {key: 'balanced', label: 'formation.tactics_balanced'|trans, desc: 'formation.tactics_balanced_desc'|trans},
+                {key: 'defensive', label: 'formation.tactics_defensive'|trans, desc: 'formation.tactics_defensive_desc'|trans}
             ] %}
 
             {% for app in approaches %}
@@ -45,13 +45,13 @@
         <input type="checkbox" id="set-default" data-formation-target="defaultCheckbox"
                class="rounded text-emerald-500 focus:ring-emerald-500 bg-gray-950 border-gray-850"
                {% if selected_formation and selected_formation.isDefault %}checked{% endif %}>
-        <label for="set-default" class="text-xs font-bold text-gray-450 cursor-pointer">Set as Default Active Formation</label>
+        <label for="set-default" class="text-xs font-bold text-gray-450 cursor-pointer">{{ 'formation.set_default'|trans }}</label>
     </div>
 
     <div class="border-t border-gray-850 pt-4 flex justify-end">
         <button data-action="click->formation#save"
                 class="btn btn-primary px-6 py-2.5 font-bold uppercase tracking-wider text-xs shadow-md shadow-emerald-950/10">
-            Save Lineup
+            {{ 'formation.save_lineup'|trans }}
         </button>
     </div>
 </div>

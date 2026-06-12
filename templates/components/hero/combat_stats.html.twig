@@ -1,26 +1,26 @@
 {# templates/components/hero/combat_stats.html.twig #}
 <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
     <div>
-        <h2 class="text-xl font-bold text-white mb-0.5">Combat Statistics</h2>
-        <p class="text-xs text-gray-550">Historical performance metrics.</p>
+        <h2 class="text-xl font-bold text-white mb-0.5">{{ 'heroes.combat_stats'|trans }}</h2>
+        <p class="text-xs text-gray-550">{{ 'heroes.combat_stats_desc'|trans }}</p>
     </div>
 
     <div class="grid grid-cols-2 gap-4 text-center">
         {# Show realistic mockup stats as required #}
         <div class="bg-gray-950 p-3 rounded-xl border border-gray-850">
-            <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5">Matches</span>
+            <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5">{{ 'heroes.matches'|trans }}</span>
             <span class="text-2xl font-extrabold text-white">0</span>
         </div>
         <div class="bg-gray-950 p-3 rounded-xl border border-gray-850">
-            <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5">Win Rate</span>
+            <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5">{{ 'heroes.win_rate'|trans }}</span>
             <span class="text-2xl font-extrabold text-white">-%</span>
         </div>
         <div class="bg-gray-950 p-3 rounded-xl border border-gray-850">
-            <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5">Fallen</span>
+            <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5">{{ 'heroes.fallen'|trans }}</span>
             <span class="text-2xl font-extrabold text-white">0</span>
         </div>
         <div class="bg-gray-950 p-3 rounded-xl border border-gray-850">
-            <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5">Trainings</span>
+            <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5">{{ 'heroes.trainings'|trans }}</span>
             {% set total_trainings = 0 %}
             {% for log in trainingHistory %}
                 {% if log.status.value == 'completed' %}

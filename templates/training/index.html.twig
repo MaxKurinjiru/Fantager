@@ -3,7 +3,16 @@
 {% block title %}{{ 'training.title'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="training">
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="training"
+     data-training-success-queue-value="{{ 'js_flash.training.success_queue'|trans }}"
+     data-training-success-cancel-value="{{ 'js_flash.training.success_cancel'|trans }}"
+     data-training-error-fetch-value="{{ 'js_flash.training.error_fetch'|trans }}"
+     data-training-error-queue-value="{{ 'js_flash.training.error_queue'|trans }}"
+     data-training-error-cancel-value="{{ 'js_flash.training.error_cancel'|trans }}"
+     data-training-text-queueing-value="{{ 'js_flash.training.text_queueing'|trans }}"
+     data-training-text-cancelling-value="{{ 'js_flash.training.text_cancelling'|trans }}"
+     data-training-text-processing-value="{{ 'js_flash.training.text_processing'|trans }}"
+>
     
     {# --- Header Section --- #}
     {% set right_content %}

@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { showAlert, hideAlert } from '../utils/alert.js';
 
 export default class extends Controller {
     static targets = [
@@ -13,6 +14,17 @@ export default class extends Controller {
         'alert',
         'alertMessage'
     ];
+
+    static values = {
+        successQueue: String,
+        successCancel: String,
+        errorFetch: String,
+        errorQueue: String,
+        errorCancel: String,
+        textQueueing: String,
+        textCancelling: String,
+        textProcessing: String
+    };
 
     connect() {
         // Initialize intervals for countdowns
@@ -42,7 +54,7 @@ export default class extends Controller {
             const options = await response.json();
 
             if (!response.ok || options.error) {
-                throw new Error(options.error || 'Failed to fetch training options.');
+                throw new Error(options.error || this.errorFetchValue);
             }
 
             this.updateOptionsUI(options);
@@ -143,7 +155,7 @@ export default class extends Controller {
     async submitTrainingJob(payload, btn) {
         btn.disabled = true;
         const originalText = btn.textContent;
-        btn.textContent = 'Queueing...';
+        btn.textContent = this.textQueueingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -161,7 +173,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to queue training job.');
+                throw new Error(result.error || this.errorQueueValue);
             }
 
             // Deduct gold in header
@@ -174,7 +186,7 @@ export default class extends Controller {
                 }
             }
 
-            this.showAlert('success', 'Training job successfully queued.');
+            this.showAlert('success', this.successQueueValue);
             
             // Reload page to refresh queue list and hero statuses
             setTimeout(() => {
@@ -195,7 +207,8 @@ export default class extends Controller {
         const refund = parseInt(btn.dataset.refund || '0', 10);
 
         btn.disabled = true;
-        btn.textContent = 'Cancelling...';
+        const originalText = btn.textContent;
+        btn.textContent = this.textCancellingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -211,7 +224,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to cancel training job.');
+                throw new Error(result.error || this.errorCancelValue);
             }
 
             // Add gold refund in header
@@ -223,7 +236,7 @@ export default class extends Controller {
                 }
             }
 
-            this.showAlert('success', 'Training job cancelled. 50% gold refunded.');
+            this.showAlert('success', this.successCancelValue);
 
             setTimeout(() => {
                 window.location.reload();
@@ -232,7 +245,7 @@ export default class extends Controller {
         } catch (error) {
             this.showAlert('error', error.message);
             btn.disabled = false;
-            btn.textContent = 'Cancel';
+            btn.textContent = originalText;
         }
     }
 
@@ -245,7 +258,7 @@ export default class extends Controller {
                 const diff = targetTime - now;
 
                 if (diff <= 0) {
-                    elem.textContent = 'Processing...';
+                    elem.textContent = this.textProcessingValue;
                     return;
                 }
 
@@ -269,20 +282,12 @@ export default class extends Controller {
 
     showAlert(type, message) {
         if (!this.hasAlertTarget || !this.hasAlertMessageTarget) return;
-        this.alertMessageTarget.textContent = message;
-        this.alertTarget.className = 'mb-6 rounded-lg px-4 py-3 text-sm flex items-center justify-between border ';
-
-        if (type === 'success') {
-            this.alertTarget.classList.add('bg-green-950/40', 'text-green-300', 'border-green-900/50');
-        } else {
-            this.alertTarget.classList.add('bg-red-950/40', 'text-red-300', 'border-red-900/50');
-        }
-        this.alertTarget.classList.remove('hidden');
+        showAlert(this.alertTarget, this.alertMessageTarget, type, message);
     }
 
     hideAlert() {
         if (this.hasAlertTarget) {
-            this.alertTarget.classList.add('hidden');
+            hideAlert(this.alertTarget);
         }
     }
 }

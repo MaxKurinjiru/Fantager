@@ -10,6 +10,7 @@ when@dev:
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
                 channels: ["!event"]
+                file_permission: 0666
             console:
                 type: console
                 process_psr_3_messages: false
@@ -36,6 +37,7 @@ when@test:
                 type: stream
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
+                file_permission: 0666
 
 when@prod:
     monolog:

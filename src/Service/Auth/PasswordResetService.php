@@ -21,6 +21,7 @@ class PasswordResetService
         private readonly VerificationTokenRepository $tokenRepository,
         private readonly MailerInterface $mailer,
         private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly string $mailerFrom,
     ) {
     }
 
@@ -48,6 +49,7 @@ class PasswordResetService
         $this->em->flush();
 
         $resetEmail = (new TemplatedEmail())
+            ->from($this->mailerFrom)
             ->to($user->getEmail())
             ->subject('Fantager — reset your password')
             ->htmlTemplate('email/password_reset.html.twig')

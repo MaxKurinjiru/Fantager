@@ -4,12 +4,12 @@
     <div class="sticky top-0 z-50">
         {# Top Resource Bar #}
         <div class="bg-gray-950 border-b border-gray-800/80 px-4 sm:px-6 py-1.5 flex items-center justify-end text-xs text-gray-400 gap-6">
-            <div class="flex items-center gap-1.5" title="Gold">
+            <div class="flex items-center gap-1.5" title="{{ 'dashboard.gold'|trans }}">
                 <span class="text-yellow-500 font-bold select-none">🪙</span>
                 <span class="font-bold text-gray-250">{{ app.user.team.gold|number_format(0, '.', ' ') }}</span>
             </div>
             <div class="w-px h-3 bg-gray-800"></div>
-            <div class="flex items-center gap-1.5" title="Crystals">
+            <div class="flex items-center gap-1.5" title="{{ 'dashboard.crystals'|trans }}">
                 <span class="text-cyan-400 font-bold select-none">💎</span>
                 <span class="font-bold text-gray-250">{{ app.user.team.crystals|number_format(0, '.', ' ') }}</span>
             </div>
@@ -49,7 +49,7 @@
                     <div data-dropdown-target="menu" 
                          class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-gray-800 bg-gray-900 p-2 shadow-2xl z-50">
                         <div class="px-3 py-2 border-b border-gray-800 mb-1">
-                            <p class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Player</p>
+                            <p class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">{{ 'dashboard.manager'|trans }}</p>
                             <p class="text-sm font-bold text-white truncate">{{ app.user.displayName }}</p>
                             <p class="text-[10px] text-emerald-400 font-medium truncate">{{ app.user.team.name }}</p>
                         </div>

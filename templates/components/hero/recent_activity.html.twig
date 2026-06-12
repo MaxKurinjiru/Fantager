@@ -1,8 +1,8 @@
 {# templates/components/hero/recent_activity.html.twig #}
 <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
     <div>
-        <h2 class="text-xl font-bold text-white mb-0.5">Recent Activity</h2>
-        <p class="text-xs text-gray-500">Last actions performed by this hero.</p>
+        <h2 class="text-xl font-bold text-white mb-0.5">{{ 'heroes.recent_activity'|trans }}</h2>
+        <p class="text-xs text-gray-550">{{ 'heroes.recent_activity_desc'|trans }}</p>
     </div>
 
     <div class="space-y-3 max-h-[175px] overflow-y-auto pr-1">
@@ -11,11 +11,11 @@
                 <div>
                     <div class="font-bold text-gray-300">
                         {% if log.trainingType.value == 'attribute' %}
-                            💪 Train: {{ log.targetAttribute|upper }}
+                            💪 {{ 'training.type_attribute'|trans }}: {{ ('training.attr.' ~ log.targetAttribute)|trans }}
                         {% elseif log.trainingType.value == 'magic' %}
-                            🔮 Train: Spell Capacity
+                            🔮 {{ 'training.type_magic'|trans }}
                         {% else %}
-                            🛌 Recovery Training
+                            🛌 {{ 'training.type_form'|trans }}
                         {% endif %}
                     </div>
                     <div class="text-[9px] text-gray-550">{{ log.completedAt ? log.completedAt|date('Y-m-d H:i') : log.executeAt|date('Y-m-d H:i') }}</div>
@@ -26,22 +26,22 @@
                             {% if log.statGain is not null and log.statGain > 0 %}
                                 +{{ (log.statGain / 10)|number_format(1) }}
                             {% else %}
-                                Done
+                                {{ 'training.status.completed'|trans }}
                             {% endif %}
                         </span>
                     {% elseif log.status.value == 'pending' %}
-                        <span class="text-[10px] font-bold text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-900/30">Queued</span>
+                        <span class="text-[10px] font-bold text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-900/30">{{ 'training.status.pending'|trans }}</span>
                     {% elseif log.status.value == 'in_progress' %}
-                        <span class="text-[10px] font-bold text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/30">Processing</span>
+                        <span class="text-[10px] font-bold text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/30">{{ 'training.status.in_progress'|trans }}</span>
                     {% else %}
-                        <span class="text-[10px] font-bold text-gray-500 bg-gray-900 px-2 py-0.5 rounded border border-gray-800">Cancelled</span>
+                        <span class="text-[10px] font-bold text-gray-500 bg-gray-900 px-2 py-0.5 rounded border border-gray-800">{{ 'training.status.cancelled'|trans }}</span>
                     {% endif %}
                 </div>
             </div>
         {% else %}
             <div class="text-center py-6 select-none opacity-50">
                 <span class="text-2xl block mb-1">💤</span>
-                <span class="text-xs text-gray-500">No training activity recorded.</span>
+                <span class="text-xs text-gray-550">{{ 'heroes.no_activity'|trans }}</span>
             </div>
         {% endfor %}
     </div>

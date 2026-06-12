@@ -1,7 +1,20 @@
 import { Controller } from '@hotwired/stimulus';
+import { showAlert, hideAlert } from '../utils/alert.js';
 
 export default class extends Controller {
     static targets = ['totalLevel', 'alert', 'alertMessage', 'raceSelect', 'optimizeBtn'];
+
+    static values = {
+        textUpgrading: String,
+        errorUpgrade: String,
+        successUpgrade: String,
+        textSaving: String,
+        errorOptimize: String,
+        successOptimize: String,
+        levelLabel: String,
+        goldFormat: String,
+        bonuses: Object
+    };
 
     async upgrade(e) {
         e.preventDefault();
@@ -10,7 +23,8 @@ export default class extends Controller {
 
         // Disable all upgrade buttons to prevent double-clicks
         this.setButtonsDisabled(true);
-        btn.textContent = 'Upgrading...';
+        const originalText = btn.textContent;
+        btn.textContent = this.textUpgradingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -28,7 +42,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to upgrade facility.');
+                throw new Error(result.error || this.errorUpgradeValue);
             }
 
             // Update Level & Cost text on target elements
@@ -38,11 +52,12 @@ export default class extends Controller {
                 const costElem = card.querySelector('[data-facility-cost]');
                 
                 if (levelElem) {
-                    levelElem.textContent = `Lvl ${result.level}`;
+                    levelElem.textContent = `${this.levelLabelValue} ${result.level}`;
                 }
                 
                 if (costElem) {
-                    costElem.textContent = `${result.upgrade_cost.toLocaleString('en-US')} Gold`;
+                    const formattedGold = result.upgrade_cost.toLocaleString('cs-CZ');
+                    costElem.textContent = this.goldFormatValue.replace('%gold%', formattedGold);
                     btn.dataset.cost = result.upgrade_cost;
                 }
 
@@ -55,10 +70,10 @@ export default class extends Controller {
                         li.className = 'flex justify-between text-xs text-gray-400';
                         
                         // Human readable bonus names
-                        const cleanKey = key.replace(/_/g, ' ').replace('pct', '%');
+                        const cleanKey = (this.hasBonusesValue && this.bonusesValue[key]) || key.replace(/_/g, ' ').replace('pct', '%');
                         li.innerHTML = `
                             <span class="capitalize">${cleanKey}:</span>
-                            <span class="text-emerald-400 font-bold">+${value}%</span>
+                            <span class="text-emerald-450 font-bold">+${value}%</span>
                         `;
                         bonusesContainer.appendChild(li);
                     });
@@ -81,7 +96,8 @@ export default class extends Controller {
                 this.totalLevelTarget.textContent = (currentTotal + 1).toString();
             }
 
-            this.showAlert('success', `Facility upgraded successfully to level ${result.level}!`);
+            const successMsg = this.successUpgradeValue.replace('%level%', result.level);
+            this.showAlert('success', successMsg);
             
             // Reload page after a brief delay to refresh state and ensure clean calculation/synergy
             setTimeout(() => {
@@ -91,7 +107,7 @@ export default class extends Controller {
         } catch (error) {
             this.showAlert('error', error.message);
             this.setButtonsDisabled(false);
-            btn.textContent = 'Upgrade';
+            btn.textContent = originalText;
         }
     }
 
@@ -100,7 +116,8 @@ export default class extends Controller {
         const selectedRace = this.raceSelectTarget.value;
 
         this.optimizeBtnTarget.disabled = true;
-        this.optimizeBtnTarget.textContent = 'Saving...';
+        const originalText = this.optimizeBtnTarget.textContent;
+        this.optimizeBtnTarget.textContent = this.textSavingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -118,10 +135,10 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to update optimization.');
+                throw new Error(result.error || this.errorOptimizeValue);
             }
 
-            this.showAlert('success', 'Headquarters race optimization updated successfully.');
+            this.showAlert('success', this.successOptimizeValue);
             
             setTimeout(() => {
                 window.location.reload();
@@ -130,7 +147,7 @@ export default class extends Controller {
         } catch (error) {
             this.showAlert('error', error.message);
             this.optimizeBtnTarget.disabled = false;
-            this.optimizeBtnTarget.textContent = 'Save Optimization';
+            this.optimizeBtnTarget.textContent = originalText;
         }
     }
 
@@ -142,21 +159,13 @@ export default class extends Controller {
 
     showAlert(type, message) {
         if (!this.hasAlertTarget || !this.hasAlertMessageTarget) return;
-        this.alertMessageTarget.textContent = message;
-        this.alertTarget.className = 'mb-6 rounded-lg px-4 py-3 text-sm flex items-center justify-between border ';
-
-        if (type === 'success') {
-            this.alertTarget.classList.add('bg-green-950/40', 'text-green-300', 'border-green-900/50');
-        } else {
-            this.alertTarget.classList.add('bg-red-950/40', 'text-red-300', 'border-red-900/50');
-        }
-        this.alertTarget.classList.remove('hidden');
+        showAlert(this.alertTarget, this.alertMessageTarget, type, message);
     }
 
     closeAlert(e) {
         e.preventDefault();
         if (this.hasAlertTarget) {
-            this.alertTarget.classList.add('hidden');
+            hideAlert(this.alertTarget);
         }
     }
 }

@@ -2,19 +2,6 @@
 //  app.scss — main stylesheet entry point
 //
 //  File structure:
-//    abstracts/_tokens.scss      Design tokens: colors, fonts, radii (edit here!)
-//    base/_base.scss             Element defaults: html, body, headings, focus
-//    components/_modal.scss      Modal overlay, dialog box, close button
-//    components/_forms.scss      .form-input, .form-label, .form-error
-//    components/_buttons.scss    .btn, .btn-primary, .btn-outline, .btn-ghost
-//    components/_links.scss      Bare <a> and .link styles
-//    components/_flash.scss      .alert, .alert-success / error / warning / info
-// =============================================================================
-
-// =============================================================================
-//  app.scss — main stylesheet entry point
-//
-//  File structure:
 //    abstracts/_tokens.scss      Design tokens: colors, fonts, radii  ← EDIT HERE
 //    base/_base.scss             Element defaults: html, body, headings, focus
 //    components/_modal.scss      Modal overlay, dialog box, close button
@@ -37,6 +24,8 @@
 @use "components/buttons";
 @use "components/links";
 @use "components/flash";
+@use "components/dashboard";
+
 
 // ── Tailwind CSS (v4 directive style, must come after @use) ───────────────────
 @tailwind base;

@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { showAlert, hideAlert } from '../utils/alert.js';
 
 export default class extends Controller {
     static targets = [
@@ -8,6 +9,22 @@ export default class extends Controller {
         'alert',
         'alertMessage'
     ];
+
+    static values = {
+        textEquipping: String,
+        errorEquip: String,
+        successEquip: String,
+        textUnequipping: String,
+        errorUnequip: String,
+        successUnequip: String,
+        confirmDismantle: String,
+        textDismantling: String,
+        errorDismantle: String,
+        successDismantle: String,
+        textRepairing: String,
+        errorRepair: String,
+        successRepair: String
+    };
 
     connect() {
         if (this.hasHeroSelectTarget && this.heroSelectTarget.value) {
@@ -40,7 +57,8 @@ export default class extends Controller {
         if (!heroId || !itemId || !slot) return;
 
         btn.disabled = true;
-        btn.textContent = 'Equipping...';
+        const originalText = btn.textContent;
+        btn.textContent = this.textEquippingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -58,16 +76,16 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to equip item.');
+                throw new Error(result.error || this.errorEquipValue);
             }
 
-            this.showAlert('success', 'Item equipped successfully.');
+            this.showAlert('success', this.successEquipValue);
             setTimeout(() => window.location.reload(), 800);
 
         } catch (error) {
             this.showAlert('error', error.message);
             btn.disabled = false;
-            btn.textContent = 'Equip';
+            btn.textContent = originalText;
         }
     }
 
@@ -80,7 +98,8 @@ export default class extends Controller {
         if (!heroId || !itemId) return;
 
         btn.disabled = true;
-        btn.textContent = 'Unequipping...';
+        const originalText = btn.textContent;
+        btn.textContent = this.textUnequippingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -98,16 +117,16 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to unequip item.');
+                throw new Error(result.error || this.errorUnequipValue);
             }
 
-            this.showAlert('success', 'Item unequipped.');
+            this.showAlert('success', this.successUnequipValue);
             setTimeout(() => window.location.reload(), 800);
 
         } catch (error) {
             this.showAlert('error', error.message);
             btn.disabled = false;
-            btn.textContent = '✕';
+            btn.textContent = originalText;
         }
     }
 
@@ -116,10 +135,11 @@ export default class extends Controller {
         const btn = e.currentTarget;
         const itemId = btn.dataset.itemId;
 
-        if (!confirm('Are you sure you want to dismantle this item? It will be permanently destroyed.')) return;
+        if (!confirm(this.confirmDismantleValue)) return;
 
         btn.disabled = true;
-        btn.textContent = 'Dismantling...';
+        const originalText = btn.textContent;
+        btn.textContent = this.textDismantlingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -137,16 +157,17 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to dismantle item.');
+                throw new Error(result.error || this.errorDismantleValue);
             }
 
-            this.showAlert('success', `Item dismantled! Gained ${result.essence_gained || 5} essence.`);
+            const successMsg = this.successDismantleValue.replace('%essence%', result.essence_gained || 5);
+            this.showAlert('success', successMsg);
             setTimeout(() => window.location.reload(), 1000);
 
         } catch (error) {
             this.showAlert('error', error.message);
             btn.disabled = false;
-            btn.textContent = 'Dismantle';
+            btn.textContent = originalText;
         }
     }
 
@@ -156,7 +177,8 @@ export default class extends Controller {
         const itemId = btn.dataset.itemId;
 
         btn.disabled = true;
-        btn.textContent = 'Repairing...';
+        const originalText = btn.textContent;
+        btn.textContent = this.textRepairingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -172,35 +194,28 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to repair item.');
+                throw new Error(result.error || this.errorRepairValue);
             }
 
-            this.showAlert('success', `Item repaired! Cost: 🪙 ${result.gold_spent || 0}.`);
+            const successMsg = this.successRepairValue.replace('%gold%', result.gold_spent || 0);
+            this.showAlert('success', successMsg);
             setTimeout(() => window.location.reload(), 1000);
 
         } catch (error) {
             this.showAlert('error', error.message);
             btn.disabled = false;
-            btn.textContent = 'Repair';
+            btn.textContent = originalText;
         }
     }
 
     showAlert(type, message) {
         if (!this.hasAlertTarget || !this.hasAlertMessageTarget) return;
-        this.alertMessageTarget.textContent = message;
-        this.alertTarget.className = 'mb-6 rounded-lg px-4 py-3 text-sm flex items-center justify-between border ';
-
-        if (type === 'success') {
-            this.alertTarget.classList.add('bg-green-950/40', 'text-green-300', 'border-green-900/50');
-        } else {
-            this.alertTarget.classList.add('bg-red-950/40', 'text-red-300', 'border-red-900/50');
-        }
-        this.alertTarget.classList.remove('hidden');
+        showAlert(this.alertTarget, this.alertMessageTarget, type, message);
     }
 
     hideAlert() {
         if (this.hasAlertTarget) {
-            this.alertTarget.classList.add('hidden');
+            hideAlert(this.alertTarget);
         }
     }
 }

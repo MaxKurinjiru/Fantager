@@ -101,6 +101,13 @@ dashboard:
   none: None
   manager: Manager
   kingdom: Kingdom
+  home_team: Home
+  away_team: Away
+  player: Player
+  npc: NPC
+  active_suffix: active
+
+
 
 settings:
   title: Account Settings
@@ -135,6 +142,17 @@ team_profile:
 heroes:
   title: Hero Roster
   subtitle: "Manage, filter, and inspect your team's heroes."
+  search_placeholder: "Search hero..."
+  race_adjustment: "Race Adjustment: %bonus%"
+  age_phase:
+    junior: Junior
+    prime: Prime
+    veteran: Veteran
+    elder: Elder
+    phase: "%phase% Phase"
+  inspect: Inspect
+  train_hero: Train Hero
+  equip_hero: Equip Hero
   summon_btn: Summon Heroes
   all_races: All Races
   all_statuses: All Statuses
@@ -286,6 +304,11 @@ hq:
 training:
   title: Training Grounds
   subtitle: Schedule training jobs to improve attributes, expand spell slots, or recover fatigue.
+  status:
+    completed: Done
+    pending: Queued
+    in_progress: Processing
+    cancelled: Cancelled
   scheduled_ticks: Scheduled Weekly Ticks
   ticks_schedule: Fridays at 10:00 UTC
   select_trainee: Select Trainee (Hero)
@@ -374,6 +397,8 @@ inventory:
 spells:
   title: Spellbook & Academy
   subtitle: Learn new spell scrolls for your heroes and manage their active combat slots.
+  slot_empty: "Slot %slot% Empty"
+  academy_desc: "In matches, causes effects depending on the magic school."
   trainee_mage: Trainee Mage
   select_hero_opt: "-- Select Hero to Manage --"
   equipped_slots: Equipped Slots
@@ -395,6 +420,17 @@ formation:
   title: Formation & Strategy
   subtitle: Organize your starting line-ups and select match tactics.
   create_new: "-- Create New Formation --"
+  default: Default
+  tactics_slot: Tactics Slot
+  name_placeholder: Enter formation name...
+  assign: Assign
+  slots:
+    back_1: Back Left
+    back_2: Back Center
+    back_3: Back Right
+    front_1: Front Left
+    front_2: Front Center
+    front_3: Front Right
   delete_btn: Delete
   starting_lineup: Starting Lineup
   starting_lineup_desc: Arrange 6 heroes on the field positions. Drag heroes from pool or use quick assigns.
@@ -415,5 +451,96 @@ formation:
   tactics_balanced_desc: Equal distribution of defense and attack bonuses.
   tactics_defensive: Defensive Fort
   tactics_defensive_desc: Increase back line recovery speed and block rating.
+
+js_flash:
+  training:
+    success_queue: Training job successfully queued.
+    success_cancel: Training job cancelled. 50% gold refunded.
+    error_fetch: Failed to fetch training options.
+    error_queue: Failed to queue training job.
+    error_cancel: Failed to cancel training job.
+    text_queueing: Queueing...
+    text_cancelling: Cancelling...
+    text_processing: Processing...
+  summoning:
+    failed: Summoning failed.
+    limit_reached: Cycle Limit Reached
+    level_label: Level
+  spells:
+    learning: Learning...
+    failed_learn: Failed to learn spell.
+    success_learn: Spell successfully learned!
+    failed_equip: Failed to equip spell.
+    success_equip: Spell equipped to slot.
+    failed_unequip: Failed to unequip spell.
+    success_unequip: Spell unequipped from slot.
+  team_profile:
+    saving: Saving...
+    failed: Failed to save settings.
+    success: Profile settings saved successfully.
+  hq:
+    upgrading: Upgrading...
+    failed_upgrade: Failed to upgrade facility.
+    success_upgrade: Facility upgraded successfully to level %level%!
+    saving: Saving...
+    failed_optimize: Failed to update optimization.
+    success_optimize: Headquarters race optimization updated successfully.
+    lvl_short: Lvl
+    gold_format: 🪙 %gold% Gold
+  heroes:
+    name_empty: Name cannot be empty.
+    failed_rename: Failed to rename hero.
+  formation:
+    name_empty: Formation name cannot be empty.
+    assign_hero: You must assign at least one hero to the formation.
+    saving: Saving...
+    failed_save: Failed to save formation.
+    success_save: Formation lineup and tactics saved successfully.
+    confirm_delete: Are you sure you want to delete this formation?
+    deleting: Deleting...
+    failed_delete: Failed to delete formation.
+    success_delete: Formation deleted successfully.
+    lvl_short: Lvl
+  inventory:
+    equipping: Equipping...
+    failed_equip: Failed to equip item.
+    success_equip: Item equipped successfully.
+    unequipping: Unequipping...
+    failed_unequip: Failed to unequip item.
+    success_unequip: Item unequipped.
+    confirm_dismantle: Are you sure you want to dismantle this item? It will be permanently destroyed.
+    dismantling: Dismantling...
+    failed_dismantle: Failed to dismantle item.
+    success_dismantle: "Item dismantled! Gained %essence% essence."
+    repairing: Repairing...
+    failed_repair: Failed to repair item.
+    success_repair: "Item repaired! Cost: 🪙 %gold%."
+  settings:
+    processing: Processing...
+    failed_email: Failed to request email change.
+    failed_cancel: Failed to request account cancellation.
+  dashboard:
+    saving: Saving...
+    failed: Failed to update optimization.
+    success: Optimization change scheduled successfully. It will apply next Sunday at 09:30.
+
+school:
+  fire: Fire
+  water: Water
+  air: Air
+  earth: Earth
+  light: Light
+  dark: Dark
+
+races:
+  combat_bonus:
+    human: "Adaptive — +5% to victory XP gains"
+    elf: "+10% accuracy & dodge ratings (natural elegance)"
+    dwarf: "+15% armor effectiveness & crit resistance"
+    orc: "+20% melee damage vs non-orc enemies; -10% vs orc allies (bloodlust)"
+    undead: "Immune to poison & disease; 50% reduced external healing (use life steal/hex)"
+    giant: "+10% damage with 1H weapons; cannot use off-hand (size limitation)"
+    ent: "+20% to Constitution defense math; -20% to speed-based actions (deep roots)"
+    genie: "+15% spell effectiveness and spell crit rate (magic essence)"
 
 

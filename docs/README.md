@@ -60,12 +60,10 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 - [19 Player Profile & Settings](screens/19-player-profile-settings.md)
 - [20 Crafting](screens/20-crafting.md)
 
-**Meta & Contributing**
+**Meta**
 - [UI & CSS Design Guidelines](ui-guidelines.md) — Modal structure, close buttons, and style guides
-- [Legacy Database Migration](legacy-migration.md) — Accessing and migrating legacy database tables
 - [README.md](../README.md) — Project overview and dev setup
-- [CONTRIBUTING.md](../CONTRIBUTING.md) — Contributor workflow and rules
-- [CHANGELOG.md](../CHANGELOG.md) — Release history and unreleased changes
+- [`_deferred/`](../_deferred/) — Parked files (CHANGELOG.md, CONTRIBUTING.md, legacy-migration.md); not actively maintained until the project reaches a stable version
 
 ---
 
@@ -100,7 +98,7 @@ This table provides a snapshot of implemented features versus placeholders:
 ---
 
 ## How to use
-- Each system/screen file is a template to fill with implementation details: data models, API routes, DTOs, services, and tests.
+- Each system/screen file is a template to fill with implementation details: data models, API routes, DTOs, and services.
 - Link to existing docs rather than copying large sections.
 - Consult [known-issues.md](known-issues.md) for gaps that need resolution before implementation.
 

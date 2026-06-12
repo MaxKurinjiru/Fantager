@@ -1,0 +1,92 @@
+{# templates/components/dashboard/next_match.html.twig #}
+<div class="next-match-card">
+    {# Glowing accents #}
+    <div class="absolute -right-24 -bottom-24 w-64 h-64 bg-emerald-500/[0.02] rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -left-24 -top-24 w-64 h-64 bg-emerald-500/[0.01] rounded-full blur-3xl pointer-events-none"></div>
+
+    <h3 class="next-match-card__title">
+        <span>🏆</span> {{ 'dashboard.next_match'|trans }}
+    </h3>
+
+    {% if dashboard.next_match|default() is not empty %}
+        {% set match = dashboard.next_match %}
+        {% set is_home = (match.home_team.id == team.id) %}
+
+        <div class="space-y-6">
+            <div class="next-match-card__teams">
+                
+                {# Home Team #}
+                <div class="next-match-team">
+                    {# 1. Pozice #}
+                    <span class="next-match-team__pos">
+                        {{ 'dashboard.home_team'|trans }}
+                    </span>
+
+                    {# 2. Logo/Emblem #}
+                    <div class="next-match-team__emblem {% if is_home %}next-match-team__emblem--highlight{% endif %}">
+                        {{ match.home_team.emblem ?: '🛡️' }}
+                    </div>
+
+                    {# 3. Název týmu #}
+                    <span class="next-match-team__name {% if is_home %}next-match-team__name--highlight{% else %}next-match-team__name--neutral{% endif %}" title="{{ match.home_team.name }}">
+                        {{ match.home_team.name }}
+                    </span>
+
+                    {# 4. Jméno hráče, nebo NPC #}
+                    <span class="next-match-team__owner {% if match.home_team.is_npc %}next-match-team__owner--npc{% else %}next-match-team__owner--player{% endif %}">
+                        {% if match.home_team.is_npc %}{{ 'dashboard.npc'|trans }}{% else %}{{ match.home_team.owner_name ?: 'dashboard.player'|trans }}{% endif %}
+                    </span>
+                </div>
+
+                {# VS #}
+                <div class="next-match-vs">
+                    <span class="next-match-vs__pill">
+                        VS
+                    </span>
+                </div>
+
+                {# Away Team #}
+                <div class="next-match-team">
+                    {# 1. Pozice #}
+                    <span class="next-match-team__pos">
+                        {{ 'dashboard.away_team'|trans }}
+                    </span>
+
+                    {# 2. Logo/Emblem #}
+                    <div class="next-match-team__emblem {% if not is_home %}next-match-team__emblem--highlight{% endif %}">
+                        {{ match.away_team.emblem ?: '🛡️' }}
+                    </div>
+
+                    {# 3. Název týmu #}
+                    <span class="next-match-team__name {% if not is_home %}next-match-team__name--highlight{% else %}next-match-team__name--neutral{% endif %}" title="{{ match.away_team.name }}">
+                        {{ match.away_team.name }}
+                    </span>
+
+                    {# 4. Jméno hráče, nebo NPC #}
+                    <span class="next-match-team__owner {% if match.away_team.is_npc %}next-match-team__owner--npc{% else %}next-match-team__owner--player{% endif %}">
+                        {% if match.away_team.is_npc %}{{ 'dashboard.npc'|trans }}{% else %}{{ match.away_team.owner_name ?: 'dashboard.player'|trans }}{% endif %}
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="next-match-meta">
+                <div class="next-match-meta__item">
+                    <span class="text-gray-550 select-none">📅</span>
+                    <span class="font-medium text-gray-300">{{ match.scheduled_at|date('d. m. Y H:i') }}</span>
+                </div>
+                <div class="next-match-meta__item">
+                    <span class="text-gray-550 select-none">🏆</span>
+                    <span class="font-medium text-gray-300">{{ match.group_name }}</span>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="next-match-empty">
+            <p class="next-match-empty__title">{{ 'dashboard.next_match_start'|trans }}</p>
+            <div class="next-match-empty__desc">
+                <span>🔔</span> {{ 'dashboard.no_matches'|trans }}
+            </div>
+        </div>
+    {% endif %}
+</div>

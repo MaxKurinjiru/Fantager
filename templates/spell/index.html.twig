@@ -1,6 +1,6 @@
 {% extends 'layouts/game.html.twig' %}
 
-{% block title %}Spellbook Management — Fantager{% endblock %}
+{% block title %}{{ 'spells.title'|trans }} — Fantager{% endblock %}
 
 {% block body %}
 {% set selected_hero_id = app.request.query.get('hero_id') %}
@@ -28,12 +28,20 @@
     {% endfor %}
 {% endif %}
 
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="spellbook">
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="spellbook"
+     data-spellbook-text-learning-value="{{ 'js_flash.spells.learning'|trans }}"
+     data-spellbook-error-learn-value="{{ 'js_flash.spells.failed_learn'|trans }}"
+     data-spellbook-success-learn-value="{{ 'js_flash.spells.success_learn'|trans }}"
+     data-spellbook-error-equip-value="{{ 'js_flash.spells.failed_equip'|trans }}"
+     data-spellbook-success-equip-value="{{ 'js_flash.spells.success_equip'|trans }}"
+     data-spellbook-error-unequip-value="{{ 'js_flash.spells.failed_unequip'|trans }}"
+     data-spellbook-success-unequip-value="{{ 'js_flash.spells.success_unequip'|trans }}"
+>
     
     {# --- Header Section --- #}
     {% include 'components/ui/page_header.html.twig' with {
-        title: 'Spellbook & Academy',
-        subtitle: 'Learn new spell scrolls for your heroes and manage their active combat slots.'
+        title: 'spells.title',
+        subtitle: 'spells.subtitle'
     } %}
 
     {# --- Alert Box --- #}
@@ -63,11 +71,11 @@
             <div class="flex border-b border-gray-850 gap-2 pb-px">
                 <button onclick="switchSubTab('learned-spells-tab', this)"
                         class="subtab-btn px-4 py-2 border-b-2 border-emerald-500 text-emerald-450 font-bold text-xs uppercase tracking-wider transition-all">
-                    Learned Spells
+                    {{ 'spells.tab_learned'|trans }}
                 </button>
                 <button onclick="switchSubTab('academy-store-tab', this)"
                         class="subtab-btn px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-gray-250 font-semibold text-xs uppercase tracking-wider transition-all">
-                    Academy Store
+                    {{ 'spells.tab_store'|trans }}
                 </button>
             </div>
 

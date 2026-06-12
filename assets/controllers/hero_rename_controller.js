@@ -2,7 +2,11 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
     static targets = ['nameDisplay', 'nameInput', 'editBtn', 'actions', 'alert', 'alertMessage'];
-    static values = { heroId: Number };
+    static values = {
+        heroId: Number,
+        errorEmpty: String,
+        errorRename: String
+    };
 
     connect() {
         this.originalName = this.nameDisplayTarget.textContent.trim();
@@ -28,7 +32,7 @@ export default class extends Controller {
         e.preventDefault();
         const newName = this.nameInputTarget.value.trim();
         if (!newName) {
-            this.showAlert('Name cannot be empty.');
+            this.showAlert(this.errorEmptyValue);
             return;
         }
 
@@ -53,7 +57,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to rename hero.');
+                throw new Error(result.error || this.errorRenameValue);
             }
 
             this.originalName = result.name;

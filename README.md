@@ -20,10 +20,9 @@ docker exec -it fantager-web npm ci
 docker exec -it fantager-web npm run build
 
 # run DB migrations
+docker exec -it fantager-web composer migrate
+# or
 docker exec -it fantager-web php bin/console doctrine:migrations:migrate
-
-# run tests
-docker exec -it fantager-web composer test
 ```
 
 Or run the equivalent commands locally if you prefer not to use containers.
@@ -34,7 +33,7 @@ After running the migrations, bootstrap your local development database with a d
 
 ```bash
 # 1. Initialize default kingdom (NPCs, heroes, league standings)
-docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom"
+docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom" --test
 
 # 2. Create and activate a test user, and assign them an NPC team in the kingdom
 docker exec -u apache fantager-web php bin/console app:user:create-test "Main Kingdom" user@example.com "Player Nickname" "password"
@@ -45,8 +44,6 @@ docker exec -u apache fantager-web php bin/console app:user:create-test "Main Ki
 - Documentation Index: [docs/README.md](docs/README.md)
 - Architecture Specification: [docs/arch-spec.md](docs/arch-spec.md)
 - API Design Guide: [docs/api-design.md](docs/api-design.md)
-- Legacy Database Migration: [docs/legacy-migration.md](docs/legacy-migration.md)
-- Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Notes
 

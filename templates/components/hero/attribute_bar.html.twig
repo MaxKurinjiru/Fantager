@@ -9,7 +9,7 @@
             <span class="text-white font-extrabold text-sm">{{ val }}</span>
             {% if bonus != 0 %}
                 <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase {{ bonus > 0 ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40' : 'bg-red-950/40 text-red-400 border border-red-900/40' }}"
-                      title="Race Flat Adjustment: {{ bonus > 0 ? '+' ~ bonus : bonus }}">
+                      title="{{ 'heroes.race_adjustment'|trans({'%bonus%': bonus > 0 ? '+' ~ bonus : bonus}) }}">
                     {{ bonus > 0 ? '+' ~ bonus : bonus }}
                 </span>
             {% endif %}

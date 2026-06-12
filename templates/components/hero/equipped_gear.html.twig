@@ -2,24 +2,24 @@
 <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg">
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h2 class="text-xl font-bold text-white mb-1">Equipped Gear</h2>
-            <p class="text-xs text-gray-500">Swapping equipment is handled inside inventory.</p>
+            <h2 class="text-xl font-bold text-white mb-1">{{ 'heroes.equipped_gear'|trans }}</h2>
+            <p class="text-xs text-gray-550">{{ 'heroes.equipped_gear_desc'|trans }}</p>
         </div>
         <a href="{{ path('app_inventory') }}?hero_id={{ hero.id }}" class="btn btn-outline btn--sm gap-1">
-            🎒 Manage Gear
+            🎒 {{ 'heroes.manage_gear'|trans }}
         </a>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {% set slot_configs = [
-            {key: 'head', label: 'Head', emoji: '🪖'},
-            {key: 'amulet', label: 'Amulet', emoji: '📿'},
-            {key: 'body', label: 'Armor/Body', emoji: '🛡️'},
-            {key: 'hands', label: 'Gloves/Hands', emoji: '🧤'},
-            {key: 'main_hand', label: 'Main Hand', emoji: '⚔️'},
-            {key: 'off_hand', label: 'Off-Hand', emoji: '🛡️'},
-            {key: 'ring', label: 'Ring', emoji: '💍'},
-            {key: 'feet', label: 'Boots/Feet', emoji: '🥾'}
+            {key: 'head', emoji: '🪖'},
+            {key: 'amulet', emoji: '📿'},
+            {key: 'body', emoji: '🛡️'},
+            {key: 'hands', emoji: '🧤'},
+            {key: 'main_hand', emoji: '⚔️'},
+            {key: 'off_hand', emoji: '🛡️'},
+            {key: 'ring', emoji: '💍'},
+            {key: 'feet', emoji: '🥾'}
         ] %}
 
         {% for slot in slot_configs %}
@@ -27,7 +27,7 @@
             {% if item %}
                 {# Active Item Slot #}
                 <div class="bg-gray-950 border border-gray-800/80 hover:border-emerald-500/30 p-3 rounded-xl flex flex-col items-center justify-between text-center min-h-[110px] transition-all relative">
-                    <span class="text-[10px] font-bold uppercase text-gray-600 tracking-wider mb-1">{{ slot.label }}</span>
+                    <span class="text-[10px] font-bold uppercase text-gray-600 tracking-wider mb-1">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
                     <span class="text-3xl mb-1 select-none">
                         {% if item.slotType.value == 'main_hand' or item.slotType.value == 'weapon' %}🗡️
                         {% elseif item.slotType.value == 'head' %}🪖
@@ -43,15 +43,15 @@
                         {% elseif item.rarity.value == 'epic' %}text-purple-400
                         {% elseif item.rarity.value == 'legendary' %}text-orange-400
                         {% else %}text-red-400{% endif %}">
-                        {{ item.rarity.value }}
+                        {{ ('inventory.rarity_' ~ item.rarity.value)|trans }}
                     </span>
                 </div>
             {% else %}
                 {# Empty Slot Placeholder #}
                 <div class="bg-gray-950/40 border border-gray-950/80 border-dashed p-3 rounded-xl flex flex-col items-center justify-center text-center min-h-[110px] select-none opacity-50 hover:opacity-75 transition-opacity">
-                    <span class="text-[10px] font-bold uppercase text-gray-700 tracking-wider mb-1">{{ slot.label }}</span>
+                    <span class="text-[10px] font-bold uppercase text-gray-700 tracking-wider mb-1">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
                     <span class="text-2xl mb-1">{{ slot.emoji }}</span>
-                    <span class="text-[10px] text-gray-600 font-medium">Empty</span>
+                    <span class="text-[10px] text-gray-600 font-medium">{{ 'inventory.empty_slot'|trans }}</span>
                 </div>
             {% endif %}
         {% endfor %}

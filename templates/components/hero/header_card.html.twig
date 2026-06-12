@@ -20,13 +20,13 @@
                     
                     <button data-hero-rename-target="editBtn" data-action="click->hero-rename#edit" 
                             class="opacity-0 group-hover:opacity-60 hover:!opacity-100 text-sm p-1 text-gray-400 hover:text-emerald-400 transition-opacity" 
-                            title="Rename Hero">
+                            title="{{ 'heroes.rename_title'|trans }}">
                         ✏️
                     </button>
                     
                     <div data-hero-rename-target="actions" class="hidden flex gap-1.5">
-                        <button data-action="click->hero-rename#save" class="bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold px-2.5 py-1 text-xs rounded transition-colors">Save</button>
-                        <button data-action="click->hero-rename#cancel" class="bg-gray-800 hover:bg-gray-750 text-gray-300 font-bold px-2.5 py-1 text-xs rounded border border-gray-700 transition-colors">Cancel</button>
+                        <button data-action="click->hero-rename#save" class="bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold px-2.5 py-1 text-xs rounded transition-colors">{{ 'heroes.save'|trans }}</button>
+                        <button data-action="click->hero-rename#cancel" class="bg-gray-800 hover:bg-gray-750 text-gray-300 font-bold px-2.5 py-1 text-xs rounded border border-gray-700 transition-colors">{{ 'heroes.cancel'|trans }}</button>
                     </div>
                 </div>
 
@@ -36,25 +36,25 @@
 
             <div class="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-sm text-gray-400">
                 <span class="flex items-center gap-1.5">
-                    <span class="text-base">🧬</span> Race: <strong class="text-white capitalize">{{ hero.race.value }}</strong>
+                    <span class="text-base">🧬</span> {{ 'heroes.race'|trans }}: <strong class="text-white capitalize">{{ ('heroes.race_' ~ hero.race.value)|trans }}</strong>
                 </span>
                 <span class="h-4 w-px bg-gray-800 hidden sm:block"></span>
                 <span class="flex items-center gap-1.5">
-                    <span class="text-base">{{ hero_age_phase_icon(hero) }}</span> Age: <strong class="text-white">{{ hero.age }} years</strong>
+                    <span class="text-base">{{ hero_age_phase_icon(hero) }}</span> {{ 'heroes.age'|trans }}: <strong class="text-white">{{ hero.age }} {{ 'heroes.years'|trans }}</strong>
                     <span class="text-[10px] font-bold bg-gray-950 px-2 py-0.5 rounded border border-gray-800 text-gray-500 uppercase tracking-wide">
-                        {{ hero_age_phase(hero) }}
+                        {{ ('heroes.age_phase.' ~ hero_age_phase(hero)|lower)|trans }}
                     </span>
                 </span>
                 <span class="h-4 w-px bg-gray-800 hidden sm:block"></span>
                 <span class="flex items-center gap-1.5">
-                    <span class="text-base">🔥</span> Level: <strong class="text-white">{{ hero.level }}</strong>
+                    <span class="text-base">🔥</span> {{ 'heroes.level'|trans }}: <strong class="text-white">{{ hero.level }}</strong>
                 </span>
             </div>
 
             {# XP Bar #}
             <div class="space-y-1.5 max-w-md mx-auto md:mx-0">
                 <div class="flex justify-between text-xs font-semibold text-gray-400">
-                    <span>Experience Points</span>
+                    <span>{{ 'heroes.xp'|trans }}</span>
                     {% set next_level_xp = 1000 * hero.level %} {# Simple illustrative formula #}
                     <span>{{ hero.xp }} / {{ next_level_xp }} XP</span>
                 </div>

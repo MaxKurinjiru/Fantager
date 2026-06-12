@@ -6,7 +6,7 @@
         <div class="flex items-center gap-2">
             {% if arena_theme %}
                 <span class="text-3xl">{{ race_icon(arena_theme) }}</span>
-                <span class="text-white font-extrabold capitalize text-base">{{ arena_theme.value }}</span>
+                <span class="text-white font-extrabold text-base">{{ ('heroes.race_' ~ arena_theme.value)|trans }}</span>
             {% else %}
                 <span class="text-white font-extrabold text-base">{{ 'dashboard.none'|trans }}</span>
             {% endif %}
@@ -27,8 +27,8 @@
             <div class="bg-gray-955/40 border border-gray-800 p-4 rounded-xl flex items-start text-left gap-3.5 transition-all">
                 {% include 'components/hero/avatar.html.twig' with { race: race_info.race, text_size: 'text-4xl' } %}
                 <div class="space-y-1">
-                    <h3 class="font-bold text-white leading-none capitalize">{{ race_info.name }}</h3>
-                    <p class="text-[10px] text-gray-400 mt-1.5 leading-relaxed">{{ race_info.combat_bonus }}</p>
+                    <h3 class="font-bold text-white leading-none">{{ ('heroes.race_' ~ race_info.race.value)|trans }}</h3>
+                    <p class="text-[10px] text-gray-400 mt-1.5 leading-relaxed">{{ ('races.combat_bonus.' ~ race_info.race.value)|trans }}</p>
                 </div>
             </div>
         {% endfor %}

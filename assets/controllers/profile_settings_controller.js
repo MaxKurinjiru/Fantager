@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { showAlert, hideAlert } from '../utils/alert.js';
 
 export default class extends Controller {
     static targets = [
@@ -11,7 +12,12 @@ export default class extends Controller {
         'alertMessage',
         'submitBtn'
     ];
-    static values = { teamId: Number };
+    static values = {
+        teamId: Number,
+        textSaving: String,
+        errorSave: String,
+        successSave: String
+    };
 
     connect() {
         // Synchronize color pickers with hex text inputs
@@ -84,7 +90,8 @@ export default class extends Controller {
         };
 
         this.submitBtnTarget.disabled = true;
-        this.submitBtnTarget.textContent = 'Saving...';
+        const originalText = this.submitBtnTarget.textContent;
+        this.submitBtnTarget.textContent = this.textSavingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -102,10 +109,10 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to save settings.');
+                throw new Error(result.error || this.errorSaveValue);
             }
 
-            this.showAlert('success', 'Profile settings saved successfully.');
+            this.showAlert('success', this.successSaveValue);
             
             // Proactively reload the page after a short delay to refresh layout team name / emblem
             setTimeout(() => {
@@ -115,29 +122,19 @@ export default class extends Controller {
         } catch (error) {
             this.showAlert('error', error.message);
             this.submitBtnTarget.disabled = false;
-            this.submitBtnTarget.textContent = 'Save Profile';
+            this.submitBtnTarget.textContent = originalText;
         }
     }
 
     showAlert(type, message) {
         if (!this.hasAlertTarget || !this.hasAlertMessageTarget) return;
-
-        this.alertMessageTarget.textContent = message;
-        this.alertTarget.className = 'mb-6 rounded-lg px-4 py-3 text-sm flex items-center justify-between border ';
-
-        if (type === 'success') {
-            this.alertTarget.classList.add('bg-green-950/40', 'text-green-300', 'border-green-900/50');
-        } else {
-            this.alertTarget.classList.add('bg-red-950/40', 'text-red-300', 'border-red-900/50');
-        }
-
-        this.alertTarget.classList.remove('hidden');
+        showAlert(this.alertTarget, this.alertMessageTarget, type, message);
     }
 
     closeAlert(e) {
         e.preventDefault();
         if (this.hasAlertTarget) {
-            this.alertTarget.classList.add('hidden');
+            hideAlert(this.alertTarget);
         }
     }
 }

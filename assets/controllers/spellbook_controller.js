@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { showAlert, hideAlert } from '../utils/alert.js';
 
 export default class extends Controller {
     static targets = [
@@ -6,6 +7,16 @@ export default class extends Controller {
         'alert',
         'alertMessage'
     ];
+
+    static values = {
+        textLearning: String,
+        errorLearn: String,
+        successLearn: String,
+        errorEquip: String,
+        successEquip: String,
+        errorUnequip: String,
+        successUnequip: String
+    };
 
     connect() {
         if (this.hasHeroSelectTarget && this.heroSelectTarget.value) {
@@ -37,7 +48,8 @@ export default class extends Controller {
         if (!heroId || !spellId) return;
 
         btn.disabled = true;
-        btn.textContent = 'Learning...';
+        const originalText = btn.textContent;
+        btn.textContent = this.textLearningValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -55,7 +67,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to learn spell.');
+                throw new Error(result.error || this.errorLearnValue);
             }
 
             // Deduct Gold in header
@@ -67,13 +79,13 @@ export default class extends Controller {
                 }
             }
 
-            this.showAlert('success', 'Spell successfully learned!');
+            this.showAlert('success', this.successLearnValue);
             setTimeout(() => window.location.reload(), 800);
 
         } catch (error) {
             this.showAlert('error', error.message);
             btn.disabled = false;
-            btn.textContent = 'Learn Spell';
+            btn.textContent = originalText;
         }
     }
 
@@ -102,10 +114,10 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to equip spell.');
+                throw new Error(result.error || this.errorEquipValue);
             }
 
-            this.showAlert('success', 'Spell equipped to slot.');
+            this.showAlert('success', this.successEquipValue);
             setTimeout(() => window.location.reload(), 800);
 
         } catch (error) {
@@ -122,6 +134,7 @@ export default class extends Controller {
         if (!heroId || !heroSpellId) return;
 
         btn.disabled = true;
+        const originalText = btn.textContent;
         btn.textContent = '...';
 
         try {
@@ -140,35 +153,27 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to unequip spell.');
+                throw new Error(result.error || this.errorUnequipValue);
             }
 
-            this.showAlert('success', 'Spell unequipped from slot.');
+            this.showAlert('success', this.successUnequipValue);
             setTimeout(() => window.location.reload(), 800);
 
         } catch (error) {
             this.showAlert('error', error.message);
             btn.disabled = false;
-            btn.textContent = '✕';
+            btn.textContent = originalText;
         }
     }
 
     showAlert(type, message) {
         if (!this.hasAlertTarget || !this.hasAlertMessageTarget) return;
-        this.alertMessageTarget.textContent = message;
-        this.alertTarget.className = 'mb-6 rounded-lg px-4 py-3 text-sm flex items-center justify-between border ';
-
-        if (type === 'success') {
-            this.alertTarget.classList.add('bg-green-950/40', 'text-green-300', 'border-green-900/50');
-        } else {
-            this.alertTarget.classList.add('bg-red-950/40', 'text-red-300', 'border-red-900/50');
-        }
-        this.alertTarget.classList.remove('hidden');
+        showAlert(this.alertTarget, this.alertMessageTarget, type, message);
     }
 
     hideAlert() {
         if (this.hasAlertTarget) {
-            this.alertTarget.classList.add('hidden');
+            hideAlert(this.alertTarget);
         }
     }
 }

@@ -1,8 +1,8 @@
 {# templates/components/hero/school_mastery.html.twig #}
 <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
     <div>
-        <h2 class="text-xl font-bold text-white mb-0.5">School Mastery</h2>
-        <p class="text-xs text-gray-500">Tier requirements to learn spells.</p>
+        <h2 class="text-xl font-bold text-white mb-0.5">{{ 'heroes.school_mastery'|trans }}</h2>
+        <p class="text-xs text-gray-500">{{ 'heroes.school_mastery_desc'|trans }}</p>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
@@ -25,7 +25,7 @@
                         {% elseif school == 'light' %}☀️
                         {% else %}🌙{% endif %}
                     </span>
-                    <span class="text-xs font-bold capitalize text-gray-300">{{ school }}</span>
+                    <span class="text-xs font-bold text-gray-300">{{ ('school.' ~ school)|trans }}</span>
                 </div>
                 <span class="text-[10px] font-extrabold bg-gray-900 border border-gray-800 text-gray-400 px-2 py-0.5 rounded">T{{ mastery_tier }}</span>
             </div>

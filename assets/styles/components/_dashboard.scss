@@ -1,0 +1,224 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  DASHBOARD — team banner, race optimization, next match card, BEM styles
+// =============================================================================
+
+@layer components {
+  // ── Dashboard Banner ───────────────────────────────────────────────────────
+  .db-banner {
+    @apply relative rounded-xl p-6 md:p-8 shadow-xl overflow-hidden flex flex-col md:flex-row items-center md:items-start gap-6;
+    background-image: linear-gradient(to bottom right, rgba(6, 78, 59, 0.2), rgba(15, 23, 42, 0.4), rgba(3, 7, 18, 0.8));
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  .db-banner__emblem {
+    @apply w-24 h-24 rounded-2xl flex items-center justify-center text-5xl select-none shrink-0 shadow-inner;
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+  }
+
+  .db-banner__content {
+    @apply flex-1 w-full space-y-4;
+  }
+
+  .db-banner__title {
+    @apply text-2xl sm:text-3xl font-bold tracking-tight text-white;
+  }
+
+  .db-banner__meta {
+    @apply text-xs font-medium flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1;
+    color: var(--color-text-secondary);
+  }
+
+  .db-banner__badges {
+    @apply flex flex-wrap items-center justify-center md:justify-start gap-4 pt-1;
+  }
+
+  .db-banner__badge {
+    @apply flex items-center gap-2 border px-3 py-1.5 rounded-xl text-xs select-none shadow-sm;
+    
+    &--morale {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    
+    &--chemistry {
+      background-color: rgba(99, 102, 241, 0.1);
+      color: #818cf8;
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+    
+    &--reputation {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+  }
+
+  .db-banner__edit-btn {
+    @apply absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-lg;
+    background-color: rgba(3, 7, 18, 0.6);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+
+    &:hover {
+      background-color: rgba(15, 23, 42, 0.8);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #fff;
+    }
+  }
+
+  // ── Race Optimization ──────────────────────────────────────────────────────
+  .db-opt {
+    @apply border-t pt-4 w-full;
+    border-color: rgba(55, 65, 81, 0.3);
+  }
+
+  .db-opt__row {
+    @apply flex flex-col sm:flex-row sm:items-center justify-center md:justify-start gap-3 text-xs;
+  }
+
+  .db-opt__label {
+    @apply flex items-center justify-center gap-1.5 font-semibold select-none shrink-0;
+    color: var(--color-text-secondary);
+  }
+
+  .db-opt__controls {
+    @apply flex flex-wrap items-center justify-center md:justify-start gap-3;
+  }
+
+  .db-opt__select {
+    @apply rounded-lg px-3 py-1.5 text-xs focus:outline-none font-medium disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer;
+    background-color: var(--color-surface-page);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    
+    &:focus {
+      border-color: var(--color-brand-500);
+    }
+  }
+
+  .db-opt__status {
+    @apply rounded-lg px-3 py-1.5 text-[10px] flex items-center gap-1.5 border;
+    
+    &--pending {
+      background-color: rgba(66, 32, 6, 0.4);
+      border-color: rgba(146, 64, 14, 0.4);
+      color: #fde68a;
+    }
+    
+    &--locked {
+      background-color: rgba(69, 10, 10, 0.4);
+      border-color: rgba(185, 28, 28, 0.4);
+      color: #fca5a5;
+    }
+  }
+
+  // ── Next Match Widget ──────────────────────────────────────────────────────
+  .next-match-card {
+    @apply rounded-xl p-6 border relative overflow-hidden shadow-lg;
+    background-color: rgba(17, 24, 39, 0.6);
+    border-color: var(--color-border);
+    backdrop-filter: blur(12px);
+  }
+
+  .next-match-card__title {
+    @apply text-base font-bold text-white mb-6 flex items-center gap-2;
+  }
+
+  .next-match-card__teams {
+    @apply grid grid-cols-1 sm:grid-cols-7 items-center gap-6 sm:gap-2;
+  }
+
+  .next-match-team {
+    @apply flex flex-col items-center text-center space-y-2 min-w-0;
+  }
+
+  .next-match-team__pos {
+    @apply text-[10px] uppercase tracking-widest font-black select-none;
+    color: var(--color-text-secondary);
+  }
+
+  .next-match-team__emblem {
+    @apply w-16 h-16 rounded-xl flex items-center justify-center text-3xl shadow-inner select-none transition-colors duration-300;
+    background-color: var(--color-surface-page);
+    border: 1px solid var(--color-border);
+    
+    &--highlight {
+      border-color: rgba(16, 185, 129, 0.5);
+      background-color: rgba(16, 185, 129, 0.05);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+    }
+  }
+
+  .next-match-team__name {
+    @apply block text-sm truncate w-full px-2 font-semibold;
+    
+    &--highlight {
+      @apply text-brand-500 font-bold;
+    }
+    &--neutral {
+      color: var(--color-text-primary);
+    }
+  }
+
+  .next-match-team__owner {
+    @apply text-[10px] font-semibold px-2.5 py-0.5 rounded-full select-none border;
+    
+    &--npc {
+      color: #fca5a5;
+      background-color: rgba(69, 10, 10, 0.2);
+      border-color: rgba(185, 28, 28, 0.3);
+    }
+    
+    &--player {
+      color: #34d399;
+      background-color: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+  }
+
+  .next-match-vs {
+    @apply sm:col-span-1 flex flex-col items-center justify-center py-4 sm:py-0;
+  }
+
+  .next-match-vs__pill {
+    @apply px-3.5 py-2 text-xs font-black rounded-xl select-none shadow-md border;
+    background-color: var(--color-surface-page);
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
+  }
+
+  .next-match-meta {
+    @apply border-t pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs;
+    border-color: rgba(55, 65, 81, 0.3);
+    color: var(--color-text-secondary);
+  }
+
+  .next-match-meta__item {
+    @apply flex items-center gap-2 border px-3 py-1.5 rounded-lg;
+    background-color: rgba(3, 7, 18, 0.5);
+    border-color: rgba(55, 65, 81, 0.5);
+  }
+
+  .next-match-empty {
+    @apply rounded-xl p-6 text-center border shadow-inner;
+    background-color: rgba(3, 7, 18, 0.6);
+    border-color: rgba(55, 65, 81, 0.5);
+  }
+
+  .next-match-empty__title {
+    @apply text-xs uppercase tracking-widest mb-3 font-semibold;
+    color: var(--color-text-secondary);
+  }
+
+  .next-match-empty__desc {
+    @apply text-sm italic font-medium flex items-center justify-center gap-2;
+    color: var(--color-text-secondary);
+  }
+}

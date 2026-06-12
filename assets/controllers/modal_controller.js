@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { showAlert, hideAlert } from '../utils/alert.js';
 
 export default class extends Controller {
     static targets = ['dialog'];
@@ -21,9 +22,15 @@ export default class extends Controller {
 
     open(event) {
         if (event) event.preventDefault();
+        this._returnFocusTo = document.activeElement;
         this.dialogTarget.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
         document.addEventListener('keydown', this.escHandler);
+        // Move focus to the first focusable element inside the dialog
+        const focusable = this.dialogTarget.querySelector(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        focusable?.focus();
     }
 
     close(event) {
@@ -31,6 +38,8 @@ export default class extends Controller {
         this.dialogTarget.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
         document.removeEventListener('keydown', this.escHandler);
+        // Return focus to the element that opened the modal
+        this._returnFocusTo?.focus();
     }
 
     closeBackdrop(event) {

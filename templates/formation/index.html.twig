@@ -1,6 +1,6 @@
 {% extends 'layouts/game.html.twig' %}
 
-{% block title %}Formation Lineup & Tactics — Fantager{% endblock %}
+{% block title %}{{ 'formation.title'|trans }} — Fantager{% endblock %}
 
 {% block body %}
 {% set selected_formation_id = app.request.query.get('formation_id') %}
@@ -34,17 +34,38 @@
     {% endfor %}
 {% endif %}
 
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="formation">
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="formation"
+     data-formation-error-empty-value="{{ 'js_flash.formation.name_empty'|trans }}"
+     data-formation-error-assign-value="{{ 'js_flash.formation.assign_hero'|trans }}"
+     data-formation-text-saving-value="{{ 'js_flash.formation.saving'|trans }}"
+     data-formation-error-save-value="{{ 'js_flash.formation.failed_save'|trans }}"
+     data-formation-success-save-value="{{ 'js_flash.formation.success_save'|trans }}"
+     data-formation-confirm-delete-value="{{ 'js_flash.formation.confirm_delete'|trans }}"
+     data-formation-text-deleting-value="{{ 'js_flash.formation.deleting'|trans }}"
+     data-formation-error-delete-value="{{ 'js_flash.formation.failed_delete'|trans }}"
+     data-formation-success-delete-value="{{ 'js_flash.formation.success_delete'|trans }}"
+     data-formation-level-label-value="{{ 'js_flash.formation.lvl_short'|trans }}"
+     data-formation-races-value="{{ {
+         human: 'heroes.race_human'|trans,
+         elf: 'heroes.race_elf'|trans,
+         dwarf: 'heroes.race_dwarf'|trans,
+         orc: 'heroes.race_orc'|trans,
+         undead: 'heroes.race_undead'|trans,
+         giant: 'heroes.race_giant'|trans,
+         ent: 'heroes.race_ent'|trans,
+         genie: 'heroes.race_genie'|trans
+     }|json_encode }}"
+>
     
     {# --- Header Section --- #}
     {% set right_content %}
         <div class="flex items-center gap-4 shrink-0 w-full md:w-auto">
             <select data-formation-target="formationSelect" data-action="change->formation#changeFormation"
                     class="rounded-xl bg-gray-900 border border-gray-800 px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-emerald-500 font-semibold w-full sm:min-w-[200px]">
-                <option value="">-- Create New Formation --</option>
+                <option value="">{{ 'formation.create_new'|trans }}</option>
                 {% for f in formations %}
                     <option value="{{ f.id }}" {% if selected_formation and selected_formation.id == f.id %}selected{% endif %}>
-                        {{ f.name }} {% if f.isDefault %}(Default){% endif %}
+                        {{ f.name }} {% if f.isDefault %}({{ 'formation.default'|trans }}){% endif %}
                     </option>
                 {% endfor %}
             </select>
@@ -52,15 +73,15 @@
             {% if selected_formation %}
                 <button data-action="click->formation#delete" data-formation-id="{{ selected_formation.id }}"
                         class="btn btn-outline border-red-950/40 text-red-400 hover:text-white hover:bg-red-900 px-4 py-2.5 text-xs font-bold uppercase tracking-wider">
-                    Delete
+                    {{ 'formation.delete_btn'|trans }}
                 </button>
             {% endif %}
         </div>
     {% endset %}
 
     {% include 'components/ui/page_header.html.twig' with {
-        title: 'Formation & Strategy',
-        subtitle: 'Organize your starting line-ups and select match tactics.',
+        title: 'formation.title',
+        subtitle: 'formation.subtitle',
         right_content: right_content
     } %}
 
@@ -78,8 +99,8 @@
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-8">
                 <div>
-                    <h2 class="text-xl font-bold text-white mb-1">Starting Lineup</h2>
-                    <p class="text-xs text-gray-550">Arrange 6 heroes on the field positions. Drag heroes from pool or use quick assigns.</p>
+                    <h2 class="text-xl font-bold text-white mb-1">{{ 'formation.starting_lineup'|trans }}</h2>
+                    <p class="text-xs text-gray-550">{{ 'formation.starting_lineup_desc'|trans }}</p>
                 </div>
 
                 {# Visual Pitch Representation #}

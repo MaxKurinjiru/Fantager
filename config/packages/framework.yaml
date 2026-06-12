@@ -1,27 +1,22 @@
 framework:
-  secret: 'S0meDevSecret'
-  default_locale: cs
-  enabled_locales: ['cs', 'en']
+  secret: '%env(APP_SECRET)%'
   set_locale_from_accept_language: true
-  csrf_protection: true
+  csrf_protection:
+    check_header: true
   router:
     utf8: true
   session:
     cookie_secure: auto
     cookie_samesite: lax
-  translator:
-    default_path: '%kernel.project_dir%/translations'
-    fallbacks:
-      - en
   rate_limiter:
     register:
       policy: fixed_window
       limit: 10
-      interval: '1 hour'
+      interval: "1 hour"
     password_reset:
       policy: fixed_window
       limit: 5
-      interval: '1 hour'
+      interval: "1 hour"
 
 when@test:
   framework:

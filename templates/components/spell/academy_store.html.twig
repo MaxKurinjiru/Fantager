@@ -16,8 +16,8 @@
                             <span class="text-2xl">📜</span>
                             <div>
                                 <h3 class="font-bold text-white text-sm leading-tight">{{ spell.name }}</h3>
-                                <span class="text-[9px] font-bold uppercase tracking-wider text-gray-500">
-                                    Tier {{ spell.tier }} &bull; {{ spell.school.value }}
+                                <span class="text-[9px] font-bold uppercase tracking-wider text-gray-550">
+                                    Tier {{ spell.tier }} &bull; {{ ('school.' ~ spell.school.value)|trans }}
                                 </span>
                             </div>
                         </div>
@@ -25,18 +25,18 @@
                         <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border
                             {% if meets_requirement %}bg-emerald-950/20 text-emerald-450 border-emerald-900/30
                             {% else %}bg-red-950/25 text-red-400 border-red-900/30{% endif %}">
-                            Req: {{ spell.school.value|capitalize }} T{{ spell.requiredMasteryTier }}
+                            {{ 'spells.req_mastery'|trans({'%school%': ('school.' ~ spell.school.value)|trans, '%tier%': spell.requiredMasteryTier}) }}
                         </span>
                     </div>
                     
                     <p class="text-[10px] text-gray-400 leading-relaxed">
-                        Deals school-dependent spell effects in combat matches. Mana Cost: {{ spell.manaCost }} &bull; Cooldown: {{ spell.cooldown }} rounds.
+                        {{ 'spells.academy_desc'|trans }} {{ 'spells.mana_cooldown'|trans({'%mana%': spell.manaCost, '%cooldown%': spell.cooldown})|raw }}
                     </p>
                 </div>
 
                 <div class="border-t border-gray-850 mt-4 pt-3 flex items-center justify-between gap-4">
                     <div>
-                        <span class="block text-[8px] font-bold text-gray-550 uppercase tracking-wider">Scroll Fee</span>
+                        <span class="block text-[8px] font-bold text-gray-550 uppercase tracking-wider">{{ 'spells.scroll_fee'|trans }}</span>
                         <span class="text-xs font-bold text-yellow-500">
                             🪙 {{ spell.learningCostGold|number_format(0, '.', ' ') }} 
                             {% if spell.learningCostEssence > 0 %}
@@ -46,12 +46,12 @@
                     </div>
 
                     {% if is_learned %}
-                        <span class="text-[10px] font-bold text-gray-500 bg-gray-955 px-2.5 py-1.5 rounded border border-gray-855">Learned</span>
+                        <span class="text-[10px] font-bold text-gray-550 bg-gray-955 px-2.5 py-1.5 rounded border border-gray-855">{{ 'spells.known'|trans }}</span>
                     {% else %}
                         <button data-action="click->spellbook#learn" data-spell-id="{{ spell.id }}" data-gold="{{ spell.learningCostGold }}"
                                 {% if not selected_hero or not meets_requirement or not has_funds %}disabled{% endif %}
                                 class="btn btn-outline btn--sm px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed">
-                            Learn Spell
+                            {{ 'spells.learn_spell'|trans }}
                         </button>
                     {% endif %}
                 </div>

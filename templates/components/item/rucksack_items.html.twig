@@ -1,6 +1,6 @@
 {# templates/components/item/rucksack_items.html.twig #}
 <div class="lg:col-span-2 space-y-6">
-    <h2 class="text-xl font-bold text-white">Compound Rucksack</h2>
+    <h2 class="text-xl font-bold text-white">{{ 'inventory.rucksack'|trans }}</h2>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {% for item in items %}
@@ -28,13 +28,13 @@
                                     {% elseif item.rarity.value == 'epic' %}text-purple-400
                                     {% elseif item.rarity.value == 'legendary' %}text-orange-400
                                     {% else %}text-red-400{% endif %}">
-                                    {{ item.rarity.value }} &bull; {{ item.slotType.value|replace({'_': ' '}) }}
+                                    {{ ('inventory.rarity_' ~ item.rarity.value)|trans }} &bull; {{ ('inventory.slot_' ~ item.slotType.value)|trans }}
                                 </span>
                             </div>
                         </div>
                         
-                        <span class="text-[9px] font-extrabold bg-gray-950 px-2 py-0.5 border border-gray-850 rounded text-gray-400">
-                            Durability: {{ item.durability }}%
+                        <span class="text-[9px] font-extrabold bg-gray-950 px-2 py-0.5 border border-gray-855 rounded text-gray-400">
+                            {{ 'inventory.durability'|trans }}: {{ item.durability }}%
                         </span>
                     </div>
 
@@ -45,7 +45,7 @@
                                 {{ stat|upper }}: <strong class="text-emerald-400">+{{ bonus }}</strong>
                             </span>
                         {% else %}
-                            <span class="text-gray-600 italic">No static attributes bonuses</span>
+                            <span class="text-gray-600 italic">{{ 'inventory.no_bonuses'|trans }}</span>
                         {% endfor %}
                     </div>
                 </div>
@@ -55,9 +55,9 @@
                     {# Equipped Badge / State #}
                     <div class="text-[10px] text-gray-550 font-semibold">
                         {% if is_equipped %}
-                            Equipped by <span class="text-gray-300 font-bold">{{ item.equippedHero.name }}</span>
+                            {{ 'inventory.equipped_by'|trans({'%hero%': '<span class="text-gray-300 font-bold">' ~ item.equippedHero.name ~ '</span>'})|raw }}
                         {% else %}
-                            <span class="text-emerald-500">Available</span>
+                            <span class="text-emerald-500">{{ 'inventory.available'|trans }}</span>
                         {% endif %}
                     </div>
 
@@ -67,7 +67,7 @@
                         {% if item.durability < 100 %}
                             <button data-action="click->equipment#repair" data-item-id="{{ item.id }}"
                                     class="btn btn-outline btn--sm px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-yellow-500 border-yellow-950/30 hover:border-yellow-500/25">
-                                Repair
+                                {{ 'inventory.repair'|trans }}
                             </button>
                         {% endif %}
 
@@ -75,7 +75,7 @@
                         {% if not is_equipped %}
                             <button data-action="click->equipment#dismantle" data-item-id="{{ item.id }}"
                                     class="btn btn-outline btn--sm px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-red-400 border-red-955/30 hover:border-red-500/25">
-                                Dismantle
+                                {{ 'inventory.dismantle'|trans }}
                             </button>
                         {% endif %}
 
@@ -83,17 +83,17 @@
                         {% if selected_hero and not is_equipped %}
                             <button data-action="click->equipment#equip" data-item-id="{{ item.id }}" data-slot="{{ item.slotType.value }}"
                                     class="btn btn-primary btn--sm px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider">
-                                Equip Slot
+                                {{ 'inventory.equip_slot_btn'|trans }}
                             </button>
                         {% endif %}
                     </div>
                 </div>
             </div>
         {% else %}
-            <div class="col-span-full bg-gray-900/20 border border-gray-850 border-dashed rounded-xl p-8 text-center select-none opacity-50">
+            <div class="col-span-full bg-gray-900/20 border border-gray-855 border-dashed rounded-xl p-8 text-center select-none opacity-50">
                 <span class="text-4xl mb-2 block">📭</span>
-                <h4 class="text-xs font-bold text-white mb-1">Rucksack is empty</h4>
-                <p class="text-[10px] text-gray-550">Buy weapons or craft them to fill your guild's storage compounding.</p>
+                <h4 class="text-xs font-bold text-white mb-1">{{ 'inventory.rucksack_empty'|trans }}</h4>
+                <p class="text-[10px] text-gray-550">{{ 'inventory.rucksack_empty_desc'|trans }}</p>
             </div>
         {% endfor %}
     </div>

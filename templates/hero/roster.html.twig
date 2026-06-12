@@ -1,6 +1,6 @@
 {% extends 'layouts/game.html.twig' %}
 
-{% block title %}Hero Roster — {{ team.name }} — Fantager{% endblock %}
+{% block title %}{{ 'heroes.title'|trans }} — {{ team.name }} — Fantager{% endblock %}
 
 {% block body %}
 <div class="space-y-8 max-w-7xl mx-auto" data-controller="roster-filter">
@@ -8,14 +8,14 @@
     {% set right_content %}
         <div class="flex gap-3">
             <a href="{{ path('app_summon') }}" class="btn btn-primary gap-1.5 shadow-lg shadow-emerald-950/20">
-                <span>🌀</span> Summon Heroes
+                <span>🌀</span> {{ 'heroes.summon_btn'|trans }}
             </a>
         </div>
     {% endset %}
 
     {% include 'components/ui/page_header.html.twig' with {
-        title: 'Hero Roster (' ~ (heroes|length) ~ ' / ' ~ team_roster_limit(team) ~ ')',
-        subtitle: 'Manage, filter, and inspect your team\'s heroes.',
+        title: 'heroes.title'|trans ~ ' (' ~ (heroes|length) ~ ' / ' ~ team_roster_limit(team) ~ ')',
+        subtitle: 'heroes.subtitle'|trans,
         right_content: right_content
     } %}
 
@@ -26,7 +26,7 @@
             <div class="relative min-w-[200px] w-full sm:w-auto">
                 <span class="absolute left-3 top-2.5 text-gray-500 text-sm">🔍</span>
                 <input type="text" data-roster-filter-target="search" data-action="input->roster-filter#filter"
-                       placeholder="Search hero..."
+                       placeholder="{{ 'heroes.search_placeholder'|trans }}"
                        class="w-full rounded-lg bg-gray-950 border border-gray-800 pl-9 pr-4 py-2 text-sm text-gray-300 focus:outline-none focus:border-emerald-500">
             </div>
 
@@ -34,9 +34,9 @@
             <div>
                 <select data-roster-filter-target="raceFilter" data-action="change->roster-filter#filter"
                         class="rounded-lg bg-gray-950 border border-gray-800 px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-emerald-500">
-                    <option value="">All Races</option>
+                    <option value="">{{ 'heroes.all_races'|trans }}</option>
                     {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
-                        <option value="{{ race }}">{{ race|capitalize }}</option>
+                        <option value="{{ race }}">{{ ('heroes.race_' ~ race)|trans }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -45,32 +45,32 @@
             <div>
                 <select data-roster-filter-target="statusFilter" data-action="change->roster-filter#filter"
                         class="rounded-lg bg-gray-950 border border-gray-800 px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-emerald-500">
-                    <option value="">All Statuses</option>
-                    <option value="available">Available</option>
-                    <option value="tired">Tired</option>
-                    <option value="training">Training</option>
-                    <option value="in_match">In Match</option>
-                    <option value="injured">Injured</option>
-                    <option value="dead">Dead</option>
+                    <option value="">{{ 'heroes.all_statuses'|trans }}</option>
+                    <option value="available">{{ 'heroes.status_available'|trans }}</option>
+                    <option value="tired">{{ 'heroes.status_tired'|trans }}</option>
+                    <option value="training">{{ 'heroes.status_training'|trans }}</option>
+                    <option value="in_match">{{ 'heroes.status_in_match'|trans }}</option>
+                    <option value="injured">{{ 'heroes.status_injured'|trans }}</option>
+                    <option value="dead">{{ 'heroes.status_dead'|trans }}</option>
                 </select>
             </div>
         </div>
 
         {# Sort Selector #}
         <div class="flex items-center gap-2 w-full md:w-auto justify-end border-t border-gray-800 md:border-none pt-3 md:pt-0">
-            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Sort by:</span>
+            <span class="text-xs text-gray-550 font-semibold uppercase tracking-wider">{{ 'heroes.sort_by'|trans }}</span>
             <select data-roster-filter-target="sortBy" data-action="change->roster-filter#sort"
                     class="rounded-lg bg-gray-950 border border-gray-800 px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-emerald-500">
-                <option value="name-asc">Name (A-Z)</option>
-                <option value="level-desc">Level (High-Low)</option>
-                <option value="age-asc">Age (Youngest-Oldest)</option>
-                <option value="morale-desc">Morale (Highest)</option>
-                <option value="form-desc">Form (Highest)</option>
-                <option value="str-desc">Strength</option>
-                <option value="dex-desc">Dexterity</option>
-                <option value="kon-desc">Constitution</option>
-                <option value="spd-desc">Speed</option>
-                <option value="int-desc">Intelligence</option>
+                <option value="name-asc">{{ 'heroes.sort_name'|trans }}</option>
+                <option value="level-desc">{{ 'heroes.sort_level'|trans }}</option>
+                <option value="age-asc">{{ 'heroes.sort_age'|trans }}</option>
+                <option value="morale-desc">{{ 'heroes.sort_morale'|trans }}</option>
+                <option value="form-desc">{{ 'heroes.sort_form'|trans }}</option>
+                <option value="str-desc">{{ 'heroes.sort_str'|trans }}</option>
+                <option value="dex-desc">{{ 'heroes.sort_dex'|trans }}</option>
+                <option value="kon-desc">{{ 'heroes.sort_kon'|trans }}</option>
+                <option value="spd-desc">{{ 'heroes.sort_spd'|trans }}</option>
+                <option value="int-desc">{{ 'heroes.sort_int'|trans }}</option>
             </select>
         </div>
     </div>
@@ -82,9 +82,9 @@
         {% else %}
             <div class="col-span-full bg-gray-900/20 rounded-xl p-8 text-center border border-gray-800 border-dashed">
                 <span class="text-4xl mb-3 block select-none">📭</span>
-                <h3 class="font-bold text-white mb-1">No heroes in roster</h3>
-                <p class="text-gray-500 text-sm mb-4">Go to the summoning chamber to recruit your first heroes.</p>
-                <a href="{{ path('app_summon') }}" class="btn btn-primary btn--sm">Go to Summoning</a>
+                <h3 class="font-bold text-white mb-1">{{ 'heroes.no_heroes'|trans }}</h3>
+                <p class="text-gray-500 text-sm mb-4">{{ 'heroes.no_heroes_desc'|trans }}</p>
+                <a href="{{ path('app_summon') }}" class="btn btn-primary btn--sm">{{ 'heroes.go_summoning'|trans }}</a>
             </div>
         {% endfor %}
     </div>

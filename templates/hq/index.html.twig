@@ -3,7 +3,31 @@
 {% block title %}{{ 'hq.title'|trans }} & {{ 'hq.facilities'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="hq">
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="hq"
+     data-hq-text-upgrading-value="{{ 'js_flash.hq.upgrading'|trans }}"
+     data-hq-error-upgrade-value="{{ 'js_flash.hq.failed_upgrade'|trans }}"
+     data-hq-success-upgrade-value="{{ 'js_flash.hq.success_upgrade'|trans }}"
+     data-hq-text-saving-value="{{ 'js_flash.hq.saving'|trans }}"
+     data-hq-error-optimize-value="{{ 'js_flash.hq.failed_optimize'|trans }}"
+     data-hq-success-optimize-value="{{ 'js_flash.hq.success_optimize'|trans }}"
+     data-hq-level-label-value="{{ 'js_flash.hq.lvl_short'|trans }}"
+     data-hq-gold-format-value="{{ 'js_flash.hq.gold_format'|trans }}"
+     data-hq-bonuses-value="{{ {
+         bonus_training_efficiency_pct: 'hq.bonus_training_efficiency_pct'|trans,
+         bonus_fatigue_reduction_pct: 'hq.bonus_fatigue_reduction_pct'|trans,
+         bonus_recovery_speed_pct: 'hq.bonus_recovery_speed_pct'|trans,
+         bonus_xp_gain_pct: 'hq.bonus_xp_gain_pct'|trans,
+         bonus_crafting_success_pct: 'hq.bonus_crafting_success_pct'|trans,
+         bonus_item_durability_pct: 'hq.bonus_item_durability_pct'|trans,
+         bonus_gold_income_pct: 'hq.bonus_gold_income_pct'|trans,
+         bonus_roster_capacity: 'hq.bonus_roster_capacity'|trans,
+         bonus_summon_base_stat_bonus: 'hq.bonus_summon_base_stat_bonus'|trans,
+         bonus_summon_stat_random_bonus: 'hq.bonus_summon_stat_random_bonus'|trans,
+         bonus_summon_stat_total_cap: 'hq.bonus_summon_stat_total_cap'|trans,
+         bonus_ticket_revenue_pct: 'hq.bonus_ticket_revenue_pct'|trans,
+         bonus_arena_capacity: 'hq.bonus_arena_capacity'|trans
+     }|json_encode }}"
+>
     
     {# --- Header Section --- #}
     {% set right_content %}
@@ -15,7 +39,7 @@
             <div class="w-px h-8 bg-gray-800"></div>
             <div>
                 <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'hq.active_optimization'|trans }}</span>
-                <span class="text-emerald-400 font-extrabold text-sm capitalize">{{ hq.raceOptimization ?: 'dashboard.none'|trans }}</span>
+                <span class="text-emerald-400 font-extrabold text-sm">{{ hq.raceOptimization ? ('heroes.race_' ~ hq.raceOptimization)|trans : 'dashboard.none'|trans }}</span>
             </div>
             <div class="w-px h-8 bg-gray-800"></div>
             <div>

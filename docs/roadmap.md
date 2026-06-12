@@ -15,11 +15,11 @@ See [known-issues.md](known-issues.md) for the full list. The ones below directl
 | 2 | **Roster** | ~~Starting Barracks capacity?~~ — **RESOLVED**: 10 (matches starting hero count). | ~~[#3](known-issues.md)~~ |
 | 3 | **Morale** | What value does morale reset to on hero transfer — 50, 100, or race-specific? | ~~[#2](known-issues.md)~~ — resolved: default = 50 |
 | 4 | **Combat formulas** | Document HP, damage, defense, accuracy, dodge, crit and status-effect formulas | [#1](known-issues.md) |
-| 5 | **Item durability & enchanting** | Define durability degradation rate, repair cost, and enchanting mechanic (Essence costs exist but rules don't) | [#5](known-issues.md) |
+| 5 | **Item durability & enchanting** | Define durability degradation rate, repair cost, and enchanting mechanic (Essence costs exist but rules don't) | [#2](known-issues.md) |
 | 6 | **Race balance** | ~~Confirm Genie stat-budget difference (+10.6% vs Human) is intentional; add equipment restrictions if not~~ — **RESOLVED**: All races use flat integer bonuses in `races.yaml`; balance tunable per config. | ~~[#9](known-issues.md)~~ |
 | 7 | **Data consistency** | ~~Confirm whether the asymmetric Giant↔Genie relationship values (60 vs 70) are intentional or a typo~~ — **RESOLVED**: Giant↔Genie = 60 (Neutral) in all sources. | ~~[#10](known-issues.md)~~ |
-| 8 | **Friendly Matches** | Document rules and purpose of Friendly Matches listed in the tick schedule | [#14](known-issues.md) |
-| 9 | **Arena Match mechanics** | Document standalone Arena Match rules separate from the HQ arena facility | [#15](known-issues.md) |
+| 8 | **Friendly Matches** | Document rules and purpose of Friendly Matches listed in the tick schedule | [#7](known-issues.md) |
+| 9 | **Arena Match mechanics** | Document standalone Arena Match rules separate from the HQ arena facility | [#8](known-issues.md) |
 | 10 | **Review next phases** | Walk through Phases 1–6 with maintainers and confirm scope, entity names, and acceptance criteria before any code is written | — |
 
 **Exit criteria**: All rows above are resolved and the answers are recorded in the relevant design docs. Phase 0 is never "done" until every row has a decision written down and the known-issues entry removed or updated.
@@ -92,6 +92,11 @@ See [known-issues.md](known-issues.md) for the full list. The ones below directl
 
 ## Phase 5 — Combat & Competition
 
+> **Prerequisites (Phase 0)**: Before starting this phase, the following open design decisions must be resolved — see [known-issues.md](known-issues.md):
+> - **#1** Combat formulas (HP, damage, defense, accuracy, dodge, crits, status effects)
+> - **#7** Friendly Match rules and purpose
+> - **#8** Arena Match mechanics (standalone mode, separate from HQ facility)
+
 | # | Task | Depends on | Notes |
 |--:|------|-----------|-------|
 | 21 | **Combat System** — Simulation engine, turn resolution, logging | Formation, Item, Spell | Entity + repository scaffolded ✅; simulation engine pending |
@@ -109,7 +114,7 @@ See [known-issues.md](known-issues.md) for the full list. The ones below directl
 | 24 | **Marketplace System** — Listings, buying, selling, fees | Economy, Item, Hero | All 3 entities + repositories scaffolded ✅; service/controller pending |
 | 25 | **Community System** — Alliances, messaging, social | Auth, Team | All 6 entities + repositories scaffolded ✅; service/controller pending |
 | 26 | **Graveyard System** — Permanent death records, memorial | Hero, Combat | Entity + repository scaffolded ✅; service/controller pending |
-| 26.5 | **Settings Alignment** — Refactor Settings routes to API/Web spec | Auth | Refactor web-JSON settings methods to standard `Api\SettingsController` later when settings expand |
+| 27 | **Settings Alignment** — Refactor Settings routes to API/Web spec | Auth | Refactor web-JSON settings methods to standard `Api\SettingsController` later when settings expand |
 
 **Exit criteria**: Full economic loop with player trading, social interaction, and hero mortality.
 
@@ -119,10 +124,10 @@ See [known-issues.md](known-issues.md) for the full list. The ones below directl
 
 | # | Task | Depends on | Notes |
 |--:|------|-----------|-------|
-| 27 | **Dungeon System** — PvE encounters, rewards | Combat, Economy | Entity + repository scaffolded ✅; encounter/reward logic pending |
-| 28 | **Quest System** — Daily/weekly quests, reward claiming | Economy, Hero | Entity + repository scaffolded ✅; generation/reward logic pending |
-| 29 | **Crafting System** — Recipes, materials, queue | Item, Economy | Entity + repository scaffolded ✅; service/controller pending |
-| 30 | **Arena Management** — Ticket revenue, capacity upgrades | HQ, Economy | `FacilityType::Arena` defined ✅; revenue/capacity upgrade service pending |
+| 28 | **Dungeon System** — PvE encounters, rewards | Combat, Economy | Entity + repository scaffolded ✅; encounter/reward logic pending |
+| 29 | **Quest System** — Daily/weekly quests, reward claiming | Economy, Hero | Entity + repository scaffolded ✅; generation/reward logic pending |
+| 30 | **Crafting System** — Recipes, materials, queue | Item, Economy | Entity + repository scaffolded ✅; service/controller pending |
+| 31 | **Arena Management** — Ticket revenue, capacity upgrades | HQ, Economy | `FacilityType::Arena` defined ✅; revenue/capacity upgrade service pending |
 
 **Exit criteria**: All documented systems are implemented and integrated.
 
@@ -158,11 +163,11 @@ A second Doctrine DBAL connection (`legacy`) is configured alongside the primary
 - Entity + repository layer: ✅ Complete for all phases — all 43 entities, all repositories, and all 34 PHP enums scaffolded
 - Phase 2 (tasks 5–8): ✅ Complete — `HeroService` + `HeroGenerator`, `SummoningService`, `HeadquartersService`, `EconomyService` (including financial transaction logging and weekly seating ticket revenue distribution), `TrainingService` (including training tick processor) + all API controllers and commands implemented
 - Phase 3 (tasks 9–11): ✅ Complete — `ItemService`, `SpellService`, `FormationService` + API controllers implemented; `Api\TeamController` (dashboard + settings) also done
-- Phase 0 design blockers: Items #1 (combat formulas), #5 (item durability/enchanting), #8 (Friendly Matches), #9 (Arena Match mechanics) remain open; items #6 and #7 resolved
+- Phase 0 design blockers: Items #1 (combat formulas), #2 (item durability/enchanting), #7 (Friendly Matches), #8 (Arena Match mechanics) remain open; previously resolved items removed from list
 - Phase 4 (tasks 12–20) frontend templates and Stimulus components: ✅ Complete — all 9 screens implemented (Dashboard, Hero Roster/Detail, Summoning, HQ, Training, Inventory, Spellbook, Formation); routes auto-discovered via `#[Route]` attributes; PHPStan passing at level 6 with 0 errors
 - Phase 5 (tasks 21–23): 🔄 Not started — `Battle` entity scaffolded ✅; `LeagueFixtureScheduler` partially done ✅; `Event`+`EventParticipation` entities scaffolded ✅; simulation engine, full matchmaking logic, and event triggers pending. Service directories `src/Service/Combat/` and `src/Service/League/` exist but contain only `.gitkeep` placeholders.
-- Phase 6 (tasks 24–26): ⏳ Not started — all entities scaffolded ✅ (`MarketplaceListing`, `MarketplaceBid`, `Transaction`; `Message`, `ForumThread`, `ForumPost`, etc.; `GraveyardRecord`); services and controllers pending. Service directories `src/Service/Marketplace/` and `src/Service/Team/` exist but contain only `.gitkeep` placeholders.
-- Phase 7 (tasks 27–30): ⏳ Not started — all entities scaffolded ✅ (`DungeonRun`; `Quest`, `PlayerQuestProgress`; `CraftingRecipe`, `CraftingQueue`; `ArenaRevenueService` done ✅); encounter logic, reward logic, crafting service pending. Service directory `src/Service/Crafting/` exists but contains only a `.gitkeep` placeholder.
+- Phase 6 (tasks 24–27): ⏳ Not started — all entities scaffolded ✅ (`MarketplaceListing`, `MarketplaceBid`, `Transaction`; `Message`, `ForumThread`, `ForumPost`, etc.; `GraveyardRecord`); services and controllers pending. Service directories `src/Service/Marketplace/` and `src/Service/Team/` exist but contain only `.gitkeep` placeholders.
+- Phase 7 (tasks 28–31): ⏳ Not started — all entities scaffolded ✅ (`DungeonRun`; `Quest`, `PlayerQuestProgress`; `CraftingRecipe`, `CraftingQueue`; `ArenaRevenueService` done ✅); encounter logic, reward logic, crafting service pending. Service directory `src/Service/Crafting/` exists but contains only a `.gitkeep` placeholder.
 - Code quality tooling: PHPStan ✅ (level 6, 0 errors), PHP-CS-Fixer ✅, PHPUnit ✅ (19 tests, 1433 assertions all passing), Playwright ❌ not installed
 - Routing: ✅ Migrated to `#[Route]` attribute auto-discovery — 45 routes registered (20 web + 25 API)
 - CI/CD: ❌ No GitHub Actions workflows configured yet

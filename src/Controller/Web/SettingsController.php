@@ -23,6 +23,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class SettingsController extends AbstractController
 {
+    public function __construct(
+        private readonly string $mailerFrom,
+    ) {
+    }
+
     #[Route('/app/settings', name: 'app_settings', methods: ['GET'])]
     #[IsGranted('ROLE_PLAYER')]
     public function index(): Response
@@ -73,6 +78,7 @@ class SettingsController extends AbstractController
 
         // Send email to original address
         $emailObj = (new TemplatedEmail())
+            ->from($this->mailerFrom)
             ->to($user->getEmail())
             ->subject('Fantager — Confirm email change request')
             ->htmlTemplate('email/change_email_old.html.twig')
@@ -126,6 +132,7 @@ class SettingsController extends AbstractController
 
         // Send email to new address
         $emailObj = (new TemplatedEmail())
+            ->from($this->mailerFrom)
             ->to($newEmail)
             ->subject('Fantager — Verify your new email address')
             ->htmlTemplate('email/change_email_new.html.twig')
@@ -207,6 +214,7 @@ class SettingsController extends AbstractController
 
         // Send email to user
         $emailObj = (new TemplatedEmail())
+            ->from($this->mailerFrom)
             ->to($user->getEmail())
             ->subject('Fantager — Confirm account deletion')
             ->htmlTemplate('email/cancel_account.html.twig')

@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { showAlert, hideAlert } from '../utils/alert.js';
 
 export default class extends Controller {
     static targets = [
@@ -16,6 +17,14 @@ export default class extends Controller {
         'summonsMax',
         'goldDisplay'
     ];
+
+    static values = {
+        goldCost: Number,
+        errorFailed: String,
+        limitReached: String,
+        levelLabel: String,
+        races: Object
+    };
 
     connect() {
     }
@@ -47,7 +56,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Summoning failed.');
+                throw new Error(result.error || this.errorFailedValue);
             }
 
             // Simulate a premium portal animation delay
@@ -68,8 +77,9 @@ export default class extends Controller {
 
         // Fill hero details
         this.heroNameTarget.textContent = hero.name;
-        this.heroRaceTarget.textContent = hero.race.charAt(0).toUpperCase() + hero.race.slice(1);
-        this.heroLevelTarget.textContent = `Level ${hero.level}`;
+        const raceName = (this.hasRacesValue && this.racesValue[hero.race]) || (hero.race.charAt(0).toUpperCase() + hero.race.slice(1));
+        this.heroRaceTarget.textContent = raceName;
+        this.heroLevelTarget.textContent = `${this.levelLabelValue} ${hero.level}`;
 
         // Map race icons
         const raceIcons = {
@@ -122,7 +132,7 @@ export default class extends Controller {
             if (newUsed >= max) {
                 this.summonBtnTarget.dataset.available = 'false';
                 this.summonBtnTarget.disabled = true;
-                this.summonBtnTarget.textContent = 'Cycle Limit Reached';
+                this.summonBtnTarget.textContent = this.limitReachedValue;
             } else {
                 this.summonBtnTarget.disabled = false;
             }
@@ -133,20 +143,20 @@ export default class extends Controller {
         if (headerGold) {
             let gold = parseInt(headerGold.textContent.replace(/\s/g, ''), 10);
             if (!isNaN(gold)) {
-                headerGold.textContent = (gold - 500).toLocaleString('cs-CZ'); // format with spaces
+                const cost = this.hasGoldCostValue ? this.goldCostValue : 500;
+                headerGold.textContent = (gold - cost).toLocaleString('cs-CZ'); // format with spaces
             }
         }
     }
 
     showError(message) {
-        if (!this.hasErrorAlertTarget) return;
-        this.errorMessageTarget.textContent = message;
-        this.errorAlertTarget.classList.remove('hidden');
+        if (!this.hasErrorAlertTarget || !this.hasErrorMessageTarget) return;
+        showAlert(this.errorAlertTarget, this.errorMessageTarget, 'error', message);
     }
 
     hideError() {
         if (this.hasErrorAlertTarget) {
-            this.errorAlertTarget.classList.add('hidden');
+            hideAlert(this.errorAlertTarget);
         }
     }
 }

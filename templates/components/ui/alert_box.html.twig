@@ -3,20 +3,20 @@
 {% set container_target = container_target|default('alert') %}
 {% set message_target = message_target|default('alertMessage') %}
 {% set close_action = close_action|default(null) %}
-{% set classes = classes|default('mb-6 text-sm') %}
-{% set type = type|default(null) %}
+{% set classes = classes|default('mb-6') %}
+{% set type = type|default('error') %}
 
-{% set type_classes = '' %}
-{% if type == 'error' %}
-    {% set type_classes = 'bg-red-950/40 text-red-300 border-red-900/50' %}
-{% elseif type == 'success' %}
-    {% set type_classes = 'bg-green-950/40 text-green-300 border-green-900/50' %}
-{% endif %}
-
-<div {% if target %}data-{{ target }}-target="{{ container_target }}"{% endif %} 
-     class="hidden rounded-lg px-4 py-3 flex items-center justify-between border {{ type_classes }} {{ classes }}">
+<div {% if target %}data-{{ target }}-target="{{ container_target }}"{% endif %}
+     class="hidden alert alert-{{ type }} {{ classes }}"
+     role="alert">
     <span {% if target %}data-{{ target }}-target="{{ message_target }}"{% endif %}></span>
     {% if close_action %}
-        <button type="button" data-action="click->{{ close_action }}" class="text-xs hover:text-white opacity-50 hover:opacity-100 ml-4 font-bold">✕</button>
+        <button type="button"
+                data-action="click->{{ close_action }}"
+                class="btn btn-ghost btn--sm shrink-0"
+                aria-label="{{ 'modal.close'|trans }}">
+            <span aria-hidden="true">✕</span>
+            <span class="sr-only">{{ 'modal.close'|trans }}</span>
+        </button>
     {% endif %}
 </div>

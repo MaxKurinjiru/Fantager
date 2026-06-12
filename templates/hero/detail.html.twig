@@ -3,17 +3,21 @@
 {% block title %}Hero Details — {{ hero.name }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="hero-rename" data-hero-rename-hero-id-value="{{ hero.id }}">
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="hero-rename"
+     data-hero-rename-hero-id-value="{{ hero.id }}"
+     data-hero-rename-error-empty-value="{{ 'js_flash.heroes.name_empty'|trans }}"
+     data-hero-rename-error-rename-value="{{ 'js_flash.heroes.failed_rename'|trans }}"
+>
     
     {# --- Breadcrumbs & Back Link --- #}
     <div class="flex items-center justify-between border-b border-gray-800 pb-4">
         <div class="flex items-center gap-2 text-sm text-gray-400">
-            <a href="{{ path('app_heroes') }}" class="hover:text-emerald-400 transition-colors">Roster</a>
+            <a href="{{ path('app_heroes') }}" class="hover:text-emerald-400 transition-colors">{{ 'heroes.back_roster'|trans }}</a>
             <span>/</span>
             <span class="text-gray-200 font-semibold">{{ hero.name }}</span>
         </div>
         <a href="{{ path('app_heroes') }}" class="btn btn-outline btn--sm gap-1.5">
-            <span>⬅️</span> Back to Roster
+            <span>⬅️</span> {{ 'heroes.back_roster'|trans }}
         </a>
     </div>
 

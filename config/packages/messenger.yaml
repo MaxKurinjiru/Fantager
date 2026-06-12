@@ -21,4 +21,5 @@ framework:
 
         routing:
             'App\Message\ProcessKingdomTicksMessage': async_medium
+            'Symfony\Component\Mailer\Messenger\SendEmailMessage': async_low
 

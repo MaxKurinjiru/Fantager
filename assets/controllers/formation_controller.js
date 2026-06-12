@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { showAlert, hideAlert } from '../utils/alert.js';
 
 export default class extends Controller {
     static targets = [
@@ -11,6 +12,20 @@ export default class extends Controller {
         'alert',
         'alertMessage'
     ];
+
+    static values = {
+        errorEmpty: String,
+        errorAssign: String,
+        textSaving: String,
+        errorSave: String,
+        successSave: String,
+        confirmDelete: String,
+        textDeleting: String,
+        errorDelete: String,
+        successDelete: String,
+        levelLabel: String,
+        races: Object
+    };
 
     connect() {
         // Parse current state of slots based on DOM elements
@@ -105,7 +120,8 @@ export default class extends Controller {
                     const heroCard = this.poolHeroTargets.find(hc => parseInt(hc.dataset.heroId, 10) === heroId);
                     if (heroCard) {
                         nameElem.textContent = heroCard.dataset.name;
-                        detailsElem.textContent = `Lvl ${heroCard.dataset.level} ${heroCard.dataset.race}`;
+                        const raceTranslated = (this.hasRacesValue && this.racesValue[heroCard.dataset.race]) || heroCard.dataset.race;
+                        detailsElem.textContent = `${this.levelLabelValue} ${heroCard.dataset.level} ${raceTranslated}`;
                     }
                     if (removeBtn) {
                         removeBtn.dataset.position = position;
@@ -161,7 +177,7 @@ export default class extends Controller {
 
         const name = this.nameInputTarget.value.trim();
         if (!name) {
-            this.showAlert('error', 'Formation name cannot be empty.');
+            this.showAlert('error', this.errorEmptyValue);
             return;
         }
 
@@ -182,12 +198,13 @@ export default class extends Controller {
         // Validate: standard formations require at least one hero
         const assignedCount = slots.filter(s => s.hero_id !== null).length;
         if (assignedCount === 0) {
-            this.showAlert('error', 'You must assign at least one hero to the formation.');
+            this.showAlert('error', this.errorAssignValue);
             return;
         }
 
         btn.disabled = true;
-        btn.textContent = 'Saving...';
+        const originalText = btn.textContent;
+        btn.textContent = this.textSavingValue;
 
         const formationId = this.hasFormationSelectTarget && this.formationSelectTarget.value 
             ? parseInt(this.formationSelectTarget.value, 10) 
@@ -217,10 +234,10 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to save formation.');
+                throw new Error(result.error || this.errorSaveValue);
             }
 
-            this.showAlert('success', 'Formation lineup and tactics saved successfully.');
+            this.showAlert('success', this.successSaveValue);
             
             setTimeout(() => {
                 // Redirect to saved formation ID
@@ -232,7 +249,7 @@ export default class extends Controller {
         } catch (error) {
             this.showAlert('error', error.message);
             btn.disabled = false;
-            btn.textContent = 'Save Lineup';
+            btn.textContent = originalText;
         }
     }
 
@@ -242,10 +259,11 @@ export default class extends Controller {
         const formationId = btn.dataset.formationId;
 
         if (!formationId) return;
-        if (!confirm('Are you sure you want to delete this formation?')) return;
+        if (!confirm(this.confirmDeleteValue)) return;
 
         btn.disabled = true;
-        btn.textContent = 'Deleting...';
+        const originalText = btn.textContent;
+        btn.textContent = this.textDeletingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -261,10 +279,10 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Failed to delete formation.');
+                throw new Error(result.error || this.errorDeleteValue);
             }
 
-            this.showAlert('success', 'Formation deleted successfully.');
+            this.showAlert('success', this.successDeleteValue);
             setTimeout(() => {
                 window.location.search = '';
             }, 1000);
@@ -272,27 +290,19 @@ export default class extends Controller {
         } catch (error) {
             this.showAlert('error', error.message);
             btn.disabled = false;
-            btn.textContent = 'Delete';
+            btn.textContent = originalText;
         }
     }
 
     showAlert(type, message) {
         if (!this.hasAlertTarget || !this.hasAlertMessageTarget) return;
-        this.alertMessageTarget.textContent = message;
-        this.alertTarget.className = 'mb-6 rounded-lg px-4 py-3 text-sm flex items-center justify-between border ';
-
-        if (type === 'success') {
-            this.alertTarget.classList.add('bg-green-950/40', 'text-green-300', 'border-green-900/50');
-        } else {
-            this.alertTarget.classList.add('bg-red-950/40', 'text-red-300', 'border-red-900/50');
-        }
-        this.alertTarget.classList.remove('hidden');
+        showAlert(this.alertTarget, this.alertMessageTarget, type, message);
     }
 
     closeAlert(e) {
         e.preventDefault();
         if (this.hasAlertTarget) {
-            this.alertTarget.classList.add('hidden');
+            hideAlert(this.alertTarget);
         }
     }
 }

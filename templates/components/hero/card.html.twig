@@ -25,7 +25,7 @@
                     <h3 class="font-bold text-white leading-tight hover:text-emerald-400">
                         <a href="{{ path('app_heroes_detail', {id: hero.id}) }}">{{ hero.name }}</a>
                     </h3>
-                    <p class="text-xs text-gray-550 mt-0.5">Level {{ hero.level }} &bull; {{ hero.race.value|capitalize }}</p>
+                    <p class="text-xs text-gray-550 mt-0.5">{{ 'heroes.level'|trans }} {{ hero.level }} &bull; {{ ('heroes.race_' ~ hero.race.value)|trans }}</p>
                 </div>
             </div>
         </div>
@@ -38,15 +38,15 @@
         {# Secondary Attributes List #}
         <div class="grid grid-cols-3 gap-3 bg-gray-950/60 border border-gray-800/60 p-3 rounded-lg mb-4 text-center">
             <div>
-                <span class="block text-[10px] text-gray-500 uppercase font-semibold">Age</span>
-                <span class="text-sm font-bold text-gray-200" title="{{ phase }} Phase">{{ hero.age }} {{ p_icon }}</span>
+                <span class="block text-[10px] text-gray-500 uppercase font-semibold">{{ 'heroes.age'|trans }}</span>
+                <span class="text-sm font-bold text-gray-200" title="{{ 'heroes.age_phase.phase'|trans({'%phase%': ('heroes.age_phase.' ~ phase|lower)|trans}) }}">{{ hero.age }} {{ p_icon }}</span>
             </div>
             <div>
-                <span class="block text-[10px] text-gray-500 uppercase font-semibold">Form</span>
+                <span class="block text-[10px] text-gray-500 uppercase font-semibold">{{ 'heroes.combat_form'|trans }}</span>
                 <span class="text-sm font-bold text-gray-200">{{ hero.form }}%</span>
             </div>
             <div>
-                <span class="block text-[10px] text-gray-500 uppercase font-semibold">Fatigue</span>
+                <span class="block text-[10px] text-gray-500 uppercase font-semibold">{{ 'heroes.fatigue'|trans }}</span>
                 <span class="text-sm font-bold text-gray-200">{{ hero.fatigue }}%</span>
             </div>
         </div>
@@ -58,12 +58,12 @@
     {# Actions #}
     <div class="flex gap-2">
         <a href="{{ path('app_heroes_detail', {id: hero.id}) }}" class="btn btn-outline btn--sm flex-1">
-            Inspect
+            {{ 'heroes.inspect'|trans }}
         </a>
-        <a href="{{ path('app_training') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="Train Hero">
+        <a href="{{ path('app_training') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.train_hero'|trans }}">
             🏋️
         </a>
-        <a href="{{ path('app_inventory') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="Equip Hero">
+        <a href="{{ path('app_inventory') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.equip_hero'|trans }}">
             🎒
         </a>
     </div>
