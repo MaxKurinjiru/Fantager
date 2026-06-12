@@ -233,6 +233,56 @@ class SeasonTransitionServiceTest extends TestCase
         $this->assertSame(LeagueSeasonStatus::Active, $upcomingSeason->getStatus());
     }
 
+    public function testPrepareUpcomingSeasonWithCustomGroupNames(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setSeasonLength(77);
+        $kingdom->setLeagueTiersConfig([
+            'teams_per_group' => 10,
+            'tiers' => [
+                [
+                    'name' => 'T1',
+                    'groups' => ['Alpha Group', 'Beta Group'],
+                    'promotion_slots' => 0,
+                    'relegation_slots' => 2,
+                    'rewards' => ['gold' => 5000, 'crystals' => 10]
+                ],
+                [
+                    'name' => 'T2',
+                    'groups' => 2,
+                    'promotion_slots' => 2,
+                    'relegation_slots' => 0,
+                    'rewards' => ['gold' => 2500, 'crystals' => 5]
+                ]
+            ]
+        ]);
+
+        $seasonRepoMock = $this->createMock(LeagueSeasonRepository::class);
+        $seasonRepoMock->method('findOneBy')
+            ->willReturn(null); // No previous season
+
+        $this->entityManagerMock->method('getRepository')
+            ->with(LeagueSeason::class)
+            ->willReturn($seasonRepoMock);
+
+        $newSeason = $this->transitionService->prepareUpcomingSeason($kingdom);
+
+        $tiers = $newSeason->getTiers()->toArray();
+        $this->assertCount(2, $tiers);
+
+        // Tier 1 groups (custom names from array)
+        $t1Groups = $tiers[0]->getGroups()->toArray();
+        $this->assertCount(2, $t1Groups);
+        $this->assertSame('Alpha Group', $t1Groups[0]->getGroupName());
+        $this->assertSame('Beta Group', $t1Groups[1]->getGroupName());
+
+        // Tier 2 groups (default fallback naming from count)
+        $t2Groups = $tiers[1]->getGroups()->toArray();
+        $this->assertCount(2, $t2Groups);
+        $this->assertSame('T2-G1', $t2Groups[0]->getGroupName());
+        $this->assertSame('T2-G2', $t2Groups[1]->getGroupName());
+    }
+
     private function setEntityId(object $entity, int $id): void
     {
         $reflector = new \ReflectionClass($entity);

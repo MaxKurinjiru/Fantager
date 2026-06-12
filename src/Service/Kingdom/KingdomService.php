@@ -48,7 +48,9 @@ class KingdomService
 
         $capacity = 0;
         foreach ($tiers as $tier) {
-            $capacity += (int) ($tier['groups'] ?? 0) * $teamsPerGroup;
+            $groupsDef = $tier['groups'] ?? 0;
+            $groupCount = is_array($groupsDef) ? count($groupsDef) : (int) $groupsDef;
+            $capacity += $groupCount * $teamsPerGroup;
         }
 
         return $capacity;

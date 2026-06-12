@@ -97,12 +97,17 @@ class SeasonTransitionService
             $season->addTier($tier);
             $this->em->persist($tier);
 
-            $groupCount = (int) ($tierDef['groups'] ?? 0);
+            $groupsDef = $tierDef['groups'] ?? 0;
+            $groupCount = is_array($groupsDef) ? count($groupsDef) : (int) $groupsDef;
             $tierName = (string) ($tierDef['name'] ?? 'Tier');
             for ($g = 1; $g <= $groupCount; ++$g) {
                 $group = new LeagueGroup();
                 $group->setTier($tier);
-                $group->setGroupName(sprintf('%s-G%d', $tierName, $g));
+                if (is_array($groupsDef) && isset($groupsDef[$g - 1])) {
+                    $group->setGroupName((string) $groupsDef[$g - 1]);
+                } else {
+                    $group->setGroupName(sprintf('%s-G%d', $tierName, $g));
+                }
                 $tier->addGroup($group);
                 $this->em->persist($group);
             }
