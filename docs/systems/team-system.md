@@ -32,7 +32,7 @@ Every team in the system, including AI-controlled opponents, is represented by t
 
 - **Auto-created on Kingdom initialization**: All slots up to kingdom capacity are filled with NPC teams before any real player joins.
 - **Fully staffed**: Each NPC team is created with **10 heroes** and a default formation.
-- **Assigned to a real player on registration**: When a player verifies their email, a random unclaimed NPC team (`user_id IS NULL`) in their Kingdom is assigned to them (`user_id` set). The team keeps `is_npc = true` until the player customizes it (TBD).
+- **Assigned to a real player on registration**: When a player registers, a random unclaimed NPC team (`user_id IS NULL`) in their Kingdom is assigned to them immediately (`user_id` set, `is_npc` set to false) to ensure player capacity calculations are up-to-date. If the registration is not verified within 24 hours, a daily maintenance tick (running at 03:30 AM) removes the team assignment and deletes the user.
 - **AI-controlled gameplay**: NPC matches are resolved by the combat engine automatically; NPC teams do not submit lineup changes unless an AI controller is implemented.
 
 ## Sections to Fill

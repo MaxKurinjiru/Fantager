@@ -49,7 +49,14 @@ class CalendarService
 
         // 1. Aggregating Recurring Ticks
         /** @var \App\Entity\League\LeagueSeason|null $season */
-        $season = $this->seasonRepository->findOneBy(['kingdom' => $kingdom], ['seasonNumber' => 'DESC']);
+        $season = $this->seasonRepository->findOneBy([
+            'kingdom' => $kingdom,
+            'status' => \App\Enum\LeagueSeasonStatus::Active,
+        ]);
+        if (null === $season) {
+            /** @var \App\Entity\League\LeagueSeason|null $season */
+            $season = $this->seasonRepository->findOneBy(['kingdom' => $kingdom], ['seasonNumber' => 'DESC']);
+        }
         $occurrences = $this->scheduleCalculator->generateOccurrences(
             $start,
             $end,
@@ -80,6 +87,11 @@ class CalendarService
                 case TickType::DailyReset:
                     $title = 'Daily Reset & Maintenance';
                     $description = 'System cleanup, quest expiration, hero aging reset';
+                    $visibility = 'system_only';
+                    break;
+                case TickType::InactiveRegistrationCleanup:
+                    $title = 'Inactive Registration Cleanup';
+                    $description = 'Remove team assignments and delete unverified accounts older than 1 day';
                     $visibility = 'system_only';
                     break;
                 case TickType::FatigueRecovery:

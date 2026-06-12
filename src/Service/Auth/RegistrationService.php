@@ -10,6 +10,7 @@ use App\Enum\TokenType;
 use App\Repository\Auth\UserRepository;
 use App\Repository\Auth\VerificationTokenRepository;
 use App\Repository\Kingdom\KingdomRepository;
+use App\Repository\Team\TeamRepository;
 use App\Service\Kingdom\KingdomService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -26,6 +27,7 @@ class RegistrationService
         private readonly KingdomService $kingdomService,
         private readonly UserRepository $userRepository,
         private readonly VerificationTokenRepository $tokenRepository,
+        private readonly TeamRepository $teamRepository,
         private readonly SlugGenerator $slugGenerator,
         private readonly string $mailerFrom,
     ) {
@@ -51,6 +53,11 @@ class RegistrationService
             throw new \InvalidArgumentException('Kingdom not found');
         }
 
+        $team = $this->teamRepository->findAvailableNpcTeam($kingdomId);
+        if (!$team) {
+            throw new \RuntimeException('No NPC team available');
+        }
+
         $user = new User();
         $user->setEmail(strtolower(trim($email)));
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
@@ -62,6 +69,9 @@ class RegistrationService
         $user->setRoles([]);
 
         $this->em->persist($user);
+
+        $team->setUser($user);
+        $team->setIsNpc(false);
 
         $token = new VerificationToken();
         $token->setUser($user);
@@ -141,6 +151,11 @@ class RegistrationService
             $errors['kingdom'] = 'register.kingdom.no_active_season';
         } elseif (!$this->kingdomService->hasCapacity($kingdom)) {
             $errors['kingdom'] = 'register.kingdom.full';
+        } else {
+            $team = $this->teamRepository->findAvailableNpcTeam($kingdomId);
+            if (!$team) {
+                $errors['kingdom'] = 'register.kingdom.full';
+            }
         }
 
         return $errors;

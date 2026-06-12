@@ -30,6 +30,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $hqServiceMock;
     private $entityManagerMock;
     private $loggerMock;
+    private $seasonTransitionServiceMock;
     private ProcessKingdomTicksHandler $handler;
 
     protected function setUp(): void
@@ -42,6 +43,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
         $this->hqServiceMock = $this->createMock(\App\Service\Headquarters\HeadquartersService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
+        $this->seasonTransitionServiceMock = $this->createMock(\App\Service\League\SeasonTransitionService::class);
 
         $this->handler = new ProcessKingdomTicksHandler(
             $this->kingdomRepositoryMock,
@@ -51,7 +53,8 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->arenaRevenueServiceMock,
             $this->hqServiceMock,
             $this->entityManagerMock,
-            $this->loggerMock
+            $this->loggerMock,
+            $this->seasonTransitionServiceMock
         );
     }
 

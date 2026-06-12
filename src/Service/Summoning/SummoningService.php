@@ -28,9 +28,26 @@ class SummoningService
     ) {
     }
 
-    public function getGoldCost(): int
+    public function getGoldCost(Team $team): int
     {
-        return self::BASE_GOLD_COST;
+        $chamberLevel = 1;
+        $hq = $this->em->getRepository(\App\Entity\Headquarters\Headquarters::class)->findOneBy(['team' => $team]);
+        if ($hq instanceof \App\Entity\Headquarters\Headquarters) {
+            foreach ($hq->getFacilities() as $facility) {
+                if (\App\Enum\FacilityType::SummoningChamber === $facility->getType()) {
+                    $chamberLevel = $facility->getLevel();
+                    break;
+                }
+            }
+        }
+
+        // Base gold cost scaled by facility level (+20% per level above 1)
+        $baseCost = self::BASE_GOLD_COST * (1.2 ** ($chamberLevel - 1));
+
+        // Inflation per summon in this cycle (+50% per previous summon in this cycle)
+        $inflationMultiplier = 1.0 + 0.5 * $team->getSummonsThisCycle();
+
+        return (int) round($baseCost * $inflationMultiplier);
     }
 
     /**
@@ -40,8 +57,9 @@ class SummoningService
      */
     public function getStatus(Team $team): array
     {
-        $cost = $this->getGoldCost();
+        $cost = $this->getGoldCost($team);
         $used = $team->getSummonsThisCycle();
+        $maxSummons = (int) max(1, round(self::MAX_SUMMONS_PER_CYCLE * (float) $team->getKingdom()->getGameSpeed()));
 
         $rosterLimit = $this->hqService->getRosterLimit($team);
         $heroCount = $this->em->getRepository(Hero::class)->count(['team' => $team]);
@@ -51,17 +69,17 @@ class SummoningService
                 'reason' => 'Roster is full.',
                 'gold_cost' => $cost,
                 'summons_used' => $used,
-                'summons_max' => self::MAX_SUMMONS_PER_CYCLE,
+                'summons_max' => $maxSummons,
             ];
         }
 
-        if ($used >= self::MAX_SUMMONS_PER_CYCLE) {
+        if ($used >= $maxSummons) {
             return [
                 'available' => false,
                 'reason' => 'Summoning limit reached for this cycle.',
                 'gold_cost' => $cost,
                 'summons_used' => $used,
-                'summons_max' => self::MAX_SUMMONS_PER_CYCLE,
+                'summons_max' => $maxSummons,
             ];
         }
 
@@ -71,7 +89,7 @@ class SummoningService
                 'reason' => sprintf('Insufficient gold. Required: %d, available: %d.', $cost, $team->getGold()),
                 'gold_cost' => $cost,
                 'summons_used' => $used,
-                'summons_max' => self::MAX_SUMMONS_PER_CYCLE,
+                'summons_max' => $maxSummons,
             ];
         }
 
@@ -80,7 +98,7 @@ class SummoningService
             'reason' => null,
             'gold_cost' => $cost,
             'summons_used' => $used,
-            'summons_max' => self::MAX_SUMMONS_PER_CYCLE,
+            'summons_max' => $maxSummons,
         ];
     }
 
@@ -145,11 +163,12 @@ class SummoningService
             throw new \DomainException('Roster is full.');
         }
 
-        if ($team->getSummonsThisCycle() >= self::MAX_SUMMONS_PER_CYCLE) {
+        $maxSummons = (int) max(1, round(self::MAX_SUMMONS_PER_CYCLE * (float) $team->getKingdom()->getGameSpeed()));
+        if ($team->getSummonsThisCycle() >= $maxSummons) {
             throw new \DomainException('Summoning limit reached for this cycle.');
         }
 
-        $cost = $this->getGoldCost();
+        $cost = $this->getGoldCost($team);
         $this->economyService->deductGold(
             $team,
             $cost,

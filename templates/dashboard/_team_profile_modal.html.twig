@@ -1,11 +1,15 @@
 <div data-controller="modal" data-modal-event-name-value="modal:open-team-profile">
-    {# Modal backdrop/dialog #}
-    <div data-modal-target="dialog" 
-         class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4" 
+    {# Modal backdrop/dialog — uses .modal-overlay + .modal-box atoms per ui-guidelines §5.1 #}
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
          data-action="click->modal#closeBackdrop">
-         
-         <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg p-6 relative shadow-2xl flex flex-col max-h-[90vh]">
-              {# Close button #}
+
+         <div class="modal-box relative flex flex-col"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="team-profile-title">
+
+              {# Close button — §5.1.1 standard close button #}
               <button type="button"
                       data-action="click->modal#close"
                       class="modal-close"
@@ -14,11 +18,12 @@
                   <span class="sr-only">{{ 'modal.close'|trans }}</span>
               </button>
 
-              {# Title #              <h2 class="text-xl font-bold text-white mb-4 border-b border-gray-800 pb-3 flex items-center gap-2">
+              {# Title #}
+              <h2 id="team-profile-title" class="text-xl font-bold text-text-primary px-6 pt-6 mb-4 border-b border-border pb-3 flex items-center gap-2">
                   <span>🛡️</span> {{ 'team_profile.title'|trans }}
               </h2>
 
-              <div class="space-y-6 overflow-y-auto pr-1 flex-1" data-controller="profile-settings"
+              <div class="space-y-6 overflow-y-auto flex-1 px-6 pb-6" data-controller="profile-settings"
                    data-profile-settings-team-id-value="{{ team.id }}"
                    data-profile-settings-text-saving-value="{{ 'js_flash.team_profile.saving'|trans }}"
                    data-profile-settings-error-save-value="{{ 'js_flash.team_profile.failed'|trans }}"
@@ -34,26 +39,30 @@
 
                   <form data-action="submit->profile-settings#save" class="space-y-5">
                       {# Team Name #}
-                      <div class="space-y-2">
-                          <label for="settings_name" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ 'team_profile.name'|trans }}</label>
+                      <div class="mb-4">
+                          <label for="settings_name" class="form-label">{{ 'team_profile.name'|trans }}</label>
                           <input type="text" id="settings_name" name="name" required maxlength="100"
                                  value="{{ team.name }}"
-                                 class="w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-gray-200 focus:outline-none focus:border-emerald-500">
+                                 class="form-input">
                       </div>
 
                       {# Emblem emoji picker #}
-                      <div class="space-y-2">
-                          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ 'team_profile.emblem'|trans }}</label>
+                      <div class="mb-4">
+                          <label class="form-label">{{ 'team_profile.emblem'|trans }}</label>
                           <div class="flex items-center gap-4">
-                              <div data-profile-settings-target="emblemPreview" class="w-16 h-16 rounded-xl bg-gray-950 border border-gray-800 flex items-center justify-center text-3xl shadow-inner select-none shrink-0">
+                              <div data-profile-settings-target="emblemPreview"
+                                   class="w-16 h-16 rounded-xl border border-border flex items-center justify-center text-3xl shadow-inner select-none shrink-0 bg-surface-base">
                                   {{ team.emblem ?: '🛡️' }}
                               </div>
                               <div class="flex-1">
                                   <input type="hidden" id="settings_emblem" name="emblem" value="{{ team.emblem ?: '🛡️' }}">
-                                  <div class="grid grid-cols-8 gap-1 bg-gray-950 p-2 rounded-lg border border-gray-800">
+                                  <div class="grid grid-cols-8 gap-1 p-2 rounded-lg border border-border bg-surface-base">
                                       {% for icon in ['🛡️', '⚔️', '🦁', '🐉', '🦅', '🐺', '🦉', '🦊', '🦄', '💀', '🔥', '❄️', '⚡', '🌟', '🔱', '💎'] %}
-                                          <button type="button" data-action="click->profile-settings#selectEmblem" data-emblem="{{ icon }}"
-                                                  class="w-8 h-8 flex items-center justify-center text-lg rounded hover:bg-gray-800 cursor-pointer transition-colors {{ (team.emblem ?: '🛡️') == icon ? 'bg-emerald-500/10 border border-emerald-500/30' : '' }}">
+                                          <button type="button"
+                                                  data-action="click->profile-settings#selectEmblem"
+                                                  data-emblem="{{ icon }}"
+                                                  aria-label="{{ icon }}"
+                                                  class="emblem-btn w-8 h-8 flex items-center justify-center text-lg rounded cursor-pointer {{ (team.emblem ?: '🛡️') == icon ? 'emblem-btn--selected' : '' }}">
                                               {{ icon }}
                                           </button>
                                       {% endfor %}
@@ -63,40 +72,44 @@
                       </div>
 
                       {# Color Options #}
-                      <div class="space-y-2">
-                          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ 'team_profile.colors'|trans }}</label>
+                      <div class="mb-4">
+                          <label class="form-label">{{ 'team_profile.colors'|trans }}</label>
                           <div class="grid grid-cols-2 gap-4">
                               {# Primary Color #}
                               <div>
-                                  <label for="settings_color_primary" class="block text-[10px] text-gray-550 mb-1">{{ 'team_profile.color_primary'|trans }}</label>
+                                  <label for="settings_color_primary" class="form-label">{{ 'team_profile.color_primary'|trans }}</label>
                                   <div class="flex gap-2">
-                                      <input type="color" id="settings_color_primary" data-profile-settings-target="colorPrimaryPicker"
+                                      <input type="color" id="settings_color_primary"
+                                             data-profile-settings-target="colorPrimaryPicker"
                                              value="{{ team.colors.primary ?? '#10b981' }}"
-                                             class="w-10 h-9 rounded border border-gray-800 bg-transparent p-0.5 cursor-pointer">
-                                      <input type="text" data-profile-settings-target="colorPrimaryText"
+                                             class="w-10 h-9 rounded border border-border bg-transparent p-0.5 cursor-pointer">
+                                      <input type="text"
+                                             data-profile-settings-target="colorPrimaryText"
                                              value="{{ team.colors.primary ?? '#10b981' }}"
-                                             class="flex-1 rounded-lg bg-gray-950 border border-gray-800 px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-emerald-500 uppercase">
+                                             class="form-input uppercase">
                                   </div>
                               </div>
 
                               {# Secondary Color #}
                               <div>
-                                  <label for="settings_color_secondary" class="block text-[10px] text-gray-550 mb-1">{{ 'team_profile.color_secondary'|trans }}</label>
+                                  <label for="settings_color_secondary" class="form-label">{{ 'team_profile.color_secondary'|trans }}</label>
                                   <div class="flex gap-2">
-                                      <input type="color" id="settings_color_secondary" data-profile-settings-target="colorSecondaryPicker"
+                                      <input type="color" id="settings_color_secondary"
+                                             data-profile-settings-target="colorSecondaryPicker"
                                              value="{{ team.colors.secondary ?? '#0f1720' }}"
-                                             class="w-10 h-9 rounded border border-gray-800 bg-transparent p-0.5 cursor-pointer">
-                                      <input type="text" data-profile-settings-target="colorSecondaryText"
+                                             class="w-10 h-9 rounded border border-border bg-transparent p-0.5 cursor-pointer">
+                                      <input type="text"
+                                             data-profile-settings-target="colorSecondaryText"
                                              value="{{ team.colors.secondary ?? '#0f1720' }}"
-                                             class="flex-1 rounded-lg bg-gray-950 border border-gray-800 px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-emerald-500 uppercase">
+                                             class="form-input uppercase">
                                   </div>
                               </div>
                           </div>
                       </div>
 
                       {# Submit Button #}
-                      <div class="border-t border-gray-800 pt-4 flex justify-end">
-                          <button type="submit" data-profile-settings-target="submitBtn" class="bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold px-5 py-2.5 rounded-lg text-sm transition-colors cursor-pointer">
+                      <div class="border-t border-border pt-4 flex justify-end">
+                          <button type="submit" data-profile-settings-target="submitBtn" class="btn btn-primary">
                               {{ 'team_profile.submit'|trans }}
                           </button>
                       </div>

@@ -16,6 +16,7 @@
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded font-semibold text-sm;
     @apply px-5 py-2.5 cursor-pointer;
+    border: 1px solid transparent; // Reset default browser borders
     transition:
       background-color var(--transition-fast),
       border-color     var(--transition-fast),
@@ -87,6 +88,40 @@
 
     &:hover {
       background-color: #dc2626;
+    }
+  }
+
+  // Emblem picker button (team profile modal)
+  .emblem-btn {
+    transition: background-color var(--transition-fast);
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    &--selected {
+      border: 1px solid var(--color-brand-400);
+      background-color: rgba(16, 185, 129, 0.12);
+    }
+  }
+
+  // Generic tab button (used with tab_controller.js)
+  .tab-btn {
+    @apply px-5 py-3 text-sm font-semibold leading-none whitespace-nowrap;
+    border-bottom: 2px solid transparent;
+    color: var(--color-text-secondary);
+    background: transparent;
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+
+    &:hover {
+      color: var(--color-text-primary);
+    }
+
+    &--active {
+      border-bottom-color: var(--color-brand-500);
+      color: var(--color-brand-400);
+      font-weight: 700;
     }
   }
 }

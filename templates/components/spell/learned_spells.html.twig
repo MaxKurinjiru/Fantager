@@ -40,7 +40,7 @@
                             {% endfor %}
 
                             {% if first_empty > 0 %}
-                                <button data-action="click->spellbook#equip" data-hero-spell-id="{{ hs.id }}" data-slot="{{ first_empty }}"
+                                <button type="button" data-action="click->spellbook#equip" data-hero-spell-id="{{ hs.id }}" data-slot="{{ first_empty }}"
                                         class="btn btn-primary btn--sm px-3 py-1 text-[9px] font-bold uppercase tracking-wider">
                                     {{ 'spells.equip_slot_num'|trans({'%slot%': first_empty}) }}
                                 </button>

@@ -38,4 +38,9 @@
     border-color: var(--color-info-border);
     color: var(--color-info-text);
   }
+
+  // Destructive action confirmation panel (account settings)
+  .cancel-confirm-panel {
+    background-color: var(--color-error-bg);
+  }
 }

@@ -6,12 +6,12 @@ Purpose: Document authentication, registration, session management, and authoriz
 
 ## Overview
 
-The auth system handles player identity and access control. The player selects a Kingdom (game world) as part of the registration form. After email verification, the player is automatically assigned a random available NPC team in their chosen Kingdom and redirected to Team Dashboard.
+The auth system handles player identity and access control. The player selects a Kingdom (game world) as part of the registration form. During the registration process, the player is immediately assigned a random available NPC team in their chosen Kingdom to ensure that player capacity numbers are always up to date. After email verification, the player is redirected to the Team Dashboard.
 
 ## Planned Approach
 
 - **Session-based authentication** (Symfony Security component)
-- **Registration**: Email, password + Kingdom selection → email verification required → random NPC team assigned on activation
+- **Registration**: Email, password + Kingdom selection → random NPC team assigned immediately → email verification required (unverified registrations older than 24 hours are deleted daily at 03:30 AM along with their team assignment)
 - **Login**: Standard session login with "remember me" option
 - **Session scoping**: `kingdom_id` from the authenticated user scopes all game data; no multi-kingdom switching (a player belongs to exactly one Kingdom).
 - **Authorization**: Role-based (ROLE_PLAYER, ROLE_ADMIN); resource ownership checks via voters
@@ -104,7 +104,7 @@ Rate limiting protects auth endpoints against brute-force attacks, credential st
 4. Server sends verification email (via `symfony/mailer`) with a signed, time-limited token
 5. User clicks link in email → `GET /verify-email?token=...`
 6. Server validates token, sets `is_verified = true`
-7. Server **immediately and automatically** assigns a random available NPC team (`is_npc = true`, `user_id IS NULL`) from the player's Kingdom — sets `user_id` on the team, no extra action required from the player. The inherited team includes **10 heroes** (see [team-system.md](../systems/team-system.md#starting-roster)).
+7. During the initial registration step (step 3), the server **immediately and automatically** assigns a random available NPC team from the player's Kingdom — sets `user_id` on the team and sets `is_npc = false`. The inherited team includes **10 heroes** (see [team-system.md](../systems/team-system.md#starting-roster)).
 8. User is logged in and redirected to Team Dashboard
 
 **Unverified users cannot log in.** Login attempt by unverified user shows: "Please verify your email first."
@@ -171,7 +171,7 @@ Rate limiting protects auth endpoints against brute-force attacks, credential st
 - Symfony Security Bundle
 - Symfony Mailer (email verification + password reset)
 - Doctrine (User entity)
-- Kingdom System (kingdom chosen during registration; NPC team assigned on email verification)
+- Kingdom System (kingdom chosen during registration; NPC team assigned immediately on registration)
 
 ## Notes
 

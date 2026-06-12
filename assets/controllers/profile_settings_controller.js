@@ -64,11 +64,11 @@ export default class extends Controller {
             this.emblemPreviewTarget.textContent = icon;
         }
 
-        // Highlight selected
+        // Highlight selected — uses .emblem-btn--selected from _buttons.scss
         btn.parentElement.querySelectorAll('button').forEach(b => {
-            b.classList.remove('bg-emerald-500/10', 'border', 'border-emerald-500/30');
+            b.classList.remove('emblem-btn--selected');
         });
-        btn.classList.add('bg-emerald-500/10', 'border', 'border-emerald-500/30');
+        btn.classList.add('emblem-btn--selected');
     }
 
     async save(e) {

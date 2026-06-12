@@ -3,7 +3,7 @@
 JSON placeholders loaded by `KingdomInitConfig` when running:
 
 ```bash
-php bin/console app:kingdom:initialize "Kingdom Name"
+php bin/console app:kingdom:initialize "Kingdom Name" [--test]
 ```
 
 | File | Purpose |

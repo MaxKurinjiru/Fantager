@@ -61,7 +61,7 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 - [20 Crafting](screens/20-crafting.md)
 
 **Meta**
-- [UI & CSS Design Guidelines](ui-guidelines.md) — Modal structure, close buttons, and style guides
+- [UI & CSS Design Guidelines](ui-guidelines.md) — Design tokens, atomic component model (atoms/molecules), BEM naming, Tailwind usage rules, Stimulus controller conventions, and accessibility requirements
 - [README.md](../README.md) — Project overview and dev setup
 - [`_deferred/`](../_deferred/) — Parked files (CHANGELOG.md, CONTRIBUTING.md, legacy-migration.md); not actively maintained until the project reaches a stable version
 
@@ -84,7 +84,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Headquarters** | Fully Implemented | Implemented | Implemented | Facility upgrades, race optimization, passive bonuses. |
 | **Items** | Fully Implemented | Implemented | Implemented | Inventory, equip/unequip, dismantle. |
 | **Spells** | Fully Implemented | Implemented | Implemented | Spell library, learning, slot equipping. |
-| **Leagues** | Partially Implemented | Not Implemented | Not Implemented | `LeagueFixtureScheduler` available; matchmaking and result processing pending (Phase 5). |
+| **Leagues** | Partially Implemented | Not Implemented | Not Implemented | `LeagueFixtureScheduler` and `SeasonTransitionService` implemented; match result processing still pending. |
 | **Combat** | Not Implemented | Not Implemented | Not Implemented | Combat simulator, formulas, and results are missing (Phase 5). |
 | **Events / Calendar UI** | Not Implemented | Not Implemented | Not Implemented | Event triggers and participation pending (Phase 5). |
 | **Marketplace** | Not Implemented | Not Implemented | Not Implemented | Listings, bids, transactions pending (Phase 6). |

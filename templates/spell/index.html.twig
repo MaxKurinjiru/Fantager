@@ -67,14 +67,20 @@
 
         {# RIGHT COLUMN: Spellbook Tabs (2 Columns) #}
         <div class="lg:col-span-2 space-y-6">
-            {# Sub-tab controls #}
-            <div class="flex border-b border-gray-850 gap-2 pb-px">
-                <button onclick="switchSubTab('learned-spells-tab', this)"
-                        class="subtab-btn px-4 py-2 border-b-2 border-emerald-500 text-emerald-450 font-bold text-xs uppercase tracking-wider transition-all">
+            {# Sub-tab controls — controlled by tab_controller.js §9.2 #}
+            <div class="flex border-b border-gray-850 gap-2 pb-px" data-controller="tab">
+                <button type="button"
+                        data-tab-target="btn"
+                        data-action="click->tab#switch"
+                        data-tab="learned-spells-tab"
+                        class="tab-btn tab-btn--active">
                     {{ 'spells.tab_learned'|trans }}
                 </button>
-                <button onclick="switchSubTab('academy-store-tab', this)"
-                        class="subtab-btn px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-gray-250 font-semibold text-xs uppercase tracking-wider transition-all">
+                <button type="button"
+                        data-tab-target="btn"
+                        data-action="click->tab#switch"
+                        data-tab="academy-store-tab"
+                        class="tab-btn">
                     {{ 'spells.tab_store'|trans }}
                 </button>
             </div>
@@ -104,19 +110,4 @@
 
 </div>
 
-{# Script for Client-side Sub-tab Switcher #}
-<script>
-    function switchSubTab(tabId, btn) {
-        document.querySelectorAll('.subtab-content').forEach(c => c.classList.add('hidden'));
-        document.getElementById(tabId).classList.remove('hidden');
-
-        document.querySelectorAll('.subtab-btn').forEach(b => {
-            b.classList.remove('border-emerald-500', 'text-emerald-455', 'font-bold');
-            b.classList.add('border-transparent', 'text-gray-400', 'font-semibold');
-        });
-
-        btn.classList.remove('border-transparent', 'text-gray-400', 'font-semibold');
-        btn.classList.add('border-emerald-500', 'text-emerald-455', 'font-bold');
-    }
-</script>
 {% endblock %}

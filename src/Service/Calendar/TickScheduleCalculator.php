@@ -46,8 +46,16 @@ class TickScheduleCalculator
                     'time' => $tDaily->setTimezone(new \DateTimeZone('UTC')),
                 ];
             }
+            // 2. Inactive Registration Cleanup (03:30)
+            $tCleanup = new \DateTimeImmutable($dateStr.' 03:30:00', $tz);
+            if ($tCleanup > $fromLocal && $tCleanup <= $toLocal) {
+                $occurrences[] = [
+                    'type' => TickType::InactiveRegistrationCleanup,
+                    'time' => $tCleanup->setTimezone(new \DateTimeZone('UTC')),
+                ];
+            }
 
-            // 2. Fatigue Recovery (04:00)
+            // 3. Fatigue Recovery (04:00)
             $tFatigue = new \DateTimeImmutable($dateStr.' 04:00:00', $tz);
             if ($tFatigue > $fromLocal && $tFatigue <= $toLocal) {
                 $occurrences[] = [

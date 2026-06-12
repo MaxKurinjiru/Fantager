@@ -183,7 +183,8 @@ class HeroGenerator
         $hero->setTeam($team);
         $hero->setName($this->randomName($race));
         $hero->setRace($race);
-        $hero->setAge(random_int($ageConfig['min'], max($ageConfig['min'], $ageConfig['max_junior'])));
+        $ageYears = random_int($ageConfig['min'], max($ageConfig['min'], $ageConfig['max_junior']));
+        $hero->setAgeRaw($ageYears * 10 + random_int(0, 9));
 
         $hero->setStrRaw(min(200, $stats['str'] * 10 + random_int(0, 9)));
         $hero->setDexRaw(min(200, $stats['dex'] * 10 + random_int(0, 9)));

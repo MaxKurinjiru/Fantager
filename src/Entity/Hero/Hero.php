@@ -160,10 +160,22 @@ class Hero
 
     public function getAge(): int
     {
+        return (int) floor($this->age / 10);
+    }
+
+    public function getAgeRaw(): int
+    {
         return $this->age;
     }
 
     public function setAge(int $age): static
+    {
+        $this->age = $age;
+
+        return $this;
+    }
+
+    public function setAgeRaw(int $age): static
     {
         $this->age = $age;
 

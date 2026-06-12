@@ -40,7 +40,7 @@
                             </span>
                         </div>
                         
-                        <button data-action="click->training#cancelTraining" data-job-id="{{ job.id }}" data-refund="{{ refund_gold }}"
+                        <button type="button" data-action="click->training#cancelTraining" data-job-id="{{ job.id }}" data-refund="{{ refund_gold }}"
                                 class="btn btn-outline btn--sm px-3 py-1.5 border-red-955/40 hover:border-red-500/30 text-red-400 hover:text-red-350 text-[10px] uppercase tracking-wider font-bold">
                             {{ 'training.cancel_btn'|trans }}
                         </button>

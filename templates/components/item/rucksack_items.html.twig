@@ -65,7 +65,7 @@
                     <div class="flex gap-2">
                         {# Repair option if durability < 100 #}
                         {% if item.durability < 100 %}
-                            <button data-action="click->equipment#repair" data-item-id="{{ item.id }}"
+                            <button type="button" data-action="click->equipment#repair" data-item-id="{{ item.id }}"
                                     class="btn btn-outline btn--sm px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-yellow-500 border-yellow-950/30 hover:border-yellow-500/25">
                                 {{ 'inventory.repair'|trans }}
                             </button>
@@ -73,7 +73,7 @@
 
                         {# Dismantle option if NOT equipped #}
                         {% if not is_equipped %}
-                            <button data-action="click->equipment#dismantle" data-item-id="{{ item.id }}"
+                            <button type="button" data-action="click->equipment#dismantle" data-item-id="{{ item.id }}"
                                     class="btn btn-outline btn--sm px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-red-400 border-red-955/30 hover:border-red-500/25">
                                 {{ 'inventory.dismantle'|trans }}
                             </button>
@@ -81,7 +81,7 @@
 
                         {# Equip to selected hero if selected, matches slot type, and NOT already equipped there #}
                         {% if selected_hero and not is_equipped %}
-                            <button data-action="click->equipment#equip" data-item-id="{{ item.id }}" data-slot="{{ item.slotType.value }}"
+                            <button type="button" data-action="click->equipment#equip" data-item-id="{{ item.id }}" data-slot="{{ item.slotType.value }}"
                                     class="btn btn-primary btn--sm px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider">
                                 {{ 'inventory.equip_slot_btn'|trans }}
                             </button>

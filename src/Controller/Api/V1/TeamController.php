@@ -37,6 +37,11 @@ class TeamController extends AbstractController
     #[Route('/settings', name: 'api_team_settings', methods: ['POST'])]
     public function settings(int $teamId, Request $request): JsonResponse
     {
+        $csrfToken = $request->headers->get('X-CSRF-Token');
+        if (!$this->isCsrfTokenValid('api', $csrfToken)) {
+            return $this->json(['error' => 'Invalid CSRF token.'], 403);
+        }
+
         $team = $this->getPlayerTeam();
         if (null === $team) {
             return $this->json(['error' => 'No team assigned to your account.'], 422);

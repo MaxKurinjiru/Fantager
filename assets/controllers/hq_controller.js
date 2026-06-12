@@ -16,6 +16,14 @@ export default class extends Controller {
         bonuses: Object
     };
 
+    connect() {
+        // Setup complete; no global listeners needed
+    }
+
+    disconnect() {
+        // No global listeners to clean up; defined for §9.1 compliance
+    }
+
     async upgrade(e) {
         e.preventDefault();
         const btn = e.currentTarget;

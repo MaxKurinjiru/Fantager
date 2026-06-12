@@ -17,7 +17,7 @@ when@dev: &sentry_config
         - 'Symfony\Component\HttpKernel\Exception\BadRequestHttpException'
         - 'Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException'
       ignore_transactions:
-        - '/\/_(wdt|profiler)/'
+        - '/(_wdt|_profiler|WebProfiler)/'
       in_app_exclude:
         - "%kernel.cache_dir%"
         - "%kernel.project_dir%/vendor"

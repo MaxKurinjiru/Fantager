@@ -22,6 +22,10 @@ export default class extends Controller {
         this.clearFeedback();
     }
 
+    disconnect() {
+        // No global listeners to clean up; defined for §9.1 compliance
+    }
+
     clearFeedback() {
         if (this.hasEmailErrorTarget) this.emailErrorTarget.classList.add('hidden');
         if (this.hasEmailSuccessTarget) this.emailSuccessTarget.classList.add('hidden');

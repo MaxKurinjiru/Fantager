@@ -3,7 +3,7 @@
     <div>
         <h2 class="text-xl font-bold text-white mb-2">{{ 'inventory.equip_manager'|trans }}</h2>
         <select data-equipment-target="heroSelect" data-action="change->equipment#loadHeroEquipment"
-                class="w-full rounded-xl bg-gray-950 border border-gray-800 px-4 py-3 text-sm text-gray-350 focus:outline-none focus:border-emerald-500 font-medium">
+                class="form-input font-medium">
             <option value="">{{ 'inventory.select_hero_opt'|trans }}</option>
             {% for h in heroes %}
                 <option value="{{ h.id }}" {% if selected_hero_id == h.id %}selected{% endif %}>
@@ -35,7 +35,7 @@
                     {% if item %}
                         <div class="bg-gray-950 border border-emerald-500/25 p-3 rounded-xl flex flex-col items-center justify-between text-center min-h-[120px] transition-all relative">
                             {# Unequip Button #}
-                            <button data-action="click->equipment#unequip" data-item-id="{{ item.id }}"
+                            <button type="button" data-action="click->equipment#unequip" data-item-id="{{ item.id }}"
                                     class="absolute right-1.5 top-1.5 w-5 h-5 bg-red-955/40 hover:bg-red-900 border border-red-900/30 text-red-400 hover:text-white rounded-full flex items-center justify-center text-[8px] font-extrabold transition-colors"
                                     title="{{ 'inventory.unequip'|trans }}">
                                 ✕

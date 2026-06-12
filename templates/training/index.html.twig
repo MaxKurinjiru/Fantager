@@ -37,23 +37,35 @@
         close_action: 'training#hideAlert'
     } %}
 
-    {# --- Multi-Tab Navigation --- #}
-    <div class="flex border-b border-gray-850 gap-2 overflow-x-auto pb-px">
-        <button onclick="switchTab('attributes-tab', this)" 
-                class="tab-btn px-5 py-3 border-b-2 border-emerald-500 text-emerald-450 font-bold text-sm leading-none whitespace-nowrap transition-all">
+    {# --- Multi-Tab Navigation — controlled by tab_controller.js §9.2 --- #}
+    <div class="flex border-b border-gray-850 gap-2 overflow-x-auto pb-px" data-controller="tab">
+        <button type="button"
+                data-tab-target="btn"
+                data-action="click->tab#switch"
+                data-tab="attributes-tab"
+                class="tab-btn tab-btn--active">
             💪 {{ 'training.tab_attrs'|trans }}
         </button>
-        <button onclick="switchTab('magic-tab', this)" 
-                class="tab-btn px-5 py-3 border-b-2 border-transparent text-gray-400 hover:text-gray-200 font-semibold text-sm leading-none whitespace-nowrap transition-all">
+        <button type="button"
+                data-tab-target="btn"
+                data-action="click->tab#switch"
+                data-tab="magic-tab"
+                class="tab-btn">
             🔮 {{ 'training.tab_magic'|trans }}
         </button>
-        <button onclick="switchTab('recovery-tab', this)" 
-                class="tab-btn px-5 py-3 border-b-2 border-transparent text-gray-400 hover:text-gray-200 font-semibold text-sm leading-none whitespace-nowrap transition-all">
+        <button type="button"
+                data-tab-target="btn"
+                data-action="click->tab#switch"
+                data-tab="recovery-tab"
+                class="tab-btn">
             🛌 {{ 'training.tab_recovery'|trans }}
         </button>
-        <button onclick="switchTab('queue-tab', this)" 
-                class="tab-btn px-5 py-3 border-b-2 border-transparent text-gray-400 hover:text-gray-200 font-semibold text-sm leading-none whitespace-nowrap transition-all flex items-center gap-2">
-            📋 {{ 'training.tab_queue'|trans }} 
+        <button type="button"
+                data-tab-target="btn"
+                data-action="click->tab#switch"
+                data-tab="queue-tab"
+                class="tab-btn flex items-center gap-2">
+            📋 {{ 'training.tab_queue'|trans }}
             <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full font-bold border border-gray-700">{{ queue|length }}</span>
         </button>
     </div>
@@ -83,24 +95,4 @@
 
 </div>
 
-{# Script for Client-side Tab Switcher #}
-<script>
-    function switchTab(tabId, btn) {
-        // Hide all tab contents
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-        
-        // Show current tab content
-        document.getElementById(tabId).classList.remove('hidden');
-
-        // Reset all buttons styling
-        document.querySelectorAll('.tab-btn').forEach(b => {
-            b.classList.remove('border-emerald-500', 'text-emerald-455', 'font-bold');
-            b.classList.add('border-transparent', 'text-gray-400', 'font-semibold');
-        });
-
-        // Set active styling on clicked button
-        btn.classList.remove('border-transparent', 'text-gray-400', 'font-semibold');
-        btn.classList.add('border-emerald-500', 'text-emerald-455', 'font-bold');
-    }
-</script>
 {% endblock %}

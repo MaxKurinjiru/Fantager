@@ -10,6 +10,11 @@ export default class extends Controller {
         successSave: String
     };
 
+    openProfileModal(e) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('modal:open-team-profile'));
+    }
+
     async optimize(e) {
         e.preventDefault();
 

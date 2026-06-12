@@ -1,43 +1,45 @@
 {% set is_guest = is_guest|default(not (app.user and app.user.team)) %}
 
 {% if not is_guest %}
-    <div class="sticky top-0 z-50">
+    <div class="navbar-container">
         {# Top Resource Bar #}
-        <div class="bg-gray-950 border-b border-gray-800/80 px-4 sm:px-6 py-1.5 flex items-center justify-end text-xs text-gray-400 gap-6">
-            <div class="flex items-center gap-1.5" title="{{ 'dashboard.gold'|trans }}">
+        <div class="navbar-resources">
+            <div class="navbar-resources__item" title="{{ 'dashboard.gold'|trans }}">
                 <span class="text-yellow-500 font-bold select-none">🪙</span>
                 <span class="font-bold text-gray-250">{{ app.user.team.gold|number_format(0, '.', ' ') }}</span>
             </div>
-            <div class="w-px h-3 bg-gray-800"></div>
-            <div class="flex items-center gap-1.5" title="{{ 'dashboard.crystals'|trans }}">
+            <div class="navbar-resources__separator"></div>
+            <div class="navbar-resources__item" title="{{ 'dashboard.crystals'|trans }}">
                 <span class="text-cyan-400 font-bold select-none">💎</span>
                 <span class="font-bold text-gray-250">{{ app.user.team.crystals|number_format(0, '.', ' ') }}</span>
             </div>
         </div>
 
         {# Top navigation bar #}
-        <nav class="border-b border-gray-800 bg-gray-900 px-4 sm:px-6 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-2 sm:gap-6">
+        <nav class="navbar-main">
+            <div class="navbar-main__left">
                 {# Hamburger Menu Button #}
-                <button data-action="click->mobile-menu#toggle" 
-                        class="md:hidden flex items-center justify-center w-10 h-10 rounded-lg border border-gray-800 bg-gray-950/40 hover:bg-gray-800 hover:text-emerald-400 text-gray-400 active:scale-95 transition-all focus:outline-none focus:ring-1 focus:ring-emerald-500/50 cursor-pointer" 
-                        aria-label="Toggle menu">
+                <button type="button"
+                        data-action="click->mobile-menu#toggle" 
+                        class="navbar-hamburger" 
+                        aria-label="{{ 'nav.toggle_menu'|trans }}">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
 
-                <a href="{{ path('app_dashboard') }}" class="text-lg sm:text-xl font-bold tracking-wide text-emerald-400 hover:text-emerald-300">Fantager</a>
-                <span class="text-xs text-gray-500 bg-gray-800 px-2.5 py-1 rounded-full border border-gray-700 hidden sm:inline-block">
+                <a href="{{ path('app_dashboard') }}" class="navbar-logo">Fantager</a>
+                <span class="navbar-badge">
                     {{ app.user.team.kingdom.name }}
                 </span>
             </div>
 
-            <div class="flex items-center gap-3 sm:gap-4">
+            <div class="navbar-main__right">
                 {# Player Dropdown Menu #}
-                <div class="relative" data-controller="dropdown">
-                    <button data-action="click->dropdown#toggle" 
-                            class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-800 bg-gray-950/40 hover:bg-gray-800 hover:text-emerald-400 text-gray-300 transition-all focus:outline-none cursor-pointer">
+                <div class="navbar-dropdown" data-controller="dropdown">
+                    <button type="button"
+                            data-action="click->dropdown#toggle" 
+                            class="navbar-dropdown__trigger">
                         <span class="text-lg select-none">{{ app.user.team.emblem ?: '🛡️' }}</span>
                         <span class="font-semibold text-xs sm:text-sm hidden sm:inline">{{ app.user.displayName }}</span>
                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,23 +49,28 @@
 
                     {# Dropdown panel #}
                     <div data-dropdown-target="menu" 
-                         class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-gray-800 bg-gray-900 p-2 shadow-2xl z-50">
-                        <div class="px-3 py-2 border-b border-gray-800 mb-1">
-                            <p class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">{{ 'dashboard.manager'|trans }}</p>
-                            <p class="text-sm font-bold text-white truncate">{{ app.user.displayName }}</p>
-                            <p class="text-[10px] text-emerald-400 font-medium truncate">{{ app.user.team.name }}</p>
+                         class="dropdown-menu hidden">
+                        <div class="dropdown-menu__header">
+                            <p class="dropdown-menu__subtitle">{{ 'dashboard.manager'|trans }}</p>
+                            <p class="dropdown-menu__title">{{ app.user.displayName }}</p>
+                            <p class="dropdown-menu__meta">{{ app.user.team.name }}</p>
                         </div>
                         
-                        {# Links #}
-                        <a href="#" onclick="window.dispatchEvent(new CustomEvent('modal:open-account-settings')); return false;" 
-                           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs sm:text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
-                            <span>⚙️</span> {{ 'nav.settings'|trans }}
-                        </a>
+                        {# Settings opens account settings modal via Stimulus event #}
+                        <button type="button"
+                                onclick="window.dispatchEvent(new CustomEvent('modal:open-account-settings'))"
+                                class="dropdown-item">
+                            <svg class="w-4 h-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            {{ 'nav.settings'|trans }}
+                        </button>
 
-                        <div class="border-t border-gray-800 my-1 pt-1"></div>
+                        <div class="dropdown-menu__separator"></div>
 
                         <a href="{{ path('app_logout') }}" 
-                           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs sm:text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors font-semibold">
+                           class="dropdown-item dropdown-item--danger">
                             <span>🚪</span> {{ 'nav.logout'|trans }}
                         </a>
                     </div>
@@ -73,37 +80,52 @@
     </div>
 {% else %}
     {# Guest navigation bar #}
-    <nav class="border-b border-gray-800 px-6 py-3 flex items-center justify-between bg-gray-950">
-        <a href="{{ path('app_home') }}" class="text-xl font-bold tracking-wide text-emerald-400">Fantager</a>
-        <div class="flex items-center gap-4 text-sm">
-            {# Guest Language Switcher #}
-            <div class="flex items-center gap-1 border border-gray-800 bg-gray-900/60 rounded-lg p-0.5">
-                <a href="{{ path('app_change_locale', { locale: 'cs' }) }}" 
-                   class="flex items-center justify-center w-7 h-7 rounded {{ app.request.locale == 'cs' ? 'bg-emerald-500/10 text-emerald-400 font-semibold' : 'text-gray-500 hover:text-gray-300' }}" 
-                   title="Čeština">
-                    CS
-                </a>
-                <div class="w-px h-3 bg-gray-800"></div>
-                <a href="{{ path('app_change_locale', { locale: 'en' }) }}" 
-                   class="flex items-center justify-center w-7 h-7 rounded {{ app.request.locale == 'en' ? 'bg-emerald-500/10 text-emerald-400 font-semibold' : 'text-gray-500 hover:text-gray-300' }}" 
-                   title="English">
-                    EN
-                </a>
+    {% set locales = {
+        'cs': { 'label': 'Čeština', 'flag': 'cs' },
+        'en': { 'label': 'English', 'flag': 'en' }
+    } %}
+    {% set current_locale = app.request.locale %}
+    {% set current_info = locales[current_locale]|default({ 'label': current_locale|upper, 'flag': '🌐' }) %}
+
+    <nav class="navbar-guest">
+        <a href="{{ path('app_home') }}" class="navbar-logo">Fantager</a>
+        <div class="navbar-guest__right">
+            {# Guest Language Switcher Dropdown #}
+            <div class="navbar-dropdown" data-controller="dropdown">
+                <button type="button"
+                        data-action="click->dropdown#toggle" 
+                        class="navbar-dropdown__trigger navbar-dropdown__trigger--compact">
+                    <span class="flex items-center gap-1">
+                        <span>{{ current_locale }}</span>
+                    </span>
+                    <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                {# Dropdown panel #}
+                <div data-dropdown-target="menu" 
+                     class="dropdown-menu dropdown-menu--compact hidden">
+                    {% for code, info in locales %}
+                        <a href="{{ path('app_change_locale', { locale: code }) }}" 
+                           class="dropdown-item {{ current_locale == code ? 'dropdown-item--active' }}">
+                            <span class="text-sm select-none">{{ info.flag }}</span> {{ info.label }}
+                        </a>
+                    {% endfor %}
+                </div>
             </div>
 
             {% if app.user %}
-                <a href="{{ path('app_dashboard') }}"
-                   class="bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-semibold px-4 py-2 rounded">
+                <a href="{{ path('app_dashboard') }}" class="btn btn-primary">
                     {{ 'nav.enter_game'|trans }}
                 </a>
                 <a href="{{ path('app_logout') }}" class="link hover:text-emerald-400 self-center">{{ 'nav.logout'|trans }}</a>
             {% else %}
                 <a href="{{ path('app_login') }}"
                     data-action="click->auth-modal#openLogin"
-                    class="link hover:text-emerald-400">{{ 'nav.login'|trans }}</a>
-                <a href="{{ path('app_register') }}"
-                    data-action="click->auth-modal#openRegister"
-                    class="link hover:text-emerald-400">{{ 'nav.register'|trans }}</a>
+                    class="btn btn-primary">
+                    {{ 'nav.login'|trans }}
+                </a>
             {% endif %}
         </div>
     </nav>

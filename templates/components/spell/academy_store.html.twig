@@ -48,7 +48,7 @@
                     {% if is_learned %}
                         <span class="text-[10px] font-bold text-gray-550 bg-gray-955 px-2.5 py-1.5 rounded border border-gray-855">{{ 'spells.known'|trans }}</span>
                     {% else %}
-                        <button data-action="click->spellbook#learn" data-spell-id="{{ spell.id }}" data-gold="{{ spell.learningCostGold }}"
+                        <button type="button" data-action="click->spellbook#learn" data-spell-id="{{ spell.id }}" data-gold="{{ spell.learningCostGold }}"
                                 {% if not selected_hero or not meets_requirement or not has_funds %}disabled{% endif %}
                                 class="btn btn-outline btn--sm px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed">
                             {{ 'spells.learn_spell'|trans }}

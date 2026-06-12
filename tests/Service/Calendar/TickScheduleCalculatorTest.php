@@ -32,10 +32,14 @@ class TickScheduleCalculatorTest extends TestCase
         $types = array_map(static fn(array $o): string => $o['type']->value, $occurrences);
         
         $this->assertContains(TickType::FatigueRecovery->value, $types);
+        $this->assertContains(TickType::InactiveRegistrationCleanup->value, $types);
         
         foreach ($occurrences as $o) {
             if ($o['type'] === TickType::FatigueRecovery) {
                 $this->assertSame('2026-06-08T04:00:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
+            }
+            if ($o['type'] === TickType::InactiveRegistrationCleanup) {
+                $this->assertSame('2026-06-08T03:30:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
             }
         }
     }
@@ -59,6 +63,7 @@ class TickScheduleCalculatorTest extends TestCase
         $this->assertContains(TickType::DailyReset->value, $types);
         $this->assertContains(TickType::FatigueRecovery->value, $types);
         $this->assertContains(TickType::LeagueMatch->value, $types);
+        $this->assertContains(TickType::InactiveRegistrationCleanup->value, $types);
 
         $dailyResets = array_values(array_filter($occurrences, static fn(array $o): bool => $o['type'] === TickType::DailyReset));
         $this->assertCount(2, $dailyResets);
@@ -68,6 +73,9 @@ class TickScheduleCalculatorTest extends TestCase
         foreach ($occurrences as $o) {
             if ($o['type'] === TickType::LeagueMatch) {
                 $this->assertSame('2026-06-09T16:00:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
+            }
+            if ($o['type'] === TickType::InactiveRegistrationCleanup) {
+                $this->assertSame('2026-06-09T01:30:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
             }
         }
     }

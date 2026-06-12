@@ -56,10 +56,12 @@ class CalendarServiceTest extends TestCase
 
         // 1. Mock Schedule Calculator (1 tick)
         $this->seasonRepositoryMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('findOneBy')
-            ->with(['kingdom' => $kingdom], ['seasonNumber' => 'DESC'])
-            ->willReturn(null);
+            ->willReturnMap([
+                [['kingdom' => $kingdom, 'status' => \App\Enum\LeagueSeasonStatus::Active], null, null],
+                [['kingdom' => $kingdom], ['seasonNumber' => 'DESC'], null],
+            ]);
 
         $this->scheduleCalculatorMock
             ->method('generateOccurrences')

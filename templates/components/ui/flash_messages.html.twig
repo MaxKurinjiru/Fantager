@@ -2,12 +2,12 @@
 
 {% for type, messages in app.flashes(['success', 'error', 'warning', 'info']) %}
     {% for message in messages %}
-        <div class="alert alert-{{ type }}" role="alert">
+        <div class="alert alert-{{ type }}" role="alert" data-controller="flash">
             <span>{{ message }}</span>
             <button type="button"
-                    onclick="this.parentElement.remove()"
-                    class="btn btn-ghost btn--sm"
-                    aria-label="{{ 'modal.close'|trans }}">
+                    class="btn btn-ghost btn--sm shrink-0"
+                    aria-label="{{ 'modal.close'|trans }}"
+                    data-action="click->flash#dismiss">
                 <span aria-hidden="true">✕</span>
                 <span class="sr-only">{{ 'modal.close'|trans }}</span>
             </button>

@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Service\Auth;
 
 use App\Entity\Auth\User;
-use App\Entity\Team\Team;
 use App\Enum\TokenType;
 use App\Exception\InactiveSeasonException;
 use App\Repository\Auth\VerificationTokenRepository;
-use App\Repository\Team\TeamRepository;
 use App\Service\Kingdom\KingdomService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -18,7 +16,6 @@ class VerificationService
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly VerificationTokenRepository $tokenRepository,
-        private readonly TeamRepository $teamRepository,
         private readonly KingdomService $kingdomService,
     ) {
     }
@@ -44,24 +41,5 @@ class VerificationService
         $this->em->flush();
 
         return $user;
-    }
-
-    public function assignNpcTeam(User $user): ?Team
-    {
-        $kingdom = $user->getKingdom();
-        if (!$kingdom) {
-            return null;
-        }
-
-        $team = $this->teamRepository->findAvailableNpcTeam($kingdom->getId());
-        if (!$team) {
-            return null;
-        }
-
-        $team->setUser($user);
-        $team->setIsNpc(false);
-        $this->em->flush();
-
-        return $team;
     }
 }

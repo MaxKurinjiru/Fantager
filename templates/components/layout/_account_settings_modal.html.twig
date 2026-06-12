@@ -91,23 +91,25 @@
                           <p class="text-xs text-text-muted">{{ 'settings.delete.warning'|trans }}</p>
 
                           {# Trigger Button #}
-                          <button data-action="click->account-settings#showCancelConfirm"
+                          <button type="button"
+                                  data-action="click->account-settings#showCancelConfirm"
                                   class="btn btn-danger btn--sm w-full">
                               {{ 'settings.delete.btn'|trans }}
                           </button>
 
                           {# Confirmation Prompt Panel #}
                           <div data-account-settings-target="cancelConfirmPanel"
-                               class="hidden border border-error-border rounded-xl p-4 space-y-3"
-                               style="background-color: var(--color-error-bg);">
+                               class="hidden cancel-confirm-panel border border-error-border rounded-xl p-4 space-y-3">
                               <p class="text-xs text-error-text font-medium">{{ 'settings.delete.confirm_msg'|trans }}</p>
                               <div class="flex gap-2">
-                                  <button data-action="click->account-settings#submitCancelAccount"
+                                  <button type="button"
+                                          data-action="click->account-settings#submitCancelAccount"
                                           data-account-settings-target="cancelSubmitBtn"
                                           class="btn btn-danger btn--sm flex-1">
                                       {{ 'settings.delete.confirm_yes'|trans }}
                                   </button>
-                                  <button data-action="click->account-settings#hideCancelConfirm"
+                                  <button type="button"
+                                          data-action="click->account-settings#hideCancelConfirm"
                                           class="btn btn-outline btn--sm flex-1">
                                       {{ 'settings.delete.confirm_no'|trans }}
                                   </button>

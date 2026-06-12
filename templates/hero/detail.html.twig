@@ -1,6 +1,6 @@
 {% extends 'layouts/game.html.twig' %}
 
-{% block title %}Hero Details — {{ hero.name }} — Fantager{% endblock %}
+{% block title %}{{ 'heroes.details_title'|trans }} — {{ hero.name }} — Fantager{% endblock %}
 
 {% block body %}
 <div class="space-y-8 max-w-7xl mx-auto" data-controller="hero-rename"

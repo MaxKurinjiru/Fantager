@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Message;
 
+use App\Entity\Auth\User;
+use App\Entity\Auth\VerificationToken;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Kingdom\KingdomTickLog;
+use App\Entity\Notification\Notification;
 use App\Enum\TickType;
 use App\Repository\Hero\HeroRepository;
 use App\Repository\Kingdom\KingdomRepository;
@@ -28,6 +31,7 @@ class ProcessKingdomTicksHandler
         TickType::DailyReset->value => 6,
         TickType::WeeklyReset->value => 6,
         TickType::RaceOptimization->value => 6,
+        TickType::InactiveRegistrationCleanup->value => 6,
     ];
 
     public function __construct(
@@ -39,6 +43,7 @@ class ProcessKingdomTicksHandler
         private readonly HeadquartersService $hqService,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
+        private readonly \App\Service\League\SeasonTransitionService $seasonTransitionService,
     ) {
     }
 
@@ -131,6 +136,7 @@ class ProcessKingdomTicksHandler
             case TickType::WeeklyReset:
                 // Distribute arena ticket revenue for teams in this kingdom
                 $this->arenaRevenueService->distributeWeeklyRevenue($kingdom);
+                $this->resetWeeklySummons($kingdom);
                 break;
 
             case TickType::RaceOptimization:
@@ -141,11 +147,21 @@ class ProcessKingdomTicksHandler
                 $this->processFatigueRecovery($kingdom);
                 break;
 
+            case TickType::InactiveRegistrationCleanup:
+                $this->cleanupInactiveRegistrations($kingdom, $scheduledAt);
+                break;
+
             case TickType::DailyReset:
+                $this->processDailyReset($kingdom, $scheduledAt);
+                break;
+
             case TickType::LeagueMatch:
-            case TickType::SeasonTransition:
-                // Stub execution paths. In the future, these will invoke respective services.
+                // Stub execution path. In the future, this will invoke match simulation.
                 $this->logger->debug(sprintf('Executing stub tick %s for Kingdom %s', $type->value, $kingdom->getName()));
+                break;
+
+            case TickType::SeasonTransition:
+                $this->seasonTransitionService->executeTransition($kingdom);
                 break;
         }
     }
@@ -174,6 +190,93 @@ class ProcessKingdomTicksHandler
 
             $hero->setFatigue($newFatigue);
             $hero->setForm($newForm);
+        }
+    }
+
+    private function cleanupInactiveRegistrations(Kingdom $kingdom, \DateTimeImmutable $scheduledAt): void
+    {
+        $threshold = $scheduledAt->modify('-1 day');
+
+        /** @var list<User> $users */
+        $users = $this->em->getRepository(User::class)
+            ->createQueryBuilder('u')
+            ->where('u.kingdom = :kingdom')
+            ->andWhere('u.isVerified = false')
+            ->andWhere('u.createdAt < :threshold')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('threshold', $threshold)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($users as $user) {
+            $team = $user->getTeam();
+            if (null !== $team) {
+                $team->setUser(null);
+                $team->setIsNpc(true);
+            }
+
+            // Delete verification tokens
+            $this->em->createQueryBuilder()
+                ->delete(VerificationToken::class, 'vt')
+                ->where('vt.user = :user')
+                ->setParameter('user', $user)
+                ->getQuery()
+                ->execute();
+
+            // Delete notifications
+            $this->em->createQueryBuilder()
+                ->delete(Notification::class, 'n')
+                ->where('n.user = :user')
+                ->setParameter('user', $user)
+                ->getQuery()
+                ->execute();
+
+            // Delete the user
+            $this->em->remove($user);
+
+            $this->logger->info(sprintf(
+                'Inactive registration cleaned up: user ID %d (email: %s), team released',
+                $user->getId(),
+                $user->getEmail()
+            ));
+        }
+    }
+
+    private function processDailyReset(Kingdom $kingdom, \DateTimeImmutable $scheduledAt): void
+    {
+        $this->logger->debug(sprintf('Executing DailyReset for Kingdom %s', $kingdom->getName()));
+
+        // Check if we need to pre-create the next season (Option A: Monday of Week 11)
+        // If scheduledAt is Monday (1)
+        if (1 === (int) $scheduledAt->format('N')) {
+            /** @var \App\Entity\League\LeagueSeason|null $activeSeason */
+            $activeSeason = $this->em->getRepository(\App\Entity\League\LeagueSeason::class)->findOneBy([
+                'kingdom' => $kingdom,
+                'status' => \App\Enum\LeagueSeasonStatus::Active,
+            ]);
+
+            if (null !== $activeSeason) {
+                $startDate = $activeSeason->getStartDate();
+                $prepMonday = (1 === (int) $startDate->format('N'))
+                    ? $startDate->setTime(0, 0, 0)
+                    : $startDate->modify('next monday')->setTime(0, 0, 0);
+
+                // Monday of Week 11 is prepMonday + 10 weeks
+                $mondayWeek11 = $prepMonday->modify('+10 weeks');
+
+                // If scheduledAt is equal to or after the Monday of Week 11
+                if ($scheduledAt->setTime(0, 0, 0) >= $mondayWeek11) {
+                    $this->seasonTransitionService->prepareUpcomingSeason($kingdom);
+                }
+            }
+        }
+    }
+
+    private function resetWeeklySummons(Kingdom $kingdom): void
+    {
+        $teams = $this->em->getRepository(\App\Entity\Team\Team::class)->findBy(['kingdom' => $kingdom]);
+        foreach ($teams as $team) {
+            $team->setSummonsThisCycle(0);
         }
     }
 }

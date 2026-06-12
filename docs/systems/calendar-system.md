@@ -13,6 +13,7 @@ The game world operates on automated server ticks executed at scheduled times. T
 | Day | Time | Event / Tick | Action Details |
 |:---|:---|:---|:---|
 | **Daily** | 00:00 | **Daily Reset & Maintenance** | Process daily quests expiration, reset daily limits, update hero aging, process expired marketplace listings. |
+| **Daily** | 03:30 | **Inactive Registration Cleanup** | Remove team assignments and delete unverified player accounts older than 1 day. |
 | **Daily** | 04:00 | **Fatigue & Form Recovery** | Recovery tick for hero fatigue and form (passive restoration). |
 | **Tuesday** | 18:00 | **League Match (Mid-Week)** | Process scheduled mid-week league fixtures. Resolve combat, distribute match XP/Gold, apply post-match fatigue/form/morale/aging. |
 | **Friday** | 10:00 | **Weekly Training** | Process queued training jobs. Calculate stat gains (using non-linear formulas and raw x10 scaling), apply to heroes, and restore status. |
@@ -105,7 +106,7 @@ To guarantee that scheduled ticks are run exactly once (idempotency) and that no
 - **Fields**:
   - `id` (INT, Primary Key)
   - `kingdom_id` (INT, Foreign Key to `kingdom`, NOT NULL)
-  - `tickType` (VARCHAR(30) / Enum: e.g. `daily_reset`, `fatigue_recovery`, `league_match`, `weekly_training`, `season_transition`, `weekly_reset`)
+  - `tickType` (VARCHAR(30) / Enum: e.g. `daily_reset`, `inactive_registration_cleanup`, `fatigue_recovery`, `league_match`, `weekly_training`, `season_transition`, `weekly_reset`)
   - `scheduledAt` (DATETIME, UTC, NOT NULL) - The scheduled real-world timestamp when the tick should have executed.
   - `status` (VARCHAR(15) / Enum: `processing`, `completed`, `failed`)
   - `errorMessage` (TEXT, Nullable)
@@ -132,7 +133,7 @@ Within the message handler (`ProcessKingdomTicksHandler`):
   3. **Priority 3: Match Resolution** (League/Friendly matches) - executes battles, applies fatigue/injury.
   4. **Priority 4: Post-Match Transitions** (Season Transitions on Week 11 Friday 19:00).
   5. **Priority 5: Fatigue & Form Recovery** (Daily 04:00) - recovers hero stats.
-  6. **Priority 6: Reset / Maintenance** (Daily 00:00, Weekly Arena Revenue Sun 23:59).
+  6. **Priority 6: Reset / Maintenance / Cleanup** (Daily 00:00, Daily 03:30 Inactive Registration Cleanup, Weekly Arena Revenue Sun 23:59).
 
 If any tick fails, the handler halts execution for that Kingdom, logs the error, and alerts administrators. This prevents subsequent ticks from executing out of order, preserving data integrity.
 

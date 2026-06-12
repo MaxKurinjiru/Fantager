@@ -2,8 +2,11 @@
 <div class="db-banner">
     <div class="absolute inset-0 bg-grid-white/[0.01] -z-10"></div>
     
-    {# Plovoucí ozubené kolečko pro editaci vpravo nahoře #}
-    <button onclick="window.dispatchEvent(new CustomEvent('modal:open-team-profile')); return false;" class="db-banner__edit-btn" aria-label="{{ 'dashboard.edit_profile'|trans }}">
+    {# Edit button — opens team profile modal via window CustomEvent (§4.1: type attribute required) #}
+    <button type="button"
+            class="db-banner__edit-btn"
+            aria-label="{{ 'dashboard.edit_profile'|trans }}"
+            data-action="click->dashboard-optimization#openProfileModal">
         <span aria-hidden="true" class="text-sm group-hover:rotate-45 transition-transform duration-300">⚙️</span>
         <span class="sr-only">{{ 'dashboard.edit_profile'|trans }}</span>
     </button>
@@ -82,7 +85,7 @@
                 <div class="db-opt__controls">
                     <select id="race-optimize-dashboard" data-dashboard-optimization-target="raceSelect"
                             {% if is_locked %}disabled{% endif %}
-                            class="db-opt__select">
+                            class="form-input db-opt__select">
                         <option value="">{{ 'hq.no_opt'|trans }}</option>
                         {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
                             <option value="{{ race }}" {% if active_opt == race %}selected{% endif %}>
@@ -106,7 +109,7 @@
                         {% endif %}
                     {% else %}
                         {# Tlačítko změny #}
-                        <button data-dashboard-optimization-target="optimizeBtn" data-action="click->dashboard-optimization#optimize"
+                        <button type="button" data-dashboard-optimization-target="optimizeBtn" data-action="click->dashboard-optimization#optimize"
                                 class="btn btn-primary btn--sm px-4 py-1.5 font-bold uppercase tracking-wider text-[10px] cursor-pointer">
                             {{ 'hq.save_opt'|trans }}
                         </button>

@@ -122,12 +122,6 @@ class RegisterController extends AbstractController
 
             return $this->redirectToRoute('app_login');
         }
-
-        $team = $this->verificationService->assignNpcTeam($user);
-        if (null === $team) {
-            $this->addFlash('warning', 'Email verified, but no NPC team was available in your kingdom. Contact support.');
-        }
-
         // Auto-login the user
         $response = $this->security->login($user, 'form_login', 'main');
 

@@ -20,6 +20,7 @@ nav:
   marketplace: Tržiště
   graveyard: Hřbitov
   settings: Nastavení
+  toggle_menu: Zobrazit/skrýt menu
 
 modal:
   close: Zavřít
@@ -54,6 +55,7 @@ auth:
   reset_password_submit: Odeslat odkaz pro reset
   verify_email_title: Zkontrolujte e-mail
   verify_email_body: Zaslali jsme ověřovací odkaz do vaší schránky. Klikněte na něj pro aktivaci účtu a začněte hrát. Odkaz vyprší za 24 hodin.
+  verify_email_delay_hint: Doručení e-mailu může trvat několik minut. Zkontrolujte prosím také složku se spamy.
   verify_email_no_email: "E-mail nedorazil?"
   verify_email_resend: Znovu odeslat
   reset_password_confirm_title: Nastavit nové heslo

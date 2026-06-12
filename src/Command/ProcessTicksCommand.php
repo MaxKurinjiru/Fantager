@@ -98,7 +98,14 @@ class ProcessTicksCommand extends Command
             $ticksDispatched = 0;
 
             /** @var \App\Entity\League\LeagueSeason|null $season */
-            $season = $this->seasonRepository->findOneBy(['kingdom' => $kingdom], ['seasonNumber' => 'DESC']);
+            $season = $this->seasonRepository->findOneBy([
+                'kingdom' => $kingdom,
+                'status' => \App\Enum\LeagueSeasonStatus::Active,
+            ]);
+            if (null === $season) {
+                /** @var \App\Entity\League\LeagueSeason|null $season */
+                $season = $this->seasonRepository->findOneBy(['kingdom' => $kingdom], ['seasonNumber' => 'DESC']);
+            }
             $seasonStartDate = $season?->getStartDate();
 
             // Generate occurrences for each TickType

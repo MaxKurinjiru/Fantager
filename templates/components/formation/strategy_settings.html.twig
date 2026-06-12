@@ -9,11 +9,11 @@
 
     {# Formation Name Input #}
     <div class="space-y-2">
-        <label for="formation-name" class="block text-[10px] font-extrabold text-gray-555 uppercase tracking-wide">{{ 'formation.formation_name'|trans }}</label>
+        <label for="formation-name" class="form-label">{{ 'formation.formation_name'|trans }}</label>
         <input type="text" id="formation-name" data-formation-target="nameInput"
                value="{{ selected_formation ? selected_formation.name : 'formation.tactics_slot'|trans }}"
                placeholder="{{ 'formation.name_placeholder'|trans }}"
-               class="w-full rounded-xl bg-gray-950 border border-gray-800 px-4 py-3 text-sm text-gray-300 focus:outline-none focus:border-emerald-500 font-semibold">
+               class="form-input font-semibold">
     </div>
 
     {# Tactical Approach Radio Group #}
@@ -41,15 +41,16 @@
     </div>
 
     {# Set as default checkbox #}
-    <div class="flex items-center gap-2.5">
+    <div class="form-check">
         <input type="checkbox" id="set-default" data-formation-target="defaultCheckbox"
                class="rounded text-emerald-500 focus:ring-emerald-500 bg-gray-950 border-gray-850"
                {% if selected_formation and selected_formation.isDefault %}checked{% endif %}>
-        <label for="set-default" class="text-xs font-bold text-gray-450 cursor-pointer">{{ 'formation.set_default'|trans }}</label>
+        <label for="set-default" class="cursor-pointer">{{ 'formation.set_default'|trans }}</label>
     </div>
 
     <div class="border-t border-gray-850 pt-4 flex justify-end">
-        <button data-action="click->formation#save"
+        <button type="button"
+                data-action="click->formation#save"
                 class="btn btn-primary px-6 py-2.5 font-bold uppercase tracking-wider text-xs shadow-md shadow-emerald-950/10">
             {{ 'formation.save_lineup'|trans }}
         </button>
