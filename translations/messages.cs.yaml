@@ -644,5 +644,82 @@ league:
   group_fixtures: Zápasy skupiny
   round: Kolo
 
+marketplace:
+  title: Tržiště
+  subtitle: Nakupujte a prodávejte hrdiny, předměty a trenéry s ostatními hráči.
+  tab_browse: Procházet nabídky
+  tab_sell: Prodat
+  tab_my_listings: Moje nabídky
+  tab_history: Historie transakcí
+  type_hero: Hrdinové
+  type_item: Předměty
+  type_trainer: Trenéři
+  filter_all_races: Všechny rasy
+  filter_all_rarities: Všechny rarity
+  filter_search: Hledat podle názvu...
+  filter_sort: Seřadit podle
+  sort_newest: Nejnovější
+  sort_price_asc: Cena: Vzestupně
+  sort_price_desc: Cena: Sestupně
+  sort_expires_asc: Končící brzy
+  label_price: Minimální příhoz
+  label_buyout: Pevná cena (Buyout)
+  label_seller: Prodejce
+  label_expires: Vyprší za
+  label_highest_bid: Nejvyšší příhoz
+  label_no_bids: Bez příhozů
+  btn_bid: Přihodit
+  btn_buyout: Koupit ihned
+  btn_cancel: Zrušit nabídku
+  btn_sell: Vytvořit nabídku
+  select_entity: Vyberte, co chcete prodat
+  select_entity_placeholder: "-- Vyberte entitu --"
+  mode_buy_now: Pouze pevná cena (Buyout)
+  mode_auction: Aukce s možností buyoutu
+  price_gold: Požadované zlato / starting bid
+  buyout_gold: Pevná cena (volitelně pro aukce)
+  duration_days: Doba trvání (dny)
+  tax_hint: "Tržní poplatek: %tax%% (bude stržen z výplaty prodejce)"
+  no_listings: Na tržišti nejsou žádné aktivní nabídky.
+  no_my_listings: Nemáte žádné aktivní ani minulé nabídky.
+  no_history: Nemáte žádnou historii transakcí.
+  col_entity: Entita
+  col_seller: Prodejce
+  col_buyer: Kupující
+  col_price: Cena
+  col_fee: Poplatek
+  col_date: Datum
+  col_status: Stav
+  status_active: Aktivní
+  status_sold: Prodáno
+  status_expired: Vypršelo
+  status_cancelled: Zrušeno
+  flash_created: Nabídka byla úspěšně vytvořena.
+  flash_cancelled: Nabídka byla zrušena a entita byla vrácena.
+  flash_purchased: Nákup byl úspěšně dokončen!
+  flash_bid: Příhoz byl úspěšně zaznamenán.
+  error_listing: Nepodařilo se vytvořit nabídku.
+  error_bid: Nepodařilo se přihodit.
+  error_purchase: Nepodařilo se koupit entitu.
+  error_cancel: Nepodařilo se zrušit nabídku.
+  own_listing_hint: "Tato nabídka patří vašemu cechu."
+  select_entity_first: "Nejprve vyberte hrdinu, předmět nebo trenéra k prodeji."
+  confirm_cancel: "Opravdu chcete zrušit tuto nabídku a vrátit entitu zpět?"
+  confirm_bid: "Opravdu chcete na tuto aukci přihodit 🪙 %amount% gold (tato částka bude okamžitě rezervována)?"
+  confirm_buyout: "Opravdu chcete koupit tuto nabídku okamžitě za 🪙 %amount% gold?"
+  time_expired: "Vypršelo"
+  time_remaining: "%days%d %hours%h zbývá"
+  time_remaining_hours: "%hours%h %minutes%m zbývá"
+  empty_listings: "Žádné nabídky neodpovídají filtrům."
+  empty_my_listings: "Nemáte žádné vystavené nabídky."
+  empty_history: "Žádná historie transakcí."
+  label_min_bid: "Počáteční příhoz / Min bid"
+  label_buyout_price: "Pevná cena (Buyout)"
+  label_no_bonuses: "Bez bonusů"
+  label_highest_bid_val: "🪙 %amount% (%bidder%)"
+  label_no_bids_val: "🪙 %amount% (počáteční)"
+  years_suffix: "let"
+
+
 
 

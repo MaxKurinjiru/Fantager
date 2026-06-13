@@ -12,4 +12,5 @@ enum HeroStatus: string
     case InMatch = 'in_match';
     case Injured = 'injured';
     case Dead = 'dead';
+    case Selling = 'selling';
 }

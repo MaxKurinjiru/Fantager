@@ -1,177 +1,269 @@
-# Implementation Roadmap
+# Implementation Roadmap (Vertical-Slice & Chronological)
 
-Purpose: Define the implementation order so agents and developers know what to build first and why.
-
----
-
-## Phase 0 — Design Decisions Required (Blocked on User Input)
-
-These items must be resolved before implementation begins. Each is an open question or gap in the design docs.
-See [known-issues.md](known-issues.md) for the full list. The ones below directly block Phase 1+ implementation.
-
-| # | Area | Decision needed | Known-issue ref |
-|--:|------|----------------|-----------------|
-| 1 | **Onboarding** | ~~How many starting heroes? At what level/age?~~ — **RESOLVED**: 10 heroes, **level 1**, age **[Min Age, Max Junior Age]** per race. | ~~[#4](known-issues.md)~~ |
-| 2 | **Roster** | ~~Starting Barracks capacity?~~ — **RESOLVED**: 10 (matches starting hero count). | ~~[#3](known-issues.md)~~ |
-| 3 | **Morale** | What value does morale reset to on hero transfer — 50, 100, or race-specific? | ~~[#2](known-issues.md)~~ — resolved: default = 50 |
-| 4 | **Combat formulas** | Document HP, damage, defense, accuracy, dodge, crit and status-effect formulas | [#1](known-issues.md) |
-| 5 | **Item durability & enchanting** | Define durability degradation rate, repair cost, and enchanting mechanic (Essence costs exist but rules don't) | [#2](known-issues.md) |
-| 6 | **Race balance** | ~~Confirm Genie stat-budget difference (+10.6% vs Human) is intentional; add equipment restrictions if not~~ — **RESOLVED**: All races use flat integer bonuses in `races.yaml`; balance tunable per config. | ~~[#9](known-issues.md)~~ |
-| 7 | **Data consistency** | ~~Confirm whether the asymmetric Giant↔Genie relationship values (60 vs 70) are intentional or a typo~~ — **RESOLVED**: Giant↔Genie = 60 (Neutral) in all sources. | ~~[#10](known-issues.md)~~ |
-| 8 | **Friendly Matches** | Document rules and purpose of Friendly Matches listed in the tick schedule | [#7](known-issues.md) |
-| 9 | **Arena Match mechanics** | Document standalone Arena Match rules separate from the HQ arena facility | [#8](known-issues.md) |
-| 10 | **Review next phases** | Walk through Phases 1–6 with maintainers and confirm scope, entity names, and acceptance criteria before any code is written | — |
-
-**Exit criteria**: All rows above are resolved and the answers are recorded in the relevant design docs. Phase 0 is never "done" until every row has a decision written down and the known-issues entry removed or updated.
+Purpose: Define a logical, step-by-step implementation path for the Fantager project. Unlike pure backend/frontend phase separation, this roadmap is organized by functional **Milestones (Vertical Slices)**. Each milestone builds a complete, testable, and visual slice of a feature—from database schema and service logic to internal APIs and interactive web interfaces.
 
 ---
 
 ## Guiding Principles
 
-- Each phase should produce a runnable, testable increment.
-- Later phases depend on earlier ones — don't skip ahead.
-- Within a phase, items can be parallelized unless noted.
+- **Vertical Slice Development**: Implement database, service logic, API endpoints, and frontend views together for each feature. This ensures every step produces a runnable, visually testable increment.
+- **Dependency Flow**: Do not skip ahead. Later milestones depend on the foundational entities and calculations established in earlier ones.
+- **Aesthetic Excellence**: Every frontend step must align with the UI specifications (`docs/ui-guidelines.md`), utilizing customized colors, typography, micro-animations, and responsive designs.
+- **Verification First**: Every step must include unit/integration tests and manual walkthrough verification.
 
 ---
 
-## Phase 1 — Foundation (skeleton done, fill implementation)
+## Milestone 1: Authentication & Kingdom Setup
+*Build the core user account systems and allow players to choose their starting Kingdom and auto-claim their initial team.*
 
-| # | Task | Depends on | Notes |
-|--:|------|-----------|-------|
-| 1 | **Auth System** — User entity, registration, login, sessions | — | ✅ Complete — login, register, verify email, password reset, rate limiting, CSRF, NPC team assignment |
-| 2 | **Kingdom System** — Kingdom entity, list endpoint, selection at registration | Auth | ✅ Complete — `/api/v1/kingdoms` endpoint, capacity calculation, KingdomService |
-| 3 | **Team System** — Team entity, auto-create on kingdom join | Auth, Kingdom | ✅ Complete — NPC team claimed on email verification, VerificationService::assignNpcTeam |
-| 4 | **Basic DB migrations** — Schema for User, Kingdom, Team | 1–3 | ✅ Complete — `Version20260608160305` generated; covers full schema across all phases (not just Phase 1 entities) |
+### Step 1.1: Database Infrastructure & Schema Setup
+- **Database & Entities**: Create migrations for base tables: `User`, `Kingdom`, `Team`, and session tables. Configure dual Doctrine connections (`default` and `legacy`) to support raw SQL read operations from legacy DB.
+- **Verification**: Run `bin/console doctrine:migrations:migrate` and check connection configuration.
+- **Status**: ✅ Complete (`Version20260608160305` covers full system schema).
 
-**Exit criteria**: A player can register, choose a kingdom, and land on an empty dashboard.
+### Step 1.2: Authentication & Sessions
+- **Service Layer**: Implement security firewalls, CSRF protection, rate limiting, and password hashing.
+- **API/Web Controllers**: Implement signup, login, email verification, and password reset routes.
+- **Frontend Views**: Create registration and login templates matching design guidelines.
+- **Verification**: Run integration tests for signup/login validation.
+- **Status**: ✅ Complete (`SecurityController`, `RegistrationController`, `ResetPasswordController`).
 
----
+### Step 1.3: Kingdom Selection
+- **Database & Entities**: `Kingdom` entity with `league_tiers_config` (JSON configuration for league capacities). Load static kingdom data.
+- **Service Layer**: `KingdomService` to calculate current player capacities and manage availability.
+- **API Contracts**: `GET /api/v1/kingdoms` returning active kingdoms and capacity status.
+- **Frontend Views**: Integration of Kingdom selection dropdown/cards into the registration process.
+- **Verification**: Verify capacity block when a kingdom reaches maximum player limit.
+- **Status**: ✅ Complete (`KingdomService`, `/api/v1/kingdoms`, Twig integration).
 
-## Phase 2 — Heroes & Core Loop
-
-| # | Task | Depends on | Notes |
-|--:|------|-----------|-------|
-| 5 | **Hero System** — Hero entity, CRUD, summoning chamber | Team | Entity + repository scaffolded ✅; `HeroService` + `HeroGenerator` done ✅; `Api\HeroController` done ✅; `SummoningService` + `Api\SummoningController` done ✅ |
-| 6 | **Training System** — Training queue, tick processing, stat increases | Hero | Entity + repository scaffolded ✅; `TrainingService` + `Api\TrainingController` done ✅; tick processor (stat application) command and service done ✅ |
-| 7 | **Headquarters System** — Facilities, upgrades, effects | Team | Entity + repository scaffolded ✅; `HeadquartersService` + `Api\HeadquartersController` done ✅ |
-| 8 | **Economy System** — Gold transactions, cost deductions, income stubs | Training, HQ | Team wallet columns done ✅; `EconomyService` (deduct/add gold) done ✅; transaction logging & weekly arena ticket revenue distribution command done ✅ |
-
-**Exit criteria**: A player can summon heroes, train them, upgrade HQ facilities, and see gold change.
-
----
-
-## Phase 3 — Equipment & Combat Preparation
-
-| # | Task | Depends on | Notes |
-|--:|------|-----------|-------|
-| 9 | **Item System** — Items, equipment slots, inventory | Hero | Entity + repository scaffolded ✅; `ItemService` + `Api\ItemController` done ✅ |
-| 10 | **Spell System** — Spells, schools, mastery, equipping | Hero | Entity + repository scaffolded ✅; `SpellService` + `Api\SpellController` done ✅ |
-| 11 | **Formation System** — Formation entity, lineup assignment | Team, Hero | Entity + repository scaffolded ✅; `FormationService` + `Api\FormationController` done ✅ |
-
-**Exit criteria**: Heroes can be equipped, have spells, and be placed in formations.
+### Step 1.4: Team Dashboard
+- **Database & Entities**: `Team` entity linked to `User` and `Kingdom`.
+- **Service Layer**: Automatic NPC team claiming logic on user email verification (`VerificationService`).
+- **API Contracts**: `GET /api/v1/teams/current` returning wallet data, reputation, and roster stats.
+- **Frontend Views**: Main Dashboard (`templates/dashboard/index.html.twig`) with active team stats, recent activity feeds, and settings tab.
+- **Verification**: Log in with a new user, verify email, and check if an NPC team is successfully claimed and rendered.
+- **Status**: ✅ Complete (`Web\DashboardController`, `Web\SettingsController`, Stimulus: `profile_settings_controller.js`).
 
 ---
 
-## Phase 4 — Frontend Core
+## Milestone 2: Hero Summoning & Roster Management
+*Allow players to summon their first batch of heroes, view roster stats, and manage hero profiles.*
 
-| # | Task | Depends on | Notes |
-|--:|------|-----------|-------|
-| 12 | **Kingdom Selection UI** — Kingdom list, filters, and selection during registration | Kingdom | ✅ Complete — kingdom list rendered in registration flow via `templates/auth/` + `RegisterController`; `/api/v1/kingdoms` wired |
-| 13 | **Main Dashboard UI** — Full team panel, stats, recent activity feed, and settings | Team, Economy | ✅ Complete — `Web\DashboardController` + `templates/dashboard/index.html.twig`; `Web\SettingsController` + `templates/settings/index.html.twig`; `profile_settings_controller.js` |
-| 14 | **Hero Management UI** — Hero list/cards, filter/sort, and detailed hero info view | Hero | ✅ Complete — `Web\HeroController` + `templates/hero/roster.html.twig` + `detail.html.twig`; `hero_rename_controller.js` + `roster_filter_controller.js` |
-| 15 | **Summoning Chamber UI** — Summoning screen, race selection, cooldowns, and animations | Summoning | ✅ Complete — `Web\SummoningController` + `templates/summoning/index.html.twig`; `summoning_controller.js` (AJAX summon, reveal animation, cooldown timer) |
-| 16 | **Training Center UI** — Frontends for attribute training, trainer selection, and magic training | Training | ✅ Complete — `Web\TrainingController` + `templates/training/index.html.twig`; `training_controller.js` (cost calc, queue countdown) |
-| 17 | **Inventory & Equipment UI** — Interactive inventory grid, detail cards, and paperdoll equipping | Item | ✅ Complete — `Web\ItemController` + `templates/item/index.html.twig`; `equipment_controller.js` |
-| 18 | **Spellbook UI** — UI for learning spells, expanding slots, and equipping spells | Spell | ✅ Complete — `Web\SpellController` + `templates/spell/index.html.twig`; `spellbook_controller.js` |
-| 19 | **Formation & Strategy UI** — Drag-and-drop grid (Front/Back line), targets priority, action sequence, and synergy | Formation | ✅ Complete — `Web\FormationController` + `templates/formation/index.html.twig`; `formation_controller.js` |
-| 20 | **Headquarters Facilities UI** — HQ dashboard, facility levels, upgrades, and race optimization | Headquarters | ✅ Complete — `Web\HeadquartersController` + `templates/hq/index.html.twig`; `hq_controller.js` (upgrade, race optimization toggle) |
+### Step 2.1: Economy & Wallet Transactions
+- **Database & Entities**: Add currency columns (`gold`, `essence`) to `Team`. Create `FinancialRecord` logs.
+- **Service Layer**: `EconomyService` to manage currency deposits, deductions, and transaction logging.
+- **Verification**: Unit tests on wallet operations (e.g., negative balance checks, overflow protection).
+- **Status**: ✅ Complete (`EconomyService`, ledger logs, weekly seating ticket revenue distribution).
 
-**Exit criteria**: Complete playable frontend skeleton for all core management loops (auth, dashboard, summoning, training, equipment, formations).
+### Step 2.2: Hero Summoning Chamber
+- **Database & Entities**: `Hero` and `SummonHistory` entities.
+- **Service Layer**: `HeroGenerator` with race name pools (first and surname definitions per race in `HeroGenerator`). `SummoningService` to handle race compatibilities and cooldowns.
+- **API Contracts**: `POST /api/v1/summon` (initiates summon), `GET /api/v1/summon/cooldown`.
+- **Frontend Views**: Summoning Chamber UI (`templates/summoning/index.html.twig`) with cooldown timers, race select, and Reveal AJAX animation.
+- **Verification**: Summon heroes, verify cooldown timings, and check names are correctly chosen from the race configuration pools.
+- **Status**: ✅ Complete (`SummoningService`, `HeroGenerator`, `templates/summoning/index.html.twig`, Stimulus: `summoning_controller.js`).
 
----
-
-## Phase 5 — Combat & Competition
-
-> **Prerequisites (Phase 0)**: Before starting this phase, the following open design decisions must be resolved — see [known-issues.md](known-issues.md):
-> - **#1** Combat formulas (HP, damage, defense, accuracy, dodge, crits, status effects)
-> - **#7** Friendly Match rules and purpose
-> - **#8** Arena Match mechanics (standalone mode, separate from HQ facility)
-
-| # | Task | Depends on | Notes |
-|--:|------|-----------|-------|
-| 21 | **Combat System** — Simulation engine, turn resolution, logging | Formation, Item, Spell | Entity + repository scaffolded ✅; simulation engine pending |
-| 22 | **League System** — Seasons, matchmaking, standings | Combat | All 5 entities + repositories scaffolded ✅; `LeagueFixtureScheduler` (fixture generation) partially implemented ✅; full matchmaking/processing logic pending |
-| 23 | **Event System** — Calendar ticks, event triggers | Combat, Economy | Entity + repository scaffolded ✅; tick processing/triggers pending |
-
-**Exit criteria**: Automated league matches run, results are logged, standings update.
+### Step 2.3: Hero Roster & Profile Management
+- **Service Layer**: Hero CRUD operations, renaming validator, and stat calculations based on race.
+- **API Contracts**: `GET /api/v1/heroes` (roster list), `POST /api/v1/heroes/{id}/rename`.
+- **Frontend Views**: Roster cards grid (`templates/hero/roster.html.twig`), detail card with stat meters (`templates/hero/detail.html.twig`).
+- **Verification**: Filter/sort heroes by level, class, and race; rename a hero and check constraints.
+- **Status**: ✅ Complete (`Web\HeroController`, `templates/hero/roster.html.twig`, Stimulus: `roster_filter_controller.js`, `hero_rename_controller.js`).
 
 ---
 
-## Phase 6 — Economy & Social
+## Milestone 3: Headquarters & Training Loop
+*Upgrade headquarters facilities to unlock passive bonuses and queue heroes in the training center.*
 
-| # | Task | Depends on | Notes |
-|--:|------|-----------|-------|
-| 24 | **Marketplace System** — Listings, buying, selling, fees | Economy, Item, Hero | All 3 entities + repositories scaffolded ✅; service/controller pending |
-| 25 | **Community System** — Alliances, messaging, social | Auth, Team | All 6 entities + repositories scaffolded ✅; service/controller pending |
-| 26 | **Graveyard System** — Permanent death records, memorial | Hero, Combat | Entity + repository scaffolded ✅; service/controller pending |
-| 27 | **Settings Alignment** — Refactor Settings routes to API/Web spec | Auth | Refactor web-JSON settings methods to standard `Api\SettingsController` later when settings expand |
+### Step 3.1: Headquarters Upgrades
+- **Database & Entities**: `Headquarters` and `Facility` entities.
+- **Service Layer**: Upgrade costs and time math, facility level checks, and passive resource buffs. Race optimization toggling.
+- **API Contracts**: `POST /api/v1/hq/facility/upgrade`, `POST /api/v1/hq/optimize`.
+- **Frontend Views**: HQ dashboard, facilities level bars, and live upgrade progress counters.
+- **Verification**: Check gold deduction during upgrades, test passive multiplier calculations.
+- **Status**: ✅ Complete (`HeadquartersService`, `Web\HeadquartersController`, Stimulus: `hq_controller.js`).
 
-**Exit criteria**: Full economic loop with player trading, social interaction, and hero mortality.
-
----
-
-## Phase 7 — Extended Content
-
-| # | Task | Depends on | Notes |
-|--:|------|-----------|-------|
-| 28 | **Dungeon System** — PvE encounters, rewards | Combat, Economy | Entity + repository scaffolded ✅; encounter/reward logic pending |
-| 29 | **Quest System** — Daily/weekly quests, reward claiming | Economy, Hero | Entity + repository scaffolded ✅; generation/reward logic pending |
-| 30 | **Crafting System** — Recipes, materials, queue | Item, Economy | Entity + repository scaffolded ✅; service/controller pending |
-| 31 | **Arena Management** — Ticket revenue, capacity upgrades | HQ, Economy | `FacilityType::Arena` defined ✅; revenue/capacity upgrade service pending |
-
-**Exit criteria**: All documented systems are implemented and integrated.
+### Step 3.2: Hero Training Loop
+- **Database & Entities**: `TrainingQueue` and `Trainer` entities.
+- **Service Layer**: Training rate calculations. Tick processing CLI command (`App\Command\ProcessTrainingTicksCommand`) to apply accumulated stat increases.
+- **API Contracts**: `POST /api/v1/training/enqueue`, `DELETE /api/v1/training/queue/{id}`.
+- **Frontend Views**: Training queue panel, trainers selection list, remaining duration countdowns.
+- **Verification**: Enqueue training, run the command `bin/console app:process-training-ticks`, and verify hero stats increase correctly.
+- **Status**: ✅ Complete (`TrainingService`, CLI command, `Web\TrainingController`, Stimulus: `training_controller.js`).
 
 ---
 
-## Cross-Cutting (ongoing, any phase)
+## Milestone 4: Combat Prep (Equipment, Spells, Formations)
+*Prepare heroes for battle by equipping weapons, organizing spellbooks, and configuring tactical grids.*
 
-- CI/CD pipeline setup (GitHub Actions — not yet configured)
-- Code quality tooling: PHPStan ✅ configured; PHP-CS-Fixer ✅ configured (`.php-cs-fixer.dist.php`); PHPUnit ✅ passing (coverage expansion pending); Playwright E2E ❌ not yet installed
-- Frontend templates and Stimulus components: ✅ Complete through Phase 4 — all 10 Stimulus controllers + all web templates implemented
-- Documentation updates as systems are implemented
+### Step 4.1: Items & Roster Inventory
+- **Database & Entities**: `Item` and `Equipment` slots.
+- **Service Layer**: Equip/unequip validators, item attributes, and dismantling rewards.
+- **API Contracts**: `POST /api/v1/items/equip`, `POST /api/v1/items/dismantle`.
+- **Frontend Views**: Interactive inventory drag-and-drop grid and hero equipment slots (paperdoll UI).
+- **Verification**: Equip items to matching slots, verify stat modifier calculations, dismantle items.
+- **Status**: ✅ Complete (`ItemService`, `Web\ItemController`, Stimulus: `equipment_controller.js`).
+
+### Step 4.2: Spellbooks & Magic Learning
+- **Database & Entities**: `Spell` and `SpellMastery` entities.
+- **Service Layer**: Magic schools mastery levels, learning spells requirements, equipping.
+- **API Contracts**: `POST /api/v1/spells/learn`, `POST /api/v1/spells/equip`.
+- **Frontend Views**: Spell learning dashboard, magic slots assignment list.
+- **Verification**: Learn spells using essence, equip them, and confirm slot limits are respected.
+- **Status**: ✅ Complete (`SpellService`, `Web\SpellController`, Stimulus: `spellbook_controller.js`).
+
+### Step 4.3: Strategic Formations
+- **Database & Entities**: `Formation` layout.
+- **Service Layer**: Lineup configuration (3 front, 3 back slots), target priorities, and synergies logic.
+- **API Contracts**: `POST /api/v1/formations/update`.
+- **Frontend Views**: Interactive drag-and-drop tactical grid, action sequences selector.
+- **Verification**: Move heroes between positions, verify front/back line constraints (max 6 active).
+- **Status**: ✅ Complete (`FormationService`, `Web\FormationController`, Stimulus: `formation_controller.js`).
 
 ---
 
-## Data Migration (infrastructure, any phase)
+## Milestone 5: Marketplace & Social Community
+*Open the player economy with auctions and establish alliances and chat systems.*
 
-A second Doctrine DBAL connection (`legacy`) is configured alongside the primary `default` connection to support reading data from an external/legacy database during migration tasks.
+### Step 5.1: Marketplace Auctions
+- **Database & Entities**: `MarketplaceListing` and `MarketplaceBid` entities.
+- **Service Layer**: Auction bid validation, fee deduction, item escrow, buyout options.
+- **API Contracts**: `GET /api/v1/marketplace/listings`, `POST /api/v1/marketplace/list`, `POST /api/v1/marketplace/bid`.
+- **Frontend Views**:
+  - **[NEW]** Marketplace Hub: Search filters (item level, rarity, class), bidding card widgets, active listing forms.
+- **Verification**: List a hero, bid from a different account, verify gold deductions and escrow refunds on higher bids.
+- **Status**: ✅ Complete (MarketplaceService, CLI processor, API & Web Controllers, and templates/controllers refactored per UI guidelines).
 
-| Item | Detail |
-|------|--------|
-| **Config** | `config/packages/doctrine.yaml` — `dbal.connections.legacy` + `orm.entity_managers.legacy` |
-| **Env var** | `DATABASE_LEGACY_URL` in `.env.local` (not committed; set per environment) |
-| **Usage** | Inject `@doctrine.dbal.legacy_connection` (raw SQL) or the `legacy` entity manager into migration services/commands |
-| **Scope** | Legacy connection is read-only by convention — no entities are mapped to it unless explicitly added |
-| **Migrations** | `doctrine:migrations:*` commands target only the `default` connection; run with `--em=default` if needed |
+### Step 5.2: Alliances & Community Channels
+- **Database & Entities**: `Alliance`, `AllianceMember`, `Message`, `ForumThread`, `ForumPost` entities.
+- **Service/Business Logic**: Alliance invitations, messaging filters, alliance rank leaderboards.
+- **API Contracts**: `GET /api/v1/alliances`, `POST /api/v1/alliances/create`, `POST /api/v1/alliances/chat`.
+- **Frontend Views**:
+  - **[NEW]** Alliance Hub: Roster lists, chat feeds, application portals.
+  - **[NEW]** Community Boards: Integrated discussion boards and global player mail.
+- **Verification**: Create an alliance, join from another team, send chat messages.
+- **Status**: ⏳ Not Started (Entities scaffolded, services pending).
 
 ---
 
-## Status
+## Milestone 6: Combat Simulation, Calendar & Leagues
+*Implement the core combat engine, chronological event tick scheduler, the weekly league competition, and hero mortality.*
 
-- Phase 1 (tasks 1–4): ✅ Complete — Auth, Kingdom, and Team systems implemented; full DB schema generated in `Version20260608160305` (covers all phases)
-- Data Migration infrastructure: ✅ Complete — dual Doctrine connection configured (`default` + `legacy`)
-- Entity + repository layer: ✅ Complete for all phases — all 43 entities, all repositories, and all 34 PHP enums scaffolded
-- Phase 2 (tasks 5–8): ✅ Complete — `HeroService` + `HeroGenerator`, `SummoningService`, `HeadquartersService`, `EconomyService` (including financial transaction logging and weekly seating ticket revenue distribution), `TrainingService` (including training tick processor) + all API controllers and commands implemented
-- Phase 3 (tasks 9–11): ✅ Complete — `ItemService`, `SpellService`, `FormationService` + API controllers implemented; `Api\TeamController` (dashboard + settings) also done
-- Phase 0 design blockers: Items #1 (combat formulas), #2 (item durability/enchanting), #7 (Friendly Matches), #8 (Arena Match mechanics) remain open; previously resolved items removed from list
-- Phase 4 (tasks 12–20) frontend templates and Stimulus components: ✅ Complete — all 9 screens implemented (Dashboard, Hero Roster/Detail, Summoning, HQ, Training, Inventory, Spellbook, Formation); routes auto-discovered via `#[Route]` attributes; PHPStan passing at level 6 with 0 errors
-- Phase 5 (tasks 21–23): 🔄 Not started — `Battle` entity scaffolded ✅; `LeagueFixtureScheduler` partially done ✅; `Event`+`EventParticipation` entities scaffolded ✅; simulation engine, full matchmaking logic, and event triggers pending. Service directories `src/Service/Combat/` and `src/Service/League/` exist but contain only `.gitkeep` placeholders.
-- Phase 6 (tasks 24–27): ⏳ Not started — all entities scaffolded ✅ (`MarketplaceListing`, `MarketplaceBid`, `Transaction`; `Message`, `ForumThread`, `ForumPost`, etc.; `GraveyardRecord`); services and controllers pending. Service directories `src/Service/Marketplace/` and `src/Service/Team/` exist but contain only `.gitkeep` placeholders.
-- Phase 7 (tasks 28–31): ⏳ Not started — all entities scaffolded ✅ (`DungeonRun`; `Quest`, `PlayerQuestProgress`; `CraftingRecipe`, `CraftingQueue`; `ArenaRevenueService` done ✅); encounter logic, reward logic, crafting service pending. Service directory `src/Service/Crafting/` exists but contains only a `.gitkeep` placeholder.
-- Code quality tooling: PHPStan ✅ (level 6, 0 errors), PHP-CS-Fixer ✅, PHPUnit ✅ (19 tests, 1433 assertions all passing), Playwright ❌ not installed
-- Routing: ✅ Migrated to `#[Route]` attribute auto-discovery — 45 routes registered (20 web + 25 API)
-- CI/CD: ❌ No GitHub Actions workflows configured yet
-- Race stat bonus table in `game-summary.md` updated June 4, 2026 — multipliers replaced with flat integer bonuses from `races.yaml`
-- Hero name pools expanded June 4, 2026 — all 8 races now have 30 first names and 30 surnames in `HeroGenerator`
+### Step 6.1: Combat Simulation Engine (Core Block)
+- **Design Prerequisites (Phase 0)**: Resolve [known-issues.md](known-issues.md) #1 (Combat formulas: HP, damage, defense, accuracy, dodge, crits, status effects).
+- **Service/Business Logic**:
+  - Implement a deterministic turn-resolution engine resolving combat round-by-round.
+  - Apply status effects (poison, stun, buffs) per tick based on speed order.
+  - Calculate post-match updates: XP gains, form adjustments, fatigue accumulation, morale impact, and hero aging.
+  - Generate a detailed `combat_log` JSON structure containing step-by-step actions.
+- **API Contracts**:
+  - `POST /api/v1/combat/simulate` — Practice/sandbox match between two rosters (requires 6 combat-ready heroes per team).
+  - `GET /api/v1/combat/{matchId}/log` — Retrieve replay log.
+- **Frontend Views**:
+  - **[NEW]** Combat Replay Viewer UI: A visually compelling page that reads a combat log JSON and steps through the battle with animations, hit point bars, and logs.
+- **Verification**:
+  - Write extensive unit tests for combat calculations (accuracy, dodge, crit multipliers).
+  - Test forfeit validation: if one team has <6 combat-ready heroes, ensure immediate 3-0 forfeit without simulator trigger.
+- **Status**: ⏳ Not Started (Entities scaffolded, engine pending).
 
-*Last updated: June 5, 2026 — Phase 4 complete; Phase 5–7 entities scaffolded*
+### Step 6.2: Calendar & Server Ticks System
+- **Database & Entities**: `CalendarSeason` and `GameEvent` entities.
+- **Service Layer**:
+  - Timeline tick scheduler running weekly/hourly increments.
+  - Action runners triggered by calendar ticks: passive economy income, training time updates, and league match executions.
+- **API/CLI Contracts**:
+  - `bin/console app:process-calendar-tick` — Command triggered by cron to advance game time.
+- **Verification**: Trigger a calendar tick and check if queues (training, items, leagues) update.
+- **Status**: ⏳ Not Started (Partial entities scaffolded, tick processor pending).
+
+### Step 6.3: League Matchmaking & Season Transition
+- **Design Prerequisites (Phase 0)**: Resolve [known-issues.md](known-issues.md) #7 (Friendly match rules) and #8 (Arena Match mechanics).
+- **Service Layer**:
+  - Implement Berger’s Algorithm to generate 18 rounds of double round-robin fixtures.
+  - Enforce home/away balance (1 home, 1 away match per week of play).
+  - Standings updates: calculate played, wins, draws, losses, points, goal difference.
+  - Season transition: process promotions, relegations, compound rewards (using global comparison tie-breakers). Shuffle groups for next season.
+- **API Contracts**:
+  - `GET /api/v1/league/standings` — standings list.
+  - `GET /api/v1/league/fixtures` — matches list.
+  - `POST /api/v1/league/process-season` — manual admin season trigger.
+- **Frontend Views**:
+  - **[NEW]** League Dashboard: Group standings table, fixture timeline, match summaries, and promotion/relegation threshold lines.
+- **Verification**: Run complete 11-week season simulation using CLI commands and verify standings and reward distributions.
+- **Status**: 🔄 Partially Complete (`LeagueFixtureScheduler` & `SeasonTransitionService` done; match results processing & frontends pending).
+
+### Step 6.4: Hero Mortality & Graveyard
+- **Database & Entities**: `GraveyardRecord` entity.
+- **Service Layer**: Permanent death triggers in combat, transfer stats to graveyard log.
+- **API Contracts**: `GET /api/v1/graveyard/records`.
+- **Frontend Views**:
+  - **[NEW]** Memorial Graveyard: Interactive cemetery listing fallen heroes with final stats, cause of death, and customizable epitaph texts.
+- **Verification**: Run a combat simulation where a hero dies, verify they are removed from rosters and added to the Graveyard DB.
+- **Status**: ⏳ Not Started (Entities scaffolded, services pending).
+
+---
+
+## Milestone 7: Endgame & Advanced Content
+*Extend the sandbox with PvE dungeon instances, daily quests, item crafting, and stadium business operations.*
+
+### Step 7.1: PvE Dungeon Encounters
+- **Database & Entities**: `DungeonRun` and `DungeonFloor` tables (depends on Combat).
+- **Service Layer**: Monster roster generation, floor difficulty progression, chest loot generators.
+- **API Contracts**: `POST /api/v1/dungeons/enter`, `POST /api/v1/dungeons/combat`.
+- **Frontend Views**:
+  - **[NEW]** Dungeon Map UI: Floor progression map, encounter cards, reward reveals.
+- **Verification**: Complete dungeon floors, confirm health persistence across fights and reward logs.
+- **Status**: ⏳ Not Started (Entities scaffolded, services pending).
+
+### Step 7.2: Daily & Weekly Quest Systems
+- **Database & Entities**: `Quest` and `PlayerQuestProgress` tables.
+- **Service Layer**: Daily Quest pool generation, progress triggers (e.g., training ticks, marketplace trades), rewards allocation.
+- **API Contracts**: `GET /api/v1/quests`, `POST /api/v1/quests/claim/{id}`.
+- **Frontend Views**:
+  - **[NEW]** Quest log: list of daily/weekly challenges, progress indicators, claim buttons.
+- **Verification**: Perform quest conditions, verify progress bar fills, claim rewards.
+- **Status**: ⏳ Not Started (Entities scaffolded, services pending).
+
+### Step 7.3: Material Gathering & Crafting
+- **Database & Entities**: `CraftingRecipe` and `CraftingQueue` tables.
+- **Service Layer**: Recipe unlocks, materials cost validation, crafting queue speed bonuses from HQ.
+- **API/Web Controllers**: `POST /api/v1/crafting/start`, `DELETE /api/v1/crafting/queue/{id}`.
+- **Frontend Views**:
+  - **[NEW]** Crafting Workshop: Recipe catalog, required ingredients checklist, active crafting progress bars.
+- **Verification**: Check material requirement validation, verify crafted items appear in the team inventory.
+- **Status**: ⏳ Not Started (Entities scaffolded, services pending).
+
+### Step 7.4: Arena Facility Management
+- **Database & Entities**: Link stadium upgrades directly to HQ Arena levels.
+- **Service Layer**: Weekly seating capacity calculations, ticket price elasticity calculations, passive revenue distribution service.
+- **API Contracts**: `POST /api/v1/hq/arena/tickets/price`.
+- **Frontend Views**:
+  - **[NEW]** Arena Hub: Seating upgrade charts, weekly attendance graphs, ticket price sliders.
+- **Verification**: Modify ticket price, trigger weekly ticket revenue command, and confirm revenue scales with formulas.
+- **Status**: ⏳ Not Started (`ArenaRevenueService` skeleton exists, UI pending).
+
+---
+
+## Cross-Cutting Infrastructures (Ongoing)
+
+- **CI/CD Pipeline**: Setup GitHub Actions workflow to run PHPStan static analysis and PHPUnit tests automatically on pull requests.
+- **Code Quality Tooling**: Maintain PHPStan configuration (level 6, zero errors limit) and automated PHP-CS-Fixer styling rules.
+- **E2E Testing Suite**: Set up Playwright to cover registration, team selection, and training/summoning flows under realistic user action scenarios.
+
+---
+
+## Project Chronological Progression Status
+
+The following matrix displays what has been completed in the codebase relative to the newly defined chronological steps:
+
+| Milestone / Slice | Database / Entities | Service Layer / CLI | API Endpoints | Frontend UI Views | Current Status |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Milestone 1 (Auth & Kingdom)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
+| **Milestone 2 (Heroes & Economy)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
+| **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
+| **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
+| **Milestone 5 (Marketplace & Social)**| ✅ | 🔄 | 🔄 | 🔄 | **In Progress** |
+| **Milestone 6 (Combat & Leagues)** | 🔄 | 🔄 | 🔄 | ⏳ | *In Progress* |
+| **Milestone 7 (Endgame & Crafting)** | ✅ | ⏳ | ⏳ | ⏳ | *Scaffolded Only* |
+
+*Last updated: June 13, 2026 — Transformed to vertical slice roadmap layout*

@@ -9,6 +9,7 @@ use App\Entity\Item\Item;
 use App\Entity\Team\Team;
 use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
+use App\Enum\ItemStatus;
 use App\Repository\Item\ItemRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -66,6 +67,10 @@ class ItemService
      */
     public function equip(Item $item, Hero $hero, ItemSlotType $slot): void
     {
+        if ($item->getStatus() !== ItemStatus::Available) {
+            throw new \DomainException('Listed or unavailable items cannot be equipped.');
+        }
+
         if ($item->getOwnerTeam()->getId() !== $hero->getTeam()->getId()) {
             throw new \DomainException('Item does not belong to the same team as the hero.');
         }
@@ -122,6 +127,10 @@ class ItemService
      */
     public function dismantle(Item $item, Team $team): array
     {
+        if ($item->getStatus() !== ItemStatus::Available) {
+            throw new \DomainException('Listed or unavailable items cannot be dismantled.');
+        }
+
         if ($item->getOwnerTeam()->getId() !== $team->getId()) {
             throw new \DomainException('Item does not belong to your team.');
         }
@@ -147,6 +156,10 @@ class ItemService
      */
     public function repair(Item $item, Team $team): int
     {
+        if ($item->getStatus() !== ItemStatus::Available) {
+            throw new \DomainException('Listed or unavailable items cannot be repaired.');
+        }
+
         if ($item->getOwnerTeam()->getId() !== $team->getId()) {
             throw new \DomainException('Item does not belong to your team.');
         }

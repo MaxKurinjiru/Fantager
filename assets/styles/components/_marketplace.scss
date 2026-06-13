@@ -1,0 +1,237 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  MARKETPLACE — Styles for cards, badges, and sell containers
+// =============================================================================
+
+@layer components {
+  // Browsing/History Cards
+  .marketplace-card {
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    transition: transform var(--transition-base), border-color var(--transition-fast), box-shadow var(--transition-base);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  .marketplace-card--hero {
+    border-color: rgba(30, 58, 138, 0.4); // blue-900/40
+    &:hover {
+      border-color: rgba(29, 78, 216, 0.8); // blue-700/80
+    }
+  }
+
+  .marketplace-card--trainer {
+    border-color: rgba(120, 53, 4, 0.4); // amber-900/40
+    &:hover {
+      border-color: rgba(180, 83, 9, 0.8); // amber-700/80
+    }
+  }
+
+  .marketplace-card--item-common {
+    border-color: var(--color-border);
+  }
+  .marketplace-card--item-uncommon {
+    border-color: rgba(5, 46, 22, 0.4); // green-950/40
+    &:hover {
+      border-color: rgba(21, 128, 61, 0.8); // green-700/80
+    }
+  }
+  .marketplace-card--item-rare {
+    border-color: rgba(30, 58, 138, 0.4);
+    &:hover {
+      border-color: rgba(29, 78, 216, 0.8);
+    }
+  }
+  .marketplace-card--item-epic {
+    border-color: rgba(88, 28, 135, 0.4); // purple-900/40
+    &:hover {
+      border-color: rgba(126, 34, 206, 0.8); // purple-700/80
+    }
+  }
+  .marketplace-card--item-legendary {
+    border-color: rgba(120, 53, 4, 0.4);
+    &:hover {
+      border-color: rgba(180, 83, 9, 0.8);
+    }
+  }
+  .marketplace-card--item-mythic {
+    border-color: rgba(127, 29, 29, 0.4); // red-900/40
+    &:hover {
+      border-color: rgba(185, 28, 28, 0.8); // red-700/80
+    }
+  }
+
+  .marketplace-card__details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    background-color: var(--color-surface-base);
+    padding: 0.625rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+
+  .marketplace-card__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.25rem;
+    text-align: center;
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .marketplace-card__stat-item {
+    background-color: var(--color-surface-base);
+    padding: 0.25rem 0;
+    border-radius: var(--radius-sm);
+  }
+
+  // Roster/Entity picker cards (Sell Tab)
+  .sell-card {
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+
+    &:hover {
+      border-color: var(--color-border-strong);
+      background-color: var(--color-surface-raised);
+    }
+
+    &--selected {
+      border-color: var(--color-brand-500) !important;
+      background-color: var(--color-surface-raised) !important;
+    }
+  }
+
+  // Segmented Selection Controls (e.g. category switcher in Sell Tab)
+  .segmented-btn {
+    @apply flex-1 px-4 py-2 text-sm font-semibold rounded-lg text-center transition cursor-pointer;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: none;
+
+    &:hover {
+      color: var(--color-text-primary);
+    }
+
+    &--active {
+      background-color: var(--color-brand-500) !important;
+      color: var(--color-surface-page) !important;
+
+      &:hover {
+        background-color: var(--color-brand-400) !important;
+      }
+    }
+  }
+
+  // Rarity Badges
+  .rarity-tag {
+    display: inline-block;
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+  }
+
+  .rarity-tag--common {
+    background-color: var(--color-surface-base);
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
+  }
+
+  .rarity-tag--uncommon {
+    background-color: var(--color-success-bg);
+    border-color: var(--color-success-border);
+    color: var(--color-success-text);
+  }
+
+  .rarity-tag--rare {
+    background-color: var(--color-info-bg);
+    border-color: var(--color-info-border);
+    color: var(--color-info-text);
+  }
+
+  .rarity-tag--epic {
+    background-color: rgba(88, 28, 135, 0.2); // purple-955/20
+    border-color: rgba(126, 34, 206, 0.4);
+    color: #c084fc; // purple-400
+  }
+
+  .rarity-tag--legendary {
+    background-color: var(--color-warning-bg);
+    border-color: var(--color-warning-border);
+    color: var(--color-warning-text);
+  }
+
+  .rarity-tag--mythic {
+    background-color: var(--color-error-bg);
+    border-color: var(--color-error-border);
+    color: var(--color-error-text);
+  }
+
+  // Status Badges
+  .status-tag {
+    display: inline-block;
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+  }
+
+  .status-tag--active {
+    background-color: var(--color-success-bg);
+    border-color: var(--color-success-border);
+    color: var(--color-success-text);
+  }
+
+  .status-tag--sold {
+    background-color: var(--color-info-bg);
+    border-color: var(--color-info-border);
+    color: var(--color-info-text);
+  }
+
+  .status-tag--cancelled {
+    background-color: var(--color-surface-base);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  .status-tag--expired {
+    background-color: var(--color-error-bg);
+    border-color: var(--color-error-border);
+    color: var(--color-error-text);
+  }
+
+  // Warnings / Hints in card components
+  .marketplace-notice {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem 0.75rem;
+    text-align: center;
+  }
+}

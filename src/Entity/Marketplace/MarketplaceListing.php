@@ -52,6 +52,9 @@ class MarketplaceListing
     #[ORM\Column]
     private int $priceGold;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $buyoutPriceGold = null;
+
     #[ORM\Column(length: 20, enumType: ListingMode::class)]
     private ListingMode $listingMode;
 
@@ -199,5 +202,17 @@ class MarketplaceListing
     public function getBids(): Collection
     {
         return $this->bids;
+    }
+
+    public function getBuyoutPriceGold(): ?int
+    {
+        return $this->buyoutPriceGold;
+    }
+
+    public function setBuyoutPriceGold(?int $buyoutPriceGold): static
+    {
+        $this->buyoutPriceGold = $buyoutPriceGold;
+
+        return $this;
     }
 }

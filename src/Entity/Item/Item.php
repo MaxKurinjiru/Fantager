@@ -9,6 +9,7 @@ use App\Entity\Team\Team;
 use App\Enum\ItemCategory;
 use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
+use App\Enum\ItemStatus;
 use App\Repository\Item\ItemRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -52,6 +53,9 @@ class Item
 
     #[ORM\Column(type: 'json')]
     private array $specialEffects = [];
+
+    #[ORM\Column(length: 15, enumType: ItemStatus::class, options: ['default' => 'available'])]
+    private ItemStatus $status = ItemStatus::Available;
 
     public function getId(): ?int
     {
@@ -174,6 +178,18 @@ class Item
     public function setSpecialEffects(array $specialEffects): static
     {
         $this->specialEffects = $specialEffects;
+
+        return $this;
+    }
+
+    public function getStatus(): ItemStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(ItemStatus $status): static
+    {
+        $this->status = $status;
 
         return $this;
     }

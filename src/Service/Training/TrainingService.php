@@ -138,6 +138,10 @@ class TrainingService
             throw new \DomainException('Dead heroes cannot be trained.');
         }
 
+        if (\App\Enum\HeroStatus::Selling === $hero->getStatus()) {
+            throw new \DomainException('Listed heroes cannot be trained.');
+        }
+
         if (count($trainer->getHeroes()) >= $this->getTrainerSlotsLimit($trainer)) {
             throw new \DomainException('Trainer does not have any available slots.');
         }

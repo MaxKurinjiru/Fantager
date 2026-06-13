@@ -646,5 +646,82 @@ league:
   group_fixtures: Group Matches
   round: Round
 
+marketplace:
+  title: Marketplace
+  subtitle: Buy and sell heroes, items, and trainers with other players.
+  tab_browse: Browse Listings
+  tab_sell: Sell
+  tab_my_listings: My Listings
+  tab_history: Transaction History
+  type_hero: Heroes
+  type_item: Items
+  type_trainer: Trainers
+  filter_all_races: All Races
+  filter_all_rarities: All Rarities
+  filter_search: Search by name...
+  filter_sort: Sort by
+  sort_newest: Newest First
+  sort_price_asc: Price: Low-High
+  sort_price_desc: Price: High-Low
+  sort_expires_asc: Ending Soon
+  label_price: Minimum Bid
+  label_buyout: Buyout Price
+  label_seller: Seller
+  label_expires: Expires in
+  label_highest_bid: Highest Bid
+  label_no_bids: No Bids
+  btn_bid: Bid
+  btn_buyout: Buy Now
+  btn_cancel: Cancel Listing
+  btn_sell: Create Listing
+  select_entity: Select what to sell
+  select_entity_placeholder: "-- Select entity --"
+  mode_buy_now: Buy Now Only
+  mode_auction: Auction with Buyout Option
+  price_gold: Starting Bid / Buyout price
+  buyout_gold: Buyout price (optional for auctions)
+  duration_days: Duration (days)
+  tax_hint: "Marketplace fee: %tax%% (deducted from seller payout)"
+  no_listings: No active listings in the marketplace.
+  no_my_listings: You have no active or past listings.
+  no_history: You have no transaction history.
+  col_entity: Entity
+  col_seller: Seller
+  col_buyer: Buyer
+  col_price: Price
+  col_fee: Fee
+  col_date: Date
+  col_status: Status
+  status_active: Active
+  status_sold: Sold
+  status_expired: Expired
+  status_cancelled: Cancelled
+  flash_created: Listing created successfully.
+  flash_cancelled: Listing cancelled and entity returned.
+  flash_purchased: Purchase completed successfully!
+  flash_bid: Bid placed successfully.
+  error_listing: Failed to create listing.
+  error_bid: Failed to place bid.
+  error_purchase: Failed to purchase entity.
+  error_cancel: Failed to cancel listing.
+  own_listing_hint: "This listing belongs to your guild."
+  select_entity_first: "Please select a hero, item, or trainer to sell first."
+  confirm_cancel: "Are you sure you want to cancel this listing and return the entity?"
+  confirm_bid: "Are you sure you want to bid 🪙 %amount% gold on this auction (this amount will be reserved immediately)?"
+  confirm_buyout: "Are you sure you want to buy this listing immediately for 🪙 %amount% gold?"
+  time_expired: "Expired"
+  time_remaining: "%days%d %hours%h remaining"
+  time_remaining_hours: "%hours%h %minutes%m remaining"
+  empty_listings: "No listings match the filters."
+  empty_my_listings: "You have no active or past listings."
+  empty_history: "No transaction history."
+  label_min_bid: "Starting bid / Min bid"
+  label_buyout_price: "Buyout Price"
+  label_no_bonuses: "No bonuses"
+  label_highest_bid_val: "🪙 %amount% (%bidder%)"
+  label_no_bids_val: "🪙 %amount% (starting)"
+  years_suffix: "years"
+
+
 
 
