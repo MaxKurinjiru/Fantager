@@ -8,7 +8,6 @@ enum FinancialRecordType: string
 {
     case LeagueReward = 'league_reward';
     case ArenaRevenue = 'arena_revenue';
-    case TrainingCost = 'training_cost';
     case SummonFee = 'summon_fee';
     case MarketplaceSale = 'marketplace_sale';
     case MarketplacePurchase = 'marketplace_purchase';

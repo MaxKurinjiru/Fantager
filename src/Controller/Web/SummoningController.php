@@ -15,6 +15,7 @@ class SummoningController extends AbstractController
 {
     public function __construct(
         private readonly \App\Service\Summoning\SummoningService $summoningService,
+        private readonly \App\Repository\Summoning\SummonHistoryRepository $historyRepository,
     ) {
     }
 
@@ -40,6 +41,35 @@ class SummoningController extends AbstractController
             'status' => $status,
             'arena_theme' => $arenaTheme,
             'compatible_races' => $compatibleRaces,
+        ]);
+    }
+
+    #[Route('/app/summon/history', name: 'app_summon_history', methods: ['GET'])]
+    public function history(\Symfony\Component\HttpFoundation\Request $request): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $team = $user->getTeam();
+
+        if (!$team) {
+            $this->addFlash('error', 'No team assigned to your account.');
+
+            return $this->redirectToRoute('app_home');
+        }
+
+        $race = $request->query->get('race');
+        if ($race === '') {
+            $race = null;
+        }
+        $sort = $request->query->get('sort', 'date-desc');
+
+        $history = $this->historyRepository->findByTeamFiltered($team, $race, $sort);
+
+        return $this->render('summoning/history.html.twig', [
+            'team' => $team,
+            'history' => $history,
+            'current_race' => $race,
+            'current_sort' => $sort,
         ]);
     }
 }

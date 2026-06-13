@@ -21,6 +21,7 @@ nav:
   graveyard: Graveyard
   settings: Settings
   toggle_menu: Toggle menu
+  finance: Ledger
 
 modal:
   close: Close
@@ -242,6 +243,59 @@ summoning:
   inspect_details: Inspect Details
   summon_again: Summon Again
   unavailable: Unavailable
+  history_title: Summoning History
+  history_subtitle: Detailed log of all summoned heroes, their race and cost.
+  history_btn: Summoning History
+  filter_race: Filter by Race
+  all_races: All Races
+  sort_by: "Sort by:"
+  sort_date_desc: "Newest first"
+  sort_date_asc: "Oldest first"
+  sort_cost_desc: "Highest cost"
+  sort_cost_asc: "Lowest cost"
+  col_hero: Hero Name
+  col_race: Race
+  col_cost: Gold Cost
+  col_date: Date & Time
+  no_history: No summons recorded.
+  back_to_summoning: Back to Summoning Chamber
+  fallen_or_dismissed: Fallen or Dismissed
+
+finance:
+  title: Financial Ledger
+  subtitle: Audit log of all currency and essence transactions for your team.
+  filter_type: Filter by Type
+  all_types: All Types
+  filter_actor: Filter by Actor
+  all_actors: All Actors
+  sort_date_desc: Newest first
+  sort_date_asc: Oldest first
+  sort_amount_desc: Gold: Highest first
+  sort_amount_asc: Gold: Lowest first
+  col_type: Type
+  col_actor: Actor
+  col_changes: Changes
+  col_date: Date & Time
+  col_context: Context
+  no_records: No financial records found.
+  type_league_reward: League Reward
+  type_arena_revenue: Arena Revenue
+  type_summon_fee: Summoning Fee
+  type_marketplace_sale: Marketplace Sale
+  type_marketplace_purchase: Marketplace Purchase
+  type_marketplace_fee: Marketplace Fee
+  type_quest_reward: Quest Reward
+  type_dungeon_reward: Dungeon Reward
+  type_crafting_cost: Crafting Cost
+  type_dismantle_gain: Dismantle Gain
+  type_item_repair: Item Repair
+  type_spell_learning_cost: Spell Scroll Purchase
+  type_spell_slot_cost: Unlock Spell Slot
+  type_hq_upgrade_cost: HQ Upgrade Cost
+  type_morale_restoration: Morale Restoration
+  actor_system: System
+  actor_active: Active Action
+  actor_passive: Passive Effect
 
 hq:
   title: Headquarters
@@ -476,7 +530,7 @@ formation:
 js_flash:
   training:
     success_queue: Training job successfully queued.
-    success_cancel: Training job cancelled. 50% gold refunded.
+    success_cancel: Training job successfully cancelled.
     error_fetch: Failed to fetch training options.
     error_queue: Failed to queue training job.
     error_cancel: Failed to cancel training job.

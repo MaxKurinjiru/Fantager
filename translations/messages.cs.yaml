@@ -21,6 +21,7 @@ nav:
   graveyard: Hřbitov
   settings: Nastavení
   toggle_menu: Zobrazit/skrýt menu
+  finance: Finanční kniha
 
 modal:
   close: Zavřít
@@ -240,6 +241,59 @@ summoning:
   inspect_details: Prohlédnout detaily
   summon_again: Vyvolat znovu
   unavailable: Nedostupné
+  history_title: Historie vyvolávání
+  history_subtitle: Detailní přehled všech vyvolaných hrdinů, jejich rasy a ceny.
+  history_btn: Historie vyvolávání
+  filter_race: Filtrovat podle rasy
+  all_races: Všechny rasy
+  sort_by: "Seřadit podle:"
+  sort_date_desc: "Nejnovější"
+  sort_date_asc: "Nejstarší"
+  sort_cost_desc: "Nejvyšší ceny"
+  sort_cost_asc: "Nejnižší ceny"
+  col_hero: Jméno hrdiny
+  col_race: Rasa
+  col_cost: Cena ve zlatě
+  col_date: Datum a čas
+  no_history: Nebyly zaznamenány žádné pokusy o vyvolání.
+  back_to_summoning: Zpět do vyvolávací síně
+  fallen_or_dismissed: Padlý nebo propuštěný
+
+finance:
+  title: Finanční kniha
+  subtitle: Auditní log všech transakcí se zlatem, krystaly a esencemi pro váš tým.
+  filter_type: Filtrovat podle typu
+  all_types: Všechny typy
+  filter_actor: Filtrovat podle iniciátora
+  all_actors: Všichni iniciátoři
+  sort_date_desc: Nejnovější
+  sort_date_asc: Nejstarší
+  sort_amount_desc: Zlato: Nejvyšší
+  sort_amount_asc: Zlato: Nejnižší
+  col_type: Typ transakce
+  col_actor: Iniciátor
+  col_changes: Změny zůstatku
+  col_date: Datum a čas
+  col_context: Kontext
+  no_records: Nebyly nalezeny žádné finanční záznamy.
+  type_league_reward: Ligová odměna
+  type_arena_revenue: Příjmy z arény
+  type_summon_fee: Poplatek za vyvolání
+  type_marketplace_sale: Prodej na tržišti
+  type_marketplace_purchase: Nákup na tržišti
+  type_marketplace_fee: Poplatek tržiště
+  type_quest_reward: Odměna za úkol
+  type_dungeon_reward: Odměna z dungeonu
+  type_crafting_cost: Cena výroby
+  type_dismantle_gain: Zisk z rozložení
+  type_item_repair: Oprava předmětu
+  type_spell_learning_cost: Nákup svitku kouzla
+  type_spell_slot_cost: Odemčení slotu na kouzla
+  type_hq_upgrade_cost: Vylepšení základny
+  type_morale_restoration: Obnovení morálky
+  actor_system: Systém
+  actor_active: Aktivní akce
+  actor_passive: Pasivní vliv
 
 hq:
   title: Základna
@@ -474,7 +528,7 @@ formation:
 js_flash:
   training:
     success_queue: Trénink byl úspěšně zařazen do fronty.
-    success_cancel: Trénink byl zrušen. Bylo vráceno 50 % zlata.
+    success_cancel: Trénink byl úspěšně zrušen.
     error_fetch: Nepodařilo se načíst možnosti tréninku.
     error_queue: Nepodařilo se zařadit trénink do fronty.
     error_cancel: Nepodařilo se zrušit trénink.

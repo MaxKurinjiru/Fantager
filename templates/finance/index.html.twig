@@ -1,0 +1,139 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'finance.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="finance-ledger max-w-7xl mx-auto space-y-6">
+    {# --- Header Section --- #}
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'finance.title',
+        subtitle: 'finance.subtitle'
+    } %}
+
+    {# --- Filters and Sorting Bar --- #}
+    <form method="GET" action="{{ path('app_finance') }}" class="finance-ledger__filters bg-gray-900/40 border border-gray-800 rounded-xl p-4 flex flex-col lg:flex-row gap-4 items-center justify-between backdrop-blur-md">
+        <div class="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+            {# Type Filter #}
+            <div>
+                <label for="finance-type-filter" class="sr-only">{{ 'finance.filter_type'|trans }}</label>
+                <select id="finance-type-filter" name="type" onchange="this.form.submit()" class="form-input">
+                    <option value="">{{ 'finance.all_types'|trans }}</option>
+                    {% for type in types %}
+                        <option value="{{ type.value }}" {% if current_type == type.value %}selected{% endif %}>
+                            {{ ('finance.type_' ~ type.value)|trans }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {# Actor Filter #}
+            <div>
+                <label for="finance-actor-filter" class="sr-only">{{ 'finance.filter_actor'|trans }}</label>
+                <select id="finance-actor-filter" name="actor" onchange="this.form.submit()" class="form-input">
+                    <option value="">{{ 'finance.all_actors'|trans }}</option>
+                    {% for actor in actors %}
+                        <option value="{{ actor.value }}" {% if current_actor == actor.value %}selected{% endif %}>
+                            {{ ('finance.actor_' ~ actor.value)|trans }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        {# Sort Selector #}
+        <div class="flex items-center gap-2 w-full lg:w-auto justify-end border-t border-gray-800 lg:border-none pt-3 lg:pt-0">
+            <label for="finance-sort-by" class="text-xs text-gray-550 font-semibold uppercase tracking-wider">{{ 'summoning.sort_by'|trans }}</label>
+            <select id="finance-sort-by" name="sort" onchange="this.form.submit()" class="form-input">
+                <option value="date-desc" {% if current_sort == 'date-desc' %}selected{% endif %}>{{ 'finance.sort_date_desc'|trans }}</option>
+                <option value="date-asc" {% if current_sort == 'date-asc' %}selected{% endif %}>{{ 'finance.sort_date_asc'|trans }}</option>
+                <option value="amount-desc" {% if current_sort == 'amount-desc' %}selected{% endif %}>{{ 'finance.sort_amount_desc'|trans }}</option>
+                <option value="amount-asc" {% if current_sort == 'amount-asc' %}selected{% endif %}>{{ 'finance.sort_amount_asc'|trans }}</option>
+            </select>
+        </div>
+    </form>
+
+    {# --- Ledger Table --- #}
+    <div class="finance-ledger__table-container bg-gray-900/20 border border-gray-800 rounded-2xl overflow-hidden backdrop-blur-md">
+        {% if records|length > 0 %}
+            <div class="overflow-x-auto">
+                <table class="finance-ledger-table w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-800 bg-gray-950/40 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            <th class="p-4">{{ 'finance.col_type'|trans }}</th>
+                            <th class="p-4">{{ 'finance.col_actor'|trans }}</th>
+                            <th class="p-4">{{ 'finance.col_changes'|trans }}</th>
+                            <th class="p-4">{{ 'finance.col_context'|trans }}</th>
+                            <th class="p-4 text-right">{{ 'finance.col_date'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-900 text-sm text-text-primary">
+                        {% for item in records %}
+                            <tr class="finance-ledger-table__row hover:bg-gray-900/20 transition-colors">
+                                <td class="p-4 font-semibold">
+                                    {{ ('finance.type_' ~ item.type.value)|trans }}
+                                </td>
+                                <td class="p-4">
+                                    <span class="finance-actor-badge finance-actor-badge--{{ item.actor.value }}">
+                                        {{ ('finance.actor_' ~ item.actor.value)|trans }}
+                                    </span>
+                                </td>
+                                <td class="p-4">
+                                    <div class="finance-changes flex flex-wrap gap-2">
+                                        {% if item.goldChange != 0 %}
+                                            <span class="finance-changes__item {{ item.goldChange > 0 ? 'finance-changes__item--positive' : 'finance-changes__item--negative' }}">
+                                                {{ item.goldChange > 0 ? '+' : '' }}{{ item.goldChange|number_format(0, '.', ' ') }} 🪙
+                                            </span>
+                                        {% endif %}
+                                        {% if item.crystalsChange != 0 %}
+                                            <span class="finance-changes__item {{ item.crystalsChange > 0 ? 'finance-changes__item--positive' : 'finance-changes__item--negative' }}">
+                                                {{ item.crystalsChange > 0 ? '+' : '' }}{{ item.crystalsChange|number_format(0, '.', ' ') }} 💎
+                                            </span>
+                                        {% endif %}
+                                        
+                                        {% set essences = {
+                                            'common': item.essenceCommonChange,
+                                            'uncommon': item.essenceUncommonChange,
+                                            'rare': item.essenceRareChange,
+                                            'epic': item.essenceEpicChange,
+                                            'legendary': item.essenceLegendaryChange,
+                                            'mythic': item.essenceMythicChange
+                                        } %}
+                                        {% for rarity, change in essences %}
+                                            {% if change != 0 %}
+                                                <span class="finance-changes__item {{ change > 0 ? 'finance-changes__item--positive' : 'finance-changes__item--negative' }} finance-changes__item--essence-{{ rarity }}">
+                                                    {{ change > 0 ? '+' : '' }}{{ change|number_format(0, '.', ' ') }} ✨ ({{ ('inventory.rarity_' ~ rarity)|trans }})
+                                                </span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td class="p-4">
+                                    {% if item.context is not empty %}
+                                        <div class="flex flex-wrap gap-1">
+                                            {% for k, v in item.context %}
+                                                <span class="finance-context-tag text-xs bg-gray-950/60 border border-gray-800 rounded px-1.5 py-0.5 font-mono text-text-secondary">
+                                                    {{ k }}: {{ v }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-text-muted italic">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="p-4 text-right text-text-secondary text-xs whitespace-nowrap">
+                                    {{ item.createdAt|date('Y-m-d H:i:s') }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-12 text-center text-text-muted">
+                <span class="text-4xl mb-3 block select-none">📭</span>
+                <p>{{ 'finance.no_records'|trans }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

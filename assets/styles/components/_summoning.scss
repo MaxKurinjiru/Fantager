@@ -1,0 +1,49 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  SUMMONING HISTORY — Styles for the summoning history view
+// =============================================================================
+
+@layer components {
+    .summon-history {
+        display: block;
+    }
+
+    .summon-history__filters {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        background-color: rgba(11, 18, 32, 0.4); // surface-base with opacity
+    }
+
+    .summon-history__table-container {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        background-color: rgba(22, 32, 48, 0.2); // surface-raised with opacity
+        overflow: hidden;
+    }
+
+    .summon-history-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th {
+            padding: 1rem;
+            color: var(--color-text-secondary);
+            border-bottom: 1px solid var(--color-border);
+            background-color: rgba(11, 18, 32, 0.6); // surface-base
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(55, 65, 81, 0.4); // border with opacity
+        }
+    }
+
+    .summon-history-table__row {
+        transition: background-color var(--transition-fast);
+
+        &:hover {
+            background-color: rgba(26, 37, 53, 0.3); // surface-overlay with opacity
+        }
+    }
+}

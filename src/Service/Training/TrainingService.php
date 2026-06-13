@@ -20,13 +20,6 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class TrainingService
 {
-    /**
-     * Base gold cost per training type.
-     * Actual cost = base * hero_level * (1 + current_stat / 10).
-     */
-    private const BASE_COSTS = [
-        TrainingType::Attribute->value => 100,
-        TrainingType::Magic->value => 150,
     /** Trainable primary attribute names. */
     private const PRIMARY_ATTRIBUTES = ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'];
 
@@ -176,7 +169,7 @@ class TrainingService
     /**
      * Returns available training options with calculated costs for a hero.
      *
-     * @return list<array{type: string, attribute: string|null, gold_cost: int, execute_at_hours: int}>
+     * @return list<array{type: string, attribute: string|null, execute_at_hours: int}>
      */
     public function getOptions(Hero $hero): array
     {
@@ -193,7 +186,6 @@ class TrainingService
             $options[] = [
                 'type' => TrainingType::Attribute->value,
                 'attribute' => $attr,
-                'gold_cost' => 0,
                 'execute_at_hours' => $executeAtHours,
             ];
         }
@@ -201,14 +193,12 @@ class TrainingService
         $options[] = [
             'type' => TrainingType::Magic->value,
             'attribute' => null,
-            'gold_cost' => 0,
             'execute_at_hours' => $executeAtHours,
         ];
 
         $options[] = [
             'type' => TrainingType::Form->value,
             'attribute' => null,
-            'gold_cost' => 0,
             'execute_at_hours' => $executeAtHours,
         ];
 
@@ -316,8 +306,6 @@ class TrainingService
                 $job->setTrainingType($type);
                 $job->setTargetAttribute($attribute);
                 $job->setTrainer($trainer);
-                $job->setGoldCost(0);
-                $job->setEssenceCost(0);
                 $job->setStatus(TrainingStatus::Completed);
                 $job->setStatGain($gainRaw);
                 $job->setExecuteAt($now);

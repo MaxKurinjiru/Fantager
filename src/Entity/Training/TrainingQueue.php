@@ -33,12 +33,6 @@ class TrainingQueue
     #[ORM\JoinColumn(nullable: true)]
     private ?Trainer $trainer = null;
 
-    #[ORM\Column]
-    private int $goldCost;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceCost = 0;
-
     #[ORM\Column(length: 15, enumType: TrainingStatus::class)]
     private TrainingStatus $status = TrainingStatus::Pending;
 
@@ -100,30 +94,6 @@ class TrainingQueue
     public function setTrainer(?Trainer $trainer): static
     {
         $this->trainer = $trainer;
-
-        return $this;
-    }
-
-    public function getGoldCost(): int
-    {
-        return $this->goldCost;
-    }
-
-    public function setGoldCost(int $goldCost): static
-    {
-        $this->goldCost = $goldCost;
-
-        return $this;
-    }
-
-    public function getEssenceCost(): int
-    {
-        return $this->essenceCost;
-    }
-
-    public function setEssenceCost(int $essenceCost): static
-    {
-        $this->essenceCost = $essenceCost;
 
         return $this;
     }
