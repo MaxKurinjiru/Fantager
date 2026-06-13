@@ -15,7 +15,12 @@ export default class extends Controller {
         errorQueue: String,
         errorCancel: String,
         textProcessing: String,
-        isLocked: Boolean
+        isLocked: Boolean,
+        textSaving: String,
+        textRemoving: String,
+        errorSaveFocus: String,
+        errorAssignHero: String,
+        errorRemoveHero: String
     };
 
     connect() {
@@ -58,7 +63,7 @@ export default class extends Controller {
 
         btn.disabled = true;
         const originalText = btn.textContent;
-        btn.textContent = '💾 Ukládání...';
+        btn.textContent = this.textSavingValue || 'Ukládání...';
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -76,7 +81,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Nastala chyba při ukládání zaměření.');
+                throw new Error(result.error || this.errorSaveFocusValue);
             }
 
             this.showAlert('success', this.successConfigureValue);
@@ -116,7 +121,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Nepodařilo se přiřadit hrdinu k trenérovi.');
+                throw new Error(result.error || this.errorAssignHeroValue);
             }
 
             this.showAlert('success', this.successAssignValue);
@@ -140,7 +145,7 @@ export default class extends Controller {
 
         btn.disabled = true;
         const originalText = btn.textContent;
-        btn.textContent = 'Odebírání...';
+        btn.textContent = this.textRemovingValue || 'Odebírání...';
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -158,7 +163,7 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || 'Nepodařilo se odebrat hrdinu z tréninku.');
+                throw new Error(result.error || this.errorRemoveHeroValue);
             }
 
             this.showAlert('success', this.successUnassignValue);

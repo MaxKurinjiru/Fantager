@@ -18,7 +18,8 @@ export default class extends Controller {
         kingdomId: Number,
         emptyThreadsMsg: String,
         emptyInboxMsg: String,
-        emptySentMsg: String
+        emptySentMsg: String,
+        translations: Object
     };
 
     connect() {
@@ -68,54 +69,54 @@ export default class extends Controller {
             const threads = await response.json();
             this.renderThreads(threads);
         } catch (err) {
-            this.showFeedback('error', 'Nepodařilo se načíst témata.');
+            this.showFeedback('error', this.translationsValue.error_load_threads || 'Nepodařilo se načíst témata.');
         }
-    }
+       renderThreads(threads) {
+        this.threadsTableBodyTarget.innerHTML = '';
 
-    renderThreads(threads) {
         if (threads.length === 0) {
-            this.threadsTableBodyTarget.innerHTML = `
-                <tr>
-                    <td colspan="4" class="py-12 text-center text-gray-550 select-none">
-                        ${this.emptyThreadsMsgValue}
-                    </td>
-                </tr>
-            `;
+            const emptyTemplate = document.getElementById('template-community-empty-row');
+            const emptyNode = emptyTemplate.content.cloneNode(true);
+            emptyNode.querySelector('.js-empty-text').textContent = this.emptyThreadsMsgValue;
+            this.threadsTableBodyTarget.appendChild(emptyNode);
             return;
         }
 
-        let html = '';
+        const template = document.getElementById('template-forum-thread-row');
+
         threads.forEach(thread => {
+            const rowNode = template.content.cloneNode(true);
+            const row = rowNode.querySelector('.community-row');
+            row.dataset.action = 'click->community#viewThread';
+            row.dataset.threadId = thread.id;
+
+            // Title and lock
+            rowNode.querySelector('.js-thread-title').textContent = thread.title;
+            if (thread.isLocked) {
+                rowNode.querySelector('.js-lock-icon').classList.remove('hidden');
+            }
+
+            // Category translation
+            const categoryText = this.translationsValue.categories?.[thread.category] || thread.category;
+            rowNode.querySelector('.js-thread-category').textContent = categoryText;
+
+            // Author details
             const primaryColor = thread.author_team.colors?.primary ?? '#10b981';
             const secondaryColor = thread.author_team.colors?.secondary ?? '#0f1720';
+            const colorSpan = rowNode.querySelector('.js-author-color');
+            colorSpan.style.backgroundColor = primaryColor;
+            colorSpan.style.borderColor = secondaryColor;
+            rowNode.querySelector('.js-author-name').textContent = thread.author_team.name;
+
+            // Replies and Date
+            rowNode.querySelector('.js-replies-count').textContent = thread.posts_count;
             const formattedDate = new Date(thread.createdAt).toLocaleString('cs-CZ', {
                 day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
             });
+            rowNode.querySelector('.js-created-at').textContent = formattedDate;
 
-            html += `
-                <tr class="community-row" data-action="click->community#viewThread" data-thread-id="${thread.id}">
-                    <td class="py-4 font-bold text-white">
-                        <div class="flex items-center gap-2">
-                            ${thread.isLocked ? '<span class="text-gray-550" title="Uzamčeno">🔒</span>' : ''}
-                            <span>${thread.title}</span>
-                        </div>
-                        <span class="text-[9px] uppercase font-bold text-emerald-400 tracking-wider bg-emerald-950/20 border border-emerald-900/40 px-2 py-0.5 rounded-full mt-1 inline-block">
-                            ${thread.category}
-                        </span>
-                    </td>
-                    <td class="py-4 text-gray-400">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full border border-gray-700" style="background-color: ${primaryColor}; border-color: ${secondaryColor};"></span>
-                            <span>${thread.author_team.name}</span>
-                        </div>
-                    </td>
-                    <td class="py-4 text-center text-gray-300 font-semibold">${thread.posts_count}</td>
-                    <td class="py-4 text-right text-gray-500">${formattedDate}</td>
-                </tr>
-            `;
+            this.threadsTableBodyTarget.appendChild(rowNode);
         });
-
-        this.threadsTableBodyTarget.innerHTML = html;
     }
 
     openNewThreadModal() {
@@ -131,12 +132,12 @@ export default class extends Controller {
         const body = this.newThreadBodyTarget.value.trim();
 
         if (!title || !body) {
-            this.showFeedback('warning', 'Vyplňte prosím předmět i obsah zprávy.');
+            this.showFeedback('warning', this.translationsValue.warning_fill_fields || 'Vyplňte prosím předmět i obsah zprávy.');
             return;
         }
 
         this.submitNewThreadBtnTarget.disabled = true;
-        this.submitNewThreadBtnTarget.textContent = 'Odesílám...';
+        this.submitNewThreadBtnTarget.textContent = this.translationsValue.text_sending || 'Odesílám...';
 
         try {
             const response = await fetch('/api/v1/forum/threads', {
@@ -147,18 +148,18 @@ export default class extends Controller {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.error ?? 'Nepodařilo se založit téma.');
+                throw new Error(data.error ?? (this.translationsValue.error_create_thread || 'Nepodařilo se založit téma.'));
             }
 
             // Close modal
             this.newThreadModalTarget.querySelector('.modal-close').click();
-            this.showFeedback('success', 'Téma bylo úspěšně založeno.');
+            this.showFeedback('success', this.translationsValue.success_create_thread || 'Téma bylo úspěšně založeno.');
             await this.refreshThreads();
         } catch (err) {
             this.showFeedback('error', err.message);
         } finally {
             this.submitNewThreadBtnTarget.disabled = false;
-            this.submitNewThreadBtnTarget.textContent = 'Vytvořit téma';
+            this.submitNewThreadBtnTarget.textContent = this.translationsValue.create_thread || 'Vytvořit téma';
         }
     }
 
@@ -175,14 +176,16 @@ export default class extends Controller {
 
             // Render Thread Detail
             this.threadTitleTarget.textContent = thread.title;
-            this.threadCategoryTarget.textContent = thread.category;
+            this.threadCategoryTarget.textContent = this.translationsValue.categories?.[thread.category] || thread.category;
 
             // Handle lock controls
             this.threadLockBadgeTarget.classList.toggle('hidden', !thread.isLocked);
             
             const isAuthor = thread.author_team.id === this.activeTeamIdValue;
             this.lockBtnTarget.classList.toggle('hidden', !isAuthor);
-            this.lockBtnTarget.textContent = thread.isLocked ? '🔓 Odemknout' : '🔒 Zamknout';
+            this.lockBtnTarget.textContent = thread.isLocked 
+                ? `🔓 ${this.translationsValue.btn_unlock || 'Odemknout'}` 
+                : `🔒 ${this.translationsValue.btn_lock || 'Zamknout'}`;
 
             // Reply Form Container Visibility
             this.replyFormContainerTarget.classList.toggle('hidden', thread.isLocked);
@@ -194,34 +197,32 @@ export default class extends Controller {
             this.threadsContainerTarget.classList.add('hidden');
             this.threadDetailContainerTarget.classList.remove('hidden');
         } catch (err) {
-            this.showFeedback('error', 'Nepodařilo se načíst detail tématu.');
+            this.showFeedback('error', this.translationsValue.error_load_thread_detail || 'Nepodařilo se načíst detail tématu.');
         }
     }
 
     renderPosts(posts) {
-        let html = '';
+        this.postsTimelineTarget.innerHTML = '';
+        const template = document.getElementById('template-forum-post');
+
         posts.forEach(post => {
+            const postNode = template.content.cloneNode(true);
             const primaryColor = post.author_team.colors?.primary ?? '#10b981';
             const secondaryColor = post.author_team.colors?.secondary ?? '#0f1720';
+            const colorSpan = postNode.querySelector('.js-author-color');
+            colorSpan.style.backgroundColor = primaryColor;
+            colorSpan.style.borderColor = secondaryColor;
+
+            postNode.querySelector('.js-author-name').textContent = post.author_team.name;
             const formattedDate = new Date(post.createdAt).toLocaleString('cs-CZ', {
                 day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
             });
+            postNode.querySelector('.js-created-at').textContent = formattedDate;
+            postNode.querySelector('.js-post-body').textContent = post.body;
 
-            html += `
-                <div class="community-post">
-                    <div class="community-post__header">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full border border-gray-700" style="background-color: ${primaryColor}; border-color: ${secondaryColor};"></span>
-                            <strong class="text-white">${post.author_team.name}</strong>
-                        </div>
-                        <span>${formattedDate}</span>
-                    </div>
-                    <div class="community-post__body">${post.body}</div>
-                </div>
-            `;
+            this.postsTimelineTarget.appendChild(postNode);
         });
 
-        this.postsTimelineTarget.innerHTML = html;
         // Scroll to bottom
         this.postsTimelineTarget.scrollTop = this.postsTimelineTarget.scrollHeight;
     }
@@ -239,7 +240,7 @@ export default class extends Controller {
         if (!body) return;
 
         this.submitReplyBtnTarget.disabled = true;
-        this.submitReplyBtnTarget.textContent = 'Odesílám...';
+        this.submitReplyBtnTarget.textContent = this.translationsValue.text_sending || 'Odesílám...';
 
         try {
             const response = await fetch(`/api/v1/forum/threads/${this.activeThreadId}/posts`, {
@@ -250,7 +251,7 @@ export default class extends Controller {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.error ?? 'Nepodařilo se odeslat odpověď.');
+                throw new Error(data.error ?? (this.translationsValue.error_send_reply || 'Nepodařilo se odeslat odpověď.'));
             }
 
             this.replyInputTarget.value = '';
@@ -260,7 +261,7 @@ export default class extends Controller {
             this.showFeedback('error', err.message);
         } finally {
             this.submitReplyBtnTarget.disabled = false;
-            this.submitReplyBtnTarget.textContent = 'Odeslat odpověď';
+            this.submitReplyBtnTarget.textContent = this.translationsValue.post_reply || 'Odeslat odpověď';
         }
     }
 
@@ -272,7 +273,7 @@ export default class extends Controller {
             const thread = await response.json();
             this.renderPosts(thread.posts);
         } catch (err) {
-            this.showFeedback('error', 'Nepodařilo se obnovit příspěvky.');
+            this.showFeedback('error', this.translationsValue.error_refresh_posts || 'Nepodařilo se obnovit příspěvky.');
         }
     }
 
@@ -291,18 +292,18 @@ export default class extends Controller {
 
             this.isLockedThread = newLockState;
             this.threadLockBadgeTarget.classList.toggle('hidden', !newLockState);
-            this.lockBtnTarget.textContent = newLockState ? '🔓 Odemknout' : '🔒 Zamknout';
+            this.lockBtnTarget.textContent = newLockState 
+                ? `🔓 ${this.translationsValue.btn_unlock || 'Odemknout'}` 
+                : `🔒 ${this.translationsValue.btn_lock || 'Zamknout'}`;
             this.replyFormContainerTarget.classList.toggle('hidden', newLockState);
         } catch (err) {
-            this.showFeedback('error', 'Nepodařilo se změnit zámek tématu.');
+            this.showFeedback('error', this.translationsValue.error_toggle_lock || 'Nepodařilo se změnit zámek tématu.');
         }
     }
 
     // =============================================================================
     //  MAIL LOGIC
-    // =============================================================================
-
-    async switchFolder(e) {
+    // ======================    async switchFolder(e) {
         e.preventDefault();
         const folder = e.currentTarget.dataset.folder;
         this.currentFolder = folder;
@@ -315,11 +316,11 @@ export default class extends Controller {
 
         // Set column and title names
         if (folder === 'sent') {
-            this.mailFolderTitleTarget.textContent = 'Odeslané zprávy';
-            this.mailSenderColTitleTarget.textContent = 'Příjemce';
+            this.mailFolderTitleTarget.textContent = this.translationsValue.sent_title || 'Odeslané zprávy';
+            this.mailSenderColTitleTarget.textContent = this.translationsValue.col_recipient || 'Příjemce';
         } else {
-            this.mailFolderTitleTarget.textContent = 'Doručené zprávy';
-            this.mailSenderColTitleTarget.textContent = 'Odesílatel';
+            this.mailFolderTitleTarget.textContent = this.translationsValue.inbox_title || 'Doručené zprávy';
+            this.mailSenderColTitleTarget.textContent = this.translationsValue.col_sender || 'Odesílatel';
         }
 
         await this.refreshMessages();
@@ -333,57 +334,56 @@ export default class extends Controller {
             const messages = await response.json();
             this.renderMessages(messages);
         } catch (err) {
-            this.showFeedback('error', 'Nepodařilo se načíst poštu.');
+            this.showFeedback('error', this.translationsValue.error_load_mail || 'Nepodařilo se načíst poštu.');
         }
     }
 
     renderMessages(messages) {
+        this.mailTableBodyTarget.innerHTML = '';
+
         if (messages.length === 0) {
             const emptyMsg = this.currentFolder === 'sent' ? this.emptySentMsgValue : this.emptyInboxMsgValue;
-            this.mailTableBodyTarget.innerHTML = `
-                <tr>
-                    <td colspan="4" class="py-12 text-center text-gray-550 select-none">
-                        ${emptyMsg}
-                    </td>
-                </tr>
-            `;
+            const emptyTemplate = document.getElementById('template-community-empty-row');
+            const emptyNode = emptyTemplate.content.cloneNode(true);
+            emptyNode.querySelector('.js-empty-text').textContent = emptyMsg;
+            this.mailTableBodyTarget.appendChild(emptyNode);
             return;
         }
 
-        let html = '';
+        const template = document.getElementById('template-mail-message-row');
+
         messages.forEach(msg => {
+            const rowNode = template.content.cloneNode(true);
+            const row = rowNode.querySelector('.community-row');
+            row.dataset.action = 'click->community#readMessage';
+            row.dataset.messageId = msg.id;
+
+            // Status indicator
+            const indicator = msg.readAt ? '📖' : '✉️';
+            const unreadSpan = rowNode.querySelector('.js-unread-indicator');
+            unreadSpan.dataset.communityUnreadIndicatorId = msg.id;
+            unreadSpan.textContent = this.currentFolder === 'sent' ? '📤' : indicator;
+
+            // Subject
+            rowNode.querySelector('.js-subject').textContent = msg.subject;
+
+            // Target Team
             const targetTeam = this.currentFolder === 'sent' ? msg.receiver_team : msg.sender_team;
             const primaryColor = targetTeam.colors?.primary ?? '#10b981';
             const secondaryColor = targetTeam.colors?.secondary ?? '#0f1720';
+            const colorSpan = rowNode.querySelector('.js-team-color');
+            colorSpan.style.backgroundColor = primaryColor;
+            colorSpan.style.borderColor = secondaryColor;
+            rowNode.querySelector('.js-team-name').textContent = targetTeam.name;
+
+            // Date
             const formattedDate = new Date(msg.sentAt).toLocaleString('cs-CZ', {
                 day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
             });
+            rowNode.querySelector('.js-sent-at').textContent = formattedDate;
 
-            // Status indicator: envelope for unread inbox, open book for read
-            const indicator = msg.readAt ? '📖' : '✉️';
-
-            html += `
-                <tr class="community-row" data-action="click->community#readMessage" data-message-id="${msg.id}">
-                    <td class="py-4 text-center text-lg">
-                        <span data-community-unread-indicator-id="${msg.id}">
-                            ${this.currentFolder === 'sent' ? '📤' : indicator}
-                        </span>
-                    </td>
-                    <td class="py-4 font-bold text-white">
-                        <span>${msg.subject}</span>
-                    </td>
-                    <td class="py-4 text-gray-400">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full border border-gray-700" style="background-color: ${primaryColor}; border-color: ${secondaryColor};"></span>
-                            <span>${targetTeam.name}</span>
-                        </div>
-                    </td>
-                    <td class="py-4 text-right text-gray-500">${formattedDate}</td>
-                </tr>
-            `;
+            this.mailTableBodyTarget.appendChild(rowNode);
         });
-
-        this.mailTableBodyTarget.innerHTML = html;
     }
 
     openComposeModal() {
@@ -400,12 +400,12 @@ export default class extends Controller {
         const body = this.composeBodyTarget.value.trim();
 
         if (!receiver_team_id || !subject || !body) {
-            this.showFeedback('warning', 'Prosím zvolte příjemce a vyplňte předmět i obsah zprávy.');
+            this.showFeedback('warning', this.translationsValue.warning_compose_fields || 'Prosím zvolte příjemce a vyplňte předmět i obsah zprávy.');
             return;
         }
 
         this.submitComposeBtnTarget.disabled = true;
-        this.submitComposeBtnTarget.textContent = 'Odesílám...';
+        this.submitComposeBtnTarget.textContent = this.translationsValue.text_sending || 'Odesílám...';
 
         try {
             const response = await fetch('/api/v1/messages', {
@@ -416,12 +416,12 @@ export default class extends Controller {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.error ?? 'Nepodařilo se odeslat zprávu.');
+                throw new Error(data.error ?? (this.translationsValue.error_send_msg || 'Nepodařilo se odeslat zprávu.'));
             }
 
             // Close modal
             this.composeModalTarget.querySelector('.modal-close').click();
-            this.showFeedback('success', 'Zpráva byla úspěšně odeslána.');
+            this.showFeedback('success', this.translationsValue.success_send_msg || 'Zpráva byla úspěšně odeslána.');
             
             if (this.currentFolder === 'sent') {
                 await this.refreshMessages();
@@ -430,7 +430,7 @@ export default class extends Controller {
             this.showFeedback('error', err.message);
         } finally {
             this.submitComposeBtnTarget.disabled = false;
-            this.submitComposeBtnTarget.textContent = 'Odeslat zprávu';
+            this.submitComposeBtnTarget.textContent = this.translationsValue.send_msg || 'Odeslat zprávu';
         }
     }
 
@@ -453,14 +453,14 @@ export default class extends Controller {
 
             // Sender/Recipient styling
             if (this.currentFolder === 'sent') {
-                this.readSenderLabelTarget.textContent = 'Komu:';
+                this.readSenderLabelTarget.textContent = `${this.translationsValue.col_recipient || 'Recipient'}:`;
                 this.readSenderNameTarget.textContent = msg.receiver_team.name;
                 const primaryColor = msg.receiver_team.colors?.primary ?? '#10b981';
                 const secondaryColor = msg.receiver_team.colors?.secondary ?? '#0f1720';
                 this.readSenderColorTarget.style.backgroundColor = primaryColor;
                 this.readSenderColorTarget.style.borderColor = secondaryColor;
             } else {
-                this.readSenderLabelTarget.textContent = 'Od:';
+                this.readSenderLabelTarget.textContent = `${this.translationsValue.col_sender || 'Sender'}:`;
                 this.readSenderNameTarget.textContent = msg.sender_team.name;
                 const primaryColor = msg.sender_team.colors?.primary ?? '#10b981';
                 const secondaryColor = msg.sender_team.colors?.secondary ?? '#0f1720';
@@ -477,7 +477,7 @@ export default class extends Controller {
                 unreadIndicator.textContent = '📖';
             }
         } catch (err) {
-            this.showFeedback('error', 'Nepodařilo se přečíst zprávu.');
+            this.showFeedback('error', this.translationsValue.error_read_msg || 'Nepodařilo se přečíst zprávu.');
         }
     }
 
@@ -486,7 +486,7 @@ export default class extends Controller {
         if (!this.activeMessageId) return;
 
         this.deleteMsgBtnTarget.disabled = true;
-        this.deleteMsgBtnTarget.textContent = 'Mazu...';
+        this.deleteMsgBtnTarget.textContent = this.translationsValue.text_deleting || 'Mažu...';
 
         try {
             const response = await fetch(`/api/v1/messages/${this.activeMessageId}`, {
@@ -497,13 +497,13 @@ export default class extends Controller {
 
             // Close modal
             this.readMessageModalTarget.querySelector('.modal-close').click();
-            this.showFeedback('success', 'Zpráva byla smazána.');
+            this.showFeedback('success', this.translationsValue.success_delete_msg || 'Zpráva byla smazána.');
             await this.refreshMessages();
         } catch (err) {
-            this.showFeedback('error', 'Nepodařilo se smazat zprávu.');
+            this.showFeedback('error', this.translationsValue.error_delete_msg || 'Nepodařilo se smazat zprávu.');
         } finally {
             this.deleteMsgBtnTarget.disabled = false;
-            this.deleteMsgBtnTarget.textContent = '🗑️ Smazat zprávu';
+            this.deleteMsgBtnTarget.textContent = `🗑️ ${this.translationsValue.delete_msg || 'Smazat zprávu'}`;
             this.activeMessageId = null;
         }
     }

@@ -48,13 +48,13 @@
         <div data-controller="tab" class="space-y-6">
             {# Tab Switcher Buttons #}
             <div class="flex border-b border-gray-800 overflow-x-auto scrollbar-none">
-                <button data-tab-target="btn" data-action="click->tab#switch" data-tab="tab-standings" class="tab-btn tab-btn--active">
+                <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="tab-standings" class="tab-btn tab-btn--active">
                     🏆 {{ 'league.tab_standings'|trans }}
                 </button>
-                <button data-tab-target="btn" data-action="click->tab#switch" data-tab="tab-fixtures" class="tab-btn">
+                <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="tab-fixtures" class="tab-btn">
                     📅 {{ 'league.tab_fixtures'|trans }}
                 </button>
-                <button data-tab-target="btn" data-action="click->tab#switch" data-tab="tab-leaderboard" class="tab-btn">
+                <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="tab-leaderboard" class="tab-btn">
                     🌎 {{ 'league.tab_leaderboard'|trans }}
                 </button>
             </div>

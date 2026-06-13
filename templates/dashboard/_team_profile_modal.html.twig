@@ -83,7 +83,9 @@
                                              data-profile-settings-target="colorPrimaryPicker"
                                              value="{{ team.colors.primary ?? '#10b981' }}"
                                              class="w-10 h-9 rounded border border-border bg-transparent p-0.5 cursor-pointer">
+                                      <label for="settings_color_primary_text" class="sr-only">{{ 'team_profile.color_primary'|trans }}</label>
                                       <input type="text"
+                                             id="settings_color_primary_text"
                                              data-profile-settings-target="colorPrimaryText"
                                              value="{{ team.colors.primary ?? '#10b981' }}"
                                              class="form-input uppercase">
@@ -98,7 +100,9 @@
                                              data-profile-settings-target="colorSecondaryPicker"
                                              value="{{ team.colors.secondary ?? '#0f1720' }}"
                                              class="w-10 h-9 rounded border border-border bg-transparent p-0.5 cursor-pointer">
+                                      <label for="settings_color_secondary_text" class="sr-only">{{ 'team_profile.color_secondary'|trans }}</label>
                                       <input type="text"
+                                             id="settings_color_secondary_text"
                                              data-profile-settings-target="colorSecondaryText"
                                              value="{{ team.colors.secondary ?? '#0f1720' }}"
                                              class="form-input uppercase">

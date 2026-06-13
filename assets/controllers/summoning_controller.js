@@ -105,10 +105,16 @@ export default class extends Controller {
             const val = hero.attributes ? hero.attributes[key] : undefined;
             const statDiv = document.createElement('div');
             statDiv.className = 'bg-gray-950 border border-gray-850 p-2.5 rounded-lg text-center';
-            statDiv.innerHTML = `
-                <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5">${key.toUpperCase()}</span>
-                <span class="text-sm font-extrabold text-white">${val}</span>
-            `;
+            const spanKey = document.createElement('span');
+            spanKey.className = 'block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5';
+            spanKey.textContent = key.toUpperCase();
+            
+            const spanVal = document.createElement('span');
+            spanVal.className = 'text-sm font-extrabold text-white';
+            spanVal.textContent = val !== undefined ? val.toString() : '';
+            
+            statDiv.appendChild(spanKey);
+            statDiv.appendChild(spanVal);
             this.heroStatsTarget.appendChild(statDiv);
         });
 

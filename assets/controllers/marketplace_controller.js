@@ -114,19 +114,18 @@ export default class extends Controller {
         const mode = event.target.value;
         if (mode === 'buy_now') {
             this.buyoutFieldContainerTarget.classList.add('hidden');
-            this.priceLabelTarget.textContent = this.translationsValue.label_buyout_price || 'Pevná cena (Buyout)';
+            this.priceLabelTarget.textContent = this.translationsValue.label_buyout_price || '';
         } else {
             this.buyoutFieldContainerTarget.classList.remove('hidden');
-            this.priceLabelTarget.textContent = this.translationsValue.label_min_bid || 'Počáteční příhoz / Min bid';
+            this.priceLabelTarget.textContent = this.translationsValue.label_min_bid || '';
         }
     }
 
     async loadListings(params = {}) {
-        this.browseContainerTarget.innerHTML = `
-            <div class="col-span-3 flex justify-center py-12">
-                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500"></div>
-            </div>
-        `;
+        this.browseContainerTarget.innerHTML = '';
+        const loadingTemplate = document.getElementById('template-loading-grid');
+        const loadingNode = loadingTemplate.content.cloneNode(true);
+        this.browseContainerTarget.appendChild(loadingNode);
 
         let url = '/api/v1/marketplace';
         const queryParams = new URLSearchParams(params);
@@ -140,7 +139,13 @@ export default class extends Controller {
             const listings = await response.json();
             this.renderBrowse(listings);
         } catch (error) {
-            this.browseContainerTarget.innerHTML = `<div class="col-span-3 text-center text-red-500 py-8">Chyba při načítání nabídek: ${error.message}</div>`;
+            this.browseContainerTarget.innerHTML = '';
+            const errorTemplate = document.getElementById('template-error-grid');
+            const errorNode = errorTemplate.content.cloneNode(true);
+            const errText = errorNode.querySelector('.js-error-text');
+            errText.textContent = (this.translationsValue.error_fetch_listings || 'Chyba při načítání nabídek: %error%')
+                .replace('%error%', error.message);
+            this.browseContainerTarget.appendChild(errorNode);
         }
     }
 
@@ -165,7 +170,11 @@ export default class extends Controller {
 
     renderBrowse(listings) {
         if (listings.length === 0) {
-            this.browseContainerTarget.innerHTML = `<div class="col-span-3 text-center text-gray-500 py-12">${this.translationsValue.empty_listings || 'Žádné nabídky neodpovídají filtrům.'}</div>`;
+            this.browseContainerTarget.innerHTML = '';
+            const emptyTemplate = document.getElementById('template-empty-grid');
+            const emptyNode = emptyTemplate.content.cloneNode(true);
+            emptyNode.querySelector('.js-empty-text').textContent = this.translationsValue.empty_listings || '';
+            this.browseContainerTarget.appendChild(emptyNode);
             return;
         }
 
@@ -182,7 +191,7 @@ export default class extends Controller {
                 card.querySelector('.js-level').textContent = `Lvl ${hero.level}`;
                 card.querySelector('.js-name').textContent = hero.name;
                 card.querySelector('.js-race').textContent = this.racesValue[hero.race] || hero.race;
-                card.querySelector('.js-age').textContent = `${hero.age} ${this.translationsValue.years_suffix || 'let'}`;
+                card.querySelector('.js-age').textContent = `${hero.age} ${this.translationsValue.years_suffix || ''}`;
                 card.querySelector('.js-form').textContent = `${hero.form}%`;
                 card.querySelector('.js-fatigue').textContent = `${hero.fatigue}%`;
 
@@ -219,7 +228,7 @@ export default class extends Controller {
                 } else {
                     const span = document.createElement('span');
                     span.className = 'text-gray-500 font-medium';
-                    span.textContent = this.translationsValue.label_no_bonuses || 'Bez bonusů';
+                    span.textContent = this.translationsValue.label_no_bonuses || '';
                     bonusesContainer.appendChild(span);
                 }
 
@@ -228,7 +237,8 @@ export default class extends Controller {
                 card = template.content.cloneNode(true).querySelector('.marketplace-card');
                 const trainer = listing.entity;
 
-                card.querySelector('.js-age').textContent = `Věk: ${trainer.age} ${this.translationsValue.years_suffix || 'let'}`;
+                const ageLabel = this.translationsValue.label_age || 'Age';
+                card.querySelector('.js-age').textContent = `${ageLabel}: ${trainer.age} ${this.translationsValue.years_suffix || ''}`;
                 card.querySelector('.js-name').textContent = trainer.name;
                 card.querySelector('.js-race').textContent = this.racesValue[trainer.race] || trainer.race;
 
@@ -265,7 +275,7 @@ export default class extends Controller {
                         .replace('%bidder%', listing.highest_bid.bidder_name);
                     highestBidSpan.textContent = bidText;
                 } else {
-                    const bidText = (this.translationsValue.no_bids || '🪙 %amount% (počáteční)')
+                    const bidText = (this.translationsValue.no_bids || '🪙 %amount% (starting)')
                         .replace('%amount%', listing.price_gold);
                     highestBidSpan.textContent = bidText;
                 }
@@ -276,14 +286,14 @@ export default class extends Controller {
             if (isSeller) {
                 const noticeDiv = document.createElement('div');
                 noticeDiv.className = 'marketplace-notice';
-                noticeDiv.textContent = this.translationsValue.own_listing_hint || 'Tato nabídka patří vašemu cechu.';
+                noticeDiv.textContent = this.translationsValue.own_listing_hint || '';
                 actionsSec.appendChild(noticeDiv);
             } else {
                 if (buyoutPrice !== null) {
                     const buyBtn = document.createElement('button');
                     buyBtn.type = 'button';
                     buyBtn.className = 'btn btn-primary w-full';
-                    buyBtn.textContent = this.translationsValue.btn_buyout || 'Koupit ihned';
+                    buyBtn.textContent = this.translationsValue.btn_buyout || '';
                     buyBtn.dataset.action = 'click->marketplace#buyoutItem';
                     buyBtn.dataset.id = listing.id;
                     buyBtn.dataset.price = buyoutPrice;
@@ -295,26 +305,20 @@ export default class extends Controller {
                     const minIncrement = Math.ceil((currentHighest * 0.05) / 10) * 10;
                     const minNextBid = currentHighest + minIncrement;
 
-                    const bidFormDiv = document.createElement('div');
-                    bidFormDiv.className = 'flex items-center space-x-2 w-full mt-2 border-t border-gray-800 pt-3';
+                    const bidFormTemplate = document.getElementById('template-bid-form');
+                    const bidFormNode = bidFormTemplate.content.cloneNode(true);
 
-                    const bidInput = document.createElement('input');
-                    bidInput.type = 'number';
+                    const bidInput = bidFormNode.querySelector('.js-bid-input');
                     bidInput.min = minNextBid;
                     bidInput.value = minNextBid;
                     bidInput.id = `bid-input-${listing.id}`;
-                    bidInput.className = 'form-input text-center w-24';
 
-                    const bidBtn = document.createElement('button');
-                    bidBtn.type = 'button';
-                    bidBtn.className = 'btn btn-outline whitespace-nowrap';
-                    bidBtn.textContent = this.translationsValue.btn_bid || 'Přihodit';
+                    const bidBtn = bidFormNode.querySelector('.js-bid-btn');
+                    bidBtn.textContent = this.translationsValue.btn_bid || '';
                     bidBtn.dataset.action = 'click->marketplace#submitBid';
                     bidBtn.dataset.id = listing.id;
 
-                    bidFormDiv.appendChild(bidInput);
-                    bidFormDiv.appendChild(bidBtn);
-                    actionsSec.appendChild(bidFormDiv);
+                    actionsSec.appendChild(bidFormNode);
                 }
             }
 
@@ -334,7 +338,7 @@ export default class extends Controller {
         const originalText = submitBtn ? submitBtn.textContent : '';
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Zpracování...';
+            submitBtn.textContent = this.translationsValue.label_processing || 'Zpracování...';
         }
 
         const formData = new FormData(form);
@@ -452,13 +456,9 @@ export default class extends Controller {
     }
 
     async loadMyListings() {
-        this.myListingsContainerTarget.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center py-12">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
-                </td>
-            </tr>
-        `;
+        this.myListingsContainerTarget.innerHTML = '';
+        const loadingTemplate = document.getElementById('template-loading-row');
+        this.myListingsContainerTarget.appendChild(loadingTemplate.content.cloneNode(true));
 
         try {
             const response = await fetch('/api/v1/marketplace/my-listings');
@@ -466,13 +466,22 @@ export default class extends Controller {
             const listings = await response.json();
             this.renderMyListings(listings);
         } catch (error) {
-            this.myListingsContainerTarget.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-8">Chyba při načítání: ${error.message}</td></tr>`;
+            this.myListingsContainerTarget.innerHTML = '';
+            const errorTemplate = document.getElementById('template-error-row');
+            const errorNode = errorTemplate.content.cloneNode(true);
+            errorNode.querySelector('.js-error-text').textContent =
+                (this.translationsValue.error_fetch_listings || 'Chyba při načítání: %error%').replace('%error%', error.message);
+            this.myListingsContainerTarget.appendChild(errorNode);
         }
     }
 
     renderMyListings(listings) {
         if (listings.length === 0) {
-            this.myListingsContainerTarget.innerHTML = `<tr><td colspan="7" class="text-center text-gray-500 py-8">${this.translationsValue.empty_my_listings || 'Nemáte žádné vystavené nabídky.'}</td></tr>`;
+            this.myListingsContainerTarget.innerHTML = '';
+            const emptyTemplate = document.getElementById('template-empty-row');
+            const emptyNode = emptyTemplate.content.cloneNode(true);
+            emptyNode.querySelector('.js-empty-text').textContent = this.translationsValue.empty_my_listings || '';
+            this.myListingsContainerTarget.appendChild(emptyNode);
             return;
         }
 
@@ -483,15 +492,19 @@ export default class extends Controller {
             const row = template.content.cloneNode(true).querySelector('tr');
 
             let name = listing.entity ? listing.entity.name : 'Unknown';
-            let category = listing.listing_type === 'hero' ? '👥 Hrdina' : (listing.listing_type === 'item' ? '🗡️ Předmět' : '🏋️ Trenér');
-            let mode = listing.listing_mode === 'auction' ? 'Aukce' : 'Direct Buy';
+            let category = listing.listing_type === 'hero'
+                ? `👥 ${this.translationsValue.type_hero || ''}`
+                : (listing.listing_type === 'item' ? `🗡️ ${this.translationsValue.type_item || ''}` : `🏋️ ${this.translationsValue.type_trainer || ''}`);
+            let mode = listing.listing_mode === 'auction'
+                ? (this.translationsValue.mode_auction || 'Auction')
+                : (this.translationsValue.direct_buy || 'Direct Buy');
 
             row.querySelector('.js-name').textContent = name;
             row.querySelector('.js-type-mode').textContent = `${category} • ${mode}`;
             row.querySelector('.js-price').textContent = `🪙 ${listing.price_gold}`;
 
-            const highestBid = listing.highest_bid 
-                ? `🪙 ${listing.highest_bid.amount} (${listing.highest_bid.bidder_name})` 
+            const highestBid = listing.highest_bid
+                ? `🪙 ${listing.highest_bid.amount} (${listing.highest_bid.bidder_name})`
                 : (this.translationsValue.no_bids || 'Bez příhozů');
             row.querySelector('.js-highest-bid').textContent = highestBid;
 
@@ -507,18 +520,18 @@ export default class extends Controller {
             // Cancel action button
             const actionTd = row.querySelector('.js-action');
             if (listing.status === 'active' && !listing.highest_bid) {
-                const cancelBtn = document.createElement('button');
-                cancelBtn.type = 'button';
-                cancelBtn.className = 'btn btn-danger btn--sm';
-                cancelBtn.textContent = this.translationsValue.btn_cancel || 'Zrušit';
+                const cancelBtnTemplate = document.getElementById('template-cancel-btn');
+                const cancelNode = cancelBtnTemplate.content.cloneNode(true);
+                const cancelBtn = cancelNode.querySelector('.js-cancel-btn');
+                cancelBtn.textContent = this.translationsValue.btn_cancel || '';
                 cancelBtn.dataset.action = 'click->marketplace#cancelListing';
                 cancelBtn.dataset.id = listing.id;
-                actionTd.appendChild(cancelBtn);
+                actionTd.appendChild(cancelNode);
             } else if (listing.status === 'active' && listing.highest_bid) {
-                const activeSpan = document.createElement('span');
-                activeSpan.className = 'text-[10px] text-gray-550 font-medium';
-                activeSpan.textContent = this.translationsValue.active_auction || 'Aktivní aukce';
-                actionTd.appendChild(activeSpan);
+                const activeSpanTemplate = document.getElementById('template-active-auction-span');
+                const activeNode = activeSpanTemplate.content.cloneNode(true);
+                activeNode.querySelector('.js-active-span').textContent = this.translationsValue.active_auction || '';
+                actionTd.appendChild(activeNode);
             }
 
             this.myListingsContainerTarget.appendChild(row);
@@ -560,13 +573,9 @@ export default class extends Controller {
     }
 
     async loadHistory() {
-        this.historyContainerTarget.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center py-12">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
-                </td>
-            </tr>
-        `;
+        this.historyContainerTarget.innerHTML = '';
+        const loadingTemplate = document.getElementById('template-loading-row');
+        this.historyContainerTarget.appendChild(loadingTemplate.content.cloneNode(true));
 
         try {
             const response = await fetch('/api/v1/marketplace/history');
@@ -574,13 +583,22 @@ export default class extends Controller {
             const history = await response.json();
             this.renderHistory(history);
         } catch (error) {
-            this.historyContainerTarget.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-8">Chyba při načítání: ${error.message}</td></tr>`;
+            this.historyContainerTarget.innerHTML = '';
+            const errorTemplate = document.getElementById('template-error-row');
+            const errorNode = errorTemplate.content.cloneNode(true);
+            errorNode.querySelector('.js-error-text').textContent =
+                (this.translationsValue.error_fetch_listings || 'Chyba při načítání: %error%').replace('%error%', error.message);
+            this.historyContainerTarget.appendChild(errorNode);
         }
     }
 
     renderHistory(history) {
         if (history.length === 0) {
-            this.historyContainerTarget.innerHTML = `<tr><td colspan="7" class="text-center text-gray-500 py-8">${this.translationsValue.empty_history || 'Žádná historie transakcí.'}</td></tr>`;
+            this.historyContainerTarget.innerHTML = '';
+            const emptyTemplate = document.getElementById('template-empty-row');
+            const emptyNode = emptyTemplate.content.cloneNode(true);
+            emptyNode.querySelector('.js-empty-text').textContent = this.translationsValue.empty_history || '';
+            this.historyContainerTarget.appendChild(emptyNode);
             return;
         }
 
@@ -592,7 +610,9 @@ export default class extends Controller {
 
             const date = new Date(tx.created_at);
             const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            let category = tx.listing_type === 'hero' ? '👥 Hrdina' : (tx.listing_type === 'item' ? '🗡️ Předmět' : '🏋️ Trenér');
+            let category = tx.listing_type === 'hero'
+                ? `👥 ${this.translationsValue.type_hero || ''}`
+                : (tx.listing_type === 'item' ? `🗡️ ${this.translationsValue.type_item || ''}` : `🏋️ ${this.translationsValue.type_trainer || ''}`);
 
             row.querySelector('.js-id').textContent = `#${tx.id}`;
             row.querySelector('.js-name').textContent = tx.entity_name;

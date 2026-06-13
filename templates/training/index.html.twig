@@ -12,6 +12,11 @@
      data-training-error-cancel-value="{{ 'js_flash.training.error_cancel'|trans }}"
      data-training-text-processing-value="{{ 'js_flash.training.text_processing'|trans }}"
      data-training-is-locked-value="{{ isLocked ? 'true' : 'false' }}"
+     data-training-text-saving-value="{{ 'js_flash.training.text_saving'|trans }}"
+     data-training-text-removing-value="{{ 'js_flash.training.text_removing'|trans }}"
+     data-training-error-save-focus-value="{{ 'js_flash.training.error_save_focus'|trans }}"
+     data-training-error-assign-hero-value="{{ 'js_flash.training.error_assign_hero'|trans }}"
+     data-training-error-remove-hero-value="{{ 'js_flash.training.error_remove_hero'|trans }}"
 >
     
     {# --- Header Section --- #}
@@ -43,7 +48,7 @@
             <span class="text-3xl select-none leading-none">🔒</span>
             <div class="space-y-1">
                 <h4 class="font-bold text-white text-sm">{{ 'training.lock_warning'|trans }}</h4>
-                <p class="text-xs text-red-300/80">Od středy 12:00 do pátky 10:00 jsou tréninky uzamčeny a nelze měnit konfiguraci ani přiřazovat hrdiny.</p>
+                <p class="text-xs text-red-300/80">{{ 'training.lock_desc'|trans }}</p>
             </div>
         </div>
     {% endif %}
@@ -88,7 +93,7 @@
                                 <div>
                                     <h3 class="font-extrabold text-white text-lg leading-tight">{{ trainer.name }}</h3>
                                     <span class="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">
-                                        {{ trainer.race.value|capitalize }} &bull; {{ 'heroes.primary_attrs'|trans }} Průměr: T{{ (trainer.str + trainer.dex + trainer.kon + trainer.spd + trainer.intel + trainer.wil + trainer.cha + trainer.lck) // 8 }}
+                                        {{ trainer.race.value|capitalize }} &bull; {{ 'heroes.primary_attrs'|trans }} {{ 'training.average'|trans }}: T{{ (trainer.str + trainer.dex + trainer.kon + trainer.spd + trainer.intel + trainer.wil + trainer.cha + trainer.lck) // 8 }}
                                     </span>
                                 </div>
                             </div>
@@ -140,7 +145,7 @@
 
                         {# Trainee Slot List #}
                         <div class="space-y-3">
-                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Svěřenci ve slotech</h4>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ 'training.trainees_in_slots'|trans }}</h4>
                             <div class="space-y-2">
                                 {% for hero in trainer.heroes %}
                                     <div class="bg-gray-955 border border-gray-850 px-4 py-3 rounded-xl flex items-center justify-between text-xs">
@@ -149,7 +154,7 @@
                                             <div>
                                                 <span class="font-bold text-white block">{{ hero.name }}</span>
                                                 <span class="text-[10px] text-gray-500 font-medium">
-                                                    {{ 'heroes.level'|trans }} {{ hero.level }} &bull; Únava: {{ hero.fatigue }}% &bull; Forma: {{ hero.form }}%
+                                                    {{ 'heroes.level'|trans }} {{ hero.level }} &bull; {{ 'heroes.fatigue'|trans }}: {{ hero.fatigue }}% &bull; {{ 'heroes.combat_form'|trans }}: {{ hero.form }}%
                                                 </span>
                                             </div>
                                         </div>
@@ -178,7 +183,7 @@
                             <select class="form-input text-xs font-medium"
                                     data-action="change->training#assignTrainee"
                                     data-trainer-id="{{ trainer.id }}">
-                                <option value="">-- Vyberte hrdinu k přiřazení --</option>
+                                <option value="">-- {{ 'training.select_trainee'|trans }} --</option>
                                 {% for hero in heroes %}
                                     {% if hero.status.value != 'dead' and hero.trainer is null %}
                                         <option value="{{ hero.id }}">
@@ -193,8 +198,8 @@
             {% else %}
                 <div class="text-center py-16 border border-gray-800 border-dashed rounded-2xl opacity-60 w-full col-span-2">
                     <span class="text-5xl block mb-2">📭</span>
-                    <h3 class="font-bold text-white">Žádní trenéři</h3>
-                    <p class="text-xs text-gray-400">Váš tým momentálně nevlastní žádné trenéry.</p>
+                    <h3 class="font-bold text-white">{{ 'training.no_trainers_title'|trans }}</h3>
+                    <p class="text-xs text-gray-400">{{ 'training.no_trainers_desc'|trans }}</p>
                 </div>
             {% endfor %}
         </div>
@@ -212,8 +217,8 @@
                             <th class="pb-3">{{ 'nav.heroes'|trans }}</th>
                             <th class="pb-3">{{ 'training.trainer'|trans }}</th>
                             <th class="pb-3">{{ 'training.type'|trans }}</th>
-                            <th class="pb-3 text-center">{{ 'heroes.fatigue'|trans }} (Předpověď)</th>
-                            <th class="pb-3 text-center">{{ 'heroes.combat_form'|trans }} (Předpověď)</th>
+                            <th class="pb-3 text-center">{{ 'heroes.fatigue'|trans }} ({{ 'training.forecast'|trans }})</th>
+                            <th class="pb-3 text-center">{{ 'heroes.combat_form'|trans }} ({{ 'training.forecast'|trans }})</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-850">
@@ -265,7 +270,7 @@
                         {% if totalActive == 0 %}
                             <tr>
                                 <td colspan="5" class="py-12 text-center text-gray-550 select-none">
-                                    Žádní hrdinové momentálně netrénují.
+                                    {{ 'training.no_active_trainees'|trans }}
                                 </td>
                             </tr>
                         {% endif %}

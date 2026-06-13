@@ -65,6 +65,7 @@ auth:
   reset_password_confirm_new: New Password
   reset_password_confirm_confirm: Confirm New Password
   reset_password_confirm_submit: Set New Password
+  toggle_password_visibility: Toggle password visibility
 
 homepage:
   title: Fantager
@@ -432,6 +433,13 @@ training:
   success_unassign: "Hero removed from trainer successfully."
   tab_trainers: "Trainers"
   tab_active: "Active Trainees"
+  trainees_in_slots: "Trainees in Slots"
+  no_active_trainees: "No heroes are currently training."
+  no_trainers_title: "No Trainers"
+  no_trainers_desc: "Your team currently does not own any trainers."
+  forecast: "Forecast"
+  average: "Average"
+  lock_desc: "From Wednesday 12:00 to Friday 10:00, training is locked and configurations or trainees cannot be changed."
 
 inventory:
   title: Armory & Rucksack
@@ -538,6 +546,11 @@ js_flash:
     text_queueing: Queueing...
     text_cancelling: Cancelling...
     text_processing: Processing...
+    text_saving: Saving...
+    text_removing: Removing...
+    error_save_focus: An error occurred while saving focus.
+    error_assign_hero: Failed to assign hero to trainer.
+    error_remove_hero: Failed to remove hero from training.
   summoning:
     failed: Summoning failed.
     limit_reached: Cycle Limit Reached
@@ -655,8 +668,11 @@ marketplace:
   tab_my_listings: My Listings
   tab_history: Transaction History
   type_hero: Heroes
+  type_hero_sing: Hero
   type_item: Items
+  type_item_sing: Item
   type_trainer: Trainers
+  type_trainer_sing: Trainer
   filter_all_races: All Races
   filter_all_rarities: All Rarities
   filter_search: Search by name...
@@ -722,6 +738,30 @@ marketplace:
   label_highest_bid_val: "🪙 %amount% (%bidder%)"
   label_no_bids_val: "🪙 %amount% (starting)"
   years_suffix: "years"
+  label_processing: "Processing..."
+  filter_all: "-- All --"
+  type_label: "Type"
+  rarity_label: "Rarity"
+  btn_reset: "Reset"
+  btn_filter: "🔍 Filter"
+  sell_desc: "Select a category and an entity you wish to put on the market."
+  no_items: "No available items for sale."
+  sell_opts_title: "Set commercial options and list item."
+  selected_label: "Selected"
+  listing_mode_label: "Listing Mode"
+  price_placeholder: "Amount in gold"
+  buyout_placeholder: "Optional — buyout price"
+  duration_days_option: "%count% days"
+  btn_list: "🚀 List on Market"
+  col_type_mode: "Type / Mode"
+  col_base_price: "Base Price"
+  col_tx_id: "Transaction ID"
+  col_total_price: "Total Price"
+  col_fee_tax: "Fee (tax)"
+  card_form: "Form:"
+  card_durability: "Durability:"
+  error_fetch_listings: "Error loading listings: %error%"
+  error_fetch_my_listings: "Error loading: %error%"
 
 community:
   title: Kingdom Community
@@ -750,6 +790,49 @@ community:
   col_author: Author
   col_replies: Replies
   col_last_post: Last Post
+  categories: "Categories"
+  all_threads: "All Discussions"
+  threads_list: "Discussion Threads"
+  col_created: "Created"
+  back_to_threads: "Back to Thread List"
+  add_reply: "Add Reply"
+  mail: "Mail"
+  inbox_title: "Received Messages"
+  sent_title: "Sent Messages"
+  col_status: "Status"
+  col_sender: "Sender"
+  col_recipient: "Recipient"
+  col_sent: "Sent"
+  new_thread_title: "Create New Thread"
+  thread_title_label: "Subject / Title"
+  thread_body_label: "Post Content"
+  cancel: "Cancel"
+  create_thread: "Create Thread"
+  compose_title: "Write Message"
+  recipient_label: "Recipient (teams in your kingdom)"
+  select_recipient: "Select Recipient"
+  send_msg: "Send Message"
+  delete_msg: "Delete Message"
+  close: "Close"
+  error_load_threads: "Failed to load threads."
+  warning_fill_fields: "Please fill in the subject and the content."
+  text_sending: "Sending..."
+  error_create_thread: "Failed to create thread."
+  success_create_thread: "Thread was successfully created."
+  btn_unlock: "Unlock"
+  btn_lock: "Lock"
+  error_load_thread_detail: "Failed to load thread details."
+  error_send_reply: "Failed to send reply."
+  error_refresh_posts: "Failed to refresh posts."
+  error_toggle_lock: "Failed to toggle thread lock."
+  error_load_mail: "Failed to load mail."
+  warning_compose_fields: "Please select recipient and fill in the subject and content."
+  error_send_msg: "Failed to send message."
+  success_send_msg: "Message was successfully sent."
+  error_read_msg: "Failed to read message."
+  text_deleting: "Deleting..."
+  success_delete_msg: "Message was deleted."
+  error_delete_msg: "Failed to delete message."
 
 
 

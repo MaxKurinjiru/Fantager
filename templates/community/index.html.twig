@@ -9,6 +9,39 @@
      data-community-empty-threads-msg-value="{{ 'community.no_threads'|trans }}"
      data-community-empty-inbox-msg-value="{{ 'community.empty_inbox'|trans }}"
      data-community-empty-sent-msg-value="{{ 'community.empty_sent'|trans }}"
+     data-community-translations-value="{{ {
+         'error_load_threads': 'community.error_load_threads'|trans,
+         'warning_fill_fields': 'community.warning_fill_fields'|trans,
+         'text_sending': 'community.text_sending'|trans,
+         'error_create_thread': 'community.error_create_thread'|trans,
+         'success_create_thread': 'community.success_create_thread'|trans,
+         'btn_unlock': 'community.btn_unlock'|trans,
+         'btn_lock': 'community.btn_lock'|trans,
+         'error_load_thread_detail': 'community.error_load_thread_detail'|trans,
+         'error_send_reply': 'community.error_send_reply'|trans,
+         'error_refresh_posts': 'community.error_refresh_posts'|trans,
+         'error_toggle_lock': 'community.error_toggle_lock'|trans,
+         'error_load_mail': 'community.error_load_mail'|trans,
+         'warning_compose_fields': 'community.warning_compose_fields'|trans,
+         'error_send_msg': 'community.error_send_msg'|trans,
+         'success_send_msg': 'community.success_send_msg'|trans,
+         'error_read_msg': 'community.error_read_msg'|trans,
+         'text_deleting': 'community.text_deleting'|trans,
+         'success_delete_msg': 'community.success_delete_msg'|trans,
+         'error_delete_msg': 'community.error_delete_msg'|trans,
+         'inbox_title': 'community.inbox_title'|trans,
+         'sent_title': 'community.sent_title'|trans,
+         'col_sender': 'community.col_sender'|trans,
+         'col_recipient': 'community.col_recipient'|trans,
+         'post_reply': 'community.post_reply'|trans,
+         'back_to_threads': 'community.back_to_threads'|trans,
+         'categories': {
+             'general': 'community.category_general'|trans,
+             'strategy': 'community.category_strategy'|trans,
+             'trading': 'community.category_trading'|trans,
+             'bugs': 'community.category_bugs'|trans
+         }
+     }|json_encode|e('html_attr') }}"
 >
     {# --- Header Section --- #}
     {% include 'components/ui/page_header.html.twig' with {
@@ -363,5 +396,66 @@
         </div>
     </div>
 </div>
+
+{# Forum Thread Row Template #}
+<template id="template-forum-thread-row">
+    <tr class="community-row">
+        <td class="py-4 font-bold text-white js-title-cell">
+            <div class="flex items-center gap-2">
+                <span class="text-gray-550 js-lock-icon hidden" title="Uzamčeno">🔒</span>
+                <span class="js-thread-title"></span>
+            </div>
+            <span class="text-[9px] uppercase font-bold text-emerald-400 tracking-wider bg-emerald-950/20 border border-emerald-900/40 px-2 py-0.5 rounded-full mt-1 inline-block js-thread-category"></span>
+        </td>
+        <td class="py-4 text-gray-400">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full border border-gray-700 js-author-color"></span>
+                <span class="js-author-name"></span>
+            </div>
+        </td>
+        <td class="py-4 text-center text-gray-300 font-semibold js-replies-count"></td>
+        <td class="py-4 text-right text-gray-550 js-created-at"></td>
+    </tr>
+</template>
+
+{# Forum Post Template #}
+<template id="template-forum-post">
+    <div class="community-post">
+        <div class="community-post__header">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full border border-gray-700 js-author-color"></span>
+                <strong class="text-white js-author-name"></strong>
+            </div>
+            <span class="js-created-at"></span>
+        </div>
+        <div class="community-post__body js-post-body"></div>
+    </div>
+</template>
+
+{# Mail Message Row Template #}
+<template id="template-mail-message-row">
+    <tr class="community-row">
+        <td class="py-4 text-center text-lg">
+            <span class="js-unread-indicator"></span>
+        </td>
+        <td class="py-4 font-bold text-white">
+            <span class="js-subject"></span>
+        </td>
+        <td class="py-4 text-gray-400">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full border border-gray-700 js-team-color"></span>
+                <span class="js-team-name"></span>
+            </div>
+        </td>
+        <td class="py-4 text-right text-gray-550 js-sent-at"></td>
+    </tr>
+</template>
+
+{# Community Empty Row Template #}
+<template id="template-community-empty-row">
+    <tr>
+        <td colspan="4" class="py-12 text-center text-gray-550 select-none js-empty-text"></td>
+    </tr>
+</template>
 
 {% endblock %}

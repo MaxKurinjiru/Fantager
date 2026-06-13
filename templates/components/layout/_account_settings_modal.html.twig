@@ -65,6 +65,7 @@
                                          required
                                          placeholder="{{ app.user.email }}"
                                          autocomplete="email"
+                                         aria-describedby="account_new_email_error"
                                          class="form-input flex-1">
                                   <button type="submit"
                                           data-account-settings-target="emailSubmitBtn"
@@ -75,7 +76,8 @@
                           </div>
 
                           {# Inline Alerts #}
-                          <div data-account-settings-target="emailError"
+                          <div id="account_new_email_error"
+                               data-account-settings-target="emailError"
                                class="hidden alert alert-error"
                                role="alert"></div>
                           <div data-account-settings-target="emailSuccess"

@@ -65,6 +65,7 @@ auth:
   reset_password_confirm_new: Nové heslo
   reset_password_confirm_confirm: Potvrdit nové heslo
   reset_password_confirm_submit: Nastavit nové heslo
+  toggle_password_visibility: Zobrazit/skrýt heslo
 
 homepage:
   title: Fantager
@@ -430,6 +431,13 @@ training:
   success_unassign: "Hrdina byl úspěšně odebrán z tréninku."
   tab_trainers: "Trenéři"
   tab_active: "Trénující hrdinové"
+  trainees_in_slots: "Svěřenci ve slotech"
+  no_active_trainees: "Žádní hrdinové momentálně netrénují."
+  no_trainers_title: "Žádní trenéři"
+  no_trainers_desc: "Váš tým momentálně nevlastní žádné trenéry."
+  forecast: "Předpověď"
+  average: "Průměr"
+  lock_desc: "Od středy 12:00 do pátku 10:00 jsou tréninky uzamčeny a nelze měnit konfiguraci ani přiřazovat hrdiny."
 
 inventory:
   title: Zbrojnice a batoh
@@ -536,6 +544,11 @@ js_flash:
     text_queueing: Řazení...
     text_cancelling: Rušení...
     text_processing: Zpracování...
+    text_saving: Ukládání...
+    text_removing: Odebírání...
+    error_save_focus: Nastala chyba při ukládání zaměření.
+    error_assign_hero: Nepodařilo se přiřadit hrdinu k trenérovi.
+    error_remove_hero: Nepodařilo se odebrat hrdinu z tréninku.
   summoning:
     failed: Vyvolávání selhalo.
     limit_reached: Dosažen limit cyklu
@@ -653,8 +666,11 @@ marketplace:
   tab_my_listings: Moje nabídky
   tab_history: Historie transakcí
   type_hero: Hrdinové
+  type_hero_sing: Hrdina
   type_item: Předměty
+  type_item_sing: Předmět
   type_trainer: Trenéři
+  type_trainer_sing: Trenér
   filter_all_races: Všechny rasy
   filter_all_rarities: Všechny rarity
   filter_search: Hledat podle názvu...
@@ -720,6 +736,30 @@ marketplace:
   label_highest_bid_val: "🪙 %amount% (%bidder%)"
   label_no_bids_val: "🪙 %amount% (počáteční)"
   years_suffix: "let"
+  label_processing: "Zpracování..."
+  filter_all: "-- Vše --"
+  type_label: "Typ"
+  rarity_label: "Rarita"
+  btn_reset: "Reset"
+  btn_filter: "🔍 Filtrovat"
+  sell_desc: "Vyberte kategorii a entitu, kterou si přejete umístit na trh."
+  no_items: "Žádné volné předměty pro prodej."
+  sell_opts_title: "Nastavte obchodní podmínky a nahrajte do nabídky."
+  selected_label: "Vybráno"
+  listing_mode_label: "Obchodní režim"
+  price_placeholder: "Částka ve zlatě"
+  buyout_placeholder: "Nepovinné — buyout cena"
+  duration_days_option: "%count% dní"
+  btn_list: "🚀 Vystavit na trh"
+  col_type_mode: "Typ / Režim"
+  col_base_price: "Základní cena"
+  col_tx_id: "ID Transakce"
+  col_total_price: "Celková cena"
+  col_fee_tax: "Poplatek (tax)"
+  card_form: "Forma:"
+  card_durability: "Ochrana/Dur:"
+  error_fetch_listings: "Chyba při načítání nabídek: %error%"
+  error_fetch_my_listings: "Chyba při načítání: %error%"
 
 community:
   title: Královská komunita
@@ -748,6 +788,49 @@ community:
   col_author: Autor
   col_replies: Odpovědi
   col_last_post: Poslední příspěvek
+  categories: "Kategorie"
+  all_threads: "Všechny diskuse"
+  threads_list: "Témata diskuse"
+  col_created: "Založeno"
+  back_to_threads: "Zpět na seznam témat"
+  add_reply: "Přidat odpověď"
+  mail: "Pošta"
+  inbox_title: "Doručené zprávy"
+  sent_title: "Odeslané zprávy"
+  col_status: "Stav"
+  col_sender: "Odesílatel"
+  col_recipient: "Příjemce"
+  col_sent: "Odesláno"
+  new_thread_title: "Založit nové téma"
+  thread_title_label: "Nadpis / Předmět"
+  thread_body_label: "Obsah příspěvku"
+  cancel: "Storno"
+  create_thread: "Vytvořit téma"
+  compose_title: "Napsat zprávu"
+  recipient_label: "Příjemce (týmy ve vašem království)"
+  select_recipient: "Vyberte příjemce"
+  send_msg: "Odeslat zprávu"
+  delete_msg: "Smazat zprávu"
+  close: "Zavřít"
+  error_load_threads: "Nepodařilo se načíst témata."
+  warning_fill_fields: "Vyplňte prosím předmět i obsah zprávy."
+  text_sending: "Odesílám..."
+  error_create_thread: "Nepodařilo se založit téma."
+  success_create_thread: "Téma bylo úspěšně založeno."
+  btn_unlock: "Odemknout"
+  btn_lock: "Zamknout"
+  error_load_thread_detail: "Nepodařilo se načíst detail tématu."
+  error_send_reply: "Nepodařilo se odeslat odpověď."
+  error_refresh_posts: "Nepodařilo se obnovit příspěvky."
+  error_toggle_lock: "Nepodařilo se změnit zámek tématu."
+  error_load_mail: "Nepodařilo se načíst poštu."
+  warning_compose_fields: "Prosím zvolte příjemce a vyplňte předmět i obsah zprávy."
+  error_send_msg: "Nepodařilo se odeslat zprávu."
+  success_send_msg: "Zpráva byla úspěšně odeslána."
+  error_read_msg: "Nepodařilo se přečíst zprávu."
+  text_deleting: "Mažu..."
+  success_delete_msg: "Zpráva byla smazána."
+  error_delete_msg: "Nepodařilo se smazat zprávu."
 
 
 

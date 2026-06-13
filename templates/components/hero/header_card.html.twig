@@ -15,7 +15,8 @@
                     <h1 data-hero-rename-target="nameDisplay" class="text-3xl font-extrabold tracking-tight text-white">
                         {{ hero.name }}
                     </h1>
-                    <input type="text" data-hero-rename-target="nameInput" data-action="keydown.enter->hero-rename#save keydown.esc->hero-rename#cancel"
+                    <label for="hero-rename-input" class="sr-only">{{ 'heroes.rename_title'|trans }}</label>
+                    <input type="text" id="hero-rename-input" data-hero-rename-target="nameInput" data-action="keydown.enter->hero-rename#save keydown.esc->hero-rename#cancel"
                            class="form-input hidden text-2xl font-semibold">
                     
                     <button type="button" data-hero-rename-target="editBtn" data-action="click->hero-rename#edit" 

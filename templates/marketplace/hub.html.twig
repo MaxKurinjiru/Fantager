@@ -60,12 +60,18 @@
          'none_selected': 'marketplace.select_entity_placeholder'|trans,
          'active_auction': 'marketplace.status_active'|trans,
          'direct_buy': 'marketplace.mode_buy_now'|trans,
+         'mode_auction': 'marketplace.mode_auction'|trans,
          'highest_bid_format': 'marketplace.label_highest_bid_val'|trans,
          'no_bids': 'marketplace.label_no_bids_val'|trans,
          'btn_bid': 'marketplace.btn_bid'|trans,
          'btn_buyout': 'marketplace.btn_buyout'|trans,
          'btn_cancel': 'marketplace.btn_cancel'|trans,
-         'years_suffix': 'marketplace.years_suffix'|trans
+         'years_suffix': 'marketplace.years_suffix'|trans,
+         'type_hero': 'marketplace.type_hero_sing'|trans,
+         'type_item': 'marketplace.type_item_sing'|trans,
+         'type_trainer': 'marketplace.type_trainer_sing'|trans,
+         'label_age': 'heroes.age'|trans,
+         'label_processing': 'marketplace.label_processing'|trans
      }|json_encode|e('html_attr') }}">
 
     {# Hub Header #}
@@ -564,5 +570,63 @@
         <td class="py-3.5 px-4 text-red-400 js-fee"></td>
         <td class="py-3.5 px-4 text-xs font-semibold text-gray-400 js-date"></td>
     </tr>
+</template>
+
+{# Loading Grid Template #}
+<template id="template-loading-grid">
+    <div class="col-span-3 flex justify-center py-12">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500"></div>
+    </div>
+</template>
+
+{# Empty Grid Template #}
+<template id="template-empty-grid">
+    <div class="col-span-3 text-center text-gray-500 py-12 js-empty-text"></div>
+</template>
+
+{# Error Grid Template #}
+<template id="template-error-grid">
+    <div class="col-span-3 text-center text-red-500 py-8 js-error-text"></div>
+</template>
+
+{# Loading Row Template #}
+<template id="template-loading-row">
+    <tr>
+        <td colspan="7" class="text-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
+        </td>
+    </tr>
+</template>
+
+{# Empty Row Template #}
+<template id="template-empty-row">
+    <tr>
+        <td colspan="7" class="text-center text-gray-500 py-8 js-empty-text"></td>
+    </tr>
+</template>
+
+{# Error Row Template #}
+<template id="template-error-row">
+    <tr>
+        <td colspan="7" class="text-center text-red-500 py-8 js-error-text"></td>
+    </tr>
+</template>
+
+{# Bid Form Template #}
+<template id="template-bid-form">
+    <div class="flex items-center space-x-2 w-full mt-2 border-t border-gray-800 pt-3">
+        <input type="number" class="form-input text-center w-24 js-bid-input">
+        <button type="button" class="btn btn-outline whitespace-nowrap js-bid-btn"></button>
+    </div>
+</template>
+
+{# Cancel Button Template #}
+<template id="template-cancel-btn">
+    <button type="button" class="btn btn-danger btn--sm js-cancel-btn"></button>
+</template>
+
+{# Active Auction Span Template #}
+<template id="template-active-auction-span">
+    <span class="text-[10px] text-gray-550 font-medium js-active-span"></span>
 </template>
 {% endblock %}

@@ -79,10 +79,17 @@ export default class extends Controller {
                         
                         // Human readable bonus names
                         const cleanKey = (this.hasBonusesValue && this.bonusesValue[key]) || key.replace(/_/g, ' ').replace('pct', '%');
-                        li.innerHTML = `
-                            <span class="capitalize">${cleanKey}:</span>
-                            <span class="text-emerald-450 font-bold">+${value}%</span>
-                        `;
+                        
+                        const spanName = document.createElement('span');
+                        spanName.className = 'capitalize';
+                        spanName.textContent = `${cleanKey}:`;
+                        
+                        const spanVal = document.createElement('span');
+                        spanVal.className = 'text-emerald-450 font-bold';
+                        spanVal.textContent = `+${value}%`;
+                        
+                        li.appendChild(spanName);
+                        li.appendChild(spanVal);
                         bonusesContainer.appendChild(li);
                     });
                 }
