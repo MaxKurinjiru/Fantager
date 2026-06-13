@@ -616,4 +616,33 @@ races:
     ent: "+20% k obranným výpočtům Odolnosti; -20% k akcím založeným na rychlosti (zakořenění)"
     genie: "+15% efektivita kouzel a šance na kritický zásah kouzlem (magická esence)"
 
+league:
+  title: Liga a žebříčky
+  subtitle: Přehled ligových tabulek, zápasů a globálního pořadí v království.
+  select_group: Vyberte skupinu
+  no_active_season: Žádná aktivní sezóna
+  no_active_season_desc: V tomto království momentálně neprobíhá žádná aktivní ligová sezóna. Zkontrolujte prosím stav později.
+  tab_standings: Tabulka skupiny
+  tab_fixtures: Zápasy a výsledky
+  tab_leaderboard: Globální žebříček
+  no_standings: Pro tuto skupinu nejsou k dispozici žádná data tabulky.
+  promotion_zone: Postupová zóna
+  relegation_zone: Sestupová zóna
+  top_x: "První %count% týmy"
+  bottom_x: "Poslední %count% týmy"
+  col_rank: Poz
+  col_team: Tým
+  col_played: Z
+  col_wins: V
+  col_draws: R
+  col_losses: P
+  col_points: Body
+  col_diff: Skóre
+  col_form: Forma
+  col_group: Skupina
+  my_fixtures: Zápasy mého týmu
+  group_fixtures: Zápasy skupiny
+  round: Kolo
+
+
 

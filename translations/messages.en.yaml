@@ -618,4 +618,33 @@ races:
     ent: "+20% to Constitution defense math; -20% to speed-based actions (deep roots)"
     genie: "+15% spell effectiveness and spell crit rate (magic essence)"
 
+league:
+  title: League & Standings
+  subtitle: Overview of league standings, fixtures, and kingdom-wide team rankings.
+  select_group: Select Group
+  no_active_season: No Active Season
+  no_active_season_desc: There is no active league season running in this kingdom at the moment. Please check back later.
+  tab_standings: Group Standings
+  tab_fixtures: Fixtures & Results
+  tab_leaderboard: Kingdom Leaderboard
+  no_standings: No standings data available for this group.
+  promotion_zone: Promotion Zone
+  relegation_zone: Relegation Zone
+  top_x: "Top %count% teams"
+  bottom_x: "Bottom %count% teams"
+  col_rank: Pos
+  col_team: Team
+  col_played: Pld
+  col_wins: W
+  col_draws: D
+  col_losses: L
+  col_points: Pts
+  col_diff: GD
+  col_form: Form
+  col_group: Group
+  my_fixtures: My Team's Matches
+  group_fixtures: Group Matches
+  round: Round
+
+
 

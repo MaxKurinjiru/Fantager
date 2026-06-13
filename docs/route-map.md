@@ -169,16 +169,13 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ## League
 
-> [!NOTE]
-> Not yet implemented — planned for Phase 5. `LeagueFixtureScheduler` (fixture generation) is partially available, but matchmaking and match processing are pending.
-
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/league` | Web\LeagueController | League page |
-| GET | `/api/v1/league/standings` | Api\V1\LeagueController | Current standings |
-| GET | `/api/v1/league/fixtures` | Api\V1\LeagueController | Fixture schedule |
-| GET | `/api/v1/league/seasons` | Api\V1\LeagueController | Season history |
-| POST | `/api/v1/league/rewards/claim` | Api\V1\LeagueController | Claim rewards |
+| GET | `/app/league` | Web\LeagueController | League page showing group standings, fixtures, and global leaderboard |
+| GET | `/api/v1/league/standings` | Api\V1\LeagueController | Current standings (planned) |
+| GET | `/api/v1/league/fixtures` | Api\V1\LeagueController | Fixture schedule (planned) |
+| GET | `/api/v1/league/seasons` | Api\V1\LeagueController | Season history (planned) |
+| POST | `/api/v1/league/rewards/claim` | Api\V1\LeagueController | Claim rewards (planned) |
 
 ---
 
