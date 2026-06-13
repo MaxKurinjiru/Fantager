@@ -22,6 +22,7 @@ nav:
   settings: Nastavení
   toggle_menu: Zobrazit/skrýt menu
   finance: Finanční kniha
+  community: Komunita
 
 modal:
   close: Zavřít
@@ -719,6 +720,34 @@ marketplace:
   label_highest_bid_val: "🪙 %amount% (%bidder%)"
   label_no_bids_val: "🪙 %amount% (počáteční)"
   years_suffix: "let"
+
+community:
+  title: Královská komunita
+  subtitle: Čtěte a zakládejte témata na nástěnce svého království a spravujte svou hráčskou poštu.
+  tab_forum: Diskusní fórum
+  tab_mail: Hráčská pošta
+  no_threads: Nebyla dosud vytvořena žádná témata.
+  new_thread: Nové téma
+  reply_placeholder: Napište svou odpověď zde...
+  post_reply: Odeslat odpověď
+  category_general: Obecné
+  category_strategy: Strategie
+  category_trading: Obchod
+  category_bugs: Chyby
+  inbox: Doručená pošta
+  sent: Odeslaná pošta
+  compose: Napsat zprávu
+  recipient: Příjemce (tým)
+  subject: Předmět
+  body: Zpráva
+  send: Odeslat
+  delete: Smazat
+  empty_inbox: Vaše schránka je prázdná.
+  empty_sent: Neodeslali jste žádné zprávy.
+  col_title: Předmět
+  col_author: Autor
+  col_replies: Odpovědi
+  col_last_post: Poslední příspěvek
 
 
 

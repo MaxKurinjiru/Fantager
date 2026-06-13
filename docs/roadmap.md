@@ -122,8 +122,8 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ---
 
-## Milestone 5: Marketplace & Social Community
-*Open the player economy with auctions and establish alliances and chat systems.*
+## Milestone 5: Marketplace & Community Forum
+*Open the player economy with auctions and establish independent communication boards for the kingdoms.*
 
 ### Step 5.1: Marketplace Auctions
 - **Database & Entities**: `MarketplaceListing` and `MarketplaceBid` entities.
@@ -134,15 +134,14 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Verification**: List a hero, bid from a different account, verify gold deductions and escrow refunds on higher bids.
 - **Status**: ✅ Complete (MarketplaceService, CLI processor, API & Web Controllers, and templates/controllers refactored per UI guidelines).
 
-### Step 5.2: Alliances & Community Channels
-- **Database & Entities**: `Alliance`, `AllianceMember`, `Message`, `ForumThread`, `ForumPost` entities.
-- **Service/Business Logic**: Alliance invitations, messaging filters, alliance rank leaderboards.
-- **API Contracts**: `GET /api/v1/alliances`, `POST /api/v1/alliances/create`, `POST /api/v1/alliances/chat`.
+### Step 5.2: Kingdom Community Forum
+- **Database & Entities**: `ForumThread`, `ForumPost`, and `Message` entities.
+- **Service/Business Logic**: Messaging filters, Kingdom-specific discussion categorization, post moderation.
+- **API Contracts**: `GET /api/v1/forum/threads`, `POST /api/v1/forum/threads/create`, `POST /api/v1/forum/threads/{id}/posts`.
 - **Frontend Views**:
-  - **[NEW]** Alliance Hub: Roster lists, chat feeds, application portals.
-  - **[NEW]** Community Boards: Integrated discussion boards and global player mail.
-- **Verification**: Create an alliance, join from another team, send chat messages.
-- **Status**: ⏳ Not Started (Entities scaffolded, services pending).
+  - **[NEW]** Community Boards: Integrated discussion boards (categorized by Kingdom and global discussion), global player mail.
+- **Verification**: Create a thread, reply to a thread, view categorized discussion boards.
+- **Status**: ✅ Complete (Entities updated, services and API controllers implemented, and templates/controllers refactored per UI guidelines).
 
 ---
 
@@ -203,10 +202,33 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ---
 
-## Milestone 7: Endgame & Advanced Content
+## Milestone 7: Alliances & Guild System
+*Establish alliances, team cooperation, and guild chat communication.*
+
+### Step 7.1: Alliance Foundation & Management
+- **Database & Entities**: `Alliance`, `AllianceMember` entities.
+- **Service/Business Logic**: Alliance creation, invitations, membership application, roles/ranks, alliance leaderboards.
+- **API Contracts**: `GET /api/v1/alliances`, `POST /api/v1/alliances/create`, `POST /api/v1/alliances/{id}/invite`, `POST /api/v1/alliances/{id}/join`.
+- **Frontend Views**:
+  - **[NEW]** Alliance Hub: Roster lists, application portals, alliance rank leaderboards, and settings page.
+- **Verification**: Create an alliance, invite another team, accept the invitation, verify permissions and ranking.
+- **Status**: ⏳ Not Started.
+
+### Step 7.2: Alliance Communication
+- **Database & Entities**: Uses existing communication entities (`Message` etc. scoped to Alliance).
+- **Service/Business Logic**: Alliance-only chat persistence and filtering.
+- **API Contracts**: `POST /api/v1/alliances/chat`, `GET /api/v1/alliances/chat/history`.
+- **Frontend Views**:
+  - **[NEW]** Alliance Chat Pane: Embedded live alliance chat feed within the Alliance Hub.
+- **Verification**: Send chat messages within an alliance, confirm they are only visible to alliance members.
+- **Status**: ⏳ Not Started.
+
+---
+
+## Milestone 8: Endgame & Advanced Content
 *Extend the sandbox with PvE dungeon instances, daily quests, item crafting, and stadium business operations.*
 
-### Step 7.1: PvE Dungeon Encounters
+### Step 8.1: PvE Dungeon Encounters
 - **Database & Entities**: `DungeonRun` and `DungeonFloor` tables (depends on Combat).
 - **Service Layer**: Monster roster generation, floor difficulty progression, chest loot generators.
 - **API Contracts**: `POST /api/v1/dungeons/enter`, `POST /api/v1/dungeons/combat`.
@@ -215,7 +237,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Verification**: Complete dungeon floors, confirm health persistence across fights and reward logs.
 - **Status**: ⏳ Not Started (Entities scaffolded, services pending).
 
-### Step 7.2: Daily & Weekly Quest Systems
+### Step 8.2: Daily & Weekly Quest Systems
 - **Database & Entities**: `Quest` and `PlayerQuestProgress` tables.
 - **Service Layer**: Daily Quest pool generation, progress triggers (e.g., training ticks, marketplace trades), rewards allocation.
 - **API Contracts**: `GET /api/v1/quests`, `POST /api/v1/quests/claim/{id}`.
@@ -224,7 +246,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Verification**: Perform quest conditions, verify progress bar fills, claim rewards.
 - **Status**: ⏳ Not Started (Entities scaffolded, services pending).
 
-### Step 7.3: Material Gathering & Crafting
+### Step 8.3: Material Gathering & Crafting
 - **Database & Entities**: `CraftingRecipe` and `CraftingQueue` tables.
 - **Service Layer**: Recipe unlocks, materials cost validation, crafting queue speed bonuses from HQ.
 - **API/Web Controllers**: `POST /api/v1/crafting/start`, `DELETE /api/v1/crafting/queue/{id}`.
@@ -233,7 +255,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Verification**: Check material requirement validation, verify crafted items appear in the team inventory.
 - **Status**: ⏳ Not Started (Entities scaffolded, services pending).
 
-### Step 7.4: Arena Facility Management
+### Step 8.4: Arena Facility Management
 - **Database & Entities**: Link stadium upgrades directly to HQ Arena levels.
 - **Service Layer**: Weekly seating capacity calculations, ticket price elasticity calculations, passive revenue distribution service.
 - **API Contracts**: `POST /api/v1/hq/arena/tickets/price`.
@@ -262,8 +284,9 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 2 (Heroes & Economy)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 5 (Marketplace & Social)**| ✅ | 🔄 | 🔄 | 🔄 | **In Progress** |
+| **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 6 (Combat & Leagues)** | 🔄 | 🔄 | 🔄 | ⏳ | *In Progress* |
-| **Milestone 7 (Endgame & Crafting)** | ✅ | ⏳ | ⏳ | ⏳ | *Scaffolded Only* |
+| **Milestone 7 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | *Not Started* |
+| **Milestone 8 (Endgame & Crafting)** | ✅ | ⏳ | ⏳ | ⏳ | *Scaffolded Only* |
 
 *Last updated: June 13, 2026 — Transformed to vertical slice roadmap layout*

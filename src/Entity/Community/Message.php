@@ -37,6 +37,12 @@ class Message
     #[ORM\Column]
     private \DateTimeImmutable $sentAt;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $deletedBySender = false;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $deletedByReceiver = false;
+
     public function __construct()
     {
         $this->sentAt = new \DateTimeImmutable();
@@ -110,5 +116,29 @@ class Message
     public function getSentAt(): \DateTimeImmutable
     {
         return $this->sentAt;
+    }
+
+    public function isDeletedBySender(): bool
+    {
+        return $this->deletedBySender;
+    }
+
+    public function setDeletedBySender(bool $deletedBySender): static
+    {
+        $this->deletedBySender = $deletedBySender;
+
+        return $this;
+    }
+
+    public function isDeletedByReceiver(): bool
+    {
+        return $this->deletedByReceiver;
+    }
+
+    public function setDeletedByReceiver(bool $deletedByReceiver): static
+    {
+        $this->deletedByReceiver = $deletedByReceiver;
+
+        return $this;
     }
 }

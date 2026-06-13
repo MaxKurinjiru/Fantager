@@ -40,6 +40,9 @@ class ForumThread
     #[ORM\Column(options: ['default' => false])]
     private bool $isPinned = false;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $isLocked = false;
+
     /** @var Collection<int, ForumPost> */
     #[ORM\OneToMany(targetEntity: ForumPost::class, mappedBy: 'thread', cascade: ['persist'])]
     private Collection $posts;
@@ -124,5 +127,17 @@ class ForumThread
     public function getPosts(): Collection
     {
         return $this->posts;
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->isLocked;
+    }
+
+    public function setIsLocked(bool $isLocked): static
+    {
+        $this->isLocked = $isLocked;
+
+        return $this;
     }
 }

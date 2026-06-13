@@ -22,6 +22,7 @@ nav:
   settings: Settings
   toggle_menu: Toggle menu
   finance: Ledger
+  community: Community
 
 modal:
   close: Close
@@ -721,6 +722,34 @@ marketplace:
   label_highest_bid_val: "🪙 %amount% (%bidder%)"
   label_no_bids_val: "🪙 %amount% (starting)"
   years_suffix: "years"
+
+community:
+  title: Kingdom Community
+  subtitle: Read and write threads on your Kingdom board and check your player mail.
+  tab_forum: Discussion Board
+  tab_mail: Player Mail
+  no_threads: No threads have been created yet.
+  new_thread: New Thread
+  reply_placeholder: Write your reply here...
+  post_reply: Post Reply
+  category_general: General
+  category_strategy: Strategy
+  category_trading: Trading
+  category_bugs: Bug Reports
+  inbox: Inbox
+  sent: Sent Mail
+  compose: New Message
+  recipient: Recipient Team
+  subject: Subject
+  body: Message Body
+  send: Send
+  delete: Delete
+  empty_inbox: Your inbox is empty.
+  empty_sent: You have not sent any messages.
+  col_title: Subject
+  col_author: Author
+  col_replies: Replies
+  col_last_post: Last Post
 
 
 
