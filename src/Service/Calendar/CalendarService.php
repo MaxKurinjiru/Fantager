@@ -7,11 +7,11 @@ namespace App\Service\Calendar;
 use App\Entity\Kingdom\Kingdom;
 use App\Enum\TickType;
 use App\Repository\Event\EventRepository;
+use App\Repository\Hero\HeroRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
 use App\Repository\Training\TrainingQueueRepository;
-use App\Repository\Hero\HeroRepository;
 
 class CalendarService
 {
@@ -240,7 +240,7 @@ class CalendarService
 
                 // For each WeeklyTraining tick in the period, add a scheduled entry
                 foreach ($occurrences as $occ) {
-                    if ($occ['type'] === TickType::WeeklyTraining) {
+                    if (TickType::WeeklyTraining === $occ['type']) {
                         $occTime = $occ['time'];
                         $feed[] = [
                             'id' => sprintf('active_training_%d_%s', $hero->getId(), $occTime->format('YmdHis')),

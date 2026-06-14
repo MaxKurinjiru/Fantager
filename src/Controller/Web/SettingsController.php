@@ -25,6 +25,7 @@ class SettingsController extends AbstractController
 {
     public function __construct(
         private readonly string $mailerFrom,
+        private readonly \Symfony\Contracts\Translation\TranslatorInterface $translator,
     ) {
     }
 
@@ -80,12 +81,13 @@ class SettingsController extends AbstractController
         $emailObj = (new TemplatedEmail())
             ->from($this->mailerFrom)
             ->to($user->getEmail())
-            ->subject('Fantager — Confirm email change request')
+            ->subject($this->translator->trans('email.change_email_old.subject', [], 'messages', $user->getLocale()))
             ->htmlTemplate('email/change_email_old.html.twig')
             ->context([
                 'user' => $user,
                 'new_email' => $newEmail,
                 'token' => $token->getToken(),
+                'locale' => $user->getLocale(),
             ]);
 
         $mailer->send($emailObj);
@@ -134,11 +136,12 @@ class SettingsController extends AbstractController
         $emailObj = (new TemplatedEmail())
             ->from($this->mailerFrom)
             ->to($newEmail)
-            ->subject('Fantager — Verify your new email address')
+            ->subject($this->translator->trans('email.change_email_new.subject', [], 'messages', $user->getLocale()))
             ->htmlTemplate('email/change_email_new.html.twig')
             ->context([
                 'user' => $user,
                 'token' => $newToken->getToken(),
+                'locale' => $user->getLocale(),
             ]);
 
         $mailer->send($emailObj);
@@ -216,11 +219,12 @@ class SettingsController extends AbstractController
         $emailObj = (new TemplatedEmail())
             ->from($this->mailerFrom)
             ->to($user->getEmail())
-            ->subject('Fantager — Confirm account deletion')
+            ->subject($this->translator->trans('email.cancel_account.subject', [], 'messages', $user->getLocale()))
             ->htmlTemplate('email/cancel_account.html.twig')
             ->context([
                 'user' => $user,
                 'token' => $token->getToken(),
+                'locale' => $user->getLocale(),
             ]);
 
         $mailer->send($emailObj);

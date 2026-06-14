@@ -65,6 +65,7 @@ class LeagueController extends AbstractController
             ->getResult();
 
         // Find the user's team's standing in the current season
+        /** @var LeagueStanding|null $userStanding */
         $userStanding = $this->em->getRepository(LeagueStanding::class)->createQueryBuilder('ls')
             ->join('ls.group', 'g')
             ->join('g.tier', 't')
@@ -82,6 +83,7 @@ class LeagueController extends AbstractController
         $selectedGroup = null;
 
         if (null !== $groupIdStr && '' !== $groupIdStr && is_numeric($groupIdStr)) {
+            /** @var LeagueGroup|null $selectedGroup */
             $selectedGroup = $this->em->getRepository(LeagueGroup::class)->find((int) $groupIdStr);
             // Verify group belongs to the active season
             if ($selectedGroup && $selectedGroup->getTier()->getSeason() !== $season) {

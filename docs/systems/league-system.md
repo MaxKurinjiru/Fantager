@@ -14,46 +14,39 @@ The league structure is configured per Kingdom via `league_tiers_config` (JSON f
 {
   "teams_per_group": 10,
   "tiers": [
-    { "name": "T1", "groups": 1 },
-    { "name": "T2", "groups": 2 },
-    { "name": "T3", "groups": 3 }
-  ]
-}
-```
-
-| Tier | Groups | Teams |
-|------|--------|-------|
-| T1   | 1      | 10    |
-| T2   | 2      | 20    |
-| T3   | 3      | 30    |
-| **Total** | **6** | **60** |
-
-Capacity formula: `sum(tier.groups) × teams_per_group` = (1 + 2 + 3) × 10 = **60**.
-*(Note: If `groups` is an array of custom names, the group count is the number of elements in the array.)*
-
-The config can be changed per Kingdom at creation time. The number of tiers, groups per tier, and teams per group are all adjustable. The Kingdom initialization step reads `league_tiers_config` to create the correct number of NPC teams, tiers, and groups.
-
-### Custom Group Naming
-
-By default, groups are automatically named following the pattern `{TierName}-G{Index}` (e.g. `T2-G1`, `T2-G2`). To specify custom group names directly in the configuration, define `groups` as an array of strings representing the desired names:
-
-```json
-{
-  "teams_per_group": 10,
-  "tiers": [
     {
       "name": "T1",
-      "groups": ["Champions Guild"]
+      "groups": ["1-A"],
+      "promotion_slots": 0,
+      "relegation_slots": 4
     },
     {
       "name": "T2",
-      "groups": ["Gold Group", "Silver Group"]
+      "groups": ["2-A", "2-B"],
+      "promotion_slots": 4,
+      "relegation_slots": 6
+    },
+    {
+      "name": "T3",
+      "groups": ["3-A", "3-B", "3-C"],
+      "promotion_slots": 6,
+      "relegation_slots": 0
     }
   ]
 }
 ```
 
+| Tier | Groups | Teams | Promotion Slots (Tier total / per Group) | Relegation Slots (Tier total / per Group) |
+|------|--------|-------|------------------------------------------|-------------------------------------------|
+| T1   | 1      | 10    | 0 / 0                                    | 4 / 4                                     |
+| T2   | 2      | 20    | 4 / 2                                    | 6 / 3                                     |
+| T3   | 3      | 30    | 6 / 2                                    | 0 / 0                                     |
+| **Total** | **6** | **60** | **10**                                   | **10**                                    |
 
+Capacity formula: `sum(tier.groups) × teams_per_group` = (1 + 2 + 3) × 10 = **60**.
+*(Note: If `groups` is an array of custom names, the group count is the number of elements in the array.)*
+
+The config can be changed per Kingdom at creation time. The number of tiers, groups per tier, and teams per group are all adjustable. The Kingdom initialization step reads `league_tiers_config` to create the correct number of NPC teams, tiers, and groups.
 
 When a new Kingdom is created, the league is set up automatically as part of Kingdom initialization (see [kingdom-system.md](kingdom-system.md#kingdom-initialization)):
 

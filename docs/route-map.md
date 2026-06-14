@@ -169,6 +169,9 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ## League
 
+> [!NOTE]
+> The Web dashboard (`/app/league`) is fully complete. The `/api/v1/league/*` API endpoints are planned/deferred as the Web dashboard renders all standings and fixtures server-side via Twig, and match combat simulation is currently a stub.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/league` | Web\LeagueController | League page showing group standings, fixtures, and global leaderboard |

@@ -38,8 +38,12 @@ class TrainingController extends AbstractController
 
         $heroes = $this->heroRepository->findBy(['team' => $team]);
         $trainers = $this->trainerRepository->findBy(['team' => $team]);
-        $isLocked = $this->trainingService->isTrainingLockedForTeam($team, new \DateTimeImmutable());
-        $nextTick = $this->trainingService->getNextTrainingTime(new \DateTimeImmutable());
+        $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
+        $nowLocal = new \DateTimeImmutable('now', $tz);
+
+        $isLocked = $this->trainingService->isTrainingLockedForTeam($team, $nowLocal);
+        $nextTick = $this->trainingService->getNextTrainingTime($nowLocal);
+        $nextLock = $nextTick->modify('-46 hours'); // Wednesday 12:00:00 local time
         $trainerLimit = $this->trainingService->getTrainerLimit($team);
 
         return $this->render('training/index.html.twig', [
@@ -48,6 +52,9 @@ class TrainingController extends AbstractController
             'trainers' => $trainers,
             'isLocked' => $isLocked,
             'nextTick' => $nextTick,
+            'nextLock' => $nextLock,
+            'nextTickFormatted' => $nextTick->format('d. m. Y H:i'),
+            'nextLockFormatted' => $nextLock->format('d. m. Y H:i'),
             'trainerLimit' => $trainerLimit,
             'trainingService' => $this->trainingService,
         ]);

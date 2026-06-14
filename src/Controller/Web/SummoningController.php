@@ -58,7 +58,7 @@ class SummoningController extends AbstractController
         }
 
         $race = $request->query->get('race');
-        if ($race === '') {
+        if ('' === $race) {
             $race = null;
         }
         $sort = $request->query->get('sort', 'date-desc');

@@ -30,6 +30,7 @@ class RegistrationService
         private readonly TeamRepository $teamRepository,
         private readonly SlugGenerator $slugGenerator,
         private readonly string $mailerFrom,
+        private readonly \Symfony\Contracts\Translation\TranslatorInterface $translator,
     ) {
     }
 
@@ -166,11 +167,12 @@ class RegistrationService
         $email = (new TemplatedEmail())
             ->from($this->mailerFrom)
             ->to($user->getEmail())
-            ->subject('Fantager — verify your email')
+            ->subject($this->translator->trans('email.verify_email.subject', [], 'messages', $user->getLocale()))
             ->htmlTemplate('email/verify_email.html.twig')
             ->context([
                 'user' => $user,
                 'token' => $token->getToken(),
+                'locale' => $user->getLocale(),
             ]);
 
         $this->mailer->send($email);

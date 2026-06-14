@@ -27,12 +27,12 @@ class FinancialRecordRepository extends ServiceEntityRepository
             ->where('f.team = :team')
             ->setParameter('team', $team);
 
-        if ($type !== null && $type !== '') {
+        if (null !== $type && '' !== $type) {
             $qb->andWhere('f.type = :type')
                ->setParameter('type', $type);
         }
 
-        if ($actor !== null && $actor !== '') {
+        if (null !== $actor && '' !== $actor) {
             $qb->andWhere('f.actor = :actor')
                ->setParameter('actor', $actor);
         }

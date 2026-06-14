@@ -22,11 +22,13 @@ class PasswordResetService
         private readonly MailerInterface $mailer,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly string $mailerFrom,
+        private readonly \Symfony\Contracts\Translation\TranslatorInterface $translator,
     ) {
     }
 
     public function requestReset(string $email): void
     {
+        /** @var \App\Entity\Auth\User|null $user */
         $user = $this->userRepository->findOneBy(['email' => strtolower(trim($email))]);
 
         if (!$user) {
@@ -51,11 +53,12 @@ class PasswordResetService
         $resetEmail = (new TemplatedEmail())
             ->from($this->mailerFrom)
             ->to($user->getEmail())
-            ->subject('Fantager — reset your password')
+            ->subject($this->translator->trans('email.password_reset.subject', [], 'messages', $user->getLocale()))
             ->htmlTemplate('email/password_reset.html.twig')
             ->context([
                 'user' => $user,
                 'token' => $token->getToken(),
+                'locale' => $user->getLocale(),
             ]);
 
         $this->mailer->send($resetEmail);

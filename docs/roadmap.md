@@ -38,11 +38,11 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ### Step 1.4: Team Dashboard
 - **Database & Entities**: `Team` entity linked to `User` and `Kingdom`.
-- **Service Layer**: Automatic NPC team claiming logic on user email verification (`VerificationService`).
-- **API Contracts**: `GET /api/v1/teams/current` returning wallet data, reputation, and roster stats.
+- **Service Layer**: Automatic NPC team claiming logic during user registration (`RegistrationService`).
+- **API Contracts**: `GET /api/v1/teams/{teamId}/dashboard` returning wallet data, reputation, and roster stats.
 - **Frontend Views**: Main Dashboard (`templates/dashboard/index.html.twig`) with active team stats, recent activity feeds, and settings tab.
-- **Verification**: Log in with a new user, verify email, and check if an NPC team is successfully claimed and rendered.
-- **Status**: ✅ Complete (`Web\DashboardController`, `Web\SettingsController`, Stimulus: `profile_settings_controller.js`).
+- **Verification**: Register a new user and verify that an NPC team is successfully claimed and rendered.
+- **Status**: ✅ Complete (`Web\DashboardController`, `Web\SettingsController`, `Api\V1\TeamController`, Stimulus: `profile_settings_controller.js`).
 
 ---
 
@@ -58,17 +58,25 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 ### Step 2.2: Hero Summoning Chamber
 - **Database & Entities**: `Hero` and `SummonHistory` entities.
 - **Service Layer**: `HeroGenerator` with race name pools (first and surname definitions per race in `HeroGenerator`). `SummoningService` to handle race compatibilities and cooldowns.
-- **API Contracts**: `POST /api/v1/summon` (initiates summon), `GET /api/v1/summon/cooldown`.
+- **API Contracts**: `POST /api/v1/summoning` (initiates summon), `GET /api/v1/summoning/status`.
 - **Frontend Views**: Summoning Chamber UI (`templates/summoning/index.html.twig`) with cooldown timers, race select, and Reveal AJAX animation.
 - **Verification**: Summon heroes, verify cooldown timings, and check names are correctly chosen from the race configuration pools.
 - **Status**: ✅ Complete (`SummoningService`, `HeroGenerator`, `templates/summoning/index.html.twig`, Stimulus: `summoning_controller.js`).
 
 ### Step 2.3: Hero Roster & Profile Management
 - **Service Layer**: Hero CRUD operations, renaming validator, and stat calculations based on race.
-- **API Contracts**: `GET /api/v1/heroes` (roster list), `POST /api/v1/heroes/{id}/rename`.
+- **API Contracts**: `GET /api/v1/heroes` (roster list), `PUT /api/v1/heroes/{id}` (rename/update).
 - **Frontend Views**: Roster cards grid (`templates/hero/roster.html.twig`), detail card with stat meters (`templates/hero/detail.html.twig`).
 - **Verification**: Filter/sort heroes by level, class, and race; rename a hero and check constraints.
 - **Status**: ✅ Complete (`Web\HeroController`, `templates/hero/roster.html.twig`, Stimulus: `roster_filter_controller.js`, `hero_rename_controller.js`).
+
+### Step 2.4: Finance History Ledger
+- **Database & Entities**: `FinancialRecord` logs of transactions.
+- **Service Layer**: Listing and sorting transactions via `FinancialRecordRepository`.
+- **API/Web Controllers**: `GET /app/finance` rendering filtered ledger logs by type and actor.
+- **Frontend Views**: Finance History page (`templates/finance/index.html.twig`) with filters (type, actor) and transaction rows.
+- **Verification**: Run transactions (e.g. summoning, upgrading) and verify they are recorded and displayed with correct details on the finance history page.
+- **Status**: ✅ Complete (`Web\FinanceController`, `templates/finance/index.html.twig`).
 
 ---
 
@@ -78,18 +86,18 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 ### Step 3.1: Headquarters Upgrades
 - **Database & Entities**: `Headquarters` and `Facility` entities.
 - **Service Layer**: Upgrade costs and time math, facility level checks, and passive resource buffs. Race optimization toggling.
-- **API Contracts**: `POST /api/v1/hq/facility/upgrade`, `POST /api/v1/hq/optimize`.
+- **API Contracts**: `POST /api/v1/hq/upgrade`, `POST /api/v1/hq/optimize`.
 - **Frontend Views**: HQ dashboard, facilities level bars, and live upgrade progress counters.
 - **Verification**: Check gold deduction during upgrades, test passive multiplier calculations.
 - **Status**: ✅ Complete (`HeadquartersService`, `Web\HeadquartersController`, Stimulus: `hq_controller.js`).
 
 ### Step 3.2: Hero Training Loop
 - **Database & Entities**: `TrainingQueue` and `Trainer` entities.
-- **Service Layer**: Training rate calculations. Tick processing CLI command (`App\Command\ProcessTrainingTicksCommand`) to apply accumulated stat increases.
-- **API Contracts**: `POST /api/v1/training/enqueue`, `DELETE /api/v1/training/queue/{id}`.
-- **Frontend Views**: Training queue panel, trainers selection list, remaining duration countdowns.
-- **Verification**: Enqueue training, run the command `bin/console app:process-training-ticks`, and verify hero stats increase correctly.
-- **Status**: ✅ Complete (`TrainingService`, CLI command, `Web\TrainingController`, Stimulus: `training_controller.js`).
+- **Service Layer**: Training rate calculations. Tick processing CLI command (`App\Command\ProcessTrainingTickCommand`) to apply accumulated stat increases.
+- **API Contracts**: `POST /api/v1/training/trainers/{id}/assign` (assign hero to trainer), `POST /api/v1/training/trainers/{id}/unassign`, `POST /api/v1/training/trainers/{id}/configure`.
+- **Frontend Views**: Trainers dashboard panel, trainers selection list, and assigned trainees list.
+- **Verification**: Assign a hero to a trainer, configure trainer focus, run the command `bin/console app:training:tick`, and verify hero stats increase correctly.
+- **Status**: ✅ Complete (`TrainingService`, `ProcessTrainingTickCommand`, `Web\TrainingController`, `Api\V1\TrainingController`, Stimulus: `training_controller.js`).
 
 ---
 
@@ -99,7 +107,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 ### Step 4.1: Items & Roster Inventory
 - **Database & Entities**: `Item` and `Equipment` slots.
 - **Service Layer**: Equip/unequip validators, item attributes, and dismantling rewards.
-- **API Contracts**: `POST /api/v1/items/equip`, `POST /api/v1/items/dismantle`.
+- **API Contracts**: `PUT /api/v1/heroes/{id}/equipment` (equip/unequip), `POST /api/v1/items/dismantle`, `POST /api/v1/items/{id}/repair`.
 - **Frontend Views**: Interactive inventory drag-and-drop grid and hero equipment slots (paperdoll UI).
 - **Verification**: Equip items to matching slots, verify stat modifier calculations, dismantle items.
 - **Status**: ✅ Complete (`ItemService`, `Web\ItemController`, Stimulus: `equipment_controller.js`).
@@ -107,7 +115,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 ### Step 4.2: Spellbooks & Magic Learning
 - **Database & Entities**: `Spell` and `SpellMastery` entities.
 - **Service Layer**: Magic schools mastery levels, learning spells requirements, equipping.
-- **API Contracts**: `POST /api/v1/spells/learn`, `POST /api/v1/spells/equip`.
+- **API Contracts**: `POST /api/v1/heroes/{id}/spells/learn`, `POST /api/v1/heroes/{id}/spells/equip`, `POST /api/v1/heroes/{id}/spells/unequip`.
 - **Frontend Views**: Spell learning dashboard, magic slots assignment list.
 - **Verification**: Learn spells using essence, equip them, and confirm slot limits are respected.
 - **Status**: ✅ Complete (`SpellService`, `Web\SpellController`, Stimulus: `spellbook_controller.js`).
@@ -115,7 +123,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 ### Step 4.3: Strategic Formations
 - **Database & Entities**: `Formation` layout.
 - **Service Layer**: Lineup configuration (3 front, 3 back slots), target priorities, and synergies logic.
-- **API Contracts**: `POST /api/v1/formations/update`.
+- **API Contracts**: `PUT /api/v1/formations` (save/update formation), `DELETE /api/v1/formations/{id}`.
 - **Frontend Views**: Interactive drag-and-drop tactical grid, action sequences selector.
 - **Verification**: Move heroes between positions, verify front/back line constraints (max 6 active).
 - **Status**: ✅ Complete (`FormationService`, `Web\FormationController`, Stimulus: `formation_controller.js`).
@@ -128,7 +136,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 ### Step 5.1: Marketplace Auctions
 - **Database & Entities**: `MarketplaceListing` and `MarketplaceBid` entities.
 - **Service Layer**: Auction bid validation, fee deduction, item escrow, buyout options.
-- **API Contracts**: `GET /api/v1/marketplace/listings`, `POST /api/v1/marketplace/list`, `POST /api/v1/marketplace/bid`.
+- **API Contracts**: `GET /api/v1/marketplace` (search/list listings), `POST /api/v1/marketplace/listings` (create listing), `POST /api/v1/marketplace/bid`, `POST /api/v1/marketplace/purchase`, `DELETE /api/v1/marketplace/listings/{id}`.
 - **Frontend Views**:
   - **[NEW]** Marketplace Hub: Search filters (item level, rarity, class), bidding card widgets, active listing forms.
 - **Verification**: List a hero, bid from a different account, verify gold deductions and escrow refunds on higher bids.
@@ -137,7 +145,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 ### Step 5.2: Kingdom Community Forum
 - **Database & Entities**: `ForumThread`, `ForumPost`, and `Message` entities.
 - **Service/Business Logic**: Messaging filters, Kingdom-specific discussion categorization, post moderation.
-- **API Contracts**: `GET /api/v1/forum/threads`, `POST /api/v1/forum/threads/create`, `POST /api/v1/forum/threads/{id}/posts`.
+- **API Contracts**: `GET /api/v1/forum/threads`, `POST /api/v1/forum/threads`, `POST /api/v1/forum/threads/{id}/posts`.
 - **Frontend Views**:
   - **[NEW]** Community Boards: Integrated discussion boards (categorized by Kingdom and global discussion), global player mail.
 - **Verification**: Create a thread, reply to a thread, view categorized discussion boards.
@@ -182,14 +190,14 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
   - Enforce home/away balance (1 home, 1 away match per week of play).
   - Standings updates: calculate played, wins, draws, losses, points, goal difference.
   - Season transition: process promotions, relegations, compound rewards (using global comparison tie-breakers). Shuffle groups for next season.
-- **API Contracts**:
-  - `GET /api/v1/league/standings` — standings list.
-  - `GET /api/v1/league/fixtures` — matches list.
-  - `POST /api/v1/league/process-season` — manual admin season trigger.
+- **API Contracts** (Planned/Deferred - Currently optional as the Web dashboard renders standings/fixtures server-side via Twig):
+  - `GET /api/v1/league/standings` — standings list (planned).
+  - `GET /api/v1/league/fixtures` — matches list (planned).
+  - `POST /api/v1/league/process-season` — manual admin season trigger (planned).
 - **Frontend Views**:
   - **[NEW]** League Dashboard: Group standings table, fixture timeline, match summaries, and promotion/relegation threshold lines.
 - **Verification**: Run complete 11-week season simulation using CLI commands and verify standings and reward distributions.
-- **Status**: 🔄 Partially Complete (`LeagueFixtureScheduler` & `SeasonTransitionService` done; match results processing & frontends pending).
+- **Status**: 🔄 Partially Complete (`LeagueFixtureScheduler`, `SeasonTransitionService`, and Web League Dashboard fully complete; API endpoints and combat simulation matching are pending implementation under the remaining Phase 6 simulation tasks).
 
 ### Step 6.4: Hero Mortality & Graveyard
 - **Database & Entities**: `GraveyardRecord` entity.
@@ -285,7 +293,7 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 6 (Combat & Leagues)** | 🔄 | 🔄 | 🔄 | ⏳ | *In Progress* |
+| **Milestone 6 (Combat & Leagues)** | 🔄 | 🔄 | 🔄 | ✅ | *In Progress* |
 | **Milestone 7 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | *Not Started* |
 | **Milestone 8 (Endgame & Crafting)** | ✅ | ⏳ | ⏳ | ⏳ | *Scaffolded Only* |
 

@@ -9,18 +9,18 @@
     <div class="flex justify-center gap-4">
         {% if app.user %}
             <a href="{{ path('app_dashboard') }}"
-               class="bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-semibold px-6 py-3 rounded">
+               class="btn btn-primary btn--lg">
                 {{ 'nav.enter_game'|trans }}
             </a>
         {% else %}
             <a href="{{ path('app_register') }}"
                data-action="click->auth-modal#openRegister"
-               class="bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-semibold px-6 py-3 rounded">
+               class="btn btn-primary btn--lg">
                 {{ 'homepage.cta_play'|trans }}
             </a>
             <a href="{{ path('app_login') }}"
                data-action="click->auth-modal#openLogin"
-               class="border border-gray-600 hover:border-emerald-400 text-gray-300 hover:text-emerald-400 font-semibold px-6 py-3 rounded">
+               class="btn btn-outline btn--lg">
                 {{ 'homepage.cta_login'|trans }}
             </a>
         {% endif %}

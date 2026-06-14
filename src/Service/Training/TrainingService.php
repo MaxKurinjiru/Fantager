@@ -13,9 +13,7 @@ use App\Enum\TrainingStatus;
 use App\Enum\TrainingType;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Training\TrainerRepository;
-use App\Repository\Training\TrainingQueueRepository;
 use App\Service\Config\RaceConfig;
-use App\Service\Economy\EconomyService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TrainingService
@@ -24,11 +22,9 @@ class TrainingService
     private const PRIMARY_ATTRIBUTES = ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'];
 
     public function __construct(
-        private readonly TrainingQueueRepository $queueRepository,
         private readonly TrainerRepository $trainerRepository,
         private readonly HeadquartersRepository $hqRepository,
         private readonly RaceConfig $raceConfig,
-        private readonly EconomyService $economyService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -47,10 +43,10 @@ class TrainingService
     {
         $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
         $nowLocal = $now->setTimezone($tz);
-        
+
         $nextTickLocal = $this->getNextTrainingTime($nowLocal);
         $lockStartLocal = $nextTickLocal->modify('-46 hours'); // Wednesday 12:00:00
-        
+
         return $nowLocal >= $lockStartLocal && $nowLocal < $nextTickLocal;
     }
 
@@ -130,15 +126,15 @@ class TrainingService
             throw new \DomainException('Training assignments are currently locked.');
         }
 
-        if ($hero->getTrainer() !== null) {
+        if (null !== $hero->getTrainer()) {
             throw new \DomainException('Hero is already assigned to a trainer.');
         }
 
-        if (\App\Enum\HeroStatus::Dead === $hero->getStatus()) {
+        if (HeroStatus::Dead === $hero->getStatus()) {
             throw new \DomainException('Dead heroes cannot be trained.');
         }
 
-        if (\App\Enum\HeroStatus::Selling === $hero->getStatus()) {
+        if (HeroStatus::Selling === $hero->getStatus()) {
             throw new \DomainException('Listed heroes cannot be trained.');
         }
 
@@ -226,11 +222,22 @@ class TrainingService
         $trainers = $qb->getQuery()->getResult();
 
         foreach ($trainers as $trainer) {
+            // Active trainers age by a stronger jump during the training tick (combat death equivalent)
+            $speed = (float) $trainer->getTeam()->getKingdom()->getGameSpeed();
+            if ($speed <= 0.0) {
+                $speed = 1.0;
+            }
+            $trainerAgeIncrement = (int) round(10 * $speed);
+            if ($trainerAgeIncrement > 0) {
+                $trainer->setAgeRaw($trainer->getAgeRaw() + $trainerAgeIncrement);
+            }
+
             $type = $trainer->getTrainingType();
+            /** @var TrainingType $type — only trainers with non-null type are queried */
             $attribute = $trainer->getTargetAttribute();
 
             foreach ($trainer->getHeroes() as $hero) {
-                if ($hero->getStatus() === HeroStatus::Dead) {
+                if (HeroStatus::Dead === $hero->getStatus()) {
                     continue;
                 }
 
@@ -277,20 +284,18 @@ class TrainingService
 
                         $this->setHeroRawStatByName($hero, $attribute, $heroStatRaw + $gainRaw);
                     }
-                    
+
                     // Standard training adds +20 fatigue (capped at 100)
                     $hero->setFatigue(min(100, $hero->getFatigue() + 20));
-
                 } elseif (TrainingType::Magic === $type) {
                     $cap = $hero->getMagicCapacity();
                     if ($cap < 5) {
                         $hero->setMagicCapacity($cap + 1);
                         $gainRaw = 1;
                     }
-                    
+
                     // Magic training adds +20 fatigue (capped at 100)
                     $hero->setFatigue(min(100, $hero->getFatigue() + 20));
-
                 } elseif (TrainingType::Form === $type) {
                     $form = $hero->getForm();
                     if ($form < 100) {
@@ -299,7 +304,7 @@ class TrainingService
                         $hero->setForm($newForm);
                         $gainRaw = $newForm - $form;
                     }
-                    
+
                     // Recovery training reduces fatigue by 20 (floor at 0)
                     $hero->setFatigue(max(0, $hero->getFatigue() - 20));
                 }

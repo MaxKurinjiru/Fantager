@@ -329,7 +329,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - **Forge/Workshop:** Level, Bonus (crafting success %), Upgrade Cost
   - **Treasury:** Level, Bonus (passive income), Storage Capacity, Upgrade Cost
   - **Barracks:** Level, Roster Capacity (starting: 10), Morale Recovery Bonus, Upgrade Cost
-  - **Summoning Chamber:** Level, Cooldown (days), Summon Quality, Upgrade Cost, Next Available Summon (countdown)
+  - **Summoning Chamber:** Level, Summon Quality, Upgrade Cost, Summons Used, Max Summons per Cycle (based on Kingdom game speed)
   - **Arena:** Level, Seating Capacity, Ticket Revenue (per cycle), Home Advantage Bonus, Upgrade Cost
 - **Passive Bonuses Summary:**
   - Total bonus from facilities (XP %, fatigue reduction, etc.)
@@ -356,9 +356,8 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 
 ### Displayed Information:
 - **Summon Status:**
-  - Next Available Summon (countdown timer)
   - Summons Used this Cycle
-  - Max Summons per Cycle (based on HQ level)
+  - Max Summons per Cycle (based on Kingdom game speed)
 - **Summon Parameters:**
   - Arena Theme Adaptation (displaying the theme race of the home Arena)
   - Potential summonable races list (based on affinity and relations with theme race)
@@ -379,7 +378,6 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 - Summon availability check
 - Random hero generation (race, age, base stats)
 - Summon endpoint (POST)
-- Cooldown tracking
 
 ---
 

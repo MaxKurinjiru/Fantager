@@ -8,7 +8,7 @@ class ContentFilterService
 {
     private const BLACKLIST = [
         'debil', 'blbec', 'curak', 'čurák', 'picus', 'píč', 'pica', 'píča', 'kokot', 'hovno', 'prdel', 'srac', 'sráč',
-        'fuck', 'shit', 'asshole', 'bitch', 'crap', 'cunt', 'bastard', 'dick'
+        'fuck', 'shit', 'asshole', 'bitch', 'crap', 'cunt', 'bastard', 'dick',
     ];
 
     /**
@@ -19,10 +19,10 @@ class ContentFilterService
         $filtered = $text;
         foreach (self::BLACKLIST as $word) {
             // Case-insensitive, Unicode-safe pattern replacement
-            $pattern = '/' . preg_quote($word, '/') . '/ui';
-            $filtered = preg_replace_callback($pattern, function (array $matches): string {
+            $pattern = '/'.preg_quote($word, '/').'/ui';
+            $filtered = preg_replace_callback($pattern, static function (array $matches): string {
                 return str_repeat('*', mb_strlen($matches[0]));
-            }, $filtered);
+            }, $filtered) ?? $filtered;
         }
 
         return $filtered;

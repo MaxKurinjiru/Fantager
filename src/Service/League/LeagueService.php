@@ -26,10 +26,13 @@ class LeagueService
      */
     public function getCurrentSeason(Kingdom $kingdom): ?LeagueSeason
     {
-        return $this->em->getRepository(LeagueSeason::class)->findOneBy([
+        /** @var LeagueSeason|null $season */
+        $season = $this->em->getRepository(LeagueSeason::class)->findOneBy([
             'kingdom' => $kingdom,
             'status' => LeagueSeasonStatus::Active,
         ]);
+
+        return $season;
     }
 
     /**

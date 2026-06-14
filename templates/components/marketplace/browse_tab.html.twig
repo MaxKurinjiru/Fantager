@@ -1,0 +1,84 @@
+{# templates/components/marketplace/browse_tab.html.twig #}
+<div data-marketplace-target="tabContent" data-tab-name="browse" class="space-y-6">
+    {# Filters Grid #}
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-xl">
+        <form data-action="submit->marketplace#applyFilters" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {# Search #}
+            <div class="flex flex-col gap-1">
+                <label for="filter-search" class="form-label">{{ 'heroes.search_placeholder'|trans }}</label>
+                <input type="text" id="filter-search" name="search" placeholder="{{ 'marketplace.filter_search'|trans }}"
+                       class="form-input">
+            </div>
+
+            {# Type #}
+            <div class="flex flex-col gap-1">
+                <label for="filter-type" class="form-label">{{ 'marketplace.type_label'|trans }}</label>
+                <select id="filter-type" name="type" data-action="change->marketplace#onTypeChange" class="form-input">
+                    <option value="">{{ 'marketplace.filter_all'|trans }}</option>
+                    <option value="hero">{{ 'marketplace.type_hero'|trans }}</option>
+                    <option value="item">{{ 'marketplace.type_item'|trans }}</option>
+                    <option value="trainer">{{ 'marketplace.type_trainer'|trans }}</option>
+                </select>
+            </div>
+
+            {# Race Filter (Heroes/Trainers) #}
+            <div class="flex flex-col gap-1" data-marketplace-target="raceFilterContainer">
+                <label for="filter-race" class="form-label">{{ 'heroes.race'|trans }}</label>
+                <select id="filter-race" name="race" class="form-input">
+                    <option value="">{{ 'marketplace.filter_all_races'|trans }}</option>
+                    <option value="human">{{ 'heroes.race_human'|trans }}</option>
+                    <option value="elf">{{ 'heroes.race_elf'|trans }}</option>
+                    <option value="dwarf">{{ 'heroes.race_dwarf'|trans }}</option>
+                    <option value="orc">{{ 'heroes.race_orc'|trans }}</option>
+                    <option value="undead">{{ 'heroes.race_undead'|trans }}</option>
+                    <option value="giant">{{ 'heroes.race_giant'|trans }}</option>
+                    <option value="ent">{{ 'heroes.race_ent'|trans }}</option>
+                    <option value="genie">{{ 'heroes.race_genie'|trans }}</option>
+                </select>
+            </div>
+
+            {# Rarity Filter (Items) #}
+            <div class="flex flex-col gap-1 hidden" data-marketplace-target="rarityFilterContainer">
+                <label for="filter-rarity" class="form-label">{{ 'marketplace.rarity_label'|trans }}</label>
+                <select id="filter-rarity" name="rarity" class="form-input">
+                    <option value="">{{ 'marketplace.filter_all_rarities'|trans }}</option>
+                    <option value="common">{{ 'inventory.rarity_common'|trans }}</option>
+                    <option value="uncommon">{{ 'inventory.rarity_uncommon'|trans }}</option>
+                    <option value="rare">{{ 'inventory.rarity_rare'|trans }}</option>
+                    <option value="epic">{{ 'inventory.rarity_epic'|trans }}</option>
+                    <option value="legendary">{{ 'inventory.rarity_legendary'|trans }}</option>
+                    <option value="mythic">{{ 'inventory.rarity_mythic'|trans }}</option>
+                </select>
+            </div>
+
+            {# Sort #}
+            <div class="flex flex-col gap-1">
+                <label for="filter-sort" class="form-label">{{ 'marketplace.filter_sort'|trans }}</label>
+                <select id="filter-sort" name="sort" class="form-input">
+                    <option value="newest">{{ 'marketplace.sort_newest'|trans }}</option>
+                    <option value="price_asc">{{ 'marketplace.sort_price_asc'|trans }}</option>
+                    <option value="price_desc">{{ 'marketplace.sort_price_desc'|trans }}</option>
+                    <option value="expires_asc">{{ 'marketplace.sort_expires_asc'|trans }}</option>
+                </select>
+            </div>
+
+            {# Submit / Reset Buttons #}
+            <div class="md:col-span-4 flex justify-end gap-3 mt-2">
+                <button type="button" data-action="click->marketplace#resetFilters" class="btn btn-outline">
+                    {{ 'marketplace.btn_reset'|trans }}
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    {{ 'marketplace.btn_filter'|trans }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {# Listings Grid #}
+    <div data-marketplace-target="browseContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {# AJAX Loaded cards #}
+        <div class="col-span-3 flex justify-center py-12">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500"></div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,203 @@
+{# templates/components/marketplace/js_templates.html.twig #}
+{# ─────────────────────────────────────────────────────────────────────────────
+   HTML TEMPLATES (CLONED IN STIMULUS CONTROLLER FOR DYNAMIC UI RENDERING)
+   ───────────────────────────────────────────────────────────────────────────── #}
+
+{# Hero Card Template #}
+<template id="template-card-hero">
+    <div class="marketplace-card marketplace-card--hero">
+        <div class="space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase font-bold text-blue-400 bg-blue-950/60 px-2.5 py-0.5 rounded border border-blue-900">👥 {{ 'marketplace.type_hero'|trans }}</span>
+                <span class="text-xs text-gray-400 font-medium js-level"></span>
+            </div>
+            <h3 class="text-lg font-bold text-white leading-tight js-name"></h3>
+            <div class="marketplace-card__details">
+                <div>{{ 'heroes.race'|trans }}: <span class="text-gray-200 font-semibold js-race"></span></div>
+                <div>{{ 'heroes.age'|trans }}: <span class="text-gray-200 font-semibold js-age"></span></div>
+                <div>Forma: <span class="text-gray-200 font-semibold js-form"></span></div>
+                <div>{{ 'heroes.fatigue'|trans }}: <span class="text-gray-200 font-semibold js-fatigue"></span></div>
+            </div>
+            <div class="marketplace-card__stats">
+                <div class="marketplace-card__stat-item">STR <span class="block text-xs text-gray-300 font-bold mt-0.5 js-str"></span></div>
+                <div class="marketplace-card__stat-item">DEX <span class="block text-xs text-gray-300 font-bold mt-0.5 js-dex"></span></div>
+                <div class="marketplace-card__stat-item">KON <span class="block text-xs text-gray-300 font-bold mt-0.5 js-kon"></span></div>
+                <div class="marketplace-card__stat-item">SPD <span class="block text-xs text-gray-300 font-bold mt-0.5 js-spd"></span></div>
+            </div>
+        </div>
+        <div class="border-t border-gray-800/80 pt-3 space-y-1 js-footer-info">
+            <div class="flex justify-between text-[11px] text-gray-500 pb-1 border-b border-gray-800/40">
+                <span>{{ 'marketplace.col_seller'|trans }}: <span class="text-gray-300 font-medium js-seller-name"></span></span>
+                <span class="text-red-400 font-semibold js-time-remaining"></span>
+            </div>
+            <div class="flex items-center justify-between py-1 border-b border-gray-800/60 js-buyout-section hidden">
+                <span class="text-xs text-gray-400">{{ 'marketplace.label_buyout'|trans }}:</span>
+                <span class="text-sm font-bold text-amber-400 flex items-center">🪙&nbsp;<span class="js-buyout-price"></span></span>
+            </div>
+            <div class="flex items-center justify-between py-1 js-bid-section hidden">
+                <span class="text-xs text-gray-400">{{ 'marketplace.label_highest_bid'|trans }}:</span>
+                <span class="text-sm font-bold text-amber-500 flex items-center js-highest-bid"></span>
+            </div>
+        </div>
+        <div class="js-actions-section"></div>
+    </div>
+</template>
+
+{# Item Card Template #}
+<template id="template-card-item">
+    <div class="marketplace-card">
+        <div class="space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded border border-emerald-900">🗡️ {{ 'marketplace.type_item'|trans }}</span>
+                <span class="js-rarity"></span>
+            </div>
+            <h3 class="text-lg font-bold text-white leading-tight js-name"></h3>
+            <div class="text-xs text-gray-400">
+                Slot: <span class="text-gray-200 font-semibold js-slot"></span> &bull; 
+                Ochrana/Dur: <span class="text-gray-200 font-semibold js-durability"></span>
+            </div>
+            <div class="flex flex-wrap gap-1.5 text-[10px] js-bonuses"></div>
+        </div>
+        <div class="border-t border-gray-800/80 pt-3 space-y-1 js-footer-info">
+            <div class="flex justify-between text-[11px] text-gray-500 pb-1 border-b border-gray-800/40">
+                <span>{{ 'marketplace.col_seller'|trans }}: <span class="text-gray-300 font-medium js-seller-name"></span></span>
+                <span class="text-red-400 font-semibold js-time-remaining"></span>
+            </div>
+            <div class="flex items-center justify-between py-1 border-b border-gray-800/60 js-buyout-section hidden">
+                <span class="text-xs text-gray-400">{{ 'marketplace.label_buyout'|trans }}:</span>
+                <span class="text-sm font-bold text-amber-400 flex items-center">🪙&nbsp;<span class="js-buyout-price"></span></span>
+            </div>
+            <div class="flex items-center justify-between py-1 js-bid-section hidden">
+                <span class="text-xs text-gray-400">{{ 'marketplace.label_highest_bid'|trans }}:</span>
+                <span class="text-sm font-bold text-amber-500 flex items-center js-highest-bid"></span>
+            </div>
+        </div>
+        <div class="js-actions-section"></div>
+    </div>
+</template>
+
+{# Trainer Card Template #}
+<template id="template-card-trainer">
+    <div class="marketplace-card marketplace-card--trainer">
+        <div class="space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-xs uppercase font-bold text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded border border-amber-900">🏋️ {{ 'marketplace.type_trainer'|trans }}</span>
+                <span class="text-xs text-gray-400 font-medium js-age"></span>
+            </div>
+            <h3 class="text-lg font-bold text-white leading-tight js-name"></h3>
+            <div class="marketplace-card__details">
+                <div>{{ 'heroes.race'|trans }}: <span class="text-gray-200 font-semibold js-race"></span></div>
+            </div>
+            <div class="marketplace-card__stats">
+                <div class="marketplace-card__stat-item">STR <span class="block text-xs text-gray-300 font-bold mt-0.5 js-str"></span></div>
+                <div class="marketplace-card__stat-item">DEX <span class="block text-xs text-gray-300 font-bold mt-0.5 js-dex"></span></div>
+                <div class="marketplace-card__stat-item">KON <span class="block text-xs text-gray-300 font-bold mt-0.5 js-kon"></span></div>
+                <div class="marketplace-card__stat-item">SPD <span class="block text-xs text-gray-300 font-bold mt-0.5 js-spd"></span></div>
+            </div>
+        </div>
+        <div class="border-t border-gray-800/80 pt-3 space-y-1 js-footer-info">
+            <div class="flex justify-between text-[11px] text-gray-500 pb-1 border-b border-gray-800/40">
+                <span>{{ 'marketplace.col_seller'|trans }}: <span class="text-gray-300 font-medium js-seller-name"></span></span>
+                <span class="text-red-400 font-semibold js-time-remaining"></span>
+            </div>
+            <div class="flex items-center justify-between py-1 border-b border-gray-800/60 js-buyout-section hidden">
+                <span class="text-xs text-gray-400">{{ 'marketplace.label_buyout'|trans }}:</span>
+                <span class="text-sm font-bold text-amber-400 flex items-center">🪙&nbsp;<span class="js-buyout-price"></span></span>
+            </div>
+            <div class="flex items-center justify-between py-1 js-bid-section hidden">
+                <span class="text-xs text-gray-400">{{ 'marketplace.label_highest_bid'|trans }}:</span>
+                <span class="text-sm font-bold text-amber-500 flex items-center js-highest-bid"></span>
+            </div>
+        </div>
+        <div class="js-actions-section"></div>
+    </div>
+</template>
+
+{# My Listings Row Template #}
+<template id="template-listing-row">
+    <tr class="border-b border-gray-800 text-sm text-gray-300 hover:bg-gray-950/40 transition">
+        <td class="py-3.5 px-4 font-bold text-white js-name"></td>
+        <td class="py-3.5 px-4 js-type-mode"></td>
+        <td class="py-3.5 px-4 font-semibold js-price"></td>
+        <td class="py-3.5 px-4 font-semibold text-amber-500 js-highest-bid"></td>
+        <td class="py-3.5 px-4 text-xs font-semibold text-red-400 js-expires"></td>
+        <td class="py-3.5 px-4">
+            <span class="js-status"></span>
+        </td>
+        <td class="py-3.5 px-4 text-right js-action"></td>
+    </tr>
+</template>
+
+{# History Row Template #}
+<template id="template-history-row">
+    <tr class="border-b border-gray-800 text-sm text-gray-300 hover:bg-gray-950/40 transition">
+        <td class="py-3.5 px-4 font-mono text-gray-400 js-id"></td>
+        <td class="py-3.5 px-4 font-bold text-white">
+            <span class="js-name"></span>
+            <span class="text-xs text-gray-400 block font-normal js-category"></span>
+        </td>
+        <td class="py-3.5 px-4 js-seller"></td>
+        <td class="py-3.5 px-4 js-buyer"></td>
+        <td class="py-3.5 px-4 font-bold text-emerald-400 js-amount"></td>
+        <td class="py-3.5 px-4 text-red-400 js-fee"></td>
+        <td class="py-3.5 px-4 text-xs font-semibold text-gray-400 js-date"></td>
+    </tr>
+</template>
+
+{# Loading Grid Template #}
+<template id="template-loading-grid">
+    <div class="col-span-3 flex justify-center py-12">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500"></div>
+    </div>
+</template>
+
+{# Empty Grid Template #}
+<template id="template-empty-grid">
+    <div class="col-span-3 text-center text-gray-500 py-12 js-empty-text"></div>
+</template>
+
+{# Error Grid Template #}
+<template id="template-error-grid">
+    <div class="col-span-3 text-center text-red-500 py-8 js-error-text"></div>
+</template>
+
+{# Loading Row Template #}
+<template id="template-loading-row">
+    <tr>
+        <td colspan="7" class="text-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
+        </td>
+    </tr>
+</template>
+
+{# Empty Row Template #}
+<template id="template-empty-row">
+    <tr>
+        <td colspan="7" class="text-center text-gray-500 py-8 js-empty-text"></td>
+    </tr>
+</template>
+
+{# Error Row Template #}
+<template id="template-error-row">
+    <tr>
+        <td colspan="7" class="text-center text-red-500 py-8 js-error-text"></td>
+    </tr>
+</template>
+
+{# Bid Form Template #}
+<template id="template-bid-form">
+    <div class="flex items-center space-x-2 w-full mt-2 border-t border-gray-800 pt-3">
+        <input type="number" class="form-input text-center w-24 js-bid-input">
+        <button type="button" class="btn btn-outline whitespace-nowrap js-bid-btn"></button>
+    </div>
+</template>
+
+{# Cancel Button Template #}
+<template id="template-cancel-btn">
+    <button type="button" class="btn btn-danger btn--sm js-cancel-btn"></button>
+</template>
+
+{# Active Auction Span Template #}
+<template id="template-active-auction-span">
+    <span class="text-[10px] text-gray-550 font-medium js-active-span"></span>
+</template>

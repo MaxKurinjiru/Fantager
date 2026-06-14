@@ -38,7 +38,7 @@ class MessageController extends AbstractController
 
         $folder = $request->query->get('folder', 'inbox');
 
-        if ($folder === 'sent') {
+        if ('sent' === $folder) {
             $messages = $this->communityService->getSentMessages($team);
         } else {
             $messages = $this->communityService->getInboxMessages($team);
@@ -59,6 +59,7 @@ class MessageController extends AbstractController
             return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
         }
 
+        /** @var Message|null $message */
         $message = $this->em->getRepository(Message::class)->find($id);
         if (!$message) {
             return $this->json(['error' => 'Message not found.'], Response::HTTP_NOT_FOUND);
@@ -95,7 +96,7 @@ class MessageController extends AbstractController
         $subject = trim($content['subject'] ?? '');
         $body = trim($content['body'] ?? '');
 
-        if ($receiverTeamId === 0 || $subject === '' || $body === '') {
+        if (0 === $receiverTeamId || '' === $subject || '' === $body) {
             return $this->json(['error' => 'Receiver team ID, subject, and body are required.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -132,6 +133,7 @@ class MessageController extends AbstractController
         }
     }
 
+    /** @return array<string, mixed> */
     private function serializeMessage(Message $message): array
     {
         return [

@@ -67,7 +67,7 @@ class ItemService
      */
     public function equip(Item $item, Hero $hero, ItemSlotType $slot): void
     {
-        if ($item->getStatus() !== ItemStatus::Available) {
+        if (ItemStatus::Available !== $item->getStatus()) {
             throw new \DomainException('Listed or unavailable items cannot be equipped.');
         }
 
@@ -127,7 +127,7 @@ class ItemService
      */
     public function dismantle(Item $item, Team $team): array
     {
-        if ($item->getStatus() !== ItemStatus::Available) {
+        if (ItemStatus::Available !== $item->getStatus()) {
             throw new \DomainException('Listed or unavailable items cannot be dismantled.');
         }
 
@@ -156,7 +156,7 @@ class ItemService
      */
     public function repair(Item $item, Team $team): int
     {
-        if ($item->getStatus() !== ItemStatus::Available) {
+        if (ItemStatus::Available !== $item->getStatus()) {
             throw new \DomainException('Listed or unavailable items cannot be repaired.');
         }
 

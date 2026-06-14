@@ -6,9 +6,8 @@ Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 
 Displayed Information:
 - Summon Status:
-	- Next Available Summon (countdown timer)
 	- Summons Used this Cycle
-	- Max Summons per Cycle (based on HQ level)
+	- Max Summons per Cycle (based on Kingdom game speed)
 - Summon Parameters:
 	- Arena Theme Adaptation (displaying the theme race of the home Arena)
 	- Potential summonable races list (based on affinity and relations with theme race)
@@ -30,7 +29,6 @@ Backend Requirements:
 - Summon availability check
 - Random hero generation
 - Summon endpoint (POST)
-- Cooldown tracking
 
 Sections to fill:
 - Display data contract (fields returned by API)

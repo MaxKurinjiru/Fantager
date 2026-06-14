@@ -24,7 +24,7 @@ class SummonHistoryRepository extends ServiceEntityRepository
             ->where('s.team = :team')
             ->setParameter('team', $team);
 
-        if ($race !== null && $race !== '') {
+        if (null !== $race && '' !== $race) {
             $qb->andWhere('s.raceSelected = :race')
                ->setParameter('race', $race);
         }

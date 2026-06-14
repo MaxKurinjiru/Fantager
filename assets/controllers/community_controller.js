@@ -71,7 +71,9 @@ export default class extends Controller {
         } catch (err) {
             this.showFeedback('error', this.translationsValue.error_load_threads || 'Nepodařilo se načíst témata.');
         }
-       renderThreads(threads) {
+    }
+
+    renderThreads(threads) {
         this.threadsTableBodyTarget.innerHTML = '';
 
         if (threads.length === 0) {
@@ -303,7 +305,8 @@ export default class extends Controller {
 
     // =============================================================================
     //  MAIL LOGIC
-    // ======================    async switchFolder(e) {
+    // =============================================================================
+    async switchFolder(e) {
         e.preventDefault();
         const folder = e.currentTarget.dataset.folder;
         this.currentFolder = folder;

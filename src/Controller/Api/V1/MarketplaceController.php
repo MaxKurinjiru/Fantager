@@ -7,7 +7,6 @@ namespace App\Controller\Api\V1;
 use App\Entity\Auth\User;
 use App\Entity\Marketplace\MarketplaceListing;
 use App\Entity\Marketplace\Transaction;
-use App\Enum\ListingMode;
 use App\Enum\ListingStatus;
 use App\Enum\ListingType;
 use App\Service\Marketplace\MarketplaceService;
@@ -78,12 +77,12 @@ class MarketplaceController extends AbstractController
                ->setParameter('race', $race);
         }
 
-        if ($levelMin !== null && $levelMin !== '') {
+        if (null !== $levelMin && '' !== $levelMin) {
             $qb->andWhere('h.level >= :levelMin')
                ->setParameter('levelMin', (int) $levelMin);
         }
 
-        if ($levelMax !== null && $levelMax !== '') {
+        if (null !== $levelMax && '' !== $levelMax) {
             $qb->andWhere('h.level <= :levelMax')
                ->setParameter('levelMax', (int) $levelMax);
         }
@@ -93,19 +92,19 @@ class MarketplaceController extends AbstractController
                ->setParameter('rarity', $rarity);
         }
 
-        if ($priceMin !== null && $priceMin !== '') {
+        if (null !== $priceMin && '' !== $priceMin) {
             $qb->andWhere('l.priceGold >= :priceMin OR l.buyoutPriceGold >= :priceMin')
                ->setParameter('priceMin', (int) $priceMin);
         }
 
-        if ($priceMax !== null && $priceMax !== '') {
+        if (null !== $priceMax && '' !== $priceMax) {
             $qb->andWhere('l.priceGold <= :priceMax OR l.buyoutPriceGold <= :priceMax')
                ->setParameter('priceMax', (int) $priceMax);
         }
 
         if ($search) {
             $qb->andWhere('h.name LIKE :search OR it.name LIKE :search OR tr.name LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+               ->setParameter('search', '%'.$search.'%');
         }
 
         $sort = $request->query->get('sort', 'newest');
@@ -150,7 +149,7 @@ class MarketplaceController extends AbstractController
         $type = (string) ($content['type'] ?? '');
         $entityId = (int) ($content['entity_id'] ?? 0);
         $priceGold = (int) ($content['price_gold'] ?? 0);
-        $buyoutPriceGold = isset($content['buyout_price_gold']) && $content['buyout_price_gold'] !== '' ? (int) $content['buyout_price_gold'] : null;
+        $buyoutPriceGold = isset($content['buyout_price_gold']) && '' !== $content['buyout_price_gold'] ? (int) $content['buyout_price_gold'] : null;
         $mode = (string) ($content['mode'] ?? '');
         $durationDays = (int) ($content['duration_days'] ?? 7);
 
@@ -246,6 +245,7 @@ class MarketplaceController extends AbstractController
             return new JsonResponse(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
         }
 
+        /** @var list<MarketplaceListing> $listings */
         $listings = $this->em->getRepository(MarketplaceListing::class)->findBy(
             ['sellerTeam' => $team],
             ['id' => 'DESC']
@@ -281,7 +281,7 @@ class MarketplaceController extends AbstractController
         foreach ($transactions as $tx) {
             $highestBid = null;
             $listing = $tx->getListing();
-            
+
             $data[] = [
                 'id' => $tx->getId(),
                 'buyer_name' => $tx->getBuyerTeam()->getName(),
@@ -292,26 +292,27 @@ class MarketplaceController extends AbstractController
                 'created_at' => $tx->getCreatedAt()->format(\DateTimeInterface::ATOM),
                 'listing_id' => $listing->getId(),
                 'listing_type' => $listing->getListingType()->value,
-                'entity_name' => $listing->getListingType() === ListingType::Hero && null !== $listing->getHero() ? $listing->getHero()->getName() :
-                                 ($listing->getListingType() === ListingType::Item && null !== $listing->getItem() ? $listing->getItem()->getName() :
-                                 ($listing->getListingType() === ListingType::Trainer && null !== $listing->getTrainer() ? $listing->getTrainer()->getName() : 'Unknown')),
+                'entity_name' => ListingType::Hero === $listing->getListingType() && null !== $listing->getHero() ? $listing->getHero()->getName() :
+                                 (ListingType::Item === $listing->getListingType() && null !== $listing->getItem() ? $listing->getItem()->getName() :
+                                 (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer() ? $listing->getTrainer()->getName() : 'Unknown')),
             ];
         }
 
         return new JsonResponse($data);
     }
 
+    /** @return array<string, mixed> */
     private function serializeListing(MarketplaceListing $listing): array
     {
         $highestBid = null;
         foreach ($listing->getBids() as $bid) {
-            if ($highestBid === null || $bid->getBidAmount() > $highestBid->getBidAmount()) {
+            if (null === $highestBid || $bid->getBidAmount() > $highestBid->getBidAmount()) {
                 $highestBid = $bid;
             }
         }
 
         $entityData = null;
-        if ($listing->getListingType() === ListingType::Hero && null !== $listing->getHero()) {
+        if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
             $hero = $listing->getHero();
             $entityData = [
                 'id' => $hero->getId(),
@@ -331,7 +332,7 @@ class MarketplaceController extends AbstractController
                 'fatigue' => $hero->getFatigue(),
                 'morale' => $hero->getMorale(),
             ];
-        } elseif ($listing->getListingType() === ListingType::Item && null !== $listing->getItem()) {
+        } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
             $item = $listing->getItem();
             $entityData = [
                 'id' => $item->getId(),
@@ -342,7 +343,7 @@ class MarketplaceController extends AbstractController
                 'durability' => $item->getDurability(),
                 'bonuses' => $item->getBonuses(),
             ];
-        } elseif ($listing->getListingType() === ListingType::Trainer && null !== $listing->getTrainer()) {
+        } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer()) {
             $trainer = $listing->getTrainer();
             $entityData = [
                 'id' => $trainer->getId(),

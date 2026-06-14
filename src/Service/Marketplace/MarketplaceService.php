@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\Service\Marketplace;
 
-use App\Entity\Team\Team;
 use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
-use App\Entity\Training\Trainer;
-use App\Entity\Marketplace\MarketplaceListing;
 use App\Entity\Marketplace\MarketplaceBid;
+use App\Entity\Marketplace\MarketplaceListing;
 use App\Entity\Marketplace\Transaction;
+use App\Entity\Team\Team;
+use App\Entity\Training\Trainer;
+use App\Enum\FinancialRecordActor;
+use App\Enum\FinancialRecordType;
+use App\Enum\HeroStatus;
+use App\Enum\ItemStatus;
 use App\Enum\ListingMode;
 use App\Enum\ListingStatus;
 use App\Enum\ListingType;
-use App\Enum\TransactionType;
-use App\Enum\HeroStatus;
-use App\Enum\TrainerStatus;
-use App\Enum\ItemStatus;
-use App\Enum\FinancialRecordType;
-use App\Enum\FinancialRecordActor;
 use App\Enum\NotificationType;
+use App\Enum\TrainerStatus;
+use App\Enum\TransactionType;
 use App\Service\Economy\EconomyService;
 use App\Service\Notification\NotificationHelper;
 use Doctrine\ORM\EntityManagerInterface;
@@ -42,7 +42,7 @@ class MarketplaceService
         ?int $buyoutPriceGold,
         string $mode,
         int $durationDays,
-        \DateTimeImmutable $now
+        \DateTimeImmutable $now,
     ): MarketplaceListing {
         if ($priceGold <= 0) {
             throw new \DomainException('Price or starting bid must be positive.');
@@ -58,7 +58,7 @@ class MarketplaceService
             throw new \InvalidArgumentException(sprintf('Invalid listing type "%s".', $type));
         }
 
-        if ($listingMode === ListingMode::BuyNow) {
+        if (ListingMode::BuyNow === $listingMode) {
             $buyoutPriceGold = $priceGold;
         } else { // Auction
             if (null !== $buyoutPriceGold && $buyoutPriceGold <= $priceGold) {
@@ -77,13 +77,13 @@ class MarketplaceService
         $listing->setStatus(ListingStatus::Active);
 
         // Fetch and escrow the entity
-        if ($listingType === ListingType::Hero) {
+        if (ListingType::Hero === $listingType) {
             /** @var Hero|null $hero */
             $hero = $this->em->getRepository(Hero::class)->find($entityId);
             if (null === $hero || $hero->getTeam()->getId() !== $seller->getId()) {
                 throw new \DomainException('Hero not found or does not belong to your team.');
             }
-            if ($hero->getStatus() !== HeroStatus::Available && $hero->getStatus() !== HeroStatus::Tired) {
+            if (HeroStatus::Available !== $hero->getStatus() && HeroStatus::Tired !== $hero->getStatus()) {
                 throw new \DomainException('Only available or tired heroes can be listed.');
             }
 
@@ -92,30 +92,31 @@ class MarketplaceService
             $listing->setHero($hero);
 
             // Remove hero from active formations
+            /** @var list<\App\Entity\Formation\FormationSlot> $slots */
             $slots = $this->em->getRepository(\App\Entity\Formation\FormationSlot::class)->findBy(['hero' => $hero]);
             foreach ($slots as $slot) {
                 $slot->setHero(null);
             }
-        } elseif ($listingType === ListingType::Item) {
+        } elseif (ListingType::Item === $listingType) {
             /** @var Item|null $item */
             $item = $this->em->getRepository(Item::class)->find($entityId);
             if (null === $item || $item->getOwnerTeam()->getId() !== $seller->getId()) {
                 throw new \DomainException('Item not found or does not belong to your team.');
             }
-            if ($item->getStatus() !== ItemStatus::Available || null !== $item->getEquippedHero()) {
+            if (ItemStatus::Available !== $item->getStatus() || null !== $item->getEquippedHero()) {
                 throw new \DomainException('Only unequipped available items can be listed.');
             }
 
             // Escrow item
             $item->setStatus(ItemStatus::Selling);
             $listing->setItem($item);
-        } elseif ($listingType === ListingType::Trainer) {
+        } elseif (ListingType::Trainer === $listingType) {
             /** @var Trainer|null $trainer */
             $trainer = $this->em->getRepository(Trainer::class)->find($entityId);
             if (null === $trainer || $trainer->getTeam()->getId() !== $seller->getId()) {
                 throw new \DomainException('Trainer not found or does not belong to your team.');
             }
-            if ($trainer->getStatus() !== TrainerStatus::Active) {
+            if (TrainerStatus::Active !== $trainer->getStatus()) {
                 throw new \DomainException('Only active trainers can be listed.');
             }
 
@@ -144,7 +145,7 @@ class MarketplaceService
             throw new \DomainException('Listing not found.');
         }
 
-        if ($listing->getStatus() !== ListingStatus::Active) {
+        if (ListingStatus::Active !== $listing->getStatus()) {
             throw new \DomainException('Only active listings can be cancelled.');
         }
 
@@ -155,11 +156,11 @@ class MarketplaceService
         $listing->setStatus(ListingStatus::Cancelled);
 
         // Restore entity
-        if ($listing->getListingType() === ListingType::Hero && null !== $listing->getHero()) {
+        if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
             $listing->getHero()->setStatus(HeroStatus::Available);
-        } elseif ($listing->getListingType() === ListingType::Item && null !== $listing->getItem()) {
+        } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
             $listing->getItem()->setStatus(ItemStatus::Available);
-        } elseif ($listing->getListingType() === ListingType::Trainer && null !== $listing->getTrainer()) {
+        } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer()) {
             $listing->getTrainer()->setStatus(TrainerStatus::Active);
         }
 
@@ -174,7 +175,7 @@ class MarketplaceService
             throw new \DomainException('Listing not found.');
         }
 
-        if ($listing->getStatus() !== ListingStatus::Active) {
+        if (ListingStatus::Active !== $listing->getStatus()) {
             throw new \DomainException('Listing is no longer active.');
         }
 
@@ -218,7 +219,7 @@ class MarketplaceService
             );
             $this->em->remove($bid);
 
-            if ($bid->getBidderTeam()->getUser() !== null) {
+            if (null !== $bid->getBidderTeam()->getUser()) {
                 $this->notificationHelper->sendNotification(
                     $bid->getBidderTeam()->getUser(),
                     NotificationType::MarketplaceBid,
@@ -239,16 +240,16 @@ class MarketplaceService
         $this->em->persist($transaction);
 
         // Transfer ownership
-        if ($listing->getListingType() === ListingType::Hero && null !== $listing->getHero()) {
+        if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
             $hero = $listing->getHero();
             $hero->setTeam($buyer);
             $hero->setStatus(HeroStatus::Available);
             $hero->setMorale(50); // Reset morale to base
-        } elseif ($listing->getListingType() === ListingType::Item && null !== $listing->getItem()) {
+        } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
             $item = $listing->getItem();
             $item->setOwnerTeam($buyer);
             $item->setStatus(ItemStatus::Available);
-        } elseif ($listing->getListingType() === ListingType::Trainer && null !== $listing->getTrainer()) {
+        } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer()) {
             $trainer = $listing->getTrainer();
             $trainer->setTeam($buyer);
             $trainer->setStatus(TrainerStatus::Active);
@@ -258,7 +259,7 @@ class MarketplaceService
         $this->em->flush();
 
         // Send Notification to Seller
-        if ($seller->getUser() !== null) {
+        if (null !== $seller->getUser()) {
             $this->notificationHelper->sendNotification(
                 $seller->getUser(),
                 NotificationType::MarketplaceSold,
@@ -276,11 +277,11 @@ class MarketplaceService
             throw new \DomainException('Listing not found.');
         }
 
-        if ($listing->getStatus() !== ListingStatus::Active) {
+        if (ListingStatus::Active !== $listing->getStatus()) {
             throw new \DomainException('Listing is not active.');
         }
 
-        if ($listing->getListingMode() !== ListingMode::Auction) {
+        if (ListingMode::Auction !== $listing->getListingMode()) {
             throw new \DomainException('This listing does not support bidding.');
         }
 
@@ -299,7 +300,7 @@ class MarketplaceService
         // Determine highest bid
         $currentHighestBid = null;
         foreach ($listing->getBids() as $b) {
-            if ($currentHighestBid === null || $b->getBidAmount() > $currentHighestBid->getBidAmount()) {
+            if (null === $currentHighestBid || $b->getBidAmount() > $currentHighestBid->getBidAmount()) {
                 $currentHighestBid = $b;
             }
         }
@@ -330,7 +331,7 @@ class MarketplaceService
         $this->em->flush();
 
         // Send Notification to Seller
-        if ($listing->getSellerTeam()->getUser() !== null) {
+        if (null !== $listing->getSellerTeam()->getUser()) {
             $this->notificationHelper->sendNotification(
                 $listing->getSellerTeam()->getUser(),
                 NotificationType::MarketplaceBid,
@@ -356,7 +357,7 @@ class MarketplaceService
             $highestBid = null;
 
             foreach ($bids as $bid) {
-                if ($highestBid === null || $bid->getBidAmount() > $highestBid->getBidAmount()) {
+                if (null === $highestBid || $bid->getBidAmount() > $highestBid->getBidAmount()) {
                     $highestBid = $bid;
                 }
             }
@@ -365,15 +366,15 @@ class MarketplaceService
                 // Expired with no bids: return entity to seller
                 $listing->setStatus(ListingStatus::Expired);
 
-                if ($listing->getListingType() === ListingType::Hero && null !== $listing->getHero()) {
+                if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
                     $listing->getHero()->setStatus(HeroStatus::Available);
-                } elseif ($listing->getListingType() === ListingType::Item && null !== $listing->getItem()) {
+                } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
                     $listing->getItem()->setStatus(ItemStatus::Available);
-                } elseif ($listing->getListingType() === ListingType::Trainer && null !== $listing->getTrainer()) {
+                } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer()) {
                     $listing->getTrainer()->setStatus(TrainerStatus::Active);
                 }
 
-                if ($listing->getSellerTeam()->getUser() !== null) {
+                if (null !== $listing->getSellerTeam()->getUser()) {
                     $this->notificationHelper->sendNotification(
                         $listing->getSellerTeam()->getUser(),
                         NotificationType::QuestExpired, // reusing expired notification type
@@ -409,7 +410,7 @@ class MarketplaceService
                             ['listing_id' => $listing->getId(), 'is_refund' => true]
                         );
 
-                        if ($bid->getBidderTeam()->getUser() !== null) {
+                        if (null !== $bid->getBidderTeam()->getUser()) {
                             $this->notificationHelper->sendNotification(
                                 $bid->getBidderTeam()->getUser(),
                                 NotificationType::MarketplaceBid,
@@ -432,16 +433,16 @@ class MarketplaceService
                 $this->em->persist($transaction);
 
                 // Transfer ownership
-                if ($listing->getListingType() === ListingType::Hero && null !== $listing->getHero()) {
+                if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
                     $hero = $listing->getHero();
                     $hero->setTeam($winner);
                     $hero->setStatus(HeroStatus::Available);
                     $hero->setMorale(50);
-                } elseif ($listing->getListingType() === ListingType::Item && null !== $listing->getItem()) {
+                } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
                     $item = $listing->getItem();
                     $item->setOwnerTeam($winner);
                     $item->setStatus(ItemStatus::Available);
-                } elseif ($listing->getListingType() === ListingType::Trainer && null !== $listing->getTrainer()) {
+                } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer()) {
                     $trainer = $listing->getTrainer();
                     $trainer->setTeam($winner);
                     $trainer->setStatus(TrainerStatus::Active);
@@ -450,7 +451,7 @@ class MarketplaceService
                 $listing->setStatus(ListingStatus::Sold);
 
                 // Notifications
-                if ($seller->getUser() !== null) {
+                if (null !== $seller->getUser()) {
                     $this->notificationHelper->sendNotification(
                         $seller->getUser(),
                         NotificationType::MarketplaceSold,
@@ -459,7 +460,7 @@ class MarketplaceService
                     );
                 }
 
-                if ($winner->getUser() !== null) {
+                if (null !== $winner->getUser()) {
                     $this->notificationHelper->sendNotification(
                         $winner->getUser(),
                         NotificationType::MarketplaceSold,

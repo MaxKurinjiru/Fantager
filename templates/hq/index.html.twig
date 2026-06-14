@@ -31,22 +31,10 @@
     
     {# --- Header Section --- #}
     {% set right_content %}
-        <div class="flex items-center gap-4 bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 backdrop-blur-md">
-            <div>
-                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'hq.compound_level'|trans }}</span>
-                <span class="text-white font-extrabold text-lg" data-hq-target="totalLevel">{{ hq.totalLevel }}</span>
-            </div>
-            <div class="w-px h-8 bg-gray-800"></div>
-            <div>
-                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'hq.active_optimization'|trans }}</span>
-                <span class="text-emerald-400 font-extrabold text-sm">{{ hq.raceOptimization ? ('heroes.race_' ~ hq.raceOptimization)|trans : 'dashboard.none'|trans }}</span>
-            </div>
-            <div class="w-px h-8 bg-gray-800"></div>
-            <div>
-                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'hq.roster_limit'|trans }}</span>
-                <span class="text-white font-extrabold text-lg">{{ team_hero_count(team) }} / {{ team_roster_limit(team) }}</span>
-            </div>
-        </div>
+        {% include 'components/hq/compound_stats.html.twig' with {
+            hq: hq,
+            team: team
+        } %}
     {% endset %}
 
     {% include 'components/ui/page_header.html.twig' with {

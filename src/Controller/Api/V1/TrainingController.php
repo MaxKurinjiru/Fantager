@@ -36,6 +36,7 @@ class TrainingController extends AbstractController
 
         $now = new \DateTimeImmutable();
         $isLocked = $this->trainingService->isTrainingLockedForTeam($team, $now);
+        /** @var list<Trainer> $trainers */
         $trainers = $this->trainerRepository->findBy(['team' => $team]);
 
         $data = [];

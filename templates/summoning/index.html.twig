@@ -22,28 +22,15 @@
     
     {# --- Header Section --- #}
     {% set right_content %}
-        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            {# History Link #}
-            <a href="{{ path('app_summon_history') }}" class="btn btn-outline gap-1.5 shadow-lg">
-                📜 {{ 'summoning.history_btn'|trans }}
-            </a>
+        {# History Link #}
+        <a href="{{ path('app_summon_history') }}" class="btn btn-outline gap-1.5 shadow-lg">
+            📜 {{ 'summoning.history_btn'|trans }}
+        </a>
 
-            {# Cooldown and Cycle Status Widget #}
-            <div class="bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 backdrop-blur-md flex items-center gap-4 text-sm shrink-0">
-                <div>
-                    <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'summoning.summons_used'|trans }}</span>
-                    <span class="text-white font-extrabold">
-                        <span data-summoning-target="summonsUsed">{{ status.summons_used }}</span> / 
-                        <span data-summoning-target="summonsMax">{{ status.summons_max }}</span>
-                    </span>
-                </div>
-                <div class="w-px h-8 bg-gray-800"></div>
-                <div>
-                    <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'summoning.cost_per_summon'|trans }}</span>
-                    <span class="text-yellow-500 font-extrabold">🪙 {{ status.gold_cost|number_format(0, '.', ' ') }}</span>
-                </div>
-            </div>
-        </div>
+        {# Cooldown and Cycle Status Widget #}
+        {% include 'components/summoning/cycle_status.html.twig' with {
+            status: status
+        } %}
     {% endset %}
 
     {% include 'components/ui/page_header.html.twig' with {

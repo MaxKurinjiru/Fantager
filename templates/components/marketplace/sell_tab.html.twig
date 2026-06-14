@@ -1,0 +1,174 @@
+{# templates/components/marketplace/sell_tab.html.twig #}
+{% set heroes = heroes|default([]) %}
+{% set items = items|default([]) %}
+{% set trainers = trainers|default([]) %}
+{% set taxRate = taxRate|default(0) %}
+
+<div data-marketplace-target="tabContent" data-tab-name="sell" class="space-y-6 hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {# Category Selector & Roster list #}
+        <div class="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl space-y-6">
+            <div>
+                <h2 class="text-xl font-bold text-white">{{ 'marketplace.select_entity'|trans }}</h2>
+                <p class="text-sm text-gray-400 mt-1">{{ 'marketplace.sell_desc'|trans }}</p>
+            </div>
+
+            {# Roster tabs #}
+            <div class="flex space-x-2 bg-gray-950 p-1 rounded-xl border border-gray-800">
+                <button type="button" data-action="click->marketplace#switchSellCategory" data-sell-cat="hero" data-marketplace-target="sellCatButton"
+                        class="segmented-btn segmented-btn--active">
+                    👥 {{ 'marketplace.type_hero'|trans }}
+                </button>
+                <button type="button" data-action="click->marketplace#switchSellCategory" data-sell-cat="item" data-marketplace-target="sellCatButton"
+                        class="segmented-btn">
+                    🎒 {{ 'marketplace.type_item'|trans }}
+                </button>
+                <button type="button" data-action="click->marketplace#switchSellCategory" data-sell-cat="trainer" data-marketplace-target="sellCatButton"
+                        class="segmented-btn">
+                    🏋️ {{ 'marketplace.type_trainer'|trans }}
+                </button>
+            </div>
+
+            {# Grid selection containers #}
+            
+            {# Heroes list #}
+            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="hero" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[450px] overflow-y-auto pr-2">
+                {% for hero in heroes %}
+                    <div data-action="click->marketplace#selectEntityToSell"
+                         data-entity-id="{{ hero.id }}"
+                         data-entity-name="{{ hero.name }}"
+                         class="sell-card flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl select-none">👥</span>
+                            <div>
+                                <h4 class="font-bold text-white leading-snug">{{ hero.name }}</h4>
+                                <span class="text-xs text-gray-400">Lvl {{ hero.level }} &bull; {{ hero.race.value|trans }}</span>
+                            </div>
+                        </div>
+                        <span class="text-xs bg-gray-900 text-gray-400 px-2.5 py-1 rounded-lg border border-gray-800 uppercase tracking-wide">
+                            {{ ('heroes.age_phase.' ~ (hero.age < 25 ? 'junior' : (hero.age < 50 ? 'prime' : (hero.age < 75 ? 'veteran' : 'elder'))))|trans }}
+                        </span>
+                    </div>
+                {% else %}
+                    <div class="col-span-2 text-center py-8 text-gray-500">{{ 'marketplace.no_heroes'|trans }}</div>
+                {% endfor %}
+            </div>
+
+            {# Items list #}
+            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="item" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[450px] overflow-y-auto pr-2 hidden">
+                {% for item in items %}
+                    <div data-action="click->marketplace#selectEntityToSell"
+                         data-entity-id="{{ item.id }}"
+                         data-entity-name="{{ item.name }}"
+                         class="sell-card flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl select-none">🗡️</span>
+                            <div>
+                                <h4 class="font-bold text-white leading-snug">{{ item.name }}</h4>
+                                <span class="text-xs text-gray-400">{{ item.slotType.value|trans }} &bull; Durability: {{ item.durability }}%</span>
+                            </div>
+                        </div>
+                        <span class="rarity-tag rarity-tag--{{ item.rarity.value }}">
+                            {{ ('inventory.rarity_' ~ item.rarity.value)|trans }}
+                        </span>
+                    </div>
+                {% else %}
+                    <div class="col-span-2 text-center py-8 text-gray-500">{{ 'marketplace.no_items'|trans }}</div>
+                {% endfor %}
+            </div>
+
+            {# Trainers list #}
+            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="trainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[450px] overflow-y-auto pr-2 hidden">
+                {% for trainer in trainers %}
+                    <div data-action="click->marketplace#selectEntityToSell"
+                         data-entity-id="{{ trainer.id }}"
+                         data-entity-name="{{ trainer.name }}"
+                         class="sell-card flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl select-none">🏋️</span>
+                            <div>
+                                <h4 class="font-bold text-white leading-snug">{{ trainer.name }}</h4>
+                                <span class="text-xs text-gray-400">{{ trainer.race.value|trans }} &bull; {{ 'heroes.age'|trans }}: {{ trainer.age }} {{ 'marketplace.years_suffix'|trans }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-span-2 text-center py-8 text-gray-500">{{ 'marketplace.no_trainers'|trans }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Listing Form Options #}
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl space-y-6 flex flex-col justify-between">
+            <form data-action="submit->marketplace#submitListing" class="space-y-5">
+                <div>
+                    <h2 class="text-xl font-bold text-white">{{ 'marketplace.btn_sell'|trans }}</h2>
+                    <p class="text-sm text-gray-400 mt-1">{{ 'marketplace.sell_opts_title'|trans }}</p>
+                </div>
+
+                {# Selected entity summary badge #}
+                <div class="marketplace-notice flex items-center justify-between">
+                    <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">{{ 'marketplace.selected_label'|trans }}</span>
+                    <span data-marketplace-target="selectedEntityLabel" class="font-bold text-white text-sm">-- Nic --</span>
+                </div>
+
+                <input type="hidden" name="sell_id" data-marketplace-target="sellIdInput" value="">
+
+                {# Listing Mode #}
+                <div class="flex flex-col gap-1.5">
+                    <label for="listing-mode" class="form-label">{{ 'marketplace.listing_mode_label'|trans }}</label>
+                    <select id="listing-mode" name="mode" data-action="change->marketplace#onListingModeChange" data-marketplace-target="listingModeSelect"
+                            class="form-input">
+                        <option value="buy_now">{{ 'marketplace.mode_buy_now'|trans }}</option>
+                        <option value="auction">{{ 'marketplace.mode_auction'|trans }}</option>
+                    </select>
+                </div>
+
+                {# Price Gold #}
+                <div class="flex flex-col gap-1.5">
+                    <label for="listing-price" data-marketplace-target="priceLabel" class="form-label">
+                        {{ 'marketplace.price_gold'|trans }}
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2 text-gray-550 text-sm">🪙</span>
+                        <input type="number" id="listing-price" name="price" required min="1" placeholder="{{ 'marketplace.price_placeholder'|trans }}"
+                               class="form-input pl-8">
+                    </div>
+                </div>
+
+                {# Buyout Price Gold (Optional for Auction) #}
+                <div class="flex flex-col gap-1.5 hidden" data-marketplace-target="buyoutFieldContainer">
+                    <label for="listing-buyout" class="form-label">
+                        {{ 'marketplace.buyout_gold'|trans }}
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2 text-gray-550 text-sm">🪙</span>
+                        <input type="number" id="listing-buyout" name="buyout" min="1" placeholder="{{ 'marketplace.buyout_placeholder'|trans }}"
+                               class="form-input pl-8">
+                    </div>
+                </div>
+
+                {# Duration #}
+                <div class="flex flex-col gap-1.5">
+                    <label for="listing-duration" class="form-label">
+                        {{ 'marketplace.duration_days'|trans }}
+                    </label>
+                    <select id="listing-duration" name="duration" class="form-input">
+                        <option value="3">{{ 'marketplace.duration_days_option'|trans({'%count%': 3}) }}</option>
+                        <option value="5" selected>{{ 'marketplace.duration_days_option'|trans({'%count%': 5}) }}</option>
+                        <option value="7">{{ 'marketplace.duration_days_option'|trans({'%count%': 7}) }}</option>
+                    </select>
+                </div>
+
+                {# Tax notice #}
+                <div class="marketplace-notice text-xs">
+                    ⚠️ {{ 'marketplace.tax_hint'|trans({'%tax%': taxRate}) }}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full">
+                    {{ 'marketplace.btn_list'|trans }}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

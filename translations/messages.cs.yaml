@@ -270,8 +270,8 @@ finance:
   all_actors: Všichni iniciátoři
   sort_date_desc: Nejnovější
   sort_date_asc: Nejstarší
-  sort_amount_desc: Zlato: Nejvyšší
-  sort_amount_asc: Zlato: Nejnižší
+  sort_amount_desc: "Zlato: Nejvyšší"
+  sort_amount_asc: "Zlato: Nejnižší"
   col_type: Typ transakce
   col_actor: Iniciátor
   col_changes: Změny zůstatku
@@ -366,7 +366,7 @@ training:
     in_progress: Zpracovává se
     cancelled: Zrušeno
   scheduled_ticks: Naplánované týdenní vyhodnocení
-  ticks_schedule: Pátky v 10:00 UTC
+  ticks_schedule: "Pátky v 10:00 UTC"
   select_trainee: Vyberte svěřence (Hrdinu)
   choose_trainee_opt: "-- Vyberte svěřence --"
   assign_trainer: Přiřadit trenéra (Volitelné)
@@ -425,6 +425,8 @@ training:
   no_trainer_heroes: "Žádný hrdina netrénuje pod tímto trenérem."
   active_trainees: "Aktivní trénující hrdinové"
   next_evaluation: "Příští vyhodnocení"
+  next_lock: "Uzamčení změn"
+  locked: "Uzamčeno"
   hours_remaining: "zbývá hodin"
   success_configure: "Zaměření trenéra bylo úspěšně uloženo."
   success_assign: "Hrdina byl úspěšně přiřazen trenérovi."
@@ -609,7 +611,7 @@ js_flash:
   dashboard:
     saving: Ukládání...
     failed: Nepodařilo se aktualizovat optimalizaci.
-    success: Změna optimalizace byla úspěšně naplánována. Projeví se příští neděli v 09:30.
+    success: "Změna optimalizace byla úspěšně naplánována. Projeví se příští neděli v 09:30."
 
 school:
   fire: Oheň
@@ -644,6 +646,14 @@ league:
   relegation_zone: Sestupová zóna
   top_x: "První %count% týmy"
   bottom_x: "Poslední %count% týmy"
+  direct_promotion_zone: Přímý postup
+  possible_promotion_zone: Možný postup (porovnání skupin)
+  direct_relegation_zone: Přímý sestup
+  possible_relegation_zone: Možný sestup (porovnání skupin)
+  top_x_direct: "Nejlepší %count% tým(y)"
+  top_x_possible: "Nejlepších %count% z dalších pozic napříč skupinami"
+  bottom_x_direct: "Nejhorší %count% tým(y)"
+  bottom_x_possible: "Nejhorších %count% z dalších pozic napříč skupinami"
   col_rank: Poz
   col_team: Tým
   col_played: Z
@@ -676,8 +686,8 @@ marketplace:
   filter_search: Hledat podle názvu...
   filter_sort: Seřadit podle
   sort_newest: Nejnovější
-  sort_price_asc: Cena: Vzestupně
-  sort_price_desc: Cena: Sestupně
+  sort_price_asc: "Cena: Vzestupně"
+  sort_price_desc: "Cena: Sestupně"
   sort_expires_asc: Končící brzy
   label_price: Minimální příhoz
   label_buyout: Pevná cena (Buyout)
@@ -760,6 +770,9 @@ marketplace:
   card_durability: "Ochrana/Dur:"
   error_fetch_listings: "Chyba při načítání nabídek: %error%"
   error_fetch_my_listings: "Chyba při načítání: %error%"
+  no_heroes: "Žádní dostupní hrdinové pro prodej."
+  no_trainers: "Žádní dostupní trenéři pro prodej."
+  col_actions: "Akce"
 
 community:
   title: Královská komunita
@@ -831,6 +844,51 @@ community:
   text_deleting: "Mažu..."
   success_delete_msg: "Zpráva byla smazána."
   error_delete_msg: "Nepodařilo se smazat zprávu."
+  from: "Od:"
+  locked: "Uzamčeno"
+
+email:
+  verify_email:
+    subject: "Fantager — Ověření e-mailové adresy"
+    title: "Ověření e-mailu"
+    greeting: "Ahoj %displayName%,"
+    body: "Děkujeme za registraci na Fantager! Kliknutím na tlačítko níže ověříte svůj e-mail a aktivujete svůj účet."
+    btn: "Ověřit e-mail"
+    note: "Tento odkaz vyprší za 24 hodin. Pokud jste účet nevytvořili, můžete tento e-mail ignorovat."
+  password_reset:
+    subject: "Fantager — Obnovení hesla"
+    title: "Obnovení hesla"
+    greeting: "Ahoj %displayName%,"
+    body: "Přijali jsme žádost o obnovení hesla k vašemu účtu Fantager. Kliknutím na tlačítko níže nastavíte nové heslo."
+    btn: "Obnovit heslo"
+    note: "Tento odkaz vyprší za 1 hodinu. Pokud jste o obnovení hesla nežádali, můžete tento e-mail ignorovat."
+  change_email_old:
+    subject: "Fantager — Potvrzení žádosti o změnu e-mailu"
+    title: "Potvrzení změny e-mailu"
+    greeting: "Ahoj %displayName%,"
+    body: "Přijali jsme žádost o změnu e-mailové adresy pro váš účet Fantager na %newEmail%."
+    body_confirm: "Chcete-li pokračovat, potvrďte prosím vlastnictví své aktuální e-mailové adresy kliknutím na tlačítko níže:"
+    btn: "Potvrdit aktuální e-mail"
+    note: "Tento odkaz vyprší za 2 hodiny. Pokud jste o tuto změnu nežádali, můžete tento e-mail ignorovat."
+  change_email_new:
+    subject: "Fantager — Ověření nové e-mailové adresy"
+    title: "Ověření nového e-mailu"
+    greeting: "Ahoj %displayName%,"
+    body: "Toto je poslední krok k aktualizaci e-mailové adresy pro váš účet Fantager."
+    body_confirm: "Kliknutím na tlačítko níže ověříte vlastnictví této nové e-mailové adresy a dokončíte aktualizaci:"
+    btn: "Ověřit nový e-mail"
+    note: "Tento odkaz vyprší za 2 hodiny. Pokud jste o tuto změnu nežádali, můžete tento e-mail ignorovat."
+  cancel_account:
+    subject: "Fantager — Potvrzení zrušení účtu"
+    title: "Potvrzení zrušení účtu"
+    greeting: "Ahoj %displayName%,"
+    body: "Obdrželi jsme žádost o trvalé smazání vašeho účtu Fantager."
+    warning_label: "Varování:"
+    warning_text: "Tato akce je trvalá. Veškerý váš postup, hrdinové, předměty a nastavení budou navždy smazány."
+    body_confirm: "Pokud si přejete pokračovat ve smazání účtu, klikněte na potvrzovací tlačítko níže:"
+    btn: "Trvale smazat můj účet"
+    note: "Tento odkaz pro smazání vyprší za 2 hodiny. Pokud jste o zrušení účtu nežádali, můžete tento e-mail ignorovat."
+
 
 
 

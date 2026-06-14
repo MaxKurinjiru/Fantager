@@ -249,6 +249,45 @@ class ProcessKingdomTicksHandler
         // Process pending facility upgrades
         $this->hqService->processFacilityUpgradesTick($kingdom, $scheduledAt);
 
+        // Update hero and trainer aging
+        $speed = (float) $kingdom->getGameSpeed();
+        if ($speed <= 0.0) {
+            $speed = 1.0;
+        }
+        $ageIncrement = (int) round(1 * $speed);
+
+        if ($ageIncrement > 0) {
+            // Fetch all heroes for this kingdom that are not Undead
+            /** @var list<\App\Entity\Hero\Hero> $heroes */
+            $heroes = $this->em->getRepository(\App\Entity\Hero\Hero::class)
+                ->createQueryBuilder('h')
+                ->join('h.team', 't')
+                ->where('t.kingdom = :kingdom')
+                ->andWhere('h.race != :undead')
+                ->setParameter('kingdom', $kingdom)
+                ->setParameter('undead', \App\Enum\Race::Undead)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($heroes as $hero) {
+                $hero->setAgeRaw($hero->getAgeRaw() + $ageIncrement);
+            }
+
+            // Fetch all trainers for this kingdom
+            /** @var list<\App\Entity\Training\Trainer> $trainers */
+            $trainers = $this->em->getRepository(\App\Entity\Training\Trainer::class)
+                ->createQueryBuilder('tr')
+                ->join('tr.team', 't')
+                ->where('t.kingdom = :kingdom')
+                ->setParameter('kingdom', $kingdom)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($trainers as $trainer) {
+                $trainer->setAgeRaw($trainer->getAgeRaw() + $ageIncrement);
+            }
+        }
+
         // Check if we need to pre-create the next season (Option A: Monday of Week 11)
         // If scheduledAt is Monday (1)
         if (1 === (int) $scheduledAt->format('N')) {

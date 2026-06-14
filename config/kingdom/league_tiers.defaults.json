@@ -8,7 +8,7 @@
                 "1-A"
             ],
             "promotion_slots": 0,
-            "relegation_slots": 2,
+            "relegation_slots": 4,
             "rewards": {
                 "gold": 5000,
                 "crystals": 10,
@@ -21,8 +21,8 @@
                 "2-A",
                 "2-B"
             ],
-            "promotion_slots": 2,
-            "relegation_slots": 2,
+            "promotion_slots": 4,
+            "relegation_slots": 6,
             "rewards": {
                 "gold": 2500,
                 "crystals": 5,
@@ -36,7 +36,7 @@
                 "3-B",
                 "3-C"
             ],
-            "promotion_slots": 2,
+            "promotion_slots": 6,
             "relegation_slots": 0,
             "rewards": {
                 "gold": 1000,

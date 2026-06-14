@@ -5,35 +5,33 @@
 {% block body %}
 <div class="space-y-6">
     {# Page Header #}
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-800 pb-5">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-emerald-400">{{ 'league.title'|trans }}</h1>
-            <p class="text-sm text-gray-400 mt-1">{{ 'league.subtitle'|trans }}</p>
-        </div>
-
-        {# Active Season Overview / Dropdown Selector #}
+    {% set right_content %}
         {% if season is not null %}
-            <div class="flex flex-wrap items-center gap-4">
-                {# Info Badge #}
-                <div class="bg-gray-900 border border-gray-800 py-1.5 px-3 rounded-md text-xs text-gray-300">
-                    <span class="text-gray-500 font-semibold uppercase text-[10px] block">{{ 'auth.kingdom_season'|trans }} {{ season.seasonNumber }}</span>
-                    {{ season.startDate|date('d. m. Y') }} — {{ season.endDate|date('d. m. Y') }}
-                </div>
-
-                {# Group Select Dropdown #}
-                <form method="GET" action="{{ path('app_league') }}" class="flex items-center gap-2">
-                    <label for="group-select" class="sr-only">{{ 'league.select_group'|trans }}</label>
-                    <select id="group-select" name="groupId" onchange="this.form.submit()" class="form-input py-2 bg-gray-900 border-gray-800 text-sm focus:border-emerald-500">
-                        {% for g in groups %}
-                            <option value="{{ g.id }}" {% if selectedGroup and selectedGroup.id == g.id %}selected{% endif %}>
-                                {{ g.tier.tierName }} — {{ g.groupName }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </form>
+            {# Info Badge #}
+            <div class="bg-gray-900 border border-gray-800 py-1.5 px-3 rounded-md text-xs text-gray-300">
+                <span class="text-gray-550 font-semibold uppercase text-[10px] block">{{ 'auth.kingdom_season'|trans }} {{ season.seasonNumber }}</span>
+                {{ season.startDate|date('d. m. Y') }} — {{ season.endDate|date('d. m. Y') }}
             </div>
+
+            {# Group Select Dropdown #}
+            <form method="GET" action="{{ path('app_league') }}" class="flex items-center gap-2">
+                <label for="group-select" class="sr-only">{{ 'league.select_group'|trans }}</label>
+                <select id="group-select" name="groupId" onchange="this.form.submit()" class="form-input py-2 bg-gray-900 border-gray-800 text-sm focus:border-emerald-500">
+                    {% for g in groups %}
+                        <option value="{{ g.id }}" {% if selectedGroup and selectedGroup.id == g.id %}selected{% endif %}>
+                            {{ g.tier.tierName }} — {{ g.groupName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
         {% endif %}
-    </div>
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'league.title',
+        subtitle: 'league.subtitle',
+        right_content: right_content
+    } %}
 
     {% if season is null %}
         {# No Active Season State #}
@@ -65,21 +63,40 @@
                     <p class="text-sm text-gray-500 text-center py-6">{{ 'league.no_standings'|trans }}</p>
                 {% else %}
                     {# Legend / Promotion-Relegation Settings #}
-                    {% set promo_slots = selectedGroup.tier.promotionSlots %}
-                    {% set releg_slots = selectedGroup.tier.relegationSlots %}
+                    {% set groups_count = selectedGroup.tier.groups|length %}
+                    {% set tier_promo = selectedGroup.tier.promotionSlots %}
+                    {% set tier_releg = selectedGroup.tier.relegationSlots %}
                     {% set total_teams = standings|length %}
 
+                    {% set k_promo = (tier_promo / groups_count)|round(0, 'floor') %}
+                    {% set rem_promo = tier_promo % groups_count %}
+
+                    {% set k_releg = (tier_releg / groups_count)|round(0, 'floor') %}
+                    {% set rem_releg = tier_releg % groups_count %}
+
                     <div class="flex flex-wrap gap-4 text-xs text-gray-400 bg-gray-900/40 p-3 rounded border border-gray-800/30">
-                        {% if promo_slots > 0 %}
+                        {% if k_promo > 0 %}
                             <div class="flex items-center gap-1.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                                <span>{{ 'league.promotion_zone'|trans }}: {{ 'league.top_x'|trans({'%count%': promo_slots}) }}</span>
+                                <span>{{ 'league.direct_promotion_zone'|trans }}: {{ 'league.top_x_direct'|trans({'%count%': k_promo}) }}</span>
                             </div>
                         {% endif %}
-                        {% if releg_slots > 0 %}
+                        {% if rem_promo > 0 %}
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/40 border border-emerald-400/80"></span>
+                                <span>{{ 'league.possible_promotion_zone'|trans }}: {{ 'league.top_x_possible'|trans({'%count%': rem_promo}) }}</span>
+                            </div>
+                        {% endif %}
+                        {% if k_releg > 0 %}
                             <div class="flex items-center gap-1.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-                                <span>{{ 'league.relegation_zone'|trans }}: {{ 'league.bottom_x'|trans({'%count%': releg_slots}) }}</span>
+                                <span>{{ 'league.direct_relegation_zone'|trans }}: {{ 'league.bottom_x_direct'|trans({'%count%': k_releg}) }}</span>
+                            </div>
+                        {% endif %}
+                        {% if rem_releg > 0 %}
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/40 border border-rose-400/80"></span>
+                                <span>{{ 'league.possible_relegation_zone'|trans }}: {{ 'league.bottom_x_possible'|trans({'%count%': rem_releg}) }}</span>
                             </div>
                         {% endif %}
                     </div>
@@ -103,17 +120,23 @@
                             <tbody class="text-sm divide-y divide-gray-800/50">
                                 {% for standing in standings %}
                                     {% set is_own_team = standing.team.id == team.id %}
-                                    {% set is_promo = loop.index <= promo_slots %}
-                                    {% set is_releg = loop.index > (total_teams - releg_slots) %}
+                                    {% set is_direct_promo = loop.index <= k_promo %}
+                                    {% set is_possible_promo = (rem_promo > 0) and (loop.index == k_promo + 1) %}
+                                    {% set is_direct_releg = loop.index > (total_teams - k_releg) %}
+                                    {% set is_possible_releg = (rem_releg > 0) and (loop.index == (total_teams - k_releg)) %}
 
                                     <tr class="transition-colors {% if is_own_team %}bg-emerald-500/10 text-emerald-400 font-bold border-l-4 border-emerald-500{% else %}hover:bg-gray-800/30{% endif %}">
                                         {# Rank / Position #}
                                         <td class="py-3.5 px-4 text-center font-mono">
                                             <div class="flex items-center justify-center gap-1">
-                                                {% if is_promo %}
-                                                    <span class="text-emerald-500 text-xs font-semibold" title="{{ 'league.promotion_zone'|trans }}">▲</span>
-                                                {% elseif is_releg %}
-                                                    <span class="text-rose-500 text-xs font-semibold" title="{{ 'league.relegation_zone'|trans }}">▼</span>
+                                                {% if is_direct_promo %}
+                                                    <span class="text-emerald-500 text-xs font-semibold" title="{{ 'league.direct_promotion_zone'|trans }}">▲</span>
+                                                {% elseif is_possible_promo %}
+                                                    <span class="text-emerald-400/50 text-xs font-semibold" title="{{ 'league.possible_promotion_zone'|trans }}">▲</span>
+                                                {% elseif is_direct_releg %}
+                                                    <span class="text-rose-500 text-xs font-semibold" title="{{ 'league.direct_relegation_zone'|trans }}">▼</span>
+                                                {% elseif is_possible_releg %}
+                                                    <span class="text-rose-400/50 text-xs font-semibold" title="{{ 'league.possible_relegation_zone'|trans }}">▼</span>
                                                 {% endif %}
                                                 {{ loop.index }}
                                             </div>

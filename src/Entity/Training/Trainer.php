@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity\Training;
 
-use App\Entity\Team\Team;
 use App\Entity\Hero\Hero;
+use App\Entity\Team\Team;
 use App\Enum\Race;
 use App\Enum\TrainerStatus;
 use App\Enum\TrainingType;

@@ -179,12 +179,19 @@ export default class extends Controller {
         this.element.querySelectorAll('[data-countdown-target]').forEach(elem => {
             const targetTime = new Date(elem.dataset.countdownTarget).getTime();
             
+            let interval;
             const updateTicker = () => {
                 const now = new Date().getTime();
                 const diff = targetTime - now;
 
                 if (diff <= 0) {
-                    elem.textContent = this.textProcessingValue;
+                    elem.textContent = this.textProcessingValue || 'Zpracování...';
+                    if (interval) {
+                        clearInterval(interval);
+                    }
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
                     return;
                 }
 
@@ -201,7 +208,7 @@ export default class extends Controller {
             };
 
             updateTicker();
-            const interval = setInterval(updateTicker, 1000);
+            interval = setInterval(updateTicker, 1000);
             this.timers.push(interval);
         });
     }

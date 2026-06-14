@@ -27,7 +27,7 @@ class CommunityService
         Kingdom $kingdom,
         string $category,
         string $title,
-        string $body
+        string $body,
     ): ForumThread {
         if ($author->getKingdom() !== $kingdom) {
             throw new \DomainException('You can only post threads in your own kingdom.');
@@ -115,27 +115,33 @@ class CommunityService
     /**
      * Get inbox messages for a team.
      *
-     * @return Message[]
+     * @return array<int, Message>
      */
     public function getInboxMessages(Team $team): array
     {
-        return $this->em->getRepository(Message::class)->findBy(
+        /** @var array<int, Message> $result */
+        $result = $this->em->getRepository(Message::class)->findBy(
             ['receiverTeam' => $team, 'deletedByReceiver' => false],
             ['id' => 'DESC']
         );
+
+        return $result;
     }
 
     /**
      * Get sent messages for a team.
      *
-     * @return Message[]
+     * @return array<int, Message>
      */
     public function getSentMessages(Team $team): array
     {
-        return $this->em->getRepository(Message::class)->findBy(
+        /** @var array<int, Message> $result */
+        $result = $this->em->getRepository(Message::class)->findBy(
             ['senderTeam' => $team, 'deletedBySender' => false],
             ['id' => 'DESC']
         );
+
+        return $result;
     }
 
     /**
@@ -143,6 +149,7 @@ class CommunityService
      */
     public function deleteMessage(Team $team, int $messageId): void
     {
+        /** @var Message|null $message */
         $message = $this->em->getRepository(Message::class)->find($messageId);
         if (!$message) {
             throw new \DomainException('Message not found.');

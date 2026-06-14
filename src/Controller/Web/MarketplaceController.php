@@ -9,8 +9,8 @@ use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
 use App\Entity\Training\Trainer;
 use App\Enum\HeroStatus;
-use App\Enum\TrainerStatus;
 use App\Enum\ItemStatus;
+use App\Enum\TrainerStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,16 +41,16 @@ class MarketplaceController extends AbstractController
         // Fetch sellable entities (escrow candidates)
         $heroes = $this->em->getRepository(Hero::class)->findBy([
             'team' => $team,
-            'status' => [HeroStatus::Available, HeroStatus::Tired]
+            'status' => [HeroStatus::Available, HeroStatus::Tired],
         ]);
         $items = $this->em->getRepository(Item::class)->findBy([
             'ownerTeam' => $team,
             'status' => ItemStatus::Available,
-            'equippedHero' => null
+            'equippedHero' => null,
         ]);
         $trainers = $this->em->getRepository(Trainer::class)->findBy([
             'team' => $team,
-            'status' => TrainerStatus::Active
+            'status' => TrainerStatus::Active,
         ]);
 
         return $this->render('marketplace/hub.html.twig', [

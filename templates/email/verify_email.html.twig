@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ locale }}">
 <head>
     <meta charset="UTF-8">
-    <title>Verify your Fantager account</title>
+    <title>{{ 'email.verify_email.subject'|trans([], 'messages', locale) }}</title>
     <style>
         body { font-family: sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 40px 20px; }
         .container { max-width: 480px; margin: 0 auto; background: #1e293b; border-radius: 8px; padding: 32px; }
@@ -14,11 +14,11 @@
 </head>
 <body>
 <div class="container">
-    <h1>Verify your email</h1>
-    <p>Hi {{ user.displayName }},</p>
-    <p>Thanks for registering at Fantager! Click the button below to verify your email and activate your account.</p>
-    <a href="{{ url('app_verify_email', {token: token}) }}" class="button">Verify Email</a>
-    <p class="note">This link expires in 24 hours. If you didn't create an account, you can ignore this email.</p>
+    <h1>{{ 'email.verify_email.title'|trans([], 'messages', locale) }}</h1>
+    <p>{{ 'email.verify_email.greeting'|trans({'%displayName%': user.displayName}, 'messages', locale) }}</p>
+    <p>{{ 'email.verify_email.body'|trans([], 'messages', locale) }}</p>
+    <a href="{{ url('app_verify_email', {token: token}) }}" class="button">{{ 'email.verify_email.btn'|trans([], 'messages', locale) }}</a>
+    <p class="note">{{ 'email.verify_email.note'|trans([], 'messages', locale) }}</p>
 </div>
 </body>
 </html>

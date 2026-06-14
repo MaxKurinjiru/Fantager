@@ -2,15 +2,17 @@
 {% set title = title|default('') %}
 {% set subtitle = subtitle|default('') %}
 
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border pb-4">
-    <div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-text-primary mb-1">{{ title|trans }}</h1>
+<div class="page-header">
+    <div class="page-header__body">
+        <h1 class="page-header__title">{{ title|trans }}</h1>
         {% if subtitle %}
-            <p class="text-text-secondary text-sm">{{ subtitle|trans }}</p>
+            <p class="page-header__subtitle">{{ subtitle|trans }}</p>
         {% endif %}
     </div>
 
     {% if right_content is defined and right_content is not null %}
-        {{ right_content|raw }}
+        <div class="page-header__actions">
+            {{ right_content|raw }}
+        </div>
     {% endif %}
 </div>

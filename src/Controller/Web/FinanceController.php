@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
-use App\Repository\Team\FinancialRecordRepository;
-use App\Enum\FinancialRecordType;
 use App\Enum\FinancialRecordActor;
+use App\Enum\FinancialRecordType;
+use App\Repository\Team\FinancialRecordRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,11 +36,11 @@ class FinanceController extends AbstractController
         }
 
         $type = $request->query->get('type');
-        if ($type === '') {
+        if ('' === $type) {
             $type = null;
         }
         $actor = $request->query->get('actor');
-        if ($actor === '') {
+        if ('' === $actor) {
             $actor = null;
         }
         $sort = $request->query->get('sort', 'date-desc');

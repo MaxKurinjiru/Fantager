@@ -1,0 +1,39 @@
+{# templates/components/community/new_thread_modal.html.twig #}
+{% set categories = categories|default([]) %}
+
+<div id="new-thread-modal" class="modal-overlay hidden" data-controller="modal" data-community-target="newThreadModal" data-modal-event-name-value="modal:open-new-thread">
+    <div class="modal-box max-w-lg" data-modal-target="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title-new-thread">
+        <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+            <span aria-hidden="true" class="text-xl leading-none">✕</span>
+            <span class="sr-only">{{ 'modal.close'|trans }}</span>
+        </button>
+
+        <h2 id="modal-title-new-thread" class="text-xl font-extrabold text-white mb-6">{{ 'community.new_thread_title'|trans }}</h2>
+
+        <div class="space-y-4">
+            <div>
+                <label for="thread-category" class="form-label">{{ 'community.categories'|trans }}</label>
+                <select id="thread-category" class="form-input text-xs font-semibold" data-community-target="newThreadCategory">
+                    {% for cat in categories %}
+                        <option value="{{ cat }}">{{ ('community.category_' ~ cat)|trans }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="thread-title" class="form-label">{{ 'community.thread_title_label'|trans }}</label>
+                <input id="thread-title" type="text" class="form-input text-xs font-semibold" data-community-target="newThreadTitle" required>
+            </div>
+
+            <div>
+                <label for="thread-body" class="form-label">{{ 'community.thread_body_label'|trans }}</label>
+                <textarea id="thread-body" class="form-input text-xs h-36 resize-none" data-community-target="newThreadBody" required></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8 border-t border-gray-800 pt-4">
+            <button type="button" data-action="click->modal#close" class="btn btn-outline text-xs py-2 px-4">{{ 'community.cancel'|trans }}</button>
+            <button type="button" data-action="click->community#submitNewThread" data-community-target="submitNewThreadBtn" class="btn btn-primary text-xs py-2 px-5 font-bold">{{ 'community.create_thread'|trans }}</button>
+        </div>
+    </div>
+</div>

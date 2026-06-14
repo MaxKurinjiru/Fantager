@@ -44,7 +44,7 @@ class ForumController extends AbstractController
            ->where('t.kingdom = :kingdom')
            ->setParameter('kingdom', $kingdom);
 
-        if ($category && $category !== 'all') {
+        if ($category && 'all' !== $category) {
             $qb->andWhere('t.category = :category')
                ->setParameter('category', $category);
         }
@@ -74,7 +74,7 @@ class ForumController extends AbstractController
         $body = trim($content['body'] ?? '');
         $category = trim($content['category'] ?? '');
 
-        if ($title === '' || $body === '' || $category === '') {
+        if ('' === $title || '' === $body || '' === $category) {
             return $this->json(['error' => 'Title, body and category are required.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -103,6 +103,7 @@ class ForumController extends AbstractController
             return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
         }
 
+        /** @var ForumThread|null $thread */
         $thread = $this->em->getRepository(ForumThread::class)->find($id);
         if (!$thread) {
             return $this->json(['error' => 'Thread not found.'], Response::HTTP_NOT_FOUND);
@@ -142,6 +143,7 @@ class ForumController extends AbstractController
             return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
         }
 
+        /** @var ForumThread|null $thread */
         $thread = $this->em->getRepository(ForumThread::class)->find($id);
         if (!$thread) {
             return $this->json(['error' => 'Thread not found.'], Response::HTTP_NOT_FOUND);
@@ -150,7 +152,7 @@ class ForumController extends AbstractController
         $content = json_decode($request->getContent(), true) ?? [];
         $body = trim($content['body'] ?? '');
 
-        if ($body === '') {
+        if ('' === $body) {
             return $this->json(['error' => 'Post body cannot be empty.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -182,6 +184,7 @@ class ForumController extends AbstractController
             return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
         }
 
+        /** @var ForumThread|null $thread */
         $thread = $this->em->getRepository(ForumThread::class)->find($id);
         if (!$thread) {
             return $this->json(['error' => 'Thread not found.'], Response::HTTP_NOT_FOUND);
@@ -199,6 +202,7 @@ class ForumController extends AbstractController
         }
     }
 
+    /** @return array<string, mixed> */
     private function serializeThread(ForumThread $thread): array
     {
         return [

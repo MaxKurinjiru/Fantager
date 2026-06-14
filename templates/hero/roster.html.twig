@@ -6,7 +6,8 @@
 <div class="space-y-8 max-w-7xl mx-auto" data-controller="roster-filter">
     {# --- Header Section --- #}
     {% set right_content %}
-        <div class="flex gap-3">
+        <div class="flex items-center gap-3 flex-wrap justify-end">
+            {% include 'components/ui/roster_badge.html.twig' with { team: team } %}
             <a href="{{ path('app_summon') }}" class="btn btn-primary gap-1.5 shadow-lg shadow-emerald-950/20">
                 <span>🌀</span> {{ 'heroes.summon_btn'|trans }}
             </a>
@@ -14,7 +15,7 @@
     {% endset %}
 
     {% include 'components/ui/page_header.html.twig' with {
-        title: 'heroes.title'|trans ~ ' (' ~ (heroes|length) ~ ' / ' ~ team_roster_limit(team) ~ ')',
+        title: 'heroes.title'|trans,
         subtitle: 'heroes.subtitle'|trans,
         right_content: right_content
     } %}
