@@ -20,8 +20,8 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/` | Web\DefaultController | Homepage |
-| GET | `/news` | Web\NewsController | News archive (each item displayed in full; no detail page) |
-| GET | `/wiki` | Web\WikiController | Help/wiki section |
+| GET | `/news` | Web\NewsController | News archive (each item displayed in full; no detail page) — **planned** |
+| GET | `/wiki` | Web\WikiController | Help/wiki section — **planned** |
 
 ---
 
@@ -40,6 +40,9 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | POST | `/password-reset` | Web\PasswordResetController | Request password reset email |
 | GET | `/password-reset/confirm` | Web\PasswordResetController | Validate token + submit new password |
 | POST | `/password-reset/confirm` | Web\PasswordResetController | Validate token + submit new password |
+| GET | `/confirm-email-change/old` | Web\SettingsController | Confirm e-mail change from old address (token link sent via e-mail) |
+| GET | `/confirm-email-change/new` | Web\SettingsController | Confirm e-mail change from new address (token link sent via e-mail) |
+| GET | `/confirm-cancel-account` | Web\SettingsController | Confirm account cancellation (token link sent via e-mail) |
 
 ---
 
@@ -78,9 +81,8 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/api/v1/heroes` | Api\V1\HeroController | List heroes (filterable) |
 | GET | `/api/v1/heroes/{id}` | Api\V1\HeroController | Hero full detail |
 | PUT | `/api/v1/heroes/{id}` | Api\V1\HeroController | Update hero (rename) |
-| POST | `/api/v1/heroes/{id}/train` | Api\V1\HeroController | Trigger training |
-| POST | `/api/v1/heroes/{id}/learn-spell` | Api\V1\HeroController | Learn spell |
-| POST | `/api/v1/heroes/{id}/convert-trainer` | Api\V1\HeroController | Convert to trainer |
+| POST | `/api/v1/heroes/{id}/train` | Api\V1\HeroController | Trigger training — **planned** |
+| POST | `/api/v1/heroes/{id}/convert-trainer` | Api\V1\HeroController | Convert to trainer — **planned** |
 
 ---
 
@@ -104,7 +106,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/api/v1/formations` | Api\V1\FormationController | Get team formations |
 | PUT | `/api/v1/formations` | Api\V1\FormationController | Save/update formations |
 | DELETE | `/api/v1/formations/{id}` | Api\V1\FormationController | Delete formation |
-| POST | `/api/v1/formations/simulate` | Api\V1\FormationController | Simulation preview |
+| POST | `/api/v1/formations/simulate` | Api\V1\FormationController | Simulation preview — **planned** |
 
 ---
 
@@ -124,6 +126,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/summon` | Web\SummoningController | Summoning Chamber page |
+| GET | `/app/summon/history` | Web\SummoningController | Summon history page |
 | GET | `/api/v1/summoning/status` | Api\V1\SummoningController | Cooldown/availability |
 | POST | `/api/v1/summoning` | Api\V1\SummoningController | Summon new hero |
 
@@ -135,7 +138,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 |--------|------|-----------|---------|
 | GET | `/app/inventory` | Web\ItemController | Equipment page |
 | GET | `/api/v1/items` | Api\V1\ItemController | Inventory list |
-| PUT | `/api/v1/heroes/{id}/equipment` | Api\V1\ItemController | Equip/unequip |
+| PUT | `/api/v1/heroes/{heroId}/equipment` | Api\V1\ItemController | Equip/unequip |
 | POST | `/api/v1/items/dismantle` | Api\V1\ItemController | Dismantle for essence |
 | POST | `/api/v1/items/{id}/repair` | Api\V1\ItemController | Repair durability |
 
@@ -147,9 +150,10 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 |--------|------|-----------|---------|
 | GET | `/app/spells` | Web\SpellController | Spell Management page |
 | GET | `/api/v1/spells` | Api\V1\SpellController | Spell library |
-| GET | `/api/v1/heroes/{id}/spells` | Api\V1\SpellController | Hero's known spells |
-| POST | `/api/v1/heroes/{id}/spells/equip` | Api\V1\SpellController | Equip to slot |
-| POST | `/api/v1/heroes/{id}/spells/unequip` | Api\V1\SpellController | Unequip from slot |
+| GET | `/api/v1/heroes/{heroId}/spells` | Api\V1\SpellController | Hero's known spells |
+| POST | `/api/v1/heroes/{heroId}/spells/learn` | Api\V1\SpellController | Learn spell |
+| POST | `/api/v1/heroes/{heroId}/spells/equip` | Api\V1\SpellController | Equip to slot |
+| POST | `/api/v1/heroes/{heroId}/spells/unequip` | Api\V1\SpellController | Unequip from slot |
 
 ---
 
@@ -184,12 +188,9 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ## Marketplace
 
-> [!NOTE]
-> Not yet implemented — planned for Phase 6.
-
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/marketplace` | Web\MarketplaceController | Marketplace page |
+| GET | `/app/marketplace` | Web\MarketplaceController | Marketplace page |
 | GET | `/api/v1/marketplace` | Api\V1\MarketplaceController | Search listings |
 | POST | `/api/v1/marketplace/listings` | Api\V1\MarketplaceController | Create listing |
 | DELETE | `/api/v1/marketplace/listings/{id}` | Api\V1\MarketplaceController | Cancel listing |
@@ -203,15 +204,15 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 ## Event / Calendar
 
 > [!NOTE]
-> Not yet implemented — planned for Phase 5.
+> Web calendar page and Event API endpoints are planned for Phase 5. The kingdom calendar feed (`/api/v1/kingdom/{id}/calendar`) is already implemented.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/calendar` | Web\EventController | Calendar page |
-| GET | `/api/v1/events` | Api\V1\EventController | Active/upcoming events |
-| GET | `/api/v1/events/calendar` | Api\V1\EventController | Full calendar feed |
+| GET | `/calendar` | Web\EventController | Calendar page — **planned** |
+| GET | `/api/v1/events` | Api\V1\EventController | Active/upcoming events — **planned** |
+| GET | `/api/v1/events/calendar` | Api\V1\EventController | Full calendar feed — **planned** |
 | GET | `/api/v1/kingdom/{id}/calendar` | Api\V1\CalendarController | Full calendar feed for Kingdom |
-| POST | `/api/v1/events/{id}/participate` | Api\V1\EventController | Join event |
+| POST | `/api/v1/events/{id}/participate` | Api\V1\EventController | Join event — **planned** |
 
 ---
 
@@ -260,13 +261,13 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 ## Community
 
 > [!NOTE]
-> Not yet implemented — planned for Phase 6.
+> The community hub web page and all API endpoints are implemented. Leaderboard API and public player profile API are planned for a future phase.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/community` | Web\CommunityController | Community hub page |
-| GET | `/api/v1/leaderboards` | Api\V1\CommunityController | Leaderboard rankings |
-| GET | `/api/v1/players/{id}/profile` | Api\V1\CommunityController | Public player profile |
+| GET | `/app/community` | Web\CommunityController | Community hub page |
+| GET | `/api/v1/leaderboards` | Api\V1\CommunityController | Leaderboard rankings — **planned** |
+| GET | `/api/v1/players/{id}/profile` | Api\V1\CommunityController | Public player profile — **planned** |
 | GET | `/api/v1/messages` | Api\V1\MessageController | Inbox |
 | POST | `/api/v1/messages` | Api\V1\MessageController | Send message |
 | GET | `/api/v1/messages/{id}` | Api\V1\MessageController | Read message |
@@ -275,6 +276,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | POST | `/api/v1/forum/threads` | Api\V1\ForumController | Create thread |
 | GET | `/api/v1/forum/threads/{id}` | Api\V1\ForumController | Thread + posts |
 | POST | `/api/v1/forum/threads/{id}/posts` | Api\V1\ForumController | Reply |
+| POST | `/api/v1/forum/threads/{id}/lock` | Api\V1\ForumController | Lock/unlock thread (author only) |
 
 ---
 
@@ -311,28 +313,34 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/settings` | Web\SettingsController | Profile & Settings page |
-| GET | `/api/v1/settings` | Api\SettingsController | Get settings (TBD) |
-| PUT | `/api/v1/settings` | Api\SettingsController | Update settings (TBD) |
-| POST | `/app/settings/change-email` | Web\SettingsController | Change email |
-| POST | `/api/v1/settings/change-password` | Api\SettingsController | Change password (TBD) |
-| POST | `/app/settings/cancel-account` | Web\SettingsController | Cancel account (formerly delete-account) |
+| GET | `/api/v1/settings` | Api\SettingsController | Get settings — **planned** |
+| PUT | `/api/v1/settings` | Api\SettingsController | Update settings — **planned** |
+| POST | `/app/settings/change-email` | Web\SettingsController | Change email (initiates token flow via `confirm-email-change/*`) |
+| POST | `/api/v1/settings/change-password` | Api\SettingsController | Change password — **planned** |
+| POST | `/app/settings/cancel-account` | Web\SettingsController | Cancel account (initiates token flow via `confirm-cancel-account`) |
 
 ---
 
 ## Notifications
 
+> [!NOTE]
+> Not yet implemented — planned for a future phase.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/api/v1/notifications` | Api\NotificationController | Get notifications |
-| PUT | `/api/v1/notifications/{id}/read` | Api\NotificationController | Mark as read |
+| GET | `/api/v1/notifications` | Api\NotificationController | Get notifications — **planned** |
+| PUT | `/api/v1/notifications/{id}/read` | Api\NotificationController | Mark as read — **planned** |
 
 ---
 
 ## Infrastructure
 
+> [!NOTE]
+> Not yet implemented.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/health` | Web\HealthController | Health check |
+| GET | `/health` | Web\HealthController | Health check — **planned** |
 
 ---
 
@@ -340,6 +348,9 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | | Web | API | Total |
 |--|-----|-----|-------|
-| Routes | 27 | 89 | **116** |
-| Controllers (Web) | ~20 | — | — |
-| Controllers (API) | — | ~22 | — |
+| Routes (implemented) | 19 | 47 | **66** |
+| Routes (planned) | 10 | 40+ | — |
+| Controllers (Web, implemented) | 13 | — | — |
+| Controllers (API, implemented) | — | 10 | — |
+
+> Routes marked **planned** have no controller implementation yet. Route counts reflect the state of the codebase; the original total of 116 includes all planned future routes.

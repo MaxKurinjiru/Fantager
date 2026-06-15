@@ -17,6 +17,7 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 **Systems**
 - [Auth System](systems/auth-system.md) — Authentication, registration, sessions
 - [Kingdom System](systems/kingdom-system.md)
+- [Summoning System](systems/summoning-system.md)
 - [Event System](systems/event-system.md)
 - [Calendar System](systems/calendar-system.md) — Weekly ticks, schedule, and season timeline
 - [Economy System](systems/economy-system.md)
@@ -84,16 +85,16 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Headquarters** | Fully Implemented | Implemented | Implemented | Facility upgrades, race optimization, passive bonuses. |
 | **Items** | Fully Implemented | Implemented | Implemented | Inventory, equip/unequip, dismantle. |
 | **Spells** | Fully Implemented | Implemented | Implemented | Spell library, learning, slot equipping. |
-| **Leagues** | Partially Implemented | Not Implemented | Not Implemented | `LeagueFixtureScheduler` and `SeasonTransitionService` implemented; match result processing still pending. |
-| **Combat** | Not Implemented | Not Implemented | Not Implemented | Combat simulator, formulas, and results are missing (Phase 5). |
-| **Events / Calendar UI** | Not Implemented | Not Implemented | Not Implemented | Event triggers and participation pending (Phase 5). |
-| **Marketplace** | Not Implemented | Not Implemented | Not Implemented | Listings, bids, transactions pending (Phase 6). |
-| **Community** | Not Implemented | Not Implemented | Not Implemented | Messaging, forum, leaderboards pending (Phase 6). |
-| **Graveyard** | Not Implemented | Not Implemented | Not Implemented | Permanent death records pending (Phase 6). |
-| **Dungeons** | Not Implemented | Not Implemented | Not Implemented | PvE encounters and rewards pending (Phase 7). |
-| **Quests** | Not Implemented | Not Implemented | Not Implemented | Quest generation and rewards pending (Phase 7). |
-| **Crafting** | Not Implemented | Not Implemented | Not Implemented | Recipe crafting and queue pending (Phase 7). |
-| **Arena Management** | Not Implemented | Not Implemented | Not Implemented | Standalone arena match rules and revenue upgrades pending (Phase 7). |
+| **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, and `LeagueService` implemented; match result processing is pending. |
+| **Combat** | Partially Implemented | Not Implemented | Not Implemented | Data models and entity schemas defined; combat simulator, formulas, and battle execution are missing (Phase 5). |
+| **Events / Calendar UI** | Fully Implemented | Implemented | Implemented | Calendar feed aggregation, timezone-aware tick schedules, and events system fully operational. |
+| **Marketplace** | Fully Implemented | Implemented | Implemented | Listings, bids, transactions, and background cron processing fully functional. |
+| **Community** | Fully Implemented | Implemented | Implemented | Messaging, forum threads/posts, achievements, and content filtering fully functional. |
+| **Graveyard** | Partially Implemented | Not Implemented | Not Implemented | Permanent death records and entity schemas defined; death triggers and graveyard UI pending (Phase 6). |
+| **Dungeons** | Partially Implemented | Not Implemented | Not Implemented | PvE encounter schemas defined; dungeon runs, rewards, and execution logic pending (Phase 7). |
+| **Quests** | Partially Implemented | Not Implemented | Not Implemented | Quest schemas and player progress tracking defined; quest generation logic pending (Phase 7). |
+| **Crafting** | Partially Implemented | Not Implemented | Not Implemented | Recipe, crafting queues, and material item schemas defined; queue processor pending (Phase 7). |
+| **Arena Management** | Partially Implemented | Not Implemented | Not Implemented | Arena is implemented as a passive HQ facility (`FacilityType::Arena`) granting ticket revenue and seating capacity bonuses. Weekly revenue is distributed via `ArenaRevenueService`. Standalone arena management screen, ticket price configuration, and friendly match scheduling are not implemented (Phase 7). |
 
 ---
 

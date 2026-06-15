@@ -144,7 +144,7 @@ assets/ (source)
 - Development: exceptions captured and visible in Sentry with full stack traces; can be disabled locally via `SENTRY_DSN=` empty
 - Production: all unhandled exceptions and errors reported to Sentry with environment, release, and user context
 - Symfony integration: `Sentry\SentryBundle` registers automatically via Flex; configure DSN in `.env.local` / environment variable `SENTRY_DSN`
-- **Do not log sensitive data** (passwords, tokens) — scrub PII in `before_send` hook using [SentryBeforeSendCallback](file:///d:/wamp64/www/Fantager/src/Service/Sentry/SentryBeforeSendCallback.php)
+- **Do not log sensitive data** (passwords, tokens) — scrub PII in `before_send` hook using [SentryBeforeSendCallback](../src/Service/Sentry/SentryBeforeSendCallback.php)
 
 ### Metrics & APM
 - Response times, error rates, and custom business metrics

@@ -34,7 +34,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | **ActivityLog** as single generic table                               | One table covers all game event types. `type` (enum) enables filtering; `data` (JSON) holds event-specific context. `subject_key` + `subject_params` (JSON) allow translated rendering without re-generating text at insert time. No separate log table per domain. |
 | `**league_tiers_config` JSON on Kingdom**                             | Configurable per kingdom; total player capacity is derived as `sum(tier.groups) × teams_per_group`. Eliminates redundant `max_players` field.                                                                                                                       |
 | **Team `morale` default value = 50**                                  | Range 0–100; 50 represents neutral/mid morale. Applied at team creation and on hero transfer/sell.                                                                                                                                                                  |
-| `**Facility.passive_bonuses` JSON structure**                         | Flat key-value map: `{"training_efficiency_pct": 5, "fatigue_reduction_pct": 10, ...}`. Keys are snake_case with unit suffix (`_pct`, `_flat`). Simple to read; keys vary per `FacilityType`.                                                                       |
+| `**Facility.passive_bonuses` design**                         | In DB, `Facility` uses a `metadata` (JSON) field. The passive bonuses are computed using `getPassiveBonuses()`, combining `metadata` with static bonuses defined per `FacilityType` level.                                                                         |
 | `**Hero.intel` column name**                                          | PHP property and DB column named `intel` instead of `int` — `int` is a PHP reserved word and cannot be used as an identifier.                                                                                                                                       |
 | `**MarketplaceListing` polymorphic entity reference**                 | Three nullable FK columns (`hero_id`, `item_id`, `trainer_id`) — only one set per row based on `listing_type`. Provides DB-level referential integrity without a generic polymorphic pattern. Application layer enforces mutual exclusivity.                        |
 | **Database Table Naming Convention**                                  | Main/root entities (e.g. `team`, `kingdom`, `headquarters`, `hero`, `formation`, `spell`, `item`, `event`, `quest`, `notification`, `achievement`, `news_article`, `activity_log`, `trainer`, `training_queue`) do NOT have domain prefixes. Sub-entities (e.g. `headquarters_facility`, `team_financial_record`, `formation_slot`, `hero_school_mastery`, `quest_player_progress`) or entities with SQL reserved keyword conflicts (e.g. `user` -> `auth_user`, `verification_token` -> `auth_verification_token`, `battle` -> `combat_battle`, `message` -> `community_message`) are prefixed with their domain namespace. |
@@ -85,7 +85,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity            | Key Fields                                                                                                                                              | Relationships                |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **Trainer**       | id, team_id, name, race, stats (8×, range 1–20), age, death_expectation, status, original_hero_id | → Team, was Hero             |
+| **Trainer**       | id, team_id, name, race, stats (8×, range 1–20), age, death_expectation, status, original_hero_id, training_type (nullable enum), target_attribute (nullable string) | → Team, was Hero             |
 | **TrainingQueue** | id, hero_id, training_type (enum), target_attribute (nullable), trainer_id (nullable), gold_cost, essence_cost, status (enum), stat_gain (nullable), execute_at, completed_at (nullable) | → Hero, → Trainer (optional). Multiple rows can share the same trainer + target_attribute for one training job |
 
 
@@ -103,8 +103,8 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity           | Key Fields                                                      | Relationships  |
 | ---------------- | --------------------------------------------------------------- | -------------- |
-| **Headquarters** | id, team_id, total_level, race_optimization                     | → Team (1:1)   |
-| **Facility**     | id, headquarters_id, type (enum), level, passive_bonuses (JSON) | → Headquarters |
+| **Headquarters** | id, team_id, total_level, race_optimization, pending_race_optimization (nullable string), has_pending_race_optimization_change (bool), race_optimization_lock_cycle (bool), upgrading_facility_id (nullable FK), upgrade_completed_at (nullable datetime) | → Team (1:1)   |
+| **Facility**     | id, headquarters_id, type (enum), level, metadata (JSON) | → Headquarters |
 
 
 ### 8. Item Domain
@@ -112,7 +112,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity   | Key Fields                                                                                                                                                     | Relationships                |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **Item** | id, owner_team_id, equipped_hero_id, equipped_slot, name, slot_type (enum), category (enum), rarity (enum), durability, bonuses (JSON), special_effects (JSON) | → Team, → Hero (if equipped) |
+| **Item** | id, owner_team_id, equipped_hero_id, equipped_slot, name, slot_type (enum), category (enum), rarity (enum), durability, status (enum), bonuses (JSON), special_effects (JSON) | → Team, → Hero (if equipped) |
 
 
 ### 9. Spell Domain
@@ -148,7 +148,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity                 | Key Fields                                                                                                                                                                     | Relationships      |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
-| **MarketplaceListing** | id, kingdom_id, seller_team_id, listing_type (enum), hero_id (nullable), item_id (nullable), trainer_id (nullable), price_gold, listing_mode (enum), expires_at, status (enum) | → Kingdom, → Team  |
+| **MarketplaceListing** | id, kingdom_id, seller_team_id, listing_type (enum), hero_id (nullable), item_id (nullable), trainer_id (nullable), price_gold, buyout_price_gold (nullable int), listing_mode (enum), expires_at, status (enum) | → Kingdom, → Team  |
 | **MarketplaceBid**     | id, listing_id, bidder_team_id, bid_amount, bid_time                                                                                                                           | → Listing, → Team  |
 | **Transaction**        | id, buyer_team_id, seller_team_id, listing_id, amount, fee_amount, type (enum), created_at                                                                                     | → Teams, → Listing |
 
@@ -193,9 +193,9 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity              | Key Fields                                                             | Relationships         |
 | ------------------- | ---------------------------------------------------------------------- | --------------------- |
-| **Message**         | id, sender_team_id, receiver_team_id, subject, body, read_at, sent_at  | → Teams               |
+| **Message**         | id, sender_team_id, receiver_team_id, subject, body, read_at, sent_at, deleted_by_sender (bool), deleted_by_receiver (bool)  | → Teams               |
 | **NewsArticle**     | id, kingdom_id, title, content, published_at                           | → Kingdom (optional)  |
-| **ForumThread**     | id, kingdom_id, category, title, author_team_id, created_at, is_pinned | → Kingdom, → Team     |
+| **ForumThread**     | id, kingdom_id, category, title, author_team_id, created_at, is_pinned, is_locked (bool) | → Kingdom, → Team     |
 | **ForumPost**       | id, thread_id, author_team_id, body, created_at                        | → ForumThread, → Team |
 | **Achievement**     | id, name, description, icon, unlock_condition (JSON)                   | —                     |
 | **TeamAchievement** | id, team_id, achievement_id, unlocked_at                               | → Team, → Achievement |
@@ -268,6 +268,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | `ActivityLogType`   | battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_crafted, item_purchased, item_sold, quest_completed, achievement_unlocked, dungeon_completed, summon_completed, season_ended, player_joined |
 | `ItemCategory`      | weapon, shield, spell_accelerator, armor, accessory, material                                                                                                                                                                                      |
 | `ItemRarity`        | common, uncommon, rare, epic, legendary, mythic                                                                                                                                                                                                   |
+| `ItemStatus`        | available, selling                                                                                                                                                                                                                                |
 | `FormationPosition` | front_1, front_2, front_3, back_1, back_2, back_3                                                                                                                                                                                                 |
 | `FormationApproach` | aggressive, balanced, defensive                                                                                                                                                                                                                   |
 | `MatchType`         | league, friendly, dungeon, arena                                                                                                                                                                                                                  |
@@ -304,7 +305,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | -------------------------- | ------ |
 | DB entities                | 43     |
 | Config-based (not DB)      | 5      |
-| PHP enums                  | 34     |
-| **Total modeled concepts** | **82** |
+| PHP enums                  | 35     |
+| **Total modeled concepts** | **83** |
 
 
