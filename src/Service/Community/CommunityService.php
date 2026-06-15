@@ -113,6 +113,47 @@ class CommunityService
     }
 
     /**
+     * Count unread inbox messages for a team.
+     */
+    public function countUnreadInbox(Team $team): int
+    {
+        return (int) $this->em->getRepository(Message::class)->count([
+            "receiverTeam" => $team,
+            "deletedByReceiver" => false,
+            "readAt" => null,
+        ]);
+    }
+
+    /**
+     * Get teams in the same kingdom that can receive mail (excluding self and NPCs).
+     *
+     * @return array<int, array{id: int|null, name: string}>
+     */
+    public function getMessageRecipients(Team $team): array
+    {
+        $kingdom = $team->getKingdom();
+
+        /** @var array<int, Team> $teams */
+        $teams = $this->em->getRepository(Team::class)->createQueryBuilder("t")
+            ->where("t.kingdom = :kingdom")
+            ->andWhere("t.id != :teamId")
+            ->andWhere("t.isNpc = false")
+            ->setParameter("kingdom", $kingdom)
+            ->setParameter("teamId", $team->getId())
+            ->orderBy("t.name", "ASC")
+            ->getQuery()
+            ->getResult();
+
+        return array_map(
+            static fn (Team $recipient): array => [
+                "id" => $recipient->getId(),
+                "name" => $recipient->getName(),
+            ],
+            $teams
+        );
+    }
+
+    /**
      * Get inbox messages for a team.
      *
      * @return array<int, Message>

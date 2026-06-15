@@ -3,7 +3,7 @@
 {% block title %}{{ 'finance.title'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="finance-ledger max-w-7xl mx-auto space-y-6">
+<div class="finance-ledger page-shell">
     {# --- Header Section --- #}
     {% include 'components/ui/page_header.html.twig' with {
         title: 'finance.title',
@@ -11,12 +11,12 @@
     } %}
 
     {# --- Filters and Sorting Bar --- #}
-    <form method="GET" action="{{ path('app_finance') }}" class="finance-ledger__filters bg-gray-900/40 border border-gray-800 rounded-xl p-4 flex flex-col lg:flex-row gap-4 items-center justify-between backdrop-blur-md">
-        <div class="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+    <form method="GET" action="{{ path('app_finance') }}" class="finance-ledger__filters filter-form" data-controller="form-auto-submit">
+        <div class="filter-form__fields">
             {# Type Filter #}
             <div>
                 <label for="finance-type-filter" class="sr-only">{{ 'finance.filter_type'|trans }}</label>
-                <select id="finance-type-filter" name="type" onchange="this.form.submit()" class="form-input">
+                <select id="finance-type-filter" name="type" data-action="change->form-auto-submit#submit" class="form-input">
                     <option value="">{{ 'finance.all_types'|trans }}</option>
                     {% for type in types %}
                         <option value="{{ type.value }}" {% if current_type == type.value %}selected{% endif %}>
@@ -29,7 +29,7 @@
             {# Actor Filter #}
             <div>
                 <label for="finance-actor-filter" class="sr-only">{{ 'finance.filter_actor'|trans }}</label>
-                <select id="finance-actor-filter" name="actor" onchange="this.form.submit()" class="form-input">
+                <select id="finance-actor-filter" name="actor" data-action="change->form-auto-submit#submit" class="form-input">
                     <option value="">{{ 'finance.all_actors'|trans }}</option>
                     {% for actor in actors %}
                         <option value="{{ actor.value }}" {% if current_actor == actor.value %}selected{% endif %}>
@@ -41,9 +41,9 @@
         </div>
 
         {# Sort Selector #}
-        <div class="flex items-center gap-2 w-full lg:w-auto justify-end border-t border-gray-800 lg:border-none pt-3 lg:pt-0">
-            <label for="finance-sort-by" class="text-xs text-gray-550 font-semibold uppercase tracking-wider">{{ 'summoning.sort_by'|trans }}</label>
-            <select id="finance-sort-by" name="sort" onchange="this.form.submit()" class="form-input">
+        <div class="filter-form__sort">
+            <label for="finance-sort-by" class="filter-form__sort-label">{{ 'summoning.sort_by'|trans }}</label>
+            <select id="finance-sort-by" name="sort" data-action="change->form-auto-submit#submit" class="form-input">
                 <option value="date-desc" {% if current_sort == 'date-desc' %}selected{% endif %}>{{ 'finance.sort_date_desc'|trans }}</option>
                 <option value="date-asc" {% if current_sort == 'date-asc' %}selected{% endif %}>{{ 'finance.sort_date_asc'|trans }}</option>
                 <option value="amount-desc" {% if current_sort == 'amount-desc' %}selected{% endif %}>{{ 'finance.sort_amount_desc'|trans }}</option>
@@ -53,40 +53,35 @@
     </form>
 
     {# --- Ledger Table --- #}
-    <div class="finance-ledger__table-container bg-gray-900/20 border border-gray-800 rounded-2xl overflow-hidden backdrop-blur-md">
+    <div class="finance-ledger__table-container">
         {% if records|length > 0 %}
             <div class="overflow-x-auto">
-                <table class="finance-ledger-table w-full text-left border-collapse">
+                <table class="finance-ledger-table">
                     <thead>
-                        <tr class="border-b border-gray-800 bg-gray-950/40 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                            <th class="p-4">{{ 'finance.col_type'|trans }}</th>
-                            <th class="p-4">{{ 'finance.col_actor'|trans }}</th>
-                            <th class="p-4">{{ 'finance.col_changes'|trans }}</th>
-                            <th class="p-4">{{ 'finance.col_context'|trans }}</th>
-                            <th class="p-4 text-right">{{ 'finance.col_date'|trans }}</th>
+                        <tr>
+                            <th class="finance-ledger-table__cell">{{ 'finance.col_type'|trans }}</th>
+                            <th class="finance-ledger-table__cell">{{ 'finance.col_actor'|trans }}</th>
+                            <th class="finance-ledger-table__cell">{{ 'finance.col_changes'|trans }}</th>
+                            <th class="finance-ledger-table__cell">{{ 'finance.col_context'|trans }}</th>
+                            <th class="finance-ledger-table__cell finance-ledger-table__cell--right">{{ 'finance.col_date'|trans }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-900 text-sm text-text-primary">
+                    <tbody >
                         {% for item in records %}
-                            <tr class="finance-ledger-table__row hover:bg-gray-900/20 transition-colors">
+                            <tr class="finance-ledger-table__row">
                                 <td class="p-4 font-semibold">
                                     {{ ('finance.type_' ~ item.type.value)|trans }}
                                 </td>
-                                <td class="p-4">
+                                <td class="finance-ledger-table__cell">
                                     <span class="finance-actor-badge finance-actor-badge--{{ item.actor.value }}">
                                         {{ ('finance.actor_' ~ item.actor.value)|trans }}
                                     </span>
                                 </td>
-                                <td class="p-4">
-                                    <div class="finance-changes flex flex-wrap gap-2">
+                                <td class="finance-ledger-table__cell">
+                                    <div class="finance-changes">
                                         {% if item.goldChange != 0 %}
                                             <span class="finance-changes__item {{ item.goldChange > 0 ? 'finance-changes__item--positive' : 'finance-changes__item--negative' }}">
                                                 {{ item.goldChange > 0 ? '+' : '' }}{{ item.goldChange|number_format(0, '.', ' ') }} 🪙
-                                            </span>
-                                        {% endif %}
-                                        {% if item.crystalsChange != 0 %}
-                                            <span class="finance-changes__item {{ item.crystalsChange > 0 ? 'finance-changes__item--positive' : 'finance-changes__item--negative' }}">
-                                                {{ item.crystalsChange > 0 ? '+' : '' }}{{ item.crystalsChange|number_format(0, '.', ' ') }} 💎
                                             </span>
                                         {% endif %}
                                         
@@ -107,11 +102,11 @@
                                         {% endfor %}
                                     </div>
                                 </td>
-                                <td class="p-4">
+                                <td class="finance-ledger-table__cell">
                                     {% if item.context is not empty %}
-                                        <div class="flex flex-wrap gap-1">
+                                        <div class="finance-context-tags">
                                             {% for k, v in item.context %}
-                                                <span class="finance-context-tag text-xs bg-gray-950/60 border border-gray-800 rounded px-1.5 py-0.5 font-mono text-text-secondary">
+                                                <span class="finance-context-tag">
                                                     {{ k }}: {{ v }}
                                                 </span>
                                             {% endfor %}
@@ -129,11 +124,12 @@
                 </table>
             </div>
         {% else %}
-            <div class="p-12 text-center text-text-muted">
-                <span class="text-4xl mb-3 block select-none">📭</span>
+            <div class="finance-ledger__empty">
+                <span class="finance-ledger__empty-icon">📭</span>
                 <p>{{ 'finance.no_records'|trans }}</p>
             </div>
         {% endif %}
     </div>
 </div>
 {% endblock %}
+

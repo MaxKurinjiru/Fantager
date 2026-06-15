@@ -23,7 +23,6 @@ class HeadquartersService
         'training' => 500,
         'medical' => 400,
         'library' => 600,
-        'forge' => 700,
         'treasury' => 450,
         'barracks' => 350,
         'summoning_chamber' => 800,

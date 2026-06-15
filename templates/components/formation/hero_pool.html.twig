@@ -1,23 +1,23 @@
 {# templates/components/formation/hero_pool.html.twig #}
-<div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-4">
+<div class="hero-panel space-y-4">
     <h3 class="text-sm font-bold text-white uppercase tracking-wider">{{ 'formation.mage_pool'|trans }}</h3>
-    <div class="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+    <div class="formation-pool">
         {% for h in heroes %}
             {% if h.status.value != 'dead' %}
                 <div data-formation-target="poolHero" data-hero-id="{{ h.id }}" data-name="{{ h.name }}" data-level="{{ h.level }}" data-race="{{ h.race.value|capitalize }}"
-                     class="bg-gray-950 border border-gray-855 p-3 rounded-xl flex items-center justify-between text-xs transition-opacity">
+                     class="formation-pool-item">
                     <div class="flex items-center gap-3">
                         {% include 'components/hero/avatar.html.twig' with { race: h.race, text_size: 'text-2xl' } %}
                         <div>
-                            <h4 class="font-bold text-gray-200">{{ h.name }}</h4>
-                            <p class="text-[9px] text-gray-555">{{ 'js_flash.hq.lvl_short'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }}</p>
+                            <h4 class="formation-pool-item__name">{{ h.name }}</h4>
+                            <p class="formation-pool-item__meta">{{ 'js_flash.hq.lvl_short'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }}</p>
                         </div>
                     </div>
-                    <span data-assigned-badge class="hidden text-[8px] font-extrabold bg-emerald-950/40 text-emerald-450 border border-emerald-900/40 px-2 py-0.5 rounded uppercase tracking-wider">{{ 'formation.assigned'|trans }}</span>
+                    <span data-assigned-badge class="hidden formation-assigned-badge">{{ 'formation.assigned'|trans }}</span>
                 </div>
             {% endif %}
         {% else %}
-            <div class="text-center py-6 text-gray-550 select-none italic text-xs">{{ 'formation.no_trainees'|trans }}</div>
+            <div class="formation-pool-empty">{{ 'formation.no_trainees'|trans }}</div>
         {% endfor %}
     </div>
 </div>

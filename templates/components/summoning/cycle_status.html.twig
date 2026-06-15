@@ -1,17 +1,16 @@
-{# templates/components/summoning/cycle_status.html.twig #}
 {% set status = status|default(null) %}
 
-<div class="bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 backdrop-blur-md flex items-center gap-4 text-sm shrink-0">
-    <div>
-        <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'summoning.summons_used'|trans }}</span>
-        <span class="text-white font-extrabold">
-            <span data-summoning-target="summonsUsed">{{ status.summons_used }}</span> / 
+<div class="summoning-cycle">
+    <div class="summoning-cycle__metric">
+        <span class="summoning-cycle__label">{{ 'summoning.summons_used'|trans }}</span>
+        <span class="summoning-cycle__value">
+            <span data-summoning-target="summonsUsed">{{ status.summons_used }}</span> /
             <span data-summoning-target="summonsMax">{{ status.summons_max }}</span>
         </span>
     </div>
-    <div class="w-px h-8 bg-gray-800"></div>
-    <div>
-        <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'summoning.cost_per_summon'|trans }}</span>
-        <span class="text-yellow-500 font-extrabold">🪙 {{ status.gold_cost|number_format(0, '.', ' ') }}</span>
+    <div class="summoning-cycle__divider"></div>
+    <div class="summoning-cycle__metric">
+        <span class="summoning-cycle__label">{{ 'summoning.cost_per_summon'|trans }}</span>
+        <span class="summoning-cycle__value summoning-cycle__value--gold">🪙 {{ status.gold_cost|number_format(0, '.', ' ') }}</span>
     </div>
 </div>

@@ -221,4 +221,110 @@
     @apply text-sm italic font-medium flex items-center justify-center gap-2;
     color: var(--color-text-secondary);
   }
+
+  .db-quick-actions {
+    @apply rounded-xl p-6 border shadow-lg relative overflow-hidden;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 45%, transparent);
+    border-color: color-mix(in srgb, var(--color-border) 75%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  .db-quick-actions__title {
+    @apply text-base font-bold text-white mb-4 flex items-center gap-2;
+  }
+
+  .db-quick-actions__grid {
+    @apply grid grid-cols-2 sm:grid-cols-4 gap-4;
+  }
+
+  .db-quick-action {
+    @apply flex flex-col items-center justify-center p-4 rounded-xl border text-center shadow-md transition-all duration-300;
+    background-color: color-mix(in srgb, var(--color-surface-base) 85%, transparent);
+    border-color: var(--color-border);
+  }
+
+  .db-quick-action:hover {
+    border-color: color-mix(in srgb, var(--color-brand-500) 35%, var(--color-border));
+    background-color: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
+  }
+
+  .db-quick-action__emoji {
+    @apply text-3xl mb-2.5 transition-transform duration-300 ease-out select-none;
+  }
+
+  .db-quick-action:hover .db-quick-action__emoji {
+    transform: scale(1.1) translateY(-2px);
+  }
+
+  .db-quick-action__label {
+    @apply text-xs font-bold transition-colors duration-200;
+    color: var(--color-text-secondary);
+  }
+
+  .db-quick-action:hover .db-quick-action__label {
+    color: var(--color-success-text);
+  }
+
+  .db-stats-card {
+    @apply rounded-xl p-6 border shadow-md backdrop-blur-md;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+    border-color: var(--color-border);
+  }
+
+  .db-stats-card__title {
+    @apply text-base font-bold text-white mb-4;
+  }
+
+  .db-stats-card__list {
+    @apply space-y-3;
+  }
+
+  .db-stats-card__row {
+    @apply flex justify-between items-center py-2;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+  }
+
+  .db-stats-card__row:last-child {
+    border-bottom: none;
+  }
+
+  .db-stats-card__label {
+    @apply text-xs font-medium;
+    color: var(--color-text-secondary);
+  }
+
+  .db-stats-card__value {
+    @apply text-xs font-bold;
+    color: var(--color-text-primary);
+  }
+
+  .db-stats-card__value--success {
+    color: var(--color-success-text);
+  }
+
+  .db-stats-card__value--warning {
+    color: var(--color-warning-text);
+  }
+}
+
+@layer components {
+  .next-match-card__glow {
+    @apply absolute rounded-full blur-3xl pointer-events-none;
+    &--br { @apply -right-24 -bottom-24 w-64 h-64; background-color: color-mix(in srgb, var(--color-brand-500) 2%, transparent); }
+    &--tl { @apply -left-24 -top-24 w-64 h-64; background-color: color-mix(in srgb, var(--color-brand-500) 1%, transparent); }
+  }
+
+  .next-match-card__body { @apply flex flex-col gap-6; }
+
+  .next-match-meta__icon { @apply select-none; color: var(--color-text-muted); }
+  .next-match-meta__text { @apply font-medium; color: var(--color-text-secondary); }
+
+  .db-banner__grid-bg { @apply absolute inset-0 -z-10; }
+  .db-banner__title-wrap { @apply text-center md:text-left; }
+  .db-banner__meta-highlight { color: var(--color-brand-400); font-weight: 600; }
+  .db-banner__meta-value { color: var(--color-text-secondary); font-weight: 600; }
+  .db-banner__meta-sep { @apply hidden md:inline select-none; color: var(--color-text-muted); }
+  .db-banner__badge-max { @apply text-[10px]; color: var(--color-text-muted); }
+  .db-banner__badge-value { @apply font-bold; color: var(--color-text-primary); }
+  .db-banner__edit-icon { @apply text-sm; }
 }

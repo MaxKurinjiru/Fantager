@@ -1,7 +1,7 @@
 {# templates/components/hero/header_card.html.twig #}
-<div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 md:p-8 backdrop-blur-md relative overflow-hidden">
+<div class="hero-panel relative overflow-hidden">
     {# Subtle glowing background orb #}
-    <div class="absolute -right-16 -top-16 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="panel-accent-glow panel-accent-glow--lg"></div>
     
     <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start relative z-10">
         {# Race Avatar Box #}
@@ -20,8 +20,9 @@
                            class="form-input hidden text-2xl font-semibold">
                     
                     <button type="button" data-hero-rename-target="editBtn" data-action="click->hero-rename#edit" 
-                            class="opacity-0 group-hover:opacity-60 hover:!opacity-100 text-sm p-1 text-gray-400 hover:text-emerald-400 transition-opacity" 
-                            title="{{ 'heroes.rename_title'|trans }}">
+                            class="hero-header__rename-btn" 
+                            title="{{ 'heroes.rename_title'|trans }}"
+                            aria-label="{{ 'heroes.rename_title'|trans }}">
                         ✏️
                     </button>
                     
@@ -35,18 +36,18 @@
                 {% include 'components/hero/status_badge.html.twig' with { status: hero.status, rounded_full: true } %}
             </div>
 
-            <div class="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-sm text-gray-400">
+            <div class="hero-header__meta">
                 <span class="flex items-center gap-1.5">
                     <span class="text-base">🧬</span> {{ 'heroes.race'|trans }}: <strong class="text-white capitalize">{{ ('heroes.race_' ~ hero.race.value)|trans }}</strong>
                 </span>
-                <span class="h-4 w-px bg-gray-800 hidden sm:block"></span>
+                <span class="hero-header__divider"></span>
                 <span class="flex items-center gap-1.5">
                     <span class="text-base">{{ hero_age_phase_icon(hero) }}</span> {{ 'heroes.age'|trans }}: <strong class="text-white">{{ hero.age }} {{ 'heroes.years'|trans }}</strong>
-                    <span class="text-[10px] font-bold bg-gray-950 px-2 py-0.5 rounded border border-gray-800 text-gray-500 uppercase tracking-wide">
+                    <span class="hero-header__phase-badge">
                         {{ ('heroes.age_phase.' ~ hero_age_phase(hero)|lower)|trans }}
                     </span>
                 </span>
-                <span class="h-4 w-px bg-gray-800 hidden sm:block"></span>
+                <span class="hero-header__divider"></span>
                 <span class="flex items-center gap-1.5">
                     <span class="text-base">🔥</span> {{ 'heroes.level'|trans }}: <strong class="text-white">{{ hero.level }}</strong>
                 </span>
@@ -54,7 +55,7 @@
 
             {# XP Bar #}
             <div class="space-y-1.5 max-w-md mx-auto md:mx-0">
-                <div class="flex justify-between text-xs font-semibold text-gray-400">
+                <div class="hero-header__xp-labels">
                     <span>{{ 'heroes.xp'|trans }}</span>
                     {% set next_level_xp = 1000 * hero.level %} {# Simple illustrative formula #}
                     <span>{{ hero.xp }} / {{ next_level_xp }} XP</span>
@@ -62,8 +63,8 @@
                 {% set xp_pct = min(100, (hero.xp / next_level_xp) * 100) %}
                 {% include 'components/ui/progress_bar.html.twig' with {
                     percentage: xp_pct,
-                    container_class: 'w-full bg-gray-950 rounded-full h-2.5 border border-gray-800 p-0.5 shadow-inner',
-                    progress_class: 'bg-gradient-to-r from-emerald-500 to-teal-400 h-1.5 rounded-full shadow-lg shadow-emerald-500/20'
+                    container_class: 'ui-progress ui-progress--xp',
+                    progress_class: 'ui-progress__fill ui-progress__fill--xp'
                 } %}
             </div>
         </div>

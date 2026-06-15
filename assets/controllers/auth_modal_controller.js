@@ -115,9 +115,9 @@ export default class extends Controller {
             const label = radio.closest('label');
             if (label) {
                 if (radio.checked) {
-                    label.classList.add('border-brand-400');
+                    label.classList.add('kingdom-card--selected');
                 } else {
-                    label.classList.remove('border-brand-400');
+                    label.classList.remove('kingdom-card--selected');
                 }
             }
         });
@@ -135,9 +135,9 @@ export default class extends Controller {
             const label = radio.closest('label');
             if (label) {
                 if (radio.checked) {
-                    label.classList.add('border-brand-400');
+                    label.classList.add('kingdom-card--selected');
                 } else {
-                    label.classList.remove('border-brand-400');
+                    label.classList.remove('kingdom-card--selected');
                 }
             }
         });

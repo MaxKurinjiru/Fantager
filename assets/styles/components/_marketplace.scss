@@ -225,6 +225,111 @@
   }
 
   // Warnings / Hints in card components
+  .treasury-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 0.5rem 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.35);
+  }
+
+  .treasury-badge__label {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  .treasury-badge__value {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-warning-text);
+  }
+
+  .segmented-control {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.25rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface-base);
+  }
+
+  .marketplace-card__type-badge {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0.125rem 0.625rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+  }
+
+  .marketplace-card__type-badge--hero {
+    color: #60a5fa;
+    background-color: rgba(30, 58, 138, 0.35);
+    border-color: rgba(30, 58, 138, 0.6);
+  }
+
+  .marketplace-card__type-badge--item {
+    color: #34d399;
+    background-color: rgba(6, 78, 59, 0.35);
+    border-color: rgba(6, 78, 59, 0.6);
+  }
+
+  .marketplace-card__type-badge--trainer {
+    color: #fbbf24;
+    background-color: rgba(120, 53, 4, 0.35);
+    border-color: rgba(120, 53, 4, 0.6);
+  }
+
+  .marketplace-card__meta {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+
+  .marketplace-card__stat-value {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-primary);
+    font-weight: 700;
+    margin-top: 0.125rem;
+  }
+
+  .marketplace-card__footer {
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .marketplace-card__footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+  }
+
+  .marketplace-card__price {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-warning-text);
+    display: flex;
+    align-items: center;
+  }
+
+  .loading-spinner__icon--sm {
+    height: 2rem;
+    width: 2rem;
+  }
+
   .marketplace-notice {
     font-size: 0.75rem;
     color: var(--color-text-secondary);
@@ -235,3 +340,26 @@
     text-align: center;
   }
 }
+
+.sell-card__name { @apply font-bold leading-snug; color: var(--color-text-primary); }
+.sell-card__meta { @apply text-xs; color: var(--color-text-secondary); }
+.marketplace-notice__label { @apply text-xs uppercase font-bold tracking-wider; color: var(--color-text-secondary); }
+.marketplace-card__level { @apply text-xs font-medium; color: var(--color-text-secondary); }
+.marketplace-card__title { @apply text-lg font-bold leading-tight; color: var(--color-text-primary); }
+.marketplace-card__detail-value { @apply font-semibold; color: var(--color-text-primary); }
+.marketplace-card__seller-name { @apply font-medium; color: var(--color-text-secondary); }
+.marketplace-card__footer-label { @apply text-xs; color: var(--color-text-secondary); }
+.marketplace-table-row {
+  @apply text-sm transition;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+  &:hover { background-color: rgba(255, 255, 255, 0.03); }
+  td { @apply py-3.5 px-4; }
+}
+.marketplace-table__cell--name { @apply font-bold; color: var(--color-text-primary); }
+.marketplace-table__cell--mono { @apply font-mono; color: var(--color-text-secondary); }
+.marketplace-table__cell--category { @apply text-xs block font-normal; color: var(--color-text-secondary); }
+.marketplace-table__cell--amount { @apply font-bold; color: var(--color-success-text); }
+.marketplace-table__cell--date { @apply text-xs font-semibold; color: var(--color-text-secondary); }
+.marketplace-auction-active { @apply text-[10px] font-medium; color: var(--color-text-muted); }
+.marketplace-bid-form { @apply flex items-center space-x-2 w-full mt-2 pt-3; border-top: 1px solid var(--color-border); }

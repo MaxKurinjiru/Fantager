@@ -15,7 +15,7 @@ Sections to fill:
 
 
 Summary:
-- Marketplace supports listings for heroes, items, and trainers; transactions are Gold-only. Crystals and Essence are non-tradeable.
+- Marketplace supports listings for heroes, items, and trainers; transactions are Gold-only. Essence is non-tradeable.
 - Apply kingdom-specific tax rates and maintain transaction logs for disputes/auditing.
 
 APIs:

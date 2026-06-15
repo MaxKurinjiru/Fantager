@@ -1,7 +1,7 @@
 {# templates/components/marketplace/browse_tab.html.twig #}
 <div data-marketplace-target="tabContent" data-tab-name="browse" class="space-y-6">
     {# Filters Grid #}
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-xl">
+    <div class="game-panel">
         <form data-action="submit->marketplace#applyFilters" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             {# Search #}
             <div class="flex flex-col gap-1">
@@ -77,8 +77,8 @@
     {# Listings Grid #}
     <div data-marketplace-target="browseContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6">
         {# AJAX Loaded cards #}
-        <div class="col-span-3 flex justify-center py-12">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500"></div>
+        <div class="col-span-3 loading-spinner">
+            <div class="loading-spinner__icon" aria-hidden="true"></div>
         </div>
     </div>
 </div>

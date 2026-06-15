@@ -1,5 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { csrfHeaders } from '../utils/csrf.js';
+import { applyTeamColors } from '../utils/team_color.js';
 
 export default class extends Controller {
     static targets = [
@@ -7,9 +9,7 @@ export default class extends Controller {
         'threadTitle', 'threadCategory', 'threadLockBadge', 'lockBtn',
         'postsTimeline', 'replyInput', 'submitReplyBtn', 'replyFormContainer',
         'newThreadModal', 'newThreadCategory', 'newThreadTitle', 'newThreadBody', 'submitNewThreadBtn',
-        'folderBtn', 'categoryBtn', 'mailFolderTitle', 'mailSenderColTitle', 'mailTableBody',
-        'composeModal', 'composeRecipient', 'composeSubject', 'composeBody', 'submitComposeBtn',
-        'readMessageModal', 'readSubject', 'readSenderLabel', 'readSenderColor', 'readSenderName', 'readDate', 'readBody', 'deleteMsgBtn',
+        'categoryBtn',
         'alert', 'alertMessage'
     ];
 
@@ -17,17 +17,17 @@ export default class extends Controller {
         activeTeamId: Number,
         kingdomId: Number,
         emptyThreadsMsg: String,
-        emptyInboxMsg: String,
-        emptySentMsg: String,
         translations: Object
     };
 
     connect() {
-        this.currentFolder = 'inbox';
         this.currentCategory = 'all';
         this.activeThreadId = null;
-        this.activeMessageId = null;
         this.isLockedThread = false;
+    }
+
+    disconnect() {
+        this.activeThreadId = null;
     }
 
     hideAlert() {
@@ -38,21 +38,11 @@ export default class extends Controller {
         showAlert(this.alertTarget, this.alertMessageTarget, type, message);
     }
 
-    onTabSwitch() {
-        this.hideAlert();
-        this.backToThreads();
-    }
-
-    // =============================================================================
-    //  FORUM LOGIC
-    // =============================================================================
-
     async filterCategory(e) {
         e.preventDefault();
         const category = e.currentTarget.dataset.category;
         this.currentCategory = category;
 
-        // Toggle buttons style semantically
         this.categoryBtnTargets.forEach(btn => {
             const isCurrent = btn.dataset.category === category;
             btn.classList.toggle('community-tab-btn--active', isCurrent);
@@ -92,25 +82,17 @@ export default class extends Controller {
             row.dataset.action = 'click->community#viewThread';
             row.dataset.threadId = thread.id;
 
-            // Title and lock
             rowNode.querySelector('.js-thread-title').textContent = thread.title;
             if (thread.isLocked) {
                 rowNode.querySelector('.js-lock-icon').classList.remove('hidden');
             }
 
-            // Category translation
             const categoryText = this.translationsValue.categories?.[thread.category] || thread.category;
             rowNode.querySelector('.js-thread-category').textContent = categoryText;
 
-            // Author details
-            const primaryColor = thread.author_team.colors?.primary ?? '#10b981';
-            const secondaryColor = thread.author_team.colors?.secondary ?? '#0f1720';
-            const colorSpan = rowNode.querySelector('.js-author-color');
-            colorSpan.style.backgroundColor = primaryColor;
-            colorSpan.style.borderColor = secondaryColor;
+            applyTeamColors(rowNode.querySelector('.js-author-color'), thread.author_team.colors);
             rowNode.querySelector('.js-author-name').textContent = thread.author_team.name;
 
-            // Replies and Date
             rowNode.querySelector('.js-replies-count').textContent = thread.posts_count;
             const formattedDate = new Date(thread.createdAt).toLocaleString('cs-CZ', {
                 day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -144,7 +126,7 @@ export default class extends Controller {
         try {
             const response = await fetch('/api/v1/forum/threads', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ category, title, body })
             });
 
@@ -153,7 +135,6 @@ export default class extends Controller {
                 throw new Error(data.error ?? (this.translationsValue.error_create_thread || 'Nepodařilo se založit téma.'));
             }
 
-            // Close modal
             this.newThreadModalTarget.querySelector('.modal-close').click();
             this.showFeedback('success', this.translationsValue.success_create_thread || 'Téma bylo úspěšně založeno.');
             await this.refreshThreads();
@@ -176,26 +157,21 @@ export default class extends Controller {
             const thread = await response.json();
             this.isLockedThread = thread.isLocked;
 
-            // Render Thread Detail
             this.threadTitleTarget.textContent = thread.title;
             this.threadCategoryTarget.textContent = this.translationsValue.categories?.[thread.category] || thread.category;
 
-            // Handle lock controls
             this.threadLockBadgeTarget.classList.toggle('hidden', !thread.isLocked);
-            
+
             const isAuthor = thread.author_team.id === this.activeTeamIdValue;
             this.lockBtnTarget.classList.toggle('hidden', !isAuthor);
-            this.lockBtnTarget.textContent = thread.isLocked 
-                ? `🔓 ${this.translationsValue.btn_unlock || 'Odemknout'}` 
+            this.lockBtnTarget.textContent = thread.isLocked
+                ? `🔓 ${this.translationsValue.btn_unlock || 'Odemknout'}`
                 : `🔒 ${this.translationsValue.btn_lock || 'Zamknout'}`;
 
-            // Reply Form Container Visibility
             this.replyFormContainerTarget.classList.toggle('hidden', thread.isLocked);
 
-            // Render Posts Timeline
             this.renderPosts(thread.posts);
 
-            // Switch views
             this.threadsContainerTarget.classList.add('hidden');
             this.threadDetailContainerTarget.classList.remove('hidden');
         } catch (err) {
@@ -209,11 +185,7 @@ export default class extends Controller {
 
         posts.forEach(post => {
             const postNode = template.content.cloneNode(true);
-            const primaryColor = post.author_team.colors?.primary ?? '#10b981';
-            const secondaryColor = post.author_team.colors?.secondary ?? '#0f1720';
-            const colorSpan = postNode.querySelector('.js-author-color');
-            colorSpan.style.backgroundColor = primaryColor;
-            colorSpan.style.borderColor = secondaryColor;
+            applyTeamColors(postNode.querySelector('.js-author-color'), post.author_team.colors);
 
             postNode.querySelector('.js-author-name').textContent = post.author_team.name;
             const formattedDate = new Date(post.createdAt).toLocaleString('cs-CZ', {
@@ -225,7 +197,6 @@ export default class extends Controller {
             this.postsTimelineTarget.appendChild(postNode);
         });
 
-        // Scroll to bottom
         this.postsTimelineTarget.scrollTop = this.postsTimelineTarget.scrollHeight;
     }
 
@@ -247,7 +218,7 @@ export default class extends Controller {
         try {
             const response = await fetch(`/api/v1/forum/threads/${this.activeThreadId}/posts`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ body })
             });
 
@@ -257,7 +228,6 @@ export default class extends Controller {
             }
 
             this.replyInputTarget.value = '';
-            // Reload thread replies
             await this.reloadThreadReplies();
         } catch (err) {
             this.showFeedback('error', err.message);
@@ -282,11 +252,15 @@ export default class extends Controller {
     async toggleLock(e) {
         e.preventDefault();
         const newLockState = !this.isLockedThread;
+        const btn = this.lockBtnTarget;
+        const originalText = btn.textContent;
+
+        btn.disabled = true;
 
         try {
             const response = await fetch(`/api/v1/forum/threads/${this.activeThreadId}/lock`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ lock: newLockState })
             });
 
@@ -294,220 +268,15 @@ export default class extends Controller {
 
             this.isLockedThread = newLockState;
             this.threadLockBadgeTarget.classList.toggle('hidden', !newLockState);
-            this.lockBtnTarget.textContent = newLockState 
-                ? `🔓 ${this.translationsValue.btn_unlock || 'Odemknout'}` 
+            btn.textContent = newLockState
+                ? `🔓 ${this.translationsValue.btn_unlock || 'Odemknout'}`
                 : `🔒 ${this.translationsValue.btn_lock || 'Zamknout'}`;
             this.replyFormContainerTarget.classList.toggle('hidden', newLockState);
         } catch (err) {
             this.showFeedback('error', this.translationsValue.error_toggle_lock || 'Nepodařilo se změnit zámek tématu.');
-        }
-    }
-
-    // =============================================================================
-    //  MAIL LOGIC
-    // =============================================================================
-    async switchFolder(e) {
-        e.preventDefault();
-        const folder = e.currentTarget.dataset.folder;
-        this.currentFolder = folder;
-
-        // Toggle buttons style semantically
-        this.folderBtnTargets.forEach(btn => {
-            const isCurrent = btn.dataset.folder === folder;
-            btn.classList.toggle('community-tab-btn--active', isCurrent);
-        });
-
-        // Set column and title names
-        if (folder === 'sent') {
-            this.mailFolderTitleTarget.textContent = this.translationsValue.sent_title || 'Odeslané zprávy';
-            this.mailSenderColTitleTarget.textContent = this.translationsValue.col_recipient || 'Příjemce';
-        } else {
-            this.mailFolderTitleTarget.textContent = this.translationsValue.inbox_title || 'Doručené zprávy';
-            this.mailSenderColTitleTarget.textContent = this.translationsValue.col_sender || 'Odesílatel';
-        }
-
-        await this.refreshMessages();
-    }
-
-    async refreshMessages() {
-        try {
-            const response = await fetch(`/api/v1/messages?folder=${this.currentFolder}`);
-            if (!response.ok) throw new Error();
-
-            const messages = await response.json();
-            this.renderMessages(messages);
-        } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_load_mail || 'Nepodařilo se načíst poštu.');
-        }
-    }
-
-    renderMessages(messages) {
-        this.mailTableBodyTarget.innerHTML = '';
-
-        if (messages.length === 0) {
-            const emptyMsg = this.currentFolder === 'sent' ? this.emptySentMsgValue : this.emptyInboxMsgValue;
-            const emptyTemplate = document.getElementById('template-community-empty-row');
-            const emptyNode = emptyTemplate.content.cloneNode(true);
-            emptyNode.querySelector('.js-empty-text').textContent = emptyMsg;
-            this.mailTableBodyTarget.appendChild(emptyNode);
-            return;
-        }
-
-        const template = document.getElementById('template-mail-message-row');
-
-        messages.forEach(msg => {
-            const rowNode = template.content.cloneNode(true);
-            const row = rowNode.querySelector('.community-row');
-            row.dataset.action = 'click->community#readMessage';
-            row.dataset.messageId = msg.id;
-
-            // Status indicator
-            const indicator = msg.readAt ? '📖' : '✉️';
-            const unreadSpan = rowNode.querySelector('.js-unread-indicator');
-            unreadSpan.dataset.communityUnreadIndicatorId = msg.id;
-            unreadSpan.textContent = this.currentFolder === 'sent' ? '📤' : indicator;
-
-            // Subject
-            rowNode.querySelector('.js-subject').textContent = msg.subject;
-
-            // Target Team
-            const targetTeam = this.currentFolder === 'sent' ? msg.receiver_team : msg.sender_team;
-            const primaryColor = targetTeam.colors?.primary ?? '#10b981';
-            const secondaryColor = targetTeam.colors?.secondary ?? '#0f1720';
-            const colorSpan = rowNode.querySelector('.js-team-color');
-            colorSpan.style.backgroundColor = primaryColor;
-            colorSpan.style.borderColor = secondaryColor;
-            rowNode.querySelector('.js-team-name').textContent = targetTeam.name;
-
-            // Date
-            const formattedDate = new Date(msg.sentAt).toLocaleString('cs-CZ', {
-                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
-            rowNode.querySelector('.js-sent-at').textContent = formattedDate;
-
-            this.mailTableBodyTarget.appendChild(rowNode);
-        });
-    }
-
-    openComposeModal() {
-        this.composeRecipientTarget.value = '';
-        this.composeSubjectTarget.value = '';
-        this.composeBodyTarget.value = '';
-        window.dispatchEvent(new CustomEvent('modal:open-compose'));
-    }
-
-    async submitCompose(e) {
-        e.preventDefault();
-        const receiver_team_id = parseInt(this.composeRecipientTarget.value);
-        const subject = this.composeSubjectTarget.value.trim();
-        const body = this.composeBodyTarget.value.trim();
-
-        if (!receiver_team_id || !subject || !body) {
-            this.showFeedback('warning', this.translationsValue.warning_compose_fields || 'Prosím zvolte příjemce a vyplňte předmět i obsah zprávy.');
-            return;
-        }
-
-        this.submitComposeBtnTarget.disabled = true;
-        this.submitComposeBtnTarget.textContent = this.translationsValue.text_sending || 'Odesílám...';
-
-        try {
-            const response = await fetch('/api/v1/messages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ receiver_team_id, subject, body })
-            });
-
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.error ?? (this.translationsValue.error_send_msg || 'Nepodařilo se odeslat zprávu.'));
-            }
-
-            // Close modal
-            this.composeModalTarget.querySelector('.modal-close').click();
-            this.showFeedback('success', this.translationsValue.success_send_msg || 'Zpráva byla úspěšně odeslána.');
-            
-            if (this.currentFolder === 'sent') {
-                await this.refreshMessages();
-            }
-        } catch (err) {
-            this.showFeedback('error', err.message);
+            btn.textContent = originalText;
         } finally {
-            this.submitComposeBtnTarget.disabled = false;
-            this.submitComposeBtnTarget.textContent = this.translationsValue.send_msg || 'Odeslat zprávu';
-        }
-    }
-
-    async readMessage(e) {
-        const messageId = e.currentTarget.dataset.messageId;
-        this.activeMessageId = messageId;
-
-        try {
-            const response = await fetch(`/api/v1/messages/${messageId}`);
-            if (!response.ok) throw new Error();
-
-            const msg = await response.json();
-            const formattedDate = new Date(msg.sentAt).toLocaleString('cs-CZ', {
-                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
-
-            this.readSubjectTarget.textContent = msg.subject;
-            this.readBodyTarget.textContent = msg.body;
-            this.readDateTarget.textContent = formattedDate;
-
-            // Sender/Recipient styling
-            if (this.currentFolder === 'sent') {
-                this.readSenderLabelTarget.textContent = `${this.translationsValue.col_recipient || 'Recipient'}:`;
-                this.readSenderNameTarget.textContent = msg.receiver_team.name;
-                const primaryColor = msg.receiver_team.colors?.primary ?? '#10b981';
-                const secondaryColor = msg.receiver_team.colors?.secondary ?? '#0f1720';
-                this.readSenderColorTarget.style.backgroundColor = primaryColor;
-                this.readSenderColorTarget.style.borderColor = secondaryColor;
-            } else {
-                this.readSenderLabelTarget.textContent = `${this.translationsValue.col_sender || 'Sender'}:`;
-                this.readSenderNameTarget.textContent = msg.sender_team.name;
-                const primaryColor = msg.sender_team.colors?.primary ?? '#10b981';
-                const secondaryColor = msg.sender_team.colors?.secondary ?? '#0f1720';
-                this.readSenderColorTarget.style.backgroundColor = primaryColor;
-                this.readSenderColorTarget.style.borderColor = secondaryColor;
-            }
-            this.readSenderColorTarget.classList.remove('hidden');
-
-            window.dispatchEvent(new CustomEvent('modal:open-read-message'));
-
-            // If it was unread, update row envelope in view immediately
-            const unreadIndicator = document.querySelector(`[data-community-unread-indicator-id="${messageId}"]`);
-            if (unreadIndicator && unreadIndicator.textContent.includes('✉️')) {
-                unreadIndicator.textContent = '📖';
-            }
-        } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_read_msg || 'Nepodařilo se přečíst zprávu.');
-        }
-    }
-
-    async deleteCurrentMessage(e) {
-        e.preventDefault();
-        if (!this.activeMessageId) return;
-
-        this.deleteMsgBtnTarget.disabled = true;
-        this.deleteMsgBtnTarget.textContent = this.translationsValue.text_deleting || 'Mažu...';
-
-        try {
-            const response = await fetch(`/api/v1/messages/${this.activeMessageId}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) throw new Error();
-
-            // Close modal
-            this.readMessageModalTarget.querySelector('.modal-close').click();
-            this.showFeedback('success', this.translationsValue.success_delete_msg || 'Zpráva byla smazána.');
-            await this.refreshMessages();
-        } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_delete_msg || 'Nepodařilo se smazat zprávu.');
-        } finally {
-            this.deleteMsgBtnTarget.disabled = false;
-            this.deleteMsgBtnTarget.textContent = `🗑️ ${this.translationsValue.delete_msg || 'Smazat zprávu'}`;
-            this.activeMessageId = null;
+            btn.disabled = false;
         }
     }
 }

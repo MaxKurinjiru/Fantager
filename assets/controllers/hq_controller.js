@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { csrfHeaders } from '../utils/csrf.js';
 
 export default class extends Controller {
     static targets = ['totalLevel', 'alert', 'alertMessage', 'raceSelect', 'optimizeBtn'];
@@ -35,15 +36,9 @@ export default class extends Controller {
         btn.textContent = this.textUpgradingValue;
 
         try {
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-
             const response = await fetch('/api/v1/hq/upgrade', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ facility: facilityType })
             });
 
@@ -72,25 +67,14 @@ export default class extends Controller {
                 // Dynamically update the displayed passive bonuses
                 const bonusesContainer = card.querySelector('[data-facility-bonuses]');
                 if (bonusesContainer && result.passive_bonuses) {
-                    bonusesContainer.innerHTML = '';
+                    bonusesContainer.replaceChildren();
+                    const bonusTemplate = document.getElementById('template-facility-bonus-row');
                     Object.entries(result.passive_bonuses).forEach(([key, value]) => {
-                        const li = document.createElement('li');
-                        li.className = 'flex justify-between text-xs text-gray-400';
-                        
-                        // Human readable bonus names
+                        const bonusNode = bonusTemplate.content.cloneNode(true);
                         const cleanKey = (this.hasBonusesValue && this.bonusesValue[key]) || key.replace(/_/g, ' ').replace('pct', '%');
-                        
-                        const spanName = document.createElement('span');
-                        spanName.className = 'capitalize';
-                        spanName.textContent = `${cleanKey}:`;
-                        
-                        const spanVal = document.createElement('span');
-                        spanVal.className = 'text-emerald-450 font-bold';
-                        spanVal.textContent = `+${value}%`;
-                        
-                        li.appendChild(spanName);
-                        li.appendChild(spanVal);
-                        bonusesContainer.appendChild(li);
+                        bonusNode.querySelector('.js-bonus-name').textContent = `${cleanKey}:`;
+                        bonusNode.querySelector('.js-bonus-value').textContent = `+${value}%`;
+                        bonusesContainer.appendChild(bonusNode);
                     });
                 }
             }
@@ -135,15 +119,9 @@ export default class extends Controller {
         this.optimizeBtnTarget.textContent = this.textSavingValue;
 
         try {
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-
             const response = await fetch('/api/v1/hq/optimize', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ race: selectedRace })
             });
 

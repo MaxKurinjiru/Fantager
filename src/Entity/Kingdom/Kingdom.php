@@ -44,7 +44,6 @@ class Kingdom
     private string $xpModifier = '1.00';
 
     #[ORM\Column(type: 'decimal', precision: 3, scale: 2, options: ['default' => '1.00'])]
-    private string $craftingBoost = '1.00';
 
     public function getId(): ?int
     {
@@ -159,15 +158,4 @@ class Kingdom
         return $this;
     }
 
-    public function getCraftingBoost(): string
-    {
-        return $this->craftingBoost;
-    }
-
-    public function setCraftingBoost(string $craftingBoost): static
-    {
-        $this->craftingBoost = $craftingBoost;
-
-        return $this;
-    }
 }

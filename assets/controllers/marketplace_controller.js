@@ -135,7 +135,7 @@ export default class extends Controller {
 
         try {
             const response = await fetch(url);
-            if (!response.ok) throw new Error('Failed to fetch');
+            if (!response.ok) throw new Error(this.translationsValue.error_fetch_listings);
             const listings = await response.json();
             this.renderBrowse(listings);
         } catch (error) {
@@ -143,7 +143,7 @@ export default class extends Controller {
             const errorTemplate = document.getElementById('template-error-grid');
             const errorNode = errorTemplate.content.cloneNode(true);
             const errText = errorNode.querySelector('.js-error-text');
-            errText.textContent = (this.translationsValue.error_fetch_listings || 'Chyba při načítání nabídek: %error%')
+            errText.textContent = this.translationsValue.error_fetch_listings
                 .replace('%error%', error.message);
             this.browseContainerTarget.appendChild(errorNode);
         }
@@ -219,17 +219,17 @@ export default class extends Controller {
                 bonusesContainer.innerHTML = '';
                 const bonusEntries = Object.entries(item.bonuses);
                 if (bonusEntries.length > 0) {
+                    const bonusTemplate = document.getElementById('template-item-bonus');
                     bonusEntries.forEach(([stat, val]) => {
-                        const span = document.createElement('span');
-                        span.className = 'bg-gray-950 text-gray-300 px-2 py-0.5 rounded border border-gray-850 font-semibold';
-                        span.textContent = `+${val} ${stat.toUpperCase()}`;
-                        bonusesContainer.appendChild(span);
+                        const bonusNode = bonusTemplate.content.cloneNode(true);
+                        bonusNode.querySelector('.js-bonus-text').textContent = `+${val} ${stat.toUpperCase()}`;
+                        bonusesContainer.appendChild(bonusNode);
                     });
                 } else {
-                    const span = document.createElement('span');
-                    span.className = 'text-gray-500 font-medium';
-                    span.textContent = this.translationsValue.label_no_bonuses || '';
-                    bonusesContainer.appendChild(span);
+                    const emptyBonusTemplate = document.getElementById('template-item-no-bonuses');
+                    const emptyBonusNode = emptyBonusTemplate.content.cloneNode(true);
+                    emptyBonusNode.querySelector('.js-no-bonuses-text').textContent = this.translationsValue.label_no_bonuses;
+                    bonusesContainer.appendChild(emptyBonusNode);
                 }
 
             } else if (listing.listing_type === 'trainer') {
@@ -237,7 +237,7 @@ export default class extends Controller {
                 card = template.content.cloneNode(true).querySelector('.marketplace-card');
                 const trainer = listing.entity;
 
-                const ageLabel = this.translationsValue.label_age || 'Age';
+                const ageLabel = this.translationsValue.label_age;
                 card.querySelector('.js-age').textContent = `${ageLabel}: ${trainer.age} ${this.translationsValue.years_suffix || ''}`;
                 card.querySelector('.js-name').textContent = trainer.name;
                 card.querySelector('.js-race').textContent = this.racesValue[trainer.race] || trainer.race;
@@ -329,7 +329,7 @@ export default class extends Controller {
     async submitListing(event) {
         event.preventDefault();
         if (!this.selectedEntityId) {
-            this.showAlert('error', this.translationsValue.select_entity_first || 'Nejprve vyberte hrdinu, předmět nebo trenéra k prodeji.');
+            this.showAlert('error', this.translationsValue.select_entity_first);
             return;
         }
 
@@ -338,7 +338,7 @@ export default class extends Controller {
         const originalText = submitBtn ? submitBtn.textContent : '';
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.textContent = this.translationsValue.label_processing || 'Zpracování...';
+            submitBtn.textContent = this.translationsValue.label_processing;
         }
 
         const formData = new FormData(form);
@@ -362,9 +362,9 @@ export default class extends Controller {
             });
 
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Failed to list');
+            if (!response.ok) throw new Error(result.error || this.translationsValue.error_listing);
 
-            this.showAlert('success', this.translationsValue.flash_created || 'Nabídka byla úspěšně vytvořena.');
+            this.showAlert('success', this.translationsValue.flash_created);
             setTimeout(() => window.location.reload(), 1000);
         } catch (error) {
             this.showAlert('error', error.message);
@@ -402,9 +402,9 @@ export default class extends Controller {
             });
 
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Failed to purchase');
+            if (!response.ok) throw new Error(result.error || this.translationsValue.error_purchase);
 
-            this.showAlert('success', this.translationsValue.flash_purchased || 'Nákup byl úspěšně dokončen!');
+            this.showAlert('success', this.translationsValue.flash_purchased);
             setTimeout(() => window.location.reload(), 1000);
         } catch (error) {
             this.showAlert('error', error.message);
@@ -444,9 +444,9 @@ export default class extends Controller {
             });
 
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Failed to place bid');
+            if (!response.ok) throw new Error(result.error || this.translationsValue.error_bid);
 
-            this.showAlert('success', this.translationsValue.flash_bid || 'Příhoz byl úspěšně zaznamenán.');
+            this.showAlert('success', this.translationsValue.flash_bid);
             setTimeout(() => window.location.reload(), 1000);
         } catch (error) {
             this.showAlert('error', error.message);
@@ -462,7 +462,7 @@ export default class extends Controller {
 
         try {
             const response = await fetch('/api/v1/marketplace/my-listings');
-            if (!response.ok) throw new Error('Failed to fetch');
+            if (!response.ok) throw new Error(this.translationsValue.error_fetch_listings);
             const listings = await response.json();
             this.renderMyListings(listings);
         } catch (error) {
@@ -470,7 +470,7 @@ export default class extends Controller {
             const errorTemplate = document.getElementById('template-error-row');
             const errorNode = errorTemplate.content.cloneNode(true);
             errorNode.querySelector('.js-error-text').textContent =
-                (this.translationsValue.error_fetch_listings || 'Chyba při načítání: %error%').replace('%error%', error.message);
+                this.translationsValue.error_fetch_my_listings.replace('%error%', error.message);
             this.myListingsContainerTarget.appendChild(errorNode);
         }
     }
@@ -491,13 +491,13 @@ export default class extends Controller {
             const template = document.getElementById('template-listing-row');
             const row = template.content.cloneNode(true).querySelector('tr');
 
-            let name = listing.entity ? listing.entity.name : 'Unknown';
+            let name = listing.entity ? listing.entity.name : this.translationsValue.unknown_entity;
             let category = listing.listing_type === 'hero'
                 ? `👥 ${this.translationsValue.type_hero || ''}`
                 : (listing.listing_type === 'item' ? `🗡️ ${this.translationsValue.type_item || ''}` : `🏋️ ${this.translationsValue.type_trainer || ''}`);
             let mode = listing.listing_mode === 'auction'
-                ? (this.translationsValue.mode_auction || 'Auction')
-                : (this.translationsValue.direct_buy || 'Direct Buy');
+                ? this.translationsValue.mode_auction
+                : this.translationsValue.direct_buy;
 
             row.querySelector('.js-name').textContent = name;
             row.querySelector('.js-type-mode').textContent = `${category} • ${mode}`;
@@ -505,7 +505,7 @@ export default class extends Controller {
 
             const highestBid = listing.highest_bid
                 ? `🪙 ${listing.highest_bid.amount} (${listing.highest_bid.bidder_name})`
-                : (this.translationsValue.no_bids || 'Bez příhozů');
+                : (this.translationsValue.no_bids);
             row.querySelector('.js-highest-bid').textContent = highestBid;
 
             const expiresAt = new Date(listing.expires_at);
@@ -561,9 +561,9 @@ export default class extends Controller {
             });
 
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Failed to cancel');
+            if (!response.ok) throw new Error(result.error || this.translationsValue.error_cancel);
 
-            this.showAlert('success', this.translationsValue.flash_cancelled || 'Nabídka byla úspěšně zrušena.');
+            this.showAlert('success', this.translationsValue.flash_cancelled);
             setTimeout(() => window.location.reload(), 1000);
         } catch (error) {
             this.showAlert('error', error.message);
@@ -579,7 +579,7 @@ export default class extends Controller {
 
         try {
             const response = await fetch('/api/v1/marketplace/history');
-            if (!response.ok) throw new Error('Failed to fetch');
+            if (!response.ok) throw new Error(this.translationsValue.error_fetch_listings);
             const history = await response.json();
             this.renderHistory(history);
         } catch (error) {
@@ -587,7 +587,7 @@ export default class extends Controller {
             const errorTemplate = document.getElementById('template-error-row');
             const errorNode = errorTemplate.content.cloneNode(true);
             errorNode.querySelector('.js-error-text').textContent =
-                (this.translationsValue.error_fetch_listings || 'Chyba při načítání: %error%').replace('%error%', error.message);
+                this.translationsValue.error_fetch_my_listings.replace('%error%', error.message);
             this.historyContainerTarget.appendChild(errorNode);
         }
     }

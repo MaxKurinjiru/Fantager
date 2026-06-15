@@ -70,13 +70,23 @@
          'type_hero': 'marketplace.type_hero_sing'|trans,
          'type_item': 'marketplace.type_item_sing'|trans,
          'type_trainer': 'marketplace.type_trainer_sing'|trans,
-         'label_age': 'heroes.age'|trans,
+         'error_fetch_listings': 'marketplace.error_fetch_listings'|trans,
+         'error_fetch_my_listings': 'marketplace.error_fetch_my_listings'|trans,
+         'error_listing': 'marketplace.error_listing'|trans,
+         'error_purchase': 'marketplace.error_purchase'|trans,
+         'error_bid': 'marketplace.error_bid'|trans,
+         'error_cancel': 'marketplace.error_cancel'|trans,
+         'flash_created': 'marketplace.flash_created'|trans,
+         'flash_purchased': 'marketplace.flash_purchased'|trans,
+         'flash_bid': 'marketplace.flash_bid'|trans,
+         'flash_cancelled': 'marketplace.flash_cancelled'|trans,
+         'unknown_entity': 'marketplace.col_entity'|trans,
          'label_processing': 'marketplace.label_processing'|trans
      }|json_encode|e('html_attr') }}">    {# Hub Header #}
     {% set right_content %}
-        <div class="flex items-center space-x-3 bg-gray-900 px-4 py-2 rounded-xl border border-gray-800 shadow-lg">
-            <span class="text-sm text-gray-400">{{ 'dashboard.treasury'|trans }}:</span>
-            <span class="text-lg font-bold text-amber-400 flex items-center">
+        <div class="treasury-badge">
+            <span class="treasury-badge__label">{{ 'dashboard.treasury'|trans }}:</span>
+            <span class="treasury-badge__value">
                 <span class="mr-1">🪙</span> {{ team.gold }} {{ 'dashboard.gold'|trans }}
             </span>
         </div>
@@ -96,7 +106,7 @@
     } %}
 
     {# Hub Tabs #}
-    <div class="flex border-b border-gray-800 overflow-x-auto">
+    <div class="tab-nav-bar">
         <button type="button" data-action="click->marketplace#switchTab" data-tab="browse" data-marketplace-target="tabButton"
                 class="tab-btn tab-btn--active">
             ⚖️ {{ 'marketplace.tab_browse'|trans }}

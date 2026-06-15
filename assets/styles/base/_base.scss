@@ -10,8 +10,18 @@
     *::before,
     *::after {
         box-sizing: border-box;
-        border: 1px solid transparent; // Reset default browser borders
+    }
 
+    // Strip UA borders from form controls & buttons so components can style
+    // individual sides (e.g. .tab-btn uses border-bottom only).
+    button,
+    [type='button'],
+    [type='reset'],
+    [type='submit'],
+    input,
+    select,
+    textarea {
+        border: none;
     }
 
     html,

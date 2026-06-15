@@ -3,7 +3,7 @@
 {% block title %}{{ 'hq.title'|trans }} & {{ 'hq.facilities'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="hq"
+<div class="hq-page page-shell" data-controller="hq"
      data-hq-text-upgrading-value="{{ 'js_flash.hq.upgrading'|trans }}"
      data-hq-error-upgrade-value="{{ 'js_flash.hq.failed_upgrade'|trans }}"
      data-hq-success-upgrade-value="{{ 'js_flash.hq.success_upgrade'|trans }}"
@@ -17,8 +17,6 @@
          bonus_fatigue_reduction_pct: 'hq.bonus_fatigue_reduction_pct'|trans,
          bonus_recovery_speed_pct: 'hq.bonus_recovery_speed_pct'|trans,
          bonus_xp_gain_pct: 'hq.bonus_xp_gain_pct'|trans,
-         bonus_crafting_success_pct: 'hq.bonus_crafting_success_pct'|trans,
-         bonus_item_durability_pct: 'hq.bonus_item_durability_pct'|trans,
          bonus_gold_income_pct: 'hq.bonus_gold_income_pct'|trans,
          bonus_roster_capacity: 'hq.bonus_roster_capacity'|trans,
          bonus_summon_base_stat_bonus: 'hq.bonus_summon_base_stat_bonus'|trans,
@@ -50,10 +48,10 @@
         close_action: 'hq#closeAlert'
     } %}
 
-    <div class="space-y-6">
-        <h2 class="text-xl font-bold text-white">{{ 'hq.facilities'|trans }}</h2>
+    <div class="hq-facilities-section">
+        <h2 class="hq-facilities-section__title">{{ 'hq.facilities'|trans }}</h2>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="cards-grid cards-grid--facilities">
             {% for facility in hq.facilities %}
                 {% include 'components/hq/facility_card.html.twig' with {
                     facility: facility,
@@ -64,4 +62,11 @@
     </div>
 
 </div>
+
+<template id="template-facility-bonus-row">
+    <li class="hq-facility-bonus">
+        <span class="hq-facility-bonus__name js-bonus-name"></span>
+        <span class="hq-facility-bonus__value js-bonus-value"></span>
+    </li>
+</template>
 {% endblock %}

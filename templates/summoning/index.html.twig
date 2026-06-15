@@ -3,7 +3,7 @@
 {% block title %}{{ 'summoning.title'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="summoning"
+<div class="summoning-page page-shell" data-controller="summoning"
      data-summoning-gold-cost-value="{{ status.gold_cost }}"
      data-summoning-error-failed-value="{{ 'js_flash.summoning.failed'|trans }}"
      data-summoning-limit-reached-value="{{ 'js_flash.summoning.limit_reached'|trans }}"
@@ -18,6 +18,16 @@
          ent: 'heroes.race_ent'|trans,
          genie: 'heroes.race_genie'|trans
      }|json_encode }}"
+     data-summoning-stat-labels-value="{{ {
+         str: 'training.attr.str'|trans,
+         dex: 'training.attr.dex'|trans,
+         kon: 'training.attr.kon'|trans,
+         spd: 'training.attr.spd'|trans,
+         int: 'training.attr.int'|trans,
+         wil: 'training.attr.wil'|trans,
+         cha: 'training.attr.cha'|trans,
+         lck: 'training.attr.lck'|trans
+     }|json_encode|e('html_attr') }}"
 >
     
     {# --- Header Section --- #}
@@ -48,23 +58,23 @@
         type: 'error'
     } %}
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="screen-grid">
         {# LEFT COLUMN: Summon Selection Panel (2 Columns) #}
-        <div class="lg:col-span-2 space-y-6">
-            <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
+        <div class="screen-grid__main">
+            <div class="feature-panel">
                 <div>
-                    <h2 class="text-xl font-bold text-white mb-1">{{ 'summoning.summon_junior'|trans }}</h2>
-                    <p class="text-xs text-gray-550">{{ 'summoning.summon_junior_desc'|trans }}</p>
+                    <h2 class="feature-panel__title">{{ 'summoning.summon_junior'|trans }}</h2>
+                    <p class="feature-panel__desc">{{ 'summoning.summon_junior_desc'|trans }}</p>
                 </div>
 
                 {# Arena Theme / Adaptation widget & Potential races list #}
                 {% include 'components/summoning/compat_races.html.twig' with { arena_theme: arena_theme, compatible_races: compatible_races } %}
 
                 {# Summon CTA Button #}
-                <div class="border-t border-gray-800 pt-6 flex justify-end">
+                <div class="feature-panel__footer">
                     <button type="button" data-summoning-target="summonBtn" data-action="click->summoning#summon" data-available="{{ status.available ? 'true' : 'false' }}"
                             {% if not status.available %}disabled{% endif %}
-                            class="btn btn-primary px-8 py-3.5 shadow-lg shadow-emerald-950/20 font-bold uppercase tracking-wider text-sm disabled:bg-gray-800 disabled:text-gray-500 disabled:border-gray-800 disabled:cursor-not-allowed">
+                            class="btn btn-primary summoning-summon-btn">
                         {% if status.available %}
                             🌀 {{ 'summoning.summon_junior'|trans }}
                         {% else %}
@@ -76,10 +86,19 @@
         </div>
 
         {# RIGHT COLUMN: Magic Portal & Reveal Area (1 Column) #}
-        <div class="lg:col-span-1">
+        <div class="screen-grid__aside">
             {% include 'components/summoning/portal_chamber.html.twig' %}
         </div>
     </div>
 
 </div>
+
+<template id="template-summoning-stat">
+    <div class="summoning-stat">
+        <span class="summoning-stat__key js-stat-key"></span>
+        <span class="summoning-stat__label js-stat-label"></span>
+        <span class="summoning-stat__value js-stat-value"></span>
+    </div>
+</template>
+
 {% endblock %}

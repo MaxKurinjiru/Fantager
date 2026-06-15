@@ -14,7 +14,7 @@ Defines the structure, requirements, and rewards of a quest.
 * **type** (`QuestType` enum): `daily`, `weekly`, `story`, or `repeatable`.
 * **title** (`string`): The name of the quest.
 * **description** (`string`): Description text.
-* **rewards** (`json` array): Rewards granted on completion (Gold, Crystals, Essence, Items).
+* **rewards** (`json` array): Rewards granted on completion (Gold, Essence, Items).
 * **requirements** (`json` array): Conditions required to complete or accept the quest.
 * **expiresAt** (`DateTimeImmutable`, nullable): Expiration date/time for timed quests.
 

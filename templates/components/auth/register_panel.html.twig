@@ -102,8 +102,8 @@
                         {% set k    = entry.kingdom %}
                         {% set full = entry.capacity > 0 and entry.playerCount >= entry.capacity %}
                         <label class="flex items-start gap-3 p-3 rounded border cursor-pointer
-                                      {{ full ? 'border-border opacity-50 cursor-not-allowed' : 'border-border-strong hover:border-brand-400' }}
-                                      {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'border-brand-400' : '' }}">
+                                      {{ full ? 'border-border opacity-50 cursor-not-allowed' : 'border-border-strong hover:border-brand-400 kingdom-card' }}
+                                      {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'kingdom-card--selected' : '' }}">
                             <input type="radio" name="kingdom_id" value="{{ k.id }}"
                                    {{ full ? 'disabled' : '' }}
                                    {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'checked' : '' }}

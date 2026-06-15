@@ -13,7 +13,7 @@ Displayed Information:
 	- Team Chemistry (value + indicator)
 - **Quick Stats:**
 	- Number of heroes in roster
-	- Current Gold, Crystals, Essence
+	- Current Gold, Essence
 	- Next scheduled match (time, opponent)
 	- Current league tier & position
 - **Recent Activity Feed:**

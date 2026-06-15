@@ -4,7 +4,7 @@
 {% set label = label|default('') %}
 {% set is_active = is_active|default(false) %}
 
-<a href="{{ path(route) }}" 
-   class="flex items-center gap-3 px-4 py-2.5 rounded font-medium transition-colors {{ is_active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200' }}">
-    <span class="text-base select-none">{{ emoji }}</span> {{ label|trans }}
+<a href="{{ path(route) }}"
+   class="sidebar-link{{ is_active ? ' sidebar-link--active' : '' }}">
+    <span class="sidebar-link__emoji">{{ emoji }}</span> {{ label|trans }}
 </a>

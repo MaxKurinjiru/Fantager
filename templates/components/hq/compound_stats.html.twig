@@ -2,16 +2,16 @@
 {% set hq = hq|default(null) %}
 {% set team = team|default(null) %}
 
-<div class="flex items-center gap-4 bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 backdrop-blur-md">
-    <div>
-        <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'hq.compound_level'|trans }}</span>
-        <span class="text-white font-extrabold text-lg" data-hq-target="totalLevel">{{ hq.totalLevel }}</span>
+<div class="hq-stats-bar">
+    <div class="hq-stats-bar__item">
+        <span class="hq-stats-bar__item-label">{{ 'hq.compound_level'|trans }}</span>
+        <span class="hq-stats-bar__item-value" data-hq-target="totalLevel">{{ hq.totalLevel }}</span>
     </div>
-    <div class="w-px h-8 bg-gray-800"></div>
-    <div>
-        <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider">{{ 'hq.active_optimization'|trans }}</span>
-        <span class="text-emerald-400 font-extrabold text-sm">{{ hq.raceOptimization ? ('heroes.race_' ~ hq.raceOptimization)|trans : 'dashboard.none'|trans }}</span>
+    <div class="hq-stats-bar__divider" aria-hidden="true"></div>
+    <div class="hq-stats-bar__item">
+        <span class="hq-stats-bar__item-label">{{ 'hq.active_optimization'|trans }}</span>
+        <span class="hq-stats-bar__item-value hq-stats-bar__item-value--accent">{{ hq.raceOptimization ? ('heroes.race_' ~ hq.raceOptimization)|trans : 'dashboard.none'|trans }}</span>
     </div>
-    <div class="w-px h-8 bg-gray-800"></div>
+    <div class="hq-stats-bar__divider" aria-hidden="true"></div>
     {% include 'components/ui/roster_badge.html.twig' with { team: team } %}
 </div>

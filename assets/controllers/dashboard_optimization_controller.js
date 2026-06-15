@@ -10,6 +10,9 @@ export default class extends Controller {
         successSave: String
     };
 
+    disconnect() {
+    }
+
     openProfileModal(e) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent('modal:open-team-profile'));
@@ -18,8 +21,7 @@ export default class extends Controller {
     async optimize(e) {
         e.preventDefault();
 
-        const confirmMsg = this.confirmValue || "Are you sure you want to change the race optimization? This scheduled change is not immediate and will apply next Sunday at 09:30.";
-        if (!confirm(confirmMsg)) {
+        if (!confirm(this.confirmValue)) {
             return;
         }
 

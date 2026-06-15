@@ -139,11 +139,11 @@ Once the set of teams for each Tier $T$ in the next season is finalized (contain
 
 ## Reward Distribution
 
-At the end of each season (during the **Season Transition** on Week 11, Friday at 19:00), rewards (Gold and Crystals) are automatically calculated and directly credited to the teams' wallets.
+At the end of each season (during the **Season Transition** on Week 11, Friday at 19:00), rewards (Gold) are automatically calculated and directly credited to the teams' wallets.
 
 ### 1. Reward Configuration Parameters
 The rewards system utilizes parameters stored in the `league_tiers_config` or the global game config:
-- **Base Tier Rewards:** Each Tier $T$ has a configured `base_gold` and `base_crystals` (e.g., T1: 5000 Gold / 10 Crystals, T2: 2500 Gold / 5 Crystals, T3: 1000 Gold / 0 Crystals).
+- **Base Tier Rewards:** Each Tier $T$ has a configured `base_gold` (e.g., T1: 5000 Gold, T2: 2500 Gold, T3: 1000 Gold).
 - **Season Growth Factor ($g$):** Default is `0.05` (5% compounding increase per season).
 - **Promotion Bonus Rate ($B_{promo}$):** Multiplier bonus for teams promoted *into* a higher tier.
   - Promoted into Tier 1 (from T2): +40% bonus ($B_{promo} = 0.40$).
@@ -185,13 +185,12 @@ The modifier depends on whether the team promoted, relegated, or remained in the
 ### 5. Final Reward Calculation
 For a team finishing at position $P$ in Tier $T_{old}$ during Season $S$, and transitioning to Tier $T_{new}$:
 $$\text{Gold Granted} = \text{Base\_Gold}(T_{old}) \times M_{pos}(P) \times M_{season}(S) \times M_{status}$$
-$$\text{Crystals Granted} = \text{Base\_Crystals}(T_{old}) \times M_{pos}(P) \times M_{season}(S) \times M_{status}$$
 *(Final results are rounded to the nearest integer).*
 
 ### 6. Distribution, Logging, and History
-- **Direct Credit:** Rewards are added directly to the team's balance (`gold` and `crystals` columns on the `Team` entity) during the Season Transition transaction. No manual claiming is required.
+- **Direct Credit:** Rewards are added directly to the team's balance (`gold` column on the `Team` entity) during the Season Transition transaction. No manual claiming is required.
 - **Activity Log:** A record is added to the `ActivityLog` table with type `season_ended` to notify the player.
-- **Financial Ledger:** A record of type `league_reward` is added to the `FinancialRecord` entity with actor set to `system`, documenting the exact amount of Gold and Crystals granted for auditing and player ledger transparency.
+- **Financial Ledger:** A record of type `league_reward` is added to the `FinancialRecord` entity with actor set to `system`, documenting the exact amount of Gold granted for auditing and player ledger transparency.
 
 ## Sections to Fill:
 - Integration with standings and leaderboards

@@ -3,7 +3,7 @@
     {% if selected_hero and selected_hero.heroSpells|length > 0 %}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {% for hs in selected_hero.heroSpells %}
-                <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-4 flex flex-col justify-between backdrop-blur-md shadow-md min-h-[140px]">
+                <div class="spell-card min-h-[140px]">
                     <div class="space-y-2.5">
                         <div class="flex justify-between items-start">
                             <div class="flex items-center gap-2">
@@ -16,11 +16,11 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="text-[10px] text-gray-400">{{ 'spells.mana_cooldown'|trans({'%mana%': hs.spell.manaCost, '%cooldown%': hs.spell.cooldown})|raw }}</p>
+                        <p class="spell-card__desc">{{ 'spells.mana_cooldown'|trans({'%mana%': hs.spell.manaCost, '%cooldown%': hs.spell.cooldown})|raw }}</p>
                     </div>
 
-                    <div class="border-t border-gray-850 mt-3 pt-3 flex items-center justify-between gap-4">
-                        <div class="text-[9px] font-bold text-gray-500">
+                    <div class="panel-divider panel-divider-row">
+                        <div class="spell-card__status">
                             {% if hs.isEquipped %}
                                 {{ 'inventory.equipped'|trans }} (Slot {{ hs.slotNumber }})
                             {% else %}
@@ -53,10 +53,10 @@
             {% endfor %}
         </div>
     {% else %}
-        <div class="text-center py-12 select-none border border-gray-850 border-dashed rounded-xl opacity-60 bg-gray-900/10">
+        <div class="spell-empty-state">
             <span class="text-4xl block mb-2">📭</span>
-            <h4 class="text-xs font-bold text-gray-455">{{ 'spells.no_spells'|trans }}</h4>
-            <p class="text-[10px] text-gray-550 mt-1">{{ 'spells.no_spells_desc'|trans }}</p>
+            <h4 class="spell-empty-state__title">{{ 'spells.no_spells'|trans }}</h4>
+            <p class="spell-empty-state__desc">{{ 'spells.no_spells_desc'|trans }}</p>
         </div>
     {% endif %}
 </div>

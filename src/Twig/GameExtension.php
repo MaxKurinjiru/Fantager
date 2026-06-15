@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Twig;
 
+use App\Entity\Auth\User;
 use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
+use App\Service\Community\CommunityService;
+use Symfony\Bundle\SecurityBundle\Security;
 use App\Enum\FacilityType;
 use App\Enum\Race;
 use App\Repository\Hero\HeroRepository;
@@ -17,6 +20,8 @@ class GameExtension extends AbstractExtension
     public function __construct(
         private readonly \App\Service\Headquarters\HeadquartersService $hqService,
         private readonly HeroRepository $heroRepository,
+        private readonly CommunityService $communityService,
+        private readonly Security $security,
     ) {
     }
 
@@ -29,7 +34,24 @@ class GameExtension extends AbstractExtension
             new TwigFunction('hq_upgrade_cost', $this->getHqUpgradeCost(...)),
             new TwigFunction('team_roster_limit', $this->getTeamRosterLimit(...)),
             new TwigFunction('team_hero_count', $this->getTeamHeroCount(...)),
+            new TwigFunction('unread_mail_count', $this->getUnreadMailCount(...)),
         ];
+    }
+
+
+    public function getUnreadMailCount(): int
+    {
+        $user = $this->security->getUser();
+        if (!$user instanceof User) {
+            return 0;
+        }
+
+        $team = $user->getTeam();
+        if (!$team) {
+            return 0;
+        }
+
+        return $this->communityService->countUnreadInbox($team);
     }
 
     public function getRaceIcon(Race|string|null $race): string

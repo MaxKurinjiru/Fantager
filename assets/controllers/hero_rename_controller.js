@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { csrfHeaders } from '../utils/csrf.js';
 
 export default class extends Controller {
     static targets = ['nameDisplay', 'nameInput', 'editBtn', 'actions', 'alert', 'alertMessage'];
@@ -10,6 +11,10 @@ export default class extends Controller {
 
     connect() {
         this.originalName = this.nameDisplayTarget.textContent.trim();
+    }
+
+    disconnect() {
+        this.originalName = null;
     }
 
     edit(e) {
@@ -30,6 +35,7 @@ export default class extends Controller {
 
     async save(e) {
         e.preventDefault();
+        const saveBtn = e.currentTarget;
         const newName = this.nameInputTarget.value.trim();
         if (!newName) {
             this.showAlert(this.errorEmptyValue);
@@ -41,16 +47,13 @@ export default class extends Controller {
             return;
         }
 
-        try {
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+        const originalDisabled = saveBtn.disabled;
+        saveBtn.disabled = true;
 
+        try {
             const response = await fetch(`/api/v1/heroes/${this.heroIdValue}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ name: newName })
             });
 
@@ -66,6 +69,8 @@ export default class extends Controller {
             this.hideAlert();
         } catch (error) {
             this.showAlert(error.message);
+        } finally {
+            saveBtn.disabled = originalDisabled;
         }
     }
 

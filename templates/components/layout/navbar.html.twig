@@ -6,12 +6,7 @@
         <div class="navbar-resources">
             <div class="navbar-resources__item" title="{{ 'dashboard.gold'|trans }}">
                 <span class="text-yellow-500 font-bold select-none">🪙</span>
-                <span class="font-bold text-gray-250">{{ app.user.team.gold|number_format(0, '.', ' ') }}</span>
-            </div>
-            <div class="navbar-resources__separator"></div>
-            <div class="navbar-resources__item" title="{{ 'dashboard.crystals'|trans }}">
-                <span class="text-cyan-400 font-bold select-none">💎</span>
-                <span class="font-bold text-gray-250">{{ app.user.team.crystals|number_format(0, '.', ' ') }}</span>
+                <span class="navbar-resources__amount">{{ app.user.team.gold|number_format(0, '.', ' ') }}</span>
             </div>
         </div>
 
@@ -42,9 +37,11 @@
                             class="navbar-dropdown__trigger">
                         <span class="text-lg select-none">{{ app.user.team.emblem ?: '🛡️' }}</span>
                         <span class="font-semibold text-xs sm:text-sm hidden sm:inline">{{ app.user.displayName }}</span>
-                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="navbar-dropdown__chevron navbar-dropdown__chevron--md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
+                        <span data-mail-target="badge"
+                              class="dropdown-trigger__badge hidden">0</span>
                     </button>
 
                     {# Dropdown panel #}
@@ -56,11 +53,23 @@
                             <p class="dropdown-menu__meta">{{ app.user.team.name }}</p>
                         </div>
                         
+
+                        <button type="button"
+                                data-action="click->mail#openMailModal" aria-label="{{ 'nav.mail'|trans }}"
+                                class="dropdown-item">
+                            <svg class="dropdown-item__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            {{ 'nav.mail'|trans }}
+                            <span data-mail-target="badge"
+                                  class="dropdown-item__badge hidden">0</span>
+                        </button>
+
                         {# Settings opens account settings modal via Stimulus event #}
                         <button type="button"
-                                onclick="window.dispatchEvent(new CustomEvent('modal:open-account-settings'))"
+                                data-action="click->mail#openAccountSettingsModal" aria-label="{{ 'nav.settings'|trans }}"
                                 class="dropdown-item">
-                            <svg class="w-4 h-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <svg class="dropdown-item__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
@@ -98,7 +107,7 @@
                     <span class="flex items-center gap-1">
                         <span>{{ current_locale }}</span>
                     </span>
-                    <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="navbar-dropdown__chevron navbar-dropdown__chevron--sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>

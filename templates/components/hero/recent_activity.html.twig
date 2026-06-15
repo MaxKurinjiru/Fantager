@@ -1,16 +1,16 @@
 {# templates/components/hero/recent_activity.html.twig #}
-<div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
+<div class="hero-panel space-y-6">
     <div>
-        <h2 class="text-xl font-bold text-white mb-0.5">{{ 'heroes.recent_activity'|trans }}</h2>
-        <p class="text-xs text-gray-550">{{ 'heroes.recent_activity_desc'|trans }}</p>
+        <h2 class="hero-panel__title hero-panel__title--tight">{{ 'heroes.recent_activity'|trans }}</h2>
+        <p class="hero-panel__desc">{{ 'heroes.recent_activity_desc'|trans }}</p>
     </div>
 
     <div class="space-y-3 max-h-[175px] overflow-y-auto pr-1">
         {% if summonRecord %}
-            <div class="bg-gray-950 p-2.5 rounded-xl border border-gray-850 flex items-center justify-between text-xs gap-3">
+            <div class="hero-activity-item">
                 <div>
-                    <div class="font-bold text-gray-300">🌀 {{ 'heroes.summoned'|trans }}</div>
-                    <div class="text-[9px] text-gray-550">{{ summonRecord.summonedAt|date('Y-m-d H:i') }}</div>
+                    <div class="hero-activity-item__title">🌀 {{ 'heroes.summoned'|trans }}</div>
+                    <div class="hero-activity-item__time">{{ summonRecord.summonedAt|date('Y-m-d H:i') }}</div>
                 </div>
                 <div class="text-right shrink-0">
                     <span class="text-[10px] font-bold text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/30">
@@ -20,9 +20,9 @@
             </div>
         {% endif %}
         {% for log in trainingHistory %}
-            <div class="bg-gray-950 p-2.5 rounded-xl border border-gray-850 flex items-center justify-between text-xs gap-3">
+            <div class="hero-activity-item">
                 <div>
-                    <div class="font-bold text-gray-300">
+                    <div class="hero-activity-item__title">
                         {% if log.trainingType.value == 'attribute' %}
                             💪 {{ 'training.type_attribute'|trans }}: {{ ('training.attr.' ~ log.targetAttribute)|trans }}
                         {% elseif log.trainingType.value == 'magic' %}
@@ -31,7 +31,7 @@
                             🛌 {{ 'training.type_form'|trans }}
                         {% endif %}
                     </div>
-                    <div class="text-[9px] text-gray-550">{{ log.completedAt ? log.completedAt|date('Y-m-d H:i') : log.executeAt|date('Y-m-d H:i') }}</div>
+                    <div class="hero-activity-item__time">{{ log.completedAt ? log.completedAt|date('Y-m-d H:i') : log.executeAt|date('Y-m-d H:i') }}</div>
                 </div>
                 <div class="text-right shrink-0">
                     {% if log.status.value == 'completed' %}
@@ -47,14 +47,14 @@
                     {% elseif log.status.value == 'in_progress' %}
                         <span class="text-[10px] font-bold text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/30">{{ 'training.status.in_progress'|trans }}</span>
                     {% else %}
-                        <span class="text-[10px] font-bold text-gray-500 bg-gray-900 px-2 py-0.5 rounded border border-gray-800">{{ 'training.status.cancelled'|trans }}</span>
+                        <span class="status-tag status-tag--cancelled">{{ 'training.status.cancelled'|trans }}</span>
                     {% endif %}
                 </div>
             </div>
         {% else %}
-            <div class="text-center py-6 select-none opacity-50">
+            <div class="hero-activity-empty">
                 <span class="text-2xl block mb-1">💤</span>
-                <span class="text-xs text-gray-550">{{ 'heroes.no_activity'|trans }}</span>
+                <span class="hero-panel__desc">{{ 'heroes.no_activity'|trans }}</span>
             </div>
         {% endfor %}
     </div>

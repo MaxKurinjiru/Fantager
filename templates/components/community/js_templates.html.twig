@@ -1,32 +1,30 @@
 {# templates/components/community/js_templates.html.twig #}
-{# Forum Thread Row Template #}
 <template id="template-forum-thread-row">
     <tr class="community-row">
-        <td class="py-4 font-bold text-white js-title-cell">
-            <div class="flex items-center gap-2">
-                <span class="text-gray-550 js-lock-icon hidden" title="{{ 'community.locked'|trans }}">🔒</span>
+        <td class="data-table__cell--title js-title-cell">
+            <div class="data-table__title-row">
+                <span class="lock-badge lock-badge--icon js-lock-icon hidden" title="{{ 'community.locked'|trans }}" aria-label="{{ 'community.locked'|trans }}">🔒</span>
                 <span class="js-thread-title"></span>
             </div>
-            <span class="text-[9px] uppercase font-bold text-emerald-400 tracking-wider bg-emerald-950/20 border border-emerald-900/40 px-2 py-0.5 rounded-full mt-1 inline-block js-thread-category"></span>
+            <span class="category-badge js-thread-category"></span>
         </td>
-        <td class="py-4 text-gray-400">
-            <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full border border-gray-700 js-author-color"></span>
+        <td>
+            <div class="data-table__author-row">
+                <span class="team-color-dot js-author-color"></span>
                 <span class="js-author-name"></span>
             </div>
         </td>
-        <td class="py-4 text-center text-gray-300 font-semibold js-replies-count"></td>
-        <td class="py-4 text-right text-gray-555 js-created-at"></td>
+        <td class="data-table__col--center data-table__cell--numeric js-replies-count"></td>
+        <td class="data-table__col--end data-table__cell--muted js-created-at"></td>
     </tr>
 </template>
 
-{# Forum Post Template #}
 <template id="template-forum-post">
     <div class="community-post">
         <div class="community-post__header">
-            <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full border border-gray-700 js-author-color"></span>
-                <strong class="text-white js-author-name"></strong>
+            <div class="data-table__author-row">
+                <span class="team-color-dot js-author-color"></span>
+                <strong class="community-post__author js-author-name"></strong>
             </div>
             <span class="js-created-at"></span>
         </div>
@@ -34,28 +32,8 @@
     </div>
 </template>
 
-{# Mail Message Row Template #}
-<template id="template-mail-message-row">
-    <tr class="community-row">
-        <td class="py-4 text-center text-lg">
-            <span class="js-unread-indicator"></span>
-        </td>
-        <td class="py-4 font-bold text-white">
-            <span class="js-subject"></span>
-        </td>
-        <td class="py-4 text-gray-400">
-            <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full border border-gray-700 js-team-color"></span>
-                <span class="js-team-name"></span>
-            </div>
-        </td>
-        <td class="py-4 text-right text-gray-555 js-sent-at"></td>
-    </tr>
-</template>
-
-{# Community Empty Row Template #}
 <template id="template-community-empty-row">
     <tr>
-        <td colspan="4" class="py-12 text-center text-gray-550 select-none js-empty-text"></td>
+        <td colspan="4" class="empty-state js-empty-text"></td>
     </tr>
 </template>

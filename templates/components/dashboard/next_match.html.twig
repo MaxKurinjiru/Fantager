@@ -1,8 +1,8 @@
 {# templates/components/dashboard/next_match.html.twig #}
 <div class="next-match-card">
     {# Glowing accents #}
-    <div class="absolute -right-24 -bottom-24 w-64 h-64 bg-emerald-500/[0.02] rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute -left-24 -top-24 w-64 h-64 bg-emerald-500/[0.01] rounded-full blur-3xl pointer-events-none"></div>
+    <div class="next-match-card__glow next-match-card__glow--br"></div>
+    <div class="next-match-card__glow next-match-card__glow--tl"></div>
 
     <h3 class="next-match-card__title">
         <span>🏆</span> {{ 'dashboard.next_match'|trans }}
@@ -12,7 +12,7 @@
         {% set match = dashboard.next_match %}
         {% set is_home = (match.home_team.id == team.id) %}
 
-        <div class="space-y-6">
+        <div class="next-match-card__body">
             <div class="next-match-card__teams">
                 
                 {# Home Team #}
@@ -72,12 +72,12 @@
 
             <div class="next-match-meta">
                 <div class="next-match-meta__item">
-                    <span class="text-gray-550 select-none">📅</span>
-                    <span class="font-medium text-gray-300">{{ match.scheduled_at|date('d. m. Y H:i') }}</span>
+                    <span class="next-match-meta__icon">📅</span>
+                    <span class="next-match-meta__text">{{ match.scheduled_at|date('d. m. Y H:i') }}</span>
                 </div>
                 <div class="next-match-meta__item">
-                    <span class="text-gray-550 select-none">🏆</span>
-                    <span class="font-medium text-gray-300">{{ match.group_name }}</span>
+                    <span class="next-match-meta__icon">🏆</span>
+                    <span class="next-match-meta__text">{{ match.group_name }}</span>
                 </div>
             </div>
         </div>

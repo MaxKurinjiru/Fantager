@@ -9,34 +9,32 @@
             {% set meets_requirement = hero_mastery >= spell.requiredMasteryTier %}
             {% set has_funds = selected_hero and team.gold >= spell.learningCostGold and (spell.learningCostEssence == 0 or team.essenceCommon >= spell.learningCostEssence) %} {# Simple check #}
 
-            <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-4 flex flex-col justify-between backdrop-blur-md shadow-md min-h-[160px]">
+            <div class="spell-card min-h-[160px]">
                 <div class="space-y-3">
                     <div class="flex justify-between items-start">
                         <div class="flex items-center gap-2">
                             <span class="text-2xl">📜</span>
                             <div>
                                 <h3 class="font-bold text-white text-sm leading-tight">{{ spell.name }}</h3>
-                                <span class="text-[9px] font-bold uppercase tracking-wider text-gray-550">
+                                <span class="spell-card__school">
                                     Tier {{ spell.tier }} &bull; {{ ('school.' ~ spell.school.value)|trans }}
                                 </span>
                             </div>
                         </div>
                         
-                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border
-                            {% if meets_requirement %}bg-emerald-950/20 text-emerald-450 border-emerald-900/30
-                            {% else %}bg-red-950/25 text-red-400 border-red-900/30{% endif %}">
+                        <span class="mastery-badge {% if meets_requirement %}mastery-badge--met{% else %}mastery-badge--unmet{% endif %}">
                             {{ 'spells.req_mastery'|trans({'%school%': ('school.' ~ spell.school.value)|trans, '%tier%': spell.requiredMasteryTier}) }}
                         </span>
                     </div>
                     
-                    <p class="text-[10px] text-gray-400 leading-relaxed">
+                    <p class="spell-card__desc">
                         {{ 'spells.academy_desc'|trans }} {{ 'spells.mana_cooldown'|trans({'%mana%': spell.manaCost, '%cooldown%': spell.cooldown})|raw }}
                     </p>
                 </div>
 
-                <div class="border-t border-gray-850 mt-4 pt-3 flex items-center justify-between gap-4">
+                <div class="spell-card__footer">
                     <div>
-                        <span class="block text-[8px] font-bold text-gray-550 uppercase tracking-wider">{{ 'spells.scroll_fee'|trans }}</span>
+                        <span class="spell-card__fee-label">{{ 'spells.scroll_fee'|trans }}</span>
                         <span class="text-xs font-bold text-yellow-500">
                             🪙 {{ spell.learningCostGold|number_format(0, '.', ' ') }} 
                             {% if spell.learningCostEssence > 0 %}
@@ -46,7 +44,7 @@
                     </div>
 
                     {% if is_learned %}
-                        <span class="text-[10px] font-bold text-gray-550 bg-gray-955 px-2.5 py-1.5 rounded border border-gray-855">{{ 'spells.known'|trans }}</span>
+                        <span class="spell-card__known-badge">{{ 'spells.known'|trans }}</span>
                     {% else %}
                         <button type="button" data-action="click->spellbook#learn" data-spell-id="{{ spell.id }}" data-gold="{{ spell.learningCostGold }}"
                                 {% if not selected_hero or not meets_requirement or not has_funds %}disabled{% endif %}

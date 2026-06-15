@@ -14,18 +14,18 @@
      data-kon="{{ hero.kon }}"
      data-spd="{{ hero.spd }}"
      data-int="{{ hero.intel }}"
-     class="relative bg-gray-900/60 backdrop-blur-md border border-gray-800 hover:border-emerald-500/20 rounded-xl p-5 flex flex-col justify-between shadow-lg hover:shadow-emerald-950/5 transition-all">
+     class="hero-card">
     
     <div>
         {# Card Header #}
-        <div class="flex justify-between items-start gap-2 mb-4 pr-16">
+        <div class="hero-card__header pr-16">
             <div class="flex items-center gap-3">
                 {% include 'components/hero/avatar.html.twig' with { race: hero.race } %}
                 <div>
                     <h3 class="font-bold text-white leading-tight hover:text-emerald-400">
                         <a href="{{ path('app_heroes_detail', {id: hero.id}) }}">{{ hero.name }}</a>
                     </h3>
-                    <p class="text-xs text-gray-550 mt-0.5">{{ 'heroes.level'|trans }} {{ hero.level }} &bull; {{ ('heroes.race_' ~ hero.race.value)|trans }}</p>
+                    <p class="hero-card__meta">{{ 'heroes.level'|trans }} {{ hero.level }} &bull; {{ ('heroes.race_' ~ hero.race.value)|trans }}</p>
                 </div>
             </div>
         </div>
@@ -36,18 +36,18 @@
         </div>
 
         {# Secondary Attributes List #}
-        <div class="grid grid-cols-3 gap-3 bg-gray-950/60 border border-gray-800/60 p-3 rounded-lg mb-4 text-center">
+        <div class="hero-stats-box">
             <div>
-                <span class="block text-[10px] text-gray-500 uppercase font-semibold">{{ 'heroes.age'|trans }}</span>
-                <span class="text-sm font-bold text-gray-200" title="{{ 'heroes.age_phase.phase'|trans({'%phase%': ('heroes.age_phase.' ~ phase|lower)|trans}) }}">{{ hero.age }} {{ p_icon }}</span>
+                <span class="hero-attr-cell__label">{{ 'heroes.age'|trans }}</span>
+                <span class="hero-attr-cell__value" title="{{ 'heroes.age_phase.phase'|trans({'%phase%': ('heroes.age_phase.' ~ phase|lower)|trans}) }}">{{ hero.age }} {{ p_icon }}</span>
             </div>
             <div>
-                <span class="block text-[10px] text-gray-500 uppercase font-semibold">{{ 'heroes.combat_form'|trans }}</span>
-                <span class="text-sm font-bold text-gray-200">{{ hero.form }}%</span>
+                <span class="hero-attr-cell__label">{{ 'heroes.combat_form'|trans }}</span>
+                <span class="hero-attr-cell__value">{{ hero.form }}%</span>
             </div>
             <div>
-                <span class="block text-[10px] text-gray-500 uppercase font-semibold">{{ 'heroes.fatigue'|trans }}</span>
-                <span class="text-sm font-bold text-gray-200">{{ hero.fatigue }}%</span>
+                <span class="hero-attr-cell__label">{{ 'heroes.fatigue'|trans }}</span>
+                <span class="hero-attr-cell__value">{{ hero.fatigue }}%</span>
             </div>
         </div>
 
@@ -56,14 +56,14 @@
     </div>
 
     {# Actions #}
-    <div class="flex gap-2">
+    <div class="hero-card__actions">
         <a href="{{ path('app_heroes_detail', {id: hero.id}) }}" class="btn btn-outline btn--sm flex-1">
             {{ 'heroes.inspect'|trans }}
         </a>
-        <a href="{{ path('app_training') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.train_hero'|trans }}">
+        <a href="{{ path('app_training') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.train_hero'|trans }}" aria-label="{{ 'heroes.train_hero'|trans }}">
             🏋️
         </a>
-        <a href="{{ path('app_inventory') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.equip_hero'|trans }}">
+        <a href="{{ path('app_inventory') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.equip_hero'|trans }}" aria-label="{{ 'heroes.equip_hero'|trans }}">
             🎒
         </a>
     </div>

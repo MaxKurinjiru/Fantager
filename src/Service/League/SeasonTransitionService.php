@@ -239,8 +239,6 @@ class SeasonTransitionService
 
             $baseRewards = $oldTier->getRewards();
             $baseGold = (int) ($baseRewards['gold'] ?? 0);
-            $baseCrystals = (int) ($baseRewards['crystals'] ?? 0);
-
             // Multipliers
             $mPos = self::POSITION_MULTIPLIERS[$position] ?? 1.0;
             $mSeason = pow(1.05, $currentSeasonNumber - 1);
@@ -267,22 +265,11 @@ class SeasonTransitionService
             }
 
             $goldGranted = (int) round($baseGold * $mPos * $mSeason * $mStatus);
-            $crystalsGranted = (int) round($baseCrystals * $mPos * $mSeason * $mStatus);
-
             // 1. Credit team balances
             if ($goldGranted > 0) {
                 $this->economyService->addGold(
                     $team,
                     $goldGranted,
-                    FinancialRecordType::LeagueReward,
-                    FinancialRecordActor::System,
-                    ['season' => $currentSeasonNumber]
-                );
-            }
-            if ($crystalsGranted > 0) {
-                $this->economyService->addCrystals(
-                    $team,
-                    $crystalsGranted,
                     FinancialRecordType::LeagueReward,
                     FinancialRecordActor::System,
                     ['season' => $currentSeasonNumber]
@@ -302,7 +289,6 @@ class SeasonTransitionService
             ]);
             $log->setData([
                 'gold' => $goldGranted,
-                'crystals' => $crystalsGranted,
             ]);
             $this->em->persist($log);
         }

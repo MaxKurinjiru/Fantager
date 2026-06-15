@@ -15,7 +15,6 @@ Sections to fill:
 
 Summary of currencies:
 - Gold: primary, earned from matches, marketplace sales, quests; spent on training, upgrades, marketplace purchases.
-- Crystals: premium/event currency; account-bound; used for QoL and cosmetic features (no direct competitive advantages).
 - Essence: crafting/upgrade currency obtained from dismantling and events; used for crafting/enchantment.
 
 Economic controls:
@@ -30,7 +29,7 @@ APIs and flows:
 
 ## Audit & Financial Ledger
 
-To ensure absolute economic tracking and player balance auditability, the system records every currency modification (Gold, Crystals, and Essences) in the `FinancialRecord` entity.
+To ensure absolute economic tracking and player balance auditability, the system records every currency modification (Gold and Essences) in the `FinancialRecord` entity.
 
 ### Financial Ledger Properties
 - **Team**: The owner team whose wallet changed.

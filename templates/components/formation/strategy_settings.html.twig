@@ -1,10 +1,10 @@
 {# templates/components/formation/strategy_settings.html.twig #}
-<div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6 relative overflow-hidden">
-    <div class="absolute -right-16 -top-16 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="hero-panel formation-section relative overflow-hidden">
+    <div class="panel-accent-glow panel-accent-glow--sm"></div>
 
     <div class="space-y-2">
-        <h3 class="text-base font-bold text-white">{{ 'formation.match_strategy'|trans }}</h3>
-        <p class="text-xs text-gray-555">{{ 'formation.match_strategy_desc'|trans }}</p>
+        <h3 class="formation-strategy__title">{{ 'formation.match_strategy'|trans }}</h3>
+        <p class="formation-strategy__desc">{{ 'formation.match_strategy_desc'|trans }}</p>
     </div>
 
     {# Formation Name Input #}
@@ -17,9 +17,9 @@
     </div>
 
     {# Tactical Approach Radio Group #}
-    <div class="space-y-3">
-        <span class="block text-[10px] font-extrabold text-gray-555 uppercase tracking-wide">{{ 'formation.prematch_approach'|trans }}</span>
-        <div class="space-y-2">
+    <div class="formation-section">
+        <span class="section-label--xs">{{ 'formation.prematch_approach'|trans }}</span>
+        <div class="formation-section">
             {% set approaches = [
                 {key: 'aggressive', label: 'formation.tactics_aggressive'|trans, desc: 'formation.tactics_aggressive_desc'|trans},
                 {key: 'balanced', label: 'formation.tactics_balanced'|trans, desc: 'formation.tactics_balanced_desc'|trans},
@@ -27,13 +27,14 @@
             ] %}
 
             {% for app in approaches %}
-                <label class="flex items-start gap-3 bg-gray-950/40 border border-gray-850 p-3 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+                {% set approach_selected = (selected_formation and selected_formation.approach.value == app.key) or (not selected_formation and app.key == 'balanced') %}
+                <label class="tactic-option{% if approach_selected %} tactic-option--selected{% endif %}">
                     <input type="radio" data-formation-target="approachRadio" name="approach" value="{{ app.key }}"
-                           class="mt-1 text-emerald-500 focus:ring-emerald-500"
-                           {% if selected_formation and selected_formation.approach.value == app.key %}checked{% elseif not selected_formation and app.key == 'balanced' %}checked{% endif %}>
+                           class="mt-1 form-control-accent"
+                           {% if approach_selected %}checked{% endif %}>
                     <div class="space-y-0.5">
-                        <span class="block text-xs font-bold text-gray-200">{{ app.label }}</span>
-                        <p class="text-[10px] text-gray-500 leading-tight">{{ app.desc }}</p>
+                        <span class="tactic-option__title">{{ app.label }}</span>
+                        <p class="tactic-option__desc">{{ app.desc }}</p>
                     </div>
                 </label>
             {% endfor %}
@@ -43,12 +44,12 @@
     {# Set as default checkbox #}
     <div class="form-check">
         <input type="checkbox" id="set-default" data-formation-target="defaultCheckbox"
-               class="rounded text-emerald-500 focus:ring-emerald-500 bg-gray-950 border-gray-850"
+               class="rounded form-control-accent"
                {% if selected_formation and selected_formation.isDefault %}checked{% endif %}>
         <label for="set-default" class="cursor-pointer">{{ 'formation.set_default'|trans }}</label>
     </div>
 
-    <div class="border-t border-gray-850 pt-4 flex justify-end">
+    <div class="formation-strategy__footer">
         <button type="button"
                 data-action="click->formation#save"
                 class="btn btn-primary px-6 py-2.5 font-bold uppercase tracking-wider text-xs shadow-md shadow-emerald-950/10">

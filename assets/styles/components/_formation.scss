@@ -1,0 +1,107 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  FORMATION — pitch slots, hero pool, tactics
+// =============================================================================
+
+@layer components {
+  .formation-section {
+    @apply space-y-4;
+  }
+
+  .formation-pitch {
+    @apply grid gap-3;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .formation-slot {
+    @apply relative flex flex-col justify-between items-center text-center min-h-[140px] p-3 rounded-2xl shadow-sm;
+    background-color: color-mix(in srgb, var(--color-surface-base) 65%, transparent);
+    border: 1px solid var(--color-border);
+
+    &__remove-btn {
+      @apply absolute -right-1 -top-1 w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-extrabold transition-colors;
+      background-color: color-mix(in srgb, var(--color-error-bg) 70%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-error-border) 40%, transparent);
+      color: var(--color-error-text);
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--color-error-bg);
+        color: var(--color-text-primary);
+      }
+    }
+  }
+
+  .formation-pool {
+    @apply space-y-3 max-h-[350px] overflow-y-auto pr-1;
+  }
+
+  .formation-pool-item {
+    @apply flex items-center justify-between text-xs p-3 rounded-xl transition-opacity;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+
+    &--assigned {
+      opacity: 0.4;
+    }
+  }
+
+  .formation-assigned-badge {
+    @apply text-[8px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider;
+    background-color: color-mix(in srgb, var(--color-success-bg) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-success-border) 45%, transparent);
+    color: var(--color-success-text);
+  }
+
+  .tactic-option {
+    @apply flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors;
+    border-color: var(--color-border);
+    background-color: color-mix(in srgb, var(--color-surface-raised) 30%, transparent);
+
+    &:hover {
+      border-color: var(--color-border-strong);
+    }
+
+    &--selected {
+      border-color: var(--color-brand-400);
+      background-color: color-mix(in srgb, var(--color-brand-500) 8%, transparent);
+    }
+  }
+}
+
+.formation-slot__pos-label {
+  @apply text-[9px] font-extrabold uppercase tracking-wider mb-2;
+  color: var(--color-text-muted);
+}
+.formation-slot__quick-select { @apply w-full rounded text-[10px] p-1 select-none; }
+.formation-slot__hero-name { @apply text-xs font-bold truncate w-full; color: var(--color-text-primary); }
+.formation-slot__hero-details { @apply text-[9px]; color: var(--color-text-muted); }
+.formation-strategy__title { @apply text-base font-bold; color: var(--color-text-primary); }
+.formation-strategy__desc { @apply text-xs; color: var(--color-text-muted); }
+.tactic-option__title { @apply block text-xs font-bold; color: var(--color-text-primary); }
+.tactic-option__desc { @apply text-[10px] leading-tight; color: var(--color-text-muted); }
+.form-control-accent { accent-color: var(--color-brand-500); }
+.formation-strategy__footer { @apply border-t pt-4 flex justify-end; border-color: var(--color-border); }
+
+.formation-pitch-board__line-label {
+  @apply block text-[9px] font-extrabold uppercase tracking-wide text-center;
+  color: var(--color-text-muted);
+}
+.formation-pool-item__name {
+  @apply font-bold;
+  color: var(--color-text-primary);
+}
+.formation-pool-item__meta {
+  @apply text-[9px];
+  color: var(--color-text-muted);
+}
+.formation-pool-empty {
+  @apply text-center py-6 select-none italic text-xs;
+  color: var(--color-text-muted);
+}
+

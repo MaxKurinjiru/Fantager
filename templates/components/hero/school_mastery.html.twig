@@ -1,8 +1,8 @@
 {# templates/components/hero/school_mastery.html.twig #}
-<div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6">
+<div class="hero-panel space-y-6">
     <div>
-        <h2 class="text-xl font-bold text-white mb-0.5">{{ 'heroes.school_mastery'|trans }}</h2>
-        <p class="text-xs text-gray-500">{{ 'heroes.school_mastery_desc'|trans }}</p>
+        <h2 class="hero-panel__title">{{ 'heroes.school_mastery'|trans }}</h2>
+        <p class="hero-panel__desc">{{ 'heroes.school_mastery_desc'|trans }}</p>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
@@ -15,7 +15,7 @@
                     {% endif %}
             {% endfor %}
             
-            <div class="bg-gray-950 p-2.5 rounded-xl border border-gray-850 flex items-center gap-2 justify-between">
+            <div class="hero-school-mastery__cell">
                 <div class="flex items-center gap-1.5">
                     <span class="text-lg">
                         {% if school == 'fire' %}🔥
@@ -25,9 +25,9 @@
                         {% elseif school == 'light' %}☀️
                         {% else %}🌙{% endif %}
                     </span>
-                    <span class="text-xs font-bold text-gray-300">{{ ('school.' ~ school)|trans }}</span>
+                    <span class="hero-school-mastery__label">{{ ('school.' ~ school)|trans }}</span>
                 </div>
-                <span class="text-[10px] font-extrabold bg-gray-900 border border-gray-800 text-gray-400 px-2 py-0.5 rounded">T{{ mastery_tier }}</span>
+                <span class="hero-school-mastery__tier">T{{ mastery_tier }}</span>
             </div>
         {% endfor %}
     </div>

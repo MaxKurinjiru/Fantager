@@ -44,7 +44,7 @@ class EconomyService
         }
 
         $team->setGold($team->getGold() - $amount);
-        $this->recordTransaction($team, $type, $actor, -$amount, 0, 0, 0, 0, 0, 0, 0, $context);
+        $this->recordTransaction($team, $type, $actor, -$amount, 0, 0, 0, 0, 0, 0, $context);
     }
 
     /**
@@ -64,53 +64,7 @@ class EconomyService
         }
 
         $team->setGold($team->getGold() + $amount);
-        $this->recordTransaction($team, $type, $actor, $amount, 0, 0, 0, 0, 0, 0, 0, $context);
-    }
-
-    /**
-     * Deduct crystals from team. Throws if insufficient funds.
-     *
-     * @param array<string, mixed> $context
-     *
-     * @throws \DomainException
-     */
-    public function deductCrystals(
-        Team $team,
-        int $amount,
-        FinancialRecordType $type,
-        FinancialRecordActor $actor,
-        array $context = [],
-    ): void {
-        if ($amount <= 0) {
-            throw new \InvalidArgumentException('Deduction amount must be positive.');
-        }
-
-        if ($team->getCrystals() < $amount) {
-            throw new \DomainException(sprintf('Insufficient crystals. Required: %d, available: %d.', $amount, $team->getCrystals()));
-        }
-
-        $team->setCrystals($team->getCrystals() - $amount);
-        $this->recordTransaction($team, $type, $actor, 0, -$amount, 0, 0, 0, 0, 0, 0, $context);
-    }
-
-    /**
-     * Add crystals to team.
-     *
-     * @param array<string, mixed> $context
-     */
-    public function addCrystals(
-        Team $team,
-        int $amount,
-        FinancialRecordType $type,
-        FinancialRecordActor $actor,
-        array $context = [],
-    ): void {
-        if ($amount <= 0) {
-            throw new \InvalidArgumentException('Addition amount must be positive.');
-        }
-
-        $team->setCrystals($team->getCrystals() + $amount);
-        $this->recordTransaction($team, $type, $actor, 0, $amount, 0, 0, 0, 0, 0, 0, $context);
+        $this->recordTransaction($team, $type, $actor, $amount, 0, 0, 0, 0, 0, 0, $context);
     }
 
     /**
@@ -165,7 +119,7 @@ class EconomyService
                 throw new \InvalidArgumentException(sprintf('Unknown essence rarity "%s".', $rarity));
         }
 
-        $this->recordTransaction($team, $type, $actor, 0, 0, $common, $uncommon, $rare, $epic, $legendary, $mythic, $context);
+        $this->recordTransaction($team, $type, $actor, 0, $common, $uncommon, $rare, $epic, $legendary, $mythic, $context);
     }
 
     /**
@@ -240,7 +194,7 @@ class EconomyService
                 throw new \InvalidArgumentException(sprintf('Unknown essence rarity "%s".', $rarity));
         }
 
-        $this->recordTransaction($team, $type, $actor, 0, 0, $common, $uncommon, $rare, $epic, $legendary, $mythic, $context);
+        $this->recordTransaction($team, $type, $actor, 0, $common, $uncommon, $rare, $epic, $legendary, $mythic, $context);
     }
 
     /**
@@ -259,7 +213,6 @@ class EconomyService
         FinancialRecordType $type,
         FinancialRecordActor $actor,
         int $goldChange = 0,
-        int $crystalsChange = 0,
         int $essenceCommonChange = 0,
         int $essenceUncommonChange = 0,
         int $essenceRareChange = 0,
@@ -273,7 +226,6 @@ class EconomyService
         $record->setType($type);
         $record->setActor($actor);
         $record->setGoldChange($goldChange);
-        $record->setCrystalsChange($crystalsChange);
         $record->setEssenceCommonChange($essenceCommonChange);
         $record->setEssenceUncommonChange($essenceUncommonChange);
         $record->setEssenceRareChange($essenceRareChange);

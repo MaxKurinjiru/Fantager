@@ -2,31 +2,29 @@
 {% set maxSlots = trainingService.getTrainerSlotsLimit(trainer) %}
 {% set occupiedSlots = trainer.heroes|length %}
 
-<div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-6 flex flex-col justify-between">
-    <div class="space-y-6">
-        {# Trainer Identity #}
-        <div class="flex items-start justify-between border-b border-gray-850 pb-4">
-            <div class="flex gap-3 items-center">
-                <span class="text-3xl select-none">👨‍🏫</span>
+<div class="trainer-card">
+    <div class="trainer-card__main">
+        <div class="trainer-card__header">
+            <div class="trainer-card__identity">
+                <span class="trainer-card__emoji" aria-hidden="true">👨‍🏫</span>
                 <div>
-                    <h3 class="font-extrabold text-white text-lg leading-tight">{{ trainer.name }}</h3>
-                    <span class="text-[10px] text-gray-550 uppercase font-semibold tracking-wider">
+                    <h3 class="trainer-card__name">{{ trainer.name }}</h3>
+                    <span class="trainer-card__meta">
                         {{ trainer.race.value|capitalize }} &bull; {{ 'heroes.primary_attrs'|trans }} {{ 'training.average'|trans }}: T{{ (trainer.str + trainer.dex + trainer.kon + trainer.spd + trainer.intel + trainer.wil + trainer.cha + trainer.lck) // 8 }}
                     </span>
                 </div>
             </div>
-            <span class="bg-emerald-950/40 border border-emerald-850 text-emerald-400 text-[9px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+            <span class="trainer-slot-badge">
                 {{ 'training.trainer_slots'|trans({'%occupied%': occupiedSlots, '%limit%': maxSlots}) }}
             </span>
         </div>
 
-        {# Focus Settings #}
-        <div class="space-y-3">
-            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ 'training.training_focus'|trans }}</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="trainer-card__section">
+            <h4 class="trainer-card__section-title">{{ 'training.training_focus'|trans }}</h4>
+            <div class="trainer-card__focus-grid">
                 <div>
-                    <label class="form-label text-[10px]">{{ 'training.type'|trans }}</label>
-                    <select class="form-input text-xs font-medium" 
+                    <label for="trainer-type-{{ trainer.id }}" class="form-label">{{ 'training.type'|trans }}</label>
+                    <select id="trainer-type-{{ trainer.id }}" class="form-input"
                             data-action="change->training#onFocusTypeChange"
                             data-trainer-id="{{ trainer.id }}"
                             {% if isLocked %}disabled{% endif %}>
@@ -36,11 +34,11 @@
                         <option value="form" {% if trainer.trainingType is not null and trainer.trainingType.value == 'form' %}selected{% endif %}>{{ 'training.type_form'|trans }}</option>
                     </select>
                 </div>
-                
+
                 <div class="{% if trainer.trainingType is null or trainer.trainingType.value != 'attribute' %}hidden{% endif %}"
                      data-training-attr-select-container="{{ trainer.id }}">
-                    <label class="form-label text-[10px]">{{ 'training.attr_label'|trans }}</label>
-                    <select class="form-input text-xs font-medium"
+                    <label for="trainer-attr-{{ trainer.id }}" class="form-label">{{ 'training.attr_label'|trans }}</label>
+                    <select id="trainer-attr-{{ trainer.id }}" class="form-input"
                             data-trainer-id="{{ trainer.id }}"
                             {% if isLocked %}disabled{% endif %}>
                         {% for attrKey in ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'] %}
@@ -51,42 +49,42 @@
                     </select>
                 </div>
             </div>
-            
-            <button type="button" 
+
+            <button type="button"
                     data-action="click->training#saveTrainerFocus"
                     data-trainer-id="{{ trainer.id }}"
-                    class="btn btn-outline btn--sm py-2 px-4 text-[10px] uppercase font-bold tracking-wider"
+                    class="btn btn-outline btn--sm"
                     {% if isLocked %}disabled{% endif %}>
                 💾 {{ 'training.save_focus'|trans }}
             </button>
         </div>
 
-        {# Trainee Slot List #}
-        <div class="space-y-3">
-            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ 'training.trainees_in_slots'|trans }}</h4>
-            <div class="space-y-2">
+        <div class="trainer-card__section">
+            <h4 class="trainer-card__section-title">{{ 'training.trainees_in_slots'|trans }}</h4>
+            <div class="trainer-card__trainee-list">
                 {% for hero in trainer.heroes %}
-                    <div class="bg-gray-955 border border-gray-850 px-4 py-3 rounded-xl flex items-center justify-between text-xs">
-                        <div class="flex items-center gap-3">
-                            <span class="text-xl select-none">💪</span>
+                    <div class="trainer-card__trainee">
+                        <div class="trainer-card__trainee-info">
+                            <span class="trainer-card__trainee-icon" aria-hidden="true">💪</span>
                             <div>
-                                <span class="font-bold text-white block">{{ hero.name }}</span>
-                                <span class="text-[10px] text-gray-550 font-medium">
+                                <span class="trainer-card__trainee-name">{{ hero.name }}</span>
+                                <span class="trainer-card__trainee-meta">
                                     {{ 'heroes.level'|trans }} {{ hero.level }} &bull; {{ 'heroes.fatigue'|trans }}: {{ hero.fatigue }}% &bull; {{ 'heroes.combat_form'|trans }}: {{ hero.form }}%
                                 </span>
                             </div>
                         </div>
-                        <button type="button" 
+                        <button type="button"
                                 data-action="click->training#unassignTrainee"
                                 data-trainer-id="{{ trainer.id }}"
                                 data-hero-id="{{ hero.id }}"
-                                class="btn btn-outline btn--sm text-red-400 border-red-950/45 hover:border-red-500/20 text-[9px] uppercase tracking-wider py-1 px-2.5"
-                                {% if isLocked %}disabled{% endif %}>
+                                class="btn btn-outline btn--sm"
+                                {% if isLocked %}disabled{% endif %}
+                                aria-label="{{ 'training.unassign_hero'|trans }}">
                             {{ 'training.unassign_hero'|trans }}
                         </button>
                     </div>
                 {% else %}
-                    <div class="text-center py-6 select-none border border-gray-850 border-dashed rounded-xl opacity-60 text-xs text-gray-500">
+                    <div class="trainer-card__trainee-empty">
                         {{ 'training.no_trainer_heroes'|trans }}
                     </div>
                 {% endfor %}
@@ -94,11 +92,10 @@
         </div>
     </div>
 
-    {# Assign Hero to Available Slot #}
     {% if occupiedSlots < maxSlots and not isLocked %}
-        <div class="border-t border-gray-850 pt-4 mt-4 space-y-2">
-            <label class="form-label text-[10px]">{{ 'training.assign_hero'|trans }}</label>
-            <select class="form-input text-xs font-medium"
+        <div class="trainer-card__assign">
+            <label for="trainer-assign-{{ trainer.id }}" class="form-label">{{ 'training.assign_hero'|trans }}</label>
+            <select id="trainer-assign-{{ trainer.id }}" class="form-input"
                     data-action="change->training#assignTrainee"
                     data-trainer-id="{{ trainer.id }}">
                 <option value="">-- {{ 'training.select_trainee'|trans }} --</option>

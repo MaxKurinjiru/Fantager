@@ -125,3 +125,12 @@
         white-space: nowrap;
     }
 }
+
+@layer components {
+  .finance-ledger-table__cell { padding: 1rem; }
+  .finance-ledger-table__cell--right { text-align: right; }
+  .finance-context-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+  .finance-changes { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .finance-ledger__empty { padding: 3rem; text-align: center; color: var(--color-text-muted); }
+  .finance-ledger__empty-icon { @apply text-4xl mb-3 block select-none; }
+}

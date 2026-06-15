@@ -93,7 +93,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Graveyard** | Partially Implemented | Not Implemented | Not Implemented | Permanent death records and entity schemas defined; death triggers and graveyard UI pending (Phase 6). |
 | **Dungeons** | Partially Implemented | Not Implemented | Not Implemented | PvE encounter schemas defined; dungeon runs, rewards, and execution logic pending (Phase 7). |
 | **Quests** | Partially Implemented | Not Implemented | Not Implemented | Quest schemas and player progress tracking defined; quest generation logic pending (Phase 7). |
-| **Crafting** | Partially Implemented | Not Implemented | Implemented | `CraftingService`, queue processor command, and API endpoints; crafting Web UI still planned (Phase 7). |
+| **Crafting** | Planned | Not Implemented | Not Implemented | Design documented; backend and UI removed pending future Phase 7 implementation. |
 | **Arena Management** | Partially Implemented | Implemented | Partial | Home-match revenue model; read-only `/app/arena` UI. Payout on league match tick. Friendly matches pending combat. |
 
 ---

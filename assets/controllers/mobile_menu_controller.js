@@ -4,22 +4,22 @@ export default class extends Controller {
     static targets = ['menu', 'backdrop'];
 
     open() {
-        this.menuTarget.classList.remove('-translate-x-full');
+        this.menuTarget.classList.add('mobile-menu--open');
         this.backdropTarget.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
     }
 
     close() {
-        this.menuTarget.classList.add('-translate-x-full');
+        this.menuTarget.classList.remove('mobile-menu--open');
         this.backdropTarget.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
     }
 
     toggle() {
-        if (this.menuTarget.classList.contains('-translate-x-full')) {
-            this.open();
-        } else {
+        if (this.menuTarget.classList.contains('mobile-menu--open')) {
             this.close();
+        } else {
+            this.open();
         }
     }
 }

@@ -3,20 +3,20 @@
 {% block title %}{{ 'league.title'|trans }} | Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-6">
+<div class="league-page">
     {# Page Header #}
     {% set right_content %}
         {% if season is not null %}
             {# Info Badge #}
-            <div class="bg-gray-900 border border-gray-800 py-1.5 px-3 rounded-md text-xs text-gray-300">
-                <span class="text-gray-550 font-semibold uppercase text-[10px] block">{{ 'auth.kingdom_season'|trans }} {{ season.seasonNumber }}</span>
+            <div class="league-info-badge">
+                <span class="league-info-badge__season">{{ 'auth.kingdom_season'|trans }} {{ season.seasonNumber }}</span>
                 {{ season.startDate|date('d. m. Y') }} — {{ season.endDate|date('d. m. Y') }}
             </div>
 
             {# Group Select Dropdown #}
-            <form method="GET" action="{{ path('app_league') }}" class="flex items-center gap-2">
+            <form method="GET" action="{{ path('app_league') }}" class="league-group-form" data-controller="form-auto-submit">
                 <label for="group-select" class="sr-only">{{ 'league.select_group'|trans }}</label>
-                <select id="group-select" name="groupId" onchange="this.form.submit()" class="form-input py-2 bg-gray-900 border-gray-800 text-sm focus:border-emerald-500">
+                <select id="group-select" name="groupId" data-action="change->form-auto-submit#submit" class="form-input league-group-select">
                     {% for g in groups %}
                         <option value="{{ g.id }}" {% if selectedGroup and selectedGroup.id == g.id %}selected{% endif %}>
                             {{ g.tier.tierName }} — {{ g.groupName }}
@@ -35,17 +35,17 @@
 
     {% if season is null %}
         {# No Active Season State #}
-        <div class="bg-gray-900 border border-gray-800 rounded-lg p-10 text-center max-w-lg mx-auto mt-12">
-            <div class="text-5xl mb-4 select-none">🏆</div>
-            <h3 class="text-lg font-bold text-gray-200 mb-2">{{ 'league.no_active_season'|trans }}</h3>
-            <p class="text-gray-400 text-sm mb-6">{{ 'league.no_active_season_desc'|trans }}</p>
+        <div class="league-empty-state">
+            <div class="league-empty-state__emoji">🏆</div>
+            <h3 class="league-empty-state__title">{{ 'league.no_active_season'|trans }}</h3>
+            <p class="league-empty-state__desc">{{ 'league.no_active_season_desc'|trans }}</p>
             <a href="{{ path('app_dashboard') }}" class="btn btn-primary">{{ 'nav.dashboard'|trans }}</a>
         </div>
     {% else %}
         {# Main League View #}
-        <div data-controller="tab" class="space-y-6">
+        <div data-controller="tab" class="league-page">
             {# Tab Switcher Buttons #}
-            <div class="flex border-b border-gray-800 overflow-x-auto scrollbar-none">
+            <div class="league-tab-nav">
                 <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="tab-standings" class="tab-btn tab-btn--active">
                     🏆 {{ 'league.tab_standings'|trans }}
                 </button>
@@ -58,9 +58,9 @@
             </div>
 
             {# ==================== TAB 1: STANDINGS ==================== #}
-            <div id="tab-standings" class="space-y-4">
+            <div id="tab-standings" class="league-tab-panel">
                 {% if standings is empty %}
-                    <p class="text-sm text-gray-500 text-center py-6">{{ 'league.no_standings'|trans }}</p>
+                    <p class="league-empty-message">{{ 'league.no_standings'|trans }}</p>
                 {% else %}
                     {# Legend / Promotion-Relegation Settings #}
                     {% set groups_count = selectedGroup.tier.groups|length %}
@@ -74,50 +74,50 @@
                     {% set k_releg = (tier_releg / groups_count)|round(0, 'floor') %}
                     {% set rem_releg = tier_releg % groups_count %}
 
-                    <div class="flex flex-wrap gap-4 text-xs text-gray-400 bg-gray-900/40 p-3 rounded border border-gray-800/30">
+                    <div class="league-standings-legend">
                         {% if k_promo > 0 %}
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <div class="league-legend-item">
+                                <span class="league-legend-dot league-legend-dot--promo-direct"></span>
                                 <span>{{ 'league.direct_promotion_zone'|trans }}: {{ 'league.top_x_direct'|trans({'%count%': k_promo}) }}</span>
                             </div>
                         {% endif %}
                         {% if rem_promo > 0 %}
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/40 border border-emerald-400/80"></span>
+                            <div class="league-legend-item">
+                                <span class="league-legend-dot league-legend-dot--promo-possible"></span>
                                 <span>{{ 'league.possible_promotion_zone'|trans }}: {{ 'league.top_x_possible'|trans({'%count%': rem_promo}) }}</span>
                             </div>
                         {% endif %}
                         {% if k_releg > 0 %}
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                            <div class="league-legend-item">
+                                <span class="league-legend-dot league-legend-dot--releg-direct"></span>
                                 <span>{{ 'league.direct_relegation_zone'|trans }}: {{ 'league.bottom_x_direct'|trans({'%count%': k_releg}) }}</span>
                             </div>
                         {% endif %}
                         {% if rem_releg > 0 %}
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/40 border border-rose-400/80"></span>
+                            <div class="league-legend-item">
+                                <span class="league-legend-dot league-legend-dot--releg-possible"></span>
                                 <span>{{ 'league.possible_relegation_zone'|trans }}: {{ 'league.bottom_x_possible'|trans({'%count%': rem_releg}) }}</span>
                             </div>
                         {% endif %}
                     </div>
 
                     {# Table #}
-                    <div class="overflow-x-auto bg-gray-900 border border-gray-800 rounded-lg">
-                        <table class="w-full text-left border-collapse">
+                    <div class="league-table-wrap">
+                        <table class="league-table">
                             <thead>
-                                <tr class="border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase bg-gray-900/80">
-                                    <th class="py-3 px-4 w-16 text-center">{{ 'league.col_rank'|trans }}</th>
-                                    <th class="py-3 px-4">{{ 'league.col_team'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-16">{{ 'league.col_played'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-16">{{ 'league.col_wins'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-16">{{ 'league.col_draws'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-16">{{ 'league.col_losses'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-20">{{ 'league.col_diff'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-20">{{ 'league.col_points'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-40">{{ 'league.col_form'|trans }}</th>
+                                <tr>
+                                    <th class="league-table__col--rank">{{ 'league.col_rank'|trans }}</th>
+                                    <th>{{ 'league.col_team'|trans }}</th>
+                                    <th class="league-table__col--stat">{{ 'league.col_played'|trans }}</th>
+                                    <th class="league-table__col--stat">{{ 'league.col_wins'|trans }}</th>
+                                    <th class="league-table__col--stat">{{ 'league.col_draws'|trans }}</th>
+                                    <th class="league-table__col--stat">{{ 'league.col_losses'|trans }}</th>
+                                    <th class="league-table__col--stat-wide">{{ 'league.col_diff'|trans }}</th>
+                                    <th class="league-table__col--stat-wide">{{ 'league.col_points'|trans }}</th>
+                                    <th class="league-table__col--form">{{ 'league.col_form'|trans }}</th>
                                 </tr>
                             </thead>
-                            <tbody class="text-sm divide-y divide-gray-800/50">
+                            <tbody>
                                 {% for standing in standings %}
                                     {% set is_own_team = standing.team.id == team.id %}
                                     {% set is_direct_promo = loop.index <= k_promo %}
@@ -125,66 +125,66 @@
                                     {% set is_direct_releg = loop.index > (total_teams - k_releg) %}
                                     {% set is_possible_releg = (rem_releg > 0) and (loop.index == (total_teams - k_releg)) %}
 
-                                    <tr class="transition-colors {% if is_own_team %}bg-emerald-500/10 text-emerald-400 font-bold border-l-4 border-emerald-500{% else %}hover:bg-gray-800/30{% endif %}">
+                                    <tr class="standings-row{% if is_own_team %} standings-row--own{% endif %}">
                                         {# Rank / Position #}
-                                        <td class="py-3.5 px-4 text-center font-mono">
-                                            <div class="flex items-center justify-center gap-1">
+                                        <td class="standings-row__cell--dense standings-row__rank">
+                                            <div class="standings-row__rank-inner">
                                                 {% if is_direct_promo %}
-                                                    <span class="text-emerald-500 text-xs font-semibold" title="{{ 'league.direct_promotion_zone'|trans }}">▲</span>
+                                                    <span class="standings-row__indicator standings-row__indicator--promo-direct" title="{{ 'league.direct_promotion_zone'|trans }}">▲</span>
                                                 {% elseif is_possible_promo %}
-                                                    <span class="text-emerald-400/50 text-xs font-semibold" title="{{ 'league.possible_promotion_zone'|trans }}">▲</span>
+                                                    <span class="standings-row__indicator standings-row__indicator--promo-possible" title="{{ 'league.possible_promotion_zone'|trans }}">▲</span>
                                                 {% elseif is_direct_releg %}
-                                                    <span class="text-rose-500 text-xs font-semibold" title="{{ 'league.direct_relegation_zone'|trans }}">▼</span>
+                                                    <span class="standings-row__indicator standings-row__indicator--releg-direct" title="{{ 'league.direct_relegation_zone'|trans }}">▼</span>
                                                 {% elseif is_possible_releg %}
-                                                    <span class="text-rose-400/50 text-xs font-semibold" title="{{ 'league.possible_relegation_zone'|trans }}">▼</span>
+                                                    <span class="standings-row__indicator standings-row__indicator--releg-possible" title="{{ 'league.possible_relegation_zone'|trans }}">▼</span>
                                                 {% endif %}
                                                 {{ loop.index }}
                                             </div>
                                         </td>
                                         
                                         {# Team Name #}
-                                        <td class="py-3.5 px-4">
-                                            <div class="flex items-center gap-2">
+                                        <td class="standings-row__cell--dense">
+                                            <div class="standings-row__team-inner">
                                                 {% if standing.team.emblem %}
-                                                    <span class="text-base select-none">{{ standing.team.emblem }}</span>
+                                                    <span class="standings-row__emblem">{{ standing.team.emblem }}</span>
                                                 {% else %}
-                                                    <span class="text-base select-none">🛡️</span>
+                                                    <span class="standings-row__emblem">🛡️</span>
                                                 {% endif %}
                                                 <span>{{ standing.team.name }}</span>
                                                 {% if standing.team.isNpc %}
-                                                    <span class="text-[9px] bg-gray-800 text-gray-500 px-1 py-0.5 rounded font-mono uppercase">{{ 'dashboard.npc'|trans }}</span>
+                                                    <span class="league-npc-tag">{{ 'dashboard.npc'|trans }}</span>
                                                 {% endif %}
                                             </div>
                                         </td>
                                         
                                         {# Stats #}
-                                        <td class="py-3.5 px-4 text-center font-mono text-gray-300">{{ standing.played }}</td>
-                                        <td class="py-3.5 px-4 text-center font-mono text-gray-300">{{ standing.wins }}</td>
-                                        <td class="py-3.5 px-4 text-center font-mono text-gray-300">{{ standing.draws }}</td>
-                                        <td class="py-3.5 px-4 text-center font-mono text-gray-300">{{ standing.losses }}</td>
+                                        <td class="standings-row__cell--dense standings-row__stat">{{ standing.played }}</td>
+                                        <td class="standings-row__cell--dense standings-row__stat">{{ standing.wins }}</td>
+                                        <td class="standings-row__cell--dense standings-row__stat">{{ standing.draws }}</td>
+                                        <td class="standings-row__cell--dense standings-row__stat">{{ standing.losses }}</td>
                                         
                                         {# Goal Diff #}
-                                        <td class="py-3.5 px-4 text-center font-mono {% if standing.goalDifference > 0 %}text-emerald-500{% elseif standing.goalDifference < 0 %}text-rose-500{% else %}text-gray-400{% endif %}">
+                                        <td class="standings-row__cell--dense league-goal-diff{% if standing.goalDifference > 0 %} league-goal-diff--positive{% elseif standing.goalDifference < 0 %} league-goal-diff--negative{% else %} league-goal-diff--neutral{% endif %}">
                                             {{ standing.goalDifference > 0 ? '+' : '' }}{{ standing.goalDifference }}
                                         </td>
                                         
                                         {# Points #}
-                                        <td class="py-3.5 px-4 text-center font-mono font-bold text-gray-200">{{ standing.points }}</td>
+                                        <td class="standings-row__cell--dense standings-row__points">{{ standing.points }}</td>
                                         
                                         {# Form #}
-                                        <td class="py-3.5 px-4">
-                                            <div class="flex items-center justify-center gap-1.5">
+                                        <td class="standings-row__cell--dense">
+                                            <div class="league-form-badges">
                                                 {% set team_form = forms[standing.team.id] ?? [] %}
                                                 {% if team_form is empty %}
-                                                    <span class="text-xs text-gray-600">—</span>
+                                                    <span class="league-form-empty">—</span>
                                                 {% else %}
                                                     {% for result in team_form %}
                                                         {% if result == 'W' %}
-                                                            <span class="w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/30 cursor-default" title="{{ 'finance.actor_active'|trans }}">W</span>
+                                                            <span class="league-form-badge league-form-badge--win" title="{{ 'finance.actor_active'|trans }}">W</span>
                                                         {% elseif result == 'D' %}
-                                                            <span class="w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full bg-gray-800 text-gray-400 border border-gray-700/30 cursor-default" title="{{ 'finance.actor_passive'|trans }}">D</span>
+                                                            <span class="league-form-badge league-form-badge--draw" title="{{ 'finance.actor_passive'|trans }}">D</span>
                                                         {% else %}
-                                                            <span class="w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full bg-rose-950 text-rose-400 border border-rose-800/30 cursor-default" title="{{ 'flash.invalid_credentials'|trans }}">L</span>
+                                                            <span class="league-form-badge league-form-badge--loss" title="{{ 'flash.invalid_credentials'|trans }}">L</span>
                                                         {% endif %}
                                                     {% endfor %}
                                                 {% endif %}
@@ -200,34 +200,34 @@
 
             {# ==================== TAB 2: FIXTURES ==================== #}
             <div id="tab-fixtures" class="hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="league-fixtures-grid">
                     {# My Matches (Left) #}
-                    <div class="space-y-4">
-                        <h3 class="text-base font-bold text-emerald-400 border-b border-gray-800 pb-2">
+                    <div class="league-section">
+                        <h3 class="league-section__title">
                             👤 {{ 'league.my_fixtures'|trans }}
                         </h3>
                         
                         {% if myFixtures is empty %}
-                            <p class="text-sm text-gray-500 text-center py-6">{{ 'dashboard.no_matches'|trans }}</p>
+                            <p class="league-empty-message">{{ 'dashboard.no_matches'|trans }}</p>
                         {% else %}
-                            <div class="space-y-2.5">
+                            <div class="fixture-list">
                                 {% for f in myFixtures %}
                                     {% set is_home = f.homeTeam.id == team.id %}
                                     {% set is_completed = f.status.value == 'completed' %}
                                     
-                                    <div class="bg-gray-900 border border-gray-800 rounded p-4 flex flex-col sm:flex-row items-center justify-between gap-4 {% if is_completed %}opacity-80{% endif %}">
-                                        <div class="text-xs text-gray-500">
-                                            <span class="block font-semibold uppercase text-[9px] text-gray-400">
+                                    <div class="fixture-card{% if is_completed %} fixture-card--completed{% endif %}">
+                                        <div class="fixture-card__date">
+                                            <span class="fixture-card__date-day">
                                                 {{ f.scheduledAt|date('d. m. Y') }}
                                             </span>
                                             {{ f.scheduledAt|date('H:i') }}
                                         </div>
                                         
                                         {# Match Score Board #}
-                                        <div class="flex items-center justify-center gap-3 text-sm flex-1">
-                                            <span class="font-medium text-right flex-1 {% if is_home %}text-emerald-400 font-bold{% endif %}">{{ f.homeTeam.name }}</span>
+                                        <div class="fixture-card__matchup">
+                                            <span class="fixture-card__team fixture-card__team--home{% if is_home %} fixture-card__team--highlight{% endif %}">{{ f.homeTeam.name }}</span>
                                             
-                                            <span class="px-2.5 py-1 bg-gray-950 rounded border border-gray-800 font-mono text-xs font-semibold text-gray-300">
+                                            <span class="fixture-card__score">
                                                 {% if is_completed and f.battle %}
                                                     {{ f.battle.scoreA }} — {{ f.battle.scoreB }}
                                                 {% else %}
@@ -235,16 +235,16 @@
                                                 {% endif %}
                                             </span>
                                             
-                                            <span class="font-medium text-left flex-1 {% if not is_home %}text-emerald-400 font-bold{% endif %}">{{ f.awayTeam.name }}</span>
+                                            <span class="fixture-card__team fixture-card__team--away{% if not is_home %} fixture-card__team--highlight{% endif %}">{{ f.awayTeam.name }}</span>
                                         </div>
                                         
                                         <div>
                                             {% if is_completed and f.battle %}
-                                                <span class="text-[10px] bg-gray-800 text-gray-400 py-1 px-2.5 rounded font-medium select-none uppercase">
+                                                <span class="fixture-card__status fixture-card__status--completed">
                                                     {{ 'training.status.completed'|trans }}
                                                 </span>
                                             {% else %}
-                                                <span class="text-[10px] bg-emerald-950/40 text-emerald-400 border border-emerald-800/20 py-1 px-2.5 rounded font-medium select-none uppercase">
+                                                <span class="fixture-card__status fixture-card__status--pending">
                                                     {{ 'training.status.pending'|trans }}
                                                 </span>
                                             {% endif %}
@@ -256,15 +256,15 @@
                     </div>
 
                     {# Group Fixtures by Round (Right) #}
-                    <div class="space-y-4">
-                        <h3 class="text-base font-bold text-emerald-400 border-b border-gray-800 pb-2">
+                    <div class="league-section">
+                        <h3 class="league-section__title">
                             🏆 {{ 'league.group_fixtures'|trans }}
                         </h3>
 
                         {% if fixtures is empty %}
-                            <p class="text-sm text-gray-500 text-center py-6">{{ 'dashboard.no_matches'|trans }}</p>
+                            <p class="league-empty-message">{{ 'dashboard.no_matches'|trans }}</p>
                         {% else %}
-                            <div class="space-y-6 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="fixture-list-scroll">
                                 {% set current_date = null %}
                                 {% set round_count = 0 %}
                                 {% for f in fixtures %}
@@ -272,19 +272,19 @@
                                     {% if f_date != current_date %}
                                         {% set current_date = f_date %}
                                         {% set round_count = round_count + 1 %}
-                                        <div class="border-b border-gray-800 pb-2 pt-2 first:pt-0">
-                                            <h4 class="text-xs font-bold text-emerald-500/80 uppercase tracking-wide">
+                                        <div class="fixture-round-header">
+                                            <h4 class="fixture-round-header__title">
                                                 {{ 'league.round'|trans }} {{ round_count }} — {{ f.scheduledAt|date('d. m. Y H:i') }}
                                             </h4>
                                         </div>
                                     {% endif %}
 
-                                    <div class="flex items-center justify-between py-2 px-3 rounded hover:bg-gray-800/20 text-xs border border-transparent hover:border-gray-800/40 gap-2">
-                                        <div class="w-5/12 text-right truncate {% if f.homeTeam.id == team.id %}font-bold text-emerald-400{% endif %}" title="{{ f.homeTeam.name }}">
+                                    <div class="fixture-row">
+                                        <div class="fixture-row__team fixture-row__team--home{% if f.homeTeam.id == team.id %} fixture-row__team--highlight{% endif %}" title="{{ f.homeTeam.name }}">
                                             {{ f.homeTeam.name }}
                                         </div>
                                         
-                                        <div class="w-2/12 text-center bg-gray-950 py-0.5 px-2 rounded font-mono text-[11px] text-gray-400 border border-gray-800/50">
+                                        <div class="fixture-row__score">
                                             {% if f.status.value == 'completed' and f.battle %}
                                                 {{ f.battle.scoreA }}-{{ f.battle.scoreB }}
                                             {% else %}
@@ -292,7 +292,7 @@
                                             {% endif %}
                                         </div>
                                         
-                                        <div class="w-5/12 text-left truncate {% if f.awayTeam.id == team.id %}font-bold text-emerald-400{% endif %}" title="{{ f.awayTeam.name }}">
+                                        <div class="fixture-row__team fixture-row__team--away{% if f.awayTeam.id == team.id %} fixture-row__team--highlight{% endif %}" title="{{ f.awayTeam.name }}">
                                             {{ f.awayTeam.name }}
                                         </div>
                                     </div>
@@ -304,54 +304,54 @@
             </div>
 
             {# ==================== TAB 3: GLOBAL LEADERBOARD ==================== #}
-            <div id="tab-leaderboard" class="hidden space-y-4">
+            <div id="tab-leaderboard" class="hidden league-tab-panel">
                 {% if globalLeaderboard is empty %}
-                    <p class="text-sm text-gray-500 text-center py-6">{{ 'league.no_standings'|trans }}</p>
+                    <p class="league-empty-message">{{ 'league.no_standings'|trans }}</p>
                 {% else %}
-                    <div class="overflow-x-auto bg-gray-900 border border-gray-800 rounded-lg">
-                        <table class="w-full text-left border-collapse">
+                    <div class="league-table-wrap">
+                        <table class="league-table">
                             <thead>
-                                <tr class="border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase bg-gray-900/80">
-                                    <th class="py-3 px-4 w-16 text-center">{{ 'league.col_rank'|trans }}</th>
-                                    <th class="py-3 px-4">{{ 'league.col_team'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-24">{{ 'auth.choose_kingdom'|trans }} Tier</th>
-                                    <th class="py-3 px-4 text-center w-32">{{ 'league.col_group'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-20">{{ 'league.col_played'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-20">{{ 'league.col_wins'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-20">{{ 'league.col_draws'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-20">{{ 'league.col_losses'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-24">{{ 'league.col_diff'|trans }}</th>
-                                    <th class="py-3 px-4 text-center w-24 font-bold">{{ 'league.col_points'|trans }}</th>
+                                <tr>
+                                    <th class="league-table__col--rank">{{ 'league.col_rank'|trans }}</th>
+                                    <th>{{ 'league.col_team'|trans }}</th>
+                                    <th class="league-table__col--tier">{{ 'auth.choose_kingdom'|trans }} Tier</th>
+                                    <th class="league-table__col--group">{{ 'league.col_group'|trans }}</th>
+                                    <th class="league-table__col--stat-wide">{{ 'league.col_played'|trans }}</th>
+                                    <th class="league-table__col--stat-wide">{{ 'league.col_wins'|trans }}</th>
+                                    <th class="league-table__col--stat-wide">{{ 'league.col_draws'|trans }}</th>
+                                    <th class="league-table__col--stat-wide">{{ 'league.col_losses'|trans }}</th>
+                                    <th class="league-table__col--tier">{{ 'league.col_diff'|trans }}</th>
+                                    <th class="league-table__col--points">{{ 'league.col_points'|trans }}</th>
                                 </tr>
                             </thead>
-                            <tbody class="text-sm divide-y divide-gray-800/50">
+                            <tbody>
                                 {% for standing in globalLeaderboard %}
                                     {% set is_own_team = standing.team.id == team.id %}
-                                    <tr class="transition-colors {% if is_own_team %}bg-emerald-500/10 text-emerald-400 font-bold border-l-4 border-emerald-500{% else %}hover:bg-gray-800/30{% endif %}">
-                                        <td class="py-3 px-4 text-center font-mono text-gray-400">{{ loop.index }}</td>
+                                    <tr class="standings-row{% if is_own_team %} standings-row--own{% endif %}">
+                                        <td class="standings-row__stat-muted">{{ loop.index }}</td>
                                         <td class="py-3 px-4">
-                                            <div class="flex items-center gap-2">
+                                            <div class="standings-row__team-inner">
                                                 {% if standing.team.emblem %}
-                                                    <span class="text-base select-none">{{ standing.team.emblem }}</span>
+                                                    <span class="standings-row__emblem">{{ standing.team.emblem }}</span>
                                                 {% else %}
-                                                    <span class="text-base select-none">🛡️</span>
+                                                    <span class="standings-row__emblem">🛡️</span>
                                                 {% endif %}
                                                 <span>{{ standing.team.name }}</span>
                                                 {% if standing.team.isNpc %}
-                                                    <span class="text-[9px] bg-gray-800 text-gray-500 px-1 py-0.5 rounded font-mono uppercase">{{ 'dashboard.npc'|trans }}</span>
+                                                    <span class="league-npc-tag">{{ 'dashboard.npc'|trans }}</span>
                                                 {% endif %}
                                             </div>
                                         </td>
-                                        <td class="py-3 px-4 text-center text-gray-300">{{ standing.group.tier.tierName }}</td>
-                                        <td class="py-3 px-4 text-center text-gray-300">{{ standing.group.groupName }}</td>
-                                        <td class="py-3 px-4 text-center font-mono text-gray-400">{{ standing.played }}</td>
-                                        <td class="py-3 px-4 text-center font-mono text-gray-400">{{ standing.wins }}</td>
-                                        <td class="py-3 px-4 text-center font-mono text-gray-400">{{ standing.draws }}</td>
-                                        <td class="py-3 px-4 text-center font-mono text-gray-400">{{ standing.losses }}</td>
-                                        <td class="py-3 px-4 text-center font-mono {% if standing.goalDifference > 0 %}text-emerald-500{% elseif standing.goalDifference < 0 %}text-rose-500{% else %}text-gray-400{% endif %}">
+                                        <td class="standings-row__stat">{{ standing.group.tier.tierName }}</td>
+                                        <td class="standings-row__stat">{{ standing.group.groupName }}</td>
+                                        <td class="standings-row__stat-muted">{{ standing.played }}</td>
+                                        <td class="standings-row__stat-muted">{{ standing.wins }}</td>
+                                        <td class="standings-row__stat-muted">{{ standing.draws }}</td>
+                                        <td class="standings-row__stat-muted">{{ standing.losses }}</td>
+                                        <td class="league-goal-diff{% if standing.goalDifference > 0 %} league-goal-diff--positive{% elseif standing.goalDifference < 0 %} league-goal-diff--negative{% else %} league-goal-diff--neutral{% endif %}">
                                             {{ standing.goalDifference > 0 ? '+' : '' }}{{ standing.goalDifference }}
                                         </td>
-                                        <td class="py-3 px-4 text-center font-mono font-bold text-gray-200">{{ standing.points }}</td>
+                                        <td class="standings-row__points">{{ standing.points }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

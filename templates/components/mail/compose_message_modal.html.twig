@@ -1,0 +1,54 @@
+{# templates/components/mail/compose_message_modal.html.twig #}
+<div id="compose-message-modal" data-controller="modal" data-mail-target="composeModal" data-modal-event-name-value="modal:open-compose">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay modal-overlay--stacked"
+         data-action="click->modal#closeBackdrop">
+
+        <div class="modal-box p-8"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="mail-compose-message-title">
+
+            <button type="button"
+                    data-action="click->modal#close"
+                    class="modal-close"
+                    aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="text-xl leading-none">✕</span>
+                <span class="sr-only">{{ 'modal.close'|trans }}</span>
+            </button>
+
+            <div class="modal-header">
+                <h2 id="mail-compose-message-title" class="modal-header__title">{{ 'community.compose_title'|trans }}</h2>
+            </div>
+
+            <div class="modal-body">
+                <div>
+                    <label for="mail-message-recipient" class="form-label">{{ 'community.recipient_label'|trans }}</label>
+                    <select id="mail-message-recipient" class="form-input" data-mail-target="composeRecipient">
+                        <option value="">-- {{ 'community.select_recipient'|trans }} --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="mail-message-subject" class="form-label">{{ 'community.subject'|trans }}</label>
+                    <input id="mail-message-subject" type="text" class="form-input" data-mail-target="composeSubject" required>
+                </div>
+
+                <div>
+                    <label for="mail-message-body" class="form-label">{{ 'community.body'|trans }}</label>
+                    <textarea id="mail-message-body" class="form-input" rows="8" data-mail-target="composeBody" required></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" data-action="click->modal#close" class="btn btn-outline btn--sm">{{ 'community.cancel'|trans }}</button>
+                <button type="button"
+                        data-action="click->mail#submitCompose"
+                        data-mail-target="submitComposeBtn"
+                        class="btn btn-primary btn--sm">
+                    {{ 'community.send_msg'|trans }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,12 +1,12 @@
 {# templates/components/formation/pitch_grid.html.twig #}
-<div class="bg-gradient-to-b from-gray-955 to-gray-900/80 border border-gray-850 p-6 rounded-3xl relative overflow-hidden flex flex-col gap-6 shadow-inner">
+<div class="formation-pitch">
     {# Grid midfield line #}
-    <div class="absolute inset-x-0 top-1/2 h-0.5 bg-gray-800/40 -translate-y-1/2"></div>
+    <div class="formation-pitch__midline"></div>
     
     {# BACK LINE ROW (3 Slots) #}
     <div class="space-y-2 relative z-10">
-        <span class="block text-[9px] font-extrabold text-gray-650 uppercase tracking-wide text-center">{{ 'formation.back_line'|trans }}</span>
-        <div class="grid grid-cols-3 gap-4">
+        <span class="formation-pitch-board__line-label">{{ 'formation.back_line'|trans }}</span>
+        <div class="formation-pitch">
             {% set back_slots = [
                 {pos: 'back_1'},
                 {pos: 'back_2'},
@@ -19,7 +19,7 @@
                     slot: slot,
                     hero: hero,
                     default_emoji: '🛡️',
-                    title_class: 'text-gray-550',
+                    title_class: 'formation-slot__pos-label',
                     heroes: heroes
                 } %}
             {% endfor %}
@@ -28,8 +28,8 @@
 
     {# FRONT LINE ROW (3 Slots) #}
     <div class="space-y-2 relative z-10">
-        <span class="block text-[9px] font-extrabold text-gray-655 uppercase tracking-wide text-center">{{ 'formation.front_line'|trans }}</span>
-        <div class="grid grid-cols-3 gap-4">
+        <span class="formation-pitch-board__line-label">{{ 'formation.front_line'|trans }}</span>
+        <div class="formation-pitch">
             {% set front_slots = [
                 {pos: 'front_1'},
                 {pos: 'front_2'},
@@ -42,7 +42,7 @@
                     slot: slot,
                     hero: hero,
                     default_emoji: '⚔️',
-                    title_class: 'text-gray-555',
+                    title_class: 'formation-slot__pos-label',
                     heroes: heroes
                 } %}
             {% endfor %}

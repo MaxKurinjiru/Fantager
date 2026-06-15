@@ -22,9 +22,9 @@
     {# --- Header Section --- #}
     {% set right_content %}
         {# --- Next Lock Box --- #}
-        <div class="bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 backdrop-blur-md text-sm shrink-0 flex items-center gap-3 min-w-[160px]">
+        <div class="training-schedule-widget">
             <div>
-                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider mb-0.5">{{ 'training.next_lock'|trans }}</span>
+                <span class="training-schedule-widget__label">{{ 'training.next_lock'|trans }}</span>
                 {% if isLocked %}
                     <span class="block text-red-400 font-extrabold text-sm flex items-center gap-1">
                         <span>🔒</span> {{ 'training.locked'|trans }}
@@ -32,16 +32,16 @@
                 {% else %}
                     <span data-countdown-target="{{ nextLock|date('c') }}" class="block text-yellow-500 font-extrabold text-sm">--h --m --s</span>
                 {% endif %}
-                <span class="block text-[10px] text-gray-400 mt-1 font-medium">{{ nextLockFormatted }}</span>
+                <span class="training-schedule-widget__sub">{{ nextLockFormatted }}</span>
             </div>
         </div>
 
         {# --- Next Evaluation Box --- #}
-        <div class="bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 backdrop-blur-md text-sm shrink-0 flex items-center gap-3 min-w-[160px]">
+        <div class="training-schedule-widget">
             <div>
-                <span class="block text-[10px] text-gray-550 uppercase font-bold tracking-wider mb-0.5">{{ 'training.next_evaluation'|trans }}</span>
+                <span class="training-schedule-widget__label">{{ 'training.next_evaluation'|trans }}</span>
                 <span data-countdown-target="{{ nextTick|date('c') }}" class="block text-white font-extrabold text-sm">--h --m --s</span>
-                <span class="block text-[10px] text-gray-400 mt-1 font-medium">{{ nextTickFormatted }}</span>
+                <span class="training-schedule-widget__sub">{{ nextTickFormatted }}</span>
             </div>
         </div>
     {% endset %}
@@ -61,17 +61,17 @@
 
     {# --- Lock Warning --- #}
     {% if isLocked %}
-        <div class="bg-red-950/40 border border-red-900/50 rounded-2xl p-5 flex items-start gap-4 text-red-200 shadow-md">
-            <span class="text-3xl select-none leading-none">🔒</span>
-            <div class="space-y-1">
-                <h4 class="font-bold text-white text-sm">{{ 'training.lock_warning'|trans }}</h4>
-                <p class="text-xs text-red-300/80">{{ 'training.lock_desc'|trans }}</p>
+        <div class="alert alert-error" role="alert">
+            <span aria-hidden="true">🔒</span>
+            <div>
+                <strong>{{ 'training.lock_warning'|trans }}</strong>
+                <p>{{ 'training.lock_desc'|trans }}</p>
             </div>
         </div>
     {% endif %}
 
     {# --- Multi-Tab Navigation --- #}
-    <div class="flex border-b border-gray-850 gap-2 overflow-x-auto pb-px" data-controller="tab">
+    <div class="tab-nav-bar" data-controller="tab">
         <button type="button"
                 data-tab-target="btn"
                 data-action="click->tab#switch"
@@ -90,8 +90,8 @@
 
     {# --- Content: Trainers Tab --- #}
     <div id="trainers-tab" class="tab-content space-y-6">
-        <div class="flex items-center justify-between bg-gray-900/20 border border-gray-850 px-6 py-4 rounded-2xl">
-            <span class="text-xs font-bold text-gray-400">
+        <div class="training-limit-bar">
+            <span class="training-limit-bar__text">
                 {{ 'training.trainer_limit'|trans({'%count%': trainers|length, '%limit%': trainerLimit}) }}
             </span>
         </div>
@@ -104,10 +104,10 @@
                     isLocked: isLocked
                 } %}
             {% else %}
-                <div class="text-center py-16 border border-gray-800 border-dashed rounded-2xl opacity-60 w-full col-span-2">
+                <div class="training-empty-state">
                     <span class="text-5xl block mb-2">📭</span>
                     <h3 class="font-bold text-white">{{ 'training.no_trainers_title'|trans }}</h3>
-                    <p class="text-xs text-gray-400">{{ 'training.no_trainers_desc'|trans }}</p>
+                    <p class="training-empty-state__desc">{{ 'training.no_trainers_desc'|trans }}</p>
                 </div>
             {% endfor %}
         </div>

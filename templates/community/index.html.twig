@@ -3,12 +3,10 @@
 {% block title %}{{ 'nav.community'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="community"
+<div class="page-content" data-controller="community"
      data-community-active-team-id-value="{{ team.id }}"
      data-community-kingdom-id-value="{{ kingdom.id }}"
      data-community-empty-threads-msg-value="{{ 'community.no_threads'|trans }}"
-     data-community-empty-inbox-msg-value="{{ 'community.empty_inbox'|trans }}"
-     data-community-empty-sent-msg-value="{{ 'community.empty_sent'|trans }}"
      data-community-translations-value="{{ {
          'error_load_threads': 'community.error_load_threads'|trans,
          'warning_fill_fields': 'community.warning_fill_fields'|trans,
@@ -21,18 +19,6 @@
          'error_send_reply': 'community.error_send_reply'|trans,
          'error_refresh_posts': 'community.error_refresh_posts'|trans,
          'error_toggle_lock': 'community.error_toggle_lock'|trans,
-         'error_load_mail': 'community.error_load_mail'|trans,
-         'warning_compose_fields': 'community.warning_compose_fields'|trans,
-         'error_send_msg': 'community.error_send_msg'|trans,
-         'success_send_msg': 'community.success_send_msg'|trans,
-         'error_read_msg': 'community.error_read_msg'|trans,
-         'text_deleting': 'community.text_deleting'|trans,
-         'success_delete_msg': 'community.success_delete_msg'|trans,
-         'error_delete_msg': 'community.error_delete_msg'|trans,
-         'inbox_title': 'community.inbox_title'|trans,
-         'sent_title': 'community.sent_title'|trans,
-         'col_sender': 'community.col_sender'|trans,
-         'col_recipient': 'community.col_recipient'|trans,
          'post_reply': 'community.post_reply'|trans,
          'back_to_threads': 'community.back_to_threads'|trans,
          'categories': {
@@ -43,254 +29,98 @@
          }
      }|json_encode|e('html_attr') }}"
 >
-    {# --- Header Section --- #}
     {% include 'components/ui/page_header.html.twig' with {
         title: 'community.title',
         subtitle: 'community.subtitle'
     } %}
 
-    {# --- Alert Box --- #}
     {% include 'components/ui/alert_box.html.twig' with {
         target: 'community',
         message_target: 'alertMessage',
         close_action: 'community#hideAlert'
     } %}
 
-    {# --- Multi-Tab Navigation --- #}
-    <div class="flex border-b border-gray-850 gap-2 overflow-x-auto pb-px" data-controller="tab">
-        <button type="button"
-                data-tab-target="btn"
-                data-action="click->tab#switch click->community#onTabSwitch"
-                data-tab="forum-tab"
-                class="tab-btn tab-btn--active">
-            💬 {{ 'community.tab_forum'|trans }}
-        </button>
-        <button type="button"
-                data-tab-target="btn"
-                data-action="click->tab#switch click->community#onTabSwitch"
-                data-tab="mail-tab"
-                class="tab-btn">
-            ✉️ {{ 'community.tab_mail'|trans }}
-        </button>
-    </div>
-
-    {# --- FORUM TAB CONTENT --- #}
-    <div id="forum-tab" class="tab-content">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {# Forum Left Sidebar (Categories) #}
-            <div class="lg:col-span-1 space-y-4">
-                <div class="community-sidebar">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider px-2 mb-3">{{ 'community.categories'|trans }}</h3>
-                    <button type="button" 
-                            data-action="click->community#filterCategory" 
-                            data-category="all" 
-                            class="community-tab-btn community-tab-btn--active"
-                            data-community-target="categoryBtn">
-                        📁 {{ 'community.all_threads'|trans }}
-                    </button>
-                    {% for cat in categories %}
-                        <button type="button" 
-                                data-action="click->community#filterCategory" 
-                                data-category="{{ cat }}" 
-                                class="community-tab-btn"
-                                data-community-target="categoryBtn">
-                            💬 {{ ('community.category_' ~ cat)|trans }}
-                        </button>
-                    {% endfor %}
-                </div>
-
-                <button type="button" 
-                        data-action="click->community#openNewThreadModal" 
-                        class="w-full btn btn-primary flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm">
-                    ➕ {{ 'community.new_thread'|trans }}
+    <div class="page-grid page-grid--sidebar">
+        <div class="community-sidebar-col">
+            <div class="community-sidebar">
+                <h3 class="community-sidebar__heading">{{ 'community.categories'|trans }}</h3>
+                <button type="button" data-action="click->community#filterCategory" data-category="all" class="community-tab-btn community-tab-btn--active" data-community-target="categoryBtn">
+                    📁 {{ 'community.all_threads'|trans }}
                 </button>
+                {% for cat in categories %}
+                    <button type="button" data-action="click->community#filterCategory" data-category="{{ cat }}" class="community-tab-btn" data-community-target="categoryBtn">
+                        💬 {{ ('community.category_' ~ cat)|trans }}
+                    </button>
+                {% endfor %}
             </div>
-
-            {# Forum Main Pane #}
-            <div class="lg:col-span-3 space-y-6">
-                {# Threads List #}
-                <div data-community-target="threadsContainer" class="community-panel space-y-4">
-                    <h2 class="text-lg font-bold text-white mb-2">{{ 'community.threads_list'|trans }}</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                             <thead>
-                                 <tr class="border-b border-gray-800 text-gray-550 uppercase tracking-wider text-[10px] font-bold">
-                                     <th class="pb-3">{{ 'community.col_title'|trans }}</th>
-                                     <th class="pb-3">{{ 'community.col_author'|trans }}</th>
-                                     <th class="pb-3 text-center">{{ 'community.col_replies'|trans }}</th>
-                                     <th class="pb-3 text-right">{{ 'community.col_created'|trans }}</th>
-                                 </tr>
-                             </thead>
-                            <tbody data-community-target="threadsTableBody" class="divide-y divide-gray-850">
-                                {% for thread in threads %}
-                                    <tr class="community-row" data-action="click->community#viewThread" data-thread-id="{{ thread.id }}">
-                                        <td class="py-4 font-bold text-white">
-                                            <div class="flex items-center gap-2">
-                                                 {% if thread.isLocked %}
-                                                     <span class="text-gray-550" title="{{ 'community.locked'|trans }}">🔒</span>
-                                                 {% endif %}
-                                                <span>{{ thread.title }}</span>
-                                            </div>
-                                            <span class="text-[9px] uppercase font-bold text-emerald-400 tracking-wider bg-emerald-950/20 border border-emerald-900/40 px-2 py-0.5 rounded-full mt-1 inline-block">
-                                                {{ ('community.category_' ~ thread.category)|trans }}
-                                            </span>
-                                        </td>
-                                        <td class="py-4 text-gray-400">
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-2.5 h-2.5 rounded-full border border-gray-700" style="background-color: {{ thread.authorTeam.colors.primary ?? '#10b981' }}; border-color: {{ thread.authorTeam.colors.secondary ?? '#0f1720' }};"></span>
-                                                <span>{{ thread.authorTeam.name }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="py-4 text-center text-gray-300 font-semibold">{{ thread.posts|length }}</td>
-                                        <td class="py-4 text-right text-gray-550">{{ thread.createdAt|date('d. m. Y H:i') }}</td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                        <td colspan="4" class="py-12 text-center text-gray-550 select-none">
-                                            {{ 'community.no_threads'|trans }}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {# Selected Thread Detail Container (Hidden initially) #}
-                <div data-community-target="threadDetailContainer" class="hidden community-panel space-y-6">
-                    <div class="flex items-start justify-between border-b border-gray-800 pb-4">
-                        <div>
-                            <button type="button" data-action="click->community#backToThreads" class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-bold mb-2">
-                                ⬅️ {{ 'community.back_to_threads'|trans }}
-                            </button>
-                            <h2 data-community-target="threadTitle" class="text-xl font-extrabold text-white leading-tight"></h2>
-                            <span data-community-target="threadCategory" class="text-[9px] uppercase font-bold text-emerald-400 tracking-wider bg-emerald-950/20 border border-emerald-900/40 px-2 py-0.5 rounded-full mt-2 inline-block"></span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span data-community-target="threadLockBadge" class="hidden bg-red-950/40 border border-red-900/50 text-red-400 text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">🔒 {{ 'community.locked'|trans }}</span>
-                            <button type="button" 
-                                    data-community-target="lockBtn" 
-                                    data-action="click->community#toggleLock"
-                                    class="hidden btn btn-outline btn--sm text-[10px] font-bold tracking-wider py-1.5 px-3">
-                                Lock
-                            </button>
-                        </div>
-                    </div>
-
-                    {# Posts Timeline #}
-                    <div data-community-target="postsTimeline" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                        <!-- Reply posts will be injected here -->
-                    </div>
-
-                    {# Reply Form #}
-                    <div data-community-target="replyFormContainer" class="border-t border-gray-800 pt-4 space-y-3">
-                        <label for="reply-body" class="form-label text-xs">{{ 'community.add_reply'|trans }}</label>
-                        <textarea id="reply-body" 
-                                  data-community-target="replyInput" 
-                                  class="form-input text-xs h-24 resize-none" 
-                                  placeholder="{{ 'community.reply_placeholder'|trans }}"
-                                  required></textarea>
-                        <button type="button" 
-                                data-community-target="submitReplyBtn"
-                                data-action="click->community#submitReply" 
-                                class="btn btn-primary font-bold text-xs py-2 px-5">
-                            {{ 'community.post_reply'|trans }}
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <button type="button" data-action="click->community#openNewThreadModal" class="btn btn-primary community-new-thread-btn">
+                ➕ {{ 'community.new_thread'|trans }}
+            </button>
         </div>
-    </div>
 
-    {# --- MAIL TAB CONTENT --- #}
-    <div id="mail-tab" class="tab-content hidden">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {# Mail Sidebar (Folder Controls) #}
-            <div class="lg:col-span-1 space-y-4">
-                <div class="community-sidebar">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider px-2 mb-3">{{ 'community.mail'|trans }}</h3>
-                    <button type="button" 
-                            data-action="click->community#switchFolder" 
-                            data-folder="inbox" 
-                            class="community-tab-btn community-tab-btn--active"
-                            data-community-target="folderBtn">
-                        📥 {{ 'community.inbox'|trans }}
-                    </button>
-                    <button type="button" 
-                            data-action="click->community#switchFolder" 
-                            data-folder="sent" 
-                            class="community-tab-btn"
-                            data-community-target="folderBtn">
-                        📤 {{ 'community.sent'|trans }}
-                    </button>
+        <div class="community-main-col">
+            <div data-community-target="threadsContainer" class="community-panel">
+                <h2 class="community-panel__title">{{ 'community.threads_list'|trans }}</h2>
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>{{ 'community.col_title'|trans }}</th>
+                                <th>{{ 'community.col_author'|trans }}</th>
+                                <th class="data-table__col--center">{{ 'community.col_replies'|trans }}</th>
+                                <th class="data-table__col--end">{{ 'community.col_created'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody data-community-target="threadsTableBody">
+                            {% for thread in threads %}
+                                <tr class="community-row" data-action="click->community#viewThread" data-thread-id="{{ thread.id }}">
+                                    <td class="data-table__cell--title">
+                                        <div class="data-table__title-row">
+                                            {% if thread.isLocked %}<span class="lock-badge lock-badge--icon" title="{{ 'community.locked'|trans }}" aria-label="{{ 'community.locked'|trans }}">🔒</span>{% endif %}
+                                            <span>{{ thread.title }}</span>
+                                        </div>
+                                        <span class="category-badge">{{ ('community.category_' ~ thread.category)|trans }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="data-table__author-row">
+                                            <span class="team-color-dot" style="--team-color-primary: {{ thread.authorTeam.colors.primary ?? '#10b981' }}; --team-color-secondary: {{ thread.authorTeam.colors.secondary ?? '#0f1720' }};"></span>
+                                            <span>{{ thread.authorTeam.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="data-table__col--center data-table__cell--numeric">{{ thread.posts|length }}</td>
+                                    <td class="data-table__col--end data-table__cell--muted">{{ thread.createdAt|date('d. m. Y H:i') }}</td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="4" class="empty-state">{{ 'community.no_threads'|trans }}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-
-                <button type="button" 
-                        data-action="click->community#openComposeModal" 
-                        class="w-full btn btn-primary flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm">
-                    ✍️ {{ 'community.compose'|trans }}
-                </button>
             </div>
 
-            {# Mail Main Pane #}
-            <div class="lg:col-span-3 space-y-6">
-                <div class="community-panel space-y-4">
-                    <h2 data-community-target="mailFolderTitle" class="text-lg font-bold text-white mb-2">{{ 'community.inbox_title'|trans }}</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="border-b border-gray-800 text-gray-550 uppercase tracking-wider text-[10px] font-bold">
-                                    <th class="pb-3 w-12 text-center">{{ 'community.col_status'|trans }}</th>
-                                    <th class="pb-3">{{ 'community.subject'|trans }}</th>
-                                    <th data-community-target="mailSenderColTitle" class="pb-3">{{ 'community.col_sender'|trans }}</th>
-                                    <th class="pb-3 text-right">{{ 'community.col_sent'|trans }}</th>
-                                </tr>
-                            </thead>
-                            <tbody data-community-target="mailTableBody" class="divide-y divide-gray-850">
-                                {% for msg in inbox %}
-                                    <tr class="community-row" data-action="click->community#readMessage" data-message-id="{{ msg.id }}">
-                                        <td class="py-4 text-center text-lg">
-                                            <span data-community-unread-indicator-id="{{ msg.id }}">
-                                                {{ msg.readAt is null ? '✉️' : '📖' }}
-                                            </span>
-                                        </td>
-                                        <td class="py-4 font-bold text-white">
-                                            <span>{{ msg.subject }}</span>
-                                        </td>
-                                        <td class="py-4 text-gray-400">
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-2.5 h-2.5 rounded-full border border-gray-700" style="background-color: {{ msg.senderTeam.colors.primary ?? '#10b981' }}; border-color: {{ msg.senderTeam.colors.secondary ?? '#0f1720' }};"></span>
-                                                <span>{{ msg.senderTeam.name }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="py-4 text-right text-gray-550">{{ msg.sentAt|date('d. m. Y H:i') }}</td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                        <td colspan="4" class="py-12 text-center text-gray-550 select-none">
-                                            {{ 'community.empty_inbox'|trans }}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            <div data-community-target="threadDetailContainer" class="hidden community-panel thread-detail">
+                <div class="thread-detail__header">
+                    <div>
+                        <button type="button" data-action="click->community#backToThreads" class="back-link">⬅️ {{ 'community.back_to_threads'|trans }}</button>
+                        <h2 data-community-target="threadTitle" class="thread-detail__title"></h2>
+                        <span data-community-target="threadCategory" class="category-badge thread-detail__category"></span>
                     </div>
+                    <div class="thread-detail__actions">
+                        <span data-community-target="threadLockBadge" class="hidden lock-badge">🔒 {{ 'community.locked'|trans }}</span>
+                        <button type="button" data-community-target="lockBtn" data-action="click->community#toggleLock" class="hidden btn btn-outline btn--sm">{{ 'community.btn_lock'|trans }}</button>
+                    </div>
+                </div>
+                <div data-community-target="postsTimeline" class="posts-timeline"></div>
+                <div data-community-target="replyFormContainer" class="training-reply-form">
+                    <label for="reply-body" class="form-label">{{ 'community.add_reply'|trans }}</label>
+                    <textarea id="reply-body" data-community-target="replyInput" class="form-input" rows="5" placeholder="{{ 'community.reply_placeholder'|trans }}" required></textarea>
+                    <button type="button" data-community-target="submitReplyBtn" data-action="click->community#submitReply" class="btn btn-primary">{{ 'community.post_reply'|trans }}</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-{# =============================================================================
-   MODAL WINDOWS & JS TEMPLATES
-   ============================================================================= #}
-
 {% include 'components/community/new_thread_modal.html.twig' with { categories: categories } %}
-
-{% include 'components/community/compose_message_modal.html.twig' with { other_teams: other_teams } %}
-
-{% include 'components/community/read_message_modal.html.twig' %}
-
 {% include 'components/community/js_templates.html.twig' %}
-
 {% endblock %}

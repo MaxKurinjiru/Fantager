@@ -1,0 +1,63 @@
+@reference "tailwindcss";
+
+@layer components {
+  .game-sidebar {
+    @apply fixed inset-y-0 left-0 z-40 w-64 p-4 flex flex-col justify-between shrink-0;
+    background-color: var(--color-surface-base);
+    border-right: 1px solid var(--color-border);
+    transition: transform 300ms ease-in-out;
+    @media (min-width: 768px) { @apply static translate-x-0; }
+  }
+  .game-sidebar__nav { @apply flex flex-col gap-1; }
+  .game-sidebar__mobile-header {
+    @apply flex items-center justify-between mb-4 pb-3;
+    border-bottom: 1px solid var(--color-border);
+    @media (min-width: 768px) { display: none; }
+  }
+  .game-sidebar__brand { @apply font-bold; color: var(--color-brand-400); }
+  .game-sidebar__close-btn {
+    @apply p-1 focus:outline-none;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    &:hover { color: var(--color-text-primary); }
+    .game-sidebar__close-icon { @apply w-6 h-6; }
+  }
+  .game-sidebar__divider { @apply h-px my-4; background-color: var(--color-border); }
+  .game-sidebar__section-label {
+    @apply text-[10px] uppercase font-bold px-4 mb-2 tracking-wider;
+    color: var(--color-text-muted);
+  }
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded font-medium transition-colors no-underline;
+    color: var(--color-text-secondary);
+    &:hover { background-color: var(--color-surface-overlay); color: var(--color-text-primary); }
+    &--active {
+      background-color: color-mix(in srgb, var(--color-brand-500) 10%, transparent);
+      color: var(--color-brand-400);
+      border: 1px solid color-mix(in srgb, var(--color-brand-500) 20%, transparent);
+    }
+  }
+  .sidebar-link__emoji { @apply text-base select-none; }
+  .sidebar-link--locked {
+    @apply flex items-center gap-3 px-4 py-2 text-sm font-medium cursor-not-allowed select-none;
+    color: var(--color-text-muted);
+  }
+  .sidebar-link__lock-badge {
+    @apply text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold;
+    background-color: var(--color-surface-overlay);
+    color: var(--color-text-muted);
+  }
+
+  .game-main {
+    @apply flex-1 w-full overflow-y-auto;
+    min-width: 0;
+    background-color: var(--color-surface-page);
+    padding: 1rem;
+
+    @media (min-width: 768px) {
+      padding: 2rem;
+    }
+  }
+}

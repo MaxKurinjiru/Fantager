@@ -11,6 +11,10 @@
     background-color: var(--modal-backdrop);
     backdrop-filter: blur(var(--modal-blur));
     transition: opacity var(--transition-base);
+
+    &--stacked {
+      z-index: 70;
+    }
   }
 
   // ── Dialog box ─────────────────────────────────────────────────────────────

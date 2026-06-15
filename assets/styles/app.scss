@@ -30,8 +30,21 @@
 @use "components/finance";
 @use "components/marketplace";
 @use "components/community";
+@use "components/mail";
 @use "components/roster_badge";
 @use "components/page_header";
+@use "components/shared";
+@use "components/hero";
+@use "components/formation";
+@use "components/hq";
+@use "components/training";
+@use "components/arena";
+@use "components/spell";
+@use "components/item";
+@use "components/calendar";
+@use "components/resource_bar";
+@use "components/league";
+@use "components/sidebar";
 
 
 // ── Tailwind CSS (v4 directive style, must come after @use) ───────────────────

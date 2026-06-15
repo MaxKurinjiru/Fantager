@@ -2,7 +2,6 @@
   "_comment": "Starting state for each NPC team created during kingdom init.",
   "starting_resources": {
     "gold": 1000,
-    "crystals": 0,
     "essence_common": 0,
     "essence_uncommon": 0,
     "essence_rare": 0,

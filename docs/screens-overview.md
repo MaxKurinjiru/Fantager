@@ -89,7 +89,7 @@ The site is divided into two main sections:
   - Team Chemistry (value + indicator)
 - **Quick Stats:**
   - Number of heroes in roster
-  - Current Gold, Crystals, Essence
+  - Current Gold, Essence
   - Next scheduled match (time, opponent)
   - Current league tier & position
 - **Recent Activity Feed:**
@@ -372,7 +372,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ### Possible Actions/Buttons:
 - **Summon Hero** - start summon process (animation, reveal)
 - **View Summoned Hero** - after summon navigate to Hero Detail
-- **Buy Another Slot** (if Crystals support) - expand summon capacity
+- **Buy Another Slot** - expand summon capacity
 
 ### Backend Requirements:
 - Summon availability check
@@ -538,7 +538,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Upcoming matches (date, time, opponent)
   - Past matches (results, score, link to replay)
 - **Seasonal Rewards Preview:**
-  - Rewards for current rank at season end (Gold, Crystals, items)
+  - Rewards for current rank at season end (Gold, items)
   - Promotion rewards
 
 ### Possible Actions/Buttons:

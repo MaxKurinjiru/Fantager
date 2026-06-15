@@ -21,8 +21,7 @@ Single source of truth for documentation gaps, design questions, and known incon
 |----|------------|
 | — | Calendar Web UI implemented at `/app/calendar` |
 | — | Arena home-match revenue model (fixed ticket price, dual-team attendance, league tick payout) |
-| — | Crafting queue processor: `CraftingService` + `app:process-crafting-queue` + API endpoints |
 | — | CI workflow added (`.github/workflows/ci.yml`) |
-| — | PHPUnit coverage extended for Marketplace, Community, Spell, Item, Crafting services |
+| — | PHPUnit coverage extended for Marketplace, Community, Spell, and Item services |
 
 Remove rows from **Open** when fixed; move a one-line summary to **Recently resolved**.

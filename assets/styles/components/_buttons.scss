@@ -108,6 +108,7 @@
     // Generic tab button (used with tab_controller.js)
     .tab-btn {
         @apply px-5 py-3 text-sm font-semibold leading-none whitespace-nowrap;
+        border: none;
         border-bottom: 2px solid transparent;
         color: var(--color-text-secondary);
         background: transparent;

@@ -111,39 +111,6 @@ The economy provides resource management depth through multiple currencies, each
   - Morale restoration items (emergency recovery)
 - **Mechanics:** Primary economic driver; scales with team reputation and arena capacity; unlimited earning potential but balanced by scaling costs
 
-#### Crystals (Premium/Event Currency)
-
-- **Earned from:**
-  - Event completions and dungeon clears
-  - League season rewards (based on final position)
-  - Achievement unlocks
-  - Rare quest chains
-  - **Supporter Contributions:** Optional one-time or recurring donations to support game development
-- **Spent on:**
-  - **Quality of Life Features:**
-    - Additional formation slots (beyond base 2, up to 4–5 total)
-    - Extra hero roster slots (increased storage capacity)
-    - Cosmetic customizations (team emblems, headquarters themes, hero skins)
-    - Chat badges and profile flair (supporter status, achievement badges)
-    - Extended marketplace listing duration
-    - Additional saved item/equipment loadouts per hero
-  - **Convenience (Non-Competitive):**
-    - Batch training queue expansion (more simultaneous training actions)
-    - Auto-sell filters for marketplace management
-    - Advanced statistics and analytics dashboards
-    - Priority customer support
-  - **NOT Available for Crystals:**
-    - ❌ Direct stat boosts or power increases
-    - ❌ Instant training completion or progression shortcuts
-    - ❌ Exclusive powerful items or heroes
-    - ❌ Any gameplay advantages in combat or competition
-- **Mechanics:**
-  - Limited availability through gameplay creates scarcity
-  - Account-bound (cannot be traded on marketplace)
-  - Designed to reward active participation, achievement, and voluntary support
-  - Supporter contributions grant badge tiers (Bronze/Silver/Gold/Platinum) based on contribution level
-  - Badge tiers unlock cosmetic rewards and minor convenience features (no competitive advantages)
-
 #### Essence (Crafting/Upgrade Currency)
 
 - **Earned from:**
@@ -183,7 +150,7 @@ The economy provides resource management depth through multiple currencies, each
 ### Trading & Marketplace
 
 - **Tradeable:** Heroes and items can be listed for Gold only
-- **Non-Tradeable:** Crystals and Essence cannot be traded between players
+- **Non-Tradeable:** Essence cannot be traded between players
 - **Marketplace Fees:** Applied to sellers (buyers pay listed price + no additional fee)
 - **Price Controls:** Suggested price ranges based on item rarity and hero stats (prevents extreme manipulation)
 - **Kingdom-Isolated:** Each server maintains separate economy; no cross-kingdom trading
@@ -194,7 +161,7 @@ The economy provides resource management depth through multiple currencies, each
 
 | Phase | Level Range | Key Characteristics |
 |:---|:---:|:---|
-| **Early Game** | 1–20 | Gold abundant for basics; limited Crystal access; Common/Uncommon Essence available; focus on initial roster and headquarters |
+| **Early Game** | 1–20 | Gold abundant for basics; Common/Uncommon Essence available; focus on initial roster and headquarters |
 | **Mid Game** | 21–50 | HQ upgrades become major gold sinks; Rare/Epic Essence needed; league becomes primary income; resource management critical |
 | **Late Game** | 51+ | Massive gold investment for high-tier facilities; Legendary/Mythic crafting; arena revenue and league rewards sustain play |
 
@@ -204,7 +171,6 @@ The economy provides resource management depth through multiple currencies, each
 
 - **Fatigue & Form Limits:** Prevent unlimited grinding and resource farming
 - **Diminishing Returns:** Repeated activities within time windows yield reduced rewards
-- **Account-Bound Crystals:** Event/achievement Crystals cannot be traded or transferred
 - **Hero Aging System:** Prevents indefinite use of same roster without replacement costs
 - **Activity Throttling:** Daily/weekly caps on certain high-reward activities
 - **Price Floor/Ceiling:** Marketplace algorithms suggest fair prices; prevent extreme manipulation
@@ -1253,7 +1219,7 @@ Supports **player interaction**, strategy discussion, and **community building**
 ### Concept
 
 - Daily, weekly, and story-driven quests provide structured progression goals
-- Quests reward Gold, Crystals, Essence, and items
+- Quests reward Gold, Essence, and items
 
 ### Key Mechanics (to be defined)
 

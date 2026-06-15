@@ -31,8 +31,6 @@ class FinancialRecord
     #[ORM\Column(options: ['default' => 0])]
     private int $goldChange = 0;
 
-    #[ORM\Column(options: ['default' => 0])]
-    private int $crystalsChange = 0;
 
     #[ORM\Column(options: ['default' => 0])]
     private int $essenceCommonChange = 0;
@@ -113,18 +111,6 @@ class FinancialRecord
     public function setGoldChange(int $goldChange): static
     {
         $this->goldChange = $goldChange;
-
-        return $this;
-    }
-
-    public function getCrystalsChange(): int
-    {
-        return $this->crystalsChange;
-    }
-
-    public function setCrystalsChange(int $crystalsChange): static
-    {
-        $this->crystalsChange = $crystalsChange;
 
         return $this;
     }

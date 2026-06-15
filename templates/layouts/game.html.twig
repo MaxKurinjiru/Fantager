@@ -1,7 +1,31 @@
 {% extends 'base.html.twig' %}
 
 {% block layout_content %}
-    <div data-controller="mobile-menu" class="min-h-screen flex flex-col">
+    <div data-controller="mobile-menu mail"
+         data-mail-unread-count-value="{{ unread_mail_count() }}"
+         data-mail-active-team-id-value="{{ app.user.team.id }}"
+         data-mail-empty-inbox-msg-value="{{ 'community.empty_inbox'|trans }}"
+         data-mail-empty-sent-msg-value="{{ 'community.empty_sent'|trans }}"
+         data-mail-translations-value="{{ {
+             'error_load_mail': 'community.error_load_mail'|trans,
+             'error_load_recipients': 'community.error_load_recipients'|trans,
+             'warning_compose_fields': 'community.warning_compose_fields'|trans,
+             'text_sending': 'community.text_sending'|trans,
+             'error_send_msg': 'community.error_send_msg'|trans,
+             'success_send_msg': 'community.success_send_msg'|trans,
+             'error_read_msg': 'community.error_read_msg'|trans,
+             'text_deleting': 'community.text_deleting'|trans,
+             'success_delete_msg': 'community.success_delete_msg'|trans,
+             'error_delete_msg': 'community.error_delete_msg'|trans,
+             'inbox_title': 'community.inbox_title'|trans,
+             'sent_title': 'community.sent_title'|trans,
+             'col_sender': 'community.col_sender'|trans,
+             'col_recipient': 'community.col_recipient'|trans,
+             'select_recipient': 'community.select_recipient'|trans,
+             'send_msg': 'community.send_msg'|trans,
+             'delete_msg': 'community.delete_msg'|trans
+         }|json_encode|e('html_attr') }}"
+         class="min-h-screen flex flex-col">
         {% include 'components/layout/navbar.html.twig' with { is_guest: false } %}
 
         {# Sidebar + Main Layout #}
@@ -11,7 +35,7 @@
 
             {% include 'components/layout/sidebar.html.twig' %}
 
-            <main class="flex-1 bg-gray-950 p-4 md:p-8 overflow-y-auto w-full">
+            <main class="game-main">
                 {% include 'components/ui/flash_messages.html.twig' with { is_guest: false } %}
 
                 {% block body %}{% endblock %}
@@ -19,5 +43,11 @@
         </div>
         {# Account Settings Modal #}
         {% include 'components/layout/_account_settings_modal.html.twig' %}
+
+        {# Player Mail Modals #}
+        {% include 'components/mail/mail_modal.html.twig' %}
+        {% include 'components/mail/compose_message_modal.html.twig' %}
+        {% include 'components/mail/read_message_modal.html.twig' %}
+        {% include 'components/mail/js_templates.html.twig' %}
     </div>
 {% endblock %}

@@ -1,5 +1,7 @@
 # Crafting System
 
+> **Status: Planned future extension — not implemented.** The crafting backend and UI were removed from the codebase. This document describes the intended design for a future implementation.
+
 Reference: [game-summary.md](../game-summary.md#217-crafting-system) and [20-crafting.md](../screens/20-crafting.md)
 
 Purpose: Detail crafting mechanics, recipes, and queue processing.
@@ -41,10 +43,8 @@ Manages the active crafting jobs scheduled by teams.
 
 ## Implementation Status
 
-- **Service**: `App\Service\Crafting\CraftingService` — start/cancel jobs, process due queue entries.
-- **CLI**: `bin/console app:process-crafting-queue` — run from cron or manually after `completesAt`.
-- **API**: `App\Controller\Api\V1\CraftingController` — recipes, queue, start, cancel.
-- **Web UI**: Planned (`/crafting` screen); use API until Phase 7 UI is built.
+Nothing is implemented in the current codebase. Crafting entities, services, API endpoints, and UI were removed; see the status note at the top of this document.
+
 
 ---
 

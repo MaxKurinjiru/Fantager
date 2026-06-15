@@ -1,0 +1,194 @@
+@reference "tailwindcss";
+
+@layer components {
+  .league-page { @apply flex flex-col gap-6; }
+  .league-info-badge {
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+  .league-info-badge__season {
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .league-group-form { @apply flex items-center gap-2; }
+  .league-group-select {
+    @apply py-2 text-sm;
+    background-color: var(--color-surface-base);
+    border-color: var(--color-border);
+    &:focus { border-color: var(--color-brand-500); }
+  }
+  .league-empty-state {
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    text-align: center;
+    max-width: 32rem;
+    margin: 3rem auto 0;
+  }
+  .league-empty-state__emoji { @apply text-5xl mb-4 select-none; }
+  .league-empty-state__title { @apply text-lg font-bold mb-2; color: var(--color-text-primary); }
+  .league-empty-state__desc { @apply text-sm mb-6; color: var(--color-text-secondary); }
+  .league-tab-panel { @apply flex flex-col gap-4; }
+  .league-tab-nav {
+    @apply flex overflow-x-auto;
+    border-bottom: 1px solid var(--color-border);
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+  .league-standings-legend {
+    @apply flex flex-wrap gap-4 text-xs p-3 rounded;
+    color: var(--color-text-secondary);
+    background-color: color-mix(in srgb, var(--color-surface-base) 40%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-border) 30%, transparent);
+  }
+  .league-legend-item { @apply flex items-center gap-1.5; }
+  .league-legend-dot { @apply w-2.5 h-2.5 rounded-full shrink-0; }
+  .league-legend-dot--promo-direct { background-color: var(--color-brand-500); }
+  .league-legend-dot--promo-possible {
+    background-color: color-mix(in srgb, var(--color-brand-500) 40%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-brand-400) 80%, transparent);
+  }
+  .league-legend-dot--releg-direct { background-color: var(--color-error-border); }
+  .league-legend-dot--releg-possible {
+    background-color: color-mix(in srgb, var(--color-error-border) 40%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-error-text) 50%, transparent);
+  }
+  .league-table-wrap {
+    @apply overflow-x-auto rounded-lg;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+  }
+  .league-table { @apply w-full text-left; border-collapse: collapse; }
+  .league-table thead tr {
+    @apply text-xs font-semibold uppercase;
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid var(--color-border);
+    background-color: color-mix(in srgb, var(--color-surface-base) 80%, transparent);
+  }
+  .league-table th, .league-table td { @apply py-3 px-4; }
+  .league-table__col--center { @apply text-center; }
+  .league-table__col--rank { @apply w-16 text-center; }
+  .league-table__col--stat { @apply text-center w-16; }
+  .league-table__col--stat-wide { @apply text-center w-20; }
+  .league-table__col--form { @apply text-center w-40; }
+  .league-table__col--tier { @apply text-center w-24; }
+  .league-table__col--group { @apply text-center w-32; }
+  .league-table__col--points { @apply text-center w-24 font-bold; }
+  .league-table tbody { @apply text-sm; }
+  .league-table tbody tr { border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent); }
+  .standings-row { @apply transition-colors; }
+  .standings-row:not(.standings-row--own):hover {
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 30%, transparent);
+  }
+  .standings-row--own {
+    background-color: color-mix(in srgb, var(--color-brand-500) 10%, transparent);
+    color: var(--color-brand-400);
+    font-weight: 700;
+    border-left: 4px solid var(--color-brand-500);
+  }
+  .standings-row__cell--dense { @apply py-3.5; }
+  .standings-row__rank { @apply text-center font-mono; }
+  .standings-row__rank-inner { @apply flex items-center justify-center gap-1; }
+  .standings-row__indicator { @apply text-xs font-semibold; }
+  .standings-row__indicator--promo-direct { color: var(--color-brand-500); }
+  .standings-row__indicator--promo-possible { color: color-mix(in srgb, var(--color-brand-400) 50%, transparent); }
+  .standings-row__indicator--releg-direct { color: var(--color-error-border); }
+  .standings-row__indicator--releg-possible { color: color-mix(in srgb, var(--color-error-text) 50%, transparent); }
+  .standings-row__team-inner { @apply flex items-center gap-2; }
+  .standings-row__emblem { @apply text-base select-none; }
+  .standings-row__stat { @apply text-center font-mono; color: var(--color-text-secondary); }
+  .standings-row__stat-muted { @apply text-center font-mono; color: var(--color-text-muted); }
+  .standings-row__points { @apply text-center font-mono font-bold; color: var(--color-text-primary); }
+  .league-npc-tag {
+    @apply text-[9px] px-1 py-0.5 rounded font-mono uppercase;
+    background-color: var(--color-surface-overlay);
+    color: var(--color-text-muted);
+  }
+  .league-goal-diff { @apply text-center font-mono; }
+  .league-goal-diff--positive { color: var(--color-brand-500); }
+  .league-goal-diff--negative { color: var(--color-error-border); }
+  .league-goal-diff--neutral { color: var(--color-text-muted); }
+  .league-form-badges { @apply flex items-center justify-center gap-1.5; }
+  .league-form-badge { @apply w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full cursor-default; }
+  .league-form-badge--win {
+    background-color: color-mix(in srgb, var(--color-success-bg) 90%, var(--color-surface-page));
+    color: var(--color-success-text);
+    border: 1px solid color-mix(in srgb, var(--color-success-border) 30%, transparent);
+  }
+  .league-form-badge--draw {
+    background-color: var(--color-surface-overlay);
+    color: var(--color-text-muted);
+    border: 1px solid color-mix(in srgb, var(--color-border) 30%, transparent);
+  }
+  .league-form-badge--loss {
+    background-color: color-mix(in srgb, var(--color-error-bg) 90%, var(--color-surface-page));
+    color: var(--color-error-text);
+    border: 1px solid color-mix(in srgb, var(--color-error-border) 30%, transparent);
+  }
+  .league-form-empty { @apply text-xs; color: var(--color-text-muted); }
+  .league-empty-message { @apply text-sm text-center py-6; color: var(--color-text-muted); }
+  .league-fixtures-grid { @apply grid gap-8; grid-template-columns: 1fr; @media (min-width: 1024px) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .league-section { @apply flex flex-col gap-4; }
+  .league-section__title {
+    @apply text-base font-bold pb-2;
+    color: var(--color-brand-400);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .fixture-card {
+    @apply rounded p-4 flex flex-col sm:flex-row items-center justify-between gap-4;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+  }
+  .fixture-card--completed { opacity: 0.8; }
+  .fixture-card__date { @apply text-xs; color: var(--color-text-muted); }
+  .fixture-card__date-day { @apply block font-semibold uppercase text-[9px]; color: var(--color-text-secondary); }
+  .fixture-card__matchup { @apply flex items-center justify-center gap-3 text-sm flex-1; }
+  .fixture-card__team { @apply font-medium flex-1; }
+  .fixture-card__team--home { @apply text-right; }
+  .fixture-card__team--away { @apply text-left; }
+  .fixture-card__team--highlight { color: var(--color-brand-400); font-weight: 700; }
+  .fixture-card__score {
+    @apply px-2.5 py-1 rounded font-mono text-xs font-semibold;
+    background-color: var(--color-surface-page);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+  }
+  .fixture-card__status { @apply text-[10px] py-1 px-2.5 rounded font-medium select-none uppercase; }
+  .fixture-card__status--completed { background-color: var(--color-surface-overlay); color: var(--color-text-muted); }
+  .fixture-card__status--pending {
+    background-color: color-mix(in srgb, var(--color-success-bg) 40%, transparent);
+    color: var(--color-success-text);
+    border: 1px solid color-mix(in srgb, var(--color-success-border) 20%, transparent);
+  }
+  .fixture-list { @apply flex flex-col gap-2.5; }
+  .fixture-list-scroll { @apply flex flex-col gap-6 max-h-[70vh] overflow-y-auto pr-2; }
+  .fixture-round-header { @apply pb-2 pt-2; border-bottom: 1px solid var(--color-border); &:first-child { padding-top: 0; } }
+  .fixture-round-header__title { @apply text-xs font-bold uppercase tracking-wide; color: color-mix(in srgb, var(--color-brand-500) 80%, transparent); }
+  .fixture-row {
+    @apply flex items-center justify-between py-2 px-3 rounded text-xs gap-2;
+    border: 1px solid transparent;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast);
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-surface-overlay) 20%, transparent);
+      border-color: color-mix(in srgb, var(--color-border) 40%, transparent);
+    }
+  }
+  .fixture-row__team { @apply truncate; }
+  .fixture-row__team--home { @apply w-5/12 text-right; }
+  .fixture-row__team--away { @apply w-5/12 text-left; }
+  .fixture-row__team--highlight { color: var(--color-brand-400); font-weight: 700; }
+  .fixture-row__score {
+    @apply w-2/12 text-center py-0.5 px-2 rounded font-mono text-[11px];
+    background-color: var(--color-surface-page);
+    color: var(--color-text-muted);
+    border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+  }
+}

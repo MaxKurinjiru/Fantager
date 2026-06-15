@@ -23,6 +23,7 @@ nav:
   toggle_menu: Toggle menu
   finance: Ledger
   community: Community
+  mail: Player Mail
   calendar: Calendar
   arena: Arena
 
@@ -86,7 +87,6 @@ flash:
 dashboard:
   treasury: Treasury
   gold: Gold
-  crystals: Crystals
   total_essence: Total Essence
   edit_profile: Edit Profile
   morale: Team Morale
@@ -204,6 +204,10 @@ heroes:
   primary_attrs_desc: Base attributes determine combat efficiency.
   status_condition: Status & Condition
   status_condition_desc: Current physical state and recovery metrics.
+  abbr_str: STR
+  abbr_dex: DEX
+  abbr_kon: KON
+  abbr_spd: SPD
   combat_form: Combat Form
   fatigue: Fatigue Level
   morale_label: Morale
@@ -242,6 +246,7 @@ summoning:
   arena_theme_desc: "Races are drawn based on your Arena's theme adaptation and their relationship/affinity (>= 50) to the theme race."
   potential_races: Potential Summonable Races
   portal_title: Summoning Portal
+  race_placeholder: "Race"
   portal_desc: Channel your gold into the portal to draw a random hero compatible with your Arena theme.
   portal_channeling: Channelling Portal...
   portal_channeling_desc: Summoning junior hero from the void.
@@ -293,7 +298,6 @@ finance:
   type_marketplace_fee: Marketplace Fee
   type_quest_reward: Quest Reward
   type_dungeon_reward: Dungeon Reward
-  type_crafting_cost: Crafting Cost
   type_dismantle_gain: Dismantle Gain
   type_item_repair: Item Repair
   type_spell_learning_cost: Spell Scroll Purchase
@@ -335,9 +339,6 @@ hq:
     library:
       name: Library & Academy
       desc: Increases hero experience points gain rate.
-    forge:
-      name: Forge & Workshop
-      desc: Boosts item crafting success and durability.
     treasury:
       name: Treasury
       desc: Increases passive gold income multipliers.
@@ -354,8 +355,6 @@ hq:
   bonus_fatigue_reduction_pct: Fatigue Reduction
   bonus_recovery_speed_pct: Recovery Speed
   bonus_xp_gain_pct: Experience Gain
-  bonus_crafting_success_pct: Crafting Success
-  bonus_item_durability_pct: Item Durability
   bonus_gold_income_pct: Gold Income
   bonus_roster_capacity: Roster Capacity
   bonus_summon_base_stat_bonus: Base Stat Summon Bonus
@@ -464,7 +463,7 @@ inventory:
   dismantle: Dismantle
   equip_slot_btn: Equip Slot
   rucksack_empty: Rucksack is empty
-  rucksack_empty_desc: Buy weapons or craft them to fill your guild's storage compounding.
+  rucksack_empty_desc: Buy weapons to fill your guild's storage.
   slot_head: Head
   slot_amulet: Amulet
   slot_body: Body Armor
@@ -819,6 +818,8 @@ marketplace:
   col_tx_id: "Transaction ID"
   col_total_price: "Total Price"
   col_fee_tax: "Fee (tax)"
+  card_slot: "Slot:"
+  label_age: "Age"
   card_form: "Form:"
   card_durability: "Durability:"
   error_fetch_listings: "Error loading listings: %error%"
@@ -829,7 +830,7 @@ marketplace:
 
 community:
   title: Kingdom Community
-  subtitle: Read and write threads on your Kingdom board and check your player mail.
+  subtitle: Read and write threads on your Kingdom board.
   tab_forum: Discussion Board
   tab_mail: Player Mail
   no_threads: No threads have been created yet.
@@ -889,6 +890,7 @@ community:
   error_send_reply: "Failed to send reply."
   error_refresh_posts: "Failed to refresh posts."
   error_toggle_lock: "Failed to toggle thread lock."
+  error_load_recipients: "Failed to load recipient list."
   error_load_mail: "Failed to load mail."
   warning_compose_fields: "Please select recipient and fill in the subject and content."
   error_send_msg: "Failed to send message."

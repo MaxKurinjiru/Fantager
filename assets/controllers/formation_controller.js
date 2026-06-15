@@ -33,6 +33,10 @@ export default class extends Controller {
         this.initializeSlotsState();
     }
 
+    disconnect() {
+        this.slotsState = {};
+    }
+
     initializeSlotsState() {
         this.gridSlotTargets.forEach(slot => {
             const position = slot.dataset.position;

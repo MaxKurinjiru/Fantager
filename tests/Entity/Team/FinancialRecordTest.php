@@ -23,7 +23,6 @@ class FinancialRecordTest extends TestCase
         $record->setType(FinancialRecordType::LeagueReward);
         $record->setActor(FinancialRecordActor::System);
         $record->setGoldChange(500);
-        $record->setCrystalsChange(10);
         $record->setEssenceCommonChange(5);
         $record->setEssenceUncommonChange(-2);
         $record->setEssenceRareChange(0);
@@ -41,7 +40,6 @@ class FinancialRecordTest extends TestCase
         $this->assertSame(FinancialRecordType::LeagueReward, $record->getType());
         $this->assertSame(FinancialRecordActor::System, $record->getActor());
         $this->assertSame(500, $record->getGoldChange());
-        $this->assertSame(10, $record->getCrystalsChange());
         $this->assertSame(5, $record->getEssenceCommonChange());
         $this->assertSame(-2, $record->getEssenceUncommonChange());
         $this->assertSame(0, $record->getEssenceRareChange());
@@ -56,7 +54,6 @@ class FinancialRecordTest extends TestCase
     {
         $record = new FinancialRecord();
         $this->assertSame(0, $record->getGoldChange());
-        $this->assertSame(0, $record->getCrystalsChange());
         $this->assertSame(0, $record->getEssenceCommonChange());
         $this->assertSame(0, $record->getEssenceUncommonChange());
         $this->assertSame(0, $record->getEssenceRareChange());

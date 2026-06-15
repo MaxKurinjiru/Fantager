@@ -50,8 +50,6 @@ class Team
     #[ORM\Column(options: ['default' => 0])]
     private int $gold = 0;
 
-    #[ORM\Column(options: ['default' => 0])]
-    private int $crystals = 0;
 
     #[ORM\Column(options: ['default' => 0])]
     private int $essenceCommon = 0;
@@ -201,18 +199,6 @@ class Team
     public function setGold(int $gold): static
     {
         $this->gold = $gold;
-
-        return $this;
-    }
-
-    public function getCrystals(): int
-    {
-        return $this->crystals;
-    }
-
-    public function setCrystals(int $crystals): static
-    {
-        $this->crystals = $crystals;
 
         return $this;
     }

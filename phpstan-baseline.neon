@@ -168,23 +168,6 @@ parameters:
 			count: 1
 			path: src/Entity/Community/Achievement.php
 
-		-
-			message: '#^Method App\\Entity\\Crafting\\CraftingRecipe\:\:getRequiredMaterials\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Entity/Crafting/CraftingRecipe.php
-
-		-
-			message: '#^Method App\\Entity\\Crafting\\CraftingRecipe\:\:setRequiredMaterials\(\) has parameter \$v with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Entity/Crafting/CraftingRecipe.php
-
-		-
-			message: '#^Property App\\Entity\\Crafting\\CraftingRecipe\:\:\$requiredMaterials type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Entity/Crafting/CraftingRecipe.php
 
 		-
 			message: '#^Method App\\Entity\\Dungeon\\DungeonRun\:\:getRewardsItems\(\) return type has no value type specified in iterable type array\.$#'
@@ -499,18 +482,6 @@ parameters:
 			path: src/Repository/Community/TeamAchievementRepository.php
 
 		-
-			message: '#^Class App\\Repository\\Crafting\\CraftingQueueRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Repository/Crafting/CraftingQueueRepository.php
-
-		-
-			message: '#^Class App\\Repository\\Crafting\\CraftingRecipeRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Repository/Crafting/CraftingRecipeRepository.php
-
-		-
 			message: '#^Class App\\Repository\\Dungeon\\DungeonRunRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
 			identifier: missingType.generics
 			count: 1
@@ -823,13 +794,13 @@ parameters:
 			path: src/Service/Headquarters/HeadquartersService.php
 
 		-
-			message: '#^Offset ''arena''\|''barracks''\|''forge''\|''library''\|''medical''\|''summoning_chamber''\|''training''\|''treasury'' on array\{training\: 500, medical\: 400, library\: 600, forge\: 700, treasury\: 450, barracks\: 350, summoning_chamber\: 800, arena\: 900\} on left side of \?\? always exists and is not nullable\.$#'
+			message: '#^Offset ''arena''\|''barracks''\\|''library''\|''medical''\|''summoning_chamber''\|''training''\|''treasury'' on array\{training\: 500, medical\: 400, library\: 600, treasury\: 450, barracks\: 350, summoning_chamber\: 800, arena\: 900\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
 			path: src/Service/Headquarters/HeadquartersService.php
 
 		-
-			message: '#^Offset ''arena''\|''barracks''\|''forge''\|''library''\|''medical''\|''summoning_chamber''\|''training''\|''treasury'' on array\{training\: array\{training_efficiency_pct\: 5\.0\}, medical\: array\{fatigue_reduction_pct\: 8\.0, recovery_speed_pct\: 5\.0\}, library\: array\{xp_gain_pct\: 4\.0\}, forge\: array\{crafting_success_pct\: 5\.0, item_durability_pct\: 3\.0\}, treasury\: array\{gold_income_pct\: 4\.0\}, barracks\: array\{roster_capacity\: 2\.0\}, summoning_chamber\: array\{summon_cost_reduction_pct\: 3\.0\}, arena\: array\{ticket_revenue_pct\: 6\.0, arena_capacity\: 10\.0\}\} on left side of \?\? always exists and is not nullable\.$#'
+			message: '#^Offset ''arena''\|''barracks''\\|''library''\|''medical''\|''summoning_chamber''\|''training''\|''treasury'' on array\{training\: array\{training_efficiency_pct\: 5\.0\}, medical\: array\{fatigue_reduction_pct\: 8\.0, recovery_speed_pct\: 5\.0\}, library\: array\{xp_gain_pct\: 4\.0\}, treasury\: array\{gold_income_pct\: 4\.0\}, barracks\: array\{roster_capacity\: 2\.0\}, summoning_chamber\: array\{summon_cost_reduction_pct\: 3\.0\}, arena\: array\{ticket_revenue_pct\: 6\.0, arena_capacity\: 10\.0\}\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
 			path: src/Service/Headquarters/HeadquartersService.php

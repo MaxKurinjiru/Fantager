@@ -241,16 +241,17 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 ---
 
 ## Crafting
+> **Planned** — routes below are not implemented in the current codebase.
+
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/crafting` | Web\CraftingController | Crafting page — **planned** |
-| GET | `/api/v1/crafting/recipes` | Api\V1\CraftingController | Recipe list |
-| POST | `/api/v1/crafting` | Api\V1\CraftingController | Start crafting |
-| GET | `/api/v1/crafting/queue` | Api\V1\CraftingController | Active jobs |
-| DELETE | `/api/v1/crafting/queue/{id}` | Api\V1\CraftingController | Cancel job |
+| GET | `/api/v1/crafting/recipes` | Api\V1\CraftingController | Recipe list — **planned** |
+| POST | `/api/v1/crafting` | Api\V1\CraftingController | Start crafting — **planned** |
+| GET | `/api/v1/crafting/queue` | Api\V1\CraftingController | Active jobs — **planned** |
+| DELETE | `/api/v1/crafting/queue/{id}` | Api\V1\CraftingController | Cancel job — **planned** |
 
-> Queue completion is processed by `bin/console app:process-crafting-queue` (also callable from cron/tick runner).
 
 ---
 

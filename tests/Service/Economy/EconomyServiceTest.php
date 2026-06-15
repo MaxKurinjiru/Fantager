@@ -93,29 +93,6 @@ class EconomyServiceTest extends TestCase
         $this->assertSame(90, $team->getGold());
     }
 
-    public function testCrystalsLogging(): void
-    {
-        $team = new Team();
-        $team->setCrystals(10);
-
-        $this->entityManagerMock
-            ->expects($this->once())
-            ->method('persist')
-            ->with($this->callback(function (FinancialRecord $record) use ($team) {
-                return $record->getTeam() === $team &&
-                    $record->getCrystalsChange() === -5;
-            }));
-
-        $this->economyService->deductCrystals(
-            $team,
-            5,
-            FinancialRecordType::SpellSlotCost,
-            FinancialRecordActor::Active
-        );
-
-        $this->assertSame(5, $team->getCrystals());
-    }
-
     public function testEssenceLogging(): void
     {
         $team = new Team();
@@ -133,7 +110,7 @@ class EconomyServiceTest extends TestCase
             $team,
             'common',
             2,
-            FinancialRecordType::CraftingCost,
+            FinancialRecordType::SpellLearningCost,
             FinancialRecordActor::Active
         );
 

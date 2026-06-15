@@ -2,18 +2,18 @@
 {% set slot = slot|default(null) %}
 {% set hero = hero|default(null) %}
 {% set default_emoji = default_emoji|default('👤') %}
-{% set title_class = title_class|default('text-gray-550') %}
+{% set title_class = title_class|default('formation-slot__pos-label') %}
 {% set heroes = heroes|default([]) %}
 
 <div data-formation-target="gridSlot" data-position="{{ slot.pos }}" data-hero-id="{{ hero ? hero.id : '' }}"
-     class="bg-gray-955/60 border border-gray-855 rounded-2xl p-3 flex flex-col justify-between items-center text-center min-h-[140px] shadow-sm relative">
-    <span class="text-[9px] font-extrabold {{ title_class }} uppercase tracking-wider mb-2">{{ ('formation.slots.' ~ slot.pos)|trans }}</span>
+     class="formation-slot">
+    <span class="{{ title_class }}">{{ ('formation.slots.' ~ slot.pos)|trans }}</span>
     
     {# Empty Slot Quick Select #}
     <div data-empty-view class="w-full space-y-2 {% if hero %}hidden{% endif %}">
         <span class="text-2xl block select-none opacity-40">{{ default_emoji }}</span>
         <select data-quick-select data-action="change->formation#quickAssign" data-position="{{ slot.pos }}"
-                class="form-input w-full rounded bg-gray-900 border border-gray-800 text-[10px] text-gray-400 p-1 select-none focus:outline-none focus:border-emerald-500">
+                class="form-input formation-slot__quick-select">
             <option value="">-- {{ 'formation.assign'|trans }} --</option>
             {% for h in heroes %}
                 <option value="{{ h.id }}">{{ h.name }}</option>
@@ -25,11 +25,12 @@
     <div data-occupied-view class="w-full h-full flex flex-col justify-between items-center relative {% if not hero %}hidden{% endif %}">
         <button type="button"
                 data-action="click->formation#removeHero" data-position="{{ slot.pos }}"
-                class="absolute -right-1 -top-1 w-5 h-5 bg-red-950/40 hover:bg-red-900 border border-red-900/30 text-red-400 hover:text-white rounded-full flex items-center justify-center text-[8px] font-extrabold transition-colors">
-            ✕
+                class="formation-slot__remove-btn"
+                aria-label="{{ 'formation.delete_btn'|trans }}">
+            <span aria-hidden="true">✕</span>
         </button>
         <span class="text-3xl mb-1 select-none">👤</span>
-        <h4 data-hero-name class="text-xs font-bold text-gray-250 truncate w-full">{{ hero ? hero.name : '' }}</h4>
-        <p data-hero-details class="text-[9px] text-gray-555">{{ hero ? 'js_flash.hq.lvl_short'|trans ~ ' ' ~ hero.level ~ ' ' ~ ('heroes.race_' ~ hero.race.value)|trans : '' }}</p>
+        <h4 data-hero-name class="formation-slot__hero-name">{{ hero ? hero.name : '' }}</h4>
+        <p data-hero-details class="formation-slot__hero-details">{{ hero ? 'js_flash.hq.lvl_short'|trans ~ ' ' ~ hero.level ~ ' ' ~ ('heroes.race_' ~ hero.race.value)|trans : '' }}</p>
     </div>
 </div>

@@ -1,13 +1,13 @@
 {# templates/components/dashboard/team_banner.html.twig #}
 <div class="db-banner">
-    <div class="absolute inset-0 bg-grid-white/[0.01] -z-10"></div>
+    <div class="db-banner__grid-bg"></div>
     
     {# Edit button — opens team profile modal via window CustomEvent (§4.1: type attribute required) #}
     <button type="button"
             class="db-banner__edit-btn"
             aria-label="{{ 'dashboard.edit_profile'|trans }}"
             data-action="click->dashboard-optimization#openProfileModal">
-        <span aria-hidden="true" class="text-sm group-hover:rotate-45 transition-transform duration-300">⚙️</span>
+        <span aria-hidden="true" class="db-banner__edit-icon">⚙️</span>
         <span class="sr-only">{{ 'dashboard.edit_profile'|trans }}</span>
     </button>
 
@@ -20,15 +20,15 @@
     <div class="db-banner__content">
         
         {# 1. Řádek: Název týmu #}
-        <div class="text-center md:text-left">
+        <div class="db-banner__title-wrap">
             <h1 class="db-banner__title">{{ team.name }}</h1>
         </div>
 
         {# 2. Řádek: Království a manažer #}
         <div class="db-banner__meta">
-            <p>{{ 'dashboard.manager'|trans }}: <span class="text-emerald-400 font-semibold">{{ user.displayName }}</span></p>
-            <span class="hidden md:inline text-gray-700 select-none">•</span>
-            <p>{{ 'dashboard.kingdom'|trans }}: <span class="text-gray-300 font-semibold">{{ team.kingdom.name }}</span></p>
+            <p>{{ 'dashboard.manager'|trans }}: <span class="db-banner__meta-highlight">{{ user.displayName }}</span></p>
+            <span class="db-banner__meta-sep">•</span>
+            <p>{{ 'dashboard.kingdom'|trans }}: <span class="db-banner__meta-value">{{ team.kingdom.name }}</span></p>
         </div>
 
         {# 3. Řádek: Morálka, chemie a reputace vedle sebe #}
@@ -37,7 +37,7 @@
             <div class="db-banner__badge db-banner__badge--morale">
                 <span>😊</span>
                 <span class="font-medium">
-                    {{ 'dashboard.morale'|trans }}: <span class="font-bold text-white">{{ team.morale }}</span><span class="text-gray-500 text-[10px]">/100</span>
+                    {{ 'dashboard.morale'|trans }}: <span class="db-banner__badge-value">{{ team.morale }}</span><span class="db-banner__badge-max">/100</span>
                 </span>
             </div>
 
@@ -45,7 +45,7 @@
             <div class="db-banner__badge db-banner__badge--chemistry">
                 <span>⚡</span>
                 <span class="font-medium">
-                    {{ 'dashboard.chemistry'|trans }}: <span class="font-bold text-white">{{ team.chemistry }}</span><span class="text-gray-550 text-[10px]">/100</span>
+                    {{ 'dashboard.chemistry'|trans }}: <span class="db-banner__badge-value">{{ team.chemistry }}</span><span class="db-banner__badge-max">/100</span>
                 </span>
             </div>
 
@@ -53,7 +53,7 @@
             <div class="db-banner__badge db-banner__badge--reputation">
                 <span>⭐</span>
                 <span class="font-medium">
-                    {{ 'dashboard.reputation'|trans }}: <span class="font-bold text-white">{{ team.reputation }}</span>
+                    {{ 'dashboard.reputation'|trans }}: <span class="db-banner__badge-value">{{ team.reputation }}</span>
                 </span>
             </div>
         </div>

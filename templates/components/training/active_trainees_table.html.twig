@@ -1,56 +1,54 @@
 {# templates/components/training/active_trainees_table.html.twig #}
-<div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-4">
-    <h2 class="text-xl font-bold text-white">{{ 'training.active_trainees'|trans }}</h2>
-    
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse">
+<div class="game-panel">
+    <h2 class="community-panel__title">{{ 'training.active_trainees'|trans }}</h2>
+
+    <div class="data-table-wrap">
+        <table class="data-table">
             <thead>
-                <tr class="border-b border-gray-800 text-gray-500 uppercase tracking-wider text-[10px] font-bold">
-                    <th class="pb-3">{{ 'nav.heroes'|trans }}</th>
-                    <th class="pb-3">{{ 'training.trainer'|trans }}</th>
-                    <th class="pb-3">{{ 'training.type'|trans }}</th>
-                    <th class="pb-3 text-center">{{ 'heroes.fatigue'|trans }} ({{ 'training.forecast'|trans }})</th>
-                    <th class="pb-3 text-center">{{ 'heroes.combat_form'|trans }} ({{ 'training.forecast'|trans }})</th>
+                <tr>
+                    <th>{{ 'nav.heroes'|trans }}</th>
+                    <th>{{ 'training.trainer'|trans }}</th>
+                    <th>{{ 'training.type'|trans }}</th>
+                    <th class="data-table__col--center">{{ 'heroes.fatigue'|trans }} ({{ 'training.forecast'|trans }})</th>
+                    <th class="data-table__col--center">{{ 'heroes.combat_form'|trans }} ({{ 'training.forecast'|trans }})</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-850">
+            <tbody>
                 {% set totalActive = 0 %}
                 {% for trainer in trainers %}
                     {% for hero in trainer.heroes %}
                         {% set totalActive = totalActive + 1 %}
                         <tr>
-                            <td class="py-4 font-bold text-white flex items-center gap-2">
-                                <span>💪</span> {{ hero.name }} (Lvl {{ hero.level }})
+                            <td class="data-table__cell--title">
+                                <span aria-hidden="true">💪</span> {{ hero.name }} (Lvl {{ hero.level }})
                             </td>
-                            <td class="py-4 text-gray-400">
-                                {{ trainer.name }}
-                            </td>
-                            <td class="py-4 text-emerald-400 font-semibold">
+                            <td>{{ trainer.name }}</td>
+                            <td class="data-table__cell--accent">
                                 {% if trainer.trainingType %}
                                     {{ ('training.type_' ~ trainer.trainingType.value)|trans }}
                                     {% if trainer.targetAttribute %}
                                         - {{ ('training.attr.' ~ trainer.targetAttribute)|trans }}
                                     {% endif %}
                                 {% else %}
-                                    <span class="text-gray-600">{{ 'training.idle'|trans }}</span>
+                                    <span class="data-table__cell--muted">{{ 'training.idle'|trans }}</span>
                                 {% endif %}
                             </td>
-                            <td class="py-4 text-center">
-                                {{ hero.fatigue }}% &rarr; 
+                            <td class="data-table__col--center">
+                                {{ hero.fatigue }}% &rarr;
                                 {% if trainer.trainingType %}
                                     {% if trainer.trainingType.value == 'form' %}
-                                        <span class="text-emerald-450">{{ max(0, hero.fatigue - 20) }}%</span>
+                                        <span class="data-table__forecast--positive">{{ max(0, hero.fatigue - 20) }}%</span>
                                     {% else %}
-                                        <span class="text-red-450">{{ min(100, hero.fatigue + 20) }}%</span>
+                                        <span class="data-table__forecast--negative">{{ min(100, hero.fatigue + 20) }}%</span>
                                     {% endif %}
                                 {% else %}
                                     <span>{{ hero.fatigue }}%</span>
                                 {% endif %}
                             </td>
-                            <td class="py-4 text-center">
-                                {{ hero.form }}% &rarr; 
+                            <td class="data-table__col--center">
+                                {{ hero.form }}% &rarr;
                                 {% if trainer.trainingType and trainer.trainingType.value == 'form' %}
-                                    <span class="text-emerald-450 font-bold">{{ min(100, hero.form + 20) }}%</span>
+                                    <span class="data-table__forecast--positive data-table__forecast--bold">{{ min(100, hero.form + 20) }}%</span>
                                 {% else %}
                                     <span>{{ hero.form }}%</span>
                                 {% endif %}
@@ -58,10 +56,10 @@
                         </tr>
                     {% endfor %}
                 {% endfor %}
-                
+
                 {% if totalActive == 0 %}
                     <tr>
-                        <td colspan="5" class="py-12 text-center text-gray-550 select-none">
+                        <td colspan="5" class="empty-state">
                             {{ 'training.no_active_trainees'|trans }}
                         </td>
                     </tr>

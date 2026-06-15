@@ -49,6 +49,32 @@ class MessageController extends AbstractController
         return $this->json($data);
     }
 
+    #[Route('/unread-count', name: 'api_messages_unread_count', methods: ['GET'])]
+    public function unreadCount(): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $team = $user->getTeam();
+        if (!$team) {
+            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json(['count' => $this->communityService->countUnreadInbox($team)]);
+    }
+
+    #[Route('/recipients', name: 'api_messages_recipients', methods: ['GET'])]
+    public function recipients(): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $team = $user->getTeam();
+        if (!$team) {
+            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json($this->communityService->getMessageRecipients($team));
+    }
+
     #[Route('/{id}', name: 'api_messages_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id): JsonResponse
     {

@@ -1,5 +1,5 @@
 {
-    "_comment": "Stored on Kingdom.league_tiers_config; capacity = sum(groups) × teams_per_group.",
+    "_comment": "Stored on Kingdom.league_tiers_config; capacity = sum(groups) \u00d7 teams_per_group.",
     "teams_per_group": 10,
     "tiers": [
         {
@@ -11,7 +11,6 @@
             "relegation_slots": 4,
             "rewards": {
                 "gold": 5000,
-                "crystals": 10,
                 "placeholder": true
             }
         },
@@ -25,7 +24,6 @@
             "relegation_slots": 6,
             "rewards": {
                 "gold": 2500,
-                "crystals": 5,
                 "placeholder": true
             }
         },
@@ -40,7 +38,6 @@
             "relegation_slots": 0,
             "rewards": {
                 "gold": 1000,
-                "crystals": 0,
                 "placeholder": true
             }
         }

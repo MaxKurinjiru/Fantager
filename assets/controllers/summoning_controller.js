@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { csrfHeaders } from '../utils/csrf.js';
 
 export default class extends Controller {
     static targets = [
@@ -23,10 +24,14 @@ export default class extends Controller {
         errorFailed: String,
         limitReached: String,
         levelLabel: String,
-        races: Object
+        races: Object,
+        statLabels: Object
     };
 
     connect() {
+    }
+
+    disconnect() {
     }
 
     async summon(e) {
@@ -41,15 +46,9 @@ export default class extends Controller {
         this.portalTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
         try {
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-
             const response = await fetch('/api/v1/summoning', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({})
             });
 
@@ -89,33 +88,17 @@ export default class extends Controller {
         this.heroRaceTarget.previousElementSibling.textContent = icon;
 
         // Fill stats
-        const statLabels = {
-            str: 'Strength',
-            dex: 'Dexterity',
-            kon: 'Constitution',
-            spd: 'Speed',
-            int: 'Intelligence',
-            wil: 'Willpower',
-            cha: 'Charisma',
-            lck: 'Luck'
-        };
+        const statLabels = this.hasStatLabelsValue ? this.statLabelsValue : {};
+        const statTemplate = document.getElementById('template-summoning-stat');
 
-        this.heroStatsTarget.innerHTML = '';
+        this.heroStatsTarget.replaceChildren();
         Object.entries(statLabels).forEach(([key, label]) => {
             const val = hero.attributes ? hero.attributes[key] : undefined;
-            const statDiv = document.createElement('div');
-            statDiv.className = 'bg-gray-950 border border-gray-850 p-2.5 rounded-lg text-center';
-            const spanKey = document.createElement('span');
-            spanKey.className = 'block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-0.5';
-            spanKey.textContent = key.toUpperCase();
-            
-            const spanVal = document.createElement('span');
-            spanVal.className = 'text-sm font-extrabold text-white';
-            spanVal.textContent = val !== undefined ? val.toString() : '';
-            
-            statDiv.appendChild(spanKey);
-            statDiv.appendChild(spanVal);
-            this.heroStatsTarget.appendChild(statDiv);
+            const statNode = statTemplate.content.cloneNode(true);
+            statNode.querySelector('.js-stat-key').textContent = key.toUpperCase();
+            statNode.querySelector('.js-stat-label').textContent = label;
+            statNode.querySelector('.js-stat-value').textContent = val !== undefined ? val.toString() : '';
+            this.heroStatsTarget.appendChild(statNode);
         });
 
         // Set inspect link action
@@ -158,6 +141,11 @@ export default class extends Controller {
     showError(message) {
         if (!this.hasErrorAlertTarget || !this.hasErrorMessageTarget) return;
         showAlert(this.errorAlertTarget, this.errorMessageTarget, 'error', message);
+    }
+
+    reloadPage(event) {
+        event?.preventDefault();
+        window.location.reload();
     }
 
     hideError() {

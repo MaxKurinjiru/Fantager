@@ -146,7 +146,6 @@ class KingdomInitializationService
         $kingdom->setSeasonLength((int) $settings['season_length']);
         $kingdom->setLevelCap((int) $settings['level_cap']);
         $kingdom->setXpModifier((string) $settings['xp_modifier']);
-        $kingdom->setCraftingBoost((string) $settings['crafting_boost']);
         $kingdom->setLeagueTiersConfig($leagueConfig);
 
         $this->em->persist($kingdom);
@@ -248,7 +247,6 @@ class KingdomInitializationService
         $team->setChemistry((int) ($teamConfig['chemistry'] ?? 0));
         $team->setFanBase((int) ($teamConfig['fan_base'] ?? 350));
         $team->setGold((int) ($resources['gold'] ?? 0));
-        $team->setCrystals((int) ($resources['crystals'] ?? 0));
         $team->setEssenceCommon((int) ($resources['essence_common'] ?? 0));
         $team->setEssenceUncommon((int) ($resources['essence_uncommon'] ?? 0));
         $team->setEssenceRare((int) ($resources['essence_rare'] ?? 0));

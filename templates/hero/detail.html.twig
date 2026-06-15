@@ -3,18 +3,18 @@
 {% block title %}{{ 'heroes.details_title'|trans }} — {{ hero.name }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="hero-rename"
+<div class="hero-detail-page page-shell" data-controller="hero-rename"
      data-hero-rename-hero-id-value="{{ hero.id }}"
      data-hero-rename-error-empty-value="{{ 'js_flash.heroes.name_empty'|trans }}"
      data-hero-rename-error-rename-value="{{ 'js_flash.heroes.failed_rename'|trans }}"
 >
     
     {# --- Breadcrumbs & Back Link --- #}
-    <div class="flex items-center justify-between border-b border-gray-800 pb-4">
-        <div class="flex items-center gap-2 text-sm text-gray-400">
-            <a href="{{ path('app_heroes') }}" class="hover:text-emerald-400 transition-colors">{{ 'heroes.back_roster'|trans }}</a>
+    <div class="hero-detail-nav">
+        <div class="hero-detail-nav__trail">
+            <a href="{{ path('app_heroes') }}" class="link">{{ 'heroes.back_roster'|trans }}</a>
             <span>/</span>
-            <span class="text-gray-200 font-semibold">{{ hero.name }}</span>
+            <span class="hero-detail-nav__current">{{ hero.name }}</span>
         </div>
         <a href="{{ path('app_heroes') }}" class="btn btn-outline btn--sm gap-1.5">
             <span>⬅️</span> {{ 'heroes.back_roster'|trans }}
@@ -33,10 +33,10 @@
     {% include 'components/hero/header_card.html.twig' with { hero: hero } %}
 
     {# --- Main Layout Grid --- #}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="hero-detail-grid">
         
         {# LEFT COLUMN: Primary Attributes & Core Stats (1 Column) #}
-        <div class="space-y-8 lg:col-span-1">
+        <div class="hero-detail-grid__side">
             {# Attributes Panel #}
             {% include 'components/hero/attributes_panel.html.twig' with { hero: hero, statBonuses: statBonuses } %}
 
@@ -45,13 +45,13 @@
         </div>
 
         {# RIGHT COLUMN: Equipment, Spells, Stats & History (2 Columns) #}
-        <div class="lg:col-span-2 space-y-8">
+        <div class="hero-detail-grid__main">
             
             {# Equipment Paperdoll Grid #}
             {% include 'components/hero/equipped_gear.html.twig' with { hero: hero, equipped: equipped } %}
 
             {# Spells & Magic Mastery #}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="hero-detail-split">
                 {# Spell slots #}
                 {% include 'components/hero/spell_slots.html.twig' with { hero: hero } %}
 
@@ -60,7 +60,7 @@
             </div>
 
             {# Statistics & History #}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="hero-detail-split">
                 {# Stats summary card #}
                 {% include 'components/hero/combat_stats.html.twig' with { hero: hero, trainingHistory: trainingHistory } %}
 

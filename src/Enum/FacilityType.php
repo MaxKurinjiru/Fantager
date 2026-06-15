@@ -9,7 +9,6 @@ enum FacilityType: string
     case Training = 'training';
     case Medical = 'medical';
     case Library = 'library';
-    case Forge = 'forge';
     case Treasury = 'treasury';
     case Barracks = 'barracks';
     case SummoningChamber = 'summoning_chamber';
@@ -26,7 +25,6 @@ enum FacilityType: string
             self::Training => ['training_efficiency_pct' => 5.0],
             self::Medical => ['fatigue_reduction_pct' => 8.0, 'recovery_speed_pct' => 5.0],
             self::Library => ['xp_gain_pct' => 4.0],
-            self::Forge => ['crafting_success_pct' => 5.0, 'item_durability_pct' => 3.0],
             self::Treasury => ['gold_income_pct' => 4.0],
             self::Barracks => ['roster_capacity' => 2.0],
             self::SummoningChamber => ['summon_base_stat_bonus' => 0.4, 'summon_stat_random_bonus' => 1.0, 'summon_stat_total_cap' => 7.0],

@@ -69,7 +69,6 @@ class TeamService
             ],
             'resources' => [
                 'gold' => $team->getGold(),
-                'crystals' => $team->getCrystals(),
                 'essence_common' => $team->getEssenceCommon(),
                 'essence_uncommon' => $team->getEssenceUncommon(),
                 'essence_rare' => $team->getEssenceRare(),

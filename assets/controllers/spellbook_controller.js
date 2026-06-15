@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { csrfHeaders } from '../utils/csrf.js';
 
 export default class extends Controller {
     static targets = [
@@ -15,7 +16,8 @@ export default class extends Controller {
         errorEquip: String,
         successEquip: String,
         errorUnequip: String,
-        successUnequip: String
+        successUnequip: String,
+        textEquipping: String
     };
 
     connect() {
@@ -52,15 +54,9 @@ export default class extends Controller {
         btn.textContent = this.textLearningValue;
 
         try {
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-
             const response = await fetch(`/api/v1/heroes/${heroId}/spells/learn`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ spell_id: parseInt(spellId, 10) })
             });
 
@@ -98,16 +94,14 @@ export default class extends Controller {
 
         if (!heroId || !heroSpellId || !slot) return;
 
-        try {
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = this.textEquippingValue;
 
+        try {
             const response = await fetch(`/api/v1/heroes/${heroId}/spells/equip`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ hero_spell_id: parseInt(heroSpellId, 10), slot: parseInt(slot, 10) })
             });
 
@@ -122,6 +116,8 @@ export default class extends Controller {
 
         } catch (error) {
             this.showAlert('error', error.message);
+            btn.disabled = false;
+            btn.textContent = originalText;
         }
     }
 
@@ -138,15 +134,9 @@ export default class extends Controller {
         btn.textContent = '...';
 
         try {
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-
             const response = await fetch(`/api/v1/heroes/${heroId}/spells/unequip`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ hero_spell_id: parseInt(heroSpellId, 10) })
             });
 

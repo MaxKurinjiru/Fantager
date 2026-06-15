@@ -1,35 +1,19 @@
-{% set wrapper_class = wrapper_class|default('grid grid-cols-4 gap-2 mb-6 text-xs text-center border-t border-gray-800/40 pt-4') %}
+{% set wrapper_class = wrapper_class|default('hero-attr-grid hero-attr-grid--bordered mb-6') %}
+{% set attr_keys = [
+    { key: 'str', field: 'str' },
+    { key: 'dex', field: 'dex' },
+    { key: 'kon', field: 'kon' },
+    { key: 'spd', field: 'spd' },
+    { key: 'int', field: 'intel' },
+    { key: 'wil', field: 'wil' },
+    { key: 'cha', field: 'cha' },
+    { key: 'lck', field: 'lck' },
+] %}
 <div class="{{ wrapper_class }}">
-    <div class="bg-gray-950/20 p-1 rounded">
-        <span class="block text-[9px] text-gray-500 uppercase">STR</span>
-        <span class="font-bold text-gray-300">{{ hero.str }}</span>
-    </div>
-    <div class="bg-gray-950/20 p-1 rounded">
-        <span class="block text-[9px] text-gray-500 uppercase">DEX</span>
-        <span class="font-bold text-gray-300">{{ hero.dex }}</span>
-    </div>
-    <div class="bg-gray-950/20 p-1 rounded">
-        <span class="block text-[9px] text-gray-500 uppercase">KON</span>
-        <span class="font-bold text-gray-300">{{ hero.kon }}</span>
-    </div>
-    <div class="bg-gray-950/20 p-1 rounded">
-        <span class="block text-[9px] text-gray-500 uppercase">SPD</span>
-        <span class="font-bold text-gray-300">{{ hero.spd }}</span>
-    </div>
-    <div class="bg-gray-950/20 p-1 rounded">
-        <span class="block text-[9px] text-gray-500 uppercase">INT</span>
-        <span class="font-bold text-gray-300">{{ hero.intel }}</span>
-    </div>
-    <div class="bg-gray-950/20 p-1 rounded">
-        <span class="block text-[9px] text-gray-500 uppercase">WIL</span>
-        <span class="font-bold text-gray-300">{{ hero.wil }}</span>
-    </div>
-    <div class="bg-gray-950/20 p-1 rounded">
-        <span class="block text-[9px] text-gray-500 uppercase">CHA</span>
-        <span class="font-bold text-gray-300">{{ hero.cha }}</span>
-    </div>
-    <div class="bg-gray-950/20 p-1 rounded">
-        <span class="block text-[9px] text-gray-500 uppercase">LCK</span>
-        <span class="font-bold text-gray-300">{{ hero.lck }}</span>
-    </div>
+    {% for attr in attr_keys %}
+        <div class="hero-attr-cell">
+            <span class="hero-attr-cell__label">{{ ('training.attr.' ~ attr.key)|trans }}</span>
+            <span class="hero-attr-cell__value">{{ attribute(hero, attr.field) }}</span>
+        </div>
+    {% endfor %}
 </div>

@@ -28,13 +28,14 @@
     {% endfor %}
 {% endif %}
 
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="spellbook"
+<div class="spellbook-page page-shell" data-controller="spellbook"
      data-spellbook-text-learning-value="{{ 'js_flash.spells.learning'|trans }}"
      data-spellbook-error-learn-value="{{ 'js_flash.spells.failed_learn'|trans }}"
      data-spellbook-success-learn-value="{{ 'js_flash.spells.success_learn'|trans }}"
      data-spellbook-error-equip-value="{{ 'js_flash.spells.failed_equip'|trans }}"
      data-spellbook-success-equip-value="{{ 'js_flash.spells.success_equip'|trans }}"
      data-spellbook-error-unequip-value="{{ 'js_flash.spells.failed_unequip'|trans }}"
+     data-spellbook-text-equipping-value="{{ 'js_flash.inventory.equipping'|trans }}"
      data-spellbook-success-unequip-value="{{ 'js_flash.spells.success_unequip'|trans }}"
 >
     
@@ -52,10 +53,10 @@
     } %}
 
     {# --- Main Layout Grid --- #}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="screen-grid">
         
         {# LEFT COLUMN: Hero Spell Slots & Mastery (1 Column) #}
-        <div class="lg:col-span-1 space-y-6">
+        <div class="screen-grid__aside">
             {% include 'components/spell/trainee_manager.html.twig' with {
                 selected_hero_id: selected_hero_id,
                 selected_hero: selected_hero,
@@ -66,9 +67,9 @@
         </div>
 
         {# RIGHT COLUMN: Spellbook Tabs (2 Columns) #}
-        <div class="lg:col-span-2 space-y-6">
+        <div class="screen-grid__main">
             {# Sub-tab controls — controlled by tab_controller.js §9.2 #}
-            <div class="flex border-b border-gray-850 gap-2 pb-px" data-controller="tab">
+            <div class="tab-nav" data-controller="tab">
                 <button type="button"
                         data-tab-target="btn"
                         data-action="click->tab#switch"

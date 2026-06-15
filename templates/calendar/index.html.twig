@@ -27,28 +27,60 @@
         subtitle: 'calendar.subtitle'
     } %}
 
-    <div class="bg-gray-900/40 border border-gray-800 rounded-xl p-4 flex flex-wrap gap-4 items-center justify-between backdrop-blur-md">
+    <div class="filter-bar game-panel">
         <div class="flex flex-wrap gap-4 items-center">
-            <label class="inline-flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-                <input type="checkbox" data-calendar-target="teamOnlyToggle" data-action="change->calendar#reload" class="rounded border-gray-700 bg-gray-950 text-emerald-500">
+            <label class="form-check cursor-pointer">
+                <input type="checkbox" data-calendar-target="teamOnlyToggle" data-action="change->calendar#reload" class="rounded form-control-accent">
                 <span>{{ 'calendar.filter_team_only'|trans }}</span>
             </label>
-            <label class="inline-flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-                <input type="checkbox" data-calendar-target="systemToggle" data-action="change->calendar#reload" class="rounded border-gray-700 bg-gray-950 text-emerald-500">
+            <label class="form-check cursor-pointer">
+                <input type="checkbox" data-calendar-target="systemToggle" data-action="change->calendar#reload" class="rounded form-control-accent">
                 <span>{{ 'calendar.filter_show_system'|trans }}</span>
             </label>
         </div>
-        <div class="flex gap-2">
+        <div class="cal-week-nav">
             <button type="button" data-action="click->calendar#prevWeek" class="btn btn-outline btn--sm">←</button>
-            <span data-calendar-target="rangeLabel" class="text-sm font-semibold text-gray-200 min-w-[180px] text-center"></span>
+            <span data-calendar-target="rangeLabel" class="cal-week-nav__label"></span>
             <button type="button" data-action="click->calendar#nextWeek" class="btn btn-outline btn--sm">→</button>
         </div>
     </div>
 
     <div data-calendar-target="feedContainer" class="space-y-3">
-        <div class="flex justify-center py-12">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500"></div>
+        <div class="loading-spinner">
+            <div class="loading-spinner__icon" aria-hidden="true"></div>
         </div>
     </div>
+
+    <template id="template-calendar-loading">
+        <div class="cal-feed-loading">
+            <div class="cal-feed-loading__spinner" aria-hidden="true"></div>
+        </div>
+    </template>
+
+    <template id="template-calendar-empty">
+        <p class="cal-feed-empty js-cal-empty"></p>
+    </template>
+
+    <template id="template-calendar-error">
+        <p class="cal-feed-error js-cal-error"></p>
+    </template>
+
+    <template id="template-calendar-event">
+        <article class="cal-event">
+            <div class="cal-event__date">
+                <div class="cal-event__weekday js-cal-weekday"></div>
+                <div class="cal-event__day js-cal-day"></div>
+                <div class="cal-event__time js-cal-time"></div>
+            </div>
+            <div class="cal-event__body">
+                <div class="cal-event__meta">
+                    <span class="cal-event__type js-cal-type"></span>
+                    <span class="cal-event__status js-cal-status"></span>
+                </div>
+                <h3 class="cal-event__title js-cal-title"></h3>
+                <p class="cal-event__description js-cal-description"></p>
+            </div>
+        </article>
+    </template>
 </div>
 {% endblock %}

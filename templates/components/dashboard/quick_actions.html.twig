@@ -9,18 +9,16 @@
     { path: 'app_spells', emoji: '📖', label: 'nav.spells' }
 ] %}
 
-<div class="bg-gray-900/40 backdrop-blur-sm rounded-xl p-6 border border-gray-800/60 shadow-lg relative overflow-hidden">
-    <div class="absolute -right-16 -top-16 w-36 h-36 bg-emerald-500/[0.01] rounded-full blur-3xl pointer-events-none"></div>
-    <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+<div class="db-quick-actions">
+    <h3 class="db-quick-actions__title">
         <span>⚡</span> {{ 'dashboard.quick_actions'|trans }}
     </h3>
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="db-quick-actions__grid">
         {% for action in actions %}
-            <a href="{{ path(action.path) }}" class="flex flex-col items-center justify-center p-4 rounded-xl bg-gray-950/80 hover:bg-gray-900/50 border border-gray-850 hover:border-emerald-500/30 transition-all duration-300 text-center group shadow-md hover:shadow-emerald-950/10">
-                <span class="text-3xl mb-2.5 group-hover:scale-110 group-hover:-translate-y-0.5 transition-transform duration-300 ease-out select-none">{{ action.emoji }}</span>
-                <span class="text-xs font-bold text-gray-400 group-hover:text-emerald-400 transition-colors duration-250">{{ action.label|trans }}</span>
+            <a href="{{ path(action.path) }}" class="db-quick-action">
+                <span class="db-quick-action__emoji">{{ action.emoji }}</span>
+                <span class="db-quick-action__label">{{ action.label|trans }}</span>
             </a>
         {% endfor %}
     </div>
 </div>
-

@@ -13,7 +13,6 @@ enum ActivityLogType: string
     case HeroDied = 'hero_died';
     case HeroRetired = 'hero_retired';
     case TrainingCompleted = 'training_completed';
-    case ItemCrafted = 'item_crafted';
     case ItemPurchased = 'item_purchased';
     case ItemSold = 'item_sold';
     case QuestCompleted = 'quest_completed';

@@ -1,13 +1,13 @@
 {# templates/components/item/rucksack_items.html.twig #}
 <div class="lg:col-span-2 space-y-6">
-    <h2 class="text-xl font-bold text-white">{{ 'inventory.rucksack'|trans }}</h2>
+    <h2 class="hero-panel__title">{{ 'inventory.rucksack'|trans }}</h2>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {% for item in items %}
             {% set is_equipped = item.equippedHero is not null %}
             {% set is_equipped_on_selected = selected_hero and is_equipped and item.equippedHero.id == selected_hero.id %}
 
-            <div class="bg-gray-900/40 border border-gray-800 hover:border-emerald-500/10 rounded-2xl p-4 flex flex-col justify-between backdrop-blur-md transition-all shadow-md">
+            <div class="item-card">
                 <div class="space-y-3">
                     {# Item Header #}
                     <div class="flex justify-between items-start">
@@ -21,41 +21,35 @@
                             </span>
                             <div>
                                 <h3 class="font-bold text-white text-sm leading-tight">{{ item.name }}</h3>
-                                <span class="text-[9px] font-bold uppercase tracking-wider
-                                    {% if item.rarity.value == 'common' %}text-gray-400
-                                    {% elseif item.rarity.value == 'uncommon' %}text-green-400
-                                    {% elseif item.rarity.value == 'rare' %}text-blue-400
-                                    {% elseif item.rarity.value == 'epic' %}text-purple-400
-                                    {% elseif item.rarity.value == 'legendary' %}text-orange-400
-                                    {% else %}text-red-400{% endif %}">
+                                <span class="item-card__rarity-line rarity-tag rarity-tag--{{ item.rarity.value }}">
                                     {{ ('inventory.rarity_' ~ item.rarity.value)|trans }} &bull; {{ ('inventory.slot_' ~ item.slotType.value)|trans }}
                                 </span>
                             </div>
                         </div>
                         
-                        <span class="text-[9px] font-extrabold bg-gray-950 px-2 py-0.5 border border-gray-855 rounded text-gray-400">
+                        <span class="item-durability-badge">
                             {{ 'inventory.durability'|trans }}: {{ item.durability }}%
                         </span>
                     </div>
 
                     {# Stats / Bonuses #}
-                    <div class="bg-gray-950/60 rounded-xl p-2.5 border border-gray-855 flex flex-wrap gap-2 text-[10px] font-semibold">
+                    <div class="item-bonus-panel">
                         {% for stat, bonus in item.bonuses %}
-                            <span class="bg-gray-900 border border-gray-800 px-2 py-0.5 rounded text-gray-400">
-                                {{ stat|upper }}: <strong class="text-emerald-400">+{{ bonus }}</strong>
+                            <span class="item-bonus-tag">
+                                {{ stat|upper }}: <strong class="item-bonus-tag__value">+{{ bonus }}</strong>
                             </span>
                         {% else %}
-                            <span class="text-gray-600 italic">{{ 'inventory.no_bonuses'|trans }}</span>
+                            <span class="item-bonus-empty">{{ 'inventory.no_bonuses'|trans }}</span>
                         {% endfor %}
                     </div>
                 </div>
 
                 {# Actions panel #}
-                <div class="border-t border-gray-850 mt-4 pt-3.5 flex items-center justify-between gap-4">
+                <div class="panel-divider panel-divider-row">
                     {# Equipped Badge / State #}
-                    <div class="text-[10px] text-gray-550 font-semibold">
+                    <div class="item-card__footer-meta">
                         {% if is_equipped %}
-                            {{ 'inventory.equipped_by'|trans({'%hero%': '<span class="text-gray-300 font-bold">' ~ item.equippedHero.name ~ '</span>'})|raw }}
+                            {{ 'inventory.equipped_by'|trans({'%hero%': '<span class="item-card__equipped-name">' ~ item.equippedHero.name ~ '</span>'})|raw }}
                         {% else %}
                             <span class="text-emerald-500">{{ 'inventory.available'|trans }}</span>
                         {% endif %}
@@ -90,10 +84,10 @@
                 </div>
             </div>
         {% else %}
-            <div class="col-span-full bg-gray-900/20 border border-gray-855 border-dashed rounded-xl p-8 text-center select-none opacity-50">
+            <div class="item-empty-state">
                 <span class="text-4xl mb-2 block">📭</span>
                 <h4 class="text-xs font-bold text-white mb-1">{{ 'inventory.rucksack_empty'|trans }}</h4>
-                <p class="text-[10px] text-gray-550">{{ 'inventory.rucksack_empty_desc'|trans }}</p>
+                <p class="hero-panel__desc">{{ 'inventory.rucksack_empty_desc'|trans }}</p>
             </div>
         {% endfor %}
     </div>

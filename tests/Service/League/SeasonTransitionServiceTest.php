@@ -52,14 +52,14 @@ class SeasonTransitionServiceTest extends TestCase
                     'groups' => 1,
                     'promotion_slots' => 0,
                     'relegation_slots' => 2,
-                    'rewards' => ['gold' => 5000, 'crystals' => 10]
+                    'rewards' => ['gold' => 5000]
                 ],
                 [
                     'name' => 'T2',
                     'groups' => 1,
                     'promotion_slots' => 2,
                     'relegation_slots' => 0,
-                    'rewards' => ['gold' => 2500, 'crystals' => 5]
+                    'rewards' => ['gold' => 2500]
                 ]
             ]
         ]);
@@ -100,14 +100,14 @@ class SeasonTransitionServiceTest extends TestCase
                     'groups' => 1,
                     'promotion_slots' => 0,
                     'relegation_slots' => 1,
-                    'rewards' => ['gold' => 5000, 'crystals' => 10]
+                    'rewards' => ['gold' => 5000]
                 ],
                 [
                     'name' => 'T2',
                     'groups' => 1,
                     'promotion_slots' => 1,
                     'relegation_slots' => 0,
-                    'rewards' => ['gold' => 2500, 'crystals' => 5]
+                    'rewards' => ['gold' => 2500]
                 ]
             ]
         ]);
@@ -121,7 +121,7 @@ class SeasonTransitionServiceTest extends TestCase
         $t1Current = new LeagueTier();
         $this->setEntityId($t1Current, 1);
         $t1Current->setTierName('T1');
-        $t1Current->setRewards(['gold' => 5000, 'crystals' => 10]);
+        $t1Current->setRewards(['gold' => 5000]);
         $t1Current->setRelegationSlots(1);
         $currentSeason->addTier($t1Current);
 
@@ -151,7 +151,7 @@ class SeasonTransitionServiceTest extends TestCase
         $t2Current = new LeagueTier();
         $this->setEntityId($t2Current, 2);
         $t2Current->setTierName('T2');
-        $t2Current->setRewards(['gold' => 2500, 'crystals' => 5]);
+        $t2Current->setRewards(['gold' => 2500]);
         $t2Current->setPromotionSlots(1);
         $currentSeason->addTier($t2Current);
 
@@ -214,7 +214,7 @@ class SeasonTransitionServiceTest extends TestCase
             ->with(LeagueSeason::class)
             ->willReturn($seasonRepoMock);
 
-        // We expect EconomyService to credit Gold and Crystals to all 20 teams
+        // We expect EconomyService to credit Gold to all 20 teams
         $this->economyServiceMock->expects($this->atLeastOnce())
             ->method('addGold');
 
@@ -245,14 +245,14 @@ class SeasonTransitionServiceTest extends TestCase
                     'groups' => ['Alpha Group', 'Beta Group'],
                     'promotion_slots' => 0,
                     'relegation_slots' => 2,
-                    'rewards' => ['gold' => 5000, 'crystals' => 10]
+                    'rewards' => ['gold' => 5000]
                 ],
                 [
                     'name' => 'T2',
                     'groups' => 2,
                     'promotion_slots' => 2,
                     'relegation_slots' => 0,
-                    'rewards' => ['gold' => 2500, 'crystals' => 5]
+                    'rewards' => ['gold' => 2500]
                 ]
             ]
         ]);

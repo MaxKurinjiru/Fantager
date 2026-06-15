@@ -23,6 +23,7 @@ nav:
   toggle_menu: Zobrazit/skrýt menu
   finance: Finanční kniha
   community: Komunita
+  mail: Hráčská pošta
   calendar: Kalendář
   arena: Aréna
 
@@ -86,7 +87,6 @@ flash:
 dashboard:
   treasury: Pokladnice
   gold: Zlato
-  crystals: Krystaly
   total_essence: Celková esence
   edit_profile: Upravit profil
   morale: Morálka týmu
@@ -202,6 +202,10 @@ heroes:
   primary_attrs_desc: Základní atributy určují bojovou efektivitu.
   status_condition: Stav a kondice
   status_condition_desc: Aktuální fyzický stav a metriky zotavení.
+  abbr_str: SÍLA
+  abbr_dex: OBR
+  abbr_kon: KON
+  abbr_spd: RYC
   combat_form: Bojová forma
   fatigue: Úroveň únavy
   morale_label: Morálka
@@ -240,6 +244,7 @@ summoning:
   arena_theme_desc: "Rasy jsou losovány na základě tématu vaší arény a jejich vztahu/afinity (>= 50) k tématické rase."
   potential_races: Potenciální vyvolatelné rasy
   portal_title: Vyvolávací portál
+  race_placeholder: "Rasa"
   portal_desc: Nasměrujte své zlato do portálu a přiveďte náhodného hrdinu kompatibilního s tématem vaší Arény.
   portal_channeling: Kanálování portálu...
   portal_channeling_desc: Vyvolávání mladého hrdiny z prázdnoty.
@@ -267,7 +272,7 @@ summoning:
 
 finance:
   title: Finanční kniha
-  subtitle: Auditní log všech transakcí se zlatem, krystaly a esencemi pro váš tým.
+  subtitle: Auditní log všech transakcí se zlatem a esencemi pro váš tým.
   filter_type: Filtrovat podle typu
   all_types: Všechny typy
   filter_actor: Filtrovat podle iniciátora
@@ -291,7 +296,6 @@ finance:
   type_marketplace_fee: Poplatek tržiště
   type_quest_reward: Odměna za úkol
   type_dungeon_reward: Odměna z dungeonu
-  type_crafting_cost: Cena výroby
   type_dismantle_gain: Zisk z rozložení
   type_item_repair: Oprava předmětu
   type_spell_learning_cost: Nákup svitku kouzla
@@ -333,9 +337,6 @@ hq:
     library:
       name: Knihovna a akademie
       desc: Zvyšuje rychlost získávání zkušenostních bodů hrdinů.
-    forge:
-      name: Kovárna a dílna
-      desc: Zvyšuje úspěšnost výroby předmětů a jejich odolnost.
     treasury:
       name: Pokladnice
       desc: Zvyšuje násobiče pasivního příjmu zlata.
@@ -352,8 +353,6 @@ hq:
   bonus_fatigue_reduction_pct: Snížení únavy
   bonus_recovery_speed_pct: Rychlost zotavení
   bonus_xp_gain_pct: Zisk zkušeností
-  bonus_crafting_success_pct: Úspěšnost výroby
-  bonus_item_durability_pct: Odolnost předmětů
   bonus_gold_income_pct: Příjem zlata
   bonus_roster_capacity: Kapacita soupisky
   bonus_summon_base_stat_bonus: Bonus k zákl. atributům vyvolání
@@ -462,7 +461,7 @@ inventory:
   dismantle: Rozložit
   equip_slot_btn: Vybavit slot
   rucksack_empty: Batoh je prázdný
-  rucksack_empty_desc: Nakupte zbraně nebo je vyrobte a naplňte sklad svého cechu.
+  rucksack_empty_desc: Nakupte zbraně a naplňte sklad svého cechu.
   slot_head: Hlava
   slot_amulet: Amulet
   slot_body: Zbroj
@@ -817,6 +816,8 @@ marketplace:
   col_tx_id: "ID Transakce"
   col_total_price: "Celková cena"
   col_fee_tax: "Poplatek (tax)"
+  card_slot: "Slot:"
+  label_age: "Věk"
   card_form: "Forma:"
   card_durability: "Ochrana/Dur:"
   error_fetch_listings: "Chyba při načítání nabídek: %error%"
@@ -827,7 +828,7 @@ marketplace:
 
 community:
   title: Královská komunita
-  subtitle: Čtěte a zakládejte témata na nástěnce svého království a spravujte svou hráčskou poštu.
+  subtitle: Čtěte a zakládejte témata na nástěnce svého království.
   tab_forum: Diskusní fórum
   tab_mail: Hráčská pošta
   no_threads: Nebyla dosud vytvořena žádná témata.
@@ -887,6 +888,7 @@ community:
   error_send_reply: "Nepodařilo se odeslat odpověď."
   error_refresh_posts: "Nepodařilo se obnovit příspěvky."
   error_toggle_lock: "Nepodařilo se změnit zámek tématu."
+  error_load_recipients: "Nepodařilo se načíst seznam příjemců."
   error_load_mail: "Nepodařilo se načíst poštu."
   warning_compose_fields: "Prosím zvolte příjemce a vyplňte předmět i obsah zprávy."
   error_send_msg: "Nepodařilo se odeslat zprávu."

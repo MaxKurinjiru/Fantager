@@ -20,31 +20,50 @@ export default class extends Controller {
     };
 
     connect() {
-        // Synchronize color pickers with hex text inputs
+        this._onPrimaryPickerInput = (e) => {
+            this.colorPrimaryTextTarget.value = e.target.value.toUpperCase();
+        };
+        this._onPrimaryTextChange = (e) => {
+            let val = e.target.value;
+            if (!val.startsWith('#')) val = '#' + val;
+            if (/^#[0-9A-F]{6}$/i.test(val)) {
+                this.colorPrimaryPickerTarget.value = val;
+            }
+        };
+        this._onSecondaryPickerInput = (e) => {
+            this.colorSecondaryTextTarget.value = e.target.value.toUpperCase();
+        };
+        this._onSecondaryTextChange = (e) => {
+            let val = e.target.value;
+            if (!val.startsWith('#')) val = '#' + val;
+            if (/^#[0-9A-F]{6}$/i.test(val)) {
+                this.colorSecondaryPickerTarget.value = val;
+            }
+        };
+
         if (this.hasColorPrimaryPickerTarget && this.hasColorPrimaryTextTarget) {
-            this.colorPrimaryPickerTarget.addEventListener('input', (e) => {
-                this.colorPrimaryTextTarget.value = e.target.value.toUpperCase();
-            });
-            this.colorPrimaryTextTarget.addEventListener('change', (e) => {
-                let val = e.target.value;
-                if (!val.startsWith('#')) val = '#' + val;
-                if (/^#[0-9A-F]{6}$/i.test(val)) {
-                    this.colorPrimaryPickerTarget.value = val;
-                }
-            });
+            this.colorPrimaryPickerTarget.addEventListener('input', this._onPrimaryPickerInput);
+            this.colorPrimaryTextTarget.addEventListener('change', this._onPrimaryTextChange);
         }
 
         if (this.hasColorSecondaryPickerTarget && this.hasColorSecondaryTextTarget) {
-            this.colorSecondaryPickerTarget.addEventListener('input', (e) => {
-                this.colorSecondaryTextTarget.value = e.target.value.toUpperCase();
-            });
-            this.colorSecondaryTextTarget.addEventListener('change', (e) => {
-                let val = e.target.value;
-                if (!val.startsWith('#')) val = '#' + val;
-                if (/^#[0-9A-F]{6}$/i.test(val)) {
-                    this.colorSecondaryPickerTarget.value = val;
-                }
-            });
+            this.colorSecondaryPickerTarget.addEventListener('input', this._onSecondaryPickerInput);
+            this.colorSecondaryTextTarget.addEventListener('change', this._onSecondaryTextChange);
+        }
+    }
+
+    disconnect() {
+        if (this.hasColorPrimaryPickerTarget && this._onPrimaryPickerInput) {
+            this.colorPrimaryPickerTarget.removeEventListener('input', this._onPrimaryPickerInput);
+        }
+        if (this.hasColorPrimaryTextTarget && this._onPrimaryTextChange) {
+            this.colorPrimaryTextTarget.removeEventListener('change', this._onPrimaryTextChange);
+        }
+        if (this.hasColorSecondaryPickerTarget && this._onSecondaryPickerInput) {
+            this.colorSecondaryPickerTarget.removeEventListener('input', this._onSecondaryPickerInput);
+        }
+        if (this.hasColorSecondaryTextTarget && this._onSecondaryTextChange) {
+            this.colorSecondaryTextTarget.removeEventListener('change', this._onSecondaryTextChange);
         }
     }
 

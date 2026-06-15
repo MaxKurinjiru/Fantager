@@ -10,78 +10,78 @@
     } %}
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="lg:col-span-2 space-y-6">
-            <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg">
-                <h2 class="text-xl font-bold text-white mb-4">{{ 'arena.status_title'|trans }}</h2>
+        <div class="lg:col-span-2 arena-section">
+            <div class="game-panel">
+                <h2 class="arena-panel__title">{{ 'arena.status_title'|trans }}</h2>
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-850 text-center">
-                        <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">{{ 'arena.level'|trans }}</span>
-                        <span class="text-2xl font-extrabold text-white">{{ status.arena_level }}</span>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.level'|trans }}</span>
+                        <span class="arena-stat-card__value">{{ status.arena_level }}</span>
                     </div>
-                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-850 text-center">
-                        <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">{{ 'arena.capacity'|trans }}</span>
-                        <span class="text-2xl font-extrabold text-white">{{ status.seating_capacity }}</span>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.capacity'|trans }}</span>
+                        <span class="arena-stat-card__value">{{ status.seating_capacity }}</span>
                     </div>
-                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-850 text-center">
-                        <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">{{ 'arena.ticket_price'|trans }}</span>
-                        <span class="text-2xl font-extrabold text-gray-200">🪙 {{ status.ticket_price }}</span>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.ticket_price'|trans }}</span>
+                        <span class="arena-stat-card__value">🪙 {{ status.ticket_price }}</span>
                     </div>
-                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-850 text-center">
-                        <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">{{ 'arena.fan_base'|trans }}</span>
-                        <span class="text-2xl font-extrabold text-indigo-400">{{ status.fan_base }}</span>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.fan_base'|trans }}</span>
+                        <span class="arena-stat-card__value">{{ status.fan_base }}</span>
                     </div>
-                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-850 text-center">
-                        <span class="block text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">{{ 'arena.show_up_rate'|trans }}</span>
-                        <span class="text-2xl font-extrabold text-indigo-300">{{ (status.show_up_rate * 100)|number_format(0) }}%</span>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.show_up_rate'|trans }}</span>
+                        <span class="arena-stat-card__value">{{ (status.show_up_rate * 100)|number_format(0) }}%</span>
                     </div>
                 </div>
-                <p class="text-xs text-gray-550 mt-4">{{ 'arena.fan_club_hint'|trans({
+                <p class="arena-hint">{{ 'arena.fan_club_hint'|trans({
                     '%fanBase%': status.fan_base,
                     '%targetFanBase%': status.target_fan_base,
                     '%reputation%': status.reputation,
                     '%morale%': status.morale,
                     '%chemistry%': status.chemistry
                 }) }}</p>
-                <p class="text-xs text-gray-600 mt-2">{{ 'arena.revenue_home_only_hint'|trans }}</p>
+                <p class="arena-hint--subtle">{{ 'arena.revenue_home_only_hint'|trans }}</p>
             </div>
 
             {% if status.next_home_match %}
-            <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg space-y-4">
+            <div class="game-panel arena-section">
                 <h2 class="text-xl font-bold text-white">{{ 'arena.next_home_match'|trans }}</h2>
-                <p class="text-gray-300">{{ 'arena.next_match_home'|trans({'%opponent%': status.next_home_match.opponent}) }}</p>
-                <p class="text-sm text-gray-550">{{ status.next_home_match.scheduled_at|date('d.m.Y H:i') }}</p>
+                <p class="arena-match-lead">{{ 'arena.next_match_home'|trans({'%opponent%': status.next_home_match.opponent}) }}</p>
+                <p class="arena-match-date">{{ status.next_home_match.scheduled_at|date('d.m.Y H:i') }}</p>
 
                 {% if status.projected_attendance is not null %}
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-gray-800">
-                    <div class="bg-gray-950 p-3 rounded-xl border border-gray-850 text-center">
-                        <span class="block text-[10px] uppercase font-bold text-gray-500 mb-1">{{ 'arena.projected_attendance'|trans }}</span>
-                        <span class="text-xl font-bold text-emerald-400">{{ status.projected_attendance }} / {{ status.seating_capacity }}</span>
+                <div class="arena-match-stats">
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.projected_attendance'|trans }}</span>
+                        <span class="arena-stat-card__value arena-stat-card__delta--positive">{{ status.projected_attendance }} / {{ status.seating_capacity }}</span>
                     </div>
-                    <div class="bg-gray-950 p-3 rounded-xl border border-gray-850 text-center">
-                        <span class="block text-[10px] uppercase font-bold text-gray-500 mb-1">{{ 'arena.home_fans'|trans }}</span>
-                        <span class="text-xl font-bold text-white">{{ status.projected_home_attendees }}</span>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.home_fans'|trans }}</span>
+                        <span class="arena-stat-card__value">{{ status.projected_home_attendees }}</span>
                     </div>
-                    <div class="bg-gray-950 p-3 rounded-xl border border-gray-850 text-center">
-                        <span class="block text-[10px] uppercase font-bold text-gray-500 mb-1">{{ 'arena.away_fans'|trans }}</span>
-                        <span class="text-xl font-bold text-gray-400">{{ status.projected_away_attendees }}</span>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.away_fans'|trans }}</span>
+                        <span class="arena-stat-card__value">{{ status.projected_away_attendees }}</span>
                     </div>
                 </div>
                 <p class="text-sm text-amber-400 font-semibold">{{ 'arena.projected_revenue'|trans }}: 🪙 {{ status.projected_revenue }}</p>
                 {% endif %}
             </div>
             {% else %}
-            <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 text-sm text-gray-550">
+            <div class="arena-match-date">
                 {{ 'arena.no_home_match'|trans }}
             </div>
             {% endif %}
 
-            <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg">
-                <h2 class="text-xl font-bold text-white mb-4">{{ 'arena.revenue_history'|trans }}</h2>
+            <div class="game-panel">
+                <h2 class="arena-panel__title">{{ 'arena.revenue_history'|trans }}</h2>
                 {% if status.recent_revenue|length > 0 %}
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
+                        <table class="arena-revenue-table">
                             <thead>
-                                <tr class="text-gray-500 uppercase text-[10px] tracking-wider border-b border-gray-800">
+                                <tr>
                                     <th class="py-2 pr-4">{{ 'finance.col_date'|trans }}</th>
                                     <th class="py-2 pr-4">{{ 'arena.col_opponent'|trans }}</th>
                                     <th class="py-2 pr-4">{{ 'arena.col_attendance'|trans }}</th>
@@ -90,38 +90,38 @@
                             </thead>
                             <tbody>
                                 {% for row in status.recent_revenue %}
-                                <tr class="border-b border-gray-850/50">
-                                    <td class="py-2 pr-4 text-gray-300">{{ row.created_at|date('d.m.Y H:i') }}</td>
-                                    <td class="py-2 pr-4 text-gray-400">{{ row.opponent_name ?? '—' }}</td>
-                                    <td class="py-2 pr-4 text-gray-400">
+                                <tr>
+                                    <td class="py-2 pr-4 arena-match-lead">{{ row.created_at|date('d.m.Y H:i') }}</td>
+                                    <td class="arena-revenue-table__cell-muted">{{ row.opponent_name ?? '—' }}</td>
+                                    <td class="arena-revenue-table__cell-muted">
                                         {% if row.attendance is not null and row.capacity is not null %}
                                             {{ row.attendance }} / {{ row.capacity }}
                                         {% else %}
                                             —
                                         {% endif %}
                                     </td>
-                                    <td class="py-2 text-emerald-400 font-semibold">+🪙 {{ row.amount }}</td>
+                                    <td class="arena-revenue-table__cell-amount">+🪙 {{ row.amount }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 {% else %}
-                    <p class="text-sm text-gray-550">{{ 'arena.no_revenue_yet'|trans }}</p>
+                    <p class="arena-match-date">{{ 'arena.no_revenue_yet'|trans }}</p>
                 {% endif %}
             </div>
         </div>
 
-        <div class="space-y-6">
-            <div class="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 backdrop-blur-md shadow-lg">
-                <h2 class="text-xl font-bold text-white mb-2">{{ 'arena.how_it_works'|trans }}</h2>
-                <ul class="text-sm text-gray-400 space-y-2 list-disc list-inside">
+        <div class="arena-section">
+            <div class="game-panel">
+                <h2 class="hero-panel__title mb-2">{{ 'arena.how_it_works'|trans }}</h2>
+                <ul class="arena-rules-list">
                     <li>{{ 'arena.rule_fixed_price'|trans({'%price%': status.ticket_price}) }}</li>
                     <li>{{ 'arena.rule_capacity'|trans }}</li>
                     <li>{{ 'arena.rule_attendance'|trans }}</li>
                     <li>{{ 'arena.rule_home_only'|trans }}</li>
                 </ul>
-                <p class="text-[11px] text-gray-600 mt-4">{{ 'arena.upgrade_hint'|trans }}</p>
+                <p class="arena-upgrade-hint">{{ 'arena.upgrade_hint'|trans }}</p>
             </div>
         </div>
     </div>
