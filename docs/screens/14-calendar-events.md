@@ -84,6 +84,7 @@ The calendar screen retrieves all entries via a unified JSON endpoint:
 
 ## Implementation Notes
 
-- **API Endpoint**: Handled by `App\Controller\Api\CalendarController::getFeed()`.
+- **Web page**: `App\Controller\Web\CalendarController` at `/app/calendar` (Stimulus `calendar_controller.js`).
+- **API Endpoint**: `App\Controller\Api\V1\CalendarController::getFeed()` at `/api/v1/kingdom/{id}/calendar`.
 - **Feed Logic**: Constructed by `App\Service\Calendar\CalendarService` which delegates collection queries to repositories (`LeagueFixtureRepository`, `EventRepository`, and queue tables).
 

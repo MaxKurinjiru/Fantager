@@ -15,6 +15,7 @@ use App\Repository\Kingdom\KingdomRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Service\Economy\ArenaRevenueService;
 use App\Service\Headquarters\HeadquartersService;
+use App\Service\Team\FanClubService;
 use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -40,6 +41,7 @@ class ProcessKingdomTicksHandler
         private readonly HeroRepository $heroRepository,
         private readonly TrainingService $trainingService,
         private readonly ArenaRevenueService $arenaRevenueService,
+        private readonly FanClubService $fanClubService,
         private readonly HeadquartersService $hqService,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
@@ -134,8 +136,6 @@ class ProcessKingdomTicksHandler
                 break;
 
             case TickType::WeeklyReset:
-                // Distribute arena ticket revenue for teams in this kingdom
-                $this->arenaRevenueService->distributeWeeklyRevenue($kingdom);
                 $this->resetWeeklySummons($kingdom);
                 break;
 
@@ -156,8 +156,8 @@ class ProcessKingdomTicksHandler
                 break;
 
             case TickType::LeagueMatch:
-                // Stub execution path. In the future, this will invoke match simulation.
-                $this->logger->debug(sprintf('Executing stub tick %s for Kingdom %s', $type->value, $kingdom->getName()));
+                $this->arenaRevenueService->processLeagueMatchTick($kingdom, $scheduledAt);
+                $this->logger->debug(sprintf('Processed league match tick (arena revenue) for Kingdom %s', $kingdom->getName()));
                 break;
 
             case TickType::SeasonTransition:
@@ -245,6 +245,8 @@ class ProcessKingdomTicksHandler
     private function processDailyReset(Kingdom $kingdom, \DateTimeImmutable $scheduledAt): void
     {
         $this->logger->debug(sprintf('Executing DailyReset for Kingdom %s', $kingdom->getName()));
+
+        $this->fanClubService->processDailyEvolutionTick($kingdom);
 
         // Process pending facility upgrades
         $this->hqService->processFacilityUpgradesTick($kingdom, $scheduledAt);

@@ -39,6 +39,15 @@ Manages the active crafting jobs scheduled by teams.
 
 ---
 
+## Implementation Status
+
+- **Service**: `App\Service\Crafting\CraftingService` — start/cancel jobs, process due queue entries.
+- **CLI**: `bin/console app:process-crafting-queue` — run from cron or manually after `completesAt`.
+- **API**: `App\Controller\Api\V1\CraftingController` — recipes, queue, start, cancel.
+- **Web UI**: Planned (`/crafting` screen); use API until Phase 7 UI is built.
+
+---
+
 ## APIs (v1)
 
 * `GET /api/v1/crafting/recipes` — List available crafting recipes.

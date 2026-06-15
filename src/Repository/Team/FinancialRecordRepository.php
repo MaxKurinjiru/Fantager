@@ -55,4 +55,20 @@ class FinancialRecordRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * @return list<FinancialRecord>
+     */
+    public function findRecentByTeamAndType(\App\Entity\Team\Team $team, string $type, int $limit = 8): array
+    {
+        return $this->createQueryBuilder('f')
+            ->where('f.team = :team')
+            ->andWhere('f.type = :type')
+            ->setParameter('team', $team)
+            ->setParameter('type', $type)
+            ->orderBy('f.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -117,8 +117,8 @@ class CalendarService
                     $visibility = 'public';
                     break;
                 case TickType::WeeklyReset:
-                    $title = 'Weekly Reset & Arena Payouts';
-                    $description = 'Reset chambers and distribute weekly Arena seat revenues';
+                    $title = 'Weekly Reset';
+                    $description = 'Reset summoning chamber cooldowns and weekly maintenance';
                     $visibility = 'public';
                     break;
                 case TickType::RaceOptimization:

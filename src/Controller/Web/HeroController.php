@@ -18,6 +18,7 @@ class HeroController extends AbstractController
         private readonly HeroRepository $heroRepository,
         private readonly \App\Repository\Item\ItemRepository $itemRepository,
         private readonly \App\Repository\Training\TrainingQueueRepository $trainingQueueRepository,
+        private readonly \App\Repository\Summoning\SummonHistoryRepository $summonHistoryRepository,
         private readonly \App\Service\Config\RaceConfig $raceConfig,
     ) {
     }
@@ -79,6 +80,16 @@ class HeroController extends AbstractController
         );
 
         $statBonuses = $this->raceConfig->getStatBonuses($hero->getRace());
+        $summonRecord = $this->summonHistoryRepository->findOneByHero($hero);
+
+        $totalStatGain = 0;
+        $completedTrainings = 0;
+        foreach ($trainingHistory as $log) {
+            if ('completed' === $log->getStatus()->value && null !== $log->getStatGain()) {
+                $totalStatGain += $log->getStatGain();
+                ++$completedTrainings;
+            }
+        }
 
         return $this->render('hero/detail.html.twig', [
             'team' => $team,
@@ -86,6 +97,9 @@ class HeroController extends AbstractController
             'equipped' => $equippedBySlot,
             'trainingHistory' => $trainingHistory,
             'statBonuses' => $statBonuses,
+            'summonRecord' => $summonRecord,
+            'totalStatGain' => $totalStatGain,
+            'completedTrainings' => $completedTrainings,
         ]);
     }
 }

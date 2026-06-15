@@ -27,6 +27,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $heroRepositoryMock;
     private $trainingServiceMock;
     private $arenaRevenueServiceMock;
+    private $fanClubServiceMock;
     private $hqServiceMock;
     private $entityManagerMock;
     private $loggerMock;
@@ -40,6 +41,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
         $this->heroRepositoryMock = $this->createMock(HeroRepository::class);
         $this->trainingServiceMock = $this->createMock(TrainingService::class);
         $this->arenaRevenueServiceMock = $this->createMock(ArenaRevenueService::class);
+        $this->fanClubServiceMock = $this->createMock(\App\Service\Team\FanClubService::class);
         $this->hqServiceMock = $this->createMock(\App\Service\Headquarters\HeadquartersService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
@@ -51,6 +53,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->heroRepositoryMock,
             $this->trainingServiceMock,
             $this->arenaRevenueServiceMock,
+            $this->fanClubServiceMock,
             $this->hqServiceMock,
             $this->entityManagerMock,
             $this->loggerMock,

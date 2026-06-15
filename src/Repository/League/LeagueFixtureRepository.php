@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository\League;
 
+use App\Entity\Kingdom\Kingdom;
 use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\LeagueFixtureStatus;
@@ -46,5 +47,35 @@ class LeagueFixtureRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findNextHomeFixtureForTeam(Team $team): ?LeagueFixture
+    {
+        return $this->createQueryBuilder('f')
+            ->where('f.homeTeam = :team')
+            ->andWhere('f.status = :status')
+            ->setParameter('team', $team)
+            ->setParameter('status', LeagueFixtureStatus::Scheduled)
+            ->orderBy('f.scheduledAt', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @return list<LeagueFixture>
+     */
+    public function findScheduledFixturesAtTime(Kingdom $kingdom, \DateTimeImmutable $scheduledAt): array
+    {
+        return $this->createQueryBuilder('f')
+            ->join('f.homeTeam', 'home')
+            ->where('home.kingdom = :kingdom')
+            ->andWhere('f.scheduledAt = :scheduledAt')
+            ->andWhere('f.status = :status')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('scheduledAt', $scheduledAt)
+            ->setParameter('status', LeagueFixtureStatus::Scheduled)
+            ->getQuery()
+            ->getResult();
     }
 }

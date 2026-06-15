@@ -80,21 +80,21 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Hero Roster** | Fully Implemented | Implemented | Implemented | Hero CRUD, rename, summoning chamber, `HeroGenerator`. |
 | **Summoning** | Fully Implemented | Implemented | Implemented | Summoning random compatible race based on Arena/HQ optimization, cooldowns, `SummonHistory` logging. |
 | **Training** | Fully Implemented | Implemented | Implemented | Training calculations + automated tick processing. |
-| **Calendar & Ticks**| Fully Implemented | Dashboard integrated | Implemented | Scheduled tick generation and seasonal calendar. |
+| **Calendar & Ticks**| Fully Implemented | Implemented | Implemented | Calendar page at `/app/calendar`; kingdom feed API; scheduled tick generation. |
 | **Formations** | Fully Implemented | Implemented | Implemented | Formation CRUD, slot assignment, strategy JSON. |
 | **Headquarters** | Fully Implemented | Implemented | Implemented | Facility upgrades, race optimization, passive bonuses. |
 | **Items** | Fully Implemented | Implemented | Implemented | Inventory, equip/unequip, dismantle. |
 | **Spells** | Fully Implemented | Implemented | Implemented | Spell library, learning, slot equipping. |
 | **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, and `LeagueService` implemented; match result processing is pending. |
 | **Combat** | Partially Implemented | Not Implemented | Not Implemented | Data models and entity schemas defined; combat simulator, formulas, and battle execution are missing (Phase 5). |
-| **Events / Calendar UI** | Fully Implemented | Implemented | Implemented | Calendar feed aggregation, timezone-aware tick schedules, and events system fully operational. |
+| **Events / Calendar UI** | Fully Implemented | Implemented | Implemented | Web calendar page + kingdom feed API. |
 | **Marketplace** | Fully Implemented | Implemented | Implemented | Listings, bids, transactions, and background cron processing fully functional. |
 | **Community** | Fully Implemented | Implemented | Implemented | Messaging, forum threads/posts, achievements, and content filtering fully functional. |
 | **Graveyard** | Partially Implemented | Not Implemented | Not Implemented | Permanent death records and entity schemas defined; death triggers and graveyard UI pending (Phase 6). |
 | **Dungeons** | Partially Implemented | Not Implemented | Not Implemented | PvE encounter schemas defined; dungeon runs, rewards, and execution logic pending (Phase 7). |
 | **Quests** | Partially Implemented | Not Implemented | Not Implemented | Quest schemas and player progress tracking defined; quest generation logic pending (Phase 7). |
-| **Crafting** | Partially Implemented | Not Implemented | Not Implemented | Recipe, crafting queues, and material item schemas defined; queue processor pending (Phase 7). |
-| **Arena Management** | Partially Implemented | Not Implemented | Not Implemented | Arena is implemented as a passive HQ facility (`FacilityType::Arena`) granting ticket revenue and seating capacity bonuses. Weekly revenue is distributed via `ArenaRevenueService`. Standalone arena management screen, ticket price configuration, and friendly match scheduling are not implemented (Phase 7). |
+| **Crafting** | Partially Implemented | Not Implemented | Implemented | `CraftingService`, queue processor command, and API endpoints; crafting Web UI still planned (Phase 7). |
+| **Arena Management** | Partially Implemented | Implemented | Partial | Home-match revenue model; read-only `/app/arena` UI. Payout on league match tick. Friendly matches pending combat. |
 
 ---
 

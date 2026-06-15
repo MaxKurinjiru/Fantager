@@ -4,75 +4,153 @@ declare(strict_types=1);
 
 namespace App\Service\Economy;
 
-use App\Entity\Headquarters\Headquarters;
+use App\Entity\Kingdom\Kingdom;
+use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\FacilityType;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use App\Repository\Headquarters\HeadquartersRepository;
-use App\Repository\Team\TeamRepository;
+use App\Repository\League\LeagueFixtureRepository;
+use App\Service\Team\FanClubService;
 
 class ArenaRevenueService
 {
-    private const BASE_SEATING_CAPACITY = 500;
-    private const BASE_TICKET_PRICE = 5;
+    public const BASE_SEATING_CAPACITY = 500;
+    public const TICKET_PRICE = 5;
 
     public function __construct(
-        private readonly TeamRepository $teamRepository,
         private readonly HeadquartersRepository $hqRepository,
+        private readonly LeagueFixtureRepository $fixtureRepository,
         private readonly EconomyService $economyService,
+        private readonly FanClubService $fanClubService,
     ) {
     }
 
     /**
-     * Distribute weekly arena ticket revenue to all active non-NPC teams.
+     * Process arena ticket revenue for league fixtures scheduled at the given tick time.
+     * Revenue is paid to the home team only.
      *
-     * @return array<int, array{team_id: int, team_name: string, capacity: int, attendance: int, gold_earned: int}>
+     * @return list<array<string, mixed>>
      */
-    public function distributeWeeklyRevenue(?\App\Entity\Kingdom\Kingdom $kingdom = null): array
+    public function processLeagueMatchTick(Kingdom $kingdom, \DateTimeImmutable $scheduledAt): array
     {
-        $criteria = ['isNpc' => false];
-        if (null !== $kingdom) {
-            $criteria['kingdom'] = $kingdom;
-        }
-
-        /** @var list<Team> $teams */
-        $teams = $this->teamRepository->findBy($criteria);
+        $fixtures = $this->fixtureRepository->findScheduledFixturesAtTime($kingdom, $scheduledAt);
         $results = [];
 
-        foreach ($teams as $team) {
-            $report = $this->processTeamRevenue($team);
-            if ($report['gold_earned'] > 0) {
-                $this->economyService->addGold(
-                    $team,
-                    $report['gold_earned'],
-                    FinancialRecordType::ArenaRevenue,
-                    FinancialRecordActor::System,
-                    [
-                        'capacity' => $report['capacity'],
-                        'attendance' => $report['attendance'],
-                        'reputation' => $team->getReputation(),
-                    ]
-                );
-            }
-            $results[] = $report;
+        foreach ($fixtures as $fixture) {
+            $results[] = $this->payFixtureRevenue($fixture);
         }
 
-        $this->economyService->flush();
+        if ([] !== $results) {
+            $this->economyService->flush();
+        }
 
         return $results;
     }
 
     /**
-     * Calculate arena capacity, attendance, and revenue for a team.
-     *
-     * @return array{team_id: int, team_name: string, capacity: int, attendance: int, gold_earned: int}
+     * @return array<string, mixed>
      */
-    public function calculateTeamRevenue(Team $team): array
+    public function payFixtureRevenue(LeagueFixture $fixture): array
     {
-        /** @var Headquarters|null $hq */
-        $hq = $this->hqRepository->findOneBy(['team' => $team]);
+        $homeTeam = $fixture->getHomeTeam();
+        $awayTeam = $fixture->getAwayTeam();
+        $report = $this->calculateMatchRevenue($homeTeam, $awayTeam);
+        $report['fixture_id'] = $fixture->getId();
 
+        if ($report['gold_earned'] > 0) {
+            $this->economyService->addGold(
+                $homeTeam,
+                $report['gold_earned'],
+                FinancialRecordType::ArenaRevenue,
+                FinancialRecordActor::System,
+                [
+                    'fixture_id' => $fixture->getId(),
+                    'away_team_id' => $awayTeam->getId(),
+                    'away_team_name' => $awayTeam->getName(),
+                    'capacity' => $report['capacity'],
+                    'attendance' => $report['attendance'],
+                    'home_attendees' => $report['home_attendees'],
+                    'away_attendees' => $report['away_attendees'],
+                    'ticket_price' => self::TICKET_PRICE,
+                ]
+            );
+        }
+
+        return $report;
+    }
+
+    /**
+     * Backward-compatible alias for FanClubService::calculateShowUpRate().
+     */
+    public function calculateFanAppeal(Team $team): float
+    {
+        return $this->fanClubService->calculateShowUpRate($team);
+    }
+
+    public function getArenaCapacity(Team $homeTeam): int
+    {
+        $bonuses = $this->getFacilityBonuses($homeTeam);
+
+        return (int) round(self::BASE_SEATING_CAPACITY * (1.0 + $bonuses['arena_capacity_pct'] / 100.0));
+    }
+
+    /**
+     * @return array{
+     *     home_team_id: int|null,
+     *     away_team_id: int|null,
+     *     capacity: int,
+     *     attendance: int,
+     *     home_attendees: int,
+     *     away_attendees: int,
+     *     ticket_price: int,
+     *     gold_earned: int,
+     *     home_fan_base: int,
+     *     away_fan_base: int,
+     *     home_show_up_rate: float,
+     *     away_show_up_rate: float,
+     *     home_fan_appeal: float,
+     *     away_fan_appeal: float
+     * }
+     */
+    public function calculateMatchRevenue(Team $homeTeam, Team $awayTeam): array
+    {
+        $capacity = $this->getArenaCapacity($homeTeam);
+        $attendanceData = $this->fanClubService->calculateMatchAttendance($homeTeam, $awayTeam, $capacity);
+
+        $bonuses = $this->getFacilityBonuses($homeTeam);
+        $baseRevenue = $attendanceData['attendance'] * self::TICKET_PRICE;
+        $goldEarned = (int) round(
+            $baseRevenue
+            * (1.0 + $bonuses['ticket_revenue_pct'] / 100.0)
+            * (1.0 + $bonuses['gold_income_pct'] / 100.0)
+        );
+
+        return [
+            'home_team_id' => $homeTeam->getId(),
+            'away_team_id' => $awayTeam->getId(),
+            'capacity' => $capacity,
+            'attendance' => $attendanceData['attendance'],
+            'home_attendees' => $attendanceData['home_attendees'],
+            'away_attendees' => $attendanceData['away_attendees'],
+            'ticket_price' => self::TICKET_PRICE,
+            'gold_earned' => $goldEarned,
+            'home_fan_base' => $homeTeam->getFanBase(),
+            'away_fan_base' => $awayTeam->getFanBase(),
+            'home_show_up_rate' => $attendanceData['home_show_up_rate'],
+            'away_show_up_rate' => $attendanceData['away_show_up_rate'],
+            'home_fan_appeal' => $attendanceData['home_show_up_rate'],
+            'away_fan_appeal' => $attendanceData['away_show_up_rate'],
+        ];
+    }
+
+    /**
+     * @return array{arena_capacity_pct: float, ticket_revenue_pct: float, gold_income_pct: float}
+     */
+    public function getFacilityBonuses(Team $team): array
+    {
+        $hq = $this->hqRepository->findOneBy(['team' => $team]);
         $arenaCapacityBonusPct = 0.0;
         $ticketRevenueBonusPct = 0.0;
         $goldIncomeBonusPct = 0.0;
@@ -90,40 +168,10 @@ class ArenaRevenueService
             }
         }
 
-        // 1. Calculate Seating Capacity
-        $capacity = (int) round(self::BASE_SEATING_CAPACITY * (1.0 + $arenaCapacityBonusPct / 100.0));
-
-        // 2. Calculate Attendance based on Reputation
-        $reputation = $team->getReputation();
-        $attendanceRatio = 0.4 + 0.6 * ($reputation / ($reputation + 100.0));
-        $attendance = (int) round($capacity * $attendanceRatio);
-
-        // Cap attendance at capacity
-        if ($attendance > $capacity) {
-            $attendance = $capacity;
-        }
-
-        // 3. Base Revenue
-        $baseRevenue = $attendance * self::BASE_TICKET_PRICE;
-
-        // 4. Adjusted Revenue (apply Arena and Treasury multipliers)
-        $adjustedRevenue = $baseRevenue * (1.0 + $ticketRevenueBonusPct / 100.0) * (1.0 + $goldIncomeBonusPct / 100.0);
-        $goldEarned = (int) round($adjustedRevenue);
-
         return [
-            'team_id' => (int) $team->getId(),
-            'team_name' => $team->getName(),
-            'capacity' => $capacity,
-            'attendance' => $attendance,
-            'gold_earned' => $goldEarned,
+            'arena_capacity_pct' => $arenaCapacityBonusPct,
+            'ticket_revenue_pct' => $ticketRevenueBonusPct,
+            'gold_income_pct' => $goldIncomeBonusPct,
         ];
-    }
-
-    /**
-     * @return array{team_id: int, team_name: string, capacity: int, attendance: int, gold_earned: int}
-     */
-    private function processTeamRevenue(Team $team): array
-    {
-        return $this->calculateTeamRevenue($team);
     }
 }

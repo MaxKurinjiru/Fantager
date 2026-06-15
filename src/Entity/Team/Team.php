@@ -44,6 +44,9 @@ class Team
     #[ORM\Column(options: ['default' => 0])]
     private int $chemistry = 0;
 
+    #[ORM\Column(options: ['default' => 350])]
+    private int $fanBase = 350;
+
     #[ORM\Column(options: ['default' => 0])]
     private int $gold = 0;
 
@@ -174,6 +177,18 @@ class Team
     public function setChemistry(int $chemistry): static
     {
         $this->chemistry = $chemistry;
+
+        return $this;
+    }
+
+    public function getFanBase(): int
+    {
+        return $this->fanBase;
+    }
+
+    public function setFanBase(int $fanBase): static
+    {
+        $this->fanBase = $fanBase;
 
         return $this;
     }

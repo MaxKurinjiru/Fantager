@@ -7,7 +7,7 @@ Purpose: Document scheduled events, server ticks, event lifecycle, and implement
 ## Event Types & Triggers
 
 Game events are categorized into three main categories:
-1. **Scheduled Server Ticks**: Automated periodic tasks that affect the game economy and player teams (Daily Reset, Fatigue Recovery, Weekly Training, Weekly Arena Revenue).
+1. **Scheduled Server Ticks**: Automated periodic tasks that affect the game economy and player teams (Daily Reset, Fatigue Recovery, Weekly Training, League Match arena revenue).
 2. **Dynamic World Events**: Limited-time gameplay events (e.g. Dungeon cycles, Seasonal bonus weeks) modeled via the `Event` entity.
 3. **Queue Completions**: Asynchronous tasks specific to teams (Facility Upgrades, Hero Training queue, Item Crafting jobs).
 

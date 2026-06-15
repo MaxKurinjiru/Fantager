@@ -92,7 +92,7 @@ assets/ (source)
 - Primary storage: MariaDB 11.4
 - Schema modeling: relational model designed according to domain entities
 - Migrations: Doctrine migrations for version control and rollback
-- Backup and recovery: backup plan and tested recovery procedures (details to be added)
+- Backup and recovery: see [Backups and Recovery](#backups-and-recovery) below; local dev uses `docker exec fantager-db mysqldump` (see `docker/README.md`)
 
 ## Code Quality & Standards
 
@@ -104,11 +104,11 @@ assets/ (source)
 ### Testing Strategy
 - **Unit Tests**: PHPUnit for Service and Repository layer testing
 - **Integration Tests**: PHPUnit with test database for API endpoint and workflow testing
-- **End-to-End Tests**: Playwright for critical user journeys and UI interactions
-- **Target Coverage**: Minimum 70% code coverage on Services and Controllers
+- **End-to-End Tests**: Playwright — planned for Phase 3; not yet installed (no `npm run test:e2e` script)
+- **Coverage Target**: Aspirational 70% on Services and Controllers; current focus is core economy, calendar, league, and newly added service tests (Marketplace, Community, Spell, Item, Crafting)
 - **Commands**:
   - `composer test` — Run PHPUnit
-  - `npm run test:e2e` — Run Playwright tests
+  - `npm run test:e2e` — Reserved for future Playwright suite
 
 ### Git Workflow
 - **Branching**: Feature branches from `main` or `develop`
@@ -226,9 +226,9 @@ docker exec -it fantager-web php bin/console doctrine:migrations:migrate
 - [x] Database accessible from the `fantager-web` container as `db`/`fantager-db` service
 
 ### CI/CD & Deployment
-- [ ] CI configuration (GitHub Actions, GitLab CI) defined and uses container images or `docker compose` for reproducible builds
+- [x] GitHub Actions workflow (`.github/workflows/ci.yml`) — PHP-CS-Fixer, PHPStan, PHPUnit on push/PR
 - [ ] Deployment process documented; images/tags and secret management described
-- [ ] Database backup strategy and migration run policy documented for deployments
+- [x] Database backup strategy documented in [Backups and Recovery](#backups-and-recovery)
 
 ### Notes & Tips
 - Prefer `docker exec -it` for iterative development tasks to avoid creating ephemeral containers unless isolation is needed (`docker compose run --rm`)
@@ -273,6 +273,15 @@ Use Docker for local development, CI and consistent deployment environment:
 - **Retention**: 30 days of daily backups; 12 months of monthly backups
 - **Storage**: Local backup storage + remote (S3 or similar) for disaster recovery
 - **Verification**: Monthly backup restoration tests to staging environment
+
+### Local backup (development)
+
+```bash
+docker exec fantager-db mysqldump -u root -p"$MARIADB_ROOT_PASSWORD" fantager > backup.sql
+docker exec -i fantager-db mysql -u root -p"$MARIADB_ROOT_PASSWORD" fantager < backup.sql
+```
+
+Production backups should follow the retention and verification policy in the sections above.
 
 ### Recovery Procedures
 - **RPO (Recovery Point Objective)**: 1 hour (lose up to 1 hour of data)

@@ -47,4 +47,9 @@ class SummonHistoryRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function findOneByHero(\App\Entity\Hero\Hero $hero): ?SummonHistory
+    {
+        return $this->findOneBy(['hero' => $hero], ['summonedAt' => 'DESC']);
+    }
 }

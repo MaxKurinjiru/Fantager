@@ -246,6 +246,7 @@ class KingdomInitializationService
         $team->setMorale((int) ($teamConfig['morale'] ?? 50));
         $team->setReputation((int) ($teamConfig['reputation'] ?? 0));
         $team->setChemistry((int) ($teamConfig['chemistry'] ?? 0));
+        $team->setFanBase((int) ($teamConfig['fan_base'] ?? 350));
         $team->setGold((int) ($resources['gold'] ?? 0));
         $team->setCrystals((int) ($resources['crystals'] ?? 0));
         $team->setEssenceCommon((int) ($resources['essence_common'] ?? 0));

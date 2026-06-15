@@ -13,6 +13,7 @@
   "morale": 50,
   "reputation": 0,
   "chemistry": 0,
+  "fan_base": 350,
   "heroes_per_team": 10,
   "default_formation": {
     "name": "Default",

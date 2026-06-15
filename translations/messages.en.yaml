@@ -23,6 +23,8 @@ nav:
   toggle_menu: Toggle menu
   finance: Ledger
   community: Community
+  calendar: Calendar
+  arena: Arena
 
 modal:
   close: Close
@@ -222,6 +224,8 @@ heroes:
   win_rate: Win Rate
   fallen: Fallen
   trainings: Trainings
+  total_stat_gain: Total Stat Gain
+  summoned: Summoned
   recent_activity: Recent Activity
   recent_activity_desc: Last actions performed by this hero.
   no_activity: No training activity recorded.
@@ -278,6 +282,7 @@ finance:
   col_actor: Actor
   col_changes: Changes
   col_date: Date & Time
+  col_amount: Amount
   col_context: Context
   no_records: No financial records found.
   type_league_reward: League Reward
@@ -669,6 +674,52 @@ league:
   my_fixtures: My Team's Matches
   group_fixtures: Group Matches
   round: Round
+
+calendar:
+  title: Calendar & Events
+  subtitle: Kingdom schedule — league matches, training ticks, and team-specific events.
+  loading: Loading calendar...
+  empty: No events in this period.
+  error: Failed to load calendar feed.
+  filter_team_only: My team only
+  filter_show_system: Show system ticks
+  type_system_tick: System
+  type_league_match: League
+  type_world_event: Event
+  type_training_queue: Training
+  status_scheduled: Scheduled
+  status_completed: Completed
+  status_failed: Failed
+
+arena:
+  title: Arena Management
+  subtitle: Home-match ticket revenue based on arena size and combined fan attendance.
+  status_title: Arena Overview
+  level: Arena Level
+  capacity: Seating Capacity
+  ticket_price: Ticket Price
+  fan_appeal: Fan Appeal
+  fan_base: Fan Club Size
+  show_up_rate: Show-up Rate
+  fan_club_hint: "Fan club of %fanBase% supporters (target %targetFanBase%). Match turnout driven by reputation %reputation%, morale %morale%, chemistry %chemistry%."
+  revenue_home_only_hint: Ticket revenue is paid to the home team after each home league match.
+  next_home_match: Next Home Match
+  next_match_home: "Home vs %opponent%"
+  projected_attendance: Expected Attendance
+  home_fans: Home Fans
+  away_fans: Away Fans
+  projected_revenue: Expected Revenue
+  no_home_match: No upcoming home league fixture scheduled.
+  revenue_history: Home Match Revenue
+  col_opponent: Opponent
+  col_attendance: Attendance
+  no_revenue_yet: No home match revenue recorded yet. Payouts occur when league matches are played.
+  how_it_works: How Arena Revenue Works
+  rule_fixed_price: "Fixed ticket price: 🪙 %price% per seat."
+  rule_capacity: Seating capacity grows with Arena facility upgrades.
+  rule_attendance: Stands fill from both teams' fan club size and current mood (reputation, morale, chemistry). A match can draw zero spectators.
+  rule_home_only: Only the home team receives match-day ticket income.
+  upgrade_hint: Upgrade the Arena in Headquarters to increase seating capacity and revenue bonuses.
 
 marketplace:
   title: Marketplace

@@ -20,7 +20,7 @@ The game world operates on automated server ticks executed at scheduled times. T
 | **Friday** | 18:00 | **League Match (End-Week)** | Process scheduled end-week league fixtures. Resolve combat, distribute match XP/Gold, apply post-match fatigue/form/morale/aging. |
 | **Friday** | 19:00 | **Season Transition** *(Week 11 only)* | Run season resolution service: finalize standings, distribute tier promotion/relegation rewards, execute team transfers (promotions/relegations), initialize the next season. |
 | **Sunday** | 09:30 | **Race Optimization** | Apply pending headquarters race optimization changes and manage weekly optimization lock cycles. |
-| **Weekly** | Sun 23:59 | **Weekly Reset** | Process weekly quest expiration, reset summoning chamber cooldowns, distribute weekly Arena seating revenues. |
+| **Weekly** | Sun 23:59 | **Weekly Reset** | Process weekly quest expiration and reset summoning chamber cooldowns. |
 
 
 ---
@@ -133,7 +133,7 @@ Within the message handler (`ProcessKingdomTicksHandler`):
   3. **Priority 3: Match Resolution** (League/Friendly matches) - executes battles, applies fatigue/injury.
   4. **Priority 4: Post-Match Transitions** (Season Transitions on Week 11 Friday 19:00).
   5. **Priority 5: Fatigue & Form Recovery** (Daily 04:00) - recovers hero stats.
-  6. **Priority 6: Reset / Maintenance / Cleanup** (Daily 00:00, Daily 03:30 Inactive Registration Cleanup, Weekly Arena Revenue Sun 23:59).
+  6. **Priority 6: Reset / Maintenance / Cleanup** (Daily 00:00, Daily 03:30 Inactive Registration Cleanup, Weekly Reset Sun 23:59).
 
 If any tick fails, the handler halts execution for that Kingdom, logs the error, and alerts administrators. This prevents subsequent ticks from executing out of order, preserving data integrity.
 
@@ -143,4 +143,21 @@ We configure three priority transports in `config/packages/messenger.yaml`:
 - **`async_high`**: Immediate interactions (real-time friendly match combat simulation, immediate player action processing).
 - **`async_medium`**: Scheduled tick processing (e.g. `ProcessKingdomTicksMessage`).
 - **`async_low`**: Analytics, history logs, and non-blocking notifications.
+
+---
+
+## Friendly Matches (Practice)
+
+Friendly matches are **non-competitive practice battles** scheduled by players outside the league fixture list. They serve these purposes:
+
+| Aspect | Rule |
+|--------|------|
+| **When** | Any time during Week 1 (preparation gap) or between league rounds; typically scheduled from the Arena screen (UI planned) |
+| **Cost** | No league points at stake; optional gold fee may apply when hosting (future) |
+| **Rewards** | Reduced XP and no league standing impact; useful for testing formations |
+| **Combat** | Uses the same combat engine as league matches once Phase 5 combat simulation is implemented |
+| **Calendar** | Appear in the kingdom calendar feed with `type: friendly_match` when scheduling is implemented |
+| **Scheduling API** | `POST /api/v1/arena/schedule-match` — planned; requires combat engine |
+
+Until the combat engine exists, friendly matches are documented only — no match resolution runs during ticks.
 

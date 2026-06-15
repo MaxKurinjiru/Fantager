@@ -203,15 +203,12 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ## Event / Calendar
 
-> [!NOTE]
-> Web calendar page and Event API endpoints are planned for Phase 5. The kingdom calendar feed (`/api/v1/kingdom/{id}/calendar`) is already implemented.
-
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/calendar` | Web\EventController | Calendar page — **planned** |
-| GET | `/api/v1/events` | Api\V1\EventController | Active/upcoming events — **planned** |
-| GET | `/api/v1/events/calendar` | Api\V1\EventController | Full calendar feed — **planned** |
+| GET | `/app/calendar` | Web\CalendarController | Calendar page — kingdom event feed with filters |
 | GET | `/api/v1/kingdom/{id}/calendar` | Api\V1\CalendarController | Full calendar feed for Kingdom |
+| GET | `/api/v1/events` | Api\V1\EventController | Active/upcoming events — **planned** |
+| GET | `/api/v1/events/calendar` | Api\V1\EventController | Full calendar feed — **planned** (superseded by kingdom calendar endpoint) |
 | POST | `/api/v1/events/{id}/participate` | Api\V1\EventController | Join event — **planned** |
 
 ---
@@ -245,28 +242,27 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ## Crafting
 
-> [!NOTE]
-> Not yet implemented — planned for Phase 7.
-
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/crafting` | Web\CraftingController | Crafting page |
+| GET | `/crafting` | Web\CraftingController | Crafting page — **planned** |
 | GET | `/api/v1/crafting/recipes` | Api\V1\CraftingController | Recipe list |
 | POST | `/api/v1/crafting` | Api\V1\CraftingController | Start crafting |
 | GET | `/api/v1/crafting/queue` | Api\V1\CraftingController | Active jobs |
 | DELETE | `/api/v1/crafting/queue/{id}` | Api\V1\CraftingController | Cancel job |
+
+> Queue completion is processed by `bin/console app:process-crafting-queue` (also callable from cron/tick runner).
 
 ---
 
 ## Community
 
 > [!NOTE]
-> The community hub web page and all API endpoints are implemented. Leaderboard API and public player profile API are planned for a future phase.
+> The community hub web page and messaging/forum API endpoints are implemented. Kingdom-wide leaderboards are available via the League screen (`/app/league` tab "Kingdom Leaderboard"); dedicated leaderboard API is not required.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/community` | Web\CommunityController | Community hub page |
-| GET | `/api/v1/leaderboards` | Api\V1\CommunityController | Leaderboard rankings — **planned** |
+| GET | `/api/v1/leaderboards` | Api\V1\CommunityController | Leaderboard rankings — **not needed** (see League UI) |
 | GET | `/api/v1/players/{id}/profile` | Api\V1\CommunityController | Public player profile — **planned** |
 | GET | `/api/v1/messages` | Api\V1\MessageController | Inbox |
 | POST | `/api/v1/messages` | Api\V1\MessageController | Send message |
@@ -295,16 +291,13 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ## Arena
 
-> [!NOTE]
-> Not yet implemented — planned for Phase 7.
-
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/arena` | Web\ArenaController | Arena Management page |
-| GET | `/api/v1/arena` | Api\V1\ArenaController | Arena status/revenue |
-| POST | `/api/v1/arena/upgrade` | Api\V1\ArenaController | Upgrade arena |
-| PUT | `/api/v1/arena/ticket-price` | Api\V1\ArenaController | Set ticket price |
-| POST | `/api/v1/arena/schedule-match` | Api\V1\ArenaController | Schedule friendly match |
+| GET | `/app/arena` | Web\ArenaController | Arena overview (capacity, fan appeal, home-match revenue projection) |
+| GET | `/api/v1/arena` | Api\V1\ArenaController | Arena status (read-only) |
+| POST | `/api/v1/arena/schedule-match` | Api\V1\ArenaController | Schedule friendly match — **planned** (requires combat engine) |
+
+> Arena facility upgrades use `/app/hq`. Match-day ticket revenue is paid to the **home team** on the League Match tick via `ArenaRevenueService::processLeagueMatchTick()`.
 
 ---
 
@@ -348,9 +341,9 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | | Web | API | Total |
 |--|-----|-----|-------|
-| Routes (implemented) | 19 | 47 | **66** |
-| Routes (planned) | 10 | 40+ | — |
-| Controllers (Web, implemented) | 13 | — | — |
-| Controllers (API, implemented) | — | 10 | — |
+| Routes (implemented) | 21 | 52 | **73** |
+| Routes (planned) | 8 | 35+ | — |
+| Controllers (Web, implemented) | 15 | — | — |
+| Controllers (API, implemented) | — | 12 | — |
 
 > Routes marked **planned** have no controller implementation yet. Route counts reflect the state of the codebase; the original total of 116 includes all planned future routes.

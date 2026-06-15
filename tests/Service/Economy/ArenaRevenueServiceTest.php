@@ -6,150 +6,210 @@ namespace App\Tests\Service\Economy;
 
 use App\Entity\Headquarters\Facility;
 use App\Entity\Headquarters\Headquarters;
+use App\Entity\Kingdom\Kingdom;
+use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\FacilityType;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use App\Repository\Headquarters\HeadquartersRepository;
+use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\Team\TeamRepository;
 use App\Service\Economy\ArenaRevenueService;
 use App\Service\Economy\EconomyService;
-use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\TestCase;
+use App\Service\Team\FanClubService;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\TestCase;
 
 #[AllowMockObjectsWithoutExpectations]
 class ArenaRevenueServiceTest extends TestCase
 {
-    private $teamRepositoryMock;
-    private $hqRepositoryMock;
-    private $economyServiceMock;
-    private $entityManagerMock;
+    private HeadquartersRepository $hqRepositoryMock;
+    private LeagueFixtureRepository $fixtureRepositoryMock;
+    private EconomyService $economyServiceMock;
     private ArenaRevenueService $arenaRevenueService;
 
     protected function setUp(): void
     {
-        $this->teamRepositoryMock = $this->createMock(TeamRepository::class);
         $this->hqRepositoryMock = $this->createMock(HeadquartersRepository::class);
+        $this->fixtureRepositoryMock = $this->createMock(LeagueFixtureRepository::class);
         $this->economyServiceMock = $this->createMock(EconomyService::class);
-        $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
+        $teamRepositoryMock = $this->createMock(TeamRepository::class);
+        $fanClubService = new FanClubService($teamRepositoryMock);
 
         $this->arenaRevenueService = new ArenaRevenueService(
-            $this->teamRepositoryMock,
             $this->hqRepositoryMock,
+            $this->fixtureRepositoryMock,
             $this->economyServiceMock,
-            $this->entityManagerMock
+            $fanClubService,
         );
     }
 
-    public function testCalculateTeamRevenueNoHqUsesDefaults(): void
+    public function testCalculateMatchRevenueUsesFanClubAttendance(): void
     {
-        $team = new Team();
-        $team->setName('Noob Team');
-        $team->setReputation(0);
+        $home = new Team();
+        $home->setName('Home FC');
+        $home->setFanBase(400);
+        $home->setReputation(100);
+        $home->setMorale(80);
+        $home->setChemistry(25);
 
-        $this->hqRepositoryMock
-            ->method('findOneBy')
-            ->willReturn(null);
+        $away = new Team();
+        $away->setName('Away FC');
+        $away->setFanBase(100);
+        $away->setReputation(0);
+        $away->setMorale(50);
+        $away->setChemistry(0);
 
-        $report = $this->arenaRevenueService->calculateTeamRevenue($team);
+        $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
 
-        // Capacity: 500
-        // Reputation: 0 -> Attendance ratio: 0.4 -> Attendance: 200
-        // Price: 5 -> Base revenue: 1000 Gold
-        // Multipliers: None
+        $report = $this->arenaRevenueService->calculateMatchRevenue($home, $away);
+
+        $this->assertSame(ArenaRevenueService::TICKET_PRICE, $report['ticket_price']);
         $this->assertSame(500, $report['capacity']);
-        $this->assertSame(200, $report['attendance']);
-        $this->assertSame(1000, $report['gold_earned']);
+        $this->assertGreaterThan($report['away_attendees'], $report['home_attendees']);
+        $this->assertSame($report['attendance'], $report['home_attendees'] + $report['away_attendees']);
+        $this->assertGreaterThan(0, $report['gold_earned']);
+        $this->assertSame(400, $report['home_fan_base']);
+        $this->assertSame(100, $report['away_fan_base']);
     }
 
-    public function testCalculateTeamRevenueWithHqUpgrades(): void
+    public function testCalculateMatchRevenueCanBeEmptyWhenFanBaseIsZero(): void
     {
-        $team = new Team();
-        $team->setName('Pro Team');
-        $team->setReputation(100); // 100 reputation
+        $home = new Team();
+        $home->setFanBase(0);
+        $home->setMorale(0);
+
+        $away = new Team();
+        $away->setFanBase(0);
+        $away->setMorale(0);
+
+        $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
+
+        $report = $this->arenaRevenueService->calculateMatchRevenue($home, $away);
+
+        $this->assertSame(0, $report['attendance']);
+        $this->assertSame(0, $report['home_attendees']);
+        $this->assertSame(0, $report['away_attendees']);
+        $this->assertSame(0, $report['gold_earned']);
+    }
+
+    public function testCalculateMatchRevenueAppliesArenaBonuses(): void
+    {
+        $home = new Team();
+        $home->setFanBase(350);
+        $home->setReputation(50);
+        $home->setMorale(50);
+        $home->setChemistry(10);
+
+        $away = new Team();
+        $away->setFanBase(350);
+        $away->setReputation(50);
+        $away->setMorale(50);
+        $away->setChemistry(10);
 
         $hq = new Headquarters();
-        
-        // Level 2 Arena: arena_capacity +20%, ticket_revenue_pct +12%
         $arena = new Facility();
         $arena->setType(FacilityType::Arena);
-        $arena->setPassiveBonuses([
-            'arena_capacity' => 20.0,
-            'ticket_revenue_pct' => 12.0
-        ]);
+        $arena->setPassiveBonuses(['arena_capacity' => 20.0, 'ticket_revenue_pct' => 10.0]);
         $hq->addFacility($arena);
 
-        // Level 2 Treasury: gold_income_pct +8%
-        $treasury = new Facility();
-        $treasury->setType(FacilityType::Treasury);
-        $treasury->setPassiveBonuses([
-            'gold_income_pct' => 8.0
-        ]);
-        $hq->addFacility($treasury);
+        $this->hqRepositoryMock->method('findOneBy')->willReturn($hq);
 
-        $this->hqRepositoryMock
-            ->method('findOneBy')
-            ->willReturn($hq);
+        $report = $this->arenaRevenueService->calculateMatchRevenue($home, $away);
 
-        $report = $this->arenaRevenueService->calculateTeamRevenue($team);
-
-        // Seating Capacity: 500 * 1.20 = 600
-        // Reputation: 100 -> Attendance ratio: 0.4 + 0.6 * (100 / 200) = 0.70
-        // Attendance: 600 * 0.70 = 420
-        // Base Revenue: 420 * 5 = 2100 Gold
-        // Adjusted: 2100 * 1.12 * 1.08 = 2540.16 -> round = 2540 Gold
         $this->assertSame(600, $report['capacity']);
-        $this->assertSame(420, $report['attendance']);
-        $this->assertSame(2540, $report['gold_earned']);
+        $this->assertGreaterThan($report['attendance'] * ArenaRevenueService::TICKET_PRICE, $report['gold_earned']);
     }
 
-    public function testDistributeWeeklyRevenue(): void
+    public function testPayFixtureRevenueCreditsHomeTeamOnly(): void
     {
-        $team1 = $this->createMock(Team::class);
-        $team1->method('getId')->willReturn(1);
-        $team1->method('getName')->willReturn('Team A');
-        $team1->method('getReputation')->willReturn(0);
+        $home = new Team();
+        $home->setName('Home FC');
+        $home->setFanBase(350);
+        $home->setReputation(20);
+        $home->setMorale(60);
+        $home->setChemistry(5);
 
-        $team2 = $this->createMock(Team::class);
-        $team2->method('getId')->willReturn(2);
-        $team2->method('getName')->willReturn('Team B');
-        $team2->method('getReputation')->willReturn(50);
+        $away = new Team();
+        $away->setName('Away FC');
+        $away->setFanBase(200);
+        $away->setReputation(10);
+        $away->setMorale(55);
+        $away->setChemistry(0);
 
-        $this->teamRepositoryMock
-            ->expects($this->once())
-            ->method('findBy')
-            ->with(['isNpc' => false])
-            ->willReturn([$team1, $team2]);
+        $fixture = new LeagueFixture();
+        $fixture->setHomeTeam($home);
+        $fixture->setAwayTeam($away);
 
-        $this->hqRepositoryMock
-            ->method('findOneBy')
-            ->willReturn(null);
+        $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
 
-        $invocations = [];
         $this->economyServiceMock
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('addGold')
-            ->willReturnCallback(function (Team $team, int $amount, $type, $actor, $context = []) use (&$invocations) {
-                $invocations[] = [$team, $amount, $type, $actor, $context];
-            });
+            ->with(
+                $home,
+                $this->greaterThan(0),
+                FinancialRecordType::ArenaRevenue,
+                FinancialRecordActor::System,
+                $this->callback(static fn(array $ctx): bool => isset($ctx['away_team_name']) && 'Away FC' === $ctx['away_team_name'])
+            );
 
-        $this->economyServiceMock
+        $this->arenaRevenueService->payFixtureRevenue($fixture);
+    }
+
+    public function testPayFixtureRevenueSkipsGoldWhenNobodyAttends(): void
+    {
+        $home = new Team();
+        $home->setFanBase(0);
+        $away = new Team();
+        $away->setFanBase(0);
+
+        $fixture = new LeagueFixture();
+        $fixture->setHomeTeam($home);
+        $fixture->setAwayTeam($away);
+
+        $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
+        $this->economyServiceMock->expects($this->never())->method('addGold');
+
+        $report = $this->arenaRevenueService->payFixtureRevenue($fixture);
+
+        $this->assertSame(0, $report['gold_earned']);
+    }
+
+    public function testProcessLeagueMatchTickProcessesFixturesAtTime(): void
+    {
+        $kingdom = new Kingdom();
+        $scheduledAt = new \DateTimeImmutable('2026-06-10 18:00:00');
+
+        $home = new Team();
+        $home->setFanBase(350);
+        $home->setReputation(10);
+        $home->setMorale(50);
+        $home->setChemistry(0);
+        $away = new Team();
+        $away->setFanBase(350);
+        $away->setReputation(10);
+        $away->setMorale(50);
+        $away->setChemistry(0);
+
+        $fixture = new LeagueFixture();
+        $fixture->setHomeTeam($home);
+        $fixture->setAwayTeam($away);
+
+        $this->fixtureRepositoryMock
             ->expects($this->once())
-            ->method('flush');
+            ->method('findScheduledFixturesAtTime')
+            ->with($kingdom, $scheduledAt)
+            ->willReturn([$fixture]);
 
-        $reports = $this->arenaRevenueService->distributeWeeklyRevenue();
+        $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
 
-        $this->assertCount(2, $reports);
-        
-        $this->assertSame($team1, $invocations[0][0]);
-        $this->assertSame(1000, $invocations[0][1]);
-        $this->assertSame(FinancialRecordType::ArenaRevenue, $invocations[0][2]);
-        $this->assertSame(FinancialRecordActor::System, $invocations[0][3]);
+        $this->economyServiceMock->expects($this->once())->method('addGold');
+        $this->economyServiceMock->expects($this->once())->method('flush');
 
-        $this->assertSame($team2, $invocations[1][0]);
-        $this->assertSame(1500, $invocations[1][1]);
-        $this->assertSame(FinancialRecordType::ArenaRevenue, $invocations[1][2]);
-        $this->assertSame(FinancialRecordActor::System, $invocations[1][3]);
+        $results = $this->arenaRevenueService->processLeagueMatchTick($kingdom, $scheduledAt);
+
+        $this->assertCount(1, $results);
     }
 }

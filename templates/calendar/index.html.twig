@@ -1,0 +1,54 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'calendar.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="space-y-8 max-w-7xl mx-auto" data-controller="calendar"
+     data-calendar-kingdom-id-value="{{ kingdom.id }}"
+     data-calendar-team-id-value="{{ team.id }}"
+     data-calendar-timezone-value="{{ kingdom.timezone }}"
+     data-calendar-translations-value="{{ {
+         'loading': 'calendar.loading'|trans,
+         'empty': 'calendar.empty'|trans,
+         'error': 'calendar.error'|trans,
+         'filter_team_only': 'calendar.filter_team_only'|trans,
+         'filter_show_system': 'calendar.filter_show_system'|trans,
+         'type_system_tick': 'calendar.type_system_tick'|trans,
+         'type_league_match': 'calendar.type_league_match'|trans,
+         'type_world_event': 'calendar.type_world_event'|trans,
+         'type_training_queue': 'calendar.type_training_queue'|trans,
+         'status_scheduled': 'calendar.status_scheduled'|trans,
+         'status_completed': 'calendar.status_completed'|trans,
+         'status_failed': 'calendar.status_failed'|trans
+     }|json_encode|e('html_attr') }}">
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'calendar.title',
+        subtitle: 'calendar.subtitle'
+    } %}
+
+    <div class="bg-gray-900/40 border border-gray-800 rounded-xl p-4 flex flex-wrap gap-4 items-center justify-between backdrop-blur-md">
+        <div class="flex flex-wrap gap-4 items-center">
+            <label class="inline-flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                <input type="checkbox" data-calendar-target="teamOnlyToggle" data-action="change->calendar#reload" class="rounded border-gray-700 bg-gray-950 text-emerald-500">
+                <span>{{ 'calendar.filter_team_only'|trans }}</span>
+            </label>
+            <label class="inline-flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                <input type="checkbox" data-calendar-target="systemToggle" data-action="change->calendar#reload" class="rounded border-gray-700 bg-gray-950 text-emerald-500">
+                <span>{{ 'calendar.filter_show_system'|trans }}</span>
+            </label>
+        </div>
+        <div class="flex gap-2">
+            <button type="button" data-action="click->calendar#prevWeek" class="btn btn-outline btn--sm">←</button>
+            <span data-calendar-target="rangeLabel" class="text-sm font-semibold text-gray-200 min-w-[180px] text-center"></span>
+            <button type="button" data-action="click->calendar#nextWeek" class="btn btn-outline btn--sm">→</button>
+        </div>
+    </div>
+
+    <div data-calendar-target="feedContainer" class="space-y-3">
+        <div class="flex justify-center py-12">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

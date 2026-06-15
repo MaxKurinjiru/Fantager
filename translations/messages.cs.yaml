@@ -23,6 +23,8 @@ nav:
   toggle_menu: Zobrazit/skrýt menu
   finance: Finanční kniha
   community: Komunita
+  calendar: Kalendář
+  arena: Aréna
 
 modal:
   close: Zavřít
@@ -220,6 +222,8 @@ heroes:
   win_rate: Míra výher
   fallen: Padlí
   trainings: Tréninky
+  total_stat_gain: Celkový růst statů
+  summoned: Vyvolán
   recent_activity: Nedávná aktivita
   recent_activity_desc: Poslední akce provedené tímto hrdinou.
   no_activity: Nebyly zaznamenány žádné tréninkové aktivity.
@@ -276,6 +280,7 @@ finance:
   col_actor: Iniciátor
   col_changes: Změny zůstatku
   col_date: Datum a čas
+  col_amount: Částka
   col_context: Kontext
   no_records: Nebyly nalezeny žádné finanční záznamy.
   type_league_reward: Ligová odměna
@@ -667,6 +672,52 @@ league:
   my_fixtures: Zápasy mého týmu
   group_fixtures: Zápasy skupiny
   round: Kolo
+
+calendar:
+  title: Kalendář a události
+  subtitle: Plán království — ligové zápasy, tréninkové ticky a týmové události.
+  loading: Načítání kalendáře...
+  empty: V tomto období nejsou žádné události.
+  error: Nepodařilo se načíst kalendář.
+  filter_team_only: Pouze můj tým
+  filter_show_system: Zobrazit systémové ticky
+  type_system_tick: Systém
+  type_league_match: Liga
+  type_world_event: Událost
+  type_training_queue: Trénink
+  status_scheduled: Naplánováno
+  status_completed: Dokončeno
+  status_failed: Selhalo
+
+arena:
+  title: Správa arény
+  subtitle: Příjmy z domácích zápasů podle velikosti arény a návštěvnosti obou týmů.
+  status_title: Přehled arény
+  level: Úroveň arény
+  capacity: Kapacita hlediště
+  ticket_price: Cena vstupenky
+  fan_appeal: Přívětivost fanoušků
+  fan_base: Velikost fanklubu
+  show_up_rate: Míra účasti
+  fan_club_hint: "Fanklub %fanBase% fanoušků (cíl %targetFanBase%). Účast na zápasech: reputace %reputation%, morálka %morale%, chemie %chemistry%."
+  revenue_home_only_hint: Příjem z vstupenek dostává pouze domácí tým po odehrání domácího ligového zápasu.
+  next_home_match: Nejbližší domácí zápas
+  next_match_home: "Domácí vs %opponent%"
+  projected_attendance: Očekávaná návštěvnost
+  home_fans: Domácí fanoušci
+  away_fans: Hostující fanoušci
+  projected_revenue: Očekávaný příjem
+  no_home_match: Není naplánován žádný nadcházející domácí ligový zápas.
+  revenue_history: Příjmy z domácích zápasů
+  col_opponent: Soupeř
+  col_attendance: Návštěvnost
+  no_revenue_yet: Zatím žádné příjmy z domácích zápasů. Výplata proběhne po odehrání ligového zápasu.
+  how_it_works: Jak funguje příjem z arény
+  rule_fixed_price: "Pevná cena vstupenky: 🪙 %price% za místo."
+  rule_capacity: Kapacita hlediště roste s vylepšením arény v základně.
+  rule_attendance: Tribuny se plní podle velikosti fanklubů obou týmů a jejich aktuální nálady (reputace, morálka, chemie). Na zápas nemusí nikdo dorazit.
+  rule_home_only: Příjem z vstupenek dostává výhradně domácí tým.
+  upgrade_hint: Vylepšete arénu v základně pro vyšší kapacitu a bonusy k příjmům.
 
 marketplace:
   title: Tržiště
