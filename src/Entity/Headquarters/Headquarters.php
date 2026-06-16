@@ -45,6 +45,12 @@ class Headquarters
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $upgradeCompletedAt = null;
 
+    #[ORM\Column(length: 10, nullable: true, enumType: \App\Enum\FacilityOperation::class)]
+    private ?\App\Enum\FacilityOperation $facilityOperation = null;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $facilityDowngradeLockCycle = false;
+
     /** @var Collection<int, Facility> */
     #[ORM\OneToMany(targetEntity: Facility::class, mappedBy: 'headquarters', cascade: ['persist'])]
     private Collection $facilities;
@@ -131,6 +137,24 @@ class Headquarters
         return $this;
     }
 
+    /** Sum of all facility levels — source of truth for HQ total level in mechanics. */
+    public function getComputedTotalLevel(): int
+    {
+        $total = 0;
+        foreach ($this->facilities as $facility) {
+            $total += $facility->getLevel();
+        }
+
+        return $total;
+    }
+
+    public function syncTotalLevel(): static
+    {
+        $this->totalLevel = $this->getComputedTotalLevel();
+
+        return $this;
+    }
+
     /** @return Collection<int, Facility> */
     public function getFacilities(): Collection
     {
@@ -169,5 +193,34 @@ class Headquarters
         $this->upgradeCompletedAt = $upgradeCompletedAt;
 
         return $this;
+    }
+
+    public function getFacilityOperation(): ?\App\Enum\FacilityOperation
+    {
+        return $this->facilityOperation;
+    }
+
+    public function setFacilityOperation(?\App\Enum\FacilityOperation $facilityOperation): static
+    {
+        $this->facilityOperation = $facilityOperation;
+
+        return $this;
+    }
+
+    public function isFacilityDowngradeLockCycle(): bool
+    {
+        return $this->facilityDowngradeLockCycle;
+    }
+
+    public function setFacilityDowngradeLockCycle(bool $facilityDowngradeLockCycle): static
+    {
+        $this->facilityDowngradeLockCycle = $facilityDowngradeLockCycle;
+
+        return $this;
+    }
+
+    public function hasFacilityChangeInProgress(): bool
+    {
+        return null !== $this->upgradingFacility;
     }
 }

@@ -12,16 +12,16 @@ The game world operates on automated server ticks executed at scheduled times. T
 
 | Day | Time | Event / Tick | Action Details |
 |:---|:---|:---|:---|
-| **Daily** | 00:00 | **Daily Reset & Maintenance** | Process daily quests expiration, reset daily limits, update hero aging, process expired marketplace listings. |
+| **Daily** | 00:00 | **Daily Reset & Maintenance** | Cleanup stale match formations, fan club evolution, expired marketplace listings, completed HQ facility upgrades, hero/trainer aging, and season pre-creation on Monday of Week 11. |
 | **Daily** | 03:30 | **Inactive Registration Cleanup** | Remove team assignments and delete unverified player accounts older than 1 day. |
+| **Daily** | 03:45 | **Inactive Player Cleanup** | Release teams from verified players inactive for 28+ days. |
 | **Daily** | 04:00 | **Fatigue & Form Recovery** | Recovery tick for hero fatigue and form (passive restoration). |
-| **Tuesday** | 18:00 | **League Match (Mid-Week)** | Process scheduled mid-week league fixtures. Resolve combat, distribute match XP/Gold, apply post-match fatigue/form/morale/aging. |
-| **Friday** | 10:00 | **Weekly Training** | Process queued training jobs. Calculate stat gains (using non-linear formulas and raw x10 scaling), apply to heroes, and restore status. |
-| **Friday** | 18:00 | **League Match (End-Week)** | Process scheduled end-week league fixtures. Resolve combat, distribute match XP/Gold, apply post-match fatigue/form/morale/aging. |
+| **Tuesday** | 18:00 | **League Match (Mid-Week)** | Process scheduled mid-week league fixtures. **Currently implemented:** home-team arena ticket revenue. **Planned (Phase 5):** combat resolution, match XP, post-match fatigue/form/morale/aging. |
+| **Friday** | 10:00 | **Weekly Training** | Process active trainer assignments. Calculate stat gains (non-linear formulas, raw x10 scaling) and apply to heroes. |
+| **Friday** | 18:00 | **League Match (End-Week)** | Process scheduled end-week league fixtures. **Currently implemented:** home-team arena ticket revenue. **Planned (Phase 5):** combat resolution, match XP, post-match fatigue/form/morale/aging. |
 | **Friday** | 19:00 | **Season Transition** *(Week 11 only)* | Run season resolution service: finalize standings, distribute tier promotion/relegation rewards, execute team transfers (promotions/relegations), initialize the next season. |
 | **Sunday** | 09:30 | **Race Optimization** | Apply pending headquarters race optimization changes and manage weekly optimization lock cycles. |
-| **Weekly** | Sun 23:59 | **Weekly Reset** | Process weekly quest expiration and reset summoning chamber cooldowns. |
-
+| **Weekly** | Sun 23:59 | **Weekly Reset** | Reset summoning chamber cooldowns, process HQ maintenance fees, facility downgrade lock expiry, and weekly financial-crisis checks. |
 
 ---
 
@@ -106,7 +106,7 @@ To guarantee that scheduled ticks are run exactly once (idempotency) and that no
 - **Fields**:
   - `id` (INT, Primary Key)
   - `kingdom_id` (INT, Foreign Key to `kingdom`, NOT NULL)
-  - `tickType` (VARCHAR(30) / Enum: e.g. `daily_reset`, `inactive_registration_cleanup`, `fatigue_recovery`, `league_match`, `weekly_training`, `season_transition`, `weekly_reset`)
+  - `tickType` (VARCHAR(30) / Enum: `daily_reset`, `inactive_registration_cleanup`, `inactive_player_cleanup`, `fatigue_recovery`, `weekly_training`, `league_match`, `season_transition`, `race_optimization`, `weekly_reset`)
   - `scheduledAt` (DATETIME, UTC, NOT NULL) - The scheduled real-world timestamp when the tick should have executed.
   - `status` (VARCHAR(15) / Enum: `processing`, `completed`, `failed`)
   - `errorMessage` (TEXT, Nullable)
@@ -127,13 +127,14 @@ For each active Kingdom:
 
 Within the message handler (`ProcessKingdomTicksHandler`):
 - All pending tick logs for the specified Kingdom are processed sequentially.
-- Ticks are sorted first by `scheduledAt ASC` (chronological order) and second by **logical priority** to avoid dependency conflicts:
-  1. **Priority 1: Queue Completions** (Facility upgrades, item crafting, dungeon completions) - updates roster/infrastructure.
-  2. **Priority 2: Weekly Training** (Friday 10:00) - upgrades hero stats.
-  3. **Priority 3: Match Resolution** (League/Friendly matches) - executes battles, applies fatigue/injury.
-  4. **Priority 4: Post-Match Transitions** (Season Transitions on Week 11 Friday 19:00).
-  5. **Priority 5: Fatigue & Form Recovery** (Daily 04:00) - recovers hero stats.
-  6. **Priority 6: Reset / Maintenance / Cleanup** (Daily 00:00, Daily 03:30 Inactive Registration Cleanup, Weekly Reset Sun 23:59).
+- Ticks are sorted first by `scheduledAt ASC` (chronological order) and second by **logical priority** to avoid dependency conflicts when multiple ticks share the same timestamp:
+  1. **Priority 2: Weekly Training** (Friday 10:00) — applies hero stat gains from active trainers.
+  2. **Priority 3: League Match** (Tuesday/Friday 18:00) — arena revenue and formation cleanup.
+  3. **Priority 4: Season Transition** (Friday 19:00, Week 11 only).
+  4. **Priority 5: Fatigue & Form Recovery** (Daily 04:00).
+  5. **Priority 6: Reset / Maintenance / Cleanup** — `DailyReset` (00:00, includes HQ facility upgrade completion), `InactiveRegistrationCleanup` (03:30), `InactivePlayerCleanup` (03:45), `RaceOptimization` (Sun 09:30), `WeeklyReset` (Sun 23:59).
+
+Team-scoped asynchronous work is handled **inside** these ticks — for example HQ facility upgrades complete during `DailyReset`, and trainer-based training resolves during `WeeklyTraining`.
 
 If any tick fails, the handler halts execution for that Kingdom, logs the error, and alerts administrators. This prevents subsequent ticks from executing out of order, preserving data integrity.
 

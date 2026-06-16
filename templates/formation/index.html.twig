@@ -3,30 +3,42 @@
 {% block title %}{{ 'formation.title'|trans }} — Fantager{% endblock %}
 
 {% block body %}
+{% set is_match_prep = fixture is not null and fixture_assignment is not null %}
 {% set selected_formation_id = app.request.query.get('formation_id') %}
 {% set selected_formation = null %}
+{% set match_edit_source = is_match_prep ? (fixture_assignment.assigned_formation ?? fixture_assignment.effective_formation) : null %}
 
-{% if selected_formation_id %}
+{% if is_match_prep %}
+    {# Match prep loads assigned or effective formation data #}
+{% elseif selected_formation_id %}
     {% for f in formations %}
         {% if f.id == selected_formation_id %}
             {% set selected_formation = f %}
         {% endif %}
     {% endfor %}
 {% else %}
-    {# Search default #}
     {% for f in formations %}
         {% if f.isDefault %}
             {% set selected_formation = f %}
         {% endif %}
     {% endfor %}
-    {# Fallback to first #}
     {% if not selected_formation and formations|length > 0 %}
         {% set selected_formation = formations[0] %}
     {% endif %}
 {% endif %}
 
 {% set current_slots = {} %}
-{% if selected_formation %}
+{% if is_match_prep and match_edit_source %}
+    {% for slot in match_edit_source.slots %}
+        {% if slot.hero_id %}
+            {% for h in heroes %}
+                {% if h.id == slot.hero_id %}
+                    {% set current_slots = current_slots|merge({(slot.position): h}) %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+{% elseif selected_formation %}
     {% for slot in selected_formation.slots %}
         {% if slot.hero %}
             {% set current_slots = current_slots|merge({(slot.position.value): slot.hero}) %}
@@ -35,6 +47,8 @@
 {% endif %}
 
 <div class="formation-page page-shell" data-controller="formation"
+     {% if is_match_prep %}data-formation-fixture-id-value="{{ fixture.id }}"{% endif %}
+     data-formation-is-match-prep-value="{{ is_match_prep ? 'true' : 'false' }}"
      data-formation-error-empty-value="{{ 'js_flash.formation.name_empty'|trans }}"
      data-formation-error-assign-value="{{ 'js_flash.formation.assign_hero'|trans }}"
      data-formation-text-saving-value="{{ 'js_flash.formation.saving'|trans }}"
@@ -44,6 +58,8 @@
      data-formation-text-deleting-value="{{ 'js_flash.formation.deleting'|trans }}"
      data-formation-error-delete-value="{{ 'js_flash.formation.failed_delete'|trans }}"
      data-formation-success-delete-value="{{ 'js_flash.formation.success_delete'|trans }}"
+     data-formation-success-promote-value="{{ 'js_flash.formation.success_promote'|trans }}"
+     data-formation-error-promote-value="{{ 'js_flash.formation.failed_promote'|trans }}"
      data-formation-level-label-value="{{ 'js_flash.formation.lvl_short'|trans }}"
      data-formation-races-value="{{ {
          human: 'heroes.race_human'|trans,
@@ -57,43 +73,40 @@
      }|json_encode }}"
 >
     
-    {# --- Header Section --- #}
     {% set right_content %}
-        <select data-formation-target="formationSelect" data-action="change->formation#changeFormation"
-                class="form-input font-semibold w-full sm:min-w-[200px]">
-            <option value="">{{ 'formation.create_new'|trans }}</option>
-            {% for f in formations %}
-                <option value="{{ f.id }}" {% if selected_formation and selected_formation.id == f.id %}selected{% endif %}>
-                    {{ f.name }} {% if f.isDefault %}({{ 'formation.default'|trans }}){% endif %}
-                </option>
-            {% endfor %}
-        </select>
+        {% if not is_match_prep %}
+            <select data-formation-target="formationSelect" data-action="change->formation#changeFormation"
+                    class="form-input font-semibold w-full sm:min-w-[200px]">
+                <option value="">{{ 'formation.create_new'|trans }}</option>
+                {% for f in formations %}
+                    <option value="{{ f.id }}" {% if selected_formation and selected_formation.id == f.id %}selected{% endif %}>
+                        {{ f.name }} {% if f.isDefault %}({{ 'formation.default'|trans }}){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
 
-        {% if selected_formation %}
-            <button type="button" data-action="click->formation#delete" data-formation-id="{{ selected_formation.id }}"
-                    class="btn btn-danger btn--sm">
-                {{ 'formation.delete_btn'|trans }}
-            </button>
+            {% if selected_formation %}
+                <button type="button" data-action="click->formation#delete" data-formation-id="{{ selected_formation.id }}"
+                        class="btn btn-danger btn--sm">
+                    {{ 'formation.delete_btn'|trans }}
+                </button>
+            {% endif %}
         {% endif %}
     {% endset %}
 
     {% include 'components/ui/page_header.html.twig' with {
-        title: 'formation.title',
-        subtitle: 'formation.subtitle',
+        title: is_match_prep ? 'formation.match_prep_title' : 'formation.title',
+        subtitle: is_match_prep ? 'formation.match_prep_subtitle' : 'formation.subtitle',
         right_content: right_content
     } %}
 
-    {# --- Alert Box --- #}
     {% include 'components/ui/alert_box.html.twig' with {
         target: 'formation',
         message_target: 'alertMessage',
         close_action: 'formation#closeAlert'
     } %}
 
-    {# --- Main Grid Layout --- #}
     <div class="screen-grid">
-        
-        {# LEFT & MIDDLE COLUMN: 3x3 Lineup Grid & Strategy Options (2 Columns) #}
         <div class="screen-grid__main">
             <div class="feature-panel formation-lineup-panel">
                 <div>
@@ -101,20 +114,27 @@
                     <p class="feature-panel__desc">{{ 'formation.starting_lineup_desc'|trans }}</p>
                 </div>
 
-                {# Visual Pitch Representation #}
                 {% include 'components/formation/pitch_grid.html.twig' with { current_slots: current_slots, heroes: heroes } %}
             </div>
         </div>
 
-        {# RIGHT COLUMN: Tactics Options & Hero Pool (1 Column) #}
         <div class="screen-grid__aside">
-            {# Strategy Settings #}
-            {% include 'components/formation/strategy_settings.html.twig' with { selected_formation: selected_formation } %}
+            {% if is_match_prep %}
+                {% include 'components/formation/match_prep_panel.html.twig' with {
+                    fixture: fixture,
+                    fixture_assignment: fixture_assignment,
+                    formations: formations,
+                    team: team
+                } %}
+            {% endif %}
 
-            {# Roster Hero pool #}
+            {% include 'components/formation/strategy_settings.html.twig' with {
+                selected_formation: is_match_prep ? null : selected_formation,
+                match_edit_source: match_edit_source
+            } %}
+
             {% include 'components/formation/hero_pool.html.twig' with { heroes: heroes } %}
         </div>
-
     </div>
 
 </div>

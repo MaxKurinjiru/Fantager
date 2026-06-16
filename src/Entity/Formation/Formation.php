@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity\Formation;
 
+use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\FormationApproach;
 use App\Repository\Formation\FormationRepository;
@@ -32,6 +33,13 @@ class Formation
 
     #[ORM\Column(length: 15, enumType: FormationApproach::class)]
     private FormationApproach $approach = FormationApproach::Balanced;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $isTemporary = false;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?LeagueFixture $sourceFixture = null;
 
     /** @var Collection<int, FormationSlot> */
     #[ORM\OneToMany(targetEntity: FormationSlot::class, mappedBy: 'formation', cascade: ['persist'])]
@@ -91,6 +99,30 @@ class Formation
     public function setApproach(FormationApproach $approach): static
     {
         $this->approach = $approach;
+
+        return $this;
+    }
+
+    public function isTemporary(): bool
+    {
+        return $this->isTemporary;
+    }
+
+    public function setIsTemporary(bool $isTemporary): static
+    {
+        $this->isTemporary = $isTemporary;
+
+        return $this;
+    }
+
+    public function getSourceFixture(): ?LeagueFixture
+    {
+        return $this->sourceFixture;
+    }
+
+    public function setSourceFixture(?LeagueFixture $sourceFixture): static
+    {
+        $this->sourceFixture = $sourceFixture;
 
         return $this;
     }

@@ -42,28 +42,22 @@
       color: var(--color-success-text);
     }
 
-    &--tired {
-      background-color: var(--color-warning-bg);
-      border-color: var(--color-warning-border);
-      color: var(--color-warning-text);
-    }
-
-    &--training {
-      background-color: color-mix(in srgb, var(--color-warning-bg) 80%, var(--color-surface-base));
-      border-color: var(--color-warning-border);
-      color: var(--color-warning-text);
-    }
-
     &--in_match {
       background-color: var(--color-info-bg);
       border-color: var(--color-info-border);
       color: var(--color-info-text);
     }
 
-    &--injured {
-      background-color: var(--color-error-bg);
-      border-color: var(--color-error-border);
-      color: var(--color-error-text);
+    &--selling {
+      background-color: color-mix(in srgb, var(--color-info-bg) 70%, var(--color-surface-base));
+      border-color: var(--color-info-border);
+      color: var(--color-info-text);
+    }
+
+    &--recovering {
+      background-color: var(--color-warning-bg);
+      border-color: var(--color-warning-border);
+      color: var(--color-warning-text);
     }
 
     &--dead {

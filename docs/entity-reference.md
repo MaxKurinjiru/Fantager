@@ -37,11 +37,11 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | `**Facility.passive_bonuses` design**                         | In DB, `Facility` uses a `metadata` (JSON) field. The passive bonuses are computed using `getPassiveBonuses()`, combining `metadata` with static bonuses defined per `FacilityType` level.                                                                         |
 | `**Hero.intel` column name**                                          | PHP property and DB column named `intel` instead of `int` — `int` is a PHP reserved word and cannot be used as an identifier.                                                                                                                                       |
 | `**MarketplaceListing` polymorphic entity reference**                 | Three nullable FK columns (`hero_id`, `item_id`, `trainer_id`) — only one set per row based on `listing_type`. Provides DB-level referential integrity without a generic polymorphic pattern. Application layer enforces mutual exclusivity.                        |
-| **Database Table Naming Convention**                                  | Main/root entities (e.g. `team`, `kingdom`, `headquarters`, `hero`, `formation`, `spell`, `item`, `event`, `quest`, `notification`, `achievement`, `news_article`, `activity_log`, `trainer`, `training_queue`) do NOT have domain prefixes. Sub-entities (e.g. `headquarters_facility`, `team_financial_record`, `formation_slot`, `hero_school_mastery`, `quest_player_progress`) or entities with SQL reserved keyword conflicts (e.g. `user` -> `auth_user`, `verification_token` -> `auth_verification_token`, `battle` -> `combat_battle`, `message` -> `community_message`) are prefixed with their domain namespace. |
+| **Database Table Naming Convention**                                  | Main/root entities (e.g. `team`, `kingdom`, `headquarters`, `hero`, `formation`, `spell`, `item`, `event`, `notification`, `achievement`, `news_article`, `activity_log`, `trainer`, `training_queue`) do NOT have domain prefixes. Sub-entities (e.g. `headquarters_facility`, `team_financial_record`, `formation_slot`, `hero_school_mastery`) or entities with SQL reserved keyword conflicts (e.g. `user` -> `auth_user`, `verification_token` -> `auth_verification_token`, `battle` -> `combat_battle`, `message` -> `community_message`) are prefixed with their domain namespace. |
 
 ---
 
-## Database Entities (43)
+## Database Entities (41)
 
 ### 1. Auth Domain
 
@@ -66,7 +66,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity   | Key Fields                                                                                                                                                                                                                                           | Relationships                                                |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **Team**            | id, user_id (nullable), kingdom_id, name, emblem, colors, morale, reputation, chemistry, gold, essence_common, essence_uncommon, essence_rare, essence_epic, essence_legendary, essence_mythic, is_npc, last_summon_at, summons_this_cycle | → User (N:1, nullable — NULL for NPC teams), → Kingdom (N:1) |
+| **Team**            | id, user_id (nullable), kingdom_id, name, emblem, colors, morale, reputation, chemistry, fan_base, gold, essence_common–mythic, is_npc, last_summon_at, summons_this_cycle, **unpaid_debt**, **crisis_weeks**, **last_recovery_action_at** | → User (N:1, nullable — NULL for NPC teams), → Kingdom (N:1) |
 | **FinancialRecord** | id, team_id, type (enum), actor (enum), gold_change, essence_common_change, essence_uncommon_change, essence_rare_change, essence_epic_change, essence_legendary_change, essence_mythic_change, context (JSON), created_at | → Team (N:1)                                                 |
 
 
@@ -94,7 +94,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity            | Key Fields                                                                           | Relationships                  |
 | ----------------- | ------------------------------------------------------------------------------------ | ------------------------------ |
-| **Formation**     | id, team_id, name, is_default, approach (enum)                                       | → Team, has many FormationSlot |
+| **Formation**     | id, team_id, name, is_default, is_temporary, source_fixture_id (nullable), approach (enum) | → Team, → LeagueFixture (optional), has many FormationSlot |
 | **FormationSlot** | id, formation_id, hero_id, position (enum), strategy (JSON), spell_priorities (JSON) | → Formation, → Hero            |
 
 
@@ -140,7 +140,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | **LeagueTier**     | id, season_id, tier_name, promotion_slots, relegation_slots, rewards (JSON)      | → LeagueSeason                   |
 | **LeagueGroup**    | id, tier_id, group_name                                                          | → LeagueTier                     |
 | **LeagueStanding** | id, group_id, team_id, played, wins, draws, losses, points, goal_difference      | → LeagueGroup, → Team            |
-| **LeagueFixture**  | id, group_id, home_team_id, away_team_id, scheduled_at, battle_id, status (enum) | → LeagueGroup, → Teams, → Battle |
+| **LeagueFixture**  | id, group_id, home_team_id, away_team_id, home_formation_id (nullable), away_formation_id (nullable), scheduled_at, battle_id, status (enum) | → LeagueGroup, → Teams, → Formations (optional), → Battle |
 
 
 ### 12. Marketplace Domain
@@ -168,15 +168,6 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | Entity         | Key Fields                                                                                                                                             | Relationships                  |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
 | **DungeonRun** | id, kingdom_id, team_id, dungeon_key (references config), formation_id, result (enum), rewards_xp, rewards_essence, rewards_items (JSON), completed_at | → Kingdom, → Team, → Formation |
-
-
-### 15. Quest Domain
-
-
-| Entity                  | Key Fields                                                                                       | Relationships   |
-| ----------------------- | ------------------------------------------------------------------------------------------------ | --------------- |
-| **Quest**               | id, kingdom_id, type (enum), title, description, rewards (JSON), requirements (JSON), expires_at | → Kingdom       |
-| **PlayerQuestProgress** | id, team_id, quest_id, status (enum), progress, completed_at                                     | → Team, → Quest |
 
 
 ### 16. Crafting Domain
@@ -261,11 +252,11 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | Enum                | Values                                                                                                                                                                                                                                            |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Race`              | human, elf, dwarf, orc, undead, giant, ent, genie                                                                                                                                                                                                                 |
-| `HeroStatus`        | available, tired, training, in_match, injured, dead                                                                                                                                                                                               |
+| `HeroStatus`        | available, in_match, selling, recovering, dead                                                                                                                                                                                               |
 | `School`            | fire, water, air, earth, light, dark                                                                                                                                                                                                              |
 | `SpellType`         | offensive, defensive, utility                                                                                                                                                                                                                     |
 | `ItemSlotType`      | main_hand, off_hand, head, body, hands, feet, amulet, ring                                                                                                                                                                                          |
-| `ActivityLogType`   | battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_crafted, item_purchased, item_sold, quest_completed, achievement_unlocked, dungeon_completed, summon_completed, season_ended, player_joined |
+| `ActivityLogType`   | battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_crafted, item_purchased, item_sold, achievement_unlocked, dungeon_completed, summon_completed, season_ended, player_joined |
 | `ItemCategory`      | weapon, shield, spell_accelerator, armor, accessory, material                                                                                                                                                                                      |
 | `ItemRarity`        | common, uncommon, rare, epic, legendary, mythic                                                                                                                                                                                                   |
 | `ItemStatus`        | available, selling                                                                                                                                                                                                                                |
@@ -278,22 +269,22 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | `ListingMode`       | buy_now, auction                                                                                                                                                                                                                                  |
 | `ListingStatus`     | active, sold, expired, cancelled                                                                                                                                                                                                                  |
 | `EventType`         | world_event, seasonal, limited_mission, special_economic                                                                                                                                                                                          |
-| `QuestType`         | daily, weekly, story, repeatable                                                                                                                                                                                                                  |
 | `TokenType`         | email_verify, password_reset, change_email_old, change_email_new, delete_account                                                                                                                                                                  |
 | `FacilityType`      | training, medical, library, forge, treasury, barracks, summoning_chamber, arena                                                                                                                                                                    |
 | `StatusEffect`      | burn, freeze, shock, petrify, blind, curse, stun, poison, shield, regeneration, haste, bless, fury, shadow_cloak, taunt, silence                                                                                                                  |
-| `TickType`          | daily_reset, fatigue_recovery, league_match, weekly_training, season_transition, weekly_reset, race_optimization, inactive_registration_cleanup                                                                                                                                   |
+| `TickType`          | daily_reset, fatigue_recovery, league_match, weekly_training, season_transition, weekly_reset, race_optimization, inactive_registration_cleanup, inactive_player_cleanup                                                                                                                                   |
 | `LeagueSeasonStatus` | scheduled, active, completed                                                                                                                                                                                                                      |
 | `LeagueFixtureStatus` | scheduled, in_progress, completed, cancelled                                                                                                                                                                                                     |
 | `TrainerStatus`     | active, retired, dead                                                                                                                                                                                                                             |
 | `TrainingStatus`    | pending, in_progress, completed, cancelled                                                                                                                                                                                                        |
 | `EventStatus`       | scheduled, active, completed, cancelled                                                                                                                                                                                                           |
 | `DungeonResult`     | win, loss, abandoned                                                                                                                                                                                                                              |
-| `QuestProgressStatus` | in_progress, completed, failed, expired                                                                                                                                                                                                         |
 | `CraftingStatus`    | pending, in_progress, completed, failed, cancelled                                                                                                                                                                                                |
 | `TransactionType`   | buy_now, auction_win                                                                                                                                                                                                                              |
-| `NotificationType`  | battle_result, training_complete, league_update, marketplace_bid, marketplace_sold, achievement_unlocked, event_started, quest_expired, hero_died, season_ended                                                                                   |
-| `FinancialRecordType` | league_reward, arena_revenue, training_cost, summon_fee, marketplace_sale, marketplace_purchase, marketplace_fee, quest_reward, dungeon_reward, crafting_cost, dismantle_gain, item_repair, spell_learning_cost, spell_slot_cost, hq_upgrade_cost, morale_restoration |
+| `NotificationType`  | battle_result, training_complete, league_update, marketplace_bid, marketplace_sold, achievement_unlocked, event_started, hero_died, season_ended, **system**                                                                                   |
+| `FinancialRecordType` | league_reward, arena_revenue, summon_fee, marketplace_sale, marketplace_purchase, marketplace_fee, dungeon_reward, dismantle_gain, item_repair, spell_learning_cost, spell_slot_cost, hq_upgrade_cost, **hq_maintenance_fee**, morale_restoration, **debt_repayment**, **hero_dismissal_compensation**, **hq_downgrade_refund** |
+| `FinancialCrisisLevel` | **none**, **warning**, **restricted**, **bankruptcy_pending** |
+| `FacilityOperation` | **upgrade**, **downgrade** |
 | `FinancialRecordActor` | system, active, passive                                                                                                                                                                                                                        |
 
 ---
@@ -303,9 +294,9 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Category                   | Count  |
 | -------------------------- | ------ |
-| DB entities                | 43     |
+| DB entities                | 41     |
 | Config-based (not DB)      | 5      |
-| PHP enums                  | 35     |
-| **Total modeled concepts** | **83** |
+| PHP enums                  | 33     |
+| **Total modeled concepts** | **79** |
 
 

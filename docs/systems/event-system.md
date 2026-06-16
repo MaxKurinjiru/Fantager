@@ -6,18 +6,26 @@ Purpose: Document scheduled events, server ticks, event lifecycle, and implement
 
 ## Event Types & Triggers
 
-Game events are categorized into three main categories:
-1. **Scheduled Server Ticks**: Automated periodic tasks that affect the game economy and player teams (Daily Reset, Fatigue Recovery, Weekly Training, League Match arena revenue).
-2. **Dynamic World Events**: Limited-time gameplay events (e.g. Dungeon cycles, Seasonal bonus weeks) modeled via the `Event` entity.
-3. **Queue Completions**: Asynchronous tasks specific to teams (Facility Upgrades, Hero Training queue, Item Crafting jobs).
+Game events fall into two implemented categories:
+
+1. **Scheduled Server Ticks**: Automated periodic tasks governed by `app:ticks:run` and `ProcessKingdomTicksHandler`. These affect economy, progression, maintenance, and league scheduling. See [Calendar System](calendar-system.md) for the full weekly schedule.
+2. **Dynamic World Events**: Limited-time gameplay events (e.g. seasonal bonus weeks) modeled via the `Event` entity.
+
+Team-scoped work processed today runs inside scheduled ticks:
+- HQ facility upgrades complete during `DailyReset` (00:00).
+- Trainer-based hero training resolves during `WeeklyTraining` (Friday 10:00).
+- Expired marketplace listings resolve during `DailyReset` (00:00).
+
+The calendar feed may also display team-specific `training_queue` entries for UI purposes; those reflect the same Friday training schedule rather than a standalone tick runner.
 
 ---
 
 ## Server Tick Scheduling & Processing
 
-All scheduled server ticks are governed by the `app:ticks:run` runner. 
+All scheduled server ticks are governed by the `app:ticks:run` runner.
 - **Timezone Alignment**: Ticks run at designated local times configured on each Kingdom (e.g. `Europe/Prague`). The scheduler normalizes target local times (e.g. `04:00` for fatigue recovery) into UTC when determining execution eligibility.
-- **Sequential Execution**: During execution, the tick engine queries outstanding ticks and processes them chronologically.
+- **Sequential Execution**: During execution, the tick engine queries outstanding ticks and processes them chronologically, with logical priority as a tie-breaker when timestamps collide.
+- **Single Entry Point**: Legacy standalone commands (`app:training:tick`, `app:process-marketplace-listings`) were removed; all recurring processing goes through the tick log system.
 
 ---
 
@@ -35,7 +43,7 @@ The system tracks event lifecycles via the following entities:
 
 ## Notifications
 
-Upon tick completion (e.g. Match resolution, crafting job done, or world event transition), the message handler dispatches notifications to players:
+Upon tick completion (e.g. marketplace listing expiry, training completion, league match revenue payout, or world event transition), the system may dispatch notifications to players:
 - **In-App Notifications**: Persists `Notification` records in the database, which players fetch on dashboard updates or login.
 
 ---
@@ -57,19 +65,17 @@ Upon tick completion (e.g. Match resolution, crafting job done, or world event t
   - `src/Command/ProcessTicksCommand.php` — Cron runner console command.
   - `src/Service/Calendar/CalendarService.php` — Calendar aggregating feed service.
 
+### Current server tick responsibilities
 
-Summary:
-- Dynamic world events include weekly server ticks, seasonal events, limited missions, and dungeon cycles. Events can grant XP, items, and currency.
-- Each event has lifecycle states: scheduled -> active -> resolving -> complete.
+- Fatigue/form recovery, weekly training, league match arena revenue, marketplace listing expiry, HQ maintenance and upgrades, player inactivity cleanup, race optimization, season transition, and weekly summon reset.
+- Runs on kingdom-local timezone and respects the Game Speed multiplier.
 
-Server tick responsibilities:
-- Process fatigue/form recovery, league match resolution, dungeon/job processing, training/crafting queue completion, marketplace auctions. See [Calendar System](calendar-system.md) for the detailed weekly schedule and season timeline.
-- Runs on kingdom-local timezone and respects Game Speed multiplier.
+### APIs & data
 
-APIs & data:
-- GET /api/events — list active and upcoming events
-- POST /api/events/{id}/participate — join event
+- `GET /api/v1/calendar` — kingdom calendar feed (ticks, fixtures, world events, team training entries)
+- `GET /api/v1/events` — list active and upcoming world events *(when exposed)*
+- `POST /api/v1/events/{id}/participate` — join event *(planned)*
 
-Edge cases:
-- Partial failures during multi-step rewards distribution; use transactional processing and retries.
+### Edge cases
 
+- Partial failures during multi-step reward distribution should use transactional processing; failed ticks block further kingdom processing until resolved.

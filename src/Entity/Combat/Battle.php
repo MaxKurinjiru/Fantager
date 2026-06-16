@@ -37,11 +37,11 @@ class Battle
     private Team $teamB;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Formation $formationA = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Formation $formationB = null;
 
     #[ORM\Column(length: 10, enumType: BattleResult::class, nullable: true)]

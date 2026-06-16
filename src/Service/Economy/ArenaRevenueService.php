@@ -23,6 +23,7 @@ class ArenaRevenueService
         private readonly HeadquartersRepository $hqRepository,
         private readonly LeagueFixtureRepository $fixtureRepository,
         private readonly EconomyService $economyService,
+        private readonly FinancialCrisisService $financialCrisisService,
         private readonly FanClubService $fanClubService,
     ) {
     }
@@ -156,14 +157,16 @@ class ArenaRevenueService
         $goldIncomeBonusPct = 0.0;
 
         if (null !== $hq) {
-            foreach ($hq->getFacilities() as $facility) {
-                if (FacilityType::Arena === $facility->getType()) {
-                    $bonuses = $facility->getPassiveBonuses();
-                    $arenaCapacityBonusPct = (float) ($bonuses['arena_capacity'] ?? 0.0);
-                    $ticketRevenueBonusPct = (float) ($bonuses['ticket_revenue_pct'] ?? 0.0);
-                } elseif (FacilityType::Treasury === $facility->getType()) {
-                    $bonuses = $facility->getPassiveBonuses();
-                    $goldIncomeBonusPct = (float) ($bonuses['gold_income_pct'] ?? 0.0);
+            if ($this->financialCrisisService->areHqBonusesActive($team)) {
+                foreach ($hq->getFacilities() as $facility) {
+                    if (FacilityType::Arena === $facility->getType()) {
+                        $bonuses = $facility->getPassiveBonuses();
+                        $arenaCapacityBonusPct = (float) ($bonuses['arena_capacity'] ?? 0.0);
+                        $ticketRevenueBonusPct = (float) ($bonuses['ticket_revenue_pct'] ?? 0.0);
+                    } elseif (FacilityType::Treasury === $facility->getType()) {
+                        $bonuses = $facility->getPassiveBonuses();
+                        $goldIncomeBonusPct = (float) ($bonuses['gold_income_pct'] ?? 0.0);
+                    }
                 }
             }
         }

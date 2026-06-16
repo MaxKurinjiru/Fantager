@@ -13,7 +13,8 @@ Displayed Information:
 	- Team Chemistry (value + indicator)
 - **Quick Stats:**
 	- Number of heroes in roster
-	- Current Gold, Essence
+	- Current Gold, Essence, **unpaid debt** (when > 0)
+	- **Financial crisis banner** with level, debt, recovery actions
 	- Next scheduled match (time, opponent)
 	- Current league tier & position
 - **Recent Activity Feed:**

@@ -10,6 +10,9 @@ use App\Entity\Team\Team;
 use App\Enum\Race;
 use App\Service\Config\RaceConfig;
 use App\Service\Economy\EconomyService;
+use App\Service\Economy\FinancialCrisisService;
+use App\Service\Economy\RoyalTreasuryService;
+use App\Enum\RoyalTreasuryContributionSource;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroGenerator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,6 +25,8 @@ class SummoningService
     public function __construct(
         private readonly HeroGenerator $heroGenerator,
         private readonly EconomyService $economyService,
+        private readonly FinancialCrisisService $financialCrisisService,
+        private readonly RoyalTreasuryService $royalTreasuryService,
         private readonly HeadquartersService $hqService,
         private readonly EntityManagerInterface $em,
         private readonly RaceConfig $raceConfig,
@@ -77,6 +82,18 @@ class SummoningService
             return [
                 'available' => false,
                 'reason' => 'Summoning limit reached for this cycle.',
+                'gold_cost' => $cost,
+                'summons_used' => $used,
+                'summons_max' => $maxSummons,
+            ];
+        }
+
+        try {
+            $this->financialCrisisService->assertSpendingAllowed($team, 'summon');
+        } catch (\DomainException $e) {
+            return [
+                'available' => false,
+                'reason' => $e->getMessage(),
                 'gold_cost' => $cost,
                 'summons_used' => $used,
                 'summons_max' => $maxSummons,
@@ -168,12 +185,19 @@ class SummoningService
             throw new \DomainException('Summoning limit reached for this cycle.');
         }
 
+        $this->financialCrisisService->assertSpendingAllowed($team, 'summon');
+
         $cost = $this->getGoldCost($team);
         $this->economyService->deductGold(
             $team,
             $cost,
             \App\Enum\FinancialRecordType::SummonFee,
             \App\Enum\FinancialRecordActor::Active
+        );
+        $this->royalTreasuryService->collectFee(
+            $team->getKingdom(),
+            $cost,
+            RoyalTreasuryContributionSource::SummonFee,
         );
 
         $chamberBonuses = $this->hqService->getSummoningChamberBonuses($team);

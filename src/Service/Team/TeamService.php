@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Team;
 
+use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\HeroStatus;
 use App\Enum\TrainingStatus;
@@ -12,6 +13,7 @@ use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\Training\TrainingQueueRepository;
+use App\Service\Economy\FinancialCrisisService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TeamService
@@ -22,6 +24,7 @@ class TeamService
         private readonly HeadquartersRepository $hqRepository,
         private readonly TrainingQueueRepository $trainingQueueRepository,
         private readonly LeagueFixtureRepository $leagueFixtureRepository,
+        private readonly FinancialCrisisService $financialCrisisService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -39,7 +42,7 @@ class TeamService
         $activeCount = 0;
         $trainingCount = 0;
         foreach ($allHeroes as $h) {
-            if (HeroStatus::Training === $h->getStatus()) {
+            if (null !== $h->getTrainer()) {
                 ++$trainingCount;
             } elseif (HeroStatus::Available === $h->getStatus()) {
                 ++$activeCount;
@@ -53,7 +56,7 @@ class TeamService
             'status' => TrainingStatus::Pending,
         ]);
 
-        $formationCount = $this->formationRepository->count(['team' => $team]);
+        $formationCount = $this->formationRepository->countSavedByTeam($team);
 
         $nextFixture = $this->leagueFixtureRepository->findNextFixtureForTeam($team);
 
@@ -82,7 +85,7 @@ class TeamService
                 'in_training' => $trainingCount,
             ],
             'headquarters' => [
-                'total_level' => $hq?->getTotalLevel() ?? 0,
+                'total_level' => $hq?->getComputedTotalLevel() ?? 0,
                 'initialized' => null !== $hq,
                 'race_optimization' => $hq?->getRaceOptimization(),
                 'pending_race_optimization' => $hq?->getPendingRaceOptimization(),
@@ -116,7 +119,9 @@ class TeamService
                 ],
                 'scheduled_at' => $nextFixture->getScheduledAt()->format(\DateTimeInterface::ATOM),
                 'group_name' => $nextFixture->getGroup()->getGroupName(),
+                'formation' => $this->serializeFixtureFormation($nextFixture, $team),
             ] : null,
+            'financial_crisis' => $this->financialCrisisService->getStatus($team),
         ];
     }
 
@@ -154,5 +159,25 @@ class TeamService
         }
 
         $this->em->flush();
+    }
+
+    /** @return array<string, mixed> */
+    private function serializeFixtureFormation(LeagueFixture $fixture, Team $team): array
+    {
+        $assigned = $fixture->getHomeTeam()->getId() === $team->getId()
+            ? $fixture->getHomeFormation()
+            : $fixture->getAwayFormation();
+
+        $mode = 'default';
+        if (null !== $assigned) {
+            $mode = $assigned->isTemporary() ? 'custom' : 'saved';
+        }
+
+        return [
+            'mode' => $mode,
+            'formation_id' => $assigned?->getId(),
+            'formation_name' => $assigned?->getName(),
+            'is_temporary' => null !== $assigned && $assigned->isTemporary(),
+        ];
     }
 }

@@ -22,7 +22,6 @@ Players take on the role of **arena managers** in a persistent fantasy world. Th
 - [2.13 Graveyard System](#213-graveyard-system)
 - [2.14 Community System](#214-community-system)
 - [2.15 Dungeon System](#215-dungeon-system)
-- [2.16 Quest System](#216-quest-system)
 - [2.17 Crafting System](#217-crafting-system)
 
 ## 2.1 Kingdom System & Server Split
@@ -98,7 +97,7 @@ The economy provides resource management depth through multiple currencies, each
   - Arena match ticket revenue (passive income based on arena capacity and team reputation)
   - League match rewards (scales with tier and position)
   - Selling items/heroes on marketplace
-  - Daily login bonuses and quest completions
+  - Daily login bonuses
   - Event participation rewards
   - Combat victories
 - **Spent on:**
@@ -135,8 +134,8 @@ The economy provides resource management depth through multiple currencies, each
 | **Headquarters facility upgrades** — major long-term investment | **League match rewards** — tier-based: higher tiers = better rewards |
 | **Marketplace transaction fees** — percentage-based, typically 5–15% | **Event completion bonuses** |
 | **Formation unlocks** and strategic customization | **Marketplace sales** — minus transaction fees |
-| **Hero maintenance** — form restoration, fatigue recovery items | **Daily and weekly quest chains** |
-| **Summoning chamber usage fees** | **Combat victory bonuses** |
+| **Hero maintenance** — form restoration, fatigue recovery items | **Combat victory bonuses** |
+| **Summoning chamber usage fees** | |
 
 ### Inflation Control Mechanisms
 
@@ -144,7 +143,7 @@ The economy provides resource management depth through multiple currencies, each
 - **Diminishing Returns:** Repeated training actions within time windows yield reduced efficiency
 - **Scaling Costs:** Higher-tier upgrades and items have exponentially increasing costs
 - **Hero Maintenance Costs:** Fatigue recovery and form restoration create ongoing expenses
-- **Time-Gated Income:** Arena revenue generated per cycle; limited daily quests prevent infinite farming
+- **Time-Gated Income:** Arena revenue generated per cycle; activity limits prevent infinite farming
 - **Level-Based Scaling:** Training and upgrade costs scale with hero level and facility tier
 
 ### Trading & Marketplace
@@ -176,10 +175,24 @@ The economy provides resource management depth through multiple currencies, each
 - **Price Floor/Ceiling:** Marketplace algorithms suggest fair prices; prevent extreme manipulation
 - **Transaction Logging:** All trades tracked for anti-fraud monitoring
 
+### Financial Crisis & Bankruptcy
+
+When weekly HQ maintenance exceeds available gold, unpaid amounts accumulate as **team debt** (`unpaid_debt`). Gold never goes negative.
+
+| Phase | Effect |
+|-------|--------|
+| **Warning** | Low gold buffer or outstanding debt; player notified |
+| **Restricted** (≥ 2 weeks) | HQ passive bonuses suspended; upgrades, summoning, and marketplace purchases blocked |
+| **Bankruptcy** (≥ 6 weeks, debt ≥ 4× weekly maintenance, no recovery) | Team released to NPC pool; player cooldown before claiming a new team |
+
+**Recovery paths:** marketplace sales, hero dismissal (40% value), facility downgrade (25% refund on completion).
+
+See [systems/financial-crisis-system.md](systems/financial-crisis-system.md).
+
 ### Special Economic Events
 
 - **Market Fluctuations:** Kingdom-wide events that temporarily adjust prices or rewards
-- **Gold Rush Events:** Limited-time increased arena revenue or quest rewards
+- **Gold Rush Events:** Limited-time increased arena revenue
 - **Crafting Festivals:** Reduced Essence costs or improved success rates for crafting
 - **Tax Holidays:** Temporary marketplace fee reductions to stimulate trading
 - **Resource Shortages:** Narrative events that increase certain costs while offering alternative rewards
@@ -667,7 +680,7 @@ Each player manages a **single team** (1:1 player-to-team relationship) that ser
 | Component | Description |
 |:---|:---|
 | **Hero Roster** | Collection of all heroes recruited by the player *(starting capacity: **10** — see Barracks in [2.7 Headquarters System](#27-headquarters-system))* |
-| **Formations** | Up to 2 saved formations with customizable positioning and strategy *(can set one as default)* |
+| **Formations** | Up to 4 saved formations with customizable positioning and strategy *(can set one as default)* |
 | **Team Identity** | Name, emblem, colors, and visual customization |
 | **Headquarters** | Team's base providing passive bonuses and upgrade options *(see [2.7 Headquarters System](#27-headquarters-system))* |
 
@@ -700,7 +713,7 @@ Each player manages a **single team** (1:1 player-to-team relationship) that ser
 
 ### Purpose
 
-Formations define how heroes are **positioned** and **controlled** during combat. Each formation contains **6 heroes** arranged across two lines with customizable combat strategy, targeting priorities, spell priorities, and action sequencing. Players can save up to **2 formations** and select which to use before each match.
+Formations define how heroes are **positioned** and **controlled** during combat. Each formation contains **6 heroes** arranged across two lines with customizable combat strategy, targeting priorities, spell priorities, and action sequencing. Players can save up to **4 formations** and select which to use before each match. Match-specific custom lineups are stored as temporary formations and removed automatically after the fixture completes.
 
 ### Formation Structure
 
@@ -841,7 +854,7 @@ Advanced strategy rules that trigger under specific conditions:
 
 #### Saving Formations
 
-Players can save up to **2 named formations**. Each formation saves:
+Players can save up to **4 named formations**. Each formation saves:
 
 | Saved Data |
 |:---|
@@ -877,7 +890,7 @@ Players can save up to **2 named formations**. Each formation saves:
 | **Slot Requirements** | All 6 lineup slots must be filled. Cannot use same hero twice. Cannot use heroes on multiple teams |
 | **Roster Requirement** | The team must have at least 6 combat-ready heroes to enter a match at all *(see [Starting Roster & Match Eligibility](#starting-roster--match-eligibility))* |
 | **Cooldowns & Restrictions** | No cooldown between matches. Cannot change formation during combat. Substitutions only on incapacitation |
-| **Resource Constraints** | HQ level determines available formations (base 2, expandable to 4–5 with upgrades). Advanced features unlock with player progression |
+| **Resource Constraints** | Each team may store up to **4 saved formations**. Temporary match-specific lineups do not count toward this limit and are deleted after the fixture completes. Advanced formation features unlock with player progression |
 
 ### Formation Tips & Strategy
 
@@ -1036,7 +1049,7 @@ Spells provide tactical options based on hero **magic proficiency**.
 
 | Step | Description |
 |---:|:---|
-| **1** | Formation selection and setup *(each player can save up to 2 formations, set one as default, and manually select which to use)* |
+| **1** | Formation selection and setup *(each player can save up to 4 formations, set one as default, and manually select which to use per fixture)* |
 | **2** | **Roster eligibility check** — each team must have ≥ 6 combat-ready heroes; otherwise apply forfeit rules *(see below)* |
 | **3** | Queue match in Redis *(skipped for forfeit/draw outcomes)* |
 | **4** | PHP worker simulates turn-based combat *(when both teams are eligible)* |
@@ -1211,24 +1224,6 @@ Supports **player interaction**, strategy discussion, and **community building**
 - Integration with Event System calendar ticks
 
 > *See [systems/dungeon-system.md](systems/dungeon-system.md) for implementation details.*
-
----
-
-## 2.16 Quest System
-
-### Concept
-
-- Daily, weekly, and story-driven quests provide structured progression goals
-- Quests reward Gold, Essence, and items
-
-### Key Mechanics (to be defined)
-
-- Quest types: daily (reset each day), weekly (reset each week), story (one-time), repeatable
-- Quest generation rules and limits per player
-- Reward scaling with player level and kingdom settings
-- Expiration and auto-fail conditions
-
-> *See [systems/quest-system.md](systems/quest-system.md) for implementation details.*
 
 ---
 

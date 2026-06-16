@@ -9,6 +9,7 @@ use App\Entity\Team\Team;
 use App\Entity\Kingdom\Kingdom;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
+use App\Service\Economy\FinancialCrisisService;
 use App\Service\Headquarters\HeadquartersService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -21,6 +22,8 @@ class HeadquartersServiceTest extends TestCase
 {
     private $hqRepositoryMock;
     private $economyServiceMock;
+    private $financialCrisisServiceMock;
+    private $royalTreasuryServiceMock;
     private $entityManagerMock;
     private HeadquartersService $service;
 
@@ -28,11 +31,15 @@ class HeadquartersServiceTest extends TestCase
     {
         $this->hqRepositoryMock = $this->createMock(HeadquartersRepository::class);
         $this->economyServiceMock = $this->createMock(EconomyService::class);
+        $this->financialCrisisServiceMock = $this->createMock(FinancialCrisisService::class);
+        $this->royalTreasuryServiceMock = $this->createMock(\App\Service\Economy\RoyalTreasuryService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
 
         $this->service = new HeadquartersService(
             $this->hqRepositoryMock,
             $this->economyServiceMock,
+            $this->financialCrisisServiceMock,
+            $this->royalTreasuryServiceMock,
             $this->entityManagerMock
         );
     }
@@ -178,6 +185,11 @@ class HeadquartersServiceTest extends TestCase
             ->method('deductGold')
             ->with($team, $this->anything(), $this->anything(), $this->anything(), $this->anything());
 
+        $this->financialCrisisServiceMock
+            ->expects($this->once())
+            ->method('assertSpendingAllowed')
+            ->with($team, 'hq_upgrade');
+
         $result = $this->service->upgradeFacility($team, \App\Enum\FacilityType::Library, $now);
 
         $this->assertSame($facility, $result);
@@ -203,9 +215,157 @@ class HeadquartersServiceTest extends TestCase
             ->willReturn($hq);
 
         $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Another facility upgrade is already in progress.');
+        $this->expectExceptionMessage('Another facility change is already in progress.');
 
         $this->service->upgradeFacility($team, \App\Enum\FacilityType::Library);
+    }
+
+    public function testCalculateUpgradeCostScalesWithTotalLevel(): void
+    {
+        $baseCost = $this->service->calculateUpgradeCost(\App\Enum\FacilityType::Training, 1, 7);
+        $this->assertSame(500, $baseCost);
+
+        $scaledCost = $this->service->calculateUpgradeCost(\App\Enum\FacilityType::Training, 1, 11);
+        $this->assertSame(550, $scaledCost);
+    }
+
+    public function testCalculateWeeklyMaintenanceFee(): void
+    {
+        $hq = new Headquarters();
+        foreach (\App\Enum\FacilityType::cases() as $type) {
+            $facility = new \App\Entity\Headquarters\Facility();
+            $facility->setType($type);
+            $facility->setLevel(1);
+            $hq->addFacility($facility);
+        }
+
+        // HQ: 50 + 7*3 = 71, facilities: 25+20+30+22+18+40+45 = 200
+        $this->assertSame(271, $this->service->calculateWeeklyMaintenanceFee($hq));
+    }
+
+    public function testProcessMaintenanceTickDeductsGold(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $team->setGold(500);
+        $team->setKingdom($kingdom);
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+        $facility = new \App\Entity\Headquarters\Facility();
+        $facility->setType(\App\Enum\FacilityType::Training);
+        $facility->setLevel(1);
+        $hq->addFacility($facility);
+        $hq->syncTotalLevel();
+
+        $this->hqRepositoryMock
+            ->expects($this->once())
+            ->method('findByKingdom')
+            ->with($kingdom)
+            ->willReturn([$hq]);
+
+        $this->economyServiceMock
+            ->expects($this->once())
+            ->method('deductGold')
+            ->with(
+                $team,
+                $this->callback(static fn (int $amount): bool => $amount > 0 && $amount <= 500),
+                \App\Enum\FinancialRecordType::HqMaintenanceFee,
+                \App\Enum\FinancialRecordActor::System,
+                $this->callback(static fn (array $context): bool => isset($context['fee_due'], $context['hq_fee'], $context['facilities_fee']))
+            );
+
+        $this->financialCrisisServiceMock
+            ->expects($this->never())
+            ->method('addUnpaidDebt');
+
+        $this->royalTreasuryServiceMock
+            ->expects($this->once())
+            ->method('collectFee');
+
+        $this->service->processMaintenanceTick($kingdom);
+    }
+
+    public function testProcessMaintenanceTickAddsDebtWhenGoldInsufficient(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $team->setGold(50);
+        $team->setKingdom($kingdom);
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+        foreach (\App\Enum\FacilityType::cases() as $type) {
+            $facility = new \App\Entity\Headquarters\Facility();
+            $facility->setType($type);
+            $facility->setLevel(1);
+            $hq->addFacility($facility);
+        }
+        $hq->syncTotalLevel();
+
+        $this->hqRepositoryMock
+            ->expects($this->once())
+            ->method('findByKingdom')
+            ->with($kingdom)
+            ->willReturn([$hq]);
+
+        $this->economyServiceMock
+            ->expects($this->once())
+            ->method('deductGold');
+
+        $this->financialCrisisServiceMock
+            ->expects($this->once())
+            ->method('addUnpaidDebt')
+            ->with($team, $this->greaterThan(0));
+
+        $this->royalTreasuryServiceMock
+            ->expects($this->once())
+            ->method('collectFee');
+
+        $this->service->processMaintenanceTick($kingdom);
+    }
+
+    public function testProcessMaintenanceTickRecordsFullyUnpaidFee(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $team->setGold(0);
+        $team->setKingdom($kingdom);
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+        foreach (\App\Enum\FacilityType::cases() as $type) {
+            $facility = new \App\Entity\Headquarters\Facility();
+            $facility->setType($type);
+            $facility->setLevel(1);
+            $hq->addFacility($facility);
+        }
+        $hq->syncTotalLevel();
+
+        $this->hqRepositoryMock
+            ->expects($this->once())
+            ->method('findByKingdom')
+            ->with($kingdom)
+            ->willReturn([$hq]);
+
+        $this->economyServiceMock
+            ->expects($this->never())
+            ->method('deductGold');
+
+        $this->economyServiceMock
+            ->expects($this->once())
+            ->method('recordLedgerEntry');
+
+        $this->financialCrisisServiceMock
+            ->expects($this->once())
+            ->method('addUnpaidDebt')
+            ->with($team, 271);
+
+        $this->royalTreasuryServiceMock
+            ->expects($this->never())
+            ->method('collectFee');
+
+        $this->service->processMaintenanceTick($kingdom);
     }
 
     public function testProcessFacilityUpgradesTickCompletesUpgrades(): void
@@ -220,6 +380,7 @@ class HeadquartersServiceTest extends TestCase
         $hq->setUpgradingFacility($facility);
         $now = new \DateTimeImmutable('2026-06-12 12:00:00', new \DateTimeZone('UTC'));
         $hq->setUpgradeCompletedAt($now);
+        $hq->setFacilityOperation(\App\Enum\FacilityOperation::Upgrade);
 
         $this->hqRepositoryMock
             ->expects($this->once())
@@ -232,6 +393,6 @@ class HeadquartersServiceTest extends TestCase
         $this->assertSame(3, $facility->getLevel());
         $this->assertNull($hq->getUpgradingFacility());
         $this->assertNull($hq->getUpgradeCompletedAt());
-        $this->assertSame(3, $hq->getTotalLevel());
+        $this->assertSame(3, $hq->getComputedTotalLevel());
     }
 }

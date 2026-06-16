@@ -52,6 +52,9 @@ class GraveyardRecord
     #[ORM\Column(type: 'date_immutable')]
     private \DateTimeImmutable $dateOfDeath;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $originalHeroId = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -185,6 +188,18 @@ class GraveyardRecord
     public function setDateOfDeath(\DateTimeImmutable $dateOfDeath): static
     {
         $this->dateOfDeath = $dateOfDeath;
+
+        return $this;
+    }
+
+    public function getOriginalHeroId(): ?int
+    {
+        return $this->originalHeroId;
+    }
+
+    public function setOriginalHeroId(?int $originalHeroId): static
+    {
+        $this->originalHeroId = $originalHeroId;
 
         return $this;
     }

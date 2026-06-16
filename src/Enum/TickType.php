@@ -14,4 +14,5 @@ enum TickType: string
     case WeeklyReset = 'weekly_reset';
     case RaceOptimization = 'race_optimization';
     case InactiveRegistrationCleanup = 'inactive_registration_cleanup';
+    case InactivePlayerCleanup = 'inactive_player_cleanup';
 }

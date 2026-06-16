@@ -6,8 +6,7 @@ Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 
 Displayed Information:
 - **Formation Selector:**
-	- Formation 1 (editable name)
-	- Formation 2 (editable name)
+	- Up to 4 saved formations (editable names)
 	- Default formation indicator
 - **Formation Layout (visual grid):**
 	- **Front Line (3 positions)**

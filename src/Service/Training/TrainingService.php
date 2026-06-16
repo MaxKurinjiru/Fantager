@@ -130,12 +130,8 @@ class TrainingService
             throw new \DomainException('Hero is already assigned to a trainer.');
         }
 
-        if (HeroStatus::Dead === $hero->getStatus()) {
-            throw new \DomainException('Dead heroes cannot be trained.');
-        }
-
-        if (HeroStatus::Selling === $hero->getStatus()) {
-            throw new \DomainException('Listed heroes cannot be trained.');
+        if (HeroStatus::Available !== $hero->getStatus()) {
+            throw new \DomainException('Only available heroes can be assigned to a trainer.');
         }
 
         if (count($trainer->getHeroes()) >= $this->getTrainerSlotsLimit($trainer)) {
@@ -143,7 +139,6 @@ class TrainingService
         }
 
         $trainer->addHero($hero);
-        $hero->setStatus(HeroStatus::Training);
         $this->em->flush();
     }
 
@@ -162,7 +157,6 @@ class TrainingService
         }
 
         $trainer->removeHero($hero);
-        $hero->setStatus(HeroStatus::Available);
         $this->em->flush();
     }
 

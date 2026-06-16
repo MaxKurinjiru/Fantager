@@ -1,12 +1,12 @@
 # Quest System
 
-Reference: [game-summary.md](../game-summary.md#216-quest-system)
+> **Status:** Planned — not implemented. This document is a design reference for a possible future feature. No database tables, entities, or API endpoints exist yet.
 
 Purpose: Detail quest mechanics, requirements, rewards, and progression flows.
 
-## Quest Entities
+## Quest Entities (planned)
 
-The quest system uses two main entities: `Quest` (static definitions or generated runs) and `PlayerQuestProgress` (tracking individual team progress).
+The quest system would use two main entities: `Quest` (static definitions or generated runs) and `PlayerQuestProgress` (tracking individual team progress).
 
 ### 1. Quest Entity
 Defines the structure, requirements, and rewards of a quest.
@@ -28,7 +28,7 @@ Tracks a team's progress toward completing a quest.
 
 ---
 
-## Quest Mechanics
+## Quest Mechanics (planned)
 
 1. **Acceptance**: A player views available quests and accepts them, creating a `PlayerQuestProgress` entry.
 2. **Progress Updates**: Gameplay events (combat wins, item crafting, training completions) publish updates that increment progress on active quests matching criteria.
@@ -36,9 +36,8 @@ Tracks a team's progress toward completing a quest.
 
 ---
 
-## APIs (v1)
+## Planned APIs (v1)
 
 * `GET /api/v1/quests` — Retrieve a list of available and active quests for the team.
 * `POST /api/v1/quests/{id}/accept` — Accept a quest.
 * `POST /api/v1/quests/{id}/claim` — Claim rewards for a completed quest.
-

@@ -78,4 +78,26 @@ class LeagueFixtureRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Completed fixtures that still reference a temporary formation assignment.
+     *
+     * @return list<LeagueFixture>
+     */
+    public function findCompletedWithTemporaryAssignments(Kingdom $kingdom): array
+    {
+        return $this->createQueryBuilder('f')
+            ->join('f.group', 'g')
+            ->join('g.tier', 'tier')
+            ->join('tier.season', 's')
+            ->leftJoin('f.homeFormation', 'hf')
+            ->leftJoin('f.awayFormation', 'af')
+            ->where('s.kingdom = :kingdom')
+            ->andWhere('f.status = :completed')
+            ->andWhere('hf.isTemporary = true OR af.isTemporary = true')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('completed', LeagueFixtureStatus::Completed)
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -7,8 +7,12 @@ export default class extends Controller {
 
     static values = {
         textUpgrading: String,
+        textDowngrading: String,
         errorUpgrade: String,
+        errorDowngrade: String,
         successUpgrade: String,
+        successDowngrade: String,
+        confirmDowngrade: String,
         textSaving: String,
         errorOptimize: String,
         successOptimize: String,
@@ -110,6 +114,46 @@ export default class extends Controller {
         }
     }
 
+    async downgrade(e) {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        const facilityType = btn.dataset.facility;
+        const refund = btn.dataset.refund || '0';
+
+        if (!window.confirm(this.confirmDowngradeValue.replace('%refund%', Number(refund).toLocaleString('cs-CZ'))) {
+            return;
+        }
+
+        this.setButtonsDisabled(true);
+        const originalText = btn.textContent;
+        btn.textContent = this.textDowngradingValue;
+
+        try {
+            const response = await fetch('/api/v1/hq/downgrade', {
+                method: 'POST',
+                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ facility: facilityType })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || result.error) {
+                throw new Error(result.error || this.errorDowngradeValue);
+            }
+
+            const successMsg = this.successDowngradeValue.replace('%level%', result.level);
+            this.showAlert('success', successMsg);
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } catch (error) {
+            this.showAlert('error', error.message);
+            this.setButtonsDisabled(false);
+            btn.textContent = originalText;
+        }
+    }
+
     async optimize(e) {
         e.preventDefault();
         const selectedRace = this.raceSelectTarget.value;
@@ -145,7 +189,7 @@ export default class extends Controller {
     }
 
     setButtonsDisabled(disabled) {
-        this.element.querySelectorAll('[data-action="click->hq#upgrade"]').forEach(b => {
+        this.element.querySelectorAll('[data-action="click->hq#upgrade"], [data-action="click->hq#downgrade"]').forEach(b => {
             b.disabled = disabled;
         });
     }

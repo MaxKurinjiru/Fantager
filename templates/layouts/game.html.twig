@@ -1,9 +1,30 @@
 {% extends 'base.html.twig' %}
 
 {% block layout_content %}
-    <div data-controller="mobile-menu mail"
+    <div data-controller="mobile-menu mail ledger"
          data-mail-unread-count-value="{{ unread_mail_count() }}"
          data-mail-active-team-id-value="{{ app.user.team.id }}"
+         data-ledger-translations-value="{{ {
+             'type_league_reward': 'finance.type_league_reward'|trans,
+             'type_arena_revenue': 'finance.type_arena_revenue'|trans,
+             'type_summon_fee': 'finance.type_summon_fee'|trans,
+             'type_marketplace_sale': 'finance.type_marketplace_sale'|trans,
+             'type_marketplace_purchase': 'finance.type_marketplace_purchase'|trans,
+             'type_marketplace_fee': 'finance.type_marketplace_fee'|trans,
+             'type_dungeon_reward': 'finance.type_dungeon_reward'|trans,
+             'type_dismantle_gain': 'finance.type_dismantle_gain'|trans,
+             'type_item_repair': 'finance.type_item_repair'|trans,
+             'type_spell_learning_cost': 'finance.type_spell_learning_cost'|trans,
+             'type_spell_slot_cost': 'finance.type_spell_slot_cost'|trans,
+             'type_hq_upgrade_cost': 'finance.type_hq_upgrade_cost'|trans,
+             'type_hq_maintenance_fee': 'finance.type_hq_maintenance_fee'|trans,
+             'type_morale_restoration': 'finance.type_morale_restoration'|trans,
+             'type_debt_repayment': 'finance.type_debt_repayment'|trans,
+             'type_hero_dismissal_compensation': 'finance.type_hero_dismissal_compensation'|trans,
+             'type_trainer_dismissal_compensation': 'finance.type_trainer_dismissal_compensation'|trans,
+             'type_hq_downgrade_refund': 'finance.type_hq_downgrade_refund'|trans,
+             'type_kingdom_reward': 'finance.type_kingdom_reward'|trans
+         }|json_encode|e('html_attr') }}"
          data-mail-empty-inbox-msg-value="{{ 'community.empty_inbox'|trans }}"
          data-mail-empty-sent-msg-value="{{ 'community.empty_sent'|trans }}"
          data-mail-translations-value="{{ {
@@ -49,5 +70,6 @@
         {% include 'components/mail/compose_message_modal.html.twig' %}
         {% include 'components/mail/read_message_modal.html.twig' %}
         {% include 'components/mail/js_templates.html.twig' %}
+        {% include 'components/layout/ledger_modal.html.twig' %}
     </div>
 {% endblock %}

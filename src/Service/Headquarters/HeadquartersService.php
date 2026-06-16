@@ -6,16 +6,23 @@ namespace App\Service\Headquarters;
 
 use App\Entity\Headquarters\Facility;
 use App\Entity\Headquarters\Headquarters;
+use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
 use App\Enum\FacilityType;
+use App\Enum\FinancialRecordActor;
+use App\Enum\FinancialRecordType;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
+use App\Service\Economy\FinancialCrisisService;
+use App\Service\Economy\RoyalTreasuryService;
+use App\Enum\RoyalTreasuryContributionSource;
 use Doctrine\ORM\EntityManagerInterface;
 
 class HeadquartersService
 {
     /**
-     * Base upgrade cost per facility (gold). Actual cost = base * 1.5^(current_level - 1).
+     * Base upgrade cost per facility (gold).
+     * Actual cost = base × 1.5^(current_level - 1) × total_level_multiplier.
      *
      * @var array<string, int>
      */
@@ -29,9 +36,33 @@ class HeadquartersService
         'arena' => 900,
     ];
 
+    /** +2.5% upgrade cost per HQ total level point above the starting sum. */
+    private const UPGRADE_TOTAL_LEVEL_FACTOR = 0.025;
+
+    private const HQ_WEEKLY_MAINTENANCE_BASE = 50;
+
+    /** Gold per facility level charged weekly (scales with facility tier). */
+    private const FACILITY_WEEKLY_MAINTENANCE = [
+        'training' => 25,
+        'medical' => 20,
+        'library' => 30,
+        'treasury' => 22,
+        'barracks' => 18,
+        'summoning_chamber' => 40,
+        'arena' => 45,
+    ];
+
+    /** Additional HQ overhead per total level point (weekly). */
+    private const HQ_MAINTENANCE_PER_TOTAL_LEVEL = 3;
+
+    /** Partial refund ratio when a facility downgrade completes (anti-exploit). */
+    private const DOWNGRADE_REFUND_RATIO = 0.25;
+
     public function __construct(
         private readonly HeadquartersRepository $hqRepository,
         private readonly EconomyService $economyService,
+        private readonly FinancialCrisisService $financialCrisisService,
+        private readonly RoyalTreasuryService $royalTreasuryService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -57,6 +88,8 @@ class HeadquartersService
             $hq->addFacility($facility);
             $this->em->persist($facility);
         }
+
+        $hq->syncTotalLevel();
 
         $this->em->persist($hq);
         $this->em->flush();
@@ -88,7 +121,75 @@ class HeadquartersService
         $hq = $this->getForTeam($team);
 
         if (null !== $hq->getUpgradingFacility()) {
-            throw new \DomainException('Another facility upgrade is already in progress.');
+            throw new \DomainException('Another facility change is already in progress.');
+        }
+
+        if ($hq->isFacilityDowngradeLockCycle()) {
+            throw new \DomainException('Facility downgrade is locked until the next weekly cycle.');
+        }
+
+        $this->financialCrisisService->assertSpendingAllowed($team, 'hq_upgrade');
+
+        $facility = null;
+        foreach ($hq->getFacilities() as $f) {
+            if ($f->getType() === $type) {
+                $facility = $f;
+                break;
+            }
+        }
+
+        if (null === $facility) {
+            throw new \DomainException(sprintf('Facility "%s" not found in HQ.', $type->value));
+        }
+
+        $cost = $this->calculateUpgradeCost($type, $facility->getLevel(), $hq->getComputedTotalLevel());
+        $this->economyService->deductGold(
+            $team,
+            $cost,
+            FinancialRecordType::HqUpgradeCost,
+            FinancialRecordActor::Active,
+            ['facility_type' => $type->value, 'new_level' => $facility->getLevel() + 1, 'total_level' => $hq->getComputedTotalLevel()]
+        );
+        $this->royalTreasuryService->collectFee(
+            $team->getKingdom(),
+            $cost,
+            RoyalTreasuryContributionSource::HqUpgradeCost,
+            ['facility_type' => $type->value],
+        );
+
+        $targetLevel = $facility->getLevel() + 1;
+        $speed = (float) $team->getKingdom()->getGameSpeed();
+        if ($speed <= 0.0) {
+            $speed = 1.0;
+        }
+        $seconds = (int) round(($targetLevel * 24 * 3600) / $speed);
+        $completedAt = $now->modify(sprintf('+%d seconds', $seconds));
+
+        $hq->setUpgradingFacility($facility);
+        $hq->setUpgradeCompletedAt($completedAt);
+        $hq->setFacilityOperation(\App\Enum\FacilityOperation::Upgrade);
+
+        $this->em->flush();
+
+        return $facility;
+    }
+
+    /**
+     * Downgrade a facility by one level. No upfront cost; a partial refund is paid on completion.
+     *
+     * @throws \DomainException
+     */
+    public function downgradeFacility(Team $team, FacilityType $type, ?\DateTimeImmutable $now = null): Facility
+    {
+        $now = $now ?? new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $hq = $this->getForTeam($team);
+
+        if (null !== $hq->getUpgradingFacility()) {
+            throw new \DomainException('Another facility change is already in progress.');
+        }
+
+        if ($hq->isFacilityDowngradeLockCycle()) {
+            throw new \DomainException('Facility downgrade is locked until the next weekly cycle.');
         }
 
         $facility = null;
@@ -103,36 +204,124 @@ class HeadquartersService
             throw new \DomainException(sprintf('Facility "%s" not found in HQ.', $type->value));
         }
 
-        $cost = $this->calculateUpgradeCost($type, $facility->getLevel());
-        $this->economyService->deductGold(
-            $team,
-            $cost,
-            \App\Enum\FinancialRecordType::HqUpgradeCost,
-            \App\Enum\FinancialRecordActor::Active,
-            ['facility_type' => $type->value, 'new_level' => $facility->getLevel() + 1]
-        );
+        if ($facility->getLevel() <= 1) {
+            throw new \DomainException('Facility is already at minimum level.');
+        }
 
-        $targetLevel = $facility->getLevel() + 1;
         $speed = (float) $team->getKingdom()->getGameSpeed();
         if ($speed <= 0.0) {
             $speed = 1.0;
         }
-        $seconds = (int) round(($targetLevel * 24 * 3600) / $speed);
+        $seconds = (int) round(($facility->getLevel() * 12 * 3600) / $speed);
         $completedAt = $now->modify(sprintf('+%d seconds', $seconds));
 
         $hq->setUpgradingFacility($facility);
         $hq->setUpgradeCompletedAt($completedAt);
+        $hq->setFacilityOperation(\App\Enum\FacilityOperation::Downgrade);
 
+        $this->financialCrisisService->recordRecoveryAction($team);
         $this->em->flush();
 
         return $facility;
     }
 
-    public function calculateUpgradeCost(FacilityType $type, int $currentLevel): int
+    public function calculateDowngradeRefund(FacilityType $type, int $currentLevel, int $totalLevel): int
+    {
+        $upgradeCost = $this->calculateUpgradeCost($type, $currentLevel - 1, $totalLevel);
+
+        return (int) round($upgradeCost * self::DOWNGRADE_REFUND_RATIO);
+    }
+
+    public function calculateUpgradeCost(FacilityType $type, int $currentLevel, int $totalLevel): int
     {
         $base = self::UPGRADE_BASE_COSTS[$type->value] ?? 500;
+        $levelCost = $base * (1.5 ** ($currentLevel - 1));
 
-        return (int) round($base * (1.5 ** ($currentLevel - 1)));
+        return (int) round($levelCost * $this->getTotalLevelCostMultiplier($totalLevel));
+    }
+
+    /**
+     * @return array{total: int, hq: int, facilities: int}
+     */
+    public function calculateWeeklyMaintenanceBreakdown(Headquarters $hq): array
+    {
+        return HqMaintenanceCalculator::calculateWeeklyMaintenanceBreakdown($hq);
+    }
+
+    public function calculateWeeklyMaintenanceFee(Headquarters $hq): int
+    {
+        return $this->calculateWeeklyMaintenanceBreakdown($hq)['total'];
+    }
+
+    public function processMaintenanceTick(Kingdom $kingdom): void
+    {
+        $hqs = $this->hqRepository->findByKingdom($kingdom);
+
+        foreach ($hqs as $hq) {
+            /** @var Headquarters $hq */
+            $team = $hq->getTeam();
+            $breakdown = $this->calculateWeeklyMaintenanceBreakdown($hq);
+            $feeDue = $breakdown['total'];
+
+            if ($feeDue <= 0) {
+                continue;
+            }
+
+            $deducted = min($team->getGold(), $feeDue);
+            $unpaid = $feeDue - $deducted;
+
+            if ($deducted > 0) {
+                $this->economyService->deductGold(
+                    $team,
+                    $deducted,
+                    FinancialRecordType::HqMaintenanceFee,
+                    FinancialRecordActor::System,
+                    [
+                        'fee_due' => $feeDue,
+                        'hq_fee' => $breakdown['hq'],
+                        'facilities_fee' => $breakdown['facilities'],
+                        'total_level' => $hq->getComputedTotalLevel(),
+                        'unpaid' => $unpaid,
+                    ]
+                );
+                $this->royalTreasuryService->collectFee(
+                    $kingdom,
+                    $deducted,
+                    RoyalTreasuryContributionSource::HqMaintenanceFee,
+                    ['team_id' => $team->getId()],
+                );
+            }
+
+            if ($unpaid > 0) {
+                $this->financialCrisisService->addUnpaidDebt($team, $unpaid);
+
+                if (0 === $deducted) {
+                    $this->economyService->recordLedgerEntry(
+                        $team,
+                        FinancialRecordType::HqMaintenanceFee,
+                        FinancialRecordActor::System,
+                        [
+                            'fee_due' => $feeDue,
+                            'hq_fee' => $breakdown['hq'],
+                            'facilities_fee' => $breakdown['facilities'],
+                            'total_level' => $hq->getComputedTotalLevel(),
+                            'unpaid' => $unpaid,
+                            'fully_unpaid' => true,
+                        ]
+                    );
+                }
+            }
+        }
+
+        $this->em->flush();
+    }
+
+    private function getTotalLevelCostMultiplier(int $totalLevel): float
+    {
+        $startingTotal = count(FacilityType::cases());
+        $excess = max(0, $totalLevel - $startingTotal);
+
+        return 1.0 + ($excess * self::UPGRADE_TOTAL_LEVEL_FACTOR);
     }
 
     /**
@@ -160,13 +349,21 @@ class HeadquartersService
     }
 
     /** @return array<string, mixed> */
-    public function serializeFacility(Facility $facility, FacilityType $type): array
+    public function serializeFacility(Facility $facility, FacilityType $type, Headquarters $hq): array
     {
+        $totalLevel = $hq->getComputedTotalLevel();
+        $canChange = null === $hq->getUpgradingFacility() && !$hq->isFacilityDowngradeLockCycle();
+
         return [
             'type' => $facility->getType()->value,
             'level' => $facility->getLevel(),
             'passive_bonuses' => $facility->getPassiveBonuses(),
-            'upgrade_cost' => $this->calculateUpgradeCost($type, $facility->getLevel()),
+            'upgrade_cost' => $this->calculateUpgradeCost($type, $facility->getLevel(), $totalLevel),
+            'can_upgrade' => $canChange,
+            'can_downgrade' => $canChange && $facility->getLevel() > 1,
+            'downgrade_refund' => $facility->getLevel() > 1
+                ? $this->calculateDowngradeRefund($type, $facility->getLevel(), $totalLevel)
+                : 0,
         ];
     }
 
@@ -177,6 +374,8 @@ class HeadquartersService
         if ($hq->hasPendingRaceOptimizationChange() || $hq->isRaceOptimizationLockCycle()) {
             throw new \DomainException('Race optimization is currently locked.');
         }
+
+        $this->financialCrisisService->assertSpendingAllowed($team, 'hq_optimize');
 
         $current = $hq->getRaceOptimization();
 
@@ -247,22 +446,59 @@ class HeadquartersService
 
         foreach ($hqs as $hq) {
             /** @var Headquarters $hq */
-            $upgrading = $hq->getUpgradingFacility();
+            $changing = $hq->getUpgradingFacility();
             $completedAt = $hq->getUpgradeCompletedAt();
+            $operation = $hq->getFacilityOperation();
 
-            if (null !== $upgrading && null !== $completedAt && $now >= $completedAt) {
-                $newLevel = $upgrading->getLevel() + 1;
-                $upgrading->setLevel($newLevel);
+            if (null === $changing || null === $completedAt || $now < $completedAt) {
+                continue;
+            }
 
-                $hq->setUpgradingFacility(null);
-                $hq->setUpgradeCompletedAt(null);
+            $team = $hq->getTeam();
+            $type = $changing->getType();
 
-                // Recalculate HQ total level
-                $total = 0;
-                foreach ($hq->getFacilities() as $f) {
-                    $total += $f->getLevel();
+            if (\App\Enum\FacilityOperation::Downgrade === $operation) {
+                $previousLevel = $changing->getLevel();
+                $newLevel = max(1, $previousLevel - 1);
+                $changing->setLevel($newLevel);
+
+                $refund = $this->calculateDowngradeRefund($type, $previousLevel, $hq->getComputedTotalLevel());
+                if ($refund > 0) {
+                    $this->economyService->addGold(
+                        $team,
+                        $refund,
+                        FinancialRecordType::HqDowngradeRefund,
+                        FinancialRecordActor::Active,
+                        [
+                            'facility_type' => $type->value,
+                            'previous_level' => $previousLevel,
+                            'new_level' => $newLevel,
+                        ]
+                    );
                 }
-                $hq->setTotalLevel($total);
+
+                $hq->setFacilityDowngradeLockCycle(true);
+            } else {
+                $changing->setLevel($changing->getLevel() + 1);
+            }
+
+            $hq->setUpgradingFacility(null);
+            $hq->setUpgradeCompletedAt(null);
+            $hq->setFacilityOperation(null);
+            $hq->syncTotalLevel();
+        }
+
+        $this->em->flush();
+    }
+
+    public function processFacilityDowngradeLockTick(\App\Entity\Kingdom\Kingdom $kingdom): void
+    {
+        $hqs = $this->hqRepository->findByKingdom($kingdom);
+
+        foreach ($hqs as $hq) {
+            /** @var Headquarters $hq */
+            if ($hq->isFacilityDowngradeLockCycle()) {
+                $hq->setFacilityDowngradeLockCycle(false);
             }
         }
 

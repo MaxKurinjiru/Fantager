@@ -305,6 +305,64 @@
   .db-stats-card__value--warning {
     color: var(--color-warning-text);
   }
+
+  .db-stats-card__value--danger {
+    color: var(--color-error-text);
+  }
+
+  .financial-crisis-banner {
+    @apply mb-0;
+
+    &__content {
+      @apply w-full space-y-3;
+    }
+
+    &__header {
+      @apply flex items-center gap-2;
+    }
+
+    &__icon {
+      @apply text-xl shrink-0;
+    }
+
+    &__title {
+      @apply text-base font-bold m-0;
+    }
+
+    &__message {
+      @apply text-sm m-0 leading-relaxed;
+    }
+
+    &__stats {
+      @apply grid grid-cols-2 sm:grid-cols-4 gap-3 m-0;
+    }
+
+    &__stat {
+      @apply space-y-0.5;
+
+      dt {
+        @apply text-[10px] font-bold uppercase tracking-wide m-0;
+        color: var(--color-text-muted);
+      }
+
+      dd {
+        @apply text-sm font-bold m-0;
+      }
+    }
+
+    &__restricted {
+      @apply text-xs m-0;
+      color: var(--color-text-secondary);
+    }
+
+    &__actions {
+      @apply flex flex-wrap gap-2 pt-1;
+    }
+  }
+
+  .hero-dismiss-panel {
+    @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4;
+  }
 }
 
 @layer components {
@@ -318,6 +376,16 @@
 
   .next-match-meta__icon { @apply select-none; color: var(--color-text-muted); }
   .next-match-meta__text { @apply font-medium; color: var(--color-text-secondary); }
+
+  .next-match-actions {
+    @apply flex flex-wrap gap-2 mt-4 pt-4;
+    border-top: 1px solid rgba(16, 185, 129, 0.15);
+  }
+
+  .db-stats-card__row--link {
+    @apply no-underline transition-colors cursor-pointer;
+    &:hover { background-color: var(--color-surface-overlay); }
+  }
 
   .db-banner__grid-bg { @apply absolute inset-0 -z-10; }
   .db-banner__title-wrap { @apply text-center md:text-left; }

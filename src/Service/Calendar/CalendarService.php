@@ -88,12 +88,17 @@ class CalendarService
             switch ($type) {
                 case TickType::DailyReset:
                     $title = 'Daily Reset & Maintenance';
-                    $description = 'System cleanup, quest expiration, hero aging reset';
+                    $description = 'System cleanup, hero aging reset';
                     $visibility = 'system_only';
                     break;
                 case TickType::InactiveRegistrationCleanup:
                     $title = 'Inactive Registration Cleanup';
                     $description = 'Remove team assignments and delete unverified accounts older than 1 day';
+                    $visibility = 'system_only';
+                    break;
+                case TickType::InactivePlayerCleanup:
+                    $title = 'Inactive Player Cleanup';
+                    $description = 'Release teams from verified players inactive for 28+ days';
                     $visibility = 'system_only';
                     break;
                 case TickType::FatigueRecovery:

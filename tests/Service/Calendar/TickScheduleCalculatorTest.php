@@ -33,6 +33,7 @@ class TickScheduleCalculatorTest extends TestCase
         
         $this->assertContains(TickType::FatigueRecovery->value, $types);
         $this->assertContains(TickType::InactiveRegistrationCleanup->value, $types);
+        $this->assertContains(TickType::InactivePlayerCleanup->value, $types);
         
         foreach ($occurrences as $o) {
             if ($o['type'] === TickType::FatigueRecovery) {
@@ -40,6 +41,9 @@ class TickScheduleCalculatorTest extends TestCase
             }
             if ($o['type'] === TickType::InactiveRegistrationCleanup) {
                 $this->assertSame('2026-06-08T03:30:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
+            }
+            if ($o['type'] === TickType::InactivePlayerCleanup) {
+                $this->assertSame('2026-06-08T03:45:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
             }
         }
     }

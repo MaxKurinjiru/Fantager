@@ -1,0 +1,37 @@
+{# templates/components/formation/match_prep_panel.html.twig #}
+{% set opponent = fixture.homeTeam.id == team.id ? fixture.awayTeam : fixture.homeTeam %}
+{% set assignment = fixture_assignment.assignment %}
+
+<div class="hero-panel formation-section space-y-4 mb-4">
+    <div>
+        <h3 class="formation-strategy__title">{{ 'formation.match_prep_title'|trans }}</h3>
+        <p class="formation-strategy__desc">
+            {{ 'formation.match_prep_desc'|trans({'%opponent%': opponent.name, '%date%': fixture.scheduledAt|date('d.m.Y H:i')}) }}
+        </p>
+    </div>
+
+    <div class="space-y-2">
+        <span class="section-label--xs">{{ 'formation.match_assignment'|trans }}</span>
+        <select data-formation-target="fixtureFormationSelect" data-action="change->formation#changeFixtureFormation"
+                class="form-input font-semibold w-full">
+            <option value="default" {% if assignment.mode == 'default' %}selected{% endif %}>
+                {{ 'formation.use_default_for_match'|trans }}
+            </option>
+            {% for f in formations %}
+                <option value="{{ f.id }}" {% if assignment.mode == 'saved' and assignment.formation_id == f.id %}selected{% endif %}>
+                    {{ f.name }}{% if f.isDefault %} ({{ 'formation.default'|trans }}){% endif %}
+                </option>
+            {% endfor %}
+            {% if assignment.mode == 'custom' %}
+                <option value="custom" selected>{{ 'formation.custom_for_match'|trans }}</option>
+            {% endif %}
+        </select>
+    </div>
+
+    {% if assignment.mode == 'custom' %}
+        <button type="button" data-action="click->formation#promoteFixtureFormation"
+                class="btn btn-outline btn--sm w-full">
+            {{ 'formation.promote_match_formation'|trans }}
+        </button>
+    {% endif %}
+</div>

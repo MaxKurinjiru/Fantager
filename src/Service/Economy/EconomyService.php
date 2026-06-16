@@ -198,6 +198,20 @@ class EconomyService
     }
 
     /**
+     * Record a ledger entry without mutating team balances.
+     *
+     * @param array<string, mixed> $context
+     */
+    public function recordLedgerEntry(
+        Team $team,
+        FinancialRecordType $type,
+        FinancialRecordActor $actor,
+        array $context = [],
+    ): void {
+        $this->recordTransaction($team, $type, $actor, 0, 0, 0, 0, 0, 0, 0, $context);
+    }
+
+    /**
      * Flush pending changes. Should be called after all mutations are applied together.
      */
     public function flush(): void

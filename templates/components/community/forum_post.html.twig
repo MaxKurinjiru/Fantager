@@ -1,0 +1,18 @@
+{# templates/components/community/forum_post.html.twig #}
+<article class="forum-post{% if is_original|default(false) %} forum-post--original{% endif %} game-panel">
+    <header class="forum-post__header">
+        <div class="forum-post__author">
+            <span class="forum-post__emblem">{{ post.authorTeam.emblem ?: '🛡️' }}</span>
+            <div>
+                <strong class="forum-post__author-name">{{ post.authorTeam.name }}</strong>
+                {% if is_original|default(false) %}
+                    <span class="forum-post__role">{{ 'community.thread_starter'|trans }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <time class="forum-post__time" datetime="{{ post.createdAt|date('c') }}">
+            {{ post.createdAt|date('d. m. Y H:i') }}
+        </time>
+    </header>
+    <div class="forum-post__body">{{ post.body }}</div>
+</article>

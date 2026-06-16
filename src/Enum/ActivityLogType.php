@@ -15,7 +15,6 @@ enum ActivityLogType: string
     case TrainingCompleted = 'training_completed';
     case ItemPurchased = 'item_purchased';
     case ItemSold = 'item_sold';
-    case QuestCompleted = 'quest_completed';
     case AchievementUnlocked = 'achievement_unlocked';
     case DungeonCompleted = 'dungeon_completed';
     case SummonCompleted = 'summon_completed';

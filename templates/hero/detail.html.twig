@@ -3,13 +3,42 @@
 {% block title %}{{ 'heroes.details_title'|trans }} — {{ hero.name }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="hero-detail-page page-shell" data-controller="hero-rename"
+{% set hero_tabs = [
+    { id: 'overview', label: 'heroes.tab_overview', emoji: '📋' },
+    { id: 'equipment', label: 'heroes.tab_equipment', emoji: '🎒' },
+    { id: 'spells', label: 'heroes.tab_spells', emoji: '📖' },
+    { id: 'training', label: 'heroes.tab_training', emoji: '🏋️' },
+    { id: 'history', label: 'heroes.tab_history', emoji: '📜' }
+] %}
+
+{% set equipped_spells = {} %}
+{% set known_spell_ids = [] %}
+{% set masteries = {} %}
+{% for hs in hero.heroSpells %}
+    {% set known_spell_ids = known_spell_ids|merge([hs.spell.id]) %}
+    {% if hs.isEquipped %}
+        {% set equipped_spells = equipped_spells|merge({(hs.slotNumber): hs}) %}
+    {% endif %}
+{% endfor %}
+{% for sm in hero.schoolMasteries %}
+    {% set masteries = masteries|merge({(sm.school.value): sm.masteryTier}) %}
+{% endfor %}
+
+<div class="hero-detail-page page-shell" data-controller="hero-rename hero-dismiss hero-sell"
      data-hero-rename-hero-id-value="{{ hero.id }}"
      data-hero-rename-error-empty-value="{{ 'js_flash.heroes.name_empty'|trans }}"
      data-hero-rename-error-rename-value="{{ 'js_flash.heroes.failed_rename'|trans }}"
+     data-hero-dismiss-hero-id-value="{{ hero.id }}"
+     data-hero-dismiss-confirm-dismiss-value="{{ 'heroes.dismiss_confirm'|trans }}"
+     data-hero-dismiss-error-dismiss-value="{{ 'js_flash.heroes.failed_dismiss'|trans }}"
+     data-hero-dismiss-success-dismiss-value="{{ 'js_flash.heroes.success_dismiss'|trans }}"
+     data-hero-sell-hero-id-value="{{ hero.id }}"
+     data-hero-sell-confirm-sell-value="{{ 'heroes.sell_confirm'|trans }}"
+     data-hero-sell-error-sell-value="{{ 'js_flash.heroes.failed_sell'|trans }}"
+     data-hero-sell-success-sell-value="{{ 'js_flash.heroes.success_sell'|trans }}"
+     data-hero-sell-price-label-buy-now-value="{{ 'marketplace.price_gold'|trans }}"
+     data-hero-sell-price-label-auction-value="{{ 'marketplace.label_min_bid'|trans }}"
 >
-    
-    {# --- Breadcrumbs & Back Link --- #}
     <div class="hero-detail-nav">
         <div class="hero-detail-nav__trail">
             <a href="{{ path('app_heroes') }}" class="link">{{ 'heroes.back_roster'|trans }}</a>
@@ -21,7 +50,6 @@
         </a>
     </div>
 
-    {# --- Error Alert --- #}
     {% include 'components/ui/alert_box.html.twig' with {
         target: 'hero-rename',
         message_target: 'alertMessage',
@@ -29,46 +57,171 @@
         type: 'error'
     } %}
 
-    {# --- Hero Header Card --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'hero-dismiss',
+        container_target: 'dismissAlert',
+        message_target: 'dismissAlertMessage',
+        close_action: 'hero-dismiss#hideAlert',
+        type: 'info',
+        classes: 'mb-6'
+    } %}
+
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'hero-sell',
+        container_target: 'sellAlert',
+        message_target: 'sellAlertMessage',
+        close_action: 'hero-sell#hideAlert',
+        type: 'info',
+        classes: 'mb-6'
+    } %}
+
     {% include 'components/hero/header_card.html.twig' with { hero: hero } %}
 
-    {# --- Main Layout Grid --- #}
-    <div class="hero-detail-grid">
-        
-        {# LEFT COLUMN: Primary Attributes & Core Stats (1 Column) #}
-        <div class="hero-detail-grid__side">
-            {# Attributes Panel #}
-            {% include 'components/hero/attributes_panel.html.twig' with { hero: hero, statBonuses: statBonuses } %}
-
-            {# Secondary Attributes Panel #}
-            {% include 'components/hero/status_panel.html.twig' with { hero: hero } %}
-        </div>
-
-        {# RIGHT COLUMN: Equipment, Spells, Stats & History (2 Columns) #}
-        <div class="hero-detail-grid__main">
-            
-            {# Equipment Paperdoll Grid #}
-            {% include 'components/hero/equipped_gear.html.twig' with { hero: hero, equipped: equipped } %}
-
-            {# Spells & Magic Mastery #}
-            <div class="hero-detail-split">
-                {# Spell slots #}
-                {% include 'components/hero/spell_slots.html.twig' with { hero: hero } %}
-
-                {# Magic School Mastery levels #}
-                {% include 'components/hero/school_mastery.html.twig' with { hero: hero } %}
-            </div>
-
-            {# Statistics & History #}
-            <div class="hero-detail-split">
-                {# Stats summary card #}
-                {% include 'components/hero/combat_stats.html.twig' with { hero: hero, trainingHistory: trainingHistory } %}
-
-                {# History logs card #}
-                {% include 'components/hero/recent_activity.html.twig' with { hero: hero, trainingHistory: trainingHistory } %}
-            </div>
-
-        </div>
+    <div class="tab-nav-bar hero-detail-tabs">
+        {% for t in hero_tabs %}
+            <a href="{{ path('app_heroes_detail', { id: hero.id, tab: t.id }) }}"
+               class="tab-btn {{ tab == t.id ? 'tab-btn--active' : '' }}">
+                {{ t.emoji }} {{ t.label|trans }}
+            </a>
+        {% endfor %}
     </div>
+
+    {% if tab == 'overview' %}
+        <div class="hero-detail-grid">
+            <div class="hero-detail-grid__side">
+                {% include 'components/hero/attributes_panel.html.twig' with { hero: hero, statBonuses: statBonuses } %}
+                {% include 'components/hero/status_panel.html.twig' with { hero: hero } %}
+                {% include 'components/hero/sell_panel.html.twig' with { hero: hero, team: team } %}
+                {% include 'components/hero/dismiss_panel.html.twig' with { hero: hero, team: team } %}
+            </div>
+            <div class="hero-detail-grid__main">
+                {% include 'components/hero/equipped_gear.html.twig' with { hero: hero, equipped: equipped } %}
+                <div class="hero-detail-split">
+                    {% include 'components/hero/spell_slots.html.twig' with { hero: hero } %}
+                    {% include 'components/hero/school_mastery.html.twig' with { hero: hero } %}
+                </div>
+            </div>
+        </div>
+
+    {% elseif tab == 'equipment' %}
+        <div class="space-y-8" data-controller="equipment"
+             data-equipment-text-equipping-value="{{ 'js_flash.inventory.equipping'|trans }}"
+             data-equipment-error-equip-value="{{ 'js_flash.inventory.failed_equip'|trans }}"
+             data-equipment-success-equip-value="{{ 'js_flash.inventory.success_equip'|trans }}"
+             data-equipment-text-unequipping-value="{{ 'js_flash.inventory.unequipping'|trans }}"
+             data-equipment-error-unequip-value="{{ 'js_flash.inventory.failed_unequip'|trans }}"
+             data-equipment-success-unequip-value="{{ 'js_flash.inventory.success_unequip'|trans }}"
+             data-equipment-confirm-dismantle-value="{{ 'js_flash.inventory.confirm_dismantle'|trans }}"
+             data-equipment-text-dismantling-value="{{ 'js_flash.inventory.dismantling'|trans }}"
+             data-equipment-error-dismantle-value="{{ 'js_flash.inventory.failed_dismantle'|trans }}"
+             data-equipment-success-dismantle-value="{{ 'js_flash.inventory.success_dismantle'|trans }}"
+             data-equipment-text-repairing-value="{{ 'js_flash.inventory.repairing'|trans }}"
+             data-equipment-error-repair-value="{{ 'js_flash.inventory.failed_repair'|trans }}"
+             data-equipment-success-repair-value="{{ 'js_flash.inventory.success_repair'|trans }}">
+            {% include 'components/ui/alert_box.html.twig' with { target: 'equipment', message_target: 'alertMessage', close_action: 'equipment#hideAlert' } %}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    {% include 'components/item/equip_manager.html.twig' with {
+                        selected_hero_id: hero.id,
+                        selected_hero: hero,
+                        heroes: heroes,
+                        equipped: equipped
+                    } %}
+                </div>
+                {% include 'components/item/rucksack_items.html.twig' with { items: items, selected_hero: hero } %}
+            </div>
+        </div>
+
+    {% elseif tab == 'spells' %}
+        <div class="spellbook-page" data-controller="spellbook"
+             data-spellbook-text-learning-value="{{ 'js_flash.spells.learning'|trans }}"
+             data-spellbook-error-learn-value="{{ 'js_flash.spells.failed_learn'|trans }}"
+             data-spellbook-success-learn-value="{{ 'js_flash.spells.success_learn'|trans }}"
+             data-spellbook-error-equip-value="{{ 'js_flash.spells.failed_equip'|trans }}"
+             data-spellbook-success-equip-value="{{ 'js_flash.spells.success_equip'|trans }}"
+             data-spellbook-error-unequip-value="{{ 'js_flash.spells.failed_unequip'|trans }}"
+             data-spellbook-text-equipping-value="{{ 'js_flash.inventory.equipping'|trans }}"
+             data-spellbook-success-unequip-value="{{ 'js_flash.spells.success_unequip'|trans }}">
+            {% include 'components/ui/alert_box.html.twig' with { target: 'spellbook', message_target: 'alertMessage', close_action: 'spellbook#hideAlert' } %}
+            <div class="screen-grid">
+                <div class="screen-grid__aside">
+                    {% include 'components/spell/trainee_manager.html.twig' with {
+                        selected_hero_id: hero.id,
+                        selected_hero: hero,
+                        heroes: heroes,
+                        equipped: equipped_spells,
+                        masteries: masteries
+                    } %}
+                </div>
+                <div class="screen-grid__main">
+                    <div class="tab-nav" data-controller="tab">
+                        <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="learned-spells-tab" class="tab-btn tab-btn--active">
+                            {{ 'spells.tab_learned'|trans }}
+                        </button>
+                        <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="academy-store-tab" class="tab-btn">
+                            {{ 'spells.tab_store'|trans }}
+                        </button>
+                    </div>
+                    {% include 'components/spell/learned_spells.html.twig' with { selected_hero: hero, equipped: equipped_spells } %}
+                    {% include 'components/spell/academy_store.html.twig' with { spells: spells, known_spell_ids: known_spell_ids, selected_hero: hero, masteries: masteries, team: team } %}
+                </div>
+            </div>
+        </div>
+
+    {% elseif tab == 'training' %}
+        <div class="space-y-6" data-controller="training"
+             data-training-success-configure-value="{{ 'training.success_configure'|trans }}"
+             data-training-success-assign-value="{{ 'training.success_assign'|trans }}"
+             data-training-success-unassign-value="{{ 'training.success_unassign'|trans }}"
+             data-training-error-fetch-value="{{ 'js_flash.training.error_fetch'|trans }}"
+             data-training-is-locked-value="{{ is_training_locked ? 'true' : 'false' }}"
+             data-training-text-saving-value="{{ 'js_flash.training.text_saving'|trans }}"
+             data-training-text-removing-value="{{ 'js_flash.training.text_removing'|trans }}"
+             data-training-error-save-focus-value="{{ 'js_flash.training.error_save_focus'|trans }}"
+             data-training-error-assign-hero-value="{{ 'js_flash.training.error_assign_hero'|trans }}"
+             data-training-error-remove-hero-value="{{ 'js_flash.training.error_remove_hero'|trans }}">
+            {% include 'components/ui/alert_box.html.twig' with { target: 'training', message_target: 'alertMessage', close_action: 'training#closeAlert' } %}
+
+            {% if hero.trainer %}
+                <div class="game-panel">
+                    <h3 class="font-bold text-white mb-2">{{ 'heroes.current_trainer'|trans }}</h3>
+                    <p>{{ hero.trainer.name }} — {{ ('training.type_' ~ (hero.trainer.trainingType ? hero.trainer.trainingType.value : 'idle'))|trans }}</p>
+                    <button type="button" data-action="click->training#unassignTrainee"
+                            data-trainer-id="{{ hero.trainer.id }}" data-hero-id="{{ hero.id }}"
+                            class="btn btn-outline btn--sm mt-3" {% if is_training_locked %}disabled{% endif %}>
+                        {{ 'training.unassign_hero'|trans }}
+                    </button>
+                </div>
+            {% else %}
+                <div class="game-panel">
+                    <h3 class="font-bold text-white mb-4">{{ 'training.assign_hero'|trans }}</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for trainer in trainers %}
+                            {% set maxSlots = training_service.getTrainerSlotsLimit(trainer) %}
+                            {% if trainer.heroes|length < maxSlots %}
+                                <div class="trainer-card p-4">
+                                    <p class="font-semibold">{{ trainer.name }}</p>
+                                    <select class="form-input mt-2" data-action="change->training#assignTrainee" data-trainer-id="{{ trainer.id }}"
+                                            {% if is_training_locked %}disabled{% endif %}>
+                                        <option value="">-- {{ 'training.select_trainee'|trans }} --</option>
+                                        <option value="{{ hero.id }}" selected>{{ hero.name }}</option>
+                                    </select>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <a href="{{ path('app_hq', { facility: 'training' }) }}" class="link text-sm mt-4 inline-block">
+                        {{ 'heroes.manage_all_trainers'|trans }} →
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+    {% elseif tab == 'history' %}
+        <div class="hero-detail-split">
+            {% include 'components/hero/combat_stats.html.twig' with { hero: hero, trainingHistory: trainingHistory } %}
+            {% include 'components/hero/recent_activity.html.twig' with { hero: hero, trainingHistory: trainingHistory } %}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

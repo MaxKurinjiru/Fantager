@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Marketplace;
 
 use App\Entity\Hero\Hero;
+use App\Entity\Kingdom\Kingdom;
 use App\Entity\Item\Item;
 use App\Entity\Marketplace\MarketplaceBid;
 use App\Entity\Marketplace\MarketplaceListing;
@@ -22,7 +23,11 @@ use App\Enum\NotificationType;
 use App\Enum\TrainerStatus;
 use App\Enum\TransactionType;
 use App\Service\Economy\EconomyService;
+use App\Service\Economy\FinancialCrisisService;
+use App\Service\Economy\RoyalTreasuryService;
+use App\Enum\RoyalTreasuryContributionSource;
 use App\Service\Notification\NotificationHelper;
+use App\Service\Team\TeamRosterService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class MarketplaceService
@@ -30,7 +35,10 @@ class MarketplaceService
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EconomyService $economyService,
+        private readonly FinancialCrisisService $financialCrisisService,
+        private readonly RoyalTreasuryService $royalTreasuryService,
         private readonly NotificationHelper $notificationHelper,
+        private readonly TeamRosterService $teamRosterService,
     ) {
     }
 
@@ -83,9 +91,15 @@ class MarketplaceService
             if (null === $hero || $hero->getTeam()->getId() !== $seller->getId()) {
                 throw new \DomainException('Hero not found or does not belong to your team.');
             }
-            if (HeroStatus::Available !== $hero->getStatus() && HeroStatus::Tired !== $hero->getStatus()) {
-                throw new \DomainException('Only available or tired heroes can be listed.');
+            if (HeroStatus::Available !== $hero->getStatus()) {
+                throw new \DomainException('Only available heroes can be listed.');
             }
+
+            if (null !== $hero->getTrainer()) {
+                throw new \DomainException('Hero is assigned to a trainer. Unassign before listing.');
+            }
+
+            $this->teamRosterService->assertCanRemoveCombatReadyHero($seller, $hero);
 
             // Escrow hero
             $hero->setStatus(HeroStatus::Selling);
@@ -123,7 +137,6 @@ class MarketplaceService
             // Unassign all trainees (heroes)
             foreach ($trainer->getHeroes() as $hero) {
                 $trainer->removeHero($hero);
-                $hero->setStatus(HeroStatus::Available);
             }
 
             // Escrow trainer
@@ -192,6 +205,8 @@ class MarketplaceService
             throw new \DomainException(sprintf('Insufficient gold. Required: %d, available: %d.', $buyoutPrice, $buyer->getGold()));
         }
 
+        $this->financialCrisisService->assertSpendingAllowed($buyer, 'marketplace_purchase');
+
         $seller = $listing->getSellerTeam();
 
         // Calculate tax fee based on Kingdom configuration
@@ -206,6 +221,12 @@ class MarketplaceService
         $this->economyService->addGold($seller, $buyoutPrice, FinancialRecordType::MarketplaceSale, FinancialRecordActor::Active, ['listing_id' => $listing->getId()]);
         if ($tax > 0) {
             $this->economyService->deductGold($seller, $tax, FinancialRecordType::MarketplaceFee, FinancialRecordActor::Active, ['listing_id' => $listing->getId()]);
+            $this->royalTreasuryService->collectFee(
+                $listing->getKingdom(),
+                $tax,
+                RoyalTreasuryContributionSource::MarketplaceTax,
+                ['listing_id' => $listing->getId()],
+            );
         }
 
         // Refund all bids in the reservation pool
@@ -256,6 +277,7 @@ class MarketplaceService
         }
 
         $listing->setStatus(ListingStatus::Sold);
+        $this->financialCrisisService->recordRecoveryAction($seller);
         $this->em->flush();
 
         // Send Notification to Seller
@@ -296,6 +318,8 @@ class MarketplaceService
         if ($bidder->getGold() < $bidAmount) {
             throw new \DomainException(sprintf('Insufficient gold. Required: %d, available: %d.', $bidAmount, $bidder->getGold()));
         }
+
+        $this->financialCrisisService->assertSpendingAllowed($bidder, 'marketplace_bid');
 
         // Determine highest bid
         $currentHighestBid = null;
@@ -343,15 +367,14 @@ class MarketplaceService
 
     public function processExpiredListings(\DateTimeImmutable $now): void
     {
-        $listings = $this->em->getRepository(MarketplaceListing::class)->createQueryBuilder('l')
-            ->where('l.status = :status')
-            ->andWhere('l.expiresAt <= :now')
-            ->setParameter('status', ListingStatus::Active)
-            ->setParameter('now', $now)
-            ->getQuery()
-            ->getResult();
+        $this->processExpiredListingsForKingdom(null, $now);
+    }
 
+    public function processExpiredListingsForKingdom(?Kingdom $kingdom, \DateTimeImmutable $now): void
+    {
         /** @var list<MarketplaceListing> $listings */
+        $listings = $this->findExpiredActiveListings($kingdom, $now);
+
         foreach ($listings as $listing) {
             $bids = $listing->getBids();
             $highestBid = null;
@@ -377,7 +400,7 @@ class MarketplaceService
                 if (null !== $listing->getSellerTeam()->getUser()) {
                     $this->notificationHelper->sendNotification(
                         $listing->getSellerTeam()->getUser(),
-                        NotificationType::QuestExpired, // reusing expired notification type
+                        NotificationType::System,
                         'Listing Expired',
                         sprintf('Your listing #%d expired with no bids. The entity has been returned to your roster/inventory.', $listing->getId())
                     );
@@ -397,6 +420,12 @@ class MarketplaceService
                 $this->economyService->addGold($seller, $winningBidAmount, FinancialRecordType::MarketplaceSale, FinancialRecordActor::System, ['listing_id' => $listing->getId()]);
                 if ($tax > 0) {
                     $this->economyService->deductGold($seller, $tax, FinancialRecordType::MarketplaceFee, FinancialRecordActor::System, ['listing_id' => $listing->getId()]);
+                    $this->royalTreasuryService->collectFee(
+                        $listing->getKingdom(),
+                        $tax,
+                        RoyalTreasuryContributionSource::MarketplaceTax,
+                        ['listing_id' => $listing->getId()],
+                    );
                 }
 
                 // Refund all OTHER (losing) bids
@@ -449,6 +478,7 @@ class MarketplaceService
                 }
 
                 $listing->setStatus(ListingStatus::Sold);
+                $this->financialCrisisService->recordRecoveryAction($seller);
 
                 // Notifications
                 if (null !== $seller->getUser()) {
@@ -472,5 +502,24 @@ class MarketplaceService
         }
 
         $this->em->flush();
+    }
+
+    /**
+     * @return list<MarketplaceListing>
+     */
+    private function findExpiredActiveListings(?Kingdom $kingdom, \DateTimeImmutable $now): array
+    {
+        $qb = $this->em->getRepository(MarketplaceListing::class)->createQueryBuilder('l')
+            ->where('l.status = :status')
+            ->andWhere('l.expiresAt <= :now')
+            ->setParameter('status', ListingStatus::Active)
+            ->setParameter('now', $now);
+
+        if (null !== $kingdom) {
+            $qb->andWhere('l.kingdom = :kingdom')
+                ->setParameter('kingdom', $kingdom);
+        }
+
+        return $qb->getQuery()->getResult();
     }
 }

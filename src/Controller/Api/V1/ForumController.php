@@ -6,8 +6,9 @@ namespace App\Controller\Api\V1;
 
 use App\Entity\Auth\User;
 use App\Entity\Community\ForumThread;
+use App\Repository\Community\ForumThreadRepository;
 use App\Service\Community\CommunityService;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\Community\ForumThreadHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,8 +21,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ForumController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
+        private readonly ForumThreadRepository $threadRepository,
         private readonly CommunityService $communityService,
+        private readonly ForumThreadHelper $threadHelper,
     ) {
     }
 
@@ -35,26 +37,20 @@ class ForumController extends AbstractController
             return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
         }
 
-        $kingdom = $team->getKingdom();
         $category = $request->query->get('category');
+        $search = trim($request->query->getString('q', ''));
 
-        $qb = $this->em->createQueryBuilder();
-        $qb->select('t')
-           ->from(ForumThread::class, 't')
-           ->where('t.kingdom = :kingdom')
-           ->setParameter('kingdom', $kingdom);
+        $threads = $this->threadRepository->findForKingdomListing(
+            $team->getKingdom(),
+            is_string($category) && 'all' !== $category ? $category : null,
+            '' !== $search ? $search : null,
+        );
+        $threads = $this->threadHelper->sortForListing($threads);
 
-        if ($category && 'all' !== $category) {
-            $qb->andWhere('t.category = :category')
-               ->setParameter('category', $category);
-        }
-
-        $qb->orderBy('t.id', 'DESC');
-
-        /** @var list<ForumThread> $threads */
-        $threads = $qb->getQuery()->getResult();
-
-        $data = array_map([$this, 'serializeThread'], $threads);
+        $data = array_map(
+            fn (ForumThread $thread): array => $this->threadHelper->serializeThread($thread),
+            $threads
+        );
 
         return $this->json($data);
     }
@@ -87,7 +83,7 @@ class ForumController extends AbstractController
                 $body
             );
 
-            return $this->json($this->serializeThread($thread), Response::HTTP_CREATED);
+            return $this->json($this->threadHelper->serializeThread($thread), Response::HTTP_CREATED);
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
@@ -104,7 +100,7 @@ class ForumController extends AbstractController
         }
 
         /** @var ForumThread|null $thread */
-        $thread = $this->em->getRepository(ForumThread::class)->find($id);
+        $thread = $this->threadRepository->find($id);
         if (!$thread) {
             return $this->json(['error' => 'Thread not found.'], Response::HTTP_NOT_FOUND);
         }
@@ -114,20 +110,16 @@ class ForumController extends AbstractController
         }
 
         $postsData = [];
-        foreach ($thread->getPosts() as $post) {
+        foreach ($this->threadHelper->getSortedPosts($thread) as $post) {
             $postsData[] = [
                 'id' => $post->getId(),
                 'body' => $post->getBody(),
                 'createdAt' => $post->getCreatedAt()->format(\DateTimeInterface::ATOM),
-                'author_team' => [
-                    'id' => $post->getAuthorTeam()->getId(),
-                    'name' => $post->getAuthorTeam()->getName(),
-                    'colors' => $post->getAuthorTeam()->getColors(),
-                ],
+                'author_team' => $this->threadHelper->serializeTeam($post->getAuthorTeam()),
             ];
         }
 
-        $threadData = $this->serializeThread($thread);
+        $threadData = $this->threadHelper->serializeThread($thread);
         $threadData['posts'] = $postsData;
 
         return $this->json($threadData);
@@ -144,7 +136,7 @@ class ForumController extends AbstractController
         }
 
         /** @var ForumThread|null $thread */
-        $thread = $this->em->getRepository(ForumThread::class)->find($id);
+        $thread = $this->threadRepository->find($id);
         if (!$thread) {
             return $this->json(['error' => 'Thread not found.'], Response::HTTP_NOT_FOUND);
         }
@@ -163,11 +155,7 @@ class ForumController extends AbstractController
                 'id' => $post->getId(),
                 'body' => $post->getBody(),
                 'createdAt' => $post->getCreatedAt()->format(\DateTimeInterface::ATOM),
-                'author_team' => [
-                    'id' => $post->getAuthorTeam()->getId(),
-                    'name' => $post->getAuthorTeam()->getName(),
-                    'colors' => $post->getAuthorTeam()->getColors(),
-                ],
+                'author_team' => $this->threadHelper->serializeTeam($post->getAuthorTeam()),
             ], Response::HTTP_CREATED);
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
@@ -185,7 +173,7 @@ class ForumController extends AbstractController
         }
 
         /** @var ForumThread|null $thread */
-        $thread = $this->em->getRepository(ForumThread::class)->find($id);
+        $thread = $this->threadRepository->find($id);
         if (!$thread) {
             return $this->json(['error' => 'Thread not found.'], Response::HTTP_NOT_FOUND);
         }
@@ -200,23 +188,5 @@ class ForumController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
-    }
-
-    /** @return array<string, mixed> */
-    private function serializeThread(ForumThread $thread): array
-    {
-        return [
-            'id' => $thread->getId(),
-            'category' => $thread->getCategory(),
-            'title' => $thread->getTitle(),
-            'createdAt' => $thread->getCreatedAt()->format(\DateTimeInterface::ATOM),
-            'isLocked' => $thread->isLocked(),
-            'author_team' => [
-                'id' => $thread->getAuthorTeam()->getId(),
-                'name' => $thread->getAuthorTeam()->getName(),
-                'colors' => $thread->getAuthorTeam()->getColors(),
-            ],
-            'posts_count' => $thread->getPosts()->count(),
-        ];
     }
 }

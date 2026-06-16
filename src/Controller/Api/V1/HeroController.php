@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1;
 
 use App\Entity\Auth\User;
+use App\Service\Hero\HeroDismissalService;
 use App\Service\Hero\HeroService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,6 +17,7 @@ class HeroController extends AbstractController
 {
     public function __construct(
         private readonly HeroService $heroService,
+        private readonly HeroDismissalService $heroDismissalService,
     ) {
     }
 
@@ -73,6 +75,31 @@ class HeroController extends AbstractController
         }
 
         return $this->json($this->heroService->serialize($hero));
+    }
+
+    #[Route('/{id}/dismiss', name: 'api_heroes_dismiss', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function dismiss(int $id): JsonResponse
+    {
+        $team = $this->getPlayerTeam();
+        if (null === $team) {
+            return $this->json(['error' => 'No team assigned to your account.'], 422);
+        }
+
+        $hero = $this->heroService->findForTeam($id, $team);
+        if (null === $hero) {
+            return $this->json(['error' => 'Hero not found.'], 404);
+        }
+
+        try {
+            $compensation = $this->heroDismissalService->dismiss($team, $hero);
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], 422);
+        }
+
+        return $this->json([
+            'dismissed' => true,
+            'compensation' => $compensation,
+        ]);
     }
 
     private function getPlayerTeam(): ?\App\Entity\Team\Team

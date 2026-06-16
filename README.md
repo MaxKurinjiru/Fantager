@@ -29,13 +29,24 @@ Or run the equivalent commands locally if you prefer not to use containers.
 
 ## Database Seeding & Initialization
 
-After running the migrations, bootstrap your local development database with a default kingdom and a test player:
+After running the migrations, bootstrap your local development database with a default kingdom and test players:
 
 ```bash
-# 1. Initialize default kingdom (NPCs, heroes, league standings)
+# Initialize default kingdom (NPCs, heroes, league standings) and 3 test users
 docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom" --test
+```
 
-# 2. Create and activate a test user, and assign them an NPC team in the kingdom
+The `--test` flag also creates three verified users, each assigned to an NPC team:
+
+| Email | Nickname | Password |
+|-------|----------|----------|
+| player1@example.com | Test Player 1 | password |
+| player2@example.com | Test Player 2 | password |
+| player3@example.com | Test Player 3 | password |
+
+To create an additional test user manually:
+
+```bash
 docker exec -u apache fantager-web php bin/console app:user:create-test "Main Kingdom" user@example.com "Player Nickname" "password"
 ```
 

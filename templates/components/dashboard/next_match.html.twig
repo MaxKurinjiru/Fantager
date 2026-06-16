@@ -80,6 +80,20 @@
                     <span class="next-match-meta__text">{{ match.group_name }}</span>
                 </div>
             </div>
+
+            <div class="next-match-actions">
+                <a href="{{ path('app_formation', { fixture_id: match.id }) }}" class="btn btn-primary btn--sm">
+                    🛡️ {{ 'dashboard.prepare_formation'|trans }}
+                </a>
+                <a href="{{ path('app_league', { tab: 'fixtures' }) }}" class="btn btn-outline btn--sm">
+                    🏆 {{ 'dashboard.view_in_league'|trans }}
+                </a>
+                {% if is_home %}
+                    <a href="{{ path('app_hq', { facility: 'arena' }) }}" class="btn btn-outline btn--sm">
+                        🏟️ {{ 'dashboard.home_arena'|trans }}
+                    </a>
+                {% endif %}
+            </div>
         </div>
     {% else %}
         <div class="next-match-empty">

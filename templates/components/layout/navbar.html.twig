@@ -4,10 +4,14 @@
     <div class="navbar-container">
         {# Top Resource Bar #}
         <div class="navbar-resources">
-            <div class="navbar-resources__item" title="{{ 'dashboard.gold'|trans }}">
+            <button type="button"
+                    data-action="click->ledger#openLedgerModal"
+                    class="navbar-resources__item navbar-resources__item--clickable"
+                    title="{{ 'finance.recent_title'|trans }}"
+                    aria-label="{{ 'finance.recent_title'|trans }}">
                 <span class="text-yellow-500 font-bold select-none">🪙</span>
                 <span class="navbar-resources__amount">{{ app.user.team.gold|number_format(0, '.', ' ') }}</span>
-            </div>
+            </button>
         </div>
 
         {# Top navigation bar #}

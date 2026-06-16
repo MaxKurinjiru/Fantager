@@ -6,7 +6,15 @@ namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
 use App\Repository\Hero\HeroRepository;
+use App\Repository\Item\ItemRepository;
+use App\Repository\Spell\SpellRepository;
+use App\Repository\Summoning\SummonHistoryRepository;
+use App\Repository\Training\TrainerRepository;
+use App\Repository\Training\TrainingQueueRepository;
+use App\Service\Config\RaceConfig;
+use App\Service\Training\TrainingService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -14,12 +22,17 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_PLAYER')]
 class HeroController extends AbstractController
 {
+    private const VALID_TABS = ['overview', 'equipment', 'spells', 'training', 'history'];
+
     public function __construct(
         private readonly HeroRepository $heroRepository,
-        private readonly \App\Repository\Item\ItemRepository $itemRepository,
-        private readonly \App\Repository\Training\TrainingQueueRepository $trainingQueueRepository,
-        private readonly \App\Repository\Summoning\SummonHistoryRepository $summonHistoryRepository,
-        private readonly \App\Service\Config\RaceConfig $raceConfig,
+        private readonly ItemRepository $itemRepository,
+        private readonly TrainingQueueRepository $trainingQueueRepository,
+        private readonly SummonHistoryRepository $summonHistoryRepository,
+        private readonly SpellRepository $spellRepository,
+        private readonly TrainerRepository $trainerRepository,
+        private readonly TrainingService $trainingService,
+        private readonly RaceConfig $raceConfig,
     ) {
     }
 
@@ -45,7 +58,7 @@ class HeroController extends AbstractController
     }
 
     #[Route('/app/heroes/{id}', name: 'app_heroes_detail', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function detail(int $id): Response
+    public function detail(int $id, Request $request): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -64,6 +77,11 @@ class HeroController extends AbstractController
             throw $this->createNotFoundException('Hero not found.');
         }
 
+        $tab = $request->query->get('tab', 'overview');
+        if (!in_array($tab, self::VALID_TABS, true)) {
+            $tab = 'overview';
+        }
+
         $equipped = $this->itemRepository->findBy(['equippedHero' => $hero]);
         $equippedBySlot = [];
         foreach ($equipped as $item) {
@@ -72,7 +90,6 @@ class HeroController extends AbstractController
             }
         }
 
-        // Fetch training history (last 10 completed/cancelled/processed jobs)
         $trainingHistory = $this->trainingQueueRepository->findBy(
             ['hero' => $hero],
             ['completedAt' => 'DESC', 'id' => 'DESC'],
@@ -91,15 +108,38 @@ class HeroController extends AbstractController
             }
         }
 
+        $items = $this->itemRepository->findBy(['ownerTeam' => $team]);
+        $spells = $this->spellRepository->findAll();
+        $heroes = $this->heroRepository->findBy(['team' => $team]);
+        $trainers = $this->trainerRepository->findBy(['team' => $team]);
+
+        $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
+        $nowLocal = new \DateTimeImmutable('now', $tz);
+        $isTrainingLocked = $this->trainingService->isTrainingLockedForTeam($team, $nowLocal);
+        $nextTick = $this->trainingService->getNextTrainingTime($nowLocal);
+        $nextLock = $nextTick->modify('-46 hours');
+
         return $this->render('hero/detail.html.twig', [
             'team' => $team,
             'hero' => $hero,
+            'tab' => $tab,
             'equipped' => $equippedBySlot,
             'trainingHistory' => $trainingHistory,
             'statBonuses' => $statBonuses,
             'summonRecord' => $summonRecord,
             'totalStatGain' => $totalStatGain,
             'completedTrainings' => $completedTrainings,
+            'items' => $items,
+            'spells' => $spells,
+            'heroes' => $heroes,
+            'trainers' => $trainers,
+            'is_training_locked' => $isTrainingLocked,
+            'next_tick' => $nextTick,
+            'next_lock' => $nextLock,
+            'next_tick_formatted' => $nextTick->format('d. m. Y H:i'),
+            'next_lock_formatted' => $nextLock->format('d. m. Y H:i'),
+            'trainer_limit' => $this->trainingService->getTrainerLimit($team),
+            'training_service' => $this->trainingService,
         ]);
     }
 }

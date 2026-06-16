@@ -12,8 +12,10 @@ use App\Enum\ListingMode;
 use App\Enum\ListingStatus;
 use App\Enum\ListingType;
 use App\Service\Economy\EconomyService;
+use App\Service\Economy\FinancialCrisisService;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Notification\NotificationHelper;
+use App\Service\Team\TeamRosterService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -23,19 +25,28 @@ class MarketplaceServiceTest extends TestCase
 {
     private EntityManagerInterface $entityManagerMock;
     private EconomyService $economyServiceMock;
+    private FinancialCrisisService $financialCrisisServiceMock;
+    private \App\Service\Economy\RoyalTreasuryService $royalTreasuryServiceMock;
     private NotificationHelper $notificationHelperMock;
+    private TeamRosterService $teamRosterServiceMock;
     private MarketplaceService $marketplaceService;
 
     protected function setUp(): void
     {
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
         $this->economyServiceMock = $this->createMock(EconomyService::class);
+        $this->financialCrisisServiceMock = $this->createMock(FinancialCrisisService::class);
+        $this->royalTreasuryServiceMock = $this->createMock(\App\Service\Economy\RoyalTreasuryService::class);
         $this->notificationHelperMock = $this->createMock(NotificationHelper::class);
+        $this->teamRosterServiceMock = $this->createMock(TeamRosterService::class);
 
         $this->marketplaceService = new MarketplaceService(
             $this->entityManagerMock,
             $this->economyServiceMock,
+            $this->financialCrisisServiceMock,
+            $this->royalTreasuryServiceMock,
             $this->notificationHelperMock,
+            $this->teamRosterServiceMock,
         );
     }
 

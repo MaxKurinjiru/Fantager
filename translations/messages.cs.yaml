@@ -10,6 +10,7 @@ nav:
   wiki: Nápověda
   news: Novinky
   heroes: Hrdinové
+  team: Tým
   summon: Vyvolávání
   hq: Základna
   training: Trénink
@@ -18,7 +19,7 @@ nav:
   formation: Formace
   league: Liga
   marketplace: Tržiště
-  graveyard: Hřbitov
+  economy: Ekonomika
   settings: Nastavení
   toggle_menu: Zobrazit/skrýt menu
   finance: Finanční kniha
@@ -113,7 +114,34 @@ dashboard:
   player: Hráč
   npc: NPC
   active_suffix: aktivní
+  action_formation: Připravit formaci
+  action_summon: Vyvolat hrdinu
+  action_hq: Vylepšit základnu
+  prepare_formation: Připravit formaci
+  view_in_league: Zobrazit v lize
+  home_arena: Domácí aréna
 
+financial_crisis:
+  title_warning: Finanční varování
+  title_restricted: Finanční restrikce
+  title_bankruptcy_pending: Hrozící bankrot
+  message_warning: "Tým má nedoplatek %debt% zlata nebo nízkou finanční rezervu vůči týdenní údržbě %maintenance% zlata. Snižte náklady, nebo prodejte aktiva."
+  message_restricted: "Tým je %weeks% týdnů v krizi. Pasivní bonusy základny jsou pozastaveny a některé akce jsou blokovány, dokud nesplátíte dluh."
+  message_bankruptcy_pending: "Bez zásahu bude tým brzy prohlášen bankrotem. Dluh %debt% zlata, gold na ruce je vyčerpán."
+  unpaid_debt: Neuhrazený dluh
+  weekly_maintenance: Týdenní údržba
+  gold_on_hand: Gold na ruce
+  weeks_until_bankruptcy: Týdnů do bankrotu
+  restricted_hint: "Blokováno: vylepšení základny, vyvolávání, nákupy na tržišti."
+  hq_bonuses_suspended: Pasivní bonusy základny jsou dočasně vypnuty.
+  action_sell: Prodat na tržišti
+  action_downgrade: Snížit zařízení
+  action_dismiss: Propustit hrdinu
+  action_ledger: Finanční deník
+  upgrade_blocked: Akce blokována kvůli finanční krizi.
+
+economy:
+  subtitle: Obchod na tržišti a finanční deník vašeho týmu.
 
 
 settings:
@@ -132,6 +160,10 @@ settings:
     confirm_no: Ponechat účet
 
 sidebar:
+  section_overview: Přehled
+  section_team: Tým a základna
+  section_competition: Soutěž
+  section_social: Obchod a komunita
   future_content: Budoucí obsah
   lock: Zamčeno
 
@@ -173,14 +205,20 @@ heroes:
   sort_spd: Rychlosti
   sort_int: Inteligence
   status_available: K dispozici
-  status_tired: Unavený
-  status_training: V tréninku
   status_in_match: V zápase
-  status_injured: Zraněný
+  status_selling: Na prodej
+  status_recovering: Zotavování
   status_dead: Mrtvý
   no_heroes: V rosteru nejsou žádní hrdinové
   no_heroes_desc: Jděte do vyvolávací síně a naverbujte své první hrdiny.
   go_summoning: Přejít k vyvolávání
+  tab_overview: Přehled
+  tab_equipment: Vybavení
+  tab_spells: Kouzla
+  tab_training: Trénink
+  tab_history: Historie
+  current_trainer: Aktuální trenér
+  manage_all_trainers: Spravovat všechny trenéry v základně
   back_roster: Zpět na Roster
   rename_title: Přejmenovat hrdinu
   save: Uložit
@@ -232,6 +270,16 @@ heroes:
   recent_activity_desc: Poslední akce provedené tímto hrdinou.
   no_activity: Nebyly zaznamenány žádné tréninkové aktivity.
   details_title: Detaily hrdiny
+  dismiss_title: Propustit hrdinu
+  dismiss_desc: Propustíte hrdinu z týmu a obdržíte částečné odstupné (40 % odhadované hodnoty).
+  dismiss_desc_crisis: Rychlá cesta k cashflow — propustění vrátí část hodnoty hrdiny do pokladny.
+  dismiss_btn: Propustit
+  dismiss_confirm: Opravdu chcete propustit tohoto hrdinu? Akce je nevratná.
+  sell_title: Prodat hrdinu
+  sell_desc: Vystavte hrdinu na tržišti. Po prodeji přejde k jinému týmu.
+  sell_btn: Vystavit na trh
+  sell_confirm: Opravdu chcete vystavit tohoto hrdinu na tržišti?
+  roster_min_hint: "Tým musí mít alespoň %min% bojeschopných hrdinů pro zápasy (aktuálně %current%). Tohoto hrdinu nelze prodat ani propustit."
 
 summoning:
   title: Vyvolávací síň
@@ -288,20 +336,27 @@ finance:
   col_amount: Částka
   col_context: Kontext
   no_records: Nebyly nalezeny žádné finanční záznamy.
+  recent_title: Nedávné transakce
+  view_full_ledger: Zobrazit celý deník
   type_league_reward: Ligová odměna
   type_arena_revenue: Příjmy z arény
   type_summon_fee: Poplatek za vyvolání
   type_marketplace_sale: Prodej na tržišti
   type_marketplace_purchase: Nákup na tržišti
   type_marketplace_fee: Poplatek tržiště
-  type_quest_reward: Odměna za úkol
   type_dungeon_reward: Odměna z dungeonu
   type_dismantle_gain: Zisk z rozložení
   type_item_repair: Oprava předmětu
   type_spell_learning_cost: Nákup svitku kouzla
   type_spell_slot_cost: Odemčení slotu na kouzla
   type_hq_upgrade_cost: Vylepšení základny
+  type_hq_maintenance_fee: Údržba základny
   type_morale_restoration: Obnovení morálky
+  type_debt_repayment: Splátka dluhu
+  type_hero_dismissal_compensation: Odstupné za propuštění hrdiny
+  type_trainer_dismissal_compensation: Odstupné za propuštění trenéra
+  type_hq_downgrade_refund: Vratka za snížení úrovně zařízení
+  type_kingdom_reward: Odměna z království
   actor_system: Systém
   actor_active: Aktivní akce
   actor_passive: Pasivní vliv
@@ -310,12 +365,24 @@ hq:
   title: Základna
   subtitle: "Rozšiřte sídlo svého cechu a odemkněte pasivní bonusy, zvyšte limity a zvyšte efektivitu."
   compound_level: Úroveň sídla
+  weekly_maintenance: Týdenní údržba
+  weekly_maintenance_hint: Strhává se každou neděli při týdenním resetu
+  weekly_maintenance_breakdown: "Sídlo %hq% + zařízení %facilities%"
   active_optimization: Aktivní optimalizace
   roster_limit: Limit soupisky
   facilities: Zařízení sídla
   passive_effects: Pasivní účinky
   upgrade_cost: Cena vylepšení
   upgrade_btn: Vylepšit
+  downgrade_btn: Snížit úroveň
+  downgrade_refund: Vratka po dokončení
+  confirm_downgrade: "Opravdu chcete snížit úroveň tohoto zařízení? Po dokončení obdržíte přibližně %refund% zlata."
+  facility_change_in_progress: "Probíhá %operation% zařízení %facility%. Dokončení: %completed_at%."
+  facility_changing_here: "Probíhá %operation% tohoto zařízení."
+  facility_change_locked: Jiná změna zařízení právě probíhá nebo je aktivní zámek.
+  downgrade_lock_active: Po nedávném snížení úrovně nelze zahájit další změnu do příštího týdenního resetu.
+  operation_upgrade: vylepšení
+  operation_downgrade: snížení úrovně
   settings: Nastavení cechu
   race_opt_title: Optimalizace rasy
   race_opt_desc: "Cílení na konkrétní rasu optimalizuje zařízení pro jejich fyzické potřeby, což snižuje únavu během tréninku a zvyšuje násobiče rychlosti."
@@ -327,6 +394,8 @@ hq:
   race_opt_locked: "Optimalizace je uzamčena do další neděle 9:30"
   race_opt_active: "Aktivní optimalizace: %race%"
   insufficient_gold: Nedostatek zlata
+  manage_facility: Spravovat
+  back_to_facilities: Zpět na budovy
   facilities_list:
     training:
       name: Tréninkové centrum
@@ -444,6 +513,9 @@ training:
   forecast: "Předpověď"
   average: "Průměr"
   lock_desc: "Od středy 12:00 do pátku 10:00 jsou tréninky uzamčeny a nelze měnit konfiguraci ani přiřazovat hrdiny."
+  dismiss_desc: Propustíte trenéra z týmu. Svěřenci budou automaticky odebráni a obdržíte odstupné (30 % odhadované hodnoty).
+  dismiss_btn: Propustit trenéra
+  dismiss_confirm: Opravdu chcete propustit tohoto trenéra? Svěřenci budou odebráni z tréninku. Akce je nevratná.
 
 inventory:
   title: Zbrojnice a batoh
@@ -539,6 +611,14 @@ formation:
   tactics_balanced_desc: Rovnoměrné rozdělení bonusů pro obranu a útok.
   tactics_defensive: Obranná pevnost
   tactics_defensive_desc: Zvýšení rychlosti zotavení zadní řady a hodnocení blokování.
+  match_prep_title: Příprava formace na zápas
+  match_prep_subtitle: Upravte sestavu pro konkrétní zápas nebo použijte výchozí formaci.
+  match_prep_desc: 'Zápas proti %opponent% (%date%). NULL přiřazení = výchozí formace týmu.'
+  match_assignment: Formace pro tento zápas
+  use_default_for_match: Použít výchozí formaci týmu
+  custom_for_match: Vlastní úprava pro tento zápas
+  promote_match_formation: Uložit jako vlastní formaci
+  save_match_lineup: Uložit sestavu pro zápas
 
 js_flash:
   training:
@@ -555,6 +635,8 @@ js_flash:
     error_save_focus: Nastala chyba při ukládání zaměření.
     error_assign_hero: Nepodařilo se přiřadit hrdinu k trenérovi.
     error_remove_hero: Nepodařilo se odebrat hrdinu z tréninku.
+    failed_dismiss: Nepodařilo se propustit trenéra.
+    success_dismiss: "Trenér byl propuštěn. Odstupné: 🪙 %gold% zlata."
   summoning:
     failed: Vyvolávání selhalo.
     limit_reached: Dosažen limit cyklu
@@ -573,8 +655,11 @@ js_flash:
     success: Nastavení profilu bylo úspěšně uloženo.
   hq:
     upgrading: Vylepšování...
+    downgrading: Snižování úrovně...
     failed_upgrade: Nepodařilo se vylepšit zařízení.
+    failed_downgrade: Nepodařilo se snížit úroveň zařízení.
     success_upgrade: Zařízení bylo úspěšně vylepšeno na úroveň %level%!
+    success_downgrade: Snížení úrovně bylo naplánováno. Aktuální úroveň %level%.
     saving: Ukládání...
     failed_optimize: Nepodařilo se aktualizovat optimalizaci.
     success_optimize: Optimalizace rasy základny byla úspěšně aktualizována.
@@ -583,6 +668,10 @@ js_flash:
   heroes:
     name_empty: Jméno nemůže být prázdné.
     failed_rename: Nepodařilo se přejmenovat hrdinu.
+    failed_dismiss: Nepodařilo se propustit hrdinu.
+    success_dismiss: "Hrdina byl propuštěn. Odstupné: 🪙 %gold% zlata."
+    failed_sell: Nepodařilo se vystavit hrdinu na trh.
+    success_sell: Hrdina byl vystaven na trh. Sledujte stav v sekci Moje nabídky.
   formation:
     name_empty: Název formace nemůže být prázdný.
     assign_hero: Musíte k formaci přiřadit alespoň jednoho hrdinu.
@@ -593,6 +682,8 @@ js_flash:
     deleting: Mazání...
     failed_delete: Nepodařilo se smazat formaci.
     success_delete: Formace byla úspěšně smazána.
+    success_promote: Formace pro zápas byla uložena mezi vaše formace.
+    failed_promote: Nepodařilo se uložit formaci pro zápas.
     lvl_short: Lvl
   inventory:
     equipping: Vybavování...
@@ -645,6 +736,7 @@ league:
   tab_standings: Tabulka skupiny
   tab_fixtures: Zápasy a výsledky
   tab_leaderboard: Globální žebříček
+  tab_calendar: Kalendář
   no_standings: Pro tuto skupinu nejsou k dispozici žádná data tabulky.
   promotion_zone: Postupová zóna
   relegation_zone: Sestupová zóna
@@ -711,6 +803,7 @@ arena:
   col_opponent: Soupeř
   col_attendance: Návštěvnost
   no_revenue_yet: Zatím žádné příjmy z domácích zápasů. Výplata proběhne po odehrání ligového zápasu.
+  view_full_ledger: Zobrazit celý finanční deník
   how_it_works: Jak funguje příjem z arény
   rule_fixed_price: "Pevná cena vstupenky: 🪙 %price% za místo."
   rule_capacity: Kapacita hlediště roste s vylepšením arény v základně.
@@ -832,6 +925,22 @@ community:
   tab_forum: Diskusní fórum
   tab_mail: Hráčská pošta
   no_threads: Nebyla dosud vytvořena žádná témata.
+  no_threads_desc: Buďte první, kdo na nástěnce království založí téma.
+  create_first_thread: Založit první téma
+  no_search_results: Žádná témata neodpovídají hledání.
+  no_search_results_desc: Zkuste jiná klíčová slova nebo zrušte filtr.
+  search_placeholder: Hledat v tématech…
+  search_btn: Hledat
+  clear_search: Zrušit hledání
+  pinned: Připnuto
+  pinned_threads: Připnutá témata
+  recent_threads: Poslední aktivita
+  replies_count: "{0} žádné odpovědi|{1} 1 odpověď|]1,Inf[ %count% odpovědí"
+  last_activity: "Aktivita:"
+  thread_starter: Autor tématu
+  started_at: "Založeno"
+  replies_heading: "{0} Odpovědi|{1} 1 odpověď|]1,Inf[ %count% odpovědí"
+  thread_locked_notice: Toto téma je uzamčené. Nové odpovědi nelze přidávat.
   new_thread: Nové téma
   reply_placeholder: Napište svou odpověď zde...
   post_reply: Odeslat odpověď
@@ -941,6 +1050,19 @@ email:
     body_confirm: "Pokud si přejete pokračovat ve smazání účtu, klikněte na potvrzovací tlačítko níže:"
     btn: "Trvale smazat můj účet"
     note: "Tento odkaz pro smazání vyprší za 2 hodiny. Pokud jste o zrušení účtu nežádali, můžete tento e-mail ignorovat."
+  inactivity_warning:
+    subject: "Fantager — Varování kvůli neaktivitě"
+    title: "Váš tým bude brzy uvolněn"
+    greeting: "Ahoj %displayName%,"
+    body: "Dlouho jste se nepřihlásili ke svému týmu „%teamName%“. Pokud se do %daysUntilRelease% dnů nevrátíte, tým bude uvolněn pro jiného hráče."
+    btn: "Přihlásit se"
+    note: "Stačí se přihlásit a hrát — aktivita se zaznamená automaticky."
+  inactivity_release:
+    subject: "Fantager — Tým uvolněn kvůli neaktivitě"
+    title: "Tým byl uvolněn"
+    greeting: "Ahoj %displayName%,"
+    body: "Váš tým „%teamName%“ byl uvolněn kvůli dlouhodobé neaktivitě. Nový tým si budete moci přiřadit za %cooldownDays% dní."
+    note: "Váš účet zůstává aktivní. Po uplynutí lhůty se můžete přihlásit a získat jiný tým."
 
 
 

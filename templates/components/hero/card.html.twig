@@ -60,10 +60,10 @@
         <a href="{{ path('app_heroes_detail', {id: hero.id}) }}" class="btn btn-outline btn--sm flex-1">
             {{ 'heroes.inspect'|trans }}
         </a>
-        <a href="{{ path('app_training') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.train_hero'|trans }}" aria-label="{{ 'heroes.train_hero'|trans }}">
+        <a href="{{ path('app_heroes_detail', { id: hero.id, tab: 'training' }) }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.train_hero'|trans }}" aria-label="{{ 'heroes.train_hero'|trans }}">
             🏋️
         </a>
-        <a href="{{ path('app_inventory') }}?hero_id={{ hero.id }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.equip_hero'|trans }}" aria-label="{{ 'heroes.equip_hero'|trans }}">
+        <a href="{{ path('app_heroes_detail', { id: hero.id, tab: 'equipment' }) }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.equip_hero'|trans }}" aria-label="{{ 'heroes.equip_hero'|trans }}">
             🎒
         </a>
     </div>

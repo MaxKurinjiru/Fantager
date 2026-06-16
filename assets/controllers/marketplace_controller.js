@@ -20,32 +20,44 @@ export default class extends Controller {
         rarities: Object,
         slots: Object,
         statuses: Object,
-        translations: Object
+        translations: Object,
+        initialTab: { type: String, default: 'browse' },
+        initialHeroId: { type: Number, default: 0 }
     };
 
     connect() {
-        this.activeTab = 'browse';
+        this.activeTab = this.hasInitialTabValue ? this.initialTabValue : 'browse';
         this.activeSellCategory = 'hero';
         this.selectedEntityId = null;
-        this.loadListings();
+
+        if (['browse', 'sell', 'mylistings', 'history'].includes(this.activeTab)) {
+            this._showTab(this.activeTab);
+        } else {
+            this.loadListings();
+        }
+
+        if (this.initialHeroIdValue > 0 && this.activeTab === 'sell') {
+            this._preselectHero(this.initialHeroIdValue);
+        }
     }
 
     switchTab(event) {
         const button = event.currentTarget;
         const tabName = button.dataset.tab;
+        this._showTab(tabName);
+    }
+
+    _showTab(tabName) {
         this.activeTab = tabName;
 
-        // Switch active states on buttons
         this.tabButtonTargets.forEach(btn => {
-            btn.classList.toggle('tab-btn--active', btn === button);
+            btn.classList.toggle('tab-btn--active', btn.dataset.tab === tabName);
         });
 
-        // Show/hide contents
         this.tabContentTargets.forEach(content => {
             content.classList.toggle('hidden', content.dataset.tabName !== tabName);
         });
 
-        // Trigger reload
         if (tabName === 'browse') {
             this.loadListings();
         } else if (tabName === 'mylistings') {
@@ -96,6 +108,14 @@ export default class extends Controller {
 
     selectEntityToSell(event) {
         const card = event.currentTarget;
+        if (card.dataset.locked === '1') {
+            const hint = card.getAttribute('title');
+            if (hint) {
+                this.showAlert('error', hint);
+            }
+            return;
+        }
+
         const id = card.dataset.entityId;
         const name = card.dataset.entityName;
 
@@ -106,6 +126,24 @@ export default class extends Controller {
         // Highlight selection
         const container = card.closest('[data-marketplace-target="sellEntitiesContainer"]');
         container.querySelectorAll('.sell-card').forEach(c => {
+            c.classList.toggle('sell-card--selected', c === card);
+        });
+    }
+
+    _preselectHero(heroId) {
+        const heroContainer = this.sellEntitiesContainerTargets.find(
+            c => c.dataset.sellCatName === 'hero'
+        );
+        if (!heroContainer) return;
+
+        const card = heroContainer.querySelector(`.sell-card[data-entity-id="${heroId}"]`);
+        if (!card || card.dataset.locked === '1') return;
+
+        this.selectedEntityId = String(heroId);
+        this.sellIdInputTarget.value = String(heroId);
+        this.selectedEntityLabelTarget.textContent = card.dataset.entityName || '';
+
+        heroContainer.querySelectorAll('.sell-card').forEach(c => {
             c.classList.toggle('sell-card--selected', c === card);
         });
     }

@@ -89,7 +89,7 @@ To generate the round-robin fixtures for a group of $N$ teams (where $N = 10$ is
    - Verify team roster eligibility (at least 6 combat-ready heroes).
    - If one or both teams fail eligibility, resolve via forfeit rules (3-0 or 0-0).
    - If both are eligible, queue the match in the combat worker queue (Redis).
-3. The Combat Simulation Engine resolves the battle, updates team stats (Gold, XP, morale, form, fatigue, aging), creates a `Battle` entity, and links it to the `LeagueFixture`.
+3. The Combat Simulation Engine resolves the battle, updates team stats (Gold, XP, morale, form, fatigue, aging), creates a `Battle` entity, and links it to the `LeagueFixture` via `LeagueFixtureCompletionService::complete()`. Lineups are resolved from fixture assignments (`NULL` → team default formation; see [formation-system.md](formation-system.md)). Temporary match-specific formations are removed on subsequent kingdom ticks (`DailyReset`, `LeagueMatch`).
 4. Update `LeagueStanding` values (played, wins, draws, losses, points, goalDifference) for both teams in the group.
 
 ## Promotion/Relegation Rules

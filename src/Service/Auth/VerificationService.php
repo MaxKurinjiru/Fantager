@@ -35,6 +35,8 @@ class VerificationService
         }
 
         $user->setIsVerified(true);
+        $user->setLastActivityAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+        $user->setInactiveWarningSentAt(null);
 
         $token->setUsedAt(new \DateTimeImmutable());
 

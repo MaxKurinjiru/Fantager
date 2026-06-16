@@ -1,0 +1,49 @@
+{# templates/components/community/thread_card.html.twig #}
+{% set sorted_posts = thread.posts|sort((a, b) => a.createdAt <=> b.createdAt) %}
+{% set replies_count = sorted_posts|length > 0 ? sorted_posts|length - 1 : 0 %}
+{% set last_post_at = sorted_posts|length > 0 ? sorted_posts|last.createdAt : thread.createdAt %}
+{% set first_post = sorted_posts|first %}
+{% set preview = '' %}
+{% if first_post %}
+    {% set preview_text = first_post.body|replace({"\n": ' ', "\r": ' '})|trim %}
+    {% set preview = preview_text|length > 140 ? preview_text|slice(0, 139) ~ '…' : preview_text %}
+{% endif %}
+
+{% set thread_link_params = { id: thread.id } %}
+{% if active_category|default('all') != 'all' %}
+    {% set thread_link_params = thread_link_params|merge({ category: active_category }) %}
+{% endif %}
+
+<a href="{{ path('app_community_thread', thread_link_params) }}"
+   class="thread-card{% if thread.isPinned %} thread-card--pinned{% endif %}">
+    <div class="thread-card__main">
+        <div class="thread-card__title-row">
+            {% if thread.isPinned %}
+                <span class="thread-card__pin" title="{{ 'community.pinned'|trans }}" aria-label="{{ 'community.pinned'|trans }}">📌</span>
+            {% endif %}
+            {% if thread.isLocked %}
+                <span class="lock-badge lock-badge--icon" title="{{ 'community.locked'|trans }}" aria-label="{{ 'community.locked'|trans }}">🔒</span>
+            {% endif %}
+            <h3 class="thread-card__title">{{ thread.title }}</h3>
+        </div>
+
+        {% if preview %}
+            <p class="thread-card__preview">{{ preview }}</p>
+        {% endif %}
+
+        <div class="thread-card__meta">
+            <span class="category-badge">{{ ('community.category_' ~ thread.category)|trans }}</span>
+            <span class="thread-card__meta-item">
+                💬 {{ 'community.replies_count'|trans({'count': replies_count}) }}
+            </span>
+            <span class="thread-card__meta-item thread-card__meta-item--muted">
+                {{ 'community.last_activity'|trans }} {{ last_post_at|date('d. m. Y H:i') }}
+            </span>
+        </div>
+    </div>
+
+    <div class="thread-card__author">
+        <span class="thread-card__emblem">{{ thread.authorTeam.emblem ?: '🛡️' }}</span>
+        <span class="thread-card__author-name">{{ thread.authorTeam.name }}</span>
+    </div>
+</a>

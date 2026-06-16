@@ -1,95 +1,323 @@
 @reference "tailwindcss";
 
 // =============================================================================
-//  COMMUNITY & MAIL — Component-level styles
+//  COMMUNITY FORUM + misc screen styles
 // =============================================================================
 
 @layer components {
-  // Main card panels & containers
-  .community-panel {
-    background-color: var(--color-surface-page);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    padding: 1.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-    transition: border-color var(--transition-fast);
-  }
-
-  .community-sidebar {
-    background-color: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    padding: 1rem;
+  .thread-list-section {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
   }
 
-  // Row and List layout interactions
-  .community-row {
-    cursor: pointer;
-    transition: background-color var(--transition-fast);
-    border-bottom: 1px solid var(--color-border);
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.03);
-    }
+  .thread-list-section__title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-secondary);
+    margin: 0;
   }
 
-  // Forum Post items/bubbles
-  .community-post {
-    background-color: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: 1rem;
+  .thread-list {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
   }
 
-  .community-post__header {
+  .thread-card {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.5rem;
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.35);
+    text-decoration: none;
+    color: inherit;
+    transition:
+      border-color var(--transition-fast),
+      background-color var(--transition-fast),
+      transform var(--transition-fast);
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    &:hover {
+      border-color: rgba(16, 185, 129, 0.35);
+      background-color: color-mix(in srgb, var(--color-surface-overlay) 75%, transparent);
+    }
+
+    &--pinned {
+      border-color: rgba(16, 185, 129, 0.25);
+    }
   }
 
-  .community-post__body {
-    font-size: 0.75rem;
+  .thread-card__main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .thread-card__title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .thread-card__pin {
+    flex-shrink: 0;
+    font-size: 0.875rem;
+  }
+
+  .thread-card__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
     color: var(--color-text-primary);
-    line-height: 1.625;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .thread-card__preview {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .thread-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .thread-card__meta-item {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+
+    &--muted {
+      color: var(--color-text-muted);
+    }
+  }
+
+  .thread-card__author {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex-shrink: 0;
+  }
+
+  .thread-card__emblem {
+    font-size: 1.5rem;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .thread-card__author-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+  }
+
+  .forum-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .forum-empty-state__emoji {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    user-select: none;
+  }
+
+  .forum-empty-state__title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 0.5rem;
+  }
+
+  .forum-empty-state__desc {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin: 0 0 1.5rem;
+    max-width: 28rem;
+  }
+
+  .forum-detail-nav {
+    margin-bottom: -0.5rem;
+  }
+
+  .thread-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .thread-detail-header__body {
+    min-width: 0;
+  }
+
+  .thread-detail-header__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .thread-detail-header__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--color-text-primary);
+  }
+
+  .thread-detail-header__meta {
+    margin: 0.75rem 0 0;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .thread-detail-header__emblem {
+    font-size: 1.125rem;
+    line-height: 1;
+  }
+
+  .thread-detail-header__actions {
+    flex-shrink: 0;
+  }
+
+  .forum-post {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    &--original {
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+  }
+
+  .forum-post__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .forum-post__author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .forum-post__emblem {
+    font-size: 1.75rem;
+    line-height: 1;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .forum-post__author-name {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+  }
+
+  .forum-post__role {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-brand-400);
+    margin-top: 0.125rem;
+  }
+
+  .forum-post__time {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .forum-post__body {
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--color-text-primary);
     white-space: pre-wrap;
     word-break: break-word;
   }
 
-  // Segmented / Tab selector buttons
-  .community-tab-btn {
-    width: 100%;
-    text-align: left;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--radius-md);
+  .forum-replies {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .forum-replies__title {
+    margin: 0;
     font-size: 0.75rem;
     font-weight: 700;
-    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
-    border: 1px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     color: var(--color-text-secondary);
+  }
 
-    &:hover {
-      color: var(--color-text-primary);
-      background-color: rgba(255, 255, 255, 0.04);
-    }
+  .forum-reply-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 
-    &--active {
-      background-color: rgba(16, 185, 129, 0.1); // brand-500/10
-      color: var(--color-brand-500) !important;
-      border-color: rgba(16, 185, 129, 0.3); // brand-500/30
+    @media (min-width: 768px) {
+      position: sticky;
+      bottom: 1rem;
+      z-index: 1;
     }
   }
 
-  // Message reading pane
+  .forum-reply-form__actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .forum-locked-notice {
+    text-align: center;
+    padding: 1.25rem;
+
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+    }
+  }
+
   .message-content-box {
     background-color: var(--color-surface-base);
     border: 1px solid var(--color-border);
@@ -107,18 +335,6 @@
   .team-color-dot {
     background-color: var(--team-color-primary);
     border-color: var(--team-color-secondary);
-  }
-
-  .mobile-menu {
-    transform: translateX(-100%);
-
-    @media (min-width: 768px) {
-      transform: translateX(0);
-    }
-
-    &--open {
-      transform: translateX(0);
-    }
   }
 
   .kingdom-card {
@@ -310,169 +526,6 @@
 
   .hq-facility-bonus__value {
     color: var(--color-brand-450, var(--color-brand-400));
-    font-weight: 700;
-  }
-}
-
-@layer components {
-  .community-sidebar-col {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .community-main-col {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .community-sidebar__heading {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--color-text-secondary);
-    padding: 0 0.5rem;
-    margin: 0 0 0.25rem;
-  }
-
-  .community-new-thread-btn {
-    width: 100%;
-    justify-content: center;
-    gap: 0.5rem;
-  }
-
-  .community-panel__title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin: 0 0 1rem;
-  }
-
-  .data-table-wrap {
-    overflow-x: auto;
-  }
-
-  .data-table__col--center {
-    text-align: center;
-  }
-
-  .data-table__col--end {
-    text-align: right;
-  }
-
-  .data-table__col--status {
-    width: 3rem;
-  }
-
-  .data-table__title-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-  }
-
-  .data-table__author-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--color-text-secondary);
-  }
-
-  .data-table__cell--title {
-    vertical-align: top;
-
-    .category-badge {
-      margin-top: 0.375rem;
-    }
-  }
-
-  .data-table__cell--numeric {
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
-
-  .data-table__cell--muted {
-    color: var(--color-text-muted);
-    font-size: 0.75rem;
-  }
-
-  .data-table__cell--accent {
-    color: var(--color-success-text);
-    font-weight: 600;
-  }
-
-  .data-table__cell--status {
-    font-size: 1.125rem;
-    line-height: 1;
-  }
-
-  .data-table__forecast--positive {
-    color: var(--color-success-text);
-  }
-
-  .data-table__forecast--negative {
-    color: var(--color-error-text);
-  }
-
-  .data-table__forecast--bold {
-    font-weight: 700;
-  }
-
-  .lock-badge--icon {
-    padding: 0;
-    background: transparent;
-    border: none;
-    font-size: inherit;
-  }
-
-  .thread-detail {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .thread-detail__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .thread-detail__title {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--color-text-primary);
-    margin: 0.5rem 0 0;
-    line-height: 1.3;
-  }
-
-  .thread-detail__category {
-    margin-top: 0.5rem;
-  }
-
-  .thread-detail__actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  .posts-timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    max-height: 31.25rem;
-    overflow-y: auto;
-    padding-right: 0.5rem;
-  }
-
-  .community-post__author {
-    color: var(--color-text-primary);
     font-weight: 700;
   }
 }

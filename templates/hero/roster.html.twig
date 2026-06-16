@@ -8,7 +8,7 @@
     {% set right_content %}
         <div class="page-header-actions">
             {% include 'components/ui/roster_badge.html.twig' with { team: team } %}
-            <a href="{{ path('app_summon') }}" class="btn btn-primary gap-1.5 shadow-lg shadow-emerald-950/20">
+            <a href="{{ path('app_hq', { facility: 'summoning_chamber' }) }}" class="btn btn-primary gap-1.5 shadow-lg shadow-emerald-950/20">
                 <span>🌀</span> {{ 'heroes.summon_btn'|trans }}
             </a>
         </div>
@@ -54,10 +54,9 @@
                         class="form-input">
                     <option value="">{{ 'heroes.all_statuses'|trans }}</option>
                     <option value="available">{{ 'heroes.status_available'|trans }}</option>
-                    <option value="tired">{{ 'heroes.status_tired'|trans }}</option>
-                    <option value="training">{{ 'heroes.status_training'|trans }}</option>
                     <option value="in_match">{{ 'heroes.status_in_match'|trans }}</option>
-                    <option value="injured">{{ 'heroes.status_injured'|trans }}</option>
+                    <option value="selling">{{ 'heroes.status_selling'|trans }}</option>
+                    <option value="recovering">{{ 'heroes.status_recovering'|trans }}</option>
                     <option value="dead">{{ 'heroes.status_dead'|trans }}</option>
                 </select>
             </div>
@@ -92,7 +91,7 @@
                 <span class="roster-empty__emoji">📭</span>
                 <h3 class="roster-empty__title">{{ 'heroes.no_heroes'|trans }}</h3>
                 <p class="roster-empty__desc">{{ 'heroes.no_heroes_desc'|trans }}</p>
-                <a href="{{ path('app_summon') }}" class="btn btn-primary btn--sm">{{ 'heroes.go_summoning'|trans }}</a>
+                <a href="{{ path('app_hq', { facility: 'summoning_chamber' }) }}" class="btn btn-primary btn--sm">{{ 'heroes.go_summoning'|trans }}</a>
             </div>
         {% endfor %}
     </div>

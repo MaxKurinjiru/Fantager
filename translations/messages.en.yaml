@@ -10,6 +10,7 @@ nav:
   wiki: Help
   news: News
   heroes: Heroes
+  team: Team
   summon: Summoning
   hq: Headquarters
   training: Training
@@ -18,7 +19,7 @@ nav:
   formation: Formation
   league: League
   marketplace: Marketplace
-  graveyard: Graveyard
+  economy: Economy
   settings: Settings
   toggle_menu: Toggle menu
   finance: Ledger
@@ -113,8 +114,34 @@ dashboard:
   player: Player
   npc: NPC
   active_suffix: active
+  action_formation: Prepare Formation
+  action_summon: Summon Hero
+  action_hq: Upgrade HQ
+  prepare_formation: Prepare Formation
+  view_in_league: View in League
+  home_arena: Home Arena
 
+financial_crisis:
+  title_warning: Financial Warning
+  title_restricted: Financial Restrictions
+  title_bankruptcy_pending: Bankruptcy Imminent
+  message_warning: "The team has %debt% gold in unpaid debt or a low cash buffer against %maintenance% gold weekly maintenance. Cut costs or sell assets."
+  message_restricted: "The team has been in crisis for %weeks% weeks. HQ passive bonuses are suspended and some actions are blocked until debt is repaid."
+  message_bankruptcy_pending: "Without action, the team will soon be declared bankrupt. Debt is %debt% gold and cash reserves are exhausted."
+  unpaid_debt: Unpaid Debt
+  weekly_maintenance: Weekly Maintenance
+  gold_on_hand: Gold on Hand
+  weeks_until_bankruptcy: Weeks Until Bankruptcy
+  restricted_hint: "Blocked: HQ upgrades, summoning, marketplace purchases."
+  hq_bonuses_suspended: HQ passive bonuses are temporarily disabled.
+  action_sell: Sell on Marketplace
+  action_downgrade: Downgrade Facility
+  action_dismiss: Dismiss Hero
+  action_ledger: Financial Ledger
+  upgrade_blocked: Action blocked due to financial crisis.
 
+economy:
+  subtitle: Marketplace trading and financial ledger for your team.
 
 settings:
   title: Account Settings
@@ -132,6 +159,10 @@ settings:
     confirm_no: Keep My Account
 
 sidebar:
+  section_overview: Overview
+  section_team: Team & Base
+  section_competition: Competition
+  section_social: Trade & Community
   future_content: Future Content
   lock: Lock
 
@@ -175,14 +206,20 @@ heroes:
   sort_spd: Speed
   sort_int: Intelligence
   status_available: Available
-  status_tired: Tired
-  status_training: Training
   status_in_match: In Match
-  status_injured: Injured
+  status_selling: For Sale
+  status_recovering: Recovering
   status_dead: Dead
   no_heroes: No heroes in roster
   no_heroes_desc: Go to the summoning chamber to recruit your first heroes.
   go_summoning: Go to Summoning
+  tab_overview: Overview
+  tab_equipment: Equipment
+  tab_spells: Spells
+  tab_training: Training
+  tab_history: History
+  current_trainer: Current Trainer
+  manage_all_trainers: Manage all trainers at HQ
   back_roster: Back to Roster
   rename_title: Rename Hero
   save: Save
@@ -234,6 +271,16 @@ heroes:
   recent_activity_desc: Last actions performed by this hero.
   no_activity: No training activity recorded.
   details_title: Hero Details
+  dismiss_title: Dismiss Hero
+  dismiss_desc: Permanently release the hero from your team and receive partial compensation (40% of estimated value).
+  dismiss_desc_crisis: A fast path to cashflow — dismissal returns part of the hero's value to your treasury.
+  dismiss_btn: Dismiss
+  dismiss_confirm: Are you sure you want to dismiss this hero? This cannot be undone.
+  sell_title: Sell Hero
+  sell_desc: List the hero on the marketplace. After a sale they transfer to another team.
+  sell_btn: List on Marketplace
+  sell_confirm: Are you sure you want to list this hero on the marketplace?
+  roster_min_hint: "Team must keep at least %min% combat-ready heroes to play matches (currently %current%). This hero cannot be sold or dismissed."
 
 summoning:
   title: Summoning Chamber
@@ -290,20 +337,27 @@ finance:
   col_amount: Amount
   col_context: Context
   no_records: No financial records found.
+  recent_title: Recent Transactions
+  view_full_ledger: View Full Ledger
   type_league_reward: League Reward
   type_arena_revenue: Arena Revenue
   type_summon_fee: Summoning Fee
   type_marketplace_sale: Marketplace Sale
   type_marketplace_purchase: Marketplace Purchase
   type_marketplace_fee: Marketplace Fee
-  type_quest_reward: Quest Reward
   type_dungeon_reward: Dungeon Reward
   type_dismantle_gain: Dismantle Gain
   type_item_repair: Item Repair
   type_spell_learning_cost: Spell Scroll Purchase
   type_spell_slot_cost: Unlock Spell Slot
   type_hq_upgrade_cost: HQ Upgrade Cost
+  type_hq_maintenance_fee: HQ Maintenance Fee
   type_morale_restoration: Morale Restoration
+  type_debt_repayment: Debt Repayment
+  type_hero_dismissal_compensation: Hero Dismissal Compensation
+  type_trainer_dismissal_compensation: Trainer Dismissal Compensation
+  type_hq_downgrade_refund: Facility Downgrade Refund
+  type_kingdom_reward: Kingdom Reward
   actor_system: System
   actor_active: Active Action
   actor_passive: Passive Effect
@@ -312,12 +366,24 @@ hq:
   title: Headquarters
   subtitle: "Expand your guild's compound to unlock passive bonuses, increase caps, and boost efficiency."
   compound_level: Compound Level
+  weekly_maintenance: Weekly Maintenance
+  weekly_maintenance_hint: Charged every Sunday at the weekly reset
+  weekly_maintenance_breakdown: "HQ %hq% + facilities %facilities%"
   active_optimization: Active Optimization
   roster_limit: Roster Limit
   facilities: Compound Facilities
   passive_effects: Passive Effects
   upgrade_cost: Upgrade Cost
   upgrade_btn: Upgrade
+  downgrade_btn: Downgrade
+  downgrade_refund: Refund on completion
+  confirm_downgrade: "Are you sure you want to downgrade this facility? You will receive approximately %refund% gold on completion."
+  facility_change_in_progress: "%operation% of %facility% in progress. Completion: %completed_at%."
+  facility_changing_here: "%operation% of this facility is in progress."
+  facility_change_locked: Another facility change is in progress or the downgrade lock is active.
+  downgrade_lock_active: A recent downgrade prevents starting another change until the next weekly reset.
+  operation_upgrade: Upgrade
+  operation_downgrade: Downgrade
   settings: Guild Settings
   race_opt_title: Race Optimization
   race_opt_desc: "Targeting a specific race optimizes facilities for their physical needs, reducing fatigue buildup during training and increasing speed multipliers."
@@ -329,6 +395,8 @@ hq:
   race_opt_locked: "Race optimization is locked until next Sunday at 09:30"
   race_opt_active: "Active optimization: %race%"
   insufficient_gold: Insufficient Gold
+  manage_facility: Manage
+  back_to_facilities: Back to facilities
   facilities_list:
     training:
       name: Training Facilities
@@ -446,6 +514,9 @@ training:
   forecast: "Forecast"
   average: "Average"
   lock_desc: "From Wednesday 12:00 to Friday 10:00, training is locked and configurations or trainees cannot be changed."
+  dismiss_desc: Release the trainer from your team. Trainees are unassigned automatically and you receive compensation (30% of estimated value).
+  dismiss_btn: Dismiss Trainer
+  dismiss_confirm: Are you sure you want to dismiss this trainer? All trainees will be unassigned. This cannot be undone.
 
 inventory:
   title: Armory & Rucksack
@@ -541,6 +612,14 @@ formation:
   tactics_balanced_desc: Equal distribution of defense and attack bonuses.
   tactics_defensive: Defensive Fort
   tactics_defensive_desc: Increase back line recovery speed and block rating.
+  match_prep_title: Match Formation Prep
+  match_prep_subtitle: Customize your lineup for a specific fixture or use the team default.
+  match_prep_desc: 'Fixture vs %opponent% (%date%). NULL assignment uses the team default formation.'
+  match_assignment: Formation for this fixture
+  use_default_for_match: Use team default formation
+  custom_for_match: Custom lineup for this fixture
+  promote_match_formation: Save as my formation
+  save_match_lineup: Save lineup for fixture
 
 js_flash:
   training:
@@ -557,6 +636,8 @@ js_flash:
     error_save_focus: An error occurred while saving focus.
     error_assign_hero: Failed to assign hero to trainer.
     error_remove_hero: Failed to remove hero from training.
+    failed_dismiss: Failed to dismiss trainer.
+    success_dismiss: "Trainer dismissed. Compensation: 🪙 %gold% gold."
   summoning:
     failed: Summoning failed.
     limit_reached: Cycle Limit Reached
@@ -575,8 +656,11 @@ js_flash:
     success: Profile settings saved successfully.
   hq:
     upgrading: Upgrading...
+    downgrading: Downgrading...
     failed_upgrade: Failed to upgrade facility.
+    failed_downgrade: Failed to downgrade facility.
     success_upgrade: Facility upgraded successfully to level %level%!
+    success_downgrade: Downgrade scheduled. Current level %level%.
     saving: Saving...
     failed_optimize: Failed to update optimization.
     success_optimize: Headquarters race optimization updated successfully.
@@ -585,6 +669,10 @@ js_flash:
   heroes:
     name_empty: Name cannot be empty.
     failed_rename: Failed to rename hero.
+    failed_dismiss: Failed to dismiss hero.
+    success_dismiss: "Hero dismissed. Compensation: 🪙 %gold% gold."
+    failed_sell: Failed to list hero on the marketplace.
+    success_sell: Hero listed on the marketplace. Track status under My Listings.
   formation:
     name_empty: Formation name cannot be empty.
     assign_hero: You must assign at least one hero to the formation.
@@ -595,6 +683,8 @@ js_flash:
     deleting: Deleting...
     failed_delete: Failed to delete formation.
     success_delete: Formation deleted successfully.
+    success_promote: Match formation saved to your formations.
+    failed_promote: Failed to save match formation.
     lvl_short: Lvl
   inventory:
     equipping: Equipping...
@@ -647,6 +737,7 @@ league:
   tab_standings: Group Standings
   tab_fixtures: Fixtures & Results
   tab_leaderboard: Kingdom Leaderboard
+  tab_calendar: Calendar
   no_standings: No standings data available for this group.
   promotion_zone: Promotion Zone
   relegation_zone: Relegation Zone
@@ -713,6 +804,7 @@ arena:
   col_opponent: Opponent
   col_attendance: Attendance
   no_revenue_yet: No home match revenue recorded yet. Payouts occur when league matches are played.
+  view_full_ledger: View full financial ledger
   how_it_works: How Arena Revenue Works
   rule_fixed_price: "Fixed ticket price: 🪙 %price% per seat."
   rule_capacity: Seating capacity grows with Arena facility upgrades.
@@ -834,6 +926,22 @@ community:
   tab_forum: Discussion Board
   tab_mail: Player Mail
   no_threads: No threads have been created yet.
+  no_threads_desc: Be the first to start a discussion on your kingdom board.
+  create_first_thread: Create the first thread
+  no_search_results: No threads match your search.
+  no_search_results_desc: Try different keywords or clear the filter.
+  search_placeholder: Search threads…
+  search_btn: Search
+  clear_search: Clear search
+  pinned: Pinned
+  pinned_threads: Pinned threads
+  recent_threads: Recent activity
+  replies_count: "{0} no replies|{1} 1 reply|]1,Inf[ %count% replies"
+  last_activity: "Activity:"
+  thread_starter: Thread starter
+  started_at: "Started"
+  replies_heading: "{0} Replies|{1} 1 reply|]1,Inf[ %count% replies"
+  thread_locked_notice: This thread is locked. New replies cannot be added.
   new_thread: New Thread
   reply_placeholder: Write your reply here...
   post_reply: Post Reply
@@ -943,6 +1051,19 @@ email:
     body_confirm: "If you wish to proceed with deleting your account, please click the confirmation button below:"
     btn: "Permanently Delete My Account"
     note: "This deletion link expires in 2 hours. If you did not request to cancel your account, please ignore this email."
+  inactivity_warning:
+    subject: "Fantager — Inactivity warning"
+    title: "Your team will be released soon"
+    greeting: "Hi %displayName%,"
+    body: "You have not logged in to your team \"%teamName%\" for a long time. If you do not return within %daysUntilRelease% days, your team will be released to another player."
+    btn: "Log in"
+    note: "Simply log in and play — activity is recorded automatically."
+  inactivity_release:
+    subject: "Fantager — Team released due to inactivity"
+    title: "Team released"
+    greeting: "Hi %displayName%,"
+    body: "Your team \"%teamName%\" was released due to prolonged inactivity. You may claim a new team in %cooldownDays% days."
+    note: "Your account remains active. After the cooldown, log in to claim another team."
 
 
 

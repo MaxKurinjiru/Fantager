@@ -5,7 +5,7 @@
             <h2 class="hero-panel__title">{{ 'heroes.equipped_gear'|trans }}</h2>
             <p class="hero-panel__desc">{{ 'heroes.equipped_gear_desc'|trans }}</p>
         </div>
-        <a href="{{ path('app_inventory') }}?hero_id={{ hero.id }}" class="btn btn-outline btn--sm gap-1">
+        <a href="{{ path('app_heroes_detail', { id: hero.id, tab: 'equipment' }) }}" class="btn btn-outline btn--sm gap-1">
             🎒 {{ 'heroes.manage_gear'|trans }}
         </a>
     </div>

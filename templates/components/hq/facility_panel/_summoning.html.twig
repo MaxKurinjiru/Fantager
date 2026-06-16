@@ -1,0 +1,144 @@
+{# templates/components/hq/facility_panel/_summoning.html.twig #}
+{% set status = summon_status %}
+{% set subtab = summon_subtab|default('summon') %}
+<div class="hq-facility-panel space-y-6" data-controller="summoning"
+     data-summoning-gold-cost-value="{{ status.gold_cost }}"
+     data-summoning-error-failed-value="{{ 'js_flash.summoning.failed'|trans }}"
+     data-summoning-limit-reached-value="{{ 'js_flash.summoning.limit_reached'|trans }}"
+     data-summoning-level-label-value="{{ 'js_flash.summoning.level_label'|trans }}"
+     data-summoning-races-value="{{ {
+         human: 'heroes.race_human'|trans,
+         elf: 'heroes.race_elf'|trans,
+         dwarf: 'heroes.race_dwarf'|trans,
+         orc: 'heroes.race_orc'|trans,
+         undead: 'heroes.race_undead'|trans,
+         giant: 'heroes.race_giant'|trans,
+         ent: 'heroes.race_ent'|trans,
+         genie: 'heroes.race_genie'|trans
+     }|json_encode }}"
+     data-summoning-stat-labels-value="{{ {
+         str: 'training.attr.str'|trans,
+         dex: 'training.attr.dex'|trans,
+         kon: 'training.attr.kon'|trans,
+         spd: 'training.attr.spd'|trans,
+         int: 'training.attr.int'|trans,
+         wil: 'training.attr.wil'|trans,
+         cha: 'training.attr.cha'|trans,
+         lck: 'training.attr.lck'|trans
+     }|json_encode|e('html_attr') }}">
+
+    <div class="hq-facility-panel__header">
+        <a href="{{ path('app_hq') }}" class="link text-sm">← {{ 'hq.back_to_facilities'|trans }}</a>
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <h2 class="hq-facility-panel__title">🌀 {{ 'hq.facilities_list.summoning_chamber.name'|trans }}</h2>
+            {% include 'components/summoning/cycle_status.html.twig' with { status: status } %}
+        </div>
+    </div>
+
+    <div class="tab-nav" data-controller="tab">
+        <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="hq-summon-tab"
+                class="tab-btn {{ subtab == 'summon' ? 'tab-btn--active' : '' }}">
+            🌀 {{ 'summoning.summon_junior'|trans }}
+        </button>
+        <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="hq-summon-history-tab"
+                class="tab-btn {{ subtab == 'history' ? 'tab-btn--active' : '' }}">
+            📜 {{ 'summoning.history_btn'|trans }}
+        </button>
+    </div>
+
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'summoning',
+        container_target: 'errorAlert',
+        message_target: 'errorMessage',
+        close_action: 'summoning#hideError',
+        type: 'error'
+    } %}
+
+    <div id="hq-summon-tab" class="{{ subtab != 'summon' ? 'hidden' : '' }}">
+        <div class="screen-grid">
+            <div class="screen-grid__main">
+                <div class="feature-panel">
+                    <h3 class="feature-panel__title">{{ 'summoning.summon_junior'|trans }}</h3>
+                    <p class="feature-panel__desc">{{ 'summoning.summon_junior_desc'|trans }}</p>
+                    {% include 'components/summoning/compat_races.html.twig' with { arena_theme: arena_theme, compatible_races: compatible_races } %}
+                    <div class="feature-panel__footer">
+                        <button type="button" data-summoning-target="summonBtn" data-action="click->summoning#summon" data-available="{{ status.available ? 'true' : 'false' }}"
+                                {% if not status.available %}disabled{% endif %}
+                                class="btn btn-primary summoning-summon-btn">
+                            {% if status.available %}
+                                🌀 {{ 'summoning.summon_junior'|trans }}
+                            {% else %}
+                                {{ status.reason ?: 'summoning.unavailable'|trans }}
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="screen-grid__aside">
+                {% include 'components/summoning/portal_chamber.html.twig' %}
+            </div>
+        </div>
+    </div>
+
+    <div id="hq-summon-history-tab" class="{{ subtab != 'history' ? 'hidden' : '' }}">
+        <form method="GET" action="{{ path('app_hq') }}" class="summon-history__filters filter-form" data-controller="form-auto-submit">
+            <input type="hidden" name="facility" value="summoning_chamber">
+            <input type="hidden" name="subtab" value="history">
+            <div class="filter-form__fields">
+                <select name="race" data-action="change->form-auto-submit#submit" class="form-input">
+                    <option value="">{{ 'summoning.all_races'|trans }}</option>
+                    {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
+                        <option value="{{ race }}" {% if summon_history_race == race %}selected{% endif %}>
+                            {{ ('heroes.race_' ~ race)|trans }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-form__sort">
+                <select name="sort" data-action="change->form-auto-submit#submit" class="form-input">
+                    <option value="date-desc" {% if summon_history_sort == 'date-desc' %}selected{% endif %}>{{ 'summoning.sort_date_desc'|trans }}</option>
+                    <option value="date-asc" {% if summon_history_sort == 'date-asc' %}selected{% endif %}>{{ 'summoning.sort_date_asc'|trans }}</option>
+                </select>
+            </div>
+        </form>
+
+        {% if summon_history|length > 0 %}
+            <table class="summon-history-table mt-4">
+                <thead>
+                    <tr>
+                        <th>{{ 'summoning.col_hero'|trans }}</th>
+                        <th>{{ 'summoning.col_race'|trans }}</th>
+                        <th>{{ 'summoning.col_cost'|trans }}</th>
+                        <th>{{ 'summoning.col_date'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in summon_history %}
+                    <tr>
+                        <td>
+                            {% if item.hero %}
+                                <a href="{{ path('app_heroes_detail', { id: item.hero.id }) }}" class="link">{{ item.hero.name }}</a>
+                            {% else %}
+                                <span class="text-text-muted italic">{{ 'summoning.fallen_or_dismissed'|trans }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ('heroes.race_' ~ item.raceSelected.value)|trans }}</td>
+                        <td>🪙 {{ item.goldCost|number_format(0, '.', ' ') }}</td>
+                        <td>{{ item.summonedAt|date('Y-m-d H:i') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="mt-4 text-text-muted">{{ 'summoning.no_history'|trans }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<template id="template-summoning-stat">
+    <div class="summoning-stat">
+        <span class="summoning-stat__key js-stat-key"></span>
+        <span class="summoning-stat__label js-stat-label"></span>
+        <span class="summoning-stat__value js-stat-value"></span>
+    </div>
+</template>

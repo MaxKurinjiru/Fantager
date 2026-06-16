@@ -2,7 +2,7 @@
 {% set rounded_full = rounded_full|default(false) %}
 {% set extra_classes = extra_classes|default('') %}
 {% set status_modifier = val %}
-{% if val not in ['available', 'tired', 'training', 'in_match', 'injured', 'dead'] %}
+{% if val not in ['available', 'in_match', 'selling', 'recovering', 'dead'] %}
     {% set status_modifier = 'unknown' %}
 {% endif %}
 

@@ -33,6 +33,7 @@ Every team in the system, including AI-controlled opponents, is represented by t
 - **Auto-created on Kingdom initialization**: All slots up to kingdom capacity are filled with NPC teams before any real player joins.
 - **Fully staffed**: Each NPC team is created with **10 heroes** and a default formation.
 - **Assigned to a real player on registration**: When a player registers, a random unclaimed NPC team (`user_id IS NULL`) in their Kingdom is assigned to them immediately (`user_id` set, `is_npc` set to false) to ensure player capacity calculations are up-to-date. If the registration is not verified within 24 hours, a daily maintenance tick (running at 03:30 AM) removes the team assignment and deletes the user.
+- **Inactive player release**: Verified players who do not log in or play for **28 days** have their team released back to the NPC pool (daily tick at 03:45 AM). A warning is sent after **21 days** of inactivity. See [player-inactivity-system.md](player-inactivity-system.md).
 - **AI-controlled gameplay**: NPC matches are resolved by the combat engine automatically; NPC teams do not submit lineup changes unless an AI controller is implemented.
 
 ## Sections to Fill
@@ -47,6 +48,23 @@ Every team in the system, including AI-controlled opponents, is represented by t
 ## Summary
 
 Teams aggregate heroes, formations, HQ, and economic resources. Team-level stats include morale, chemistry, and reputation. Roster depth (10 heroes at start) ensures teams can field 6-hero lineups; understaffed teams forfeit matches automatically.
+
+## Financial Crisis
+
+Player teams track financial health via `unpaid_debt`, `crisis_weeks`, and `last_recovery_action_at`. Prolonged insolvency escalates from warning to restricted play, and ultimately **bankruptcy** (team released to NPC pool).
+
+Recovery options: sell assets on marketplace, dismiss heroes (40% compensation), downgrade HQ facilities.
+
+See [financial-crisis-system.md](financial-crisis-system.md).
+
+## Hero Dismissal
+
+Players can dismiss available heroes via `POST /api/v1/heroes/{id}/dismiss`:
+
+- Compensation = **40%** of estimated hero value (level + stats)
+- Team must retain at least **6 combat-ready** heroes (status `available`)
+- Hero must be unassigned from trainer before dismissal
+- Hero is permanently removed (unlike marketplace sale)
 
 ## APIs
 

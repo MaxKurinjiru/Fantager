@@ -5,8 +5,12 @@
 {% block body %}
 <div class="hq-page page-shell" data-controller="hq"
      data-hq-text-upgrading-value="{{ 'js_flash.hq.upgrading'|trans }}"
+     data-hq-text-downgrading-value="{{ 'js_flash.hq.downgrading'|trans }}"
      data-hq-error-upgrade-value="{{ 'js_flash.hq.failed_upgrade'|trans }}"
+     data-hq-error-downgrade-value="{{ 'js_flash.hq.failed_downgrade'|trans }}"
      data-hq-success-upgrade-value="{{ 'js_flash.hq.success_upgrade'|trans }}"
+     data-hq-success-downgrade-value="{{ 'js_flash.hq.success_downgrade'|trans }}"
+     data-hq-confirm-downgrade-value="{{ 'hq.confirm_downgrade'|trans }}"
      data-hq-text-saving-value="{{ 'js_flash.hq.saving'|trans }}"
      data-hq-error-optimize-value="{{ 'js_flash.hq.failed_optimize'|trans }}"
      data-hq-success-optimize-value="{{ 'js_flash.hq.success_optimize'|trans }}"
@@ -26,13 +30,8 @@
          bonus_arena_capacity: 'hq.bonus_arena_capacity'|trans
      }|json_encode }}"
 >
-    
-    {# --- Header Section --- #}
     {% set right_content %}
-        {% include 'components/hq/compound_stats.html.twig' with {
-            hq: hq,
-            team: team
-        } %}
+        {% include 'components/hq/compound_stats.html.twig' with { hq: hq, team: team } %}
     {% endset %}
 
     {% include 'components/ui/page_header.html.twig' with {
@@ -40,27 +39,55 @@
         subtitle: 'hq.subtitle',
         right_content: right_content
     } %}
- 
-    {# --- Alert Box --- #}
+
     {% include 'components/ui/alert_box.html.twig' with {
         target: 'hq',
         message_target: 'alertMessage',
         close_action: 'hq#closeAlert'
     } %}
 
+    {% include 'components/dashboard/financial_crisis_banner.html.twig' with { team: team } %}
+
+    {% if hq and hq.upgradingFacility %}
+        <div class="alert alert-info mb-6" role="status">
+            {{ 'hq.facility_change_in_progress'|trans({
+                '%facility%': ('hq.facilities_list.' ~ hq.upgradingFacility.type.value ~ '.name')|trans,
+                '%operation%': hq.facilityOperation and hq.facilityOperation.value == 'downgrade'
+                    ? ('hq.operation_downgrade'|trans)
+                    : ('hq.operation_upgrade'|trans),
+                '%completed_at%': hq.upgradeCompletedAt ? hq.upgradeCompletedAt|date('d.m.Y H:i') : '—'
+            }) }}
+        </div>
+    {% endif %}
+
+    {% if hq and hq.facilityDowngradeLockCycle %}
+        <div class="alert alert-warning mb-6" role="status">
+            {{ 'hq.downgrade_lock_active'|trans }}
+        </div>
+    {% endif %}
+
+    {% if active_facility %}
+        <div id="hq-facility-detail" class="hq-facility-detail mb-8">
+            {% if active_facility == 'arena' %}
+                {% include 'components/hq/facility_panel/_arena.html.twig' %}
+            {% elseif active_facility == 'summoning_chamber' %}
+                {% include 'components/hq/facility_panel/_summoning.html.twig' %}
+            {% elseif active_facility == 'training' %}
+                {% include 'components/hq/facility_panel/_training.html.twig' %}
+            {% elseif active_facility == 'barracks' %}
+                {% include 'components/hq/facility_panel/_barracks.html.twig' %}
+            {% endif %}
+        </div>
+    {% endif %}
+
     <div class="hq-facilities-section">
         <h2 class="hq-facilities-section__title">{{ 'hq.facilities'|trans }}</h2>
-        
         <div class="cards-grid cards-grid--facilities">
             {% for facility in hq.facilities %}
-                {% include 'components/hq/facility_card.html.twig' with {
-                    facility: facility,
-                    team: team
-                } %}
+                {% include 'components/hq/facility_card.html.twig' with { facility: facility, team: team, hq: hq } %}
             {% endfor %}
         </div>
     </div>
-
 </div>
 
 <template id="template-facility-bonus-row">

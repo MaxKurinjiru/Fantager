@@ -90,6 +90,20 @@
                 {% endfor %}
             </div>
         </div>
+
+        {% if trainer.status.value == 'active' %}
+            <div class="trainer-card__section trainer-card__dismiss">
+                <p class="trainer-card__dismiss-desc text-text-muted text-sm">
+                    {{ 'training.dismiss_desc'|trans }}
+                </p>
+                <button type="button"
+                        data-action="click->training#dismissTrainer"
+                        data-trainer-id="{{ trainer.id }}"
+                        class="btn btn-outline btn--sm text-red-400 border-red-400/30 hover:border-red-400">
+                    {{ 'training.dismiss_btn'|trans }}
+                </button>
+            </div>
+        {% endif %}
     </div>
 
     {% if occupiedSlots < maxSlots and not isLocked %}
@@ -100,7 +114,7 @@
                     data-trainer-id="{{ trainer.id }}">
                 <option value="">-- {{ 'training.select_trainee'|trans }} --</option>
                 {% for hero in heroes %}
-                    {% if hero.status.value != 'dead' and hero.trainer is null %}
+                    {% if hero.status.value == 'available' and hero.trainer is null %}
                         <option value="{{ hero.id }}">
                             {{ hero.name }} &bull; Lvl {{ hero.level }} ({{ 'heroes.fatigue'|trans }}: {{ hero.fatigue }}%)
                         </option>

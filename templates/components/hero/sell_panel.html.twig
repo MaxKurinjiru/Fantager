@@ -1,0 +1,71 @@
+{# templates/components/hero/sell_panel.html.twig #}
+{% set hero = hero|default(null) %}
+{% set team = team|default(null) %}
+{% if hero and team and hero.status.value == 'available' and hero.trainer is null %}
+    {% set can_leave = hero_can_leave_roster(team, hero) %}
+    {% set tax_rate = team.kingdom.marketplaceTaxRate %}
+    <div class="hero-panel hero-sell-panel">
+        <div>
+            <h2 class="hero-panel__title">{{ 'heroes.sell_title'|trans }}</h2>
+            <p class="hero-panel__desc">{{ 'heroes.sell_desc'|trans }}</p>
+            {% if not can_leave %}
+                <p class="hero-panel__hint text-warning mt-2">
+                    {{ 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}
+                </p>
+            {% else %}
+                <p class="hero-panel__hint text-text-muted text-xs mt-2">
+                    ⚠️ {{ 'marketplace.tax_hint'|trans({'%tax%': tax_rate}) }}
+                </p>
+            {% endif %}
+        </div>
+
+        {% if can_leave %}
+            <form class="hero-sell-form space-y-3 mt-4"
+                  data-action="submit->hero-sell#submit">
+                <div class="flex flex-col gap-1.5">
+                    <label for="hero-sell-mode" class="form-label">{{ 'marketplace.listing_mode_label'|trans }}</label>
+                    <select id="hero-sell-mode" name="mode" data-action="change->hero-sell#onModeChange" data-hero-sell-target="modeSelect"
+                            class="form-input">
+                        <option value="buy_now">{{ 'marketplace.mode_buy_now'|trans }}</option>
+                        <option value="auction">{{ 'marketplace.mode_auction'|trans }}</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="hero-sell-price" data-hero-sell-target="priceLabel" class="form-label">
+                        {{ 'marketplace.price_gold'|trans }}
+                    </label>
+                    <div class="form-input-affix">
+                        <span class="form-input-affix__icon">🪙</span>
+                        <input type="number" id="hero-sell-price" name="price" required min="1"
+                               placeholder="{{ 'marketplace.price_placeholder'|trans }}"
+                               class="form-input pl-8">
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5 hidden" data-hero-sell-target="buyoutContainer">
+                    <label for="hero-sell-buyout" class="form-label">{{ 'marketplace.buyout_gold'|trans }}</label>
+                    <div class="form-input-affix">
+                        <span class="form-input-affix__icon">🪙</span>
+                        <input type="number" id="hero-sell-buyout" name="buyout" min="1"
+                               placeholder="{{ 'marketplace.buyout_placeholder'|trans }}"
+                               class="form-input pl-8">
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="hero-sell-duration" class="form-label">{{ 'marketplace.duration_days'|trans }}</label>
+                    <select id="hero-sell-duration" name="duration" class="form-input">
+                        <option value="3">{{ 'marketplace.duration_days_option'|trans({'%count%': 3}) }}</option>
+                        <option value="5" selected>{{ 'marketplace.duration_days_option'|trans({'%count%': 5}) }}</option>
+                        <option value="7">{{ 'marketplace.duration_days_option'|trans({'%count%': 7}) }}</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn--sm w-full">
+                    {{ 'heroes.sell_btn'|trans }}
+                </button>
+            </form>
+        {% endif %}
+    </div>
+{% endif %}

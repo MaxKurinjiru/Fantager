@@ -29,6 +29,8 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $arenaRevenueServiceMock;
     private $fanClubServiceMock;
     private $hqServiceMock;
+    private $financialCrisisServiceMock;
+    private $royalTreasuryServiceMock;
     private $entityManagerMock;
     private $loggerMock;
     private $seasonTransitionServiceMock;
@@ -43,6 +45,11 @@ class ProcessKingdomTicksHandlerTest extends TestCase
         $this->arenaRevenueServiceMock = $this->createMock(ArenaRevenueService::class);
         $this->fanClubServiceMock = $this->createMock(\App\Service\Team\FanClubService::class);
         $this->hqServiceMock = $this->createMock(\App\Service\Headquarters\HeadquartersService::class);
+        $this->financialCrisisServiceMock = $this->createMock(\App\Service\Economy\FinancialCrisisService::class);
+        $this->royalTreasuryServiceMock = $this->createMock(\App\Service\Economy\RoyalTreasuryService::class);
+        $this->playerInactivityServiceMock = $this->createMock(\App\Service\Auth\PlayerInactivityService::class);
+        $this->fixtureFormationServiceMock = $this->createMock(\App\Service\Formation\FixtureFormationService::class);
+        $this->marketplaceServiceMock = $this->createMock(\App\Service\Marketplace\MarketplaceService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
         $this->seasonTransitionServiceMock = $this->createMock(\App\Service\League\SeasonTransitionService::class);
@@ -55,6 +62,11 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->arenaRevenueServiceMock,
             $this->fanClubServiceMock,
             $this->hqServiceMock,
+            $this->financialCrisisServiceMock,
+            $this->royalTreasuryServiceMock,
+            $this->playerInactivityServiceMock,
+            $this->fixtureFormationServiceMock,
+            $this->marketplaceServiceMock,
             $this->entityManagerMock,
             $this->loggerMock,
             $this->seasonTransitionServiceMock

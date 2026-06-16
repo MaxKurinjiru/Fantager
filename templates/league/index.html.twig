@@ -43,22 +43,29 @@
         </div>
     {% else %}
         {# Main League View #}
-        <div data-controller="tab" class="league-page">
+        <div class="league-page">
             {# Tab Switcher Buttons #}
             <div class="league-tab-nav">
-                <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="tab-standings" class="tab-btn tab-btn--active">
+                <a href="{{ path('app_league', selectedGroup ? { tab: 'standings', groupId: selectedGroup.id } : { tab: 'standings' }) }}"
+                   class="tab-btn {{ tab == 'standings' ? 'tab-btn--active' : '' }}">
                     🏆 {{ 'league.tab_standings'|trans }}
-                </button>
-                <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="tab-fixtures" class="tab-btn">
+                </a>
+                <a href="{{ path('app_league', selectedGroup ? { tab: 'fixtures', groupId: selectedGroup.id } : { tab: 'fixtures' }) }}"
+                   class="tab-btn {{ tab == 'fixtures' ? 'tab-btn--active' : '' }}">
                     📅 {{ 'league.tab_fixtures'|trans }}
-                </button>
-                <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="tab-leaderboard" class="tab-btn">
+                </a>
+                <a href="{{ path('app_league', selectedGroup ? { tab: 'leaderboard', groupId: selectedGroup.id } : { tab: 'leaderboard' }) }}"
+                   class="tab-btn {{ tab == 'leaderboard' ? 'tab-btn--active' : '' }}">
                     🌎 {{ 'league.tab_leaderboard'|trans }}
-                </button>
+                </a>
+                <a href="{{ path('app_league', selectedGroup ? { tab: 'calendar', groupId: selectedGroup.id } : { tab: 'calendar' }) }}"
+                   class="tab-btn {{ tab == 'calendar' ? 'tab-btn--active' : '' }}">
+                    🗓️ {{ 'league.tab_calendar'|trans }}
+                </a>
             </div>
 
             {# ==================== TAB 1: STANDINGS ==================== #}
-            <div id="tab-standings" class="league-tab-panel">
+            <div id="tab-standings" class="league-tab-panel {{ tab != 'standings' ? 'hidden' : '' }}">
                 {% if standings is empty %}
                     <p class="league-empty-message">{{ 'league.no_standings'|trans }}</p>
                 {% else %}
@@ -199,7 +206,7 @@
             </div>
 
             {# ==================== TAB 2: FIXTURES ==================== #}
-            <div id="tab-fixtures" class="hidden">
+            <div id="tab-fixtures" class="league-tab-panel {{ tab != 'fixtures' ? 'hidden' : '' }}">
                 <div class="league-fixtures-grid">
                     {# My Matches (Left) #}
                     <div class="league-section">
@@ -304,7 +311,7 @@
             </div>
 
             {# ==================== TAB 3: GLOBAL LEADERBOARD ==================== #}
-            <div id="tab-leaderboard" class="hidden league-tab-panel">
+            <div id="tab-leaderboard" class="league-tab-panel {{ tab != 'leaderboard' ? 'hidden' : '' }}">
                 {% if globalLeaderboard is empty %}
                     <p class="league-empty-message">{{ 'league.no_standings'|trans }}</p>
                 {% else %}
@@ -359,6 +366,8 @@
                     </div>
                 {% endif %}
             </div>
+
+            {% include 'components/league/calendar_tab.html.twig' %}
         </div>
     {% endif %}
 </div>

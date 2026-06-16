@@ -1,0 +1,35 @@
+{# templates/components/layout/ledger_modal.html.twig #}
+<div data-controller="modal" data-modal-event-name-value="modal:open-ledger" id="ledger-modal">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+        <div class="modal-box p-8" role="dialog" aria-modal="true" aria-labelledby="ledger-modal-title">
+            <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="text-xl leading-none">✕</span>
+            </button>
+
+            <div class="modal-header">
+                <h2 id="ledger-modal-title" class="modal-header__title">🪙 {{ 'finance.recent_title'|trans }}</h2>
+            </div>
+
+            <div class="modal-body">
+                <p data-ledger-target="emptyMessage" class="hidden text-text-muted text-center py-4">{{ 'finance.no_records'|trans }}</p>
+                <div class="overflow-x-auto">
+                    <table class="finance-ledger-table w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-2 text-left text-xs">{{ 'finance.col_type'|trans }}</th>
+                                <th class="p-2 text-left text-xs">{{ 'finance.col_changes'|trans }}</th>
+                                <th class="p-2 text-right text-xs">{{ 'finance.col_date'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody data-ledger-target="tableBody"></tbody>
+                    </table>
+                </div>
+                <a href="{{ path('app_economy', { tab: 'ledger' }) }}" class="btn btn-outline btn--sm w-full mt-4">
+                    {{ 'finance.view_full_ledger'|trans }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

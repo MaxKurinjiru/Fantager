@@ -55,6 +55,15 @@ class TickScheduleCalculator
                 ];
             }
 
+            // 2b. Inactive Player Cleanup (03:45)
+            $tPlayerCleanup = new \DateTimeImmutable($dateStr.' 03:45:00', $tz);
+            if ($tPlayerCleanup > $fromLocal && $tPlayerCleanup <= $toLocal) {
+                $occurrences[] = [
+                    'type' => TickType::InactivePlayerCleanup,
+                    'time' => $tPlayerCleanup->setTimezone(new \DateTimeZone('UTC')),
+                ];
+            }
+
             // 3. Fatigue Recovery (04:00)
             $tFatigue = new \DateTimeImmutable($dateStr.' 04:00:00', $tz);
             if ($tFatigue > $fromLocal && $tFatigue <= $toLocal) {

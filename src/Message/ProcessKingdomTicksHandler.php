@@ -13,8 +13,13 @@ use App\Enum\TickType;
 use App\Repository\Hero\HeroRepository;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
+use App\Service\Auth\PlayerInactivityService;
 use App\Service\Economy\ArenaRevenueService;
+use App\Service\Economy\FinancialCrisisService;
+use App\Service\Economy\RoyalTreasuryService;
+use App\Service\Formation\FixtureFormationService;
 use App\Service\Headquarters\HeadquartersService;
+use App\Service\Marketplace\MarketplaceService;
 use App\Service\Team\FanClubService;
 use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +38,7 @@ class ProcessKingdomTicksHandler
         TickType::WeeklyReset->value => 6,
         TickType::RaceOptimization->value => 6,
         TickType::InactiveRegistrationCleanup->value => 6,
+        TickType::InactivePlayerCleanup->value => 6,
     ];
 
     public function __construct(
@@ -43,6 +49,11 @@ class ProcessKingdomTicksHandler
         private readonly ArenaRevenueService $arenaRevenueService,
         private readonly FanClubService $fanClubService,
         private readonly HeadquartersService $hqService,
+        private readonly FinancialCrisisService $financialCrisisService,
+        private readonly RoyalTreasuryService $royalTreasuryService,
+        private readonly PlayerInactivityService $playerInactivityService,
+        private readonly FixtureFormationService $fixtureFormationService,
+        private readonly MarketplaceService $marketplaceService,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
         private readonly \App\Service\League\SeasonTransitionService $seasonTransitionService,
@@ -137,6 +148,10 @@ class ProcessKingdomTicksHandler
 
             case TickType::WeeklyReset:
                 $this->resetWeeklySummons($kingdom);
+                $this->hqService->processMaintenanceTick($kingdom);
+                $this->royalTreasuryService->processWeeklyDistribution($kingdom);
+                $this->hqService->processFacilityDowngradeLockTick($kingdom);
+                $this->financialCrisisService->processWeeklyCrisisTick($kingdom);
                 break;
 
             case TickType::RaceOptimization:
@@ -151,12 +166,17 @@ class ProcessKingdomTicksHandler
                 $this->cleanupInactiveRegistrations($kingdom, $scheduledAt);
                 break;
 
+            case TickType::InactivePlayerCleanup:
+                $this->playerInactivityService->processDailyInactivityTick($kingdom, $scheduledAt);
+                break;
+
             case TickType::DailyReset:
                 $this->processDailyReset($kingdom, $scheduledAt);
                 break;
 
             case TickType::LeagueMatch:
                 $this->arenaRevenueService->processLeagueMatchTick($kingdom, $scheduledAt);
+                $this->cleanupStaleTemporaryFormations($kingdom);
                 $this->logger->debug(sprintf('Processed league match tick (arena revenue) for Kingdom %s', $kingdom->getName()));
                 break;
 
@@ -246,7 +266,9 @@ class ProcessKingdomTicksHandler
     {
         $this->logger->debug(sprintf('Executing DailyReset for Kingdom %s', $kingdom->getName()));
 
+        $this->cleanupStaleTemporaryFormations($kingdom);
         $this->fanClubService->processDailyEvolutionTick($kingdom);
+        $this->marketplaceService->processExpiredListingsForKingdom($kingdom, $scheduledAt);
 
         // Process pending facility upgrades
         $this->hqService->processFacilityUpgradesTick($kingdom, $scheduledAt);
@@ -321,6 +343,18 @@ class ProcessKingdomTicksHandler
         $teams = $this->em->getRepository(\App\Entity\Team\Team::class)->findBy(['kingdom' => $kingdom]);
         foreach ($teams as $team) {
             $team->setSummonsThisCycle(0);
+        }
+    }
+
+    private function cleanupStaleTemporaryFormations(Kingdom $kingdom): void
+    {
+        $removed = $this->fixtureFormationService->cleanupStaleTemporaryFormationsForKingdom($kingdom);
+        if ($removed > 0) {
+            $this->logger->info(sprintf(
+                'Removed %d stale temporary formation(s) for Kingdom %s',
+                $removed,
+                $kingdom->getName(),
+            ));
         }
     }
 }

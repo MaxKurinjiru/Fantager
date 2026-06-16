@@ -53,9 +53,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user')]
     private ?Team $team = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $teamReassignmentAvailableAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastActivityAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $inactiveWarningSentAt = null;
+
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $this->createdAt = $now;
+        $this->lastActivityAt = $now;
     }
 
     public function getId(): ?int
@@ -186,6 +197,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTeam(?Team $team): static
     {
         $this->team = $team;
+
+        return $this;
+    }
+
+    public function getTeamReassignmentAvailableAt(): ?\DateTimeImmutable
+    {
+        return $this->teamReassignmentAvailableAt;
+    }
+
+    public function setTeamReassignmentAvailableAt(?\DateTimeImmutable $teamReassignmentAvailableAt): static
+    {
+        $this->teamReassignmentAvailableAt = $teamReassignmentAvailableAt;
+
+        return $this;
+    }
+
+    public function getLastActivityAt(): ?\DateTimeImmutable
+    {
+        return $this->lastActivityAt;
+    }
+
+    public function setLastActivityAt(?\DateTimeImmutable $lastActivityAt): static
+    {
+        $this->lastActivityAt = $lastActivityAt;
+
+        return $this;
+    }
+
+    public function getInactiveWarningSentAt(): ?\DateTimeImmutable
+    {
+        return $this->inactiveWarningSentAt;
+    }
+
+    public function setInactiveWarningSentAt(?\DateTimeImmutable $inactiveWarningSentAt): static
+    {
+        $this->inactiveWarningSentAt = $inactiveWarningSentAt;
 
         return $this;
     }

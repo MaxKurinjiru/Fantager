@@ -43,7 +43,8 @@ class Kingdom
     #[ORM\Column(type: 'decimal', precision: 3, scale: 2, options: ['default' => '1.00'])]
     private string $xpModifier = '1.00';
 
-    #[ORM\Column(type: 'decimal', precision: 3, scale: 2, options: ['default' => '1.00'])]
+    #[ORM\Column(options: ['default' => 0])]
+    private int $royalTreasuryGold = 0;
 
     public function getId(): ?int
     {
@@ -154,6 +155,18 @@ class Kingdom
     public function setXpModifier(string $xpModifier): static
     {
         $this->xpModifier = $xpModifier;
+
+        return $this;
+    }
+
+    public function getRoyalTreasuryGold(): int
+    {
+        return $this->royalTreasuryGold;
+    }
+
+    public function setRoyalTreasuryGold(int $royalTreasuryGold): static
+    {
+        $this->royalTreasuryGold = max(0, $royalTreasuryGold);
 
         return $this;
     }

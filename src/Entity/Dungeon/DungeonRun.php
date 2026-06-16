@@ -32,7 +32,7 @@ class DungeonRun
     private string $dungeonKey;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Formation $formation = null;
 
     #[ORM\Column(length: 15, enumType: DungeonResult::class, nullable: true)]

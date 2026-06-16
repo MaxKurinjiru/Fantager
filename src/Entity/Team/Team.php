@@ -78,6 +78,15 @@ class Team
     #[ORM\Column(options: ['default' => 0])]
     private int $summonsThisCycle = 0;
 
+    #[ORM\Column(options: ['default' => 0])]
+    private int $unpaidDebt = 0;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $crisisWeeks = 0;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastRecoveryActionAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -307,6 +316,42 @@ class Team
     public function setSummonsThisCycle(int $summonsThisCycle): static
     {
         $this->summonsThisCycle = $summonsThisCycle;
+
+        return $this;
+    }
+
+    public function getUnpaidDebt(): int
+    {
+        return $this->unpaidDebt;
+    }
+
+    public function setUnpaidDebt(int $unpaidDebt): static
+    {
+        $this->unpaidDebt = max(0, $unpaidDebt);
+
+        return $this;
+    }
+
+    public function getCrisisWeeks(): int
+    {
+        return $this->crisisWeeks;
+    }
+
+    public function setCrisisWeeks(int $crisisWeeks): static
+    {
+        $this->crisisWeeks = max(0, $crisisWeeks);
+
+        return $this;
+    }
+
+    public function getLastRecoveryActionAt(): ?\DateTimeImmutable
+    {
+        return $this->lastRecoveryActionAt;
+    }
+
+    public function setLastRecoveryActionAt(?\DateTimeImmutable $lastRecoveryActionAt): static
+    {
+        $this->lastRecoveryActionAt = $lastRecoveryActionAt;
 
         return $this;
     }

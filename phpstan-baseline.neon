@@ -350,42 +350,6 @@ parameters:
 			path: src/Entity/League/LeagueTier.php
 
 		-
-			message: '#^Method App\\Entity\\Quest\\Quest\:\:getRequirements\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Entity/Quest/Quest.php
-
-		-
-			message: '#^Method App\\Entity\\Quest\\Quest\:\:getRewards\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Entity/Quest/Quest.php
-
-		-
-			message: '#^Method App\\Entity\\Quest\\Quest\:\:setRequirements\(\) has parameter \$requirements with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Entity/Quest/Quest.php
-
-		-
-			message: '#^Method App\\Entity\\Quest\\Quest\:\:setRewards\(\) has parameter \$rewards with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Entity/Quest/Quest.php
-
-		-
-			message: '#^Property App\\Entity\\Quest\\Quest\:\:\$requirements type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Entity/Quest/Quest.php
-
-		-
-			message: '#^Property App\\Entity\\Quest\\Quest\:\:\$rewards type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Entity/Quest/Quest.php
-
-		-
 			message: '#^Method App\\Entity\\Spell\\Spell\:\:getEffects\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -612,18 +576,6 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: src/Repository/Notification/NotificationRepository.php
-
-		-
-			message: '#^Class App\\Repository\\Quest\\PlayerQuestProgressRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Repository/Quest/PlayerQuestProgressRepository.php
-
-		-
-			message: '#^Class App\\Repository\\Quest\\QuestRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Repository/Quest/QuestRepository.php
 
 		-
 			message: '#^Class App\\Repository\\Spell\\SpellRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'

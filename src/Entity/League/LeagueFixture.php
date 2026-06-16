@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity\League;
 
 use App\Entity\Combat\Battle;
+use App\Entity\Formation\Formation;
 use App\Entity\Team\Team;
 use App\Enum\LeagueFixtureStatus;
 use App\Repository\League\LeagueFixtureRepository;
@@ -37,6 +38,14 @@ class LeagueFixture
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Battle $battle = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Formation $homeFormation = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Formation $awayFormation = null;
 
     #[ORM\Column(length: 20, enumType: LeagueFixtureStatus::class)]
     private LeagueFixtureStatus $status = LeagueFixtureStatus::Scheduled;
@@ -102,6 +111,30 @@ class LeagueFixture
     public function setBattle(?Battle $battle): static
     {
         $this->battle = $battle;
+
+        return $this;
+    }
+
+    public function getHomeFormation(): ?Formation
+    {
+        return $this->homeFormation;
+    }
+
+    public function setHomeFormation(?Formation $homeFormation): static
+    {
+        $this->homeFormation = $homeFormation;
+
+        return $this;
+    }
+
+    public function getAwayFormation(): ?Formation
+    {
+        return $this->awayFormation;
+    }
+
+    public function setAwayFormation(?Formation $awayFormation): static
+    {
+        $this->awayFormation = $awayFormation;
 
         return $this;
     }

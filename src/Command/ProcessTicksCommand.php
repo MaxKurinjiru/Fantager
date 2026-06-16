@@ -133,19 +133,23 @@ class ProcessTicksCommand extends Command
                 $occurrences = $this->scheduleCalculator->generateOccurrences($latestTime, $now, $kingdom->getTimezone(), $seasonStartDate);
 
                 foreach ($occurrences as $occurrence) {
+                    if ($occurrence['type'] !== $tickType) {
+                        continue;
+                    }
+
                     $scheduledAt = $occurrence['time'];
 
                     // Double check if log already exists
                     $existingLog = $this->tickLogRepository->findOneBy([
                         'kingdom' => $kingdom,
-                        'tickType' => $tickType,
+                        'tickType' => $occurrence['type'],
                         'scheduledAt' => $scheduledAt,
                     ]);
 
                     if (null === $existingLog) {
                         $log = new KingdomTickLog();
                         $log->setKingdom($kingdom);
-                        $log->setTickType($tickType);
+                        $log->setTickType($occurrence['type']);
                         $log->setScheduledAt($scheduledAt);
                         $log->setStatus('processing');
 

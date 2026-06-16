@@ -1,13 +1,14 @@
 {# templates/components/dashboard/quick_actions.html.twig #}
-{% set actions = [
-    { path: 'app_summon', emoji: '🌀', label: 'nav.summon' },
-    { path: 'app_training', emoji: '🏋️', label: 'nav.training' },
-    { path: 'app_hq', emoji: '🏰', label: 'nav.hq' },
-    { path: 'app_heroes', emoji: '👥', label: 'nav.heroes' },
-    { path: 'app_formation', emoji: '🛡️', label: 'nav.formation' },
-    { path: 'app_inventory', emoji: '🎒', label: 'nav.inventory' },
-    { path: 'app_spells', emoji: '📖', label: 'nav.spells' }
-] %}
+{% set actions = [] %}
+{% if dashboard.next_match|default() is not empty %}
+    {% set actions = actions|merge([
+        { path: 'app_formation', emoji: '🛡️', label: 'dashboard.action_formation', params: {} }
+    ]) %}
+{% endif %}
+{% set actions = actions|merge([
+    { path: 'app_hq', emoji: '🌀', label: 'dashboard.action_summon', params: { facility: 'summoning_chamber' } },
+    { path: 'app_hq', emoji: '🏰', label: 'dashboard.action_hq', params: {} }
+]) %}
 
 <div class="db-quick-actions">
     <h3 class="db-quick-actions__title">
@@ -15,7 +16,7 @@
     </h3>
     <div class="db-quick-actions__grid">
         {% for action in actions %}
-            <a href="{{ path(action.path) }}" class="db-quick-action">
+            <a href="{{ path(action.path, action.params) }}" class="db-quick-action">
                 <span class="db-quick-action__emoji">{{ action.emoji }}</span>
                 <span class="db-quick-action__label">{{ action.label|trans }}</span>
             </a>

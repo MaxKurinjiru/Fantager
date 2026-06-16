@@ -5,7 +5,7 @@
             <h2 class="hero-panel__title hero-panel__title--tight">{{ 'heroes.spell_slots'|trans }}</h2>
             <p class="hero-panel__desc">{{ 'heroes.spell_slots_limit'|trans({'%limit%': hero.magicCapacity}) }}</p>
         </div>
-        <a href="{{ path('app_spells') }}?hero_id={{ hero.id }}" class="btn btn-outline btn--sm p-1.5" title="{{ 'heroes.spells'|trans }}" aria-label="{{ 'heroes.spells'|trans }}">
+        <a href="{{ path('app_heroes_detail', { id: hero.id, tab: 'spells' }) }}" class="btn btn-outline btn--sm p-1.5" title="{{ 'heroes.spells'|trans }}" aria-label="{{ 'heroes.spells'|trans }}">
             📖
         </a>
     </div>
@@ -45,7 +45,7 @@
                             <span class="hero-spell-row__empty-icon">🔮</span>
                             <span class="hero-spell-row__empty-label">{{ 'spells.slot_empty'|trans({'%slot%': i}) }}</span>
                         </div>
-                        <a href="{{ path('app_spells') }}?hero_id={{ hero.id }}" class="inline-link">{{ 'heroes.equip'|trans }}</a>
+                        <a href="{{ path('app_heroes_detail', { id: hero.id, tab: 'spells' }) }}" class="inline-link">{{ 'heroes.equip'|trans }}</a>
                     </div>
                 {% endif %}
             {% endfor %}

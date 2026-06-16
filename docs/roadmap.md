@@ -93,11 +93,11 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ### Step 3.2: Hero Training Loop
 - **Database & Entities**: `TrainingQueue` and `Trainer` entities.
-- **Service Layer**: Training rate calculations. Tick processing CLI command (`App\Command\ProcessTrainingTickCommand`) to apply accumulated stat increases.
+- **Service Layer**: Training rate calculations. Weekly training tick (`TickType::WeeklyTraining`) processed by `ProcessKingdomTicksHandler`.
 - **API Contracts**: `POST /api/v1/training/trainers/{id}/assign` (assign hero to trainer), `POST /api/v1/training/trainers/{id}/unassign`, `POST /api/v1/training/trainers/{id}/configure`.
 - **Frontend Views**: Trainers dashboard panel, trainers selection list, and assigned trainees list.
-- **Verification**: Assign a hero to a trainer, configure trainer focus, run the command `bin/console app:training:tick`, and verify hero stats increase correctly.
-- **Status**: ✅ Complete (`TrainingService`, `ProcessTrainingTickCommand`, `Web\TrainingController`, `Api\V1\TrainingController`, Stimulus: `training_controller.js`).
+- **Verification**: Assign a hero to a trainer, configure trainer focus, run `bin/console app:ticks:run --time="YYYY-MM-DD 10:00:00"` after the scheduled Friday training tick, and verify hero stats increase correctly.
+- **Status**: ✅ Complete (`TrainingService`, `ProcessKingdomTicksHandler` weekly training tick, `Web\TrainingController`, `Api\V1\TrainingController`, Stimulus: `training_controller.js`).
 
 ---
 
@@ -234,7 +234,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 ---
 
 ## Milestone 8: Endgame & Advanced Content
-*Extend the sandbox with PvE dungeon instances, daily quests, item crafting, and stadium business operations.*
+*Extend the sandbox with PvE dungeon instances, item crafting, and stadium business operations.*
 
 ### Step 8.1: PvE Dungeon Encounters
 - **Database & Entities**: `DungeonRun` and `DungeonFloor` tables (depends on Combat).
@@ -246,13 +246,14 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Status**: ⏳ Not Started (Entities scaffolded, services pending).
 
 ### Step 8.2: Daily & Weekly Quest Systems
-- **Database & Entities**: `Quest` and `PlayerQuestProgress` tables.
+- **Design Reference**: [systems/quest-system.md](systems/quest-system.md)
+- **Database & Entities**: `Quest` and `PlayerQuestProgress` tables (not scaffolded yet).
 - **Service Layer**: Daily Quest pool generation, progress triggers (e.g., training ticks, marketplace trades), rewards allocation.
 - **API Contracts**: `GET /api/v1/quests`, `POST /api/v1/quests/claim/{id}`.
 - **Frontend Views**:
   - **[NEW]** Quest log: list of daily/weekly challenges, progress indicators, claim buttons.
 - **Verification**: Perform quest conditions, verify progress bar fills, claim rewards.
-- **Status**: ⏳ Not Started (Entities scaffolded, services pending).
+- **Status**: ⏳ Not Started (design only; no code or DB schema).
 
 ### Step 8.3: Material Gathering & Crafting
 - **Database & Entities**: `CraftingRecipe` and `CraftingQueue` tables.

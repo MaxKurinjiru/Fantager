@@ -38,11 +38,18 @@ class LeagueController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
+        $tab = $request->query->get('tab', 'standings');
+        if (!in_array($tab, ['standings', 'fixtures', 'leaderboard', 'calendar'], true)) {
+            $tab = 'standings';
+        }
+
         $season = $this->leagueService->getCurrentSeason($team->getKingdom());
 
         if (null === $season) {
             return $this->render('league/index.html.twig', [
                 'team' => $team,
+                'kingdom' => $team->getKingdom(),
+                'tab' => $tab,
                 'season' => null,
                 'groups' => [],
                 'selectedGroup' => null,
@@ -136,6 +143,8 @@ class LeagueController extends AbstractController
 
         return $this->render('league/index.html.twig', [
             'team' => $team,
+            'kingdom' => $team->getKingdom(),
+            'tab' => $tab,
             'season' => $season,
             'groups' => $groups,
             'selectedGroup' => $selectedGroup,

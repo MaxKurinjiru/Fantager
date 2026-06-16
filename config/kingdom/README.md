@@ -6,6 +6,8 @@ JSON placeholders loaded by `KingdomInitConfig` when running:
 php bin/console app:kingdom:initialize "Kingdom Name" [--test]
 ```
 
+With `--test`, the season starts on the previous Monday and three default test users are created (`player1@example.com` … `player3@example.com`, password `password`).
+
 | File | Purpose |
 |------|---------|
 | `kingdom.defaults.json` | Kingdom entity settings (language, timezone, game_speed, level_cap, xp_modifier, marketplace_tax_rate, season_length) |

@@ -7,6 +7,8 @@
     {# --- Header / Premium Guild Banner --- #}
     {% include 'components/dashboard/team_banner.html.twig' %}
 
+    {% include 'components/dashboard/financial_crisis_banner.html.twig' with { team: team } %}
+
     {# --- Main Grid --- #}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {# --- Left Column: Next Match & Quick Actions --- #}

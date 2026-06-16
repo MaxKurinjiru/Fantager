@@ -13,7 +13,7 @@ enum NotificationType: string
     case MarketplaceSold = 'marketplace_sold';
     case AchievementUnlocked = 'achievement_unlocked';
     case EventStarted = 'event_started';
-    case QuestExpired = 'quest_expired';
     case HeroDied = 'hero_died';
     case SeasonEnded = 'season_ended';
+    case System = 'system';
 }

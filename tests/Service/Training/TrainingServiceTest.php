@@ -16,11 +16,9 @@ use App\Enum\HeroStatus;
 use App\Enum\Race;
 use App\Enum\TrainingStatus;
 use App\Enum\TrainingType;
-use App\Repository\Training\TrainerRepository;
-use App\Repository\Training\TrainingQueueRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
+use App\Repository\Training\TrainerRepository;
 use App\Service\Config\RaceConfig;
-use App\Service\Economy\EconomyService;
 use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -29,29 +27,23 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 #[AllowMockObjectsWithoutExpectations]
 class TrainingServiceTest extends TestCase
 {
-    private $queueRepositoryMock;
     private $trainerRepositoryMock;
     private $hqRepositoryMock;
     private $raceConfigMock;
-    private $economyServiceMock;
     private $entityManagerMock;
     private TrainingService $trainingService;
 
     protected function setUp(): void
     {
-        $this->queueRepositoryMock = $this->createMock(TrainingQueueRepository::class);
         $this->trainerRepositoryMock = $this->createMock(TrainerRepository::class);
         $this->hqRepositoryMock = $this->createMock(HeadquartersRepository::class);
         $this->raceConfigMock = $this->createMock(RaceConfig::class);
-        $this->economyServiceMock = $this->createMock(EconomyService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
 
         $this->trainingService = new TrainingService(
-            $this->queueRepositoryMock,
             $this->trainerRepositoryMock,
             $this->hqRepositoryMock,
             $this->raceConfigMock,
-            $this->economyServiceMock,
             $this->entityManagerMock
         );
     }
@@ -171,7 +163,7 @@ class TrainingServiceTest extends TestCase
         $this->trainingService->assignHero($trainer, $hero, $team, $now);
 
         $this->assertSame($trainer, $hero->getTrainer());
-        $this->assertSame(HeroStatus::Training, $hero->getStatus());
+        $this->assertSame(HeroStatus::Available, $hero->getStatus());
         $this->assertTrue($trainer->getHeroes()->contains($hero));
     }
 
@@ -222,7 +214,7 @@ class TrainingServiceTest extends TestCase
         $hero = new Hero();
         $hero->setTeam($team);
         $hero->setRace(Race::Human);
-        $hero->setStatus(HeroStatus::Training);
+        $hero->setStatus(HeroStatus::Available);
         $hero->setStrRaw(142); // external 14
         $hero->setFatigue(10);
 
@@ -294,7 +286,7 @@ class TrainingServiceTest extends TestCase
         $hero->setTeam($team);
         $hero->setForm(70);
         $hero->setFatigue(50);
-        $hero->setStatus(HeroStatus::Training);
+        $hero->setStatus(HeroStatus::Available);
 
         $trainer = new Trainer();
         $trainer->setTeam($team);

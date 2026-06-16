@@ -1,0 +1,31 @@
+{# templates/components/hero/dismiss_panel.html.twig #}
+{% set hero = hero|default(null) %}
+{% set team = team|default(null) %}
+{% if hero and team and hero.status.value == 'available' and hero.trainer is null %}
+    {% set can_leave = hero_can_leave_roster(team, hero) %}
+    {% set crisis = team_financial_crisis(team) %}
+    <div class="hero-panel hero-dismiss-panel">
+        <div>
+            <h2 class="hero-panel__title">{{ 'heroes.dismiss_title'|trans }}</h2>
+            <p class="hero-panel__desc">
+                {% if crisis.level != 'none' %}
+                    {{ 'heroes.dismiss_desc_crisis'|trans }}
+                {% else %}
+                    {{ 'heroes.dismiss_desc'|trans }}
+                {% endif %}
+            </p>
+            {% if not can_leave %}
+                <p class="hero-panel__hint text-warning mt-2">
+                    {{ 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}
+                </p>
+            {% endif %}
+        </div>
+        {% if can_leave %}
+            <button type="button"
+                    class="btn btn-outline btn--sm"
+                    data-action="click->hero-dismiss#dismiss">
+                {{ 'heroes.dismiss_btn'|trans }}
+            </button>
+        {% endif %}
+    </div>
+{% endif %}

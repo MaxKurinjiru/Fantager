@@ -20,7 +20,10 @@ export default class extends Controller {
         textRemoving: String,
         errorSaveFocus: String,
         errorAssignHero: String,
-        errorRemoveHero: String
+        errorRemoveHero: String,
+        confirmDismiss: String,
+        errorDismiss: String,
+        successDismiss: String
     };
 
     connect() {
@@ -168,6 +171,56 @@ export default class extends Controller {
 
             this.showAlert('success', this.successUnassignValue);
             setTimeout(() => window.location.reload(), 1000);
+        } catch (error) {
+            this.showAlert('error', error.message);
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+
+    async dismissTrainer(e) {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        const trainerId = btn.dataset.trainerId;
+        if (!trainerId) return;
+
+        const message = this.hasConfirmDismissValue
+            ? this.confirmDismissValue
+            : 'Dismiss this trainer?';
+
+        if (!window.confirm(message)) {
+            return;
+        }
+
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = this.textProcessingValue || '…';
+
+        try {
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+            const response = await fetch(`/api/v1/training/trainers/${trainerId}/dismiss`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': csrfToken,
+                },
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || result.error) {
+                throw new Error(result.error || this.errorDismissValue);
+            }
+
+            const compensation = result.compensation ?? 0;
+            const successMsg = (this.successDismissValue || 'Trainer dismissed. Compensation: %gold% gold.')
+                .replace('%gold%', compensation.toLocaleString('cs-CZ'));
+            this.showAlert('success', successMsg);
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1200);
         } catch (error) {
             this.showAlert('error', error.message);
             btn.disabled = false;

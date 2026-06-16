@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Service\Auth\TestUserService;
 use App\Service\Kingdom\KingdomInitializationService;
 use App\Service\Kingdom\KingdomService;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -23,6 +24,7 @@ class InitializeKingdomCommand extends Command
     public function __construct(
         private readonly KingdomInitializationService $initializationService,
         private readonly KingdomService $kingdomService,
+        private readonly TestUserService $testUserService,
     ) {
         parent::__construct();
     }
@@ -31,7 +33,12 @@ class InitializeKingdomCommand extends Command
     {
         $this
             ->addArgument('name', InputArgument::REQUIRED, 'Display name of the new kingdom (server)')
-            ->addOption('test', null, InputOption::VALUE_NONE, 'Set the season start date to last Monday for testing');
+            ->addOption(
+                'test',
+                null,
+                InputOption::VALUE_NONE,
+                'Test mode: season starts last Monday and creates 3 default test users (player1–3@example.com / password)',
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -59,6 +66,22 @@ class InitializeKingdomCommand extends Command
             $result['heroes'],
             $capacity,
         ));
+
+        if ($testMode) {
+            try {
+                $users = $this->testUserService->createDefaultTestUsers($kingdom);
+            } catch (\DomainException $e) {
+                $io->error($e->getMessage());
+
+                return Command::FAILURE;
+            }
+
+            $io->success(sprintf(
+                'Created %d test users: %s',
+                count($users),
+                implode(', ', array_map(static fn ($user) => $user->getEmail(), $users)),
+            ));
+        }
 
         $io->note('Defaults loaded from config/kingdom/*.defaults.json — edit those files to tune bootstrap values.');
 

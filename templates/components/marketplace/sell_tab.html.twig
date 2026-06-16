@@ -3,6 +3,7 @@
 {% set items = items|default([]) %}
 {% set trainers = trainers|default([]) %}
 {% set taxRate = taxRate|default(0) %}
+{% set team = team|default(null) %}
 
 <div data-marketplace-target="tabContent" data-tab-name="sell" class="space-y-6 hidden">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -32,10 +33,13 @@
             {# Heroes list #}
             <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="hero" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[450px] overflow-y-auto pr-2">
                 {% for hero in heroes %}
-                    <div data-action="click->marketplace#selectEntityToSell"
+                    {% set can_sell = hero_can_leave_roster(team, hero) and hero.trainer is null %}
+                    <div {% if can_sell %}data-action="click->marketplace#selectEntityToSell"{% endif %}
                          data-entity-id="{{ hero.id }}"
                          data-entity-name="{{ hero.name }}"
-                         class="sell-card flex items-center justify-between">
+                         data-locked="{{ can_sell ? '0' : '1' }}"
+                         title="{{ can_sell ? '' : 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}"
+                         class="sell-card flex items-center justify-between {{ can_sell ? '' : 'sell-card--locked opacity-50 cursor-not-allowed' }}">
                         <div class="flex items-center gap-3">
                             <span class="text-2xl select-none">👥</span>
                             <div>

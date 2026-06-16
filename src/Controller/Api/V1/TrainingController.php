@@ -9,6 +9,7 @@ use App\Entity\Training\Trainer;
 use App\Enum\TrainingType;
 use App\Repository\Hero\HeroRepository;
 use App\Repository\Training\TrainerRepository;
+use App\Service\Training\TrainerDismissalService;
 use App\Service\Training\TrainingService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +21,7 @@ class TrainingController extends AbstractController
 {
     public function __construct(
         private readonly TrainingService $trainingService,
+        private readonly TrainerDismissalService $trainerDismissalService,
         private readonly HeroRepository $heroRepository,
         private readonly TrainerRepository $trainerRepository,
     ) {
@@ -185,6 +187,32 @@ class TrainingController extends AbstractController
         return $this->json([
             'message' => 'Hero unassigned from trainer successfully.',
             'hero_id' => $hero->getId(),
+        ]);
+    }
+
+    #[Route('/training/trainers/{id}/dismiss', name: 'api_training_trainer_dismiss', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function dismiss(int $id): JsonResponse
+    {
+        $team = $this->getPlayerTeam();
+        if (null === $team) {
+            return $this->json(['error' => 'No team assigned to your account.'], 422);
+        }
+
+        /** @var Trainer|null $trainer */
+        $trainer = $this->trainerRepository->findOneBy(['id' => $id, 'team' => $team]);
+        if (null === $trainer) {
+            return $this->json(['error' => 'Trainer not found.'], 404);
+        }
+
+        try {
+            $compensation = $this->trainerDismissalService->dismiss($team, $trainer);
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], 422);
+        }
+
+        return $this->json([
+            'dismissed' => true,
+            'compensation' => $compensation,
         ]);
     }
 

@@ -17,6 +17,7 @@ use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\Team\TeamRepository;
 use App\Service\Economy\ArenaRevenueService;
 use App\Service\Economy\EconomyService;
+use App\Service\Economy\FinancialCrisisService;
 use App\Service\Team\FanClubService;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -27,6 +28,7 @@ class ArenaRevenueServiceTest extends TestCase
     private HeadquartersRepository $hqRepositoryMock;
     private LeagueFixtureRepository $fixtureRepositoryMock;
     private EconomyService $economyServiceMock;
+    private FinancialCrisisService $financialCrisisServiceMock;
     private ArenaRevenueService $arenaRevenueService;
 
     protected function setUp(): void
@@ -34,6 +36,10 @@ class ArenaRevenueServiceTest extends TestCase
         $this->hqRepositoryMock = $this->createMock(HeadquartersRepository::class);
         $this->fixtureRepositoryMock = $this->createMock(LeagueFixtureRepository::class);
         $this->economyServiceMock = $this->createMock(EconomyService::class);
+        $this->financialCrisisServiceMock = $this->createMock(FinancialCrisisService::class);
+        $this->financialCrisisServiceMock
+            ->method('areHqBonusesActive')
+            ->willReturn(true);
         $teamRepositoryMock = $this->createMock(TeamRepository::class);
         $fanClubService = new FanClubService($teamRepositoryMock);
 
@@ -41,6 +47,7 @@ class ArenaRevenueServiceTest extends TestCase
             $this->hqRepositoryMock,
             $this->fixtureRepositoryMock,
             $this->economyServiceMock,
+            $this->financialCrisisServiceMock,
             $fanClubService,
         );
     }

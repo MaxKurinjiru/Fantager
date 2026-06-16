@@ -114,7 +114,58 @@ This means upgrading to level 2 takes **2 real days** at game speed 1.0, upgradi
 
 ### Upgrade Completion
 
-Facility upgrades are processed by the **`daily_reset` tick** (daily at 00:00 server time). When `now >= upgrade_completed_at`, the facility level is incremented, `upgrading_facility` is cleared, and `total_level` on the HQ is recalculated.
+Facility upgrades are processed by the **`daily_reset` tick** (daily at 00:00 server time). When `now >= change_completed_at`, the facility level is incremented (upgrade) or decremented (downgrade), `changing_facility` is cleared, and `total_level` on the HQ is recalculated.
+
+---
+
+## Weekly Maintenance
+
+HQ maintenance is charged on the **`weekly_reset` tick** (Sunday 23:59).
+
+### Formula
+
+```
+HQ fee     = 50 + (total_level × 3)
+Facilities = Σ (base_fee[type] × facility_level)
+Total      = HQ fee + Facilities
+```
+
+### Base facility fees (gold per level / week)
+
+| Facility | Fee |
+|----------|-----|
+| Training | 25 |
+| Medical | 20 |
+| Library | 30 |
+| Treasury | 22 |
+| Barracks | 18 |
+| Summoning Chamber | 40 |
+| Arena | 45 |
+
+**Example:** All facilities at level 1 → total **271 gold/week**.
+
+### Unpaid maintenance
+
+If the team lacks sufficient gold, only the available balance is deducted. The remainder is added to `team.unpaid_debt`. See [financial-crisis-system.md](financial-crisis-system.md).
+
+---
+
+## Downgrading Facilities
+
+Teams in financial difficulty can downgrade facilities to reduce weekly maintenance.
+
+### Rules
+
+- Only **one facility change** (upgrade or downgrade) at a time
+- Minimum level = **1**
+- Duration: `current_level × 12 hours / game_speed` (shorter than upgrades)
+- **No upfront cost**; on completion, a **25% refund** of the last level's upgrade cost is paid
+- A **lock cycle** prevents another downgrade until the next `weekly_reset` tick
+- Downgrade is always allowed, including during financial restrictions
+
+### Downgrade completion
+
+Processed on **`daily_reset`** tick, same as upgrades. Sets `facility_downgrade_lock_cycle = true` until next weekly reset.
 
 ---
 
@@ -143,6 +194,7 @@ During the `race_optimization` tick:
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/app/hq` | HQ page (Twig-rendered) |
-| GET | `/api/v1/hq` | Facility levels, passive bonuses, upgrade status |
+| GET | `/api/v1/hq` | Facility levels, passive bonuses, upgrade/downgrade status |
 | POST | `/api/v1/hq/upgrade` | Start a facility upgrade |
+| POST | `/api/v1/hq/downgrade` | Start a facility downgrade |
 | POST | `/api/v1/hq/optimize` | Request a race optimization change |

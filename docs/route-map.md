@@ -102,10 +102,13 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/formation` | Web\FormationController | Formation Setup page |
-| GET | `/api/v1/formations` | Api\V1\FormationController | Get team formations |
-| PUT | `/api/v1/formations` | Api\V1\FormationController | Save/update formations |
-| DELETE | `/api/v1/formations/{id}` | Api\V1\FormationController | Delete formation |
+| GET | `/app/formation` | Web\FormationController | Formation Setup page (supports `?fixture_id=` for match prep) |
+| GET | `/api/v1/formations` | Api\V1\FormationController | Get team saved formations (max 4) |
+| PUT | `/api/v1/formations` | Api\V1\FormationController | Save/update saved formations |
+| DELETE | `/api/v1/formations/{id}` | Api\V1\FormationController | Delete saved formation |
+| GET | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Fixture formation assignment state |
+| PUT | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Assign default / saved / custom lineup |
+| POST | `/api/v1/fixtures/{id}/formation/promote` | Api\V1\FixtureFormationController | Promote temporary match lineup to saved |
 | POST | `/api/v1/formations/simulate` | Api\V1\FormationController | Simulation preview — **planned** |
 
 ---
@@ -226,20 +229,6 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ---
 
-## Quest
-
-> [!NOTE]
-> Not yet implemented — planned for Phase 7.
-
-| Method | Path | Controller | Purpose |
-|--------|------|-----------|---------|
-| GET | `/quests` | Web\QuestController | Quest page |
-| GET | `/api/v1/quests` | Api\V1\QuestController | Available quests |
-| POST | `/api/v1/quests/{id}/accept` | Api\V1\QuestController | Accept quest |
-| POST | `/api/v1/quests/{id}/claim` | Api\V1\QuestController | Claim rewards |
-
----
-
 ## Crafting
 > **Planned** — routes below are not implemented in the current codebase.
 
@@ -262,7 +251,8 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/community` | Web\CommunityController | Community hub page |
+| GET | `/app/community` | Web\CommunityController | Kingdom discussion board (thread list) |
+| GET | `/app/community/threads/{id}` | Web\CommunityController | Thread detail with replies |
 | GET | `/api/v1/leaderboards` | Api\V1\CommunityController | Leaderboard rankings — **not needed** (see League UI) |
 | GET | `/api/v1/players/{id}/profile` | Api\V1\CommunityController | Public player profile — **planned** |
 | GET | `/api/v1/messages` | Api\V1\MessageController | Inbox |

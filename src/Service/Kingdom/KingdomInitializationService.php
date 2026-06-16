@@ -315,7 +315,6 @@ class KingdomInitializationService
     {
         $hq = new Headquarters();
         $hq->setTeam($team);
-        $hq->setTotalLevel((int) ($hqConfig['total_level'] ?? 1));
         // Set race_optimization from the team's assigned race (overrides the config default).
         $hq->setRaceOptimization($teamRace->value);
         $this->em->persist($hq);
@@ -336,6 +335,8 @@ class KingdomInitializationService
             $hq->addFacility($facility);
             $this->em->persist($facility);
         }
+
+        $hq->syncTotalLevel();
 
         return $hq;
     }

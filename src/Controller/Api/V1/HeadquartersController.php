@@ -36,21 +36,62 @@ class HeadquartersController extends AbstractController
 
         $facilities = [];
         foreach ($hq->getFacilities() as $facility) {
-            $facilities[] = $this->hqService->serializeFacility($facility, $facility->getType());
+            $facilities[] = $this->hqService->serializeFacility($facility, $facility->getType(), $hq);
         }
+
+        $maintenance = $this->hqService->calculateWeeklyMaintenanceBreakdown($hq);
 
         $upgradingType = $hq->getUpgradingFacility()?->getType()?->value;
         $completedAt = $hq->getUpgradeCompletedAt()?->format(\DateTimeInterface::ATOM);
+        $facilityOperation = $hq->getFacilityOperation()?->value;
 
         return $this->json([
-            'total_level' => $hq->getTotalLevel(),
+            'total_level' => $hq->getComputedTotalLevel(),
+            'weekly_maintenance_fee' => $maintenance['total'],
+            'weekly_maintenance_breakdown' => [
+                'hq' => $maintenance['hq'],
+                'facilities' => $maintenance['facilities'],
+            ],
             'race_optimization' => $hq->getRaceOptimization(),
             'pending_race_optimization' => $hq->getPendingRaceOptimization(),
             'is_optimization_locked' => ($hq->hasPendingRaceOptimizationChange() || $hq->isRaceOptimizationLockCycle()),
+            'changing_facility' => $upgradingType,
+            'facility_operation' => $facilityOperation,
+            'change_completed_at' => $completedAt,
+            'is_downgrade_locked' => $hq->isFacilityDowngradeLockCycle(),
             'upgrading_facility' => $upgradingType,
             'upgrade_completed_at' => $completedAt,
             'facilities' => $facilities,
         ]);
+    }
+
+    #[Route('/downgrade', name: 'api_hq_downgrade', methods: ['POST'])]
+    public function downgrade(Request $request): JsonResponse
+    {
+        $team = $this->getPlayerTeam();
+        if (null === $team) {
+            return $this->json(['error' => 'No team assigned to your account.'], 422);
+        }
+
+        /** @var array<string, mixed> $body */
+        $body = json_decode($request->getContent(), true) ?? [];
+
+        $facilityValue = (string) ($body['facility'] ?? '');
+        $type = FacilityType::tryFrom($facilityValue);
+        if (null === $type) {
+            $valid = implode(', ', array_column(FacilityType::cases(), 'value'));
+
+            return $this->json(['error' => sprintf('Invalid facility type. Valid values: %s.', $valid)], 400);
+        }
+
+        try {
+            $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+            $facility = $this->hqService->downgradeFacility($team, $type, $now);
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], 422);
+        }
+
+        return $this->json($this->hqService->serializeFacility($facility, $type, $this->hqService->getForTeam($team)));
     }
 
     #[Route('/upgrade', name: 'api_hq_upgrade', methods: ['POST'])]
@@ -79,7 +120,7 @@ class HeadquartersController extends AbstractController
             return $this->json(['error' => $e->getMessage()], 422);
         }
 
-        return $this->json($this->hqService->serializeFacility($facility, $type));
+        return $this->json($this->hqService->serializeFacility($facility, $type, $this->hqService->getForTeam($team)));
     }
 
     #[Route('/optimize', name: 'api_hq_optimize', methods: ['POST'])]

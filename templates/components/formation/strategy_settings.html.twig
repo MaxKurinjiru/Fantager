@@ -1,4 +1,5 @@
 {# templates/components/formation/strategy_settings.html.twig #}
+{% set match_edit_source = match_edit_source|default(null) %}
 <div class="hero-panel formation-section relative overflow-hidden">
     <div class="panel-accent-glow panel-accent-glow--sm"></div>
 
@@ -11,7 +12,7 @@
     <div class="space-y-2">
         <label for="formation-name" class="form-label">{{ 'formation.formation_name'|trans }}</label>
         <input type="text" id="formation-name" data-formation-target="nameInput"
-               value="{{ selected_formation ? selected_formation.name : 'formation.tactics_slot'|trans }}"
+               value="{{ match_edit_source ? match_edit_source.name : (selected_formation ? selected_formation.name : 'formation.tactics_slot'|trans) }}"
                placeholder="{{ 'formation.name_placeholder'|trans }}"
                class="form-input font-semibold">
     </div>
@@ -27,7 +28,9 @@
             ] %}
 
             {% for app in approaches %}
-                {% set approach_selected = (selected_formation and selected_formation.approach.value == app.key) or (not selected_formation and app.key == 'balanced') %}
+                {% set approach_selected = (match_edit_source and match_edit_source.approach == app.key)
+                    or (selected_formation and selected_formation.approach.value == app.key)
+                    or (not match_edit_source and not selected_formation and app.key == 'balanced') %}
                 <label class="tactic-option{% if approach_selected %} tactic-option--selected{% endif %}">
                     <input type="radio" data-formation-target="approachRadio" name="approach" value="{{ app.key }}"
                            class="mt-1 form-control-accent"
@@ -45,7 +48,8 @@
     <div class="form-check">
         <input type="checkbox" id="set-default" data-formation-target="defaultCheckbox"
                class="rounded form-control-accent"
-               {% if selected_formation and selected_formation.isDefault %}checked{% endif %}>
+               {% if selected_formation and selected_formation.isDefault %}checked{% endif %}
+               {% if match_edit_source %}disabled{% endif %}>
         <label for="set-default" class="cursor-pointer">{{ 'formation.set_default'|trans }}</label>
     </div>
 
@@ -53,7 +57,7 @@
         <button type="button"
                 data-action="click->formation#save"
                 class="btn btn-primary px-6 py-2.5 font-bold uppercase tracking-wider text-xs shadow-md shadow-emerald-950/10">
-            {{ 'formation.save_lineup'|trans }}
+            {{ match_edit_source ? 'formation.save_match_lineup'|trans : 'formation.save_lineup'|trans }}
         </button>
     </div>
 </div>
