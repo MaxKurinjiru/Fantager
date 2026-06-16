@@ -12,6 +12,7 @@ use App\Enum\FinancialCrisisLevel;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Notification\NotificationHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -24,6 +25,7 @@ class FinancialCrisisServiceTest extends TestCase
     private HeadquartersRepository $hqRepositoryMock;
     private EconomyService $economyServiceMock;
     private NotificationHelper $notificationHelperMock;
+    private TeamChronicleService $teamChronicleServiceMock;
     private EntityManagerInterface $entityManagerMock;
     private LoggerInterface $loggerMock;
     private FinancialCrisisService $service;
@@ -33,6 +35,7 @@ class FinancialCrisisServiceTest extends TestCase
         $this->hqRepositoryMock = $this->createMock(HeadquartersRepository::class);
         $this->economyServiceMock = $this->createMock(EconomyService::class);
         $this->notificationHelperMock = $this->createMock(NotificationHelper::class);
+        $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
 
@@ -40,6 +43,7 @@ class FinancialCrisisServiceTest extends TestCase
             $this->hqRepositoryMock,
             $this->economyServiceMock,
             $this->notificationHelperMock,
+            $this->teamChronicleServiceMock,
             $this->entityManagerMock,
             $this->loggerMock,
         );

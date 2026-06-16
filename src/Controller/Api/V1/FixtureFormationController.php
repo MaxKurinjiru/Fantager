@@ -87,7 +87,7 @@ class FixtureFormationController extends AbstractController
                     return $this->json(['error' => sprintf('Invalid approach. Valid values: %s.', $valid)], 400);
                 }
 
-                /** @var list<array{position: string, hero_id: int|null, strategy: array, spell_priorities: array}> $slots */
+                /** @var list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slots */
                 $slots = is_array($body['slots'] ?? null) ? $body['slots'] : [];
                 $this->fixtureFormationService->saveMatchSpecificFormation($fixture, $team, $name, $approach, $slots);
             } else {

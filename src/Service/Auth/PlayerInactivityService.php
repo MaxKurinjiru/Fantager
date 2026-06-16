@@ -7,9 +7,11 @@ namespace App\Service\Auth;
 use App\Entity\Auth\User;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
+use App\Enum\ChronicleReleaseReason;
 use App\Enum\NotificationType;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Notification\NotificationHelper;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -27,6 +29,7 @@ class PlayerInactivityService
         private readonly TranslatorInterface $translator,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
+        private readonly TeamChronicleService $teamChronicleService,
         private readonly string $mailerFrom,
     ) {
     }
@@ -82,6 +85,7 @@ class PlayerInactivityService
 
         $team->setUser(null);
         $team->setIsNpc(true);
+        $this->teamChronicleService->recordPlayerReleased($team, $user, ChronicleReleaseReason::Inactivity);
 
         $user->setTeam(null);
         $user->setInactiveWarningSentAt(null);

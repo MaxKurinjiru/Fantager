@@ -8,13 +8,13 @@ use App\Entity\Auth\User;
 use App\Entity\Headquarters\Headquarters;
 use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
+use App\Enum\FacilityType;
+use App\Enum\Race;
+use App\Repository\Hero\HeroRepository;
 use App\Service\Community\CommunityService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Team\TeamRosterService;
 use Symfony\Bundle\SecurityBundle\Security;
-use App\Enum\FacilityType;
-use App\Enum\Race;
-use App\Repository\Hero\HeroRepository;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
@@ -47,7 +47,6 @@ class GameExtension extends AbstractExtension
             new TwigFunction('hero_can_leave_roster', $this->canHeroLeaveRoster(...)),
         ];
     }
-
 
     public function getUnreadMailCount(): int
     {

@@ -33,7 +33,7 @@ This document defines the basic backend architecture of the project. It serves a
 - **Internal API Routes**: Resource-oriented endpoints returning JSON; serve as reference implementations and prepare for future REST API expansion
 - **Data Access Layer**: Repository and ORM (Doctrine) abstracting database operations
 - **Persistence Layer**: MariaDB 11.4 for relational data
-- **Migrations and Schema Management**: Doctrine migrations for DB versioning and rollback capability
+- **Schema Management**: Doctrine init migration bootstraps the database schema
 
 ## Architectural Pattern
 
@@ -91,7 +91,7 @@ assets/ (source)
 ## Data Architecture
 - Primary storage: MariaDB 11.4
 - Schema modeling: relational model designed according to domain entities
-- Migrations: Doctrine migrations for version control and rollback
+- Schema: Doctrine init migration for database bootstrap
 - Backup and recovery: see [Backups and Recovery](#backups-and-recovery) below; local dev uses `docker exec fantager-db mysqldump` (see `docker/README.md`)
 
 ## Code Quality & Standards
@@ -247,7 +247,7 @@ docker exec -it fantager-web php bin/console doctrine:migrations:migrate
 ## Operations and Deployment
 - Environments: `dev`, `staging`, `prod`
 - Deployment automation: CI/CD pipeline (specific tools to be added later)
-- Database migrations: Doctrine migrations run before deployment; rollback capability maintained
+- Database schema: init migration applied on fresh environment setup
 
 ### Containerization
 Use Docker for local development, CI and consistent deployment environment:
@@ -314,7 +314,7 @@ Production backups should follow the retention and verification policy in the se
 ### Phase 2: Implementation ✅ Backend largely done
 - [x] Create Dockerfile and docker-compose.yml
 - [x] Set up Symfony project structure and routing
-- [x] Implement database migrations and schema (all phases covered in `Version20260608160305`)
+- [x] Implement database schema (init migration covers full current schema)
 - [x] Create Service layer foundation (Auth, Kingdom, Team, Hero, Summoning, Training, HQ, Economy, Item, Spell, Formation)
 - [x] Set up PHPUnit testing framework (1 test passing; coverage expansion pending)
 - [ ] Set up Playwright for E2E tests (not yet installed)

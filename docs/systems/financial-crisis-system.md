@@ -86,10 +86,11 @@ During `restricted` or `bankruptcy_pending` with `unpaid_debt > 0`, passive HQ b
 When bankruptcy triggers:
 
 1. Team `user_id` → NULL, `is_npc` → true
-2. Team gold, debt, and crisis counters reset
-3. User `team` → NULL; `team_reassignment_available_at` set (+7 days)
-4. System notification sent to player
-5. Heroes, HQ, and roster remain on the released NPC team
+2. Team chronicle entry: `player_released` / `bankruptcy` (`FinancialCrisisService::executeBankruptcy()`)
+3. Team gold, debt, and crisis counters reset
+4. User `team` → NULL; `team_reassignment_available_at` set (+7 days)
+5. System notification sent to player
+6. Heroes, HQ, and roster remain on the released NPC team
 
 ---
 

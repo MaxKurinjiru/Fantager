@@ -1,6 +1,16 @@
-# VCS
+# VCS & Docker Config
 .git
 .gitignore
+.dockerignore
+docker/Dockerfile
+docker/README.md
+docker-compose.yml
+docker-compose.override.yml
+
+# Documentation
+README.md
+docs/
+_deferred/
 
 # Dependencies and build artifacts
 node_modules/
@@ -19,8 +29,6 @@ var/cache/
 var/log/
 var/sessions/
 
-# Docker overrides
-docker-compose.override.yml
 
 # Logs and debug
 npm-debug.log

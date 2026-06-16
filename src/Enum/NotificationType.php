@@ -11,7 +11,6 @@ enum NotificationType: string
     case LeagueUpdate = 'league_update';
     case MarketplaceBid = 'marketplace_bid';
     case MarketplaceSold = 'marketplace_sold';
-    case AchievementUnlocked = 'achievement_unlocked';
     case EventStarted = 'event_started';
     case HeroDied = 'hero_died';
     case SeasonEnded = 'season_ended';

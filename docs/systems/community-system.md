@@ -11,9 +11,8 @@ Purpose: Document leaderboards, private messages, forums, content moderation, an
 The community system covers:
 1. **Private Messages** — team-to-team inbox/outbox within the same kingdom.
 2. **Forum** — kingdom-scoped threaded discussions with categories.
-3. **Achievements** — unlockable badges tracked per team.
-4. **News Articles** — kingdom-scoped or global announcements.
-5. **Leaderboards & Public Profiles** — planned for a future phase.
+3. **News Articles** — kingdom-scoped or global announcements.
+4. **Leaderboards & Public Profiles** — planned for a future phase.
 
 All community interactions are **kingdom-scoped**: teams can only send messages to or create threads for teams within their own kingdom.
 
@@ -117,35 +116,10 @@ The current blacklist contains Czech and English profanities. The list is define
 
 ---
 
-## Achievements
-
-### Model (`Achievement` + `TeamAchievement` entities)
-
-**Achievement** — static definitions (not player-created):
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | string | Achievement name |
-| `description` | string | Achievement description |
-| `icon` | string | Icon identifier |
-| `unlock_condition` | JSON | Machine-readable condition rules |
-
-**TeamAchievement** — tracks which teams have unlocked which achievements:
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `team_id` | FK → Team | Team that unlocked it |
-| `achievement_id` | FK → Achievement | The achievement |
-| `unlocked_at` | datetime | When it was unlocked |
-
-> Achievement unlock logic is not yet implemented — entity schema is defined; trigger points (e.g. on battle win, training completion) are pending (Phase 6+).
-
----
-
 ## Leaderboards & Public Profiles
 
 > [!NOTE]
-> **Planned for a future phase.** The `GET /api/v1/leaderboards` and `GET /api/v1/players/{id}/profile` endpoints are not yet implemented. Leaderboard data will be derived from `LeagueStanding` and `TeamAchievement`; player profiles will project `User + Team + Achievements`.
+> **Planned for a future phase.** The `GET /api/v1/leaderboards` and `GET /api/v1/players/{id}/profile` endpoints are not yet implemented. Leaderboard data will be derived from `LeagueStanding`; player profiles will project `User + Team`.
 
 ---
 

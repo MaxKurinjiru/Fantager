@@ -288,31 +288,39 @@ Use the **`.alert`** base class + a status modifier:
 
 Modals are built from the overlay + box atoms and controlled by the Stimulus `modal` controller.
 
-#### Structure
+#### Structure (standard pattern)
+
+The overlay element carries `data-modal-target="dialog"` and the backdrop click handler:
 
 ```html
-<div class="modal-overlay" data-controller="modal">
-    <div class="modal-box"
-         data-modal-target="dialog"
-         role="dialog"
-         aria-modal="true"
-         aria-labelledby="modal-title-{id}">
+<div data-controller="modal">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
 
-        <!-- Close button — see 5.1.1 -->
+        <div class="modal-box"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="modal-title-{id}">
 
-        <h2 id="modal-title-{id}" class="text-lg font-semibold mb-4">
-            Dialog Title
-        </h2>
+            <!-- Close button — see 5.1.1 -->
 
-        <!-- Content -->
+            <h2 id="modal-title-{id}" class="text-lg font-semibold mb-4">
+                Dialog Title
+            </h2>
 
-        <div class="flex justify-end gap-3 mt-6">
-            <button type="button" data-action="click->modal#close" class="btn btn-outline">Cancel</button>
-            <button type="submit" class="btn btn-primary">Confirm</button>
+            <!-- Content -->
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" data-action="click->modal#close" class="btn btn-outline">Cancel</button>
+                <button type="submit" class="btn btn-primary">Confirm</button>
+            </div>
         </div>
     </div>
 </div>
 ```
+
+Some modals (e.g. community compose) use the overlay as the controller root; `modal_controller.js` detects this and toggles visibility on the correct element. Backdrop clicks on that variant are handled in `connect()` when the preference is enabled.
 
 #### 5.1.1 Standard Close Button
 
@@ -332,8 +340,10 @@ Close buttons **must** use the `.modal-close` class. Do **not** use raw `&times;
 
 - `aria-labelledby` must point to the modal's heading `id`.
 - The first focusable element inside the modal should receive focus when it opens (handled by the Stimulus controller).
-- Close on `Escape` and overlay click — do not remove these behaviours.
-- Never place a modal inside another modal.
+- **Escape** always closes the active modal.
+- **Backdrop click** closes the modal only when the player has enabled **Backdrop zavírání modalů** in Account Settings (`UserSettings.closeModalOnBackdrop`, default `false`). Read at runtime via `assets/utils/user_preferences.js` (bootstrapped from `data-user-pref-close-modal-on-backdrop` on the game layout).
+- **Mobile back / swipe-back** always closes the topmost open modal. Implemented in `assets/utils/modal_history.js` using `history.pushState` on open and `popstate` on back; programmatic close calls `history.back()` without double-closing.
+- Never place a modal inside another modal (stacked overlays such as mail read-on-compose are separate controller instances with their own history entry).
 - `aria-modal="true"` is required; it prevents screen readers from reading background content.
 
 ---
@@ -502,7 +512,8 @@ export default class extends Controller {
   this._returnFocusTo?.focus(); // on close
   ```
 - **Initial Focus**: Automatically focus the first interactive element inside a modal upon opening.
-- **Key handlers**: Trap focus or bind the Escape key (`keydown.esc`) to close overlays.
+- **Key handlers**: Bind the Escape key to close overlays. Modal history for mobile back is managed centrally in `assets/utils/modal_history.js` — do not reimplement per controller.
+- **User preferences**: Interface toggles that affect modal behaviour must be stored in `auth_user_settings` and exposed to JS via layout data attributes or the preferences utility — not hardcoded defaults in controllers.
 
 ### 9.6 Strict Rules & Constraints
 

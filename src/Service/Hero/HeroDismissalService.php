@@ -9,11 +9,11 @@ use App\Entity\Team\Team;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use App\Enum\HeroStatus;
+use App\Enum\MemorialCause;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
 use App\Service\Team\TeamRosterService;
-use App\Enum\GraveyardCause;
 use Doctrine\ORM\EntityManagerInterface;
 
 class HeroDismissalService
@@ -70,7 +70,7 @@ class HeroDismissalService
         $compensation = (int) round($estimatedValue * self::COMPENSATION_RATIO);
 
         $this->graveyardService->prepareHeroRemoval($hero);
-        $this->graveyardService->recordHero($hero, $team, GraveyardCause::Dismissed);
+        $this->graveyardService->recordMemorial($hero, $team, MemorialCause::Dismissed);
 
         if ($compensation > 0) {
             $this->economyService->addGold(

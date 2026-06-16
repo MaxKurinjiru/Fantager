@@ -33,7 +33,7 @@ final class HqMaintenanceCalculator
 
         $facilitiesFee = 0;
         foreach ($hq->getFacilities() as $facility) {
-            $base = self::FACILITY_WEEKLY_MAINTENANCE[$facility->getType()->value] ?? 20;
+            $base = self::FACILITY_WEEKLY_MAINTENANCE[$facility->getType()->value];
             $facilitiesFee += $base * $facility->getLevel();
         }
 

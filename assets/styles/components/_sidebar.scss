@@ -1,6 +1,10 @@
 @reference "tailwindcss";
 
 @layer components {
+  .game-content-column {
+    @apply flex flex-col flex-1 min-w-0 min-h-0;
+  }
+
   .game-sidebar {
     @apply fixed inset-y-0 left-0 z-40 w-64 p-4 flex flex-col justify-between shrink-0;
     background-color: var(--color-surface-base);
@@ -53,6 +57,7 @@
   .game-main {
     @apply flex-1 w-full overflow-y-auto;
     min-width: 0;
+    min-height: 0;
     background-color: var(--color-surface-page);
     padding: 1rem;
 

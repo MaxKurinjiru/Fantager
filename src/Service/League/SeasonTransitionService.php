@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Service\League;
 
-use App\Entity\ActivityLog\ActivityLog;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\League\LeagueGroup;
 use App\Entity\League\LeagueSeason;
 use App\Entity\League\LeagueStanding;
 use App\Entity\League\LeagueTier;
 use App\Entity\Team\Team;
-use App\Enum\ActivityLogType;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use App\Enum\LeagueSeasonStatus;
 use App\Service\Economy\EconomyService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class SeasonTransitionService
@@ -37,6 +36,7 @@ class SeasonTransitionService
         private readonly EntityManagerInterface $em,
         private readonly LeagueFixtureScheduler $fixtureScheduler,
         private readonly EconomyService $economyService,
+        private readonly TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -277,20 +277,14 @@ class SeasonTransitionService
             }
 
             // 2. Add Activity Log
-            $log = new ActivityLog();
-            $log->setTeam($team);
-            $log->setType(ActivityLogType::SeasonEnded);
-            $log->setSubjectKey('activity.season_ended');
-            $log->setSubjectParams([
-                'season' => (string) $currentSeasonNumber,
-                'tier' => $oldTier->getTierName(),
-                'position' => (string) $position,
-                'status' => $status,
-            ]);
-            $log->setData([
-                'gold' => $goldGranted,
-            ]);
-            $this->em->persist($log);
+            $this->teamChronicleService->recordSeasonEnded(
+                $team,
+                $currentSeasonNumber,
+                $oldTier->getTierName(),
+                $position,
+                $status,
+                $goldGranted,
+            );
         }
 
         // Shuffle teams and seed them into groups of their new tiers for the upcoming season

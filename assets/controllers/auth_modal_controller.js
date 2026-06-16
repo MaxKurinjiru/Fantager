@@ -1,4 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
+import { isCloseModalOnBackdropEnabled } from '../utils/user_preferences.js';
+import { registerModalHistory, unregisterModalHistory } from '../utils/modal_history.js';
 
 export default class extends Controller {
     static targets = ['overlay', 'loginPanel', 'registerPanel'];
@@ -6,6 +8,7 @@ export default class extends Controller {
 
     connect() {
         this._escHandler = this._onEsc.bind(this);
+        this._historyEntry = null;
         if (this.openValue) {
             this._show(this.openValue);
         }
@@ -13,6 +16,7 @@ export default class extends Controller {
 
     disconnect() {
         document.removeEventListener('keydown', this._escHandler);
+        this._clearHistory(false);
     }
 
     openLogin(e) {
@@ -38,8 +42,7 @@ export default class extends Controller {
     }
 
     closeOverlay(e) {
-        // Only close when clicking the backdrop itself, not the modal box
-        if (e.target === e.currentTarget) {
+        if (e.target === e.currentTarget && isCloseModalOnBackdropEnabled()) {
             this._hide();
         }
     }
@@ -63,7 +66,10 @@ export default class extends Controller {
 
         document.addEventListener('keydown', this._escHandler);
 
-        // §9.5 — focus first interactive element inside the visible panel
+        if (!this._historyEntry) {
+            this._historyEntry = registerModalHistory((fromPopState) => this._hide(fromPopState));
+        }
+
         const activePanel = panel === 'register' ? this.registerPanelTarget : this.loginPanelTarget;
         const focusable = activePanel.querySelector(
             'input:not([type="hidden"]), button, [href], select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -71,17 +77,30 @@ export default class extends Controller {
         focusable?.focus();
     }
 
-    _hide() {
+    _hide(fromPopState = false) {
+        if (this.overlayTarget.classList.contains('hidden')) {
+            return;
+        }
+
         this.overlayTarget.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
         document.removeEventListener('keydown', this._escHandler);
-        // §9.5 — restore focus to the element that triggered the modal
+        this._clearHistory(fromPopState);
         this._returnFocusTo?.focus();
         this._returnFocusTo = null;
     }
 
     _onEsc(e) {
         if (e.key === 'Escape') this._hide();
+    }
+
+    _clearHistory(fromPopState) {
+        if (!this._historyEntry) {
+            return;
+        }
+
+        unregisterModalHistory(this._historyEntry, fromPopState);
+        this._historyEntry = null;
     }
 
     togglePassword(e) {

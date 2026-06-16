@@ -1,6 +1,6 @@
 # Calendar & Server Ticks System
 
-Reference: [game-summary.md](../game-summary.md#22-weekly-calendar-server-ticks), [event-system.md](event-system.md), [league-system.md](league-system.md)
+Reference: [game-summary.md](../game-summary.md#22-calendar--server-ticks), [league-system.md](league-system.md)
 
 Purpose: Document the weekly schedule, automated event sequences, daily/weekly server ticks, and the timeline of a league season.
 

@@ -7,12 +7,10 @@ namespace App\Service\Team;
 use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\HeroStatus;
-use App\Enum\TrainingStatus;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Repository\League\LeagueFixtureRepository;
-use App\Repository\Training\TrainingQueueRepository;
 use App\Service\Economy\FinancialCrisisService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -22,7 +20,6 @@ class TeamService
         private readonly HeroRepository $heroRepository,
         private readonly FormationRepository $formationRepository,
         private readonly HeadquartersRepository $hqRepository,
-        private readonly TrainingQueueRepository $trainingQueueRepository,
         private readonly LeagueFixtureRepository $leagueFixtureRepository,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly EntityManagerInterface $em,
@@ -36,12 +33,12 @@ class TeamService
      */
     public function getDashboardData(Team $team): array
     {
-        $allHeroes = $this->heroRepository->findBy(['team' => $team]);
+        $combatants = $this->heroRepository->findCombatantsByTeam($team);
 
-        $heroCount = count($allHeroes);
+        $heroCount = count($combatants);
         $activeCount = 0;
         $trainingCount = 0;
-        foreach ($allHeroes as $h) {
+        foreach ($combatants as $h) {
             if (null !== $h->getTrainer()) {
                 ++$trainingCount;
             } elseif (HeroStatus::Available === $h->getStatus()) {
@@ -51,10 +48,6 @@ class TeamService
 
         /** @var \App\Entity\Headquarters\Headquarters|null $hq */
         $hq = $this->hqRepository->findOneBy(['team' => $team]);
-
-        $pendingJobs = $this->trainingQueueRepository->count([
-            'status' => TrainingStatus::Pending,
-        ]);
 
         $formationCount = $this->formationRepository->countSavedByTeam($team);
 
@@ -90,9 +83,6 @@ class TeamService
                 'race_optimization' => $hq?->getRaceOptimization(),
                 'pending_race_optimization' => $hq?->getPendingRaceOptimization(),
                 'is_optimization_locked' => $hq ? ($hq->hasPendingRaceOptimizationChange() || $hq->isRaceOptimizationLockCycle()) : false,
-            ],
-            'training' => [
-                'pending_jobs' => $pendingJobs,
             ],
             'formations' => [
                 'count' => $formationCount,

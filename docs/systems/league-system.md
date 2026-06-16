@@ -189,7 +189,7 @@ $$\text{Gold Granted} = \text{Base\_Gold}(T_{old}) \times M_{pos}(P) \times M_{s
 
 ### 6. Distribution, Logging, and History
 - **Direct Credit:** Rewards are added directly to the team's balance (`gold` column on the `Team` entity) during the Season Transition transaction. No manual claiming is required.
-- **Activity Log:** A record is added to the `ActivityLog` table with type `season_ended` to notify the player.
+- **Team chronicle:** `TeamChronicleService::recordSeasonEnded()` writes type `season_ended` to `team_chronicle` (tier, position, promotion/relegation status, gold granted). Displayed on the dashboard and at `/app/chronicle`. See [team-chronicle-system.md](team-chronicle-system.md).
 - **Financial Ledger:** A record of type `league_reward` is added to the `FinancialRecord` entity with actor set to `system`, documenting the exact amount of Gold granted for auditing and player ledger transparency.
 
 ## Sections to Fill:

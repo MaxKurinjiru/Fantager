@@ -21,7 +21,7 @@ class LeagueFixtureRepository extends ServiceEntityRepository
     /**
      * @return list<LeagueFixture>
      */
-    public function findFixturesInPeriod(\App\Entity\Kingdom\Kingdom $kingdom, \DateTimeImmutable $start, \DateTimeImmutable $end): array
+    public function findFixturesInPeriod(Kingdom $kingdom, \DateTimeImmutable $start, \DateTimeImmutable $end): array
     {
         return $this->createQueryBuilder('f')
             ->join('f.group', 'g')

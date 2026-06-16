@@ -4,6 +4,7 @@
 
 {% block body %}
 <div class="hq-page page-shell" data-controller="hq"
+     data-hq-active-facility-value="{{ active_facility|default('') }}"
      data-hq-text-upgrading-value="{{ 'js_flash.hq.upgrading'|trans }}"
      data-hq-text-downgrading-value="{{ 'js_flash.hq.downgrading'|trans }}"
      data-hq-error-upgrade-value="{{ 'js_flash.hq.failed_upgrade'|trans }}"
@@ -66,20 +67,6 @@
         </div>
     {% endif %}
 
-    {% if active_facility %}
-        <div id="hq-facility-detail" class="hq-facility-detail mb-8">
-            {% if active_facility == 'arena' %}
-                {% include 'components/hq/facility_panel/_arena.html.twig' %}
-            {% elseif active_facility == 'summoning_chamber' %}
-                {% include 'components/hq/facility_panel/_summoning.html.twig' %}
-            {% elseif active_facility == 'training' %}
-                {% include 'components/hq/facility_panel/_training.html.twig' %}
-            {% elseif active_facility == 'barracks' %}
-                {% include 'components/hq/facility_panel/_barracks.html.twig' %}
-            {% endif %}
-        </div>
-    {% endif %}
-
     <div class="hq-facilities-section">
         <h2 class="hq-facilities-section__title">{{ 'hq.facilities'|trans }}</h2>
         <div class="cards-grid cards-grid--facilities">
@@ -96,4 +83,6 @@
         <span class="hq-facility-bonus__value js-bonus-value"></span>
     </li>
 </template>
+
+{% include 'components/hq/facility_modals.html.twig' %}
 {% endblock %}

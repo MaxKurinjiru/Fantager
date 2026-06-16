@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Service\Training;
 
+use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
-use App\Entity\Training\Trainer;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
-use App\Enum\StaffDepartureCause;
-use App\Enum\TrainerStatus;
+use App\Enum\HeroStatus;
+use App\Enum\MemorialCause;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
@@ -28,7 +28,7 @@ class TrainerDismissalService
     ) {
     }
 
-    public function estimateTrainerValue(Trainer $trainer): int
+    public function estimateTrainerValue(Hero $trainer): int
     {
         $statSum = $trainer->getStr() + $trainer->getDex() + $trainer->getKon() + $trainer->getSpd()
             + $trainer->getIntel() + $trainer->getWil() + $trainer->getCha() + $trainer->getLck();
@@ -39,13 +39,17 @@ class TrainerDismissalService
     /**
      * @throws \DomainException
      */
-    public function dismiss(Team $team, Trainer $trainer): int
+    public function dismiss(Team $team, Hero $trainer): int
     {
+        if (!$trainer->isTrainer()) {
+            throw new \DomainException('Entity is not a trainer.');
+        }
+
         if ($trainer->getTeam()->getId() !== $team->getId()) {
             throw new \DomainException('Trainer does not belong to your team.');
         }
 
-        if (TrainerStatus::Active !== $trainer->getStatus()) {
+        if (HeroStatus::Available !== $trainer->getStatus()) {
             throw new \DomainException('Only active trainers can be dismissed.');
         }
 
@@ -53,7 +57,7 @@ class TrainerDismissalService
         $compensation = (int) round($estimatedValue * self::COMPENSATION_RATIO);
 
         $this->graveyardService->prepareTrainerRemoval($trainer);
-        $this->graveyardService->recordTrainer($trainer, $team, StaffDepartureCause::Dismissed);
+        $this->graveyardService->recordMemorial($trainer, $team, MemorialCause::Dismissed);
 
         if ($compensation > 0) {
             $this->economyService->addGold(
@@ -70,7 +74,7 @@ class TrainerDismissalService
         }
 
         $this->financialCrisisService->recordRecoveryAction($team);
-        $this->graveyardService->removeTrainer($trainer);
+        $this->graveyardService->removeHero($trainer);
         $this->em->flush();
 
         return $compensation;

@@ -6,7 +6,7 @@ namespace App\Controller\Api\V1;
 
 use App\Entity\Auth\User;
 use App\Entity\Marketplace\MarketplaceListing;
-use App\Entity\Marketplace\Transaction;
+use App\Entity\Marketplace\MarketplaceTransaction;
 use App\Enum\ListingStatus;
 use App\Enum\ListingType;
 use App\Service\Marketplace\MarketplaceService;
@@ -61,10 +61,9 @@ class MarketplaceController extends AbstractController
         $priceMax = $request->query->get('price_max');
         $search = $request->query->get('search');
 
-        // Joins for Hero / Trainer filters
+        // Joins for Hero / Trainer filters (both use hero FK)
         if ($race || $levelMin || $levelMax || $search) {
-            $qb->leftJoin('l.hero', 'h')
-               ->leftJoin('l.trainer', 'tr');
+            $qb->leftJoin('l.hero', 'h');
         }
 
         // Joins for Item filters
@@ -73,7 +72,7 @@ class MarketplaceController extends AbstractController
         }
 
         if ($race) {
-            $qb->andWhere('h.race = :race OR tr.race = :race')
+            $qb->andWhere('h.race = :race')
                ->setParameter('race', $race);
         }
 
@@ -103,7 +102,7 @@ class MarketplaceController extends AbstractController
         }
 
         if ($search) {
-            $qb->andWhere('h.name LIKE :search OR it.name LIKE :search OR tr.name LIKE :search')
+            $qb->andWhere('h.name LIKE :search OR it.name LIKE :search')
                ->setParameter('search', '%'.$search.'%');
         }
 
@@ -269,7 +268,7 @@ class MarketplaceController extends AbstractController
             return new JsonResponse(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
         }
 
-        $transactions = $this->em->getRepository(Transaction::class)->createQueryBuilder('t')
+        $transactions = $this->em->getRepository(MarketplaceTransaction::class)->createQueryBuilder('t')
             ->where('t.buyerTeam = :team OR t.sellerTeam = :team')
             ->setParameter('team', $team)
             ->orderBy('t.id', 'DESC')
@@ -277,7 +276,7 @@ class MarketplaceController extends AbstractController
             ->getResult();
 
         $data = [];
-        /** @var Transaction $tx */
+        /** @var MarketplaceTransaction $tx */
         foreach ($transactions as $tx) {
             $highestBid = null;
             $listing = $tx->getListing();
@@ -292,9 +291,8 @@ class MarketplaceController extends AbstractController
                 'created_at' => $tx->getCreatedAt()->format(\DateTimeInterface::ATOM),
                 'listing_id' => $listing->getId(),
                 'listing_type' => $listing->getListingType()->value,
-                'entity_name' => ListingType::Hero === $listing->getListingType() && null !== $listing->getHero() ? $listing->getHero()->getName() :
-                                 (ListingType::Item === $listing->getListingType() && null !== $listing->getItem() ? $listing->getItem()->getName() :
-                                 (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer() ? $listing->getTrainer()->getName() : 'Unknown')),
+                'entity_name' => null !== $listing->getHero() ? $listing->getHero()->getName() :
+                                 (ListingType::Item === $listing->getListingType() && null !== $listing->getItem() ? $listing->getItem()->getName() : 'Unknown'),
             ];
         }
 
@@ -343,8 +341,8 @@ class MarketplaceController extends AbstractController
                 'durability' => $item->getDurability(),
                 'bonuses' => $item->getBonuses(),
             ];
-        } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer()) {
-            $trainer = $listing->getTrainer();
+        } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
+            $trainer = $listing->getHero();
             $entityData = [
                 'id' => $trainer->getId(),
                 'name' => $trainer->getName(),

@@ -31,7 +31,6 @@ class FinancialRecord
     #[ORM\Column(options: ['default' => 0])]
     private int $goldChange = 0;
 
-
     #[ORM\Column(options: ['default' => 0])]
     private int $essenceCommonChange = 0;
 

@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Entity\Hero;
 
 use App\Entity\Team\Team;
-use App\Entity\Training\Trainer;
+use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use App\Enum\Race;
+use App\Enum\TrainingType;
 use App\Repository\Hero\HeroRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -31,6 +32,9 @@ class Hero
 
     #[ORM\Column(length: 10, enumType: Race::class)]
     private Race $race;
+
+    #[ORM\Column(length: 15, enumType: HeroRole::class, options: ['default' => 'combatant'])]
+    private HeroRole $role = HeroRole::Combatant;
 
     #[ORM\Column(options: ['default' => 1])]
     private int $level = 1;
@@ -80,9 +84,19 @@ class Hero
     #[ORM\Column(length: 15, enumType: HeroStatus::class)]
     private HeroStatus $status = HeroStatus::Available;
 
-    #[ORM\ManyToOne(targetEntity: Trainer::class, inversedBy: 'heroes')]
+    #[ORM\Column(length: 15, nullable: true, enumType: TrainingType::class)]
+    private ?TrainingType $trainingType = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $targetAttribute = null;
+
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'trainees')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    private ?Trainer $trainer = null;
+    private ?Hero $trainer = null;
+
+    /** @var Collection<int, Hero> */
+    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'trainer')]
+    private Collection $trainees;
 
     /** @var Collection<int, SchoolMastery> */
     #[ORM\OneToMany(targetEntity: SchoolMastery::class, mappedBy: 'hero', cascade: ['persist'])]
@@ -94,6 +108,7 @@ class Hero
 
     public function __construct()
     {
+        $this->trainees = new ArrayCollection();
         $this->schoolMasteries = new ArrayCollection();
         $this->heroSpells = new ArrayCollection();
     }
@@ -137,6 +152,28 @@ class Hero
         $this->race = $race;
 
         return $this;
+    }
+
+    public function getRole(): HeroRole
+    {
+        return $this->role;
+    }
+
+    public function setRole(HeroRole $role): static
+    {
+        $this->role = $role;
+
+        return $this;
+    }
+
+    public function isTrainer(): bool
+    {
+        return HeroRole::Trainer === $this->role;
+    }
+
+    public function isCombatant(): bool
+    {
+        return HeroRole::Combatant === $this->role;
     }
 
     public function getLevel(): int
@@ -439,16 +476,83 @@ class Hero
         return $this;
     }
 
-    public function getTrainer(): ?Trainer
+    public function getTrainingType(): ?TrainingType
+    {
+        return $this->trainingType;
+    }
+
+    public function setTrainingType(?TrainingType $trainingType): static
+    {
+        $this->trainingType = $trainingType;
+
+        return $this;
+    }
+
+    public function getTargetAttribute(): ?string
+    {
+        return $this->targetAttribute;
+    }
+
+    public function setTargetAttribute(?string $targetAttribute): static
+    {
+        $this->targetAttribute = $targetAttribute;
+
+        return $this;
+    }
+
+    public function getTrainer(): ?Hero
     {
         return $this->trainer;
     }
 
-    public function setTrainer(?Trainer $trainer): static
+    public function setTrainer(?Hero $trainer): static
     {
         $this->trainer = $trainer;
 
         return $this;
+    }
+
+    /** @return Collection<int, Hero> */
+    public function getTrainees(): Collection
+    {
+        return $this->trainees;
+    }
+
+    /** @return Collection<int, Hero> */
+    public function getHeroes(): Collection
+    {
+        return $this->trainees;
+    }
+
+    public function addTrainee(Hero $hero): static
+    {
+        if (!$this->trainees->contains($hero)) {
+            $this->trainees->add($hero);
+            $hero->setTrainer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTrainee(Hero $hero): static
+    {
+        if ($this->trainees->removeElement($hero)) {
+            if ($hero->getTrainer() === $this) {
+                $hero->setTrainer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function addHero(Hero $hero): static
+    {
+        return $this->addTrainee($hero);
+    }
+
+    public function removeHero(Hero $hero): static
+    {
+        return $this->removeTrainee($hero);
     }
 
     /** @return Collection<int, SchoolMastery> */

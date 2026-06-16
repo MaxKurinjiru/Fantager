@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Service\Marketplace;
 
 use App\Entity\Hero\Hero;
-use App\Entity\Kingdom\Kingdom;
 use App\Entity\Item\Item;
+use App\Entity\Kingdom\Kingdom;
 use App\Entity\Marketplace\MarketplaceBid;
 use App\Entity\Marketplace\MarketplaceListing;
-use App\Entity\Marketplace\Transaction;
+use App\Entity\Marketplace\MarketplaceTransaction;
 use App\Entity\Team\Team;
-use App\Entity\Training\Trainer;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use App\Enum\HeroStatus;
@@ -20,12 +19,11 @@ use App\Enum\ListingMode;
 use App\Enum\ListingStatus;
 use App\Enum\ListingType;
 use App\Enum\NotificationType;
-use App\Enum\TrainerStatus;
+use App\Enum\RoyalTreasuryContributionSource;
 use App\Enum\TransactionType;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
-use App\Enum\RoyalTreasuryContributionSource;
 use App\Service\Notification\NotificationHelper;
 use App\Service\Team\TeamRosterService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -125,23 +123,21 @@ class MarketplaceService
             $item->setStatus(ItemStatus::Selling);
             $listing->setItem($item);
         } elseif (ListingType::Trainer === $listingType) {
-            /** @var Trainer|null $trainer */
-            $trainer = $this->em->getRepository(Trainer::class)->find($entityId);
-            if (null === $trainer || $trainer->getTeam()->getId() !== $seller->getId()) {
+            /** @var Hero|null $trainer */
+            $trainer = $this->em->getRepository(Hero::class)->find($entityId);
+            if (null === $trainer || $trainer->getTeam()->getId() !== $seller->getId() || !$trainer->isTrainer()) {
                 throw new \DomainException('Trainer not found or does not belong to your team.');
             }
-            if (TrainerStatus::Active !== $trainer->getStatus()) {
+            if (HeroStatus::Available !== $trainer->getStatus()) {
                 throw new \DomainException('Only active trainers can be listed.');
             }
 
-            // Unassign all trainees (heroes)
-            foreach ($trainer->getHeroes() as $hero) {
-                $trainer->removeHero($hero);
+            foreach ($trainer->getTrainees() as $hero) {
+                $trainer->removeTrainee($hero);
             }
 
-            // Escrow trainer
-            $trainer->setStatus(TrainerStatus::Selling);
-            $listing->setTrainer($trainer);
+            $trainer->setStatus(HeroStatus::Selling);
+            $listing->setHero($trainer);
         }
 
         $this->em->persist($listing);
@@ -173,8 +169,8 @@ class MarketplaceService
             $listing->getHero()->setStatus(HeroStatus::Available);
         } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
             $listing->getItem()->setStatus(ItemStatus::Available);
-        } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer()) {
-            $listing->getTrainer()->setStatus(TrainerStatus::Active);
+        } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
+            $listing->getHero()->setStatus(HeroStatus::Available);
         }
 
         $this->em->flush();
@@ -251,7 +247,7 @@ class MarketplaceService
         }
 
         // Record Transaction
-        $transaction = new Transaction();
+        $transaction = new MarketplaceTransaction();
         $transaction->setBuyerTeam($buyer);
         $transaction->setSellerTeam($seller);
         $transaction->setListing($listing);
@@ -270,10 +266,10 @@ class MarketplaceService
             $item = $listing->getItem();
             $item->setOwnerTeam($buyer);
             $item->setStatus(ItemStatus::Available);
-        } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer()) {
-            $trainer = $listing->getTrainer();
+        } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
+            $trainer = $listing->getHero();
             $trainer->setTeam($buyer);
-            $trainer->setStatus(TrainerStatus::Active);
+            $trainer->setStatus(HeroStatus::Available);
         }
 
         $listing->setStatus(ListingStatus::Sold);
@@ -393,8 +389,8 @@ class MarketplaceService
                     $listing->getHero()->setStatus(HeroStatus::Available);
                 } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
                     $listing->getItem()->setStatus(ItemStatus::Available);
-                } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer()) {
-                    $listing->getTrainer()->setStatus(TrainerStatus::Active);
+                } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
+                    $listing->getHero()->setStatus(HeroStatus::Available);
                 }
 
                 if (null !== $listing->getSellerTeam()->getUser()) {
@@ -452,7 +448,7 @@ class MarketplaceService
                 }
 
                 // Record Transaction
-                $transaction = new Transaction();
+                $transaction = new MarketplaceTransaction();
                 $transaction->setBuyerTeam($winner);
                 $transaction->setSellerTeam($seller);
                 $transaction->setListing($listing);
@@ -471,10 +467,10 @@ class MarketplaceService
                     $item = $listing->getItem();
                     $item->setOwnerTeam($winner);
                     $item->setStatus(ItemStatus::Available);
-                } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getTrainer()) {
-                    $trainer = $listing->getTrainer();
+                } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
+                    $trainer = $listing->getHero();
                     $trainer->setTeam($winner);
-                    $trainer->setStatus(TrainerStatus::Active);
+                    $trainer->setStatus(HeroStatus::Available);
                 }
 
                 $listing->setStatus(ListingStatus::Sold);

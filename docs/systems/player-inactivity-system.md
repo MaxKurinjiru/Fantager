@@ -1,6 +1,6 @@
 # Player Inactivity System
 
-Reference: [team-system.md](team-system.md), [financial-crisis-system.md](financial-crisis-system.md), [calendar-system.md](calendar-system.md)
+Reference: [team-system.md](team-system.md), [team-chronicle-system.md](team-chronicle-system.md), [financial-crisis-system.md](financial-crisis-system.md), [calendar-system.md](calendar-system.md)
 
 Purpose: Release teams from verified players who stop playing, so NPC slots remain available for active managers.
 
@@ -36,7 +36,7 @@ There is **no dashboard banner** — inactive players do not log in, so outreach
 Runs daily at **03:45** (Kingdom local time), after inactive registration cleanup.
 
 1. Find verified users in the Kingdom with a non-NPC team
-2. If inactive ≥ 28 days → release team to NPC pool, email + notify player, set reassignment cooldown
+2. If inactive ≥ 28 days → release team to NPC pool, email + notify player, set reassignment cooldown, chronicle entry `player_released` / `inactivity`
 3. If inactive ≥ 21 days and no warning sent for this inactivity period → email + notify player
 
 ---
@@ -58,10 +58,11 @@ Service: `App\Service\Auth\PlayerActivityService`
 When inactivity release triggers:
 
 1. Team `user_id` → NULL, `is_npc` → true
-2. Team state preserved (gold, debt, roster, HQ)
-3. User `team` → NULL; `team_reassignment_available_at` set (+7 days)
-4. Email + system notification sent to player
-5. User account remains — only the team assignment is removed
+2. Chronicle: `TeamChronicleService::recordPlayerReleased()` with reason `inactivity`
+3. Team state preserved (gold, debt, roster, HQ)
+4. User `team` → NULL; `team_reassignment_available_at` set (+7 days)
+5. Email + system notification sent to player
+6. User account remains — only the team assignment is removed
 
 Service: `App\Service\Auth\PlayerInactivityService::executeInactivityRelease()`
 

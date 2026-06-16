@@ -53,6 +53,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user')]
     private ?Team $team = null;
 
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?UserSettings $settings = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $teamReassignmentAvailableAt = null;
 
@@ -235,5 +238,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->inactiveWarningSentAt = $inactiveWarningSentAt;
 
         return $this;
+    }
+
+    public function getSettings(): ?UserSettings
+    {
+        return $this->settings;
+    }
+
+    public function setSettings(?UserSettings $settings): static
+    {
+        $this->settings = $settings;
+
+        return $this;
+    }
+
+    public function isCloseModalOnBackdrop(): bool
+    {
+        return $this->settings?->isCloseModalOnBackdrop() ?? false;
     }
 }

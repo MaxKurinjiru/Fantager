@@ -91,7 +91,7 @@
             </div>
         </div>
 
-        {% if trainer.status.value == 'active' %}
+        {% if trainer.status.value == 'available' %}
             <div class="trainer-card__section trainer-card__dismiss">
                 <p class="trainer-card__dismiss-desc text-text-muted text-sm">
                     {{ 'training.dismiss_desc'|trans }}
@@ -114,7 +114,7 @@
                     data-trainer-id="{{ trainer.id }}">
                 <option value="">-- {{ 'training.select_trainee'|trans }} --</option>
                 {% for hero in heroes %}
-                    {% if hero.status.value == 'available' and hero.trainer is null %}
+                    {% if hero.role.value == 'combatant' and hero.status.value == 'available' and hero.trainer is null %}
                         <option value="{{ hero.id }}">
                             {{ hero.name }} &bull; Lvl {{ hero.level }} ({{ 'heroes.fatigue'|trans }}: {{ hero.fatigue }}%)
                         </option>

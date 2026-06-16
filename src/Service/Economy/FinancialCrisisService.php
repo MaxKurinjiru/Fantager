@@ -8,6 +8,7 @@ use App\Entity\Auth\User;
 use App\Entity\Headquarters\Headquarters;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
+use App\Enum\ChronicleReleaseReason;
 use App\Enum\FinancialCrisisLevel;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
@@ -15,6 +16,7 @@ use App\Enum\NotificationType;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Headquarters\HqMaintenanceCalculator;
 use App\Service\Notification\NotificationHelper;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -31,6 +33,7 @@ class FinancialCrisisService
         private readonly HeadquartersRepository $hqRepository,
         private readonly EconomyService $economyService,
         private readonly NotificationHelper $notificationHelper,
+        private readonly TeamChronicleService $teamChronicleService,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
     ) {
@@ -142,10 +145,7 @@ class FinancialCrisisService
         ];
 
         if (in_array($action, $blockedActions, true)) {
-            throw new \DomainException(sprintf(
-                'This action is blocked during financial restrictions (%s). Sell assets, dismiss heroes, or downgrade facilities to recover.',
-                $level->value
-            ));
+            throw new \DomainException(sprintf('This action is blocked during financial restrictions (%s). Sell assets, dismiss heroes, or downgrade facilities to recover.', $level->value));
         }
     }
 
@@ -225,6 +225,7 @@ class FinancialCrisisService
 
         $team->setUser(null);
         $team->setIsNpc(true);
+        $this->teamChronicleService->recordPlayerReleased($team, $user, ChronicleReleaseReason::Bankruptcy);
         $team->setUnpaidDebt(0);
         $team->setCrisisWeeks(0);
         $team->setLastRecoveryActionAt(null);

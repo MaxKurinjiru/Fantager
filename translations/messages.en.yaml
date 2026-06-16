@@ -11,6 +11,7 @@ nav:
   news: News
   heroes: Heroes
   team: Team
+  chronicle: Team Chronicle
   summon: Summoning
   hq: Headquarters
   training: Training
@@ -121,6 +122,57 @@ dashboard:
   view_in_league: View in League
   home_arena: Home Arena
 
+chronicle:
+  title: Team Chronicle
+  subtitle: Complete history of your team — across all managers and NPC periods.
+  recent_title: Recent Events
+  view_all: Full chronicle
+  empty: No events recorded yet.
+  empty_filtered: No events match the selected filters.
+  filter_category: Category
+  filter_type: Event type
+  filter_type_all: All types
+  filter_sort: Sort
+  sort_date_desc: Newest first
+  sort_date_asc: Oldest first
+  category:
+    all: All events
+    ownership: Ownership
+    competition: Competition
+    roster: Roster
+    economy: Economy
+
+activity:
+  team_established: 'Team established in kingdom %kingdom% (season %season%).'
+  player_joined: '%player% took over the team.'
+  player_released:
+    inactivity: '%player% released the team due to inactivity.'
+    bankruptcy: '%player% lost the team due to bankruptcy.'
+    unverified_registration: '%player% released the team — registration was not verified in time.'
+    account_deleted: '%player% released the team — account was deleted.'
+  season_ended: 'Season %season% ended in tier %tier% (position %position%, %status%).'
+  summon_completed: 'Summoned hero %hero% (%race%).'
+  season_status:
+    promoted: promoted
+    relegated: relegated
+    maintained: position maintained
+  type:
+    team_established: Team established
+    player_joined: Manager joined
+    player_released: Manager released
+    battle_win: Match won
+    battle_loss: Match lost
+    battle_draw: Match drawn
+    hero_levelup: Hero level up
+    hero_died: Hero died
+    hero_retired: Hero retired
+    training_completed: Training completed
+    item_purchased: Item purchased
+    item_sold: Item sold
+    dungeon_completed: Dungeon completed
+    summon_completed: Hero summoned
+    season_ended: Season ended
+
 financial_crisis:
   title_warning: Financial Warning
   title_restricted: Financial Restrictions
@@ -146,6 +198,8 @@ economy:
 settings:
   title: Account Settings
   language: Game Language
+  interface: Interface
+  modal_backdrop_close: Close modals on backdrop click
   email:
     title: Change Email
     label: New Email Address
@@ -704,6 +758,7 @@ js_flash:
     processing: Processing...
     failed_email: Failed to request email change.
     failed_cancel: Failed to request account cancellation.
+    failed_preferences: Failed to save interface preferences.
   dashboard:
     saving: Saving...
     failed: Failed to update optimization.
@@ -775,8 +830,7 @@ calendar:
   filter_show_system: Show system ticks
   type_system_tick: System
   type_league_match: League
-  type_world_event: Event
-  type_training_queue: Training
+  type_hero_training_history: Training
   status_scheduled: Scheduled
   status_completed: Completed
   status_failed: Failed

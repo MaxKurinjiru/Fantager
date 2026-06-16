@@ -8,6 +8,7 @@ use App\Entity\Auth\User;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
 use App\Service\Auth\PlayerInactivityService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Notification\NotificationHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -24,6 +25,7 @@ class PlayerInactivityServiceTest extends TestCase
     private TranslatorInterface $translatorMock;
     private EntityManagerInterface $entityManagerMock;
     private LoggerInterface $loggerMock;
+    private TeamChronicleService $teamChronicleServiceMock;
     private PlayerInactivityService $service;
 
     protected function setUp(): void
@@ -33,6 +35,7 @@ class PlayerInactivityServiceTest extends TestCase
         $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
+        $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
 
         $this->service = new PlayerInactivityService(
             $this->notificationHelperMock,
@@ -40,6 +43,7 @@ class PlayerInactivityServiceTest extends TestCase
             $this->translatorMock,
             $this->entityManagerMock,
             $this->loggerMock,
+            $this->teamChronicleServiceMock,
             'noreply@fantager.test',
         );
     }

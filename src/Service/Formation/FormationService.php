@@ -67,7 +67,7 @@ class FormationService
     /**
      * Create a new formation or update an existing one (matched by id).
      *
-     * @param list<array{position: string, hero_id: int|null, strategy: array, spell_priorities: array}> $slotsData
+     * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
      *
      * @throws \DomainException|\InvalidArgumentException
      */
@@ -114,7 +114,7 @@ class FormationService
     }
 
     /**
-     * @param list<array{position: string, hero_id: int|null, strategy: array, spell_priorities: array}> $slotsData
+     * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
      *
      * @throws \DomainException|\InvalidArgumentException
      */
@@ -151,7 +151,7 @@ class FormationService
     }
 
     /**
-     * @param list<array{position: string, hero_id: int|null, strategy: array, spell_priorities: array}> $slotsData
+     * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
      *
      * @throws \DomainException|\InvalidArgumentException
      */
@@ -280,15 +280,12 @@ class FormationService
     public function assertCanCreateSavedFormation(Team $team): void
     {
         if ($this->formationRepository->countSavedByTeam($team) >= self::MAX_SAVED_FORMATIONS) {
-            throw new \DomainException(sprintf(
-                'Maximum of %d saved formations allowed.',
-                self::MAX_SAVED_FORMATIONS,
-            ));
+            throw new \DomainException(sprintf('Maximum of %d saved formations allowed.', self::MAX_SAVED_FORMATIONS));
         }
     }
 
     /**
-     * @param list<array{position: string, hero_id: int|null, strategy: array, spell_priorities: array}> $slotsData
+     * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
      *
      * @throws \DomainException|\InvalidArgumentException
      */
@@ -302,7 +299,7 @@ class FormationService
         $this->em->flush();
 
         foreach ($slotsData as $slotData) {
-            $positionValue = (string) ($slotData['position'] ?? '');
+            $positionValue = $slotData['position'];
             $position = FormationPosition::tryFrom($positionValue);
             if (null === $position) {
                 throw new \InvalidArgumentException(sprintf('Invalid position "%s".', $positionValue));
@@ -321,8 +318,8 @@ class FormationService
             $slot->setFormation($formation);
             $slot->setPosition($position);
             $slot->setHero($hero);
-            $slot->setStrategy(is_array($slotData['strategy'] ?? null) ? $slotData['strategy'] : []);
-            $slot->setSpellPriorities(is_array($slotData['spell_priorities'] ?? null) ? $slotData['spell_priorities'] : []);
+            $slot->setStrategy($slotData['strategy']);
+            $slot->setSpellPriorities($slotData['spell_priorities']);
 
             $this->em->persist($slot);
         }

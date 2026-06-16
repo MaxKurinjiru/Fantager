@@ -2,6 +2,7 @@
 
 {% block layout_content %}
     <div data-controller="mobile-menu mail ledger"
+         data-user-pref-close-modal-on-backdrop="{{ app.user.closeModalOnBackdrop ? 'true' : 'false' }}"
          data-mail-unread-count-value="{{ unread_mail_count() }}"
          data-mail-active-team-id-value="{{ app.user.team.id }}"
          data-ledger-translations-value="{{ {
@@ -47,20 +48,22 @@
              'delete_msg': 'community.delete_msg'|trans
          }|json_encode|e('html_attr') }}"
          class="min-h-screen flex flex-col">
-        {% include 'components/layout/navbar.html.twig' with { is_guest: false } %}
-
         {# Sidebar + Main Layout #}
-        <div class="flex flex-1 relative min-h-[calc(100vh-53px)]">
+        <div class="flex flex-1 relative min-h-0">
             {# Backdrop #}
             <div data-mobile-menu-target="backdrop" data-action="click->mobile-menu#close" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden"></div>
 
             {% include 'components/layout/sidebar.html.twig' %}
 
-            <main class="game-main">
-                {% include 'components/ui/flash_messages.html.twig' with { is_guest: false } %}
+            <div class="game-content-column">
+                {% include 'components/layout/navbar.html.twig' with { is_guest: false } %}
 
-                {% block body %}{% endblock %}
-            </main>
+                <main class="game-main">
+                    {% include 'components/ui/flash_messages.html.twig' with { is_guest: false } %}
+
+                    {% block body %}{% endblock %}
+                </main>
+            </div>
         </div>
         {# Account Settings Modal #}
         {% include 'components/layout/_account_settings_modal.html.twig' %}

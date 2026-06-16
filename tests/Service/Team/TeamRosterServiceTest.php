@@ -6,7 +6,7 @@ namespace App\Tests\Service\Team;
 
 use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
-use App\Entity\Training\Trainer;
+use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Team\TeamRosterService;
@@ -20,6 +20,7 @@ class TeamRosterServiceTest extends TestCase
     {
         $team = new Team();
         $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
         $hero->setStatus(HeroStatus::Available);
 
         $repo = $this->createMock(HeroRepository::class);
@@ -34,6 +35,7 @@ class TeamRosterServiceTest extends TestCase
     {
         $team = new Team();
         $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
         $hero->setStatus(HeroStatus::Available);
 
         $repo = $this->createMock(HeroRepository::class);
@@ -47,9 +49,13 @@ class TeamRosterServiceTest extends TestCase
     public function testIsCombatReadyWhenAssignedToTrainer(): void
     {
         $team = new Team();
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+
         $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
         $hero->setStatus(HeroStatus::Available);
-        $hero->setTrainer(new Trainer());
+        $hero->setTrainer($trainer);
 
         $repo = $this->createMock(HeroRepository::class);
         $service = new TeamRosterService($repo);
@@ -60,6 +66,7 @@ class TeamRosterServiceTest extends TestCase
     public function testIsNotCombatReadyWhenRecovering(): void
     {
         $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
         $hero->setStatus(HeroStatus::Recovering);
 
         $repo = $this->createMock(HeroRepository::class);
@@ -72,6 +79,7 @@ class TeamRosterServiceTest extends TestCase
     {
         $team = new Team();
         $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
         $hero->setStatus(HeroStatus::Available);
 
         $repo = $this->createMock(HeroRepository::class);

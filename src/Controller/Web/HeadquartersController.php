@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
+use App\Entity\Headquarters\Headquarters;
+use App\Entity\Team\Team;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
-use App\Repository\Summoning\SummonHistoryRepository;
-use App\Repository\Training\TrainerRepository;
-use App\Service\Arena\ArenaService;
+use App\Repository\Team\TeamSummonHistoryRepository;
+use App\Service\Headquarters\ArenaService;
 use App\Service\Summoning\SummoningService;
 use App\Service\Training\TrainingService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,9 +33,8 @@ class HeadquartersController extends AbstractController
         private readonly HeadquartersRepository $hqRepository,
         private readonly ArenaService $arenaService,
         private readonly SummoningService $summoningService,
-        private readonly SummonHistoryRepository $historyRepository,
+        private readonly TeamSummonHistoryRepository $historyRepository,
         private readonly HeroRepository $heroRepository,
-        private readonly TrainerRepository $trainerRepository,
         private readonly TrainingService $trainingService,
     ) {
     }
@@ -52,64 +52,70 @@ class HeadquartersController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
+        /** @var Headquarters|null $hq */
         $hq = $this->hqRepository->findOneBy(['team' => $team]);
-        $facility = $request->query->get('facility');
-        if (!in_array($facility, self::FACILITY_PANELS, true)) {
-            $facility = null;
+        $activeFacility = $request->query->get('facility');
+        if (!in_array($activeFacility, self::FACILITY_PANELS, true)) {
+            $activeFacility = null;
         }
 
-        $panelData = [];
+        return $this->render('hq/index.html.twig', array_merge(
+            [
+                'team' => $team,
+                'hq' => $hq,
+                'active_facility' => $activeFacility,
+            ],
+            $this->buildFacilityPanelData($team, $hq, $request),
+        ));
+    }
 
-        if ('arena' === $facility) {
-            $panelData['arena_status'] = $this->arenaService->getArenaStatus($team);
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildFacilityPanelData(Team $team, ?Headquarters $hq, Request $request): array
+    {
+        $race = $request->query->get('race');
+        if ('' === $race) {
+            $race = null;
         }
 
-        if ('summoning_chamber' === $facility) {
-            $panelData['summon_status'] = $this->summoningService->getStatus($team);
-            $panelData['arena_theme'] = $this->summoningService->getArenaRaceTheme($team);
-            $panelData['compatible_races'] = $this->summoningService->getCompatibleRacesDetails($team);
+        $heroes = $this->heroRepository->findCombatantsByTeam($team);
+        $trainers = $this->heroRepository->findTrainersByTeam($team);
+        $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
+        $nowLocal = new \DateTimeImmutable('now', $tz);
+        $nextTick = $this->trainingService->getNextTrainingTime($nowLocal);
+        $nextLock = $nextTick->modify('-46 hours');
 
-            $race = $request->query->get('race');
-            if ('' === $race) {
-                $race = null;
-            }
-            $sort = $request->query->get('sort', 'date-desc');
-            $panelData['summon_history'] = $this->historyRepository->findByTeamFiltered($team, $race, $sort);
-            $panelData['summon_history_race'] = $race;
-            $panelData['summon_history_sort'] = $sort;
-            $panelData['summon_subtab'] = $request->query->get('subtab', 'summon');
-        }
-
-        if ('training' === $facility) {
-            $heroes = $this->heroRepository->findBy(['team' => $team]);
-            $trainers = $this->trainerRepository->findBy(['team' => $team]);
-            $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
-            $nowLocal = new \DateTimeImmutable('now', $tz);
-
-            $panelData['heroes'] = $heroes;
-            $panelData['trainers'] = $trainers;
-            $panelData['is_locked'] = $this->trainingService->isTrainingLockedForTeam($team, $nowLocal);
-            $nextTick = $this->trainingService->getNextTrainingTime($nowLocal);
-            $nextLock = $nextTick->modify('-46 hours');
-            $panelData['next_tick'] = $nextTick;
-            $panelData['next_lock'] = $nextLock;
-            $panelData['next_tick_formatted'] = $nextTick->format('d. m. Y H:i');
-            $panelData['next_lock_formatted'] = $nextLock->format('d. m. Y H:i');
-            $panelData['trainer_limit'] = $this->trainingService->getTrainerLimit($team);
-            $panelData['training_service'] = $this->trainingService;
-            $panelData['training_subtab'] = $request->query->get('subtab', 'trainers');
-        }
-
-        if ('barracks' === $facility) {
-            $panelData['race_optimization'] = $hq?->getRaceOptimization();
-            $panelData['pending_race_optimization'] = $hq?->getPendingRaceOptimization();
-            $panelData['is_optimization_locked'] = $hq ? ($hq->hasPendingRaceOptimizationChange() || $hq->isRaceOptimizationLockCycle()) : false;
-        }
-
-        return $this->render('hq/index.html.twig', array_merge([
-            'team' => $team,
-            'hq' => $hq,
-            'active_facility' => $facility,
-        ], $panelData));
+        return [
+            'arena_status' => $this->arenaService->getArenaStatus($team),
+            'summon_status' => $this->summoningService->getStatus($team),
+            'arena_theme' => $this->summoningService->getArenaRaceTheme($team),
+            'compatible_races' => $this->summoningService->getCompatibleRacesDetails($team),
+            'summon_history' => $this->historyRepository->findByTeamFiltered(
+                $team,
+                'summoning_chamber' === $request->query->get('facility') ? $race : null,
+                $request->query->get('sort', 'date-desc'),
+            ),
+            'summon_history_race' => 'summoning_chamber' === $request->query->get('facility') ? $race : null,
+            'summon_history_sort' => $request->query->get('sort', 'date-desc'),
+            'summon_subtab' => 'summoning_chamber' === $request->query->get('facility')
+                ? $request->query->get('subtab', 'summon')
+                : 'summon',
+            'heroes' => $heroes,
+            'trainers' => $trainers,
+            'is_locked' => $this->trainingService->isTrainingLockedForTeam($team, $nowLocal),
+            'next_tick' => $nextTick,
+            'next_lock' => $nextLock,
+            'next_tick_formatted' => $nextTick->format('d. m. Y H:i'),
+            'next_lock_formatted' => $nextLock->format('d. m. Y H:i'),
+            'trainer_limit' => $this->trainingService->getTrainerLimit($team),
+            'training_service' => $this->trainingService,
+            'training_subtab' => 'training' === $request->query->get('facility')
+                ? $request->query->get('subtab', 'trainers')
+                : 'trainers',
+            'race_optimization' => $hq?->getRaceOptimization(),
+            'pending_race_optimization' => $hq?->getPendingRaceOptimization(),
+            'is_optimization_locked' => $hq ? ($hq->hasPendingRaceOptimizationChange() || $hq->isRaceOptimizationLockCycle()) : false,
+        ];
     }
 }

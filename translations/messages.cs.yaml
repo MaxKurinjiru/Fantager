@@ -11,6 +11,7 @@ nav:
   news: Novinky
   heroes: Hrdinové
   team: Tým
+  chronicle: Kronika týmu
   summon: Vyvolávání
   hq: Základna
   training: Trénink
@@ -121,6 +122,57 @@ dashboard:
   view_in_league: Zobrazit v lize
   home_arena: Domácí aréna
 
+chronicle:
+  title: Kronika týmu
+  subtitle: Kompletní historie týmu — napříč manažery i obdobími pod NPC kontrolou.
+  recent_title: Nedávné události
+  view_all: Celá kronika
+  empty: Zatím nejsou zaznamenány žádné události.
+  empty_filtered: Vybraným filtrům neodpovídá žádná událost.
+  filter_category: Kategorie
+  filter_type: Typ události
+  filter_type_all: Všechny typy
+  filter_sort: Řazení
+  sort_date_desc: Od nejnovějších
+  sort_date_asc: Od nejstarších
+  category:
+    all: Všechny události
+    ownership: Vlastnictví
+    competition: Soutěž
+    roster: Roster
+    economy: Ekonomika
+
+activity:
+  team_established: 'Tým založen v království %kingdom% (sezóna %season%).'
+  player_joined: 'Tým převzal hráč %player%.'
+  player_released:
+    inactivity: 'Hráč %player% uvolnil tým z důvodu neaktivity.'
+    bankruptcy: 'Hráč %player% ztratil tým kvůli bankrotu.'
+    unverified_registration: 'Hráč %player% uvolnil tým — registrace nebyla včas ověřena.'
+    account_deleted: 'Hráč %player% uvolnil tým — účet byl smazán.'
+  season_ended: 'Sezóna %season% skončila v %tier% (pozice %position%, %status%).'
+  summon_completed: 'Vyvolán hrdina %hero% (%race%).'
+  season_status:
+    promoted: postup
+    relegated: sestup
+    maintained: udržení pozice
+  type:
+    team_established: Založení týmu
+    player_joined: Převzetí týmu
+    player_released: Uvolnění týmu
+    battle_win: Výhra v zápase
+    battle_loss: Prohra v zápase
+    battle_draw: Remíza
+    hero_levelup: Level up hrdiny
+    hero_died: Úmrtí hrdiny
+    hero_retired: Odchod do důchodu
+    training_completed: Dokončený trénink
+    item_purchased: Nákup předmětu
+    item_sold: Prodej předmětu
+    dungeon_completed: Dokončen dungeon
+    summon_completed: Vyvolání hrdiny
+    season_ended: Konec sezóny
+
 financial_crisis:
   title_warning: Finanční varování
   title_restricted: Finanční restrikce
@@ -147,6 +199,8 @@ economy:
 settings:
   title: Nastavení účtu
   language: Jazyk hry
+  interface: Rozhraní
+  modal_backdrop_close: Backdrop zavírání modalů
   email:
     title: Změna e-mailu
     label: Nová e-mailová adresa
@@ -703,6 +757,7 @@ js_flash:
     processing: Zpracování...
     failed_email: Nepodařilo se požádat o změnu e-mailu.
     failed_cancel: Nepodařilo se požádat o zrušení účtu.
+    failed_preferences: Nepodařilo se uložit preference rozhraní.
   dashboard:
     saving: Ukládání...
     failed: Nepodařilo se aktualizovat optimalizaci.
@@ -774,8 +829,7 @@ calendar:
   filter_show_system: Zobrazit systémové ticky
   type_system_tick: Systém
   type_league_match: Liga
-  type_world_event: Událost
-  type_training_queue: Trénink
+  type_hero_training_history: Trénink
   status_scheduled: Naplánováno
   status_completed: Dokončeno
   status_failed: Selhalo

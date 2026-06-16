@@ -8,7 +8,6 @@ use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
-use App\Entity\Training\Trainer;
 use App\Enum\ListingMode;
 use App\Enum\ListingStatus;
 use App\Enum\ListingType;
@@ -44,10 +43,6 @@ class MarketplaceListing
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Item $item = null;
-
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    private ?Trainer $trainer = null;
 
     #[ORM\Column]
     private int $priceGold;
@@ -134,18 +129,6 @@ class MarketplaceListing
     public function setItem(?Item $item): static
     {
         $this->item = $item;
-
-        return $this;
-    }
-
-    public function getTrainer(): ?Trainer
-    {
-        return $this->trainer;
-    }
-
-    public function setTrainer(?Trainer $trainer): static
-    {
-        $this->trainer = $trainer;
 
         return $this;
     }

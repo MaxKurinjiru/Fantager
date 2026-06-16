@@ -9,10 +9,9 @@ use App\Enum\TickType;
 use App\Service\Calendar\CalendarService;
 use App\Service\Calendar\TickScheduleCalculator;
 use App\Repository\Kingdom\KingdomTickLogRepository;
-use App\Repository\Training\TrainingQueueRepository;
+use App\Repository\Hero\HeroTrainingHistoryRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
-use App\Repository\Event\EventRepository;
 use App\Repository\Hero\HeroRepository;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -22,9 +21,8 @@ class CalendarServiceTest extends TestCase
 {
     private $scheduleCalculatorMock;
     private $tickLogRepositoryMock;
-    private $trainingQueueRepositoryMock;
+    private $heroTrainingHistoryRepositoryMock;
     private $leagueFixtureRepositoryMock;
-    private $eventRepositoryMock;
     private $seasonRepositoryMock;
     private $heroRepositoryMock;
     private CalendarService $service;
@@ -33,18 +31,16 @@ class CalendarServiceTest extends TestCase
     {
         $this->scheduleCalculatorMock = $this->createMock(TickScheduleCalculator::class);
         $this->tickLogRepositoryMock = $this->createMock(KingdomTickLogRepository::class);
-        $this->trainingQueueRepositoryMock = $this->createMock(TrainingQueueRepository::class);
+        $this->heroTrainingHistoryRepositoryMock = $this->createMock(HeroTrainingHistoryRepository::class);
         $this->leagueFixtureRepositoryMock = $this->createMock(LeagueFixtureRepository::class);
-        $this->eventRepositoryMock = $this->createMock(EventRepository::class);
         $this->seasonRepositoryMock = $this->createMock(LeagueSeasonRepository::class);
         $this->heroRepositoryMock = $this->createMock(HeroRepository::class);
 
         $this->service = new CalendarService(
             $this->scheduleCalculatorMock,
             $this->tickLogRepositoryMock,
-            $this->trainingQueueRepositoryMock,
+            $this->heroTrainingHistoryRepositoryMock,
             $this->leagueFixtureRepositoryMock,
-            $this->eventRepositoryMock,
             $this->seasonRepositoryMock,
             $this->heroRepositoryMock
         );
@@ -76,11 +72,6 @@ class CalendarServiceTest extends TestCase
         // 2. Mock League Fixtures (0 returned)
         $this->leagueFixtureRepositoryMock
             ->method('findFixturesInPeriod')
-            ->willReturn([]);
-
-        // 3. Mock Events (0 returned)
-        $this->eventRepositoryMock
-            ->method('findEventsInPeriod')
             ->willReturn([]);
 
         $feed = $this->service->getCalendarFeed($kingdom, $start, $end, null);

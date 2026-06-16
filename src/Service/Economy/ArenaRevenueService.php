@@ -151,6 +151,7 @@ class ArenaRevenueService
      */
     public function getFacilityBonuses(Team $team): array
     {
+        /** @var \App\Entity\Headquarters\Headquarters|null $hq */
         $hq = $this->hqRepository->findOneBy(['team' => $team]);
         $arenaCapacityBonusPct = 0.0;
         $ticketRevenueBonusPct = 0.0;

@@ -1,0 +1,59 @@
+{# Arena #}
+<div data-controller="modal" data-modal-event-name-value="modal:open-hq-arena" id="hq-arena-modal">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+        <div class="modal-box modal-box--wide p-6 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="hq-arena-modal-title">
+            <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="text-xl leading-none">✕</span>
+            </button>
+            <div id="hq-arena-modal-title" class="sr-only">{{ 'hq.facilities_list.arena.name'|trans }}</div>
+            {% include 'components/hq/facility_panel/_arena.html.twig' %}
+        </div>
+    </div>
+</div>
+
+{# Summoning Chamber #}
+<div data-controller="modal" data-modal-event-name-value="modal:open-hq-summoning_chamber" id="hq-summoning-modal">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+        <div class="modal-box modal-box--wide p-6 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="hq-summoning-modal-title">
+            <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="text-xl leading-none">✕</span>
+            </button>
+            <div id="hq-summoning-modal-title" class="sr-only">{{ 'hq.facilities_list.summoning_chamber.name'|trans }}</div>
+            {% include 'components/hq/facility_panel/_summoning.html.twig' %}
+        </div>
+    </div>
+</div>
+
+{# Training #}
+<div data-controller="modal" data-modal-event-name-value="modal:open-hq-training" id="hq-training-modal">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+        <div class="modal-box modal-box--wide p-6 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="hq-training-modal-title">
+            <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="text-xl leading-none">✕</span>
+            </button>
+            <div id="hq-training-modal-title" class="sr-only">{{ 'hq.facilities_list.training.name'|trans }}</div>
+            {% include 'components/hq/facility_panel/_training.html.twig' %}
+        </div>
+    </div>
+</div>
+
+{# Barracks #}
+<div data-controller="modal" data-modal-event-name-value="modal:open-hq-barracks" id="hq-barracks-modal">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+        <div class="modal-box modal-box--wide p-6 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="hq-barracks-modal-title">
+            <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="text-xl leading-none">✕</span>
+            </button>
+            <div id="hq-barracks-modal-title" class="sr-only">{{ 'hq.facilities_list.barracks.name'|trans }}</div>
+            {% include 'components/hq/facility_panel/_barracks.html.twig' %}
+        </div>
+    </div>
+</div>

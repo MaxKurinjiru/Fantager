@@ -6,6 +6,7 @@ namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
 use App\Service\Team\TeamService;
+use App\Service\TeamChronicle\TeamChroniclePresenter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -16,6 +17,7 @@ class DashboardController extends AbstractController
 {
     public function __construct(
         private readonly TeamService $teamService,
+        private readonly TeamChroniclePresenter $teamChroniclePresenter,
     ) {
     }
 
@@ -33,11 +35,13 @@ class DashboardController extends AbstractController
         }
 
         $dashboardData = $this->teamService->getDashboardData($team);
+        $recentChronicle = $this->teamChroniclePresenter->presentRecentForTeam($team, 5, $user->getLocale());
 
         return $this->render('dashboard/index.html.twig', [
             'user' => $user,
             'team' => $team,
             'dashboard' => $dashboardData,
+            'recent_chronicle' => $recentChronicle,
         ]);
     }
 }

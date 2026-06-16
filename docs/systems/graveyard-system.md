@@ -8,10 +8,10 @@ Purpose: Permanent memorial records for heroes and staff who leave the team.
 
 | Type | Entity | Triggers |
 |------|--------|----------|
-| **Hero memorial** | `GraveyardRecord` | Dismissal, combat death (future), age (future) |
+| **Hero memorial** | `GraveyardMemorial` | Dismissal, combat death (future), age (future) |
 | **Staff memorial** | `StaffRecord` | Trainer dismissal (future: retirement, death) |
 
-Dismissed heroes are no longer hard-deleted — a snapshot is written to `graveyard_record` before the live `Hero` row is removed.
+Dismissed heroes are no longer hard-deleted — a snapshot is written to `graveyard_memorial` before the live `Hero` row is removed.
 
 ## Hero Dismissal Flow
 

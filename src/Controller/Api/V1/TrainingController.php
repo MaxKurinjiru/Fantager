@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1;
 
 use App\Entity\Auth\User;
-use App\Entity\Training\Trainer;
+use App\Entity\Hero\Hero;
+use App\Enum\HeroRole;
 use App\Enum\TrainingType;
 use App\Repository\Hero\HeroRepository;
-use App\Repository\Training\TrainerRepository;
 use App\Service\Training\TrainerDismissalService;
 use App\Service\Training\TrainingService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,7 +23,6 @@ class TrainingController extends AbstractController
         private readonly TrainingService $trainingService,
         private readonly TrainerDismissalService $trainerDismissalService,
         private readonly HeroRepository $heroRepository,
-        private readonly TrainerRepository $trainerRepository,
     ) {
     }
 
@@ -38,13 +37,12 @@ class TrainingController extends AbstractController
 
         $now = new \DateTimeImmutable();
         $isLocked = $this->trainingService->isTrainingLockedForTeam($team, $now);
-        /** @var list<Trainer> $trainers */
-        $trainers = $this->trainerRepository->findBy(['team' => $team]);
+        $trainers = $this->heroRepository->findTrainersByTeam($team);
 
         $data = [];
         foreach ($trainers as $trainer) {
             $heroes = [];
-            foreach ($trainer->getHeroes() as $hero) {
+            foreach ($trainer->getTrainees() as $hero) {
                 $heroes[] = [
                     'id' => $hero->getId(),
                     'name' => $hero->getName(),
@@ -84,8 +82,7 @@ class TrainingController extends AbstractController
             return $this->json(['error' => 'No team assigned to your account.'], 422);
         }
 
-        /** @var Trainer|null $trainer */
-        $trainer = $this->trainerRepository->findOneBy(['id' => $id, 'team' => $team]);
+        $trainer = $this->findTeamTrainer($id, $team);
         if (null === $trainer) {
             return $this->json(['error' => 'Trainer not found.'], 404);
         }
@@ -126,8 +123,7 @@ class TrainingController extends AbstractController
             return $this->json(['error' => 'No team assigned to your account.'], 422);
         }
 
-        /** @var Trainer|null $trainer */
-        $trainer = $this->trainerRepository->findOneBy(['id' => $id, 'team' => $team]);
+        $trainer = $this->findTeamTrainer($id, $team);
         if (null === $trainer) {
             return $this->json(['error' => 'Trainer not found.'], 404);
         }
@@ -136,7 +132,7 @@ class TrainingController extends AbstractController
         $body = json_decode($request->getContent(), true) ?? [];
         $heroId = (int) ($body['hero_id'] ?? 0);
 
-        $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
+        $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team, 'role' => HeroRole::Combatant]);
         if (null === $hero) {
             return $this->json(['error' => 'Hero not found.'], 404);
         }
@@ -163,8 +159,7 @@ class TrainingController extends AbstractController
             return $this->json(['error' => 'No team assigned to your account.'], 422);
         }
 
-        /** @var Trainer|null $trainer */
-        $trainer = $this->trainerRepository->findOneBy(['id' => $id, 'team' => $team]);
+        $trainer = $this->findTeamTrainer($id, $team);
         if (null === $trainer) {
             return $this->json(['error' => 'Trainer not found.'], 404);
         }
@@ -173,7 +168,7 @@ class TrainingController extends AbstractController
         $body = json_decode($request->getContent(), true) ?? [];
         $heroId = (int) ($body['hero_id'] ?? 0);
 
-        $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
+        $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team, 'role' => HeroRole::Combatant]);
         if (null === $hero) {
             return $this->json(['error' => 'Hero not found.'], 404);
         }
@@ -198,8 +193,7 @@ class TrainingController extends AbstractController
             return $this->json(['error' => 'No team assigned to your account.'], 422);
         }
 
-        /** @var Trainer|null $trainer */
-        $trainer = $this->trainerRepository->findOneBy(['id' => $id, 'team' => $team]);
+        $trainer = $this->findTeamTrainer($id, $team);
         if (null === $trainer) {
             return $this->json(['error' => 'Trainer not found.'], 404);
         }
@@ -222,5 +216,12 @@ class TrainingController extends AbstractController
         $user = $this->getUser();
 
         return $user?->getTeam();
+    }
+
+    private function findTeamTrainer(int $id, \App\Entity\Team\Team $team): ?Hero
+    {
+        $trainer = $this->heroRepository->findOneBy(['id' => $id, 'team' => $team, 'role' => HeroRole::Trainer]);
+
+        return $trainer instanceof Hero ? $trainer : null;
     }
 }

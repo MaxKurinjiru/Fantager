@@ -190,7 +190,7 @@ class FixtureFormationService
     /**
      * Save a match-specific temporary formation for this fixture.
      *
-     * @param list<array{position: string, hero_id: int|null, strategy: array, spell_priorities: array}> $slotsData
+     * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
      *
      * @throws \DomainException|\InvalidArgumentException
      */

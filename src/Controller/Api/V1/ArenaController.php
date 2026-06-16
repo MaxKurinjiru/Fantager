@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1;
 
 use App\Entity\Auth\User;
-use App\Service\Arena\ArenaService;
+use App\Service\Headquarters\ArenaService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;

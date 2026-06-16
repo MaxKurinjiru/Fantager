@@ -24,6 +24,10 @@
     border: 1px solid var(--modal-border);
     max-height: 90vh;
     transition: opacity var(--transition-base), transform var(--transition-base);
+
+    &--wide {
+      max-width: 72rem;
+    }
   }
 
   // Responsive inner padding (tighter on small screens)

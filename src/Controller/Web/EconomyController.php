@@ -7,12 +7,11 @@ namespace App\Controller\Web;
 use App\Entity\Auth\User;
 use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
-use App\Entity\Training\Trainer;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
+use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use App\Enum\ItemStatus;
-use App\Enum\TrainerStatus;
 use App\Repository\Team\FinancialRecordRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -50,16 +49,18 @@ class EconomyController extends AbstractController
 
         $heroes = $this->em->getRepository(Hero::class)->findBy([
             'team' => $team,
-            'status' => [HeroStatus::Available],
+            'role' => HeroRole::Combatant,
+            'status' => HeroStatus::Available,
         ]);
         $items = $this->em->getRepository(Item::class)->findBy([
             'ownerTeam' => $team,
             'status' => ItemStatus::Available,
             'equippedHero' => null,
         ]);
-        $trainers = $this->em->getRepository(Trainer::class)->findBy([
+        $trainers = $this->em->getRepository(Hero::class)->findBy([
             'team' => $team,
-            'status' => TrainerStatus::Active,
+            'role' => HeroRole::Trainer,
+            'status' => HeroStatus::Available,
         ]);
 
         $type = $request->query->get('type');

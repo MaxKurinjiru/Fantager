@@ -18,11 +18,15 @@ export default class extends Controller {
         successOptimize: String,
         levelLabel: String,
         goldFormat: String,
-        bonuses: Object
+        bonuses: Object,
+        activeFacility: String,
     };
 
     connect() {
-        // Setup complete; no global listeners needed
+        if (this.hasActiveFacilityValue && this.activeFacilityValue) {
+            this.openFacilityModal(this.activeFacilityValue);
+            this.cleanFacilityUrl();
+        }
     }
 
     disconnect() {
@@ -120,7 +124,7 @@ export default class extends Controller {
         const facilityType = btn.dataset.facility;
         const refund = btn.dataset.refund || '0';
 
-        if (!window.confirm(this.confirmDowngradeValue.replace('%refund%', Number(refund).toLocaleString('cs-CZ'))) {
+        if (!window.confirm(this.confirmDowngradeValue.replace('%refund%', Number(refund).toLocaleString('cs-CZ')))) {
             return;
         }
 
@@ -204,5 +208,26 @@ export default class extends Controller {
         if (this.hasAlertTarget) {
             hideAlert(this.alertTarget);
         }
+    }
+
+    openFacility(e) {
+        e.preventDefault();
+        const facility = e.params.facility || e.currentTarget.dataset.hqFacilityParam;
+        if (!facility) return;
+        this.openFacilityModal(facility);
+    }
+
+    openFacilityModal(facility) {
+        window.dispatchEvent(new Event(`modal:open-hq-${facility}`));
+    }
+
+    cleanFacilityUrl() {
+        const url = new URL(window.location.href);
+        if (!url.searchParams.has('facility')) {
+            return;
+        }
+
+        url.searchParams.delete('facility');
+        window.history.replaceState({}, '', url);
     }
 }

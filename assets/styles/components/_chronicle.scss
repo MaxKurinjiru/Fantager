@@ -1,0 +1,132 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  TEAM CHRONICLE — full history page and dashboard widget
+// =============================================================================
+
+@layer components {
+  .db-chronicle-card {
+    @apply rounded-xl p-6 border shadow-md backdrop-blur-md;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+    border-color: var(--color-border);
+  }
+
+  .db-chronicle-card__header {
+    @apply flex items-center justify-between gap-3 mb-4;
+  }
+
+  .db-chronicle-card__title {
+    @apply text-base font-bold text-white m-0;
+  }
+
+  .db-chronicle-card__link {
+    @apply text-[11px] font-bold uppercase tracking-wide no-underline;
+    color: var(--color-brand-400);
+
+    &:hover {
+      color: var(--color-brand-300);
+    }
+  }
+
+  .db-chronicle-card__list {
+    @apply space-y-2 max-h-[220px] overflow-y-auto pr-1;
+  }
+
+  .db-chronicle-item {
+    @apply p-2.5 rounded-xl;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+  }
+
+  .db-chronicle-item__title {
+    @apply text-xs font-bold leading-snug;
+    color: var(--color-text-secondary);
+  }
+
+  .db-chronicle-item__time {
+    @apply text-[9px] mt-1;
+    color: var(--color-text-muted);
+  }
+
+  .db-chronicle-empty {
+    @apply text-center py-6 select-none opacity-60 text-xs;
+    color: var(--color-text-secondary);
+  }
+
+  .chronicle-page {
+    @apply space-y-6;
+  }
+
+  .chronicle-filters {
+    @apply p-4 rounded-xl border;
+    border-color: var(--color-border);
+    background-color: rgba(11, 18, 32, 0.4);
+  }
+
+  .chronicle-filters__grid {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+  }
+
+  .chronicle-filters__field {
+    @apply space-y-1;
+  }
+
+  .chronicle-list {
+    @apply space-y-3;
+  }
+
+  .chronicle-entry {
+    @apply flex gap-4 p-4 rounded-xl border transition-colors;
+    background-color: rgba(22, 32, 48, 0.25);
+    border-color: var(--color-border);
+
+    &:hover {
+      background-color: rgba(26, 37, 53, 0.35);
+    }
+  }
+
+  .chronicle-entry__icon {
+    @apply text-2xl shrink-0 select-none;
+  }
+
+  .chronicle-entry__body {
+    @apply min-w-0 flex-1 space-y-1;
+  }
+
+  .chronicle-entry__meta {
+    @apply flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px];
+  }
+
+  .chronicle-entry__type {
+    @apply font-bold uppercase tracking-wide;
+    color: var(--color-brand-400);
+  }
+
+  .chronicle-entry__time {
+    color: var(--color-text-muted);
+  }
+
+  .chronicle-entry__message {
+    @apply text-sm m-0 leading-relaxed;
+    color: var(--color-text-primary);
+  }
+
+  .chronicle-empty {
+    @apply text-center py-16 px-6 rounded-xl border;
+    border-color: var(--color-border);
+    background-color: rgba(11, 18, 32, 0.35);
+  }
+
+  .chronicle-empty__emoji {
+    @apply text-5xl mb-4;
+  }
+
+  .chronicle-empty__title {
+    @apply text-lg font-bold text-white mb-2;
+  }
+
+  .chronicle-empty__desc {
+    @apply text-sm m-0;
+    color: var(--color-text-secondary);
+  }
+}

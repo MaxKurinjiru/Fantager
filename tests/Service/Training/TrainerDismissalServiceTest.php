@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\Training;
 
+use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
-use App\Entity\Training\Trainer;
+use App\Enum\HeroRole;
+use App\Enum\HeroStatus;
 use App\Enum\Race;
-use App\Enum\TrainerStatus;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
@@ -28,7 +29,8 @@ class TrainerDismissalServiceTest extends TestCase
             $this->createMock(EntityManagerInterface::class),
         );
 
-        $trainer = new Trainer();
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
         $trainer->setStrRaw(50);
         $trainer->setDexRaw(50);
         $trainer->setKonRaw(50);
@@ -51,11 +53,12 @@ class TrainerDismissalServiceTest extends TestCase
         );
 
         $team = new Team();
-        $trainer = new Trainer();
+        $trainer = new Hero();
         $trainer->setTeam($team);
         $trainer->setName('Coach');
         $trainer->setRace(Race::Human);
-        $trainer->setStatus(TrainerStatus::Selling);
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setStatus(HeroStatus::Selling);
 
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('Only active trainers can be dismissed.');

@@ -7,7 +7,7 @@ Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 Displayed Information:
 - Community Tabs: Leaderboards, Player Profiles, Mail/Messages, News Feed, Forums
 - Leaderboards Panel: categories and top players with filters
-- Player Profile View: team info, achievements, notable heroes, recent matches
+- Player Profile View: team info, notable heroes, recent matches
 - Mail Panel: inbox, sent, compose message, attachments
 - News Feed and Forums: posts, comments, moderation flags
 

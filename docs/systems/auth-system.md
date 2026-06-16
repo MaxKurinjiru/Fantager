@@ -101,11 +101,12 @@ Rate limiting protects auth endpoints against brute-force attacks, credential st
 1. User submits Register form (email, password, confirm password, **game nickname**, **Kingdom selection**)
 2. Server validates input (see [00-auth-screens.md](../screens/00-auth-screens.md#form-validation-rules)); validates chosen Kingdom exists and has available capacity; validates nickname uniqueness via `display_name_slug`
 3. Server creates User entity with `is_verified = false`, `kingdom_id` set to chosen Kingdom, `locale` set to the Kingdom's `language` (default language inherited from Kingdom), `display_name` as entered, `display_name_slug` as webalized form
-4. Server sends verification email (via `symfony/mailer`) with a signed, time-limited token
-5. User clicks link in email → `GET /verify-email?token=...`
-6. Server validates token, sets `is_verified = true`
-7. During the initial registration step (step 3), the server **immediately and automatically** assigns a random available NPC team from the player's Kingdom — sets `user_id` on the team and sets `is_npc = false`. The inherited team includes **10 heroes** (see [team-system.md](../systems/team-system.md#starting-roster)).
-8. User is logged in and redirected to Team Dashboard
+4. Server creates default **`UserSettings`** row (`auth_user_settings`) via `UserSettingsService::getOrCreate()` — e.g. `close_modal_on_backdrop = false`
+5. Server sends verification email (via `symfony/mailer`) with a signed, time-limited token
+6. User clicks link in email → `GET /verify-email?token=...`
+7. Server validates token, sets `is_verified = true`
+8. During the initial registration step (step 3), the server **immediately and automatically** assigns a random available NPC team from the player's Kingdom — sets `user_id` on the team and sets `is_npc = false`. A **`player_joined`** chronicle entry is written to `team_chronicle`. The inherited team includes **10 heroes** (see [team-system.md](../systems/team-system.md#starting-roster)).
+9. User is logged in and redirected to Team Dashboard
 
 **Unverified users cannot log in.** Login attempt by unverified user shows: "Please verify your email first."
 
@@ -151,9 +152,18 @@ Rate limiting protects auth endpoints against brute-force attacks, credential st
 
 ## Sections to fill
 
-- User entity and data model (exact fields, Doctrine mapping)
 - Security headers and cookie hardening (deferred)
 - Tests: registration, email verification, login, unauthorized access, session expiry
+
+## User data model (implemented)
+
+| Entity | Table | Notes |
+|--------|-------|-------|
+| **User** | `auth_user` | Identity: email, password, locale, display name, kingdom, verification state |
+| **UserSettings** | `auth_user_settings` | 1:1 UI preferences; see [19-player-profile-settings.md](../screens/19-player-profile-settings.md) |
+| **VerificationToken** | `auth_verification_token` | Email verify, password reset, email change, account deletion |
+
+Service: `App\Service\Auth\UserSettingsService` — lazy `getOrCreate()` for existing accounts.
 
 ## API endpoints (planned)
 

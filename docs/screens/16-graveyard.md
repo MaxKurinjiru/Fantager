@@ -7,7 +7,7 @@ Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 Displayed Information:
 - Graveyard List:
 	- Hero name, race, final level, age at death
-	- Cause of death, battles fought, wins, achievements, date of death
+	- Cause of death, battles fought, wins, date of death
 - Statistics Summary:
 	- Total fallen heroes, average lifespan, notable heroes
 - Memorial Wall:

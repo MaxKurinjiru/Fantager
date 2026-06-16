@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\Graveyard;
 
-use App\Entity\Graveyard\GraveyardRecord;
+use App\Entity\Graveyard\GraveyardMemorial;
 use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
-use App\Enum\GraveyardCause;
+use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
+use App\Enum\MemorialCause;
 use App\Enum\Race;
 use App\Service\Graveyard\GraveyardService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,10 +19,10 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class GraveyardServiceTest extends TestCase
 {
-    public function testRecordHeroCreatesSnapshot(): void
+    public function testRecordMemorialCreatesSnapshot(): void
     {
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects($this->once())->method('persist')->with($this->isInstanceOf(GraveyardRecord::class));
+        $em->expects($this->once())->method('persist')->with($this->isInstanceOf(GraveyardMemorial::class));
 
         $service = new GraveyardService($em);
 
@@ -29,6 +30,7 @@ class GraveyardServiceTest extends TestCase
         $hero = new Hero();
         $hero->setName('Aldric');
         $hero->setRace(Race::Human);
+        $hero->setRole(HeroRole::Combatant);
         $hero->setLevel(5);
         $hero->setAgeRaw(250);
         $hero->setStatus(HeroStatus::Available);
@@ -41,12 +43,13 @@ class GraveyardServiceTest extends TestCase
         $hero->setChaRaw(28);
         $hero->setLckRaw(25);
 
-        $record = $service->recordHero($hero, $team, GraveyardCause::Dismissed);
+        $record = $service->recordMemorial($hero, $team, MemorialCause::Dismissed);
 
-        $this->assertSame('Aldric', $record->getHeroName());
+        $this->assertSame('Aldric', $record->getName());
         $this->assertSame(Race::Human, $record->getRace());
+        $this->assertSame(HeroRole::Combatant, $record->getRoleAtDeparture());
         $this->assertSame(5, $record->getFinalLevel());
-        $this->assertSame('dismissed', $record->getCauseOfDeath());
+        $this->assertSame(MemorialCause::Dismissed, $record->getCause());
         $this->assertSame(5, $record->getFinalStats()['str']);
     }
 }

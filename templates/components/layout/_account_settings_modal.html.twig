@@ -47,12 +47,32 @@
 
                   <hr class="border-border" />
 
-                  {# 2. Email Change (with AJAX) #}
-                  <div data-controller="account-settings" class="space-y-4"
+                  <div data-controller="account-settings" class="space-y-6"
                        data-account-settings-text-processing-value="{{ 'js_flash.settings.processing'|trans }}"
                        data-account-settings-error-email-value="{{ 'js_flash.settings.failed_email'|trans }}"
                        data-account-settings-error-cancel-value="{{ 'js_flash.settings.failed_cancel'|trans }}"
+                       data-account-settings-error-preferences-value="{{ 'js_flash.settings.failed_preferences'|trans }}"
                   >
+                  {# 2. Interface preferences #}
+                  <div class="space-y-2">
+                      <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wider">{{ 'settings.interface'|trans }}</h3>
+                      <label class="form-check cursor-pointer">
+                          <input type="checkbox"
+                                 data-account-settings-target="closeModalOnBackdropToggle"
+                                 data-action="change->account-settings#saveCloseModalOnBackdrop"
+                                 {% if app.user.closeModalOnBackdrop %}checked{% endif %}
+                                 class="rounded form-control-accent">
+                          <span>{{ 'settings.modal_backdrop_close'|trans }}</span>
+                      </label>
+                      <div data-account-settings-target="closeModalOnBackdropError"
+                           class="hidden alert alert-error"
+                           role="alert"></div>
+                  </div>
+
+                  <hr class="border-border" />
+
+                  {# 3. Email Change (with AJAX) #}
+                  <div class="space-y-4">
                       {# Email Form #}
                       <form data-action="submit->account-settings#changeEmail" class="space-y-3">
                           <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wider">{{ 'settings.email.title'|trans }}</h3>
@@ -126,6 +146,7 @@
                                class="hidden alert alert-success"
                                role="alert"></div>
                       </div>
+                  </div>
                   </div>
               </div>
          </div>

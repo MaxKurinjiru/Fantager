@@ -25,6 +25,7 @@ use App\Service\Config\KingdomInitConfig;
 use App\Service\Config\RaceConfig;
 use App\Service\Hero\HeroGenerator;
 use App\Service\League\LeagueFixtureScheduler;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class KingdomInitializationService
@@ -36,6 +37,7 @@ class KingdomInitializationService
         private readonly HeroGenerator $heroGenerator,
         private readonly RaceConfig $raceConfig,
         private readonly LeagueFixtureScheduler $fixtureScheduler,
+        private readonly TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -103,6 +105,7 @@ class KingdomInitializationService
                 for ($slot = 0; $slot < $teamsPerGroup; ++$slot) {
                     $teamRace = $this->pickTeamRace($npcConfig);
                     $team = $this->createNpcTeam($kingdom, $teamConfig, $npcConfig, $teamIndex);
+                    $this->teamChronicleService->recordTeamEstablished($team, $kingdom, $season->getSeasonNumber());
                     ++$teamIndex;
 
                     $hq = $this->createHeadquarters($team, $hqConfig, $teamRace);

@@ -71,9 +71,12 @@
         </div>
         <div class="facility-card__actions">
             {% if key in ['arena', 'summoning_chamber', 'training', 'barracks'] %}
-                <a href="{{ path('app_hq', { facility: key }) }}" class="btn btn-primary btn--sm">
+                <button type="button"
+                        class="btn btn-primary btn--sm"
+                        data-action="click->hq#openFacility"
+                        data-hq-facility-param="{{ key }}">
                     {{ 'hq.manage_facility'|trans }}
-                </a>
+                </button>
             {% endif %}
             {% if facility.level > 1 %}
                 <button type="button"

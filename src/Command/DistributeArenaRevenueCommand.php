@@ -64,7 +64,7 @@ class DistributeArenaRevenueCommand extends Command
         } else {
             $io->table(
                 ['Home Team', 'Away Team', 'Capacity', 'Attendance', 'Gold (home)'],
-                array_map(static fn(array $r): array => [
+                array_map(static fn (array $r): array => [
                     $r['home_team_id'],
                     $r['away_team_id'],
                     $r['capacity'],

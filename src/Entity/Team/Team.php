@@ -50,7 +50,6 @@ class Team
     #[ORM\Column(options: ['default' => 0])]
     private int $gold = 0;
 
-
     #[ORM\Column(options: ['default' => 0])]
     private int $essenceCommon = 0;
 

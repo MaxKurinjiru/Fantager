@@ -23,6 +23,7 @@
         {# --- Right Column: Stats Card --- #}
         <div class="space-y-6">
             {% include 'components/dashboard/stats_card.html.twig' %}
+            {% include 'components/dashboard/recent_chronicle.html.twig' with { recent_chronicle: recent_chronicle } %}
         </div>
     </div>
 </div>

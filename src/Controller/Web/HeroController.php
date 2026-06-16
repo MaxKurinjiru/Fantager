@@ -6,11 +6,10 @@ namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
 use App\Repository\Hero\HeroRepository;
+use App\Repository\Hero\HeroTrainingHistoryRepository;
 use App\Repository\Item\ItemRepository;
 use App\Repository\Spell\SpellRepository;
-use App\Repository\Summoning\SummonHistoryRepository;
-use App\Repository\Training\TrainerRepository;
-use App\Repository\Training\TrainingQueueRepository;
+use App\Repository\Team\TeamSummonHistoryRepository;
 use App\Service\Config\RaceConfig;
 use App\Service\Training\TrainingService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,10 +26,9 @@ class HeroController extends AbstractController
     public function __construct(
         private readonly HeroRepository $heroRepository,
         private readonly ItemRepository $itemRepository,
-        private readonly TrainingQueueRepository $trainingQueueRepository,
-        private readonly SummonHistoryRepository $summonHistoryRepository,
+        private readonly HeroTrainingHistoryRepository $heroTrainingHistoryRepository,
+        private readonly TeamSummonHistoryRepository $teamSummonHistoryRepository,
         private readonly SpellRepository $spellRepository,
-        private readonly TrainerRepository $trainerRepository,
         private readonly TrainingService $trainingService,
         private readonly RaceConfig $raceConfig,
     ) {
@@ -49,7 +47,7 @@ class HeroController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-        $heroes = $this->heroRepository->findBy(['team' => $team]);
+        $heroes = $this->heroRepository->findCombatantsByTeam($team);
 
         return $this->render('hero/roster.html.twig', [
             'team' => $team,
@@ -90,19 +88,20 @@ class HeroController extends AbstractController
             }
         }
 
-        $trainingHistory = $this->trainingQueueRepository->findBy(
+        /** @var \App\Entity\Hero\HeroTrainingHistory[] $trainingHistory */
+        $trainingHistory = $this->heroTrainingHistoryRepository->findBy(
             ['hero' => $hero],
             ['completedAt' => 'DESC', 'id' => 'DESC'],
             10
         );
 
         $statBonuses = $this->raceConfig->getStatBonuses($hero->getRace());
-        $summonRecord = $this->summonHistoryRepository->findOneByHero($hero);
+        $summonRecord = $this->teamSummonHistoryRepository->findOneByHero($hero);
 
         $totalStatGain = 0;
         $completedTrainings = 0;
         foreach ($trainingHistory as $log) {
-            if ('completed' === $log->getStatus()->value && null !== $log->getStatGain()) {
+            if (null !== $log->getStatGain()) {
                 $totalStatGain += $log->getStatGain();
                 ++$completedTrainings;
             }
@@ -110,8 +109,8 @@ class HeroController extends AbstractController
 
         $items = $this->itemRepository->findBy(['ownerTeam' => $team]);
         $spells = $this->spellRepository->findAll();
-        $heroes = $this->heroRepository->findBy(['team' => $team]);
-        $trainers = $this->trainerRepository->findBy(['team' => $team]);
+        $heroes = $this->heroRepository->findCombatantsByTeam($team);
+        $trainers = $this->heroRepository->findTrainersByTeam($team);
 
         $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
         $nowLocal = new \DateTimeImmutable('now', $tz);

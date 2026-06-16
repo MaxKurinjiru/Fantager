@@ -6,6 +6,7 @@ namespace App\EventListener;
 
 use App\Entity\Auth\User;
 use App\Service\Auth\PlayerActivityService;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -15,6 +16,7 @@ final class UserActivityListener
 {
     public function __construct(
         private readonly PlayerActivityService $playerActivityService,
+        private readonly Security $security,
     ) {
     }
 
@@ -46,7 +48,7 @@ final class UserActivityListener
             return;
         }
 
-        $user = $request->getUser();
+        $user = $this->security->getUser();
         if (!$user instanceof User || !$user->isVerified()) {
             return;
         }

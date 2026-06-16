@@ -7,7 +7,7 @@ Players take on the role of **arena managers** in a persistent fantasy world. Th
 ## Table of Contents
 
 - [2.1 Kingdom System & Server Split](#21-kingdom-system--server-split)
-- [2.2 Event System](#22-event-system)
+- [2.2 Calendar & Server Ticks](#22-calendar--server-ticks)
 - [2.3 Economy System](#23-economy-system)
 - [2.4 Hero System](#24-hero-system)
 - [2.5 Training System](#25-training-system)
@@ -53,13 +53,13 @@ Players take on the role of **arena managers** in a persistent fantasy world. Th
 
 ---
 
-## 2.2 Event System
+## 2.2 Calendar & Server Ticks
 
 ### Concept
 
-- **Dynamic world events**, seasonal activities, and limited missions
-- Heroes participating gain **XP**, level up, and improve stats
-- **Fatigue/form** tracked to prevent overuse
+The game is driven by a **weekly calendar of server ticks**. Each Kingdom/server runs scheduled tasks at fixed times (server-local timezone). Hero fatigue/form limits prevent overuse during competitive play.
+
+> **Deferred:** Dynamic world events (seasonal activities, limited missions, special economic events) are documented in [future/world-events-system.md](future/world-events-system.md) but are not implemented and not currently planned.
 
 ### Weekly Calendar (Server Ticks)
 
@@ -98,7 +98,6 @@ The economy provides resource management depth through multiple currencies, each
   - League match rewards (scales with tier and position)
   - Selling items/heroes on marketplace
   - Daily login bonuses
-  - Event participation rewards
   - Combat victories
 - **Spent on:**
   - Hero training costs (increases with hero level and stat tier)
@@ -115,9 +114,7 @@ The economy provides resource management depth through multiple currencies, each
 - **Earned from:**
   - Dismantling items (returns Essence based on item rarity)
   - Combat victories and arena performance
-  - Event dungeons and special challenges
   - Daily activity rewards
-  - Kingdom events
 - **Spent on:**
   - Item crafting (cost scales with rarity tier)
   - Item enchanting and upgrades
@@ -132,9 +129,9 @@ The economy provides resource management depth through multiple currencies, each
 |:---|:---|
 | **Training costs** — scales exponentially with hero level and attribute tier | **Arena ticket revenue** — passive income, scales with arena upgrades and team reputation |
 | **Headquarters facility upgrades** — major long-term investment | **League match rewards** — tier-based: higher tiers = better rewards |
-| **Marketplace transaction fees** — percentage-based, typically 5–15% | **Event completion bonuses** |
-| **Formation unlocks** and strategic customization | **Marketplace sales** — minus transaction fees |
-| **Hero maintenance** — form restoration, fatigue recovery items | **Combat victory bonuses** |
+| **Marketplace transaction fees** — percentage-based, typically 5–15% | **Marketplace sales** — minus transaction fees |
+| **Formation unlocks** and strategic customization | **Combat victory bonuses** |
+| **Hero maintenance** — form restoration, fatigue recovery items | |
 | **Summoning chamber usage fees** | |
 
 ### Inflation Control Mechanisms
@@ -189,13 +186,7 @@ When weekly HQ maintenance exceeds available gold, unpaid amounts accumulate as 
 
 See [systems/financial-crisis-system.md](systems/financial-crisis-system.md).
 
-### Special Economic Events
-
-- **Market Fluctuations:** Kingdom-wide events that temporarily adjust prices or rewards
-- **Gold Rush Events:** Limited-time increased arena revenue
-- **Crafting Festivals:** Reduced Essence costs or improved success rates for crafting
-- **Tax Holidays:** Temporary marketplace fee reductions to stimulate trading
-- **Resource Shortages:** Narrative events that increase certain costs while offering alternative rewards
+> **Deferred:** Special economic world events (market fluctuations, gold rush, crafting festivals) are described in [future/world-events-system.md](future/world-events-system.md).
 
 ---
 
@@ -704,7 +695,7 @@ Each player manages a **single team** (1:1 player-to-team relationship) that ser
 
 - Team stats **persist and evolve** continuously based on activity and results
 - Formation changes can be made **between matches** but not during combat
-- Team-wide buffs from events, kingdom bonuses, and achievements
+- Team-wide buffs from events and kingdom bonuses
 - Headquarters upgrades provide **passive bonuses** to all heroes
 
 ---
@@ -957,7 +948,6 @@ Each team has its own **Headquarters** serving as their base of operations, prov
 
 - **Visual themes** and decorations
 - **Facility layout** and placement
-- **Special trophies** and achievements displayed
 - **Visitor access** settings *(for social features)*
 
 ---
@@ -1179,9 +1169,9 @@ The Graveyard is a **permanent repository** for all heroes who have died permane
 | **Historical Record** | Preserves complete hero information: final stats, level, age at death, team/player association, total battles fought, victories achieved, and cause of death |
 | **No Resurrection** | Heroes in the Graveyard **cannot** be revived or returned to active play |
 | **Memorial Function** | Players can visit the Graveyard to view their fallen heroes and team history |
-| **Statistics Tracking** | Contributes to overall team legacy statistics and achievements |
+| **Statistics Tracking** | Contributes to overall team legacy statistics |
 
-> *Note: The Graveyard is purely a record-keeping system. It does not consume roster space or affect active team management. It may unlock special achievements or titles based on legendary fallen heroes.*
+> *Note: The Graveyard is purely a record-keeping system. It does not consume roster space or affect active team management.*
 
 ---
 
@@ -1199,7 +1189,7 @@ Supports **player interaction**, strategy discussion, and **community building**
 | **News Feed** | Kingdom-wide announcements, server events, and updates |
 | **Forum Discussions** | Dedicated spaces for strategy discussion and player engagement |
 | **Email Notifications** | System alerts for trades, league results, and events |
-| **Player Profiles** | Public profiles showing hero stats *(level, form, fatigue, age)*, team record, and achievements |
+| **Player Profiles** | Public profiles showing hero stats *(level, form, fatigue, age)* and team record |
 | **Leaderboards** | Rankings by league tier, arena performance, total victories |
 
 ---
@@ -1207,7 +1197,7 @@ Supports **player interaction**, strategy discussion, and **community building**
 ## 2.15 Dungeon System
 
 > [!NOTE]
-> **Future Feature**: The Dungeon System is a future feature (Phase 7 of the implementation roadmap). It is not currently implemented or operational.
+> **Future Feature**: The Dungeon System is a future feature (Phase 7 of the implementation roadmap). It is not currently implemented; the `dungeon_run` entity was removed from the codebase. Design is preserved in [future/dungeon-system.md](future/dungeon-system.md).
 
 ### Concept
 
@@ -1221,9 +1211,9 @@ Supports **player interaction**, strategy discussion, and **community building**
 - Encounter generation and enemy scaling
 - Reward tables per tier and per kingdom settings
 - Fatigue/cooldown costs for participation
-- Integration with Event System calendar ticks
+- Integration with calendar server ticks
 
-> *See [systems/dungeon-system.md](systems/dungeon-system.md) for implementation details.*
+> *See [future/dungeon-system.md](future/dungeon-system.md) for the deferred design.*
 
 ---
 

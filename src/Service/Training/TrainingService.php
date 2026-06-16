@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\Service\Training;
 
 use App\Entity\Hero\Hero;
+use App\Entity\Hero\HeroTrainingHistory;
 use App\Entity\Team\Team;
-use App\Entity\Training\Trainer;
-use App\Entity\Training\TrainingQueue;
+use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
-use App\Enum\TrainingStatus;
 use App\Enum\TrainingType;
 use App\Repository\Headquarters\HeadquartersRepository;
-use App\Repository\Training\TrainerRepository;
+use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -22,7 +21,7 @@ class TrainingService
     private const PRIMARY_ATTRIBUTES = ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'];
 
     public function __construct(
-        private readonly TrainerRepository $trainerRepository,
+        private readonly HeroRepository $heroRepository,
         private readonly HeadquartersRepository $hqRepository,
         private readonly RaceConfig $raceConfig,
         private readonly EntityManagerInterface $em,
@@ -69,8 +68,12 @@ class TrainingService
         return 2 + (int) floor(($trainingLevel - 1) / 2);
     }
 
-    public function getTrainerSlotsLimit(Trainer $trainer): int
+    public function getTrainerSlotsLimit(Hero $trainer): int
     {
+        if (!$trainer->isTrainer()) {
+            throw new \InvalidArgumentException('Hero is not a trainer.');
+        }
+
         $team = $trainer->getTeam();
         /** @var \App\Entity\Headquarters\Headquarters|null $hq */
         $hq = $this->hqRepository->findOneBy(['team' => $team]);
@@ -89,8 +92,12 @@ class TrainingService
         return 3 + (int) floor(($trainingLevel - 1) / 2);
     }
 
-    public function configureTrainer(Trainer $trainer, ?TrainingType $type, ?string $attribute, Team $team, \DateTimeImmutable $now): void
+    public function configureTrainer(Hero $trainer, ?TrainingType $type, ?string $attribute, Team $team, \DateTimeImmutable $now): void
     {
+        if (!$trainer->isTrainer()) {
+            throw new \DomainException('Entity is not a trainer.');
+        }
+
         if ($trainer->getTeam()->getId() !== $team->getId()) {
             throw new \DomainException('Trainer does not belong to your team.');
         }
@@ -116,8 +123,16 @@ class TrainingService
         $this->em->flush();
     }
 
-    public function assignHero(Trainer $trainer, Hero $hero, Team $team, \DateTimeImmutable $now): void
+    public function assignHero(Hero $trainer, Hero $hero, Team $team, \DateTimeImmutable $now): void
     {
+        if (!$trainer->isTrainer()) {
+            throw new \DomainException('Entity is not a trainer.');
+        }
+
+        if (!$hero->isCombatant()) {
+            throw new \DomainException('Only combatant heroes can be assigned to a trainer.');
+        }
+
         if ($trainer->getTeam()->getId() !== $team->getId() || $hero->getTeam()->getId() !== $team->getId()) {
             throw new \DomainException('Trainer or Hero does not belong to your team.');
         }
@@ -134,16 +149,20 @@ class TrainingService
             throw new \DomainException('Only available heroes can be assigned to a trainer.');
         }
 
-        if (count($trainer->getHeroes()) >= $this->getTrainerSlotsLimit($trainer)) {
+        if (count($trainer->getTrainees()) >= $this->getTrainerSlotsLimit($trainer)) {
             throw new \DomainException('Trainer does not have any available slots.');
         }
 
-        $trainer->addHero($hero);
+        $trainer->addTrainee($hero);
         $this->em->flush();
     }
 
-    public function unassignHero(Trainer $trainer, Hero $hero, Team $team, \DateTimeImmutable $now): void
+    public function unassignHero(Hero $trainer, Hero $hero, Team $team, \DateTimeImmutable $now): void
     {
+        if (!$trainer->isTrainer()) {
+            throw new \DomainException('Entity is not a trainer.');
+        }
+
         if ($trainer->getTeam()->getId() !== $team->getId() || $hero->getTeam()->getId() !== $team->getId()) {
             throw new \DomainException('Trainer or Hero does not belong to your team.');
         }
@@ -156,7 +175,7 @@ class TrainingService
             throw new \DomainException('Hero is not assigned to this trainer.');
         }
 
-        $trainer->removeHero($hero);
+        $trainer->removeTrainee($hero);
         $this->em->flush();
     }
 
@@ -204,15 +223,17 @@ class TrainingService
      */
     public function processTrainingTick(\DateTimeImmutable $now, ?\App\Entity\Kingdom\Kingdom $kingdom = null): void
     {
-        $qb = $this->trainerRepository->createQueryBuilder('t')
-            ->join('t.team', 'team')
-            ->where('t.trainingType IS NOT NULL');
+        $qb = $this->heroRepository->createQueryBuilder('h')
+            ->join('h.team', 'team')
+            ->where('h.role = :trainerRole')
+            ->andWhere('h.trainingType IS NOT NULL')
+            ->setParameter('trainerRole', HeroRole::Trainer);
         if (null !== $kingdom) {
             $qb->andWhere('team.kingdom = :kingdom')
                ->setParameter('kingdom', $kingdom);
         }
 
-        /** @var list<Trainer> $trainers */
+        /** @var list<Hero> $trainers */
         $trainers = $qb->getQuery()->getResult();
 
         foreach ($trainers as $trainer) {
@@ -230,7 +251,7 @@ class TrainingService
             /** @var TrainingType $type — only trainers with non-null type are queried */
             $attribute = $trainer->getTargetAttribute();
 
-            foreach ($trainer->getHeroes() as $hero) {
+            foreach ($trainer->getTrainees() as $hero) {
                 if (HeroStatus::Dead === $hero->getStatus()) {
                     continue;
                 }
@@ -240,8 +261,8 @@ class TrainingService
                 if (TrainingType::Attribute === $type && null !== $attribute) {
                     $heroStatExt = $this->getHeroStatByName($hero, $attribute);
                     $heroStatRaw = $this->getHeroRawStatByName($hero, $attribute);
-                    $trainerStatExt = $this->getTrainerStatByName($trainer, $attribute);
-                    $trainerStatRaw = $this->getTrainerRawStatByName($trainer, $attribute);
+                    $trainerStatExt = $this->getHeroStatByName($trainer, $attribute);
+                    $trainerStatRaw = $this->getHeroRawStatByName($trainer, $attribute);
                     $cap = $trainerStatRaw;
 
                     if ($heroStatRaw < $cap) {
@@ -303,18 +324,15 @@ class TrainingService
                     $hero->setFatigue(max(0, $hero->getFatigue() - 20));
                 }
 
-                // Log a completed training history entry
-                $job = new TrainingQueue();
-                $job->setHero($hero);
-                $job->setTrainingType($type);
-                $job->setTargetAttribute($attribute);
-                $job->setTrainer($trainer);
-                $job->setStatus(TrainingStatus::Completed);
-                $job->setStatGain($gainRaw);
-                $job->setExecuteAt($now);
-                $job->setCompletedAt($now);
+                $history = new HeroTrainingHistory();
+                $history->setHero($hero);
+                $history->setTrainingType($type);
+                $history->setTargetAttribute($attribute);
+                $history->setTrainer($trainer);
+                $history->setStatGain($gainRaw);
+                $history->setCompletedAt($now);
 
-                $this->em->persist($job);
+                $this->em->persist($history);
             }
         }
 
@@ -336,21 +354,6 @@ class TrainingService
         };
     }
 
-    private function getTrainerStatByName(Trainer $trainer, string $attr): int
-    {
-        return match ($attr) {
-            'str' => $trainer->getStr(),
-            'dex' => $trainer->getDex(),
-            'kon' => $trainer->getKon(),
-            'spd' => $trainer->getSpd(),
-            'int' => $trainer->getIntel(),
-            'wil' => $trainer->getWil(),
-            'cha' => $trainer->getCha(),
-            'lck' => $trainer->getLck(),
-            default => throw new \InvalidArgumentException(sprintf('Unknown attribute "%s".', $attr)),
-        };
-    }
-
     private function getHeroRawStatByName(Hero $hero, string $attr): int
     {
         return match ($attr) {
@@ -362,21 +365,6 @@ class TrainingService
             'wil' => $hero->getWilRaw(),
             'cha' => $hero->getChaRaw(),
             'lck' => $hero->getLckRaw(),
-            default => throw new \InvalidArgumentException(sprintf('Unknown attribute "%s".', $attr)),
-        };
-    }
-
-    private function getTrainerRawStatByName(Trainer $trainer, string $attr): int
-    {
-        return match ($attr) {
-            'str' => $trainer->getStrRaw(),
-            'dex' => $trainer->getDexRaw(),
-            'kon' => $trainer->getKonRaw(),
-            'spd' => $trainer->getSpdRaw(),
-            'int' => $trainer->getIntelRaw(),
-            'wil' => $trainer->getWilRaw(),
-            'cha' => $trainer->getChaRaw(),
-            'lck' => $trainer->getLckRaw(),
             default => throw new \InvalidArgumentException(sprintf('Unknown attribute "%s".', $attr)),
         };
     }

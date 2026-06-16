@@ -12,6 +12,7 @@ use App\Entity\League\LeagueTier;
 use App\Entity\Team\Team;
 use App\Enum\LeagueSeasonStatus;
 use App\Service\Economy\EconomyService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\League\LeagueFixtureScheduler;
 use App\Service\League\SeasonTransitionService;
 use App\Repository\League\LeagueSeasonRepository;
@@ -36,7 +37,8 @@ class SeasonTransitionServiceTest extends TestCase
         $this->transitionService = new SeasonTransitionService(
             $this->entityManagerMock,
             $this->fixtureSchedulerMock,
-            $this->economyServiceMock
+            $this->economyServiceMock,
+            $this->createMock(TeamChronicleService::class),
         );
     }
 

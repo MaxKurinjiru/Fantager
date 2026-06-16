@@ -12,6 +12,7 @@ use App\Repository\Auth\VerificationTokenRepository;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Repository\Team\TeamRepository;
 use App\Service\Kingdom\KingdomService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -29,6 +30,8 @@ class RegistrationService
         private readonly VerificationTokenRepository $tokenRepository,
         private readonly TeamRepository $teamRepository,
         private readonly SlugGenerator $slugGenerator,
+        private readonly TeamChronicleService $teamChronicleService,
+        private readonly UserSettingsService $userSettingsService,
         private readonly string $mailerFrom,
         private readonly \Symfony\Contracts\Translation\TranslatorInterface $translator,
     ) {
@@ -70,9 +73,11 @@ class RegistrationService
         $user->setRoles([]);
 
         $this->em->persist($user);
+        $this->userSettingsService->getOrCreate($user);
 
         $team->setUser($user);
         $team->setIsNpc(false);
+        $this->teamChronicleService->recordPlayerJoined($team, $user);
 
         $token = new VerificationToken();
         $token->setUser($user);

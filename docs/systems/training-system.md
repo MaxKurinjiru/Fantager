@@ -80,7 +80,7 @@ Helps a hero recover physical conditioning and rest.
 - **Form Impact**: Increases form by **+20** (capped at 100).
 - **Fatigue Impact**: Decreases fatigue by **-20** (floor at 0).
 
-At the end of the tick, a historical `TrainingQueue` record with status `Completed` is persisted for logging purposes.
+At the end of the tick, a `HeroTrainingHistory` row is persisted for each trained hero (append-only log for hero activity and calendar history).
 
 ## APIs
 

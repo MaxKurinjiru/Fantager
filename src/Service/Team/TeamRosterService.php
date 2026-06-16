@@ -25,7 +25,7 @@ class TeamRosterService
 
     public function isCombatReady(Hero $hero): bool
     {
-        return HeroStatus::Available === $hero->getStatus();
+        return $hero->isCombatant() && HeroStatus::Available === $hero->getStatus();
     }
 
     public function canRemoveCombatReadyHero(Team $team, Hero $hero): bool
@@ -47,10 +47,7 @@ class TeamRosterService
         }
 
         if ($this->countCombatReadyHeroes($team) <= self::MIN_COMBAT_READY_HEROES) {
-            throw new \DomainException(sprintf(
-                'Cannot remove hero. Team must keep at least %d combat-ready heroes to play matches.',
-                self::MIN_COMBAT_READY_HEROES
-            ));
+            throw new \DomainException(sprintf('Cannot remove hero. Team must keep at least %d combat-ready heroes to play matches.', self::MIN_COMBAT_READY_HEROES));
         }
     }
 }

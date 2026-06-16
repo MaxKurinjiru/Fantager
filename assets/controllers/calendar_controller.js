@@ -110,8 +110,7 @@ export default class extends Controller {
         const key = {
             system_tick: 'type_system_tick',
             league_match: 'type_league_match',
-            world_event: 'type_world_event',
-            training_queue: 'type_training_queue',
+            hero_training_history: 'type_hero_training_history',
         }[type];
         return key ? this.translationsValue[key] : type;
     }

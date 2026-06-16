@@ -189,6 +189,18 @@ During the `race_optimization` tick:
 
 ---
 
+## Services
+
+| Service | Namespace | Responsibility |
+| ------- | --------- | -------------- |
+| `HeadquartersService` | `App\Service\Headquarters` | Facility upgrades/downgrades, race optimization requests, passive bonus aggregation |
+| `HqMaintenanceCalculator` | `App\Service\Headquarters` | Weekly HQ maintenance fee calculation |
+| `ArenaService` | `App\Service\Headquarters` | Arena facility status (capacity, fan appeal, projected home-match revenue) — used by HQ panel and `/api/v1/arena` |
+
+Ticket payout on match day is handled by `App\Service\Economy\ArenaRevenueService` (economy domain). Combat simulation is a separate domain — see [Combat System](combat-system.md) and the **Domain Boundaries** table in [entity-reference.md](../entity-reference.md#domain-boundaries-combat-vs-arena).
+
+---
+
 ## API Endpoints
 
 | Method | Path | Purpose |

@@ -6,28 +6,26 @@ namespace App\Service\Calendar;
 
 use App\Entity\Kingdom\Kingdom;
 use App\Enum\TickType;
-use App\Repository\Event\EventRepository;
 use App\Repository\Hero\HeroRepository;
+use App\Repository\Hero\HeroTrainingHistoryRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
-use App\Repository\Training\TrainingQueueRepository;
 
 class CalendarService
 {
     public function __construct(
         private readonly TickScheduleCalculator $scheduleCalculator,
         private readonly KingdomTickLogRepository $tickLogRepository,
-        private readonly TrainingQueueRepository $trainingQueueRepository,
+        private readonly HeroTrainingHistoryRepository $heroTrainingHistoryRepository,
         private readonly LeagueFixtureRepository $leagueFixtureRepository,
-        private readonly EventRepository $eventRepository,
         private readonly LeagueSeasonRepository $seasonRepository,
         private readonly HeroRepository $heroRepository,
     ) {
     }
 
     /**
-     * Aggregates recurring ticks, world events, league matches, and team-specific queues.
+     * Aggregates recurring ticks, league matches, and team-specific queues.
      *
      * @return list<array{
      *     id: string,
@@ -109,12 +107,12 @@ class CalendarService
                 case TickType::WeeklyTraining:
                     $title = 'Weekly Training Process';
                     $description = 'Calculate queued hero stat increases and finalize jobs';
-                    $visibility = 'public';
+                    $visibility = 'system_only';
                     break;
                 case TickType::LeagueMatch:
                     $title = 'League Match Tick';
                     $description = 'Trigger scheduled league fixtures simulation';
-                    $visibility = 'public';
+                    $visibility = 'system_only';
                     break;
                 case TickType::SeasonTransition:
                     $title = 'Season Transition Tick';
@@ -124,12 +122,12 @@ class CalendarService
                 case TickType::WeeklyReset:
                     $title = 'Weekly Reset';
                     $description = 'Reset summoning chamber cooldowns and weekly maintenance';
-                    $visibility = 'public';
+                    $visibility = 'system_only';
                     break;
                 case TickType::RaceOptimization:
                     $title = 'Race Optimization Update';
                     $description = 'Apply pending race optimization settings and update lock states';
-                    $visibility = 'public';
+                    $visibility = 'system_only';
                     break;
             }
 
@@ -182,48 +180,28 @@ class CalendarService
             ];
         }
 
-        // 3. Aggregating World Events
-        $events = $this->eventRepository->findEventsInPeriod($kingdom, $start, $end);
-
-        foreach ($events as $event) {
-            $feed[] = [
-                'id' => sprintf('world_event_%d', $event->getId()),
-                'type' => 'world_event',
-                'title' => $event->getName(),
-                'description' => $event->getDescription(),
-                'scheduledAt' => $event->getStartAt()->format(\DateTimeInterface::ATOM),
-                'visibility' => 'public',
-                'status' => $event->getStatus()->value,
-                'metadata' => [
-                    'eventId' => $event->getId(),
-                    'endAt' => $event->getEndAt()->format(\DateTimeInterface::ATOM),
-                    'eventType' => $event->getType()->value,
-                ],
-            ];
-        }
-
-        // 4. Aggregating Team-Specific Training Queue Completions
+        // 3. Aggregating team training history completions
         if (null !== $teamId) {
-            $jobs = $this->trainingQueueRepository->findJobsInPeriodForTeam($teamId, $start, $end);
+            $historyEntries = $this->heroTrainingHistoryRepository->findInPeriodForTeam($teamId, $start, $end);
 
-            foreach ($jobs as $job) {
+            foreach ($historyEntries as $entry) {
                 $feed[] = [
-                    'id' => sprintf('training_queue_%d', $job->getId()),
-                    'type' => 'training_queue',
-                    'title' => sprintf('Training complete: %s', $job->getHero()->getName()),
+                    'id' => sprintf('hero_training_history_%d', $entry->getId()),
+                    'type' => 'hero_training_history',
+                    'title' => sprintf('Training complete: %s', $entry->getHero()->getName()),
                     'description' => sprintf(
                         'Scheduled training for %s (%s)',
-                        $job->getHero()->getName(),
-                        $job->getTrainingType()->value.($job->getTargetAttribute() ? ': '.$job->getTargetAttribute() : '')
+                        $entry->getHero()->getName(),
+                        $entry->getTrainingType()->value.($entry->getTargetAttribute() ? ': '.$entry->getTargetAttribute() : '')
                     ),
-                    'scheduledAt' => $job->getExecuteAt()->format(\DateTimeInterface::ATOM),
+                    'scheduledAt' => $entry->getCompletedAt()->format(\DateTimeInterface::ATOM),
                     'visibility' => 'team_only',
-                    'status' => $job->getStatus()->value,
+                    'status' => 'completed',
                     'metadata' => [
-                        'queueId' => $job->getId(),
-                        'heroId' => $job->getHero()->getId(),
-                        'trainingType' => $job->getTrainingType()->value,
-                        'attribute' => $job->getTargetAttribute(),
+                        'historyId' => $entry->getId(),
+                        'heroId' => $entry->getHero()->getId(),
+                        'trainingType' => $entry->getTrainingType()->value,
+                        'attribute' => $entry->getTargetAttribute(),
                     ],
                 ];
             }
@@ -249,7 +227,7 @@ class CalendarService
                         $occTime = $occ['time'];
                         $feed[] = [
                             'id' => sprintf('active_training_%d_%s', $hero->getId(), $occTime->format('YmdHis')),
-                            'type' => 'training_queue',
+                            'type' => 'hero_training_history',
                             'title' => sprintf('Training complete: %s', $hero->getName()),
                             'description' => sprintf(
                                 'Scheduled training for %s (%s)',
@@ -260,7 +238,7 @@ class CalendarService
                             'visibility' => 'team_only',
                             'status' => 'scheduled',
                             'metadata' => [
-                                'queueId' => null,
+                                'historyId' => null,
                                 'heroId' => $hero->getId(),
                                 'trainingType' => $trainer->getTrainingType()->value,
                                 'attribute' => $trainer->getTargetAttribute(),

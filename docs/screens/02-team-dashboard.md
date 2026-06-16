@@ -17,11 +17,11 @@ Displayed Information:
 	- **Financial crisis banner** with level, debt, recovery actions
 	- Next scheduled match (time, opponent)
 	- Current league tier & position
-- **Recent Activity Feed:**
-	- Recent matches (results)
-	- Completed trainings
-	- Marketplace notifications
-	- Kingdom events
+- **Team Chronicle (recent events):**
+	- Last **5** entries from `team_chronicle` for the player's team
+	- Localized message + timestamp per entry
+	- Link **Full chronicle** → `/app/chronicle` (`app_team_chronicle`)
+	- Includes ownership changes, season results, summons, etc. (see [team-chronicle-system.md](../systems/team-chronicle-system.md))
 - **Shortcuts:**
 	- Quick access to Formation, Training, Marketplace, League
 
@@ -30,13 +30,19 @@ Possible Actions/Buttons:
 - **Manage Headquarters** - navigate to HQ Screen
 - **Check League** - navigate to League Screen
 - **Go to Marketplace** - navigate to Marketplace
-- **View Calendar** - navigate to Events Calendar
+- **View Calendar** - navigate to Calendar
+- **View Team Chronicle** - navigate to `/app/chronicle`
 - **Team Settings** - change name, emblem, colors
 
 Backend Requirements:
-- Dashboard aggregation endpoint (stats, notifications, recent activity)
-- Real-time notifications (Server-Sent Events / SSE)
+- Dashboard aggregation: `TeamService::getDashboardData()` + `TeamChroniclePresenter::presentRecentForTeam()` (5 entries)
+- Full chronicle: `TeamChronicleController` with category/type/sort filters
+- Real-time notifications (Server-Sent Events / SSE) — planned; separate from chronicle
 
+Implementation:
+- **Route:** `GET /app/dashboard` — `DashboardController`
+- **Templates:** `templates/dashboard/index.html.twig`, `templates/components/dashboard/recent_chronicle.html.twig`
+- **Chronicle page:** `GET /app/chronicle` — [team-chronicle-system.md](../systems/team-chronicle-system.md)
 
 Sections to fill:
 - Display data contract (fields returned by API)
@@ -44,4 +50,3 @@ Sections to fill:
 - Validation and server-side checks
 - UX notes and edge cases
 - Tests and mocks
-- Implementation notes

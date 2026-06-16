@@ -69,7 +69,8 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->marketplaceServiceMock,
             $this->entityManagerMock,
             $this->loggerMock,
-            $this->seasonTransitionServiceMock
+            $this->seasonTransitionServiceMock,
+            $this->createMock(\App\Service\TeamChronicle\TeamChronicleService::class),
         );
     }
 

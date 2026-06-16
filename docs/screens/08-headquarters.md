@@ -14,7 +14,6 @@ Possible Actions/Buttons:
 - Change Race Optimization
 - Customize Theme
 - Visit Summoning Chamber
-- View Trophies
 
 Backend Requirements:
 - HQ data endpoint

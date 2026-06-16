@@ -37,7 +37,7 @@ The site is divided into two main sections:
 - [11. Spell Management Screen](#11-spell-management-screen)
 - [12. Combat/Battle Screen](#12-combatbattle-screen)
 - [13. League Screen](#13-league-screen)
-- [14. Calendar/Events Screen](#14-calendarevents-screen)
+- [14. Calendar Screen](#14-calendar-screen)
 - [15. Marketplace Screen](#15-marketplace-screen)
 - [16. Graveyard Screen](#16-graveyard-screen)
 - [17. Community Screen](#17-community-screen)
@@ -92,11 +92,10 @@ The site is divided into two main sections:
   - Current Gold, Essence
   - Next scheduled match (time, opponent)
   - Current league tier & position
-- **Recent Activity Feed:**
-  - Recent matches (results)
-  - Completed trainings
-  - Marketplace notifications
-  - Kingdom events
+- **Team Chronicle (recent events):**
+  - Last 5 entries from `team_chronicle` (ownership, season, summons, …)
+  - Link to full filtered history at `/app/chronicle`
+  - See [team-chronicle-system.md](../systems/team-chronicle-system.md)
 - **Shortcuts:**
   - Quick access to Formation, Training, Marketplace, League
 
@@ -105,11 +104,12 @@ The site is divided into two main sections:
 - **Manage Headquarters** - navigate to HQ Screen
 - **Check League** - navigate to League Screen
 - **Go to Marketplace** - navigate to Marketplace
-- **View Calendar** - navigate to Events Calendar
+- **View Calendar** - navigate to Calendar
+- **View Team Chronicle** - navigate to `/app/chronicle`
 - **Team Settings** - change name, emblem, colors
 
 ### Backend Requirements:
-- Dashboard aggregation endpoint (stats, notifications, recent activity)
+- Dashboard aggregation endpoint (stats, notifications, recent chronicle via `TeamChroniclePresenter`)
 
 ---
 
@@ -339,7 +339,6 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 - **Change Race Optimization** - dropdown with races, confirm modal (may have cooldown/cost)
 - **Customize Theme** - navigate to visual customization (if implemented)
 - **Visit Summoning Chamber** - navigate to Summoning Screen
-- **View Trophies** - navigate to Achievements/Trophies Screen
 - **HQ Settings** - access settings, visibility for community
 
 ### Backend Requirements:
@@ -556,47 +555,36 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 
 ---
 
-## 14. Calendar/Events Screen
-**When:** Displaying calendar and Kingdom events
+## 14. Calendar Screen
+**When:** Displaying the kingdom schedule (server ticks, league fixtures, team training)
 
 ### Displayed Information:
-- **Weekly Calendar Grid:**
-  - 7 days per week
-  - Scheduled Server Ticks (icons/labels):
+- **Weekly Calendar Feed:**
+  - Scheduled server ticks (icons/labels):
     - Fatigue & Form Recovery
     - League Matches
-    - Dungeon Matches
-    - Friendly Matches
     - Training Queue Processing
-    - Crafting Queue Processing
     - Arena Ticket Revenue Distribution
     - Hero Aging Update
-    - Marketplace Auctions End
-  - Kingdom Events (speciální event ikony)
-  - Player's Scheduled Matches (league, friendly)
-- **Upcoming Events Panel:**
-  - List of upcoming events with description
-  - Rewards preview
-  - Participation requirements
-- **Active Events Panel:**
-  - Ongoing events
-  - Progress tracking (if applicable)
-  - Time remaining
-- **Event History:**
-  - Completed events
-  - Earned rewards
+    - Marketplace listing expiry
+    - HQ maintenance and weekly resets
+  - League fixtures (home/away)
+  - Team training queue completions (when scoped to player's team)
+- **Filters:**
+  - Show/hide system-only ticks
+  - Team-only entries
 
 ### Possible Actions/Buttons:
-- **View Event Details** - expand full description
-- **Participate in Event** - join button (if it's a dungeon or limited mission)
-- **Set Reminder** - notification for upcoming tick/event
-- **Filter Events** - filter by type (combat, crafting, economy, etc.)
+- **Navigate weeks** — previous / next week
+- **Toggle filters** — system ticks, team-only view
+- **Set Reminder** — notification for upcoming tick (planned)
 
 ### Backend Requirements:
-- Calendar events endpoint
-- Server tick schedule
-- Event participation endpoint
-- Notification system
+- Calendar feed endpoint (`GET /api/v1/kingdom/{id}/calendar`)
+- Server tick schedule and timezone normalization
+- Notification system (future)
+
+> Dynamic world events (participation panels, event history) are deferred — see [future/world-events-system.md](future/world-events-system.md).
 
 ---
 
@@ -658,14 +646,12 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Cause of Death (Combat, Mortality Roll, etc.)
   - Total Battles Fought
   - Wins
-  - Notable Achievements (if any)
   - Team/Player (if applicable)
   - Date of Death
 - **Statistics Summary:**
   - Total Fallen Heroes
   - Average Lifespan
   - Most Battles Fought (legend hero)
-  - Most Decorated (achievements)
 - **Memorial Wall (visualization):**
   - Gravestones/icons for each hero
   - Click for detail modal
@@ -673,7 +659,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ### Possible Actions/Buttons:
 - **View Hero Details** - expand full history and stats
 - **Filter by Race** - display only specific race
-- **Sort by** - battles, level, achievements
+- **Sort by** - battles, level
 - **Search** - search by name
 - **Share Memorial** (optional social feature) - share on profile
 
@@ -706,7 +692,6 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Win/Loss Record
   - Team Reputation
   - Notable Heroes (top 3 by level/stats)
-  - Achievements/Badges (including supporter badges)
   - Recent Match History
 - **Mail Panel:**
   - Inbox (received messages)
@@ -718,7 +703,6 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Kingdom announcements
   - System updates
   - Event notifications
-  - Top player achievements (public)
   - Patch notes
 - **Forums:**
   - Categories (Strategy, Trading, General Discussion, Bug Reports)
@@ -777,39 +761,41 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ---
 
 ## 19. Player Profile & Settings Screen
-**When:** Player and profile settings
+**When:** Player account settings (navbar → Account Settings modal)
 
 ### Displayed Information:
-- **Account Info:**
-  - Username
-  - Email
-  - Kingdom (cannot be changed)
-  - Member Since (date)
-  - Supporter Tier (badge) - if applicable
-- **Notification Settings:**
+- **Language & Display (implemented):**
+  - Interface Language (Czech / English) — saved to `User.locale`
+- **Interface preferences (implemented):**
+  - Backdrop modal closing toggle — saved to `auth_user_settings.close_modal_on_backdrop` (default off)
+- **Account Info (partial):**
+  - Email (shown in change-email form placeholder)
+  - Username, Kingdom, Member Since, Supporter Tier — **planned**
+- **Notification Settings (planned):**
   - Email notifications (on/off for various categories)
   - In-game notifications (on/off)
-- **Privacy Settings:**
+- **Privacy Settings (planned):**
   - Profile Visibility (Public/Friends/Private)
   - Headquarters Visitor Access
   - Allow Trade Requests
-- **Language & Display:**
-  - Interface Language
-  - Time Format
-  - Timezone Display
 
 ### Possible Actions/Buttons:
-- **Edit Email** - change email (verification required)
-- **Change Password** - password update
-- **Update Notifications** - save changes
-- **Support & Donations** - navigate to supporter contribution page (if implemented)
-- **Logout** - logout
-- **Delete Account** - account deletion (confirm modal)
+- **Change Language** — locale switcher links (implemented)
+- **Toggle backdrop modal closing** — auto-save checkbox (implemented)
+- **Edit Email** — change email (verification required, implemented)
+- **Change Password** — password update (**planned**)
+- **Update Notifications** — save changes (**planned**)
+- **Support & Donations** — navigate to supporter contribution page (**planned**)
+- **Logout** — logout (navbar, not in modal)
+- **Delete Account** — account deletion with confirm panel (implemented)
 
 ### Backend Requirements:
-- User settings GET/PUT endpoints
-- Email/password change (with verification)
-- Privacy settings
+- `UserSettings` entity (`auth_user_settings`) for UI preferences — **implemented**
+- `POST /app/settings/preferences` — update preferences — **implemented**
+- Email change with verification — **implemented**
+- Account cancellation with verification — **implemented**
+- Bulk settings GET/PUT API — **planned**
+- Privacy / notification settings — **planned**
 
 ---
 
@@ -885,7 +871,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 - Marketplace Listings, Transactions
 - Combat Battles, Battle Logs
 - League Seasons, Groups, Fixtures
-- Events, Calendar
+- Calendar (server ticks, fixtures, training)
 - Mail/Messages
 - Graveyard Records
 - User Settings

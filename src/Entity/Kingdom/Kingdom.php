@@ -170,5 +170,4 @@ class Kingdom
 
         return $this;
     }
-
 }

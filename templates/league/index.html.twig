@@ -3,7 +3,7 @@
 {% block title %}{{ 'league.title'|trans }} | Fantager{% endblock %}
 
 {% block body %}
-<div class="league-page">
+<div class="league-page page-shell">
     {# Page Header #}
     {% set right_content %}
         {% if season is not null %}
@@ -43,9 +43,9 @@
         </div>
     {% else %}
         {# Main League View #}
-        <div class="league-page">
+        <div>
             {# Tab Switcher Buttons #}
-            <div class="league-tab-nav">
+            <div class="tab-nav-bar">
                 <a href="{{ path('app_league', selectedGroup ? { tab: 'standings', groupId: selectedGroup.id } : { tab: 'standings' }) }}"
                    class="tab-btn {{ tab == 'standings' ? 'tab-btn--active' : '' }}">
                     🏆 {{ 'league.tab_standings'|trans }}

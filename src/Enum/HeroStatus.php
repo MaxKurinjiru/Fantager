@@ -11,4 +11,5 @@ enum HeroStatus: string
     case Selling = 'selling';
     case Recovering = 'recovering';
     case Dead = 'dead';
+    case Retired = 'retired';
 }

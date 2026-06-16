@@ -9,6 +9,7 @@ use App\Entity\Auth\VerificationToken;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Kingdom\KingdomTickLog;
 use App\Entity\Notification\Notification;
+use App\Enum\ChronicleReleaseReason;
 use App\Enum\TickType;
 use App\Repository\Hero\HeroRepository;
 use App\Repository\Kingdom\KingdomRepository;
@@ -21,6 +22,7 @@ use App\Service\Formation\FixtureFormationService;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Team\FanClubService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -57,6 +59,7 @@ class ProcessKingdomTicksHandler
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
         private readonly \App\Service\League\SeasonTransitionService $seasonTransitionService,
+        private readonly TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -231,6 +234,11 @@ class ProcessKingdomTicksHandler
         foreach ($users as $user) {
             $team = $user->getTeam();
             if (null !== $team) {
+                $this->teamChronicleService->recordPlayerReleased(
+                    $team,
+                    $user,
+                    ChronicleReleaseReason::UnverifiedRegistration,
+                );
                 $team->setUser(null);
                 $team->setIsNpc(true);
             }
@@ -287,28 +295,16 @@ class ProcessKingdomTicksHandler
                 ->createQueryBuilder('h')
                 ->join('h.team', 't')
                 ->where('t.kingdom = :kingdom')
+                ->andWhere('h.role = :combatant')
                 ->andWhere('h.race != :undead')
                 ->setParameter('kingdom', $kingdom)
+                ->setParameter('combatant', \App\Enum\HeroRole::Combatant)
                 ->setParameter('undead', \App\Enum\Race::Undead)
                 ->getQuery()
                 ->getResult();
 
             foreach ($heroes as $hero) {
                 $hero->setAgeRaw($hero->getAgeRaw() + $ageIncrement);
-            }
-
-            // Fetch all trainers for this kingdom
-            /** @var list<\App\Entity\Training\Trainer> $trainers */
-            $trainers = $this->em->getRepository(\App\Entity\Training\Trainer::class)
-                ->createQueryBuilder('tr')
-                ->join('tr.team', 't')
-                ->where('t.kingdom = :kingdom')
-                ->setParameter('kingdom', $kingdom)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($trainers as $trainer) {
-                $trainer->setAgeRaw($trainer->getAgeRaw() + $ageIncrement);
             }
         }
 

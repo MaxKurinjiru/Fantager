@@ -1,0 +1,23 @@
+{# templates/components/dashboard/recent_chronicle.html.twig #}
+<div class="db-chronicle-card">
+    <div class="db-chronicle-card__header">
+        <h3 class="db-chronicle-card__title">{{ 'chronicle.recent_title'|trans }}</h3>
+        <a href="{{ path('app_team_chronicle') }}" class="db-chronicle-card__link">{{ 'chronicle.view_all'|trans }}</a>
+    </div>
+
+    <div class="db-chronicle-card__list">
+        {% for entry in recent_chronicle %}
+            <div class="db-chronicle-item">
+                <div class="db-chronicle-item__main">
+                    <div class="db-chronicle-item__title">{{ entry.icon }} {{ entry.message }}</div>
+                    <div class="db-chronicle-item__time">{{ entry.created_at|date('Y-m-d H:i') }}</div>
+                </div>
+            </div>
+        {% else %}
+            <div class="db-chronicle-empty">
+                <span class="text-2xl block mb-1">📜</span>
+                <span>{{ 'chronicle.empty'|trans }}</span>
+            </div>
+        {% endfor %}
+    </div>
+</div>

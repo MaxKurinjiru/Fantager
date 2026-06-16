@@ -24,32 +24,49 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | **ItemAttributeBonus** as JSON column on Item                         | Always read as whole; no cross-item queries needed.                                                                                                                                                                                                                 |
 | **FormationHeroStrategy** as JSON on FormationSlot                    | Complex per-slot config, never queried across slots.                                                                                                                                                                                                                |
 | **FormationSpellPriority** as JSON on FormationSlot                   | Same reasoning.                                                                                                                                                                                                                                                     |
-| **NotificationPreference** as JSON on User                            | Simple key-value per user.                                                                                                                                                                                                                                          |
-| **TrainingHistory** = completed TrainingQueue entries                 | No separate entity; add `stat_gain` to TrainingQueue.                                                                                                                                                                                                               |
+| **NotificationPreference** | Dedicated **`UserSettings`** table (`auth_user_settings`), 1:1 with User | UI/interface preferences (modal backdrop, future toggles). Notification email/in-game prefs still **planned**. |
+| **HeroTrainingHistory** as append-only weekly training log            | One row per hero trained during each weekly tick. Used for hero recent activity and calendar history until `team_chronicle.training_completed` is wired.                                                                                                              |
 | **Leaderboard** = SQL view / computed                                 | Derived from LeagueStanding, not stored separately.                                                                                                                                                                                                                 |
-| **PlayerProfile** = projection of User+Team+Achievements              | Not a DB entity.                                                                                                                                                                                                                                                    |
+| **PlayerProfile** = projection of User+Team                              | Not a DB entity.                                                                                                                                                                                                                                                    |
 | **NPC Team** as `is_npc = true` on Team entity                        | No separate entity needed; NPC and player teams share all fields. `user_id` is NULL for NPC teams.                                                                                                                                                                  |
 | **Kingdom initialization** creates all NPC teams + first LeagueSeason | Ensures a full league bracket exists before any player joins.                                                                                                                                                                                                       |
 | `**display_name` + `display_name_slug`** both on User                 | `display_name` is stored and displayed exactly as entered. `display_name_slug` is the webalized form (lowercase, diacritics stripped, non-alphanumeric replaced with `-`) and carries a unique index — used solely for collision detection.                         |
-| **ActivityLog** as single generic table                               | One table covers all game event types. `type` (enum) enables filtering; `data` (JSON) holds event-specific context. `subject_key` + `subject_params` (JSON) allow translated rendering without re-generating text at insert time. No separate log table per domain. |
+| **TeamChronicle** as single generic table (team chronicle)              | One table (`team_chronicle`) covers all game event types, scoped by **`team_id`** (not `user_id`). `type` (enum) enables filtering; `data` (JSON) holds event-specific context. `subject_key` + `subject_params` (JSON) allow translated rendering at display time in the player's locale. Append-only team history across NPC periods and multiple managers. See [team-chronicle-system.md](systems/team-chronicle-system.md). |
 | `**league_tiers_config` JSON on Kingdom**                             | Configurable per kingdom; total player capacity is derived as `sum(tier.groups) × teams_per_group`. Eliminates redundant `max_players` field.                                                                                                                       |
 | **Team `morale` default value = 50**                                  | Range 0–100; 50 represents neutral/mid morale. Applied at team creation and on hero transfer/sell.                                                                                                                                                                  |
 | `**Facility.passive_bonuses` design**                         | In DB, `Facility` uses a `metadata` (JSON) field. The passive bonuses are computed using `getPassiveBonuses()`, combining `metadata` with static bonuses defined per `FacilityType` level.                                                                         |
 | `**Hero.intel` column name**                                          | PHP property and DB column named `intel` instead of `int` — `int` is a PHP reserved word and cannot be used as an identifier.                                                                                                                                       |
 | `**MarketplaceListing` polymorphic entity reference**                 | Three nullable FK columns (`hero_id`, `item_id`, `trainer_id`) — only one set per row based on `listing_type`. Provides DB-level referential integrity without a generic polymorphic pattern. Application layer enforces mutual exclusivity.                        |
-| **Database Table Naming Convention**                                  | Main/root entities (e.g. `team`, `kingdom`, `headquarters`, `hero`, `formation`, `spell`, `item`, `event`, `notification`, `achievement`, `news_article`, `activity_log`, `trainer`, `training_queue`) do NOT have domain prefixes. Sub-entities (e.g. `headquarters_facility`, `team_financial_record`, `formation_slot`, `hero_school_mastery`) or entities with SQL reserved keyword conflicts (e.g. `user` -> `auth_user`, `verification_token` -> `auth_verification_token`, `battle` -> `combat_battle`, `message` -> `community_message`) are prefixed with their domain namespace. |
+| **Database Table Naming Convention**                                  | Main/root entities (e.g. `team`, `kingdom`, `headquarters`, `hero`, `formation`, `spell`, `item`, `event`, `notification`, `news_article`) do NOT have domain prefixes. Sub-entities (e.g. `headquarters_facility`, `team_financial_record`, `team_chronicle`, `team_summon_history`, `formation_slot`, `hero_school_mastery`, `hero_training_history`, **`auth_user_settings`**) or entities with SQL reserved keyword conflicts (e.g. `user` -> `auth_user`, `verification_token` -> `auth_verification_token`, `battle` -> `combat_battle`, `message` -> `community_message`) are prefixed with their domain namespace. |
 
 ---
 
-## Database Entities (41)
+## Domain Boundaries (Combat vs Arena)
+
+**Combat** and **Arena** are separate game concepts. Controllers may use user-facing names (`ArenaController`, `/app/arena`) while services follow entity ownership.
+
+| Concept | Entity / data | Service namespace | Responsibility |
+| ------- | ------------- | ----------------- | -------------- |
+| **Combat** | `App\Entity\Combat\Battle` (`combat_battle`) | `App\Service\Combat` *(planned)* | Turn-based battle simulation, combat log, post-match XP/form/fatigue |
+| **Arena facility** | `Headquarters` + `Facility` (`FacilityType::Arena`) | `App\Service\Headquarters\ArenaService` | Arena level, seating capacity, fan appeal, next-home-match projection |
+| **Arena revenue** | `FinancialRecord` (`arena_revenue`) | `App\Service\Economy\ArenaRevenueService` | Ticket payout on league match tick, attendance calculation |
+
+- `ArenaController` stays under `Controller` — it is the player-facing screen name; Web route redirects to `/app/hq?facility=arena`.
+- `MatchType::Arena` is a match category consumed by the combat engine, not by `ArenaService`.
+- When the combat engine ships (Milestone 6), add `App\Service\Combat\BattleSimulationService` etc.; do not fold it into `ArenaService`.
+
+---
+
+## Database Entities (34 implemented)
 
 ### 1. Auth Domain
 
 
 | Entity                | Key Fields                                                                                                      | Relationships         |
 | --------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------- |
-| **User**              | id, email, password_hash, is_verified, roles[], kingdom_id, locale, display_name, display_name_slug, created_at | N:1 Kingdom, 1:1 Team |
-| **VerificationToken** | id, user_id, token, type (email_verify / password_reset), expires_at, used_at                                   | → User                |
+| **User**              | id, email, password_hash, is_verified, roles[], kingdom_id, locale, display_name, display_name_slug, created_at | N:1 Kingdom, 1:1 Team, 1:1 UserSettings |
+| **UserSettings**      | id, user_id, close_modal_on_backdrop, updated_at                                                                | 1:1 User (CASCADE DELETE) |
+| **VerificationToken** | id, user_id, token, type (email_verify / password_reset / …), expires_at, used_at                             | → User                |
 
 
 ### 2. Kingdom Domain
@@ -68,6 +85,8 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | **Team**            | id, user_id (nullable), kingdom_id, name, emblem, colors, morale, reputation, chemistry, fan_base, gold, essence_common–mythic, is_npc, last_summon_at, summons_this_cycle, **unpaid_debt**, **crisis_weeks**, **last_recovery_action_at** | → User (N:1, nullable — NULL for NPC teams), → Kingdom (N:1) |
 | **FinancialRecord** | id, team_id, type (enum), actor (enum), gold_change, essence_common_change, essence_uncommon_change, essence_rare_change, essence_epic_change, essence_legendary_change, essence_mythic_change, context (JSON), created_at | → Team (N:1)                                                 |
+| **TeamChronicle**   | id, team_id, type (`ChronicleEventType` enum), subject_key, subject_params (JSON), data (JSON), created_at | → Team (N:1)                                                 |
+| **TeamSummonHistory** | id, team_id, race_selected, hero_id, gold_cost, summoned_at | → Team (N:1), → Hero (N:1)                                   |
 
 
 ### 4. Hero Domain
@@ -83,10 +102,10 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 ### 5. Training Domain
 
 
-| Entity            | Key Fields                                                                                                                                              | Relationships                |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **Trainer**       | id, team_id, name, race, stats (8×, range 1–20), age, death_expectation, status, original_hero_id, training_type (nullable enum), target_attribute (nullable string) | → Team, was Hero             |
-| **TrainingQueue** | id, hero_id, training_type (enum), target_attribute (nullable), trainer_id (nullable), gold_cost, essence_cost, status (enum), stat_gain (nullable), execute_at, completed_at (nullable) | → Hero, → Trainer (optional). Multiple rows can share the same trainer + target_attribute for one training job |
+| Entity                  | Key Fields                                                                                                                                              | Relationships                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **Hero (Trainer role)** | Trainers are heroes with `role = trainer`. Fields: `training_type` (nullable enum), `target_attribute` (nullable string), trainee assignments via `hero.trainer_id` | → Team, has many trainee Heroes |
+| **HeroTrainingHistory** | id, hero_id, training_type (enum), target_attribute (nullable), trainer_id (nullable), stat_gain (nullable), completed_at                               | → Hero (trainee), → Hero (trainer, optional). Append-only log written after each weekly training tick |
 
 
 ### 6. Formation Domain
@@ -150,27 +169,10 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
 | **MarketplaceListing** | id, kingdom_id, seller_team_id, listing_type (enum), hero_id (nullable), item_id (nullable), trainer_id (nullable), price_gold, buyout_price_gold (nullable int), listing_mode (enum), expires_at, status (enum) | → Kingdom, → Team  |
 | **MarketplaceBid**     | id, listing_id, bidder_team_id, bid_amount, bid_time                                                                                                                           | → Listing, → Team  |
-| **Transaction**        | id, buyer_team_id, seller_team_id, listing_id, amount, fee_amount, type (enum), created_at                                                                                     | → Teams, → Listing |
+| **MarketplaceTransaction** | id, buyer_team_id, seller_team_id, listing_id, amount, fee_amount, type (enum), created_at                                                                                 | → Teams, → Listing |
 
 
-### 13. Event Domain
-
-
-| Entity                 | Key Fields                                                                                      | Relationships   |
-| ---------------------- | ----------------------------------------------------------------------------------------------- | --------------- |
-| **Event**              | id, kingdom_id, type (enum), name, description, status (enum), start_at, end_at, rewards (JSON) | → Kingdom       |
-| **EventParticipation** | id, event_id, team_id, progress, rewards_claimed                                                | → Event, → Team |
-
-
-### 14. Dungeon Domain
-
-
-| Entity         | Key Fields                                                                                                                                             | Relationships                  |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| **DungeonRun** | id, kingdom_id, team_id, dungeon_key (references config), formation_id, result (enum), rewards_xp, rewards_essence, rewards_items (JSON), completed_at | → Kingdom, → Team, → Formation |
-
-
-### 16. Crafting Domain
+### 16. Crafting Domain (deferred — not in codebase)
 
 
 | Entity             | Key Fields                                                                                                                                                                         | Relationships            |
@@ -188,8 +190,6 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | **NewsArticle**     | id, kingdom_id, title, content, published_at                           | → Kingdom (optional)  |
 | **ForumThread**     | id, kingdom_id, category, title, author_team_id, created_at, is_pinned, is_locked (bool) | → Kingdom, → Team     |
 | **ForumPost**       | id, thread_id, author_team_id, body, created_at                        | → ForumThread, → Team |
-| **Achievement**     | id, name, description, icon, unlock_condition (JSON)                   | —                     |
-| **TeamAchievement** | id, team_id, achievement_id, unlocked_at                               | → Team, → Achievement |
 
 
 ### 18. Graveyard Domain
@@ -197,18 +197,10 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity              | Key Fields                                                                                                                                                | Relationships |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| **GraveyardRecord** | id, team_id, hero_name, race, final_level, age_at_death, cause_of_death, total_battles, victories, final_stats (JSON), achievements (JSON), date_of_death | → Team        |
+| **GraveyardMemorial** | id, team_id, name, race, role_at_departure, cause, age, final_level, final_stats (JSON), departed_at, original_hero_id | → Team        |
 
 
-### 19. Summoning Domain
-
-
-| Entity            | Key Fields                                                  | Relationships  |
-| ----------------- | ----------------------------------------------------------- | -------------- |
-| **SummonHistory** | id, team_id, race_selected, hero_id, gold_cost, summoned_at | → Team, → Hero |
-
-
-### 20. Notification Domain
+### 19. Notification Domain
 
 
 | Entity           | Key Fields                                                 | Relationships |
@@ -216,19 +208,25 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | **Notification** | id, user_id, type (enum), title, body, is_read, created_at | → User        |
 
 
-### 21. Activity Log Domain
+### 20. Team Chronicle (append-only event log)
 
+Table: `team_chronicle` — entity `App\Entity\Team\TeamChronicle`.
 
 | Entity          | Key Fields                                                                                              | Relationships |
 | --------------- | ------------------------------------------------------------------------------------------------------- | ------------- |
-| **ActivityLog** | id, team_id, type (`ActivityLogType` enum), subject_key, subject_params (JSON), data (JSON), created_at | → Team        |
+| **TeamChronicle** | id, team_id, type (`ChronicleEventType` enum), subject_key, subject_params (JSON), data (JSON), created_at | → Team        |
 
 
-- `type` — enum value used for filtering and grouping (e.g. show only battles, only training).
-- `subject_key` — Symfony translation key (e.g. `activity.battle.win`); rendered in the player's locale at display time.
-- `subject_params` — JSON map of parameters injected into the translation string (e.g. `{"opponent": "Iron Wolves", "score": "3–2"}`).
-- `data` — full machine-readable context for detailed views or future processing (e.g. linked `battle_id`, `hero_id`).
-- Entries are **append-only**; never updated or deleted individually (pruned in bulk after a configurable retention period).
+- `type` — enum value used for filtering and grouping (e.g. ownership, competition, roster).
+- `subject_key` — Symfony translation key (e.g. `activity.player_joined`, `activity.season_ended`); rendered in the player's locale at display time via `TeamChroniclePresenter`.
+- `subject_params` — JSON map of parameters injected into the translation string (e.g. `{"player": "Alice"}`, `{"season": "1", "tier": "T1"}`).
+- `data` — full machine-readable context for detailed views or future processing (e.g. `user_id`, `hero_id`, `gold`, `reason`).
+- Entries are **append-only**; never updated or deleted individually (bulk retention pruning planned, not implemented).
+- **Write path:** `TeamChronicleService` only (do not persist `TeamChronicle` directly from feature services).
+- **Read path:** `TeamChronicleRepository` + `TeamChroniclePresenter`; dashboard shows last 5 entries; full history at `GET /app/chronicle`.
+- **Implemented types today:** `team_established`, `player_joined`, `player_released`, `season_ended`, `summon_completed`. Other enum values are reserved for upcoming features (combat, marketplace, etc.).
+
+See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behaviour.
 
 ---
 
@@ -256,7 +254,9 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | `School`            | fire, water, air, earth, light, dark                                                                                                                                                                                                              |
 | `SpellType`         | offensive, defensive, utility                                                                                                                                                                                                                     |
 | `ItemSlotType`      | main_hand, off_hand, head, body, hands, feet, amulet, ring                                                                                                                                                                                          |
-| `ActivityLogType`   | battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_crafted, item_purchased, item_sold, achievement_unlocked, dungeon_completed, summon_completed, season_ended, player_joined |
+| `ChronicleEventType`   | team_established, player_joined, player_released, battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_purchased, item_sold, dungeon_completed, summon_completed, season_ended |
+| `ChronicleReleaseReason` | inactivity, bankruptcy, unverified_registration, account_deleted (stored in `data.reason`; used with `player_released`) |
+| `ChronicleCategory` | all, ownership, competition, roster, economy (UI filter groups; not stored on rows) |
 | `ItemCategory`      | weapon, shield, spell_accelerator, armor, accessory, material                                                                                                                                                                                      |
 | `ItemRarity`        | common, uncommon, rare, epic, legendary, mythic                                                                                                                                                                                                   |
 | `ItemStatus`        | available, selling                                                                                                                                                                                                                                |
@@ -268,7 +268,6 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | `ListingType`       | hero, item, trainer                                                                                                                                                                                                                               |
 | `ListingMode`       | buy_now, auction                                                                                                                                                                                                                                  |
 | `ListingStatus`     | active, sold, expired, cancelled                                                                                                                                                                                                                  |
-| `EventType`         | world_event, seasonal, limited_mission, special_economic                                                                                                                                                                                          |
 | `TokenType`         | email_verify, password_reset, change_email_old, change_email_new, delete_account                                                                                                                                                                  |
 | `FacilityType`      | training, medical, library, forge, treasury, barracks, summoning_chamber, arena                                                                                                                                                                    |
 | `StatusEffect`      | burn, freeze, shock, petrify, blind, curse, stun, poison, shield, regeneration, haste, bless, fury, shadow_cloak, taunt, silence                                                                                                                  |
@@ -276,12 +275,10 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | `LeagueSeasonStatus` | scheduled, active, completed                                                                                                                                                                                                                      |
 | `LeagueFixtureStatus` | scheduled, in_progress, completed, cancelled                                                                                                                                                                                                     |
 | `TrainerStatus`     | active, retired, dead                                                                                                                                                                                                                             |
-| `TrainingStatus`    | pending, in_progress, completed, cancelled                                                                                                                                                                                                        |
-| `EventStatus`       | scheduled, active, completed, cancelled                                                                                                                                                                                                           |
-| `DungeonResult`     | win, loss, abandoned                                                                                                                                                                                                                              |
+| `DungeonResult`     | win, loss, abandoned *(deferred — not in codebase)*                                                                                                                                                                                              |
 | `CraftingStatus`    | pending, in_progress, completed, failed, cancelled                                                                                                                                                                                                |
 | `TransactionType`   | buy_now, auction_win                                                                                                                                                                                                                              |
-| `NotificationType`  | battle_result, training_complete, league_update, marketplace_bid, marketplace_sold, achievement_unlocked, event_started, hero_died, season_ended, **system**                                                                                   |
+| `NotificationType`  | battle_result, training_complete, league_update, marketplace_bid, marketplace_sold, event_started, hero_died, season_ended, **system**                                                                                   |
 | `FinancialRecordType` | league_reward, arena_revenue, summon_fee, marketplace_sale, marketplace_purchase, marketplace_fee, dungeon_reward, dismantle_gain, item_repair, spell_learning_cost, spell_slot_cost, hq_upgrade_cost, **hq_maintenance_fee**, morale_restoration, **debt_repayment**, **hero_dismissal_compensation**, **hq_downgrade_refund** |
 | `FinancialCrisisLevel` | **none**, **warning**, **restricted**, **bankruptcy_pending** |
 | `FacilityOperation` | **upgrade**, **downgrade** |
@@ -294,9 +291,19 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Category                   | Count  |
 | -------------------------- | ------ |
-| DB entities                | 41     |
+| DB entities (implemented) | 34     |
 | Config-based (not DB)      | 5      |
-| PHP enums                  | 33     |
-| **Total modeled concepts** | **79** |
+| PHP enums                  | 30     |
+| **Total modeled concepts** | **68** |
 
+
+---
+
+## Deferred Concepts
+
+World events (`Event`, `EventParticipation`, `EventType`, `EventStatus`) are not implemented. See [future/world-events-system.md](future/world-events-system.md).
+
+Dungeon runs (`DungeonRun`, table `dungeon_run`) were removed from the codebase. See [future/dungeon-system.md](future/dungeon-system.md).
+
+Crafting (`CraftingRecipe`, `CraftingQueue`) is not implemented. See [systems/crafting-system.md](systems/crafting-system.md).
 

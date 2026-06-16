@@ -67,6 +67,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/dashboard` | Web\DashboardController | Team Dashboard (main game screen) |
+| GET | `/app/chronicle` | Web\TeamChronicleController | Full team chronicle with category/type/sort filters |
 | GET | `/api/v1/teams/{id}/dashboard` | Api\V1\TeamController | Aggregated dashboard data |
 | POST | `/api/v1/teams/{id}/settings` | Api\V1\TeamController | Update team name/emblem/colors |
 
@@ -204,22 +205,18 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ---
 
-## Event / Calendar
+## Calendar
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/calendar` | Web\CalendarController | Calendar page — kingdom event feed with filters |
-| GET | `/api/v1/kingdom/{id}/calendar` | Api\V1\CalendarController | Full calendar feed for Kingdom |
-| GET | `/api/v1/events` | Api\V1\EventController | Active/upcoming events — **planned** |
-| GET | `/api/v1/events/calendar` | Api\V1\EventController | Full calendar feed — **planned** (superseded by kingdom calendar endpoint) |
-| POST | `/api/v1/events/{id}/participate` | Api\V1\EventController | Join event — **planned** |
+| GET | `/app/calendar` | Web\CalendarController | Calendar page — kingdom schedule feed with filters |
+| GET | `/api/v1/kingdom/{id}/calendar` | Api\V1\CalendarController | Full calendar feed for Kingdom (ticks, fixtures, training) |
 
 ---
 
-## Dungeon (Future Feature - Planned)
+## Dungeon (Deferred — design only)
 
-> [!NOTE]
-> These routes are planned for Fáze 7 and are not currently implemented.
+> Design preserved in [future/dungeon-system.md](future/dungeon-system.md). No routes or controllers in the codebase.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
@@ -296,7 +293,8 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/settings` | Web\SettingsController | Profile & Settings page |
+| GET | `/app/settings` | Web\SettingsController | Redirects to dashboard (settings UI is the account settings modal) |
+| POST | `/app/settings/preferences` | Web\SettingsController | Update player UI preferences (`closeModalOnBackdrop`, …) |
 | GET | `/api/v1/settings` | Api\SettingsController | Get settings — **planned** |
 | PUT | `/api/v1/settings` | Api\SettingsController | Update settings — **planned** |
 | POST | `/app/settings/change-email` | Web\SettingsController | Change email (initiates token flow via `confirm-email-change/*`) |
@@ -332,7 +330,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | | Web | API | Total |
 |--|-----|-----|-------|
-| Routes (implemented) | 21 | 52 | **73** |
+| Routes (implemented) | 21 | 52 | **74** |
 | Routes (planned) | 8 | 35+ | — |
 | Controllers (Web, implemented) | 15 | — | — |
 | Controllers (API, implemented) | — | 12 | — |

@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Service\Graveyard;
 
-use App\Entity\Graveyard\GraveyardRecord;
-use App\Entity\Graveyard\StaffRecord;
+use App\Entity\Graveyard\GraveyardMemorial;
 use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
 use App\Entity\Team\Team;
-use App\Entity\Training\Trainer;
-use App\Enum\GraveyardCause;
-use App\Enum\StaffDepartureCause;
+use App\Enum\HeroRole;
+use App\Enum\MemorialCause;
 use Doctrine\ORM\EntityManagerInterface;
 
 class GraveyardService
@@ -21,44 +19,21 @@ class GraveyardService
     ) {
     }
 
-    public function recordHero(Hero $hero, Team $team, GraveyardCause $cause, ?\DateTimeImmutable $date = null): GraveyardRecord
+    public function recordMemorial(Hero $hero, Team $team, MemorialCause $cause, ?\DateTimeImmutable $date = null): GraveyardMemorial
     {
         $date ??= new \DateTimeImmutable();
 
-        $record = new GraveyardRecord();
+        $record = new GraveyardMemorial();
         $record->setTeam($team);
-        $record->setHeroName($hero->getName());
+        $record->setName($hero->getName());
         $record->setRace($hero->getRace());
-        $record->setFinalLevel($hero->getLevel());
-        $record->setAgeAtDeath($hero->getAge());
-        $record->setCauseOfDeath($cause->value);
-        $record->setTotalBattles(0);
-        $record->setVictories(0);
-        $record->setFinalStats($this->buildHeroStatsSnapshot($hero));
-        $record->setAchievements([]);
-        $record->setDateOfDeath($date);
-        $record->setOriginalHeroId($hero->getId());
-
-        $this->em->persist($record);
-
-        return $record;
-    }
-
-    public function recordTrainer(Trainer $trainer, Team $team, StaffDepartureCause $cause, ?\DateTimeImmutable $date = null): StaffRecord
-    {
-        $date ??= new \DateTimeImmutable();
-
-        $record = new StaffRecord();
-        $record->setTeam($team);
-        $record->setName($trainer->getName());
-        $record->setRace($trainer->getRace());
-        $record->setAge($trainer->getAge());
+        $record->setRoleAtDeparture($hero->getRole());
         $record->setCause($cause);
-        $record->setTrainingType($trainer->getTrainingType()?->value);
-        $record->setFinalStats($this->buildTrainerStatsSnapshot($trainer));
-        $record->setTraineesCount($trainer->getHeroes()->count());
-        $record->setOriginalTrainerId($trainer->getId());
-        $record->setDateOfDeparture($date);
+        $record->setAge($hero->getAge());
+        $record->setFinalLevel(HeroRole::Combatant === $hero->getRole() ? $hero->getLevel() : null);
+        $record->setFinalStats($this->buildStatsSnapshot($hero));
+        $record->setDepartedAt($date);
+        $record->setOriginalHeroId($hero->getId());
 
         $this->em->persist($record);
 
@@ -67,6 +42,10 @@ class GraveyardService
 
     public function prepareHeroRemoval(Hero $hero): void
     {
+        if (!$hero->isCombatant()) {
+            throw new \DomainException('Only combatant heroes can be removed through hero dismissal flow.');
+        }
+
         /** @var list<Item> $equippedItems */
         $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
         foreach ($equippedItems as $item) {
@@ -81,7 +60,7 @@ class GraveyardService
         }
 
         if (null !== $hero->getTrainer()) {
-            $hero->getTrainer()->removeHero($hero);
+            $hero->getTrainer()->removeTrainee($hero);
             $hero->setTrainer(null);
         }
 
@@ -93,17 +72,21 @@ class GraveyardService
             $this->em->remove($mastery);
         }
 
-        /** @var list<\App\Entity\Training\TrainingQueue> $queueEntries */
-        $queueEntries = $this->em->getRepository(\App\Entity\Training\TrainingQueue::class)->findBy(['hero' => $hero]);
-        foreach ($queueEntries as $entry) {
+        /** @var list<\App\Entity\Hero\HeroTrainingHistory> $historyEntries */
+        $historyEntries = $this->em->getRepository(\App\Entity\Hero\HeroTrainingHistory::class)->findBy(['hero' => $hero]);
+        foreach ($historyEntries as $entry) {
             $this->em->remove($entry);
         }
     }
 
-    public function prepareTrainerRemoval(Trainer $trainer): void
+    public function prepareTrainerRemoval(Hero $trainer): void
     {
-        foreach ($trainer->getHeroes()->toArray() as $hero) {
-            $trainer->removeHero($hero);
+        if (!$trainer->isTrainer()) {
+            throw new \DomainException('Only trainer heroes can be removed through trainer dismissal flow.');
+        }
+
+        foreach ($trainer->getTrainees()->toArray() as $hero) {
+            $trainer->removeTrainee($hero);
         }
     }
 
@@ -112,17 +95,12 @@ class GraveyardService
         $this->em->remove($hero);
     }
 
-    public function removeTrainer(Trainer $trainer): void
-    {
-        $this->em->remove($trainer);
-    }
-
     /**
      * @return array<string, int>
      */
-    public function buildHeroStatsSnapshot(Hero $hero): array
+    public function buildStatsSnapshot(Hero $hero): array
     {
-        return [
+        $stats = [
             'str' => $hero->getStr(),
             'dex' => $hero->getDex(),
             'kon' => $hero->getKon(),
@@ -131,68 +109,33 @@ class GraveyardService
             'wil' => $hero->getWil(),
             'cha' => $hero->getCha(),
             'lck' => $hero->getLck(),
-            'form' => $hero->getForm(),
-            'fatigue' => $hero->getFatigue(),
-            'morale' => $hero->getMorale(),
         ];
-    }
 
-    /**
-     * @return array<string, int>
-     */
-    public function buildTrainerStatsSnapshot(Trainer $trainer): array
-    {
-        return [
-            'str' => $trainer->getStr(),
-            'dex' => $trainer->getDex(),
-            'kon' => $trainer->getKon(),
-            'spd' => $trainer->getSpd(),
-            'int' => $trainer->getIntel(),
-            'wil' => $trainer->getWil(),
-            'cha' => $trainer->getCha(),
-            'lck' => $trainer->getLck(),
-        ];
+        if ($hero->isCombatant()) {
+            $stats['form'] = $hero->getForm();
+            $stats['fatigue'] = $hero->getFatigue();
+            $stats['morale'] = $hero->getMorale();
+        }
+
+        return $stats;
     }
 
     /**
      * @return array<string, mixed>
      */
-    public function serializeHeroRecord(GraveyardRecord $record): array
+    public function serializeMemorial(GraveyardMemorial $record): array
     {
         return [
             'id' => $record->getId(),
-            'type' => 'hero',
-            'name' => $record->getHeroName(),
-            'race' => $record->getRace()->value,
-            'final_level' => $record->getFinalLevel(),
-            'age' => $record->getAgeAtDeath(),
-            'cause' => $record->getCauseOfDeath(),
-            'total_battles' => $record->getTotalBattles(),
-            'victories' => $record->getVictories(),
-            'final_stats' => $record->getFinalStats(),
-            'achievements' => $record->getAchievements(),
-            'date' => $record->getDateOfDeath()->format('Y-m-d'),
-            'original_hero_id' => $record->getOriginalHeroId(),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function serializeStaffRecord(StaffRecord $record): array
-    {
-        return [
-            'id' => $record->getId(),
-            'type' => 'staff',
+            'type' => $record->getRoleAtDeparture()->value,
             'name' => $record->getName(),
             'race' => $record->getRace()->value,
+            'final_level' => $record->getFinalLevel(),
             'age' => $record->getAge(),
             'cause' => $record->getCause()->value,
-            'training_type' => $record->getTrainingType(),
             'final_stats' => $record->getFinalStats(),
-            'trainees_count' => $record->getTraineesCount(),
-            'date' => $record->getDateOfDeparture()->format('Y-m-d'),
-            'original_trainer_id' => $record->getOriginalTrainerId(),
+            'date' => $record->getDepartedAt()->format('Y-m-d'),
+            'original_hero_id' => $record->getOriginalHeroId(),
         ];
     }
 }

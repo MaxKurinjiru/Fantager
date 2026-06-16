@@ -28,7 +28,6 @@
      }|json_encode|e('html_attr') }}">
 
     <div class="hq-facility-panel__header">
-        <a href="{{ path('app_hq') }}" class="link text-sm">← {{ 'hq.back_to_facilities'|trans }}</a>
         <div class="flex flex-wrap items-center justify-between gap-4">
             <h2 class="hq-facility-panel__title">🌀 {{ 'hq.facilities_list.summoning_chamber.name'|trans }}</h2>
             {% include 'components/summoning/cycle_status.html.twig' with { status: status } %}

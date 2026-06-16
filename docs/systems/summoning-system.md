@@ -12,7 +12,9 @@ Teams can summon new heroes through the **Summoning Chamber** — a facility in 
 1. Checks availability (roster limit, cycle limit, gold).
 2. Selects a race based on the team's Arena race optimization and race relationships.
 3. Generates a level-1 hero using `HeroGenerator` with bonuses from the Summoning Chamber facility.
-4. Deducts gold and records the event in `SummonHistory`.
+4. Deducts gold and records the event in `TeamSummonHistory` and the team chronicle (`summon_completed` in `team_chronicle`).
+
+See [team-chronicle-system.md](team-chronicle-system.md).
 
 ---
 
@@ -122,7 +124,7 @@ A random first name and surname are drawn from race-specific name lists defined 
 
 ## Summon History
 
-Every summon is recorded in the `SummonHistory` entity:
+Every summon is recorded in the `TeamSummonHistory` entity (table `team_summon_history`):
 
 | Field | Description |
 |-------|-------------|
@@ -132,7 +134,7 @@ Every summon is recorded in the `SummonHistory` entity:
 | `gold_cost` | Actual gold paid |
 | `summoned_at` | Timestamp |
 
-The summon history is displayed on the `/app/summon/history` page.
+The summon history is displayed on the `/app/summon/history` page. The same event also appears on the **team chronicle** (dashboard widget and `/app/chronicle`).
 
 ---
 

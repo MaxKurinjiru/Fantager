@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace App\Service\Summoning;
 
 use App\Entity\Hero\Hero;
-use App\Entity\Summoning\SummonHistory;
 use App\Entity\Team\Team;
+use App\Entity\Team\TeamSummonHistory;
 use App\Enum\Race;
+use App\Enum\RoyalTreasuryContributionSource;
 use App\Service\Config\RaceConfig;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
-use App\Enum\RoyalTreasuryContributionSource;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroGenerator;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class SummoningService
@@ -30,6 +31,7 @@ class SummoningService
         private readonly HeadquartersService $hqService,
         private readonly EntityManagerInterface $em,
         private readonly RaceConfig $raceConfig,
+        private readonly TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -210,7 +212,7 @@ class SummoningService
         $race = $compatibleRaces[array_rand($compatibleRaces)];
         $hero = $this->heroGenerator->createForTeam($team, $race, $chamberBonuses);
 
-        $history = new SummonHistory();
+        $history = new TeamSummonHistory();
         $history->setTeam($team);
         $history->setRaceSelected($race);
         $history->setHero($hero);
@@ -221,6 +223,7 @@ class SummoningService
 
         $this->em->persist($hero);
         $this->em->persist($history);
+        $this->teamChronicleService->recordSummonCompleted($team, $hero, $race, $cost);
         $this->em->flush();
 
         return $hero;

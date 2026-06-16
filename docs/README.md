@@ -18,19 +18,18 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 - [Auth System](systems/auth-system.md) — Authentication, registration, sessions
 - [Kingdom System](systems/kingdom-system.md)
 - [Summoning System](systems/summoning-system.md)
-- [Event System](systems/event-system.md)
 - [Calendar System](systems/calendar-system.md) — Weekly ticks, schedule, and season timeline
 - [Economy System](systems/economy-system.md)
 - [Financial Crisis System](systems/financial-crisis-system.md)
 - [Hero System](systems/hero-system.md)
 - [Training System](systems/training-system.md)
 - [Team System](systems/team-system.md)
+- [Team Chronicle System](systems/team-chronicle-system.md) — Append-only team event log (`team_chronicle`), dashboard widget, full history page
 - [Formation System](systems/formation-system.md)
 - [Headquarters System](systems/headquarters-system.md)
 - [Item System](systems/item-system.md)
 - [Spell System](systems/spell-system.md)
 - [Combat System](systems/combat-system.md)
-- [Dungeon System](systems/dungeon-system.md)
 - [Marketplace System](systems/marketplace-system.md)
 - [League System](systems/league-system.md)
 - [Graveyard System](systems/graveyard-system.md)
@@ -43,6 +42,7 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 - [00 Auth (Login/Register)](screens/00-auth-screens.md)
 - [01 Kingdom Selection](screens/01-kingdom-selection.md)
 - [02 Team Dashboard](screens/02-team-dashboard.md)
+- [02a Team Chronicle](screens/02a-team-chronicle.md)
 - [03 Hero Roster](screens/03-hero-roster.md)
 - [04 Hero Detail](screens/04-hero-detail.md)
 - [05 Training](screens/05-training.md)
@@ -54,7 +54,7 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 - [11 Spell Management](screens/11-spell-management.md)
 - [12 Combat/Battle](screens/12-combat-battle.md)
 - [13 League](screens/13-league.md)
-- [14 Calendar/Events](screens/14-calendar-events.md)
+- [14 Calendar](screens/14-calendar.md)
 - [15 Marketplace](screens/15-marketplace.md)
 - [16 Graveyard](screens/16-graveyard.md)
 - [17 Community](screens/17-community.md)
@@ -65,6 +65,7 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 **Meta**
 - [UI & CSS Design Guidelines](ui-guidelines.md) — Design tokens, atomic component model (atoms/molecules), BEM naming, Tailwind usage rules, Stimulus controller conventions, and accessibility requirements
 - [README.md](../README.md) — Project overview and dev setup
+- [`future/`](future/) — Deferred features not currently planned (e.g. world events, dungeons)
 - [`_deferred/`](../_deferred/) — Parked files (CHANGELOG.md, CONTRIBUTING.md, legacy-migration.md); not actively maintained until the project reaches a stable version
 
 ---
@@ -75,11 +76,11 @@ This table provides a snapshot of implemented features versus placeholders:
 
 | Feature / Area | Service Layer | Web UI / Controllers | API (V1) Endpoints | Status / Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **Authentication** | Fully Implemented | Implemented | N/A (Session-based) | Register, verification, login, password reset. |
+| **Authentication** | Fully Implemented | Implemented | N/A (Session-based) | Register, verification, login, password reset. Account settings modal (language, UI prefs, email change, delete account). |
 | **Kingdom & Locale**| Fully Implemented | Implemented | Implemented | Data loading from JSON, capacity calculations. Locale switcher (`/change-locale/{locale}`) implemented. |
-| **Team / Dashboard**| Fully Implemented | Implemented | Implemented | Dashboard, settings, economy (gold/essence), financial records. |
+| **Team / Dashboard**| Fully Implemented | Implemented | Implemented | Dashboard, settings, economy (gold/essence), financial records, **team chronicle** (recent events + `/app/chronicle`). |
 | **Hero Roster** | Fully Implemented | Implemented | Implemented | Hero CRUD, rename, summoning chamber, `HeroGenerator`. |
-| **Summoning** | Fully Implemented | Implemented | Implemented | Summoning random compatible race based on Arena/HQ optimization, cooldowns, `SummonHistory` logging. |
+| **Summoning** | Fully Implemented | Implemented | Implemented | Summoning random compatible race based on Arena/HQ optimization, cooldowns, `TeamSummonHistory` logging. |
 | **Training** | Fully Implemented | Implemented | Implemented | Training calculations + automated tick processing. |
 | **Calendar & Ticks**| Fully Implemented | Implemented | Implemented | Calendar page at `/app/calendar`; kingdom feed API; scheduled tick generation. |
 | **Formations** | Fully Implemented | Implemented | Implemented | Formation CRUD, slot assignment, strategy JSON. |
@@ -88,11 +89,11 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Spells** | Fully Implemented | Implemented | Implemented | Spell library, learning, slot equipping. |
 | **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, and `LeagueService` implemented; match result processing is pending. |
 | **Combat** | Partially Implemented | Not Implemented | Not Implemented | Data models and entity schemas defined; combat simulator, formulas, and battle execution are missing (Phase 5). |
-| **Events / Calendar UI** | Fully Implemented | Implemented | Implemented | Web calendar page + kingdom feed API. |
+| **World Events** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/world-events-system.md](future/world-events-system.md). |
+| **Dungeons** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/dungeon-system.md](future/dungeon-system.md). Backend removed from codebase. |
 | **Marketplace** | Fully Implemented | Implemented | Implemented | Listings, bids, transactions, and background cron processing fully functional. |
-| **Community** | Fully Implemented | Implemented | Implemented | Messaging, forum threads/posts, achievements, and content filtering fully functional. |
-| **Graveyard** | Partially Implemented | Not Implemented | Not Implemented | Permanent death records and entity schemas defined; death triggers and graveyard UI pending (Phase 6). |
-| **Dungeons** | Partially Implemented | Not Implemented | Not Implemented | PvE encounter schemas defined; dungeon runs, rewards, and execution logic pending (Phase 7). |
+| **Community** | Fully Implemented | Implemented | Implemented | Messaging, forum threads/posts, and content filtering fully functional. |
+| **Graveyard** | Partially Implemented | Not Implemented | Not Implemented | `GraveyardMemorial` entity and dismissal flow implemented; combat death triggers and graveyard UI pending (Phase 6). |
 | **Quests** | Planned | Not Implemented | Not Implemented | Design documented in [quest-system.md](systems/quest-system.md); no code or DB schema yet. |
 | **Crafting** | Planned | Not Implemented | Not Implemented | Design documented; backend and UI removed pending future Phase 7 implementation. |
 | **Arena Management** | Partially Implemented | Implemented | Partial | Home-match revenue model; read-only `/app/arena` UI. Payout on league match tick. Friendly matches pending combat. |

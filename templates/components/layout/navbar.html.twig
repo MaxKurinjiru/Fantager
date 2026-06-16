@@ -2,21 +2,9 @@
 
 {% if not is_guest %}
     <div class="navbar-container">
-        {# Top Resource Bar #}
-        <div class="navbar-resources">
-            <button type="button"
-                    data-action="click->ledger#openLedgerModal"
-                    class="navbar-resources__item navbar-resources__item--clickable"
-                    title="{{ 'finance.recent_title'|trans }}"
-                    aria-label="{{ 'finance.recent_title'|trans }}">
-                <span class="text-yellow-500 font-bold select-none">🪙</span>
-                <span class="navbar-resources__amount">{{ app.user.team.gold|number_format(0, '.', ' ') }}</span>
-            </button>
-        </div>
-
-        {# Top navigation bar #}
         <nav class="navbar-main">
-            <div class="navbar-main__left">
+            <div class="navbar-main__inner">
+                <div class="navbar-main__left">
                 {# Hamburger Menu Button #}
                 <button type="button"
                         data-action="click->mobile-menu#toggle" 
@@ -31,9 +19,18 @@
                 <span class="navbar-badge">
                     {{ app.user.team.kingdom.name }}
                 </span>
-            </div>
+                </div>
 
-            <div class="navbar-main__right">
+                <div class="navbar-main__right">
+                <button type="button"
+                        data-action="click->ledger#openLedgerModal"
+                        class="navbar-gold"
+                        title="{{ 'finance.recent_title'|trans }}"
+                        aria-label="{{ 'finance.recent_title'|trans }}">
+                    <span class="navbar-gold__icon" aria-hidden="true">🪙</span>
+                    <span class="navbar-gold__amount">{{ app.user.team.gold|number_format(0, '.', ' ') }}</span>
+                </button>
+
                 {# Player Dropdown Menu #}
                 <div class="navbar-dropdown" data-controller="dropdown">
                     <button type="button"
@@ -89,6 +86,7 @@
                     </div>
                 </div>
             </div>
+            </div>
         </nav>
     </div>
 {% else %}
@@ -101,8 +99,9 @@
     {% set current_info = locales[current_locale]|default({ 'label': current_locale|upper, 'flag': '🌐' }) %}
 
     <nav class="navbar-guest">
-        <a href="{{ path('app_home') }}" class="navbar-logo">Fantager</a>
-        <div class="navbar-guest__right">
+        <div class="navbar-guest__inner">
+            <a href="{{ path('app_home') }}" class="navbar-logo">Fantager</a>
+            <div class="navbar-guest__right">
             {# Guest Language Switcher Dropdown #}
             <div class="navbar-dropdown" data-controller="dropdown">
                 <button type="button"
@@ -140,6 +139,7 @@
                     {{ 'nav.login'|trans }}
                 </a>
             {% endif %}
+            </div>
         </div>
     </nav>
 {% endif %}

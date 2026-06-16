@@ -9,7 +9,8 @@ mkdir -p "$APP_DIR/var/cache" "$APP_DIR/var/log" "$APP_DIR/var/sessions" "$APP_D
 mkdir -p /tmp/fantager/cache/dev/profiler
 chmod -R 777 /tmp/fantager
 
-chown -R apache:apache "$APP_DIR" || true
+# Avoid changing owner of the entire host-mounted directory to prevent resetting host file permissions
+# chown -R apache:apache "$APP_DIR" || true
 chown -R apache:apache "$APP_DIR/var" || true
 chmod -R 0777 "$APP_DIR/var" || true
 mkdir -p /var/www/opcache && chown -R apache:apache /var/www/opcache || true

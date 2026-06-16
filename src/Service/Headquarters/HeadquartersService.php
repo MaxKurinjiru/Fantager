@@ -11,11 +11,11 @@ use App\Entity\Team\Team;
 use App\Enum\FacilityType;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
+use App\Enum\RoyalTreasuryContributionSource;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
-use App\Enum\RoyalTreasuryContributionSource;
 use Doctrine\ORM\EntityManagerInterface;
 
 class HeadquartersService
@@ -38,22 +38,6 @@ class HeadquartersService
 
     /** +2.5% upgrade cost per HQ total level point above the starting sum. */
     private const UPGRADE_TOTAL_LEVEL_FACTOR = 0.025;
-
-    private const HQ_WEEKLY_MAINTENANCE_BASE = 50;
-
-    /** Gold per facility level charged weekly (scales with facility tier). */
-    private const FACILITY_WEEKLY_MAINTENANCE = [
-        'training' => 25,
-        'medical' => 20,
-        'library' => 30,
-        'treasury' => 22,
-        'barracks' => 18,
-        'summoning_chamber' => 40,
-        'arena' => 45,
-    ];
-
-    /** Additional HQ overhead per total level point (weekly). */
-    private const HQ_MAINTENANCE_PER_TOTAL_LEVEL = 3;
 
     /** Partial refund ratio when a facility downgrade completes (anti-exploit). */
     private const DOWNGRADE_REFUND_RATIO = 0.25;
@@ -421,7 +405,7 @@ class HeadquartersService
         return 10 + (int) round($barracksBonus);
     }
 
-    public function processRaceOptimizationTick(\App\Entity\Kingdom\Kingdom $kingdom): void
+    public function processRaceOptimizationTick(Kingdom $kingdom): void
     {
         $hqs = $this->hqRepository->findByKingdom($kingdom);
 
@@ -440,7 +424,7 @@ class HeadquartersService
         $this->em->flush();
     }
 
-    public function processFacilityUpgradesTick(\App\Entity\Kingdom\Kingdom $kingdom, \DateTimeImmutable $now): void
+    public function processFacilityUpgradesTick(Kingdom $kingdom, \DateTimeImmutable $now): void
     {
         $hqs = $this->hqRepository->findByKingdom($kingdom);
 
@@ -491,7 +475,7 @@ class HeadquartersService
         $this->em->flush();
     }
 
-    public function processFacilityDowngradeLockTick(\App\Entity\Kingdom\Kingdom $kingdom): void
+    public function processFacilityDowngradeLockTick(Kingdom $kingdom): void
     {
         $hqs = $this->hqRepository->findByKingdom($kingdom);
 

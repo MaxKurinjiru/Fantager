@@ -8,7 +8,7 @@ Single source of truth for documentation gaps, design questions, and known incon
 |----|------|-------|----------|--------|--------|
 | 1 | Combat | No combat formulas documented (HP, damage, defense, accuracy, dodge, crits, status effects) | High | Phase 5 league match resolution, graveyard death triggers | Open |
 | 2 | Item System | Durability & enchanting mechanics referenced in economy docs but undefined in item system | High | Phase 6 enchanting | Open |
-| 3 | Dungeon | Encounter rules, rewards and tick processing undefined | Low | Phase 7 | Deferred (planned) |
+| 3 | Dungeon | Encounter rules, rewards and tick processing undefined | Low | Phase 7 | Deferred — design in [future/dungeon-system.md](future/dungeon-system.md); backend removed from codebase |
 | 6 | Terminology | "Death Expectation" column name misleading — alias "Mortality Threshold" added in game-summary | Low | — | Open (cosmetic) |
 | 7 | Friendly Matches | Rules now documented in `calendar-system.md`; scheduling UI/API still pending combat engine | Low | Phase 5 friendly match scheduling | Partially resolved |
 | 8 | Arena Matches | Home-match revenue model implemented; friendly match scheduling pending combat | Low | Phase 5 | Partially resolved |

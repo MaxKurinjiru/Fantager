@@ -6,10 +6,13 @@ namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
 use App\Entity\Auth\VerificationToken;
+use App\Enum\ChronicleReleaseReason;
 use App\Enum\TokenType;
 use App\Repository\Auth\UserRepository;
 use App\Repository\Auth\VerificationTokenRepository;
 use App\Repository\Notification\NotificationRepository;
+use App\Service\Auth\UserSettingsService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -191,6 +194,43 @@ class SettingsController extends AbstractController
         return $this->redirectToRoute('app_home');
     }
 
+    #[Route('/app/settings/preferences', name: 'api_update_preferences', methods: ['POST'])]
+    #[IsGranted('ROLE_PLAYER')]
+    public function updatePreferences(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserSettingsService $userSettingsService,
+    ): JsonResponse {
+        $csrfToken = $request->headers->get('X-CSRF-Token');
+        if (!$this->isCsrfTokenValid('api', $csrfToken)) {
+            return $this->json(['error' => 'Invalid security token.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        if (!\is_array($data)) {
+            return $this->json(['error' => 'Invalid request payload.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (!\array_key_exists('closeModalOnBackdrop', $data)) {
+            return $this->json(['error' => 'No preferences provided.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (!\is_bool($data['closeModalOnBackdrop'])) {
+            return $this->json(['error' => 'Invalid closeModalOnBackdrop value.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        /** @var User $user */
+        $user = $this->getUser();
+        $settings = $userSettingsService->getOrCreate($user);
+        $settings->setCloseModalOnBackdrop($data['closeModalOnBackdrop']);
+        $entityManager->flush();
+
+        return $this->json([
+            'message' => 'Preferences saved.',
+            'closeModalOnBackdrop' => $settings->isCloseModalOnBackdrop(),
+        ]);
+    }
+
     #[Route('/app/settings/cancel-account', name: 'api_cancel_account', methods: ['POST'])]
     #[IsGranted('ROLE_PLAYER')]
     public function cancelAccount(
@@ -239,6 +279,7 @@ class SettingsController extends AbstractController
         NotificationRepository $notificationRepository,
         EntityManagerInterface $entityManager,
         TokenStorageInterface $tokenStorage,
+        TeamChronicleService $teamChronicleService,
     ): Response {
         $rawToken = $request->query->getString('token');
         $token = $tokenRepository->findActiveByToken($rawToken);
@@ -258,6 +299,11 @@ class SettingsController extends AbstractController
         // Disassociate team
         $team = $user->getTeam();
         if ($team) {
+            $teamChronicleService->recordPlayerReleased(
+                $team,
+                $user,
+                ChronicleReleaseReason::AccountDeleted,
+            );
             $team->setUser(null);
             $team->setIsNpc(true);
         }

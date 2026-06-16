@@ -17,9 +17,9 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 *Build the core user account systems and allow players to choose their starting Kingdom and auto-claim their initial team.*
 
 ### Step 1.1: Database Infrastructure & Schema Setup
-- **Database & Entities**: Create migrations for base tables: `User`, `Kingdom`, `Team`, and session tables. Configure dual Doctrine connections (`default` and `legacy`) to support raw SQL read operations from legacy DB.
+- **Database & Entities**: Create init migration for base tables: `User`, `Kingdom`, `Team`, and session tables. Configure dual Doctrine connections (`default` and `legacy`) to support raw SQL read operations from legacy DB.
 - **Verification**: Run `bin/console doctrine:migrations:migrate` and check connection configuration.
-- **Status**: ✅ Complete (`Version20260608160305` covers full system schema).
+- **Status**: ✅ Complete (init migration covers full system schema).
 
 ### Step 1.2: Authentication & Sessions
 - **Service Layer**: Implement security firewalls, CSRF protection, rate limiting, and password hashing.
@@ -40,9 +40,9 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Database & Entities**: `Team` entity linked to `User` and `Kingdom`.
 - **Service Layer**: Automatic NPC team claiming logic during user registration (`RegistrationService`).
 - **API Contracts**: `GET /api/v1/teams/{teamId}/dashboard` returning wallet data, reputation, and roster stats.
-- **Frontend Views**: Main Dashboard (`templates/dashboard/index.html.twig`) with active team stats, recent activity feeds, and settings tab.
-- **Verification**: Register a new user and verify that an NPC team is successfully claimed and rendered.
-- **Status**: ✅ Complete (`Web\DashboardController`, `Web\SettingsController`, `Api\V1\TeamController`, Stimulus: `profile_settings_controller.js`).
+- **Frontend Views**: Main Dashboard (`templates/dashboard/index.html.twig`) with active team stats, **team chronicle widget** (5 recent `team_chronicle` entries), and settings tab. Full chronicle at `/app/chronicle`.
+- **Verification**: Register a new user and verify that an NPC team is successfully claimed, chronicle shows `player_joined`, and dashboard renders recent events.
+- **Status**: ✅ Complete (`Web\DashboardController`, `Web\TeamChronicleController`, `TeamChronicleService`, `templates/components/dashboard/recent_chronicle.html.twig`, `templates/team_chronicle/index.html.twig`).
 
 ---
 
@@ -56,7 +56,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Status**: ✅ Complete (`EconomyService`, ledger logs, weekly seating ticket revenue distribution).
 
 ### Step 2.2: Hero Summoning Chamber
-- **Database & Entities**: `Hero` and `SummonHistory` entities.
+- **Database & Entities**: `Hero` and `TeamSummonHistory` entities.
 - **Service Layer**: `HeroGenerator` with race name pools (first and surname definitions per race in `HeroGenerator`). `SummoningService` to handle race compatibilities and cooldowns.
 - **API Contracts**: `POST /api/v1/summoning` (initiates summon), `GET /api/v1/summoning/status`.
 - **Frontend Views**: Summoning Chamber UI (`templates/summoning/index.html.twig`) with cooldown timers, race select, and Reveal AJAX animation.
@@ -92,7 +92,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Status**: ✅ Complete (`HeadquartersService`, `Web\HeadquartersController`, Stimulus: `hq_controller.js`).
 
 ### Step 3.2: Hero Training Loop
-- **Database & Entities**: `TrainingQueue` and `Trainer` entities.
+- **Database & Entities**: `HeroTrainingHistory`; trainers are heroes with `role = trainer`.
 - **Service Layer**: Training rate calculations. Weekly training tick (`TickType::WeeklyTraining`) processed by `ProcessKingdomTicksHandler`.
 - **API Contracts**: `POST /api/v1/training/trainers/{id}/assign` (assign hero to trainer), `POST /api/v1/training/trainers/{id}/unassign`, `POST /api/v1/training/trainers/{id}/configure`.
 - **Frontend Views**: Trainers dashboard panel, trainers selection list, and assigned trainees list.
@@ -174,7 +174,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Status**: ⏳ Not Started (Entities scaffolded, engine pending).
 
 ### Step 6.2: Calendar & Server Ticks System
-- **Database & Entities**: `CalendarSeason` and `GameEvent` entities.
+- **Database & Entities**: `KingdomTickLog` (implemented).
 - **Service Layer**:
   - Timeline tick scheduler running weekly/hourly increments.
   - Action runners triggered by calendar ticks: passive economy income, training time updates, and league match executions.
@@ -200,7 +200,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Status**: 🔄 Partially Complete (`LeagueFixtureScheduler`, `SeasonTransitionService`, and Web League Dashboard fully complete; API endpoints and combat simulation matching are pending implementation under the remaining Phase 6 simulation tasks).
 
 ### Step 6.4: Hero Mortality & Graveyard
-- **Database & Entities**: `GraveyardRecord` entity.
+- **Database & Entities**: `GraveyardMemorial` entity (`graveyard_memorial` table).
 - **Service Layer**: Permanent death triggers in combat, transfer stats to graveyard log.
 - **API Contracts**: `GET /api/v1/graveyard/records`.
 - **Frontend Views**:
@@ -237,7 +237,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 *Extend the sandbox with PvE dungeon instances, item crafting, and stadium business operations.*
 
 ### Step 8.1: PvE Dungeon Encounters
-- **Database & Entities**: `DungeonRun` and `DungeonFloor` tables (depends on Combat).
+- **Database & Entities**: `DungeonRun` table (depends on Combat). Design preserved in [future/dungeon-system.md](future/dungeon-system.md); no code in codebase yet.
 - **Service Layer**: Monster roster generation, floor difficulty progression, chest loot generators.
 - **API Contracts**: `POST /api/v1/dungeons/enter`, `POST /api/v1/dungeons/combat`.
 - **Frontend Views**:

@@ -3,7 +3,7 @@
 {% block title %}{{ 'nav.economy'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-6" data-controller="marketplace"
+<div class="page-shell" data-controller="marketplace"
      data-marketplace-initial-tab-value="{{ tab in ['browse', 'sell', 'mylistings', 'history'] ? tab : 'browse' }}"
      data-marketplace-initial-hero-id-value="{{ sell_hero_id|default(0) }}"
      data-marketplace-tax-rate-value="{{ taxRate }}"
@@ -124,7 +124,7 @@
     </div>
 
     {% if tab == 'ledger' %}
-        <div class="finance-ledger page-shell">
+        <div class="finance-ledger">
             {% include 'components/finance/ledger_content.html.twig' %}
         </div>
     {% else %}
