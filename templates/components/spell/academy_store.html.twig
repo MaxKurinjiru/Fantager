@@ -17,7 +17,7 @@
                             <div>
                                 <h3 class="font-bold text-white text-sm leading-tight">{{ spell.name }}</h3>
                                 <span class="spell-card__school">
-                                    Tier {{ spell.tier }} &bull; {{ ('school.' ~ spell.school.value)|trans }}
+                                    {{ 'spells.tier_label'|trans({'%tier%': spell.tier}) }} &bull; {{ ('school.' ~ spell.school.value)|trans }}
                                 </span>
                             </div>
                         </div>

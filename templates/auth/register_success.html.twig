@@ -14,7 +14,7 @@
         <form method="POST" action="{{ path('app_register_resend') }}" class="flex gap-2 justify-center">
             <input type="hidden" name="_token" value="{{ csrf_token('register_resend') }}">
             <label for="resend_email" class="sr-only">{{ 'auth.email'|trans }}</label>
-            <input type="email" id="resend_email" name="email" required placeholder="your@email.com"
+            <input type="email" id="resend_email" name="email" required placeholder="{{ 'auth.email'|trans }}"
                    autocomplete="email"
                    class="form-input">
             <button type="submit" class="btn btn-outline btn--sm">

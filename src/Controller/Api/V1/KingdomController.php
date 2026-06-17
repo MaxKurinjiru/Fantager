@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Service\Kingdom\KingdomService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -11,6 +12,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class KingdomController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly KingdomService $kingdomService,
     ) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Community;
 
+use App\Entity\Auth\User;
 use App\Entity\Community\ForumPost;
 use App\Entity\Community\ForumThread;
 use App\Entity\Team\Team;
@@ -95,13 +96,27 @@ final class ForumThreadHelper
     }
 
     /** @return array<string, mixed> */
-    public function serializeTeam(Team $team): array
+    public function serializeTeam(?Team $team): ?array
     {
+        if (null === $team) {
+            return null;
+        }
+
         return [
             'id' => $team->getId(),
             'name' => $team->getName(),
             'emblem' => $team->getEmblem() ?: '🛡️',
             'colors' => $team->getColors(),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public function serializeAuthor(User $user, ?Team $team): array
+    {
+        return [
+            'id' => $user->getId(),
+            'display_name' => $user->getDisplayName(),
+            'team' => $this->serializeTeam($team),
         ];
     }
 
@@ -117,9 +132,20 @@ final class ForumThreadHelper
             'isLocked' => $thread->isLocked(),
             'isPinned' => $thread->isPinned(),
             'preview' => $this->getPreview($thread),
-            'author_team' => $this->serializeTeam($thread->getAuthorTeam()),
+            'author' => $this->serializeAuthor($thread->getAuthorUser(), $thread->getAuthorTeam()),
             'posts_count' => $thread->getPosts()->count(),
             'replies_count' => $this->getRepliesCount($thread),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public function serializePost(ForumPost $post): array
+    {
+        return [
+            'id' => $post->getId(),
+            'body' => $post->getBody(),
+            'createdAt' => $post->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            'author' => $this->serializeAuthor($post->getAuthorUser(), $post->getAuthorTeam()),
         ];
     }
 }

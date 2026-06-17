@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Entity\Marketplace\MarketplaceListing;
 use App\Entity\Marketplace\MarketplaceTransaction;
@@ -21,6 +22,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_PLAYER')]
 class MarketplaceController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly MarketplaceService $marketplaceService,
@@ -34,7 +37,7 @@ class MarketplaceController extends AbstractController
         $user = $this->getUser();
         $team = $user->getTeam();
         if (!$team) {
-            return new JsonResponse(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.no_team', 400);
         }
 
         $kingdom = $team->getKingdom();
@@ -141,7 +144,7 @@ class MarketplaceController extends AbstractController
         $user = $this->getUser();
         $team = $user->getTeam();
         if (!$team) {
-            return new JsonResponse(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.no_team', 400);
         }
 
         $content = json_decode($request->getContent(), true) ?? [];
@@ -166,7 +169,7 @@ class MarketplaceController extends AbstractController
 
             return new JsonResponse($this->serializeListing($listing), Response::HTTP_CREATED);
         } catch (\DomainException|\InvalidArgumentException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->jsonException($e, 400);
         }
     }
 
@@ -177,7 +180,7 @@ class MarketplaceController extends AbstractController
         $user = $this->getUser();
         $team = $user->getTeam();
         if (!$team) {
-            return new JsonResponse(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.no_team', 400);
         }
 
         try {
@@ -185,7 +188,7 @@ class MarketplaceController extends AbstractController
 
             return new JsonResponse(['success' => true]);
         } catch (\DomainException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->jsonException($e, 400);
         }
     }
 
@@ -196,7 +199,7 @@ class MarketplaceController extends AbstractController
         $user = $this->getUser();
         $team = $user->getTeam();
         if (!$team) {
-            return new JsonResponse(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.no_team', 400);
         }
 
         $content = json_decode($request->getContent(), true) ?? [];
@@ -207,7 +210,7 @@ class MarketplaceController extends AbstractController
 
             return new JsonResponse(['success' => true]);
         } catch (\DomainException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->jsonException($e, 400);
         }
     }
 
@@ -218,7 +221,7 @@ class MarketplaceController extends AbstractController
         $user = $this->getUser();
         $team = $user->getTeam();
         if (!$team) {
-            return new JsonResponse(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.no_team', 400);
         }
 
         $content = json_decode($request->getContent(), true) ?? [];
@@ -230,7 +233,7 @@ class MarketplaceController extends AbstractController
 
             return new JsonResponse(['success' => true]);
         } catch (\DomainException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->jsonException($e, 400);
         }
     }
 
@@ -241,7 +244,7 @@ class MarketplaceController extends AbstractController
         $user = $this->getUser();
         $team = $user->getTeam();
         if (!$team) {
-            return new JsonResponse(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.no_team', 400);
         }
 
         /** @var list<MarketplaceListing> $listings */
@@ -265,7 +268,7 @@ class MarketplaceController extends AbstractController
         $user = $this->getUser();
         $team = $user->getTeam();
         if (!$team) {
-            return new JsonResponse(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.no_team', 400);
         }
 
         $transactions = $this->em->getRepository(MarketplaceTransaction::class)->createQueryBuilder('t')

@@ -5,7 +5,7 @@
 {% set taxRate = taxRate|default(0) %}
 {% set team = team|default(null) %}
 
-<div data-marketplace-target="tabContent" data-tab-name="sell" class="space-y-6 hidden">
+<div data-marketplace-target="tabContent" data-tab-name="sell" class="space-y-6{% if tab|default('browse') != 'sell' %} hidden{% endif %}">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {# Category Selector & Roster list #}
         <div class="lg:col-span-2 game-panel space-y-6">
@@ -48,7 +48,7 @@
                             </div>
                         </div>
                         <span class="category-badge">
-                            {{ ('heroes.age_phase.' ~ (hero.age < 25 ? 'junior' : (hero.age < 50 ? 'prime' : (hero.age < 75 ? 'veteran' : 'elder'))))|trans }}
+                            {{ ('heroes.age_phase.' ~ hero_age_phase(hero)|lower)|trans }}
                         </span>
                     </div>
                 {% else %}

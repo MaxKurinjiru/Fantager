@@ -10,6 +10,7 @@ use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\FormationApproach;
 use App\Enum\LeagueFixtureStatus;
+use App\Exception\UserFacingException;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,6 +29,31 @@ class FixtureFormationService
      * @return array<string, mixed>
      *
      * @throws \DomainException
+     */
+    /**
+     * Lightweight summary for fixture lists (dashboard, league).
+     *
+     * @return array{mode: string, formation_id: int|null, formation_name: string|null, is_temporary: bool}
+     */
+    public function getFormationSummary(LeagueFixture $fixture, Team $team): array
+    {
+        $assigned = $this->getAssignedFormation($fixture, $team);
+
+        $mode = 'default';
+        if (null !== $assigned) {
+            $mode = $assigned->isTemporary() ? 'custom' : 'saved';
+        }
+
+        return [
+            'mode' => $mode,
+            'formation_id' => $assigned?->getId(),
+            'formation_name' => $assigned?->getName(),
+            'is_temporary' => null !== $assigned && $assigned->isTemporary(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
      */
     public function getAssignmentState(LeagueFixture $fixture, Team $team): array
     {
@@ -148,7 +174,7 @@ class FixtureFormationService
         $assigned = $this->getAssignedFormation($fixture, $team);
         if (null !== $assigned) {
             if ($assigned->getTeam()->getId() !== $team->getId()) {
-                throw new \DomainException('Assigned formation does not belong to the team.');
+                throw new UserFacingException('error.formation_not_belong_team');
             }
 
             return $assigned;
@@ -180,7 +206,7 @@ class FixtureFormationService
 
         $formation = $this->formationService->findForTeam($formationId, $team);
         if (null === $formation) {
-            throw new \DomainException('Formation not found.');
+            throw new UserFacingException('error.formation_not_found');
         }
 
         $this->replaceAssignment($fixture, $team, $formation);
@@ -235,7 +261,7 @@ class FixtureFormationService
 
         $assigned = $this->getAssignedFormation($fixture, $team);
         if (null === $assigned || !$assigned->isTemporary()) {
-            throw new \DomainException('No match-specific formation to promote.');
+            throw new UserFacingException('error.formation_no_match_to_promote');
         }
 
         return $this->formationService->promoteTemporary($assigned, $team, $name, $isDefault);
@@ -266,7 +292,7 @@ class FixtureFormationService
             return $fixture->getAwayFormation();
         }
 
-        throw new \DomainException('Team is not part of this fixture.');
+        throw new UserFacingException('error.formation_not_on_fixture');
     }
 
     private function setAssignedFormation(LeagueFixture $fixture, Team $team, ?Formation $formation): void
@@ -283,7 +309,7 @@ class FixtureFormationService
             return;
         }
 
-        throw new \DomainException('Team is not part of this fixture.');
+        throw new UserFacingException('error.formation_not_on_fixture');
     }
 
     private function replaceAssignment(LeagueFixture $fixture, Team $team, ?Formation $newFormation): void
@@ -307,7 +333,7 @@ class FixtureFormationService
     private function assertTeamInFixture(LeagueFixture $fixture, Team $team): void
     {
         if ($fixture->getHomeTeam()->getId() !== $team->getId() && $fixture->getAwayTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Team is not part of this fixture.');
+            throw new UserFacingException('error.formation_not_on_fixture');
         }
     }
 
@@ -319,7 +345,7 @@ class FixtureFormationService
         $this->assertTeamInFixture($fixture, $team);
 
         if (LeagueFixtureStatus::Scheduled !== $fixture->getStatus()) {
-            throw new \DomainException('Formation can only be changed for scheduled fixtures.');
+            throw new UserFacingException('error.formation_only_scheduled');
         }
     }
 }

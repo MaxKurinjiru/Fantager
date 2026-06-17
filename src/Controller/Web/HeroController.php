@@ -12,6 +12,7 @@ use App\Repository\Spell\SpellRepository;
 use App\Repository\Team\TeamSummonHistoryRepository;
 use App\Service\Config\RaceConfig;
 use App\Service\Training\TrainingService;
+use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,6 +32,7 @@ class HeroController extends AbstractController
         private readonly SpellRepository $spellRepository,
         private readonly TrainingService $trainingService,
         private readonly RaceConfig $raceConfig,
+        private readonly UserMessageTranslator $userMessages,
     ) {
     }
 
@@ -42,7 +44,7 @@ class HeroController extends AbstractController
         $team = $user->getTeam();
 
         if (!$team) {
-            $this->addFlash('error', 'No team assigned to your account.');
+            $this->addFlash('error', $this->userMessages->trans('error.no_team'));
 
             return $this->redirectToRoute('app_home');
         }
@@ -63,7 +65,7 @@ class HeroController extends AbstractController
         $team = $user->getTeam();
 
         if (!$team) {
-            $this->addFlash('error', 'No team assigned to your account.');
+            $this->addFlash('error', $this->userMessages->trans('error.no_team'));
 
             return $this->redirectToRoute('app_home');
         }

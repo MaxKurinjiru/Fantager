@@ -85,7 +85,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ### Step 3.1: Headquarters Upgrades
 - **Database & Entities**: `Headquarters` and `Facility` entities.
-- **Service Layer**: Upgrade costs and time math, facility level checks, and passive resource buffs. Race optimization toggling.
+- **Service Layer**: Upgrade costs and time math, facility level checks, and passive resource buffs. Arena adaptation toggling.
 - **API Contracts**: `POST /api/v1/hq/upgrade`, `POST /api/v1/hq/optimize`.
 - **Frontend Views**: HQ dashboard, facilities level bars, and live upgrade progress counters.
 - **Verification**: Check gold deduction during upgrades, test passive multiplier calculations.
@@ -171,7 +171,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Verification**:
   - Write extensive unit tests for combat calculations (accuracy, dodge, crit multipliers).
   - Test forfeit validation: if one team has <6 combat-ready heroes, ensure immediate 3-0 forfeit without simulator trigger.
-- **Status**: ⏳ Not Started (Entities scaffolded, engine pending).
+- **Status**: ⏳ Not Started (Battle entity scaffolded; combat engine pending).
 
 ### Step 6.2: Calendar & Server Ticks System
 - **Database & Entities**: `KingdomTickLog` (implemented).
@@ -179,9 +179,10 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
   - Timeline tick scheduler running weekly/hourly increments.
   - Action runners triggered by calendar ticks: passive economy income, training time updates, and league match executions.
 - **API/CLI Contracts**:
-  - `bin/console app:process-calendar-tick` — Command triggered by cron to advance game time.
+  - `bin/console app:ticks:run` — Command triggered by cron to advance game time.
+  - `GET /api/v1/kingdom/{id}/calendar` — Kingdom schedule feed.
 - **Verification**: Trigger a calendar tick and check if queues (training, items, leagues) update.
-- **Status**: ⏳ Not Started (Partial entities scaffolded, tick processor pending).
+- **Status**: ✅ Complete (`ProcessTicksCommand`, `TickScheduleCalculator`, `CalendarService`, `ProcessKingdomTicksHandler`, Web Calendar page, kingdom calendar API). League match ticks currently process arena revenue only; combat execution remains pending under Step 6.1.
 
 ### Step 6.3: League Matchmaking & Season Transition
 - **Design Prerequisites (Phase 0)**: Resolve [known-issues.md](known-issues.md) #7 (Friendly match rules) and #8 (Arena Match mechanics).
@@ -200,13 +201,13 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Status**: 🔄 Partially Complete (`LeagueFixtureScheduler`, `SeasonTransitionService`, and Web League Dashboard fully complete; API endpoints and combat simulation matching are pending implementation under the remaining Phase 6 simulation tasks).
 
 ### Step 6.4: Hero Mortality & Graveyard
-- **Database & Entities**: `GraveyardMemorial` entity (`graveyard_memorial` table).
-- **Service Layer**: Permanent death triggers in combat, transfer stats to graveyard log.
-- **API Contracts**: `GET /api/v1/graveyard/records`.
+- **Database & Entities**: `GraveyardMemorial` entity (`graveyard` table).
+- **Service Layer**: `GraveyardService` records memorial snapshots on hero/trainer dismissal. Combat death triggers reserved for Step 6.1.
+- **API Contracts**: `GET /api/v1/graveyard`, `GET /api/v1/graveyard/{id}`.
 - **Frontend Views**:
-  - **[NEW]** Memorial Graveyard: Interactive cemetery listing fallen heroes with final stats, cause of death, and customizable epitaph texts.
-- **Verification**: Run a combat simulation where a hero dies, verify they are removed from rosters and added to the Graveyard DB.
-- **Status**: ⏳ Not Started (Entities scaffolded, services pending).
+  - **[NEW]** Memorial Graveyard: Cemetery listing with filters (role, cause, race), summary stats, and memorial detail.
+- **Verification**: Dismiss a hero or trainer and verify memorial appears on `/app/graveyard` and via read API.
+- **Status**: 🔄 Partially Complete (`GraveyardService`, dismissal flows, Web UI, and read API implemented; combat death memorials pending combat engine).
 
 ---
 
@@ -243,10 +244,10 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - **[NEW]** Dungeon Map UI: Floor progression map, encounter cards, reward reveals.
 - **Verification**: Complete dungeon floors, confirm health persistence across fights and reward logs.
-- **Status**: ⏳ Not Started (Entities scaffolded, services pending).
+- **Status**: ⏳ Not Started (design only; no code or DB schema — see [future/dungeon-system.md](future/dungeon-system.md)).
 
 ### Step 8.2: Daily & Weekly Quest Systems
-- **Design Reference**: [systems/quest-system.md](systems/quest-system.md)
+- **Design Reference**: [future/quest-system.md](future/quest-system.md)
 - **Database & Entities**: `Quest` and `PlayerQuestProgress` tables (not scaffolded yet).
 - **Service Layer**: Daily Quest pool generation, progress triggers (e.g., training ticks, marketplace trades), rewards allocation.
 - **API Contracts**: `GET /api/v1/quests`, `POST /api/v1/quests/claim/{id}`.
@@ -256,13 +257,14 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Status**: ⏳ Not Started (design only; no code or DB schema).
 
 ### Step 8.3: Material Gathering & Crafting
+- **Design Reference**: [future/crafting-system.md](future/crafting-system.md)
 - **Database & Entities**: `CraftingRecipe` and `CraftingQueue` tables.
 - **Service Layer**: Recipe unlocks, materials cost validation, crafting queue speed bonuses from HQ.
 - **API/Web Controllers**: `POST /api/v1/crafting/start`, `DELETE /api/v1/crafting/queue/{id}`.
 - **Frontend Views**:
   - **[NEW]** Crafting Workshop: Recipe catalog, required ingredients checklist, active crafting progress bars.
 - **Verification**: Check material requirement validation, verify crafted items appear in the team inventory.
-- **Status**: ⏳ Not Started (Entities scaffolded, services pending).
+- **Status**: ⏳ Not Started (design only; backend and UI removed from codebase — see [future/crafting-system.md](future/crafting-system.md)).
 
 ### Step 8.4: Arena Facility Management
 - **Database & Entities**: Link stadium upgrades directly to HQ Arena levels.
@@ -271,7 +273,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - **[NEW]** Arena Hub: Seating upgrade charts, weekly attendance graphs, ticket price sliders.
 - **Verification**: Modify ticket price, trigger weekly ticket revenue command, and confirm revenue scales with formulas.
-- **Status**: ⏳ Not Started (`ArenaRevenueService` skeleton exists, UI pending).
+- **Status**: 🔄 Partially Complete (`ArenaRevenueService`, league-match tick payout, HQ arena panel at `/app/hq?facility=arena`; ticket price API and extended analytics UI pending).
 
 ---
 
@@ -294,8 +296,8 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 6 (Combat & Leagues)** | 🔄 | 🔄 | 🔄 | ✅ | *In Progress* |
+| **Milestone 6 (Combat & Leagues)** | 🔄 | 🔄 | 🔄 | ✅ | *In Progress* (calendar/ticks + graveyard read path done; combat engine pending) |
 | **Milestone 7 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | *Not Started* |
-| **Milestone 8 (Endgame & Crafting)** | ✅ | ⏳ | ⏳ | ⏳ | *Scaffolded Only* |
+| **Milestone 8 (Endgame & Crafting)** | ⏳ | 🔄 | ⏳ | 🔄 | *Partially Complete* (arena revenue done; dungeons/crafting/quests deferred) |
 
-*Last updated: June 13, 2026 — Transformed to vertical slice roadmap layout*
+*Last updated: June 17, 2026 — Synced calendar, graveyard, arena, and deferred feature statuses*

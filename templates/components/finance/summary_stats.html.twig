@@ -1,0 +1,72 @@
+{# templates/components/finance/summary_stats.html.twig #}
+{% set crisis = summary.crisis %}
+{% set period = summary.period %}
+{% set all_time = summary.all_time %}
+
+<section class="finance-summary" aria-label="{{ 'finance.summary_title'|trans }}">
+    <h2 class="finance-summary__heading">{{ 'finance.summary_title'|trans }}</h2>
+
+    <div class="finance-summary__grid">
+        <article class="finance-summary__card">
+            <span class="finance-summary__label">{{ 'financial_crisis.gold_on_hand'|trans }}</span>
+            <span class="finance-summary__value">🪙 {{ crisis.gold|number_format(0, '.', ' ') }}</span>
+        </article>
+
+        <article class="finance-summary__card">
+            <span class="finance-summary__label">{{ 'financial_crisis.weekly_maintenance'|trans }}</span>
+            <span class="finance-summary__value finance-summary__value--muted">🪙 {{ crisis.weekly_maintenance|number_format(0, '.', ' ') }}</span>
+        </article>
+
+        <article class="finance-summary__card">
+            <span class="finance-summary__label">{{ 'financial_crisis.unpaid_debt'|trans }}</span>
+            <span class="finance-summary__value{% if crisis.unpaid_debt > 0 %} finance-summary__value--danger{% endif %}">
+                🪙 {{ crisis.unpaid_debt|number_format(0, '.', ' ') }}
+            </span>
+        </article>
+
+        <article class="finance-summary__card">
+            <span class="finance-summary__label">{{ 'finance.summary_net_period'|trans({'%days%': summary.period_days}) }}</span>
+            <span class="finance-summary__value{% if period.net > 0 %} finance-summary__value--success{% elseif period.net < 0 %} finance-summary__value--danger{% endif %}">
+                {{ period.net > 0 ? '+' : '' }}{{ period.net|number_format(0, '.', ' ') }} 🪙
+            </span>
+        </article>
+    </div>
+
+    <div class="finance-summary__grid finance-summary__grid--secondary">
+        <article class="finance-summary__card finance-summary__card--compact">
+            <span class="finance-summary__label">{{ 'finance.summary_income_period'|trans({'%days%': summary.period_days}) }}</span>
+            <span class="finance-summary__value finance-summary__value--success">+{{ period.income|number_format(0, '.', ' ') }} 🪙</span>
+        </article>
+
+        <article class="finance-summary__card finance-summary__card--compact">
+            <span class="finance-summary__label">{{ 'finance.summary_expense_period'|trans({'%days%': summary.period_days}) }}</span>
+            <span class="finance-summary__value finance-summary__value--danger">−{{ period.expense|number_format(0, '.', ' ') }} 🪙</span>
+        </article>
+
+        <article class="finance-summary__card finance-summary__card--compact">
+            <span class="finance-summary__label">{{ 'finance.summary_transactions_period'|trans({'%days%': summary.period_days}) }}</span>
+            <span class="finance-summary__value">{{ period.transaction_count|number_format(0, '.', ' ') }}</span>
+        </article>
+
+        <article class="finance-summary__card finance-summary__card--compact">
+            <span class="finance-summary__label">{{ 'finance.summary_net_all_time'|trans }}</span>
+            <span class="finance-summary__value{% if all_time.net > 0 %} finance-summary__value--success{% elseif all_time.net < 0 %} finance-summary__value--danger{% endif %}">
+                {{ all_time.net > 0 ? '+' : '' }}{{ all_time.net|number_format(0, '.', ' ') }} 🪙
+            </span>
+        </article>
+    </div>
+
+    {% if summary.top_expenses is not empty %}
+        <div class="finance-summary__breakdown game-panel">
+            <h3 class="finance-summary__breakdown-title">{{ 'finance.summary_top_expenses'|trans({'%days%': summary.period_days}) }}</h3>
+            <ul class="finance-summary__breakdown-list">
+                {% for item in summary.top_expenses %}
+                    <li class="finance-summary__breakdown-item">
+                        <span class="finance-summary__breakdown-label">{{ ('finance.type_' ~ item.type)|trans }}</span>
+                        <span class="finance-summary__breakdown-amount">−{{ item.amount|number_format(0, '.', ' ') }} 🪙</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</section>

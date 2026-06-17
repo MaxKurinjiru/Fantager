@@ -12,7 +12,9 @@ use App\Enum\FacilityType;
 use App\Enum\Race;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Community\CommunityService;
+use App\Service\Config\RaceConfig;
 use App\Service\Economy\FinancialCrisisService;
+use App\Service\Notification\NotificationService;
 use App\Service\Team\TeamRosterService;
 use Symfony\Bundle\SecurityBundle\Security;
 use Twig\Extension\AbstractExtension;
@@ -24,6 +26,8 @@ class GameExtension extends AbstractExtension
         private readonly \App\Service\Headquarters\HeadquartersService $hqService,
         private readonly HeroRepository $heroRepository,
         private readonly CommunityService $communityService,
+        private readonly NotificationService $notificationService,
+        private readonly RaceConfig $raceConfig,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly TeamRosterService $teamRosterService,
         private readonly Security $security,
@@ -41,6 +45,9 @@ class GameExtension extends AbstractExtension
             new TwigFunction('team_roster_limit', $this->getTeamRosterLimit(...)),
             new TwigFunction('team_hero_count', $this->getTeamHeroCount(...)),
             new TwigFunction('unread_mail_count', $this->getUnreadMailCount(...)),
+            new TwigFunction('unread_notification_count', $this->getUnreadNotificationCount(...)),
+            new TwigFunction('hero_mortality_threshold', $this->getHeroMortalityThreshold(...)),
+            new TwigFunction('hero_at_mortality_threshold', $this->isHeroAtMortalityThreshold(...)),
             new TwigFunction('team_financial_crisis', $this->getTeamFinancialCrisis(...)),
             new TwigFunction('hq_downgrade_refund', $this->getHqDowngradeRefund(...)),
             new TwigFunction('team_combat_ready_count', $this->getTeamCombatReadyCount(...)),
@@ -55,12 +62,27 @@ class GameExtension extends AbstractExtension
             return 0;
         }
 
-        $team = $user->getTeam();
-        if (!$team) {
+        return $this->communityService->countUnreadInbox($user);
+    }
+
+    public function getUnreadNotificationCount(): int
+    {
+        $user = $this->security->getUser();
+        if (!$user instanceof User) {
             return 0;
         }
 
-        return $this->communityService->countUnreadInbox($team);
+        return $this->notificationService->countUnread($user);
+    }
+
+    public function getHeroMortalityThreshold(Hero $hero): int
+    {
+        return $this->raceConfig->getMortalityThreshold($hero->getRace());
+    }
+
+    public function isHeroAtMortalityThreshold(Hero $hero): bool
+    {
+        return $this->raceConfig->isAtOrAboveMortalityThreshold($hero->getRace(), $hero->getAge());
     }
 
     public function getRaceIcon(Race|string|null $race): string
@@ -89,31 +111,7 @@ class GameExtension extends AbstractExtension
 
     public function getAgePhase(Hero $hero): string
     {
-        $age = $hero->getAge();
-
-        // Age milestones by race
-        $milestones = match ($hero->getRace()) {
-            Race::Human => ['junior' => 20, 'prime' => 50, 'elder' => 80],
-            Race::Elf => ['junior' => 80, 'prime' => 300, 'elder' => 800],
-            Race::Dwarf => ['junior' => 30, 'prime' => 100, 'elder' => 250],
-            Race::Orc => ['junior' => 16, 'prime' => 35, 'elder' => 60],
-            Race::Undead => ['junior' => 80, 'prime' => 300, 'elder' => 800],
-            Race::Giant => ['junior' => 25, 'prime' => 60, 'elder' => 150],
-            Race::Ent => ['junior' => 50, 'prime' => 200, 'elder' => 1000],
-            Race::Genie => ['junior' => 150, 'prime' => 500, 'elder' => 2000],
-        };
-
-        if ($age <= $milestones['junior']) {
-            return 'Junior';
-        }
-        if ($age <= $milestones['prime']) {
-            return 'Prime';
-        }
-        if ($age < $milestones['elder']) {
-            return 'Veteran';
-        }
-
-        return 'Elder';
+        return $this->raceConfig->resolveAgePhase($hero->getRace(), $hero->getAge());
     }
 
     public function getAgePhaseIcon(Hero $hero): string

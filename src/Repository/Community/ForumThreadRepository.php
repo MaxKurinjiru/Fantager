@@ -26,8 +26,11 @@ class ForumThreadRepository extends ServiceEntityRepository
     ): array {
         $qb = $this->createQueryBuilder('t')
             ->distinct()
-            ->leftJoin('t.authorTeam', 'author')->addSelect('author')
+            ->leftJoin('t.authorUser', 'author')->addSelect('author')
+            ->leftJoin('t.authorTeam', 'authorTeam')->addSelect('authorTeam')
             ->leftJoin('t.posts', 'p')->addSelect('p')
+            ->leftJoin('p.authorUser', 'postAuthor')->addSelect('postAuthor')
+            ->leftJoin('p.authorTeam', 'postAuthorTeam')->addSelect('postAuthorTeam')
             ->where('t.kingdom = :kingdom')
             ->setParameter('kingdom', $kingdom);
 

@@ -67,6 +67,19 @@ Starting roster:
 - Every new team receives **10 heroes** at creation (6 match lineup + 4 reserves). See [team-system.md](team-system.md#starting-roster).
 - Each hero starts at **level 1** with age random within **[Min Age, Max Junior Age]** for their race.
 
+## Age Milestones & Terminology
+
+Race age data lives in `config/game/races.yaml` under each race's `age` block.
+
+| Milestone (player-facing) | Config key | Meaning |
+|---------------------------|------------|---------|
+| Minimum Age | `min` | Lowest recruitment age |
+| Max Junior Age | `max_junior` | Upper bound for junior phase |
+| Prime Age Limit | `prime_limit` | Last age with full training efficiency |
+| **Mortality Threshold** | `mortality_threshold` | Age from which permanent death risk escalates after combat deaths |
+
+**Implementation:** `RaceConfig::getMortalityThreshold()`, `resolveAgePhase()`, `isAtOrAboveMortalityThreshold()`. Twig helpers: `hero_age_phase()`, `hero_mortality_threshold()`, `hero_at_mortality_threshold()`.
+
 Mechanics & APIs:
 - Hero generation: Summoning Chamber produces junior heroes with randomized base stats within race ranges.
 - GET /api/heroes — list for a player; GET /api/heroes/{id} — detail; POST/PUT for updates (rename, equipment changes)

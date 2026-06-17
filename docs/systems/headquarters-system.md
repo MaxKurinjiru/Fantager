@@ -2,17 +2,19 @@
 
 Reference: [game-summary.md](../game-summary.md#27-headquarters-system)
 
-Purpose: Document HQ facilities, upgrades, passive bonuses, race optimization, and related APIs.
+Purpose: Document HQ facilities, upgrades, passive bonuses, arena adaptation, and related APIs.
 
 ---
 
 ## Overview
 
-Every team has exactly one `Headquarters` entity (1:1 with `Team`). The headquarters contains 8 **facilities**, each independently upgradeable. All facilities start at **level 1** when the HQ is initialized for a new team.
+Every team has exactly one `Headquarters` entity (1:1 with `Team`). The headquarters contains **7 facilities**, each independently upgradeable. All facilities start at **level 1** when the HQ is initialized for a new team.
+
+> **Note:** The Forge/Workshop facility was removed from the codebase when crafting was deferred. Crafting design is preserved in [future/crafting-system.md](../future/crafting-system.md).
 
 The `Headquarters` entity also tracks:
-- The currently active **race optimization** (which race the team's arena is themed for, affecting summoning).
-- A **pending race optimization change** (applied on the next `race_optimization` tick on Sundays at 09:30).
+- The currently active **arena adaptation** (which race the team's arena is adapted for, affecting summoning).
+- A **pending arena adaptation change** (applied on the next `race_optimization` tick on Sundays at 09:30).
 - The **currently upgrading facility** and its scheduled completion time (only one upgrade at a time).
 - The **total facility level** (sum of all facility levels; used as an aggregate metric).
 
@@ -25,7 +27,6 @@ The `Headquarters` entity also tracks:
 | Training | `training` | Speeds up hero attribute training |
 | Medical | `medical` | Improves fatigue reduction and hero recovery |
 | Library | `library` | Increases XP gains for heroes |
-| Forge | `forge` | Improves crafting success rate and item durability |
 | Treasury | `treasury` | Increases passive gold income |
 | Barracks | `barracks` | Increases the team's hero roster capacity |
 | Summoning Chamber | `summoning_chamber` | Improves stats of summoned heroes |
@@ -43,8 +44,6 @@ Passive bonuses scale **linearly** with the facility level. The bonus value is `
 | Medical | `fatigue_reduction_pct` | +8.0% | +40% fatigue reduction |
 | Medical | `recovery_speed_pct` | +5.0% | +25% recovery speed |
 | Library | `xp_gain_pct` | +4.0% | +20% XP gain |
-| Forge | `crafting_success_pct` | +5.0% | +25% crafting success |
-| Forge | `item_durability_pct` | +3.0% | +15% item durability |
 | Treasury | `gold_income_pct` | +4.0% | +20% gold income |
 | Barracks | `roster_capacity` | +2 heroes | +10 heroes (base 10 → 20) |
 | Summoning Chamber | `summon_base_stat_bonus` | +0.4 | +2.0 base stat bonus on summon |
@@ -87,7 +86,6 @@ Upgrade Cost = base_cost × 1.5^(current_level - 1)
 | Training | 500 |
 | Medical | 400 |
 | Library | 600 |
-| Forge | 700 |
 | Treasury | 450 |
 | Barracks | 350 |
 | Summoning Chamber | 800 |
@@ -169,13 +167,13 @@ Processed on **`daily_reset`** tick, same as upgrades. Sets `facility_downgrade_
 
 ---
 
-## Race Optimization
+## Arena Adaptation
 
-Race optimization controls which racial theme the team's Arena is configured for. This affects which races are offered in the **Summoning Chamber** (see [Summoning System](summoning-system.md)).
+Arena adaptation controls which race the team's arena is configured for. This affects which races are offered in the **Summoning Chamber** (see [Summoning System](summoning-system.md)).
 
 ### Rules
 
-- The active optimization is stored in `Headquarters.race_optimization` (string, nullable — `null` = no theme).
+- The active adaptation is stored in `Headquarters.race_optimization` (string, nullable — `null` = no adaptation).
 - Changes are **not instant**. Requesting a change sets `pending_race_optimization` and flips `has_pending_race_optimization_change = true`.
 - A lock cycle is enforced: after the change is applied, `race_optimization_lock_cycle = true` for one full cycle so teams cannot switch every week.
 - Changes are applied during the **`race_optimization` tick** (Sundays at 09:30).
@@ -193,7 +191,7 @@ During the `race_optimization` tick:
 
 | Service | Namespace | Responsibility |
 | ------- | --------- | -------------- |
-| `HeadquartersService` | `App\Service\Headquarters` | Facility upgrades/downgrades, race optimization requests, passive bonus aggregation |
+| `HeadquartersService` | `App\Service\Headquarters` | Facility upgrades/downgrades, arena adaptation requests, passive bonus aggregation |
 | `HqMaintenanceCalculator` | `App\Service\Headquarters` | Weekly HQ maintenance fee calculation |
 | `ArenaService` | `App\Service\Headquarters` | Arena facility status (capacity, fan appeal, projected home-match revenue) — used by HQ panel and `/api/v1/arena` |
 
@@ -205,8 +203,8 @@ Ticket payout on match day is handled by `App\Service\Economy\ArenaRevenueServic
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/app/hq` | HQ page (Twig-rendered) |
+| GET | `/app/hq` | HQ hub (Twig-rendered; facility panels via `?facility=` query) |
 | GET | `/api/v1/hq` | Facility levels, passive bonuses, upgrade/downgrade status |
 | POST | `/api/v1/hq/upgrade` | Start a facility upgrade |
 | POST | `/api/v1/hq/downgrade` | Start a facility downgrade |
-| POST | `/api/v1/hq/optimize` | Request a race optimization change |
+| POST | `/api/v1/hq/optimize` | Request an arena adaptation change |

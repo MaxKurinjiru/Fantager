@@ -10,7 +10,7 @@ Purpose: Document summoning mechanics, costs, cooldowns, race selection, and her
 
 Teams can summon new heroes through the **Summoning Chamber** — a facility in their Headquarters. Each summon:
 1. Checks availability (roster limit, cycle limit, gold).
-2. Selects a race based on the team's Arena race optimization and race relationships.
+2. Selects a race based on the team's arena adaptation and race relationships.
 3. Generates a level-1 hero using `HeroGenerator` with bonuses from the Summoning Chamber facility.
 4. Deducts gold and records the event in `TeamSummonHistory` and the team chronicle (`summon_completed` in `team_chronicle`).
 
@@ -64,15 +64,15 @@ Both results are rounded to the nearest integer.
 
 ## Race Selection
 
-The race of a summoned hero is **not freely chosen** by the player. It is drawn randomly from a pool of **compatible races** determined by the team's Arena race optimization (the race theme set in HQ).
+The race of a summoned hero is **not freely chosen** by the player. It is drawn randomly from a pool of **compatible races** determined by the team's arena adaptation (the race set in HQ Barracks).
 
 ### Compatible Race Pool
 
-1. The active `race_optimization` value from `Headquarters` is the **theme race**.
-2. All 8 races are evaluated against the theme using the **relationship matrix** (`config/game/race_relations.yaml`).
-3. Races with a relationship score `>= 50` to the theme race are included in the pool.
+1. The active `race_optimization` value from `Headquarters` is the **adapted race**.
+2. All 8 races are evaluated against the adapted race using the **relationship matrix** (`config/game/race_relations.yaml`).
+3. Races with a relationship score `>= 50` to the adapted race are included in the pool.
 4. A race always has a self-relationship of `100` and is always included.
-5. If no theme is set (`race_optimization = null`), **all 8 races** are in the pool.
+5. If no adaptation is set (`race_optimization = null`), **all 8 races** are in the pool.
 6. One race is drawn uniformly at random from the pool.
 
 ---
@@ -134,7 +134,7 @@ Every summon is recorded in the `TeamSummonHistory` entity (table `team_summon_h
 | `gold_cost` | Actual gold paid |
 | `summoned_at` | Timestamp |
 
-The summon history is displayed on the `/app/summon/history` page. The same event also appears on the **team chronicle** (dashboard widget and `/app/chronicle`).
+The summon history is displayed in the **Summoning Chamber panel** on the HQ page (`/app/hq?facility=summoning_chamber&subtab=history`). Legacy route `/app/summon/history` redirects there. The same event also appears on the **team chronicle** (dashboard widget and `/app/chronicle`).
 
 ---
 
@@ -142,8 +142,8 @@ The summon history is displayed on the `/app/summon/history` page. The same even
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/app/summon` | Summoning Chamber page (Twig) |
-| GET | `/app/summon/history` | Summon history page (Twig) |
+| GET | `/app/summon` | Redirect → `/app/hq?facility=summoning_chamber` |
+| GET | `/app/summon/history` | Redirect → `/app/hq?facility=summoning_chamber&subtab=history` |
 | GET | `/api/v1/summoning/status` | Returns availability, cost, cycle usage, and compatible races |
 | POST | `/api/v1/summoning` | Perform a summon (deducts gold, creates hero) |
 

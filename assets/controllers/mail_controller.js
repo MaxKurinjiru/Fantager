@@ -3,6 +3,22 @@ import { showAlert, hideAlert } from '../utils/alert.js';
 import { csrfHeaders } from '../utils/csrf.js';
 import { applyTeamColors } from '../utils/team_color.js';
 
+function formatParticipantLabel(participant) {
+    if (participant.team?.name) {
+        return `${participant.display_name} (${participant.team.name})`;
+    }
+
+    return participant.display_name;
+}
+
+function formatRecipientOption(recipient) {
+    if (recipient.team_name) {
+        return `${recipient.display_name} (${recipient.team_name})`;
+    }
+
+    return recipient.display_name;
+}
+
 export default class extends Controller {
     static targets = [
         'folderBtn', 'mailFolderTitle', 'mailSenderColTitle', 'mailTableBody',
@@ -13,7 +29,6 @@ export default class extends Controller {
 
     static values = {
         unreadCount: Number,
-        activeTeamId: Number,
         emptyInboxMsg: String,
         emptySentMsg: String,
         translations: Object
@@ -110,9 +125,15 @@ export default class extends Controller {
 
             rowNode.querySelector('.js-subject').textContent = msg.subject;
 
-            const targetTeam = this.currentFolder === 'sent' ? msg.receiver_team : msg.sender_team;
-            applyTeamColors(rowNode.querySelector('.js-team-color'), targetTeam.colors);
-            rowNode.querySelector('.js-team-name').textContent = targetTeam.name;
+            const participant = this.currentFolder === 'sent' ? msg.receiver : msg.sender;
+            const teamColorEl = rowNode.querySelector('.js-team-color');
+            if (participant.team?.colors) {
+                applyTeamColors(teamColorEl, participant.team.colors);
+                teamColorEl.classList.remove('hidden');
+            } else {
+                teamColorEl.classList.add('hidden');
+            }
+            rowNode.querySelector('.js-team-name').textContent = formatParticipantLabel(participant);
 
             const formattedDate = new Date(msg.sentAt).toLocaleString('cs-CZ', {
                 day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -144,7 +165,7 @@ export default class extends Controller {
             recipients.forEach(recipient => {
                 const option = document.createElement('option');
                 option.value = recipient.id;
-                option.textContent = recipient.name;
+                option.textContent = formatRecipientOption(recipient);
                 select.appendChild(option);
             });
         } catch (err) {
@@ -154,11 +175,11 @@ export default class extends Controller {
 
     async submitCompose(e) {
         e.preventDefault();
-        const receiver_team_id = parseInt(this.composeRecipientTarget.value);
+        const receiver_user_id = parseInt(this.composeRecipientTarget.value);
         const subject = this.composeSubjectTarget.value.trim();
         const body = this.composeBodyTarget.value.trim();
 
-        if (!receiver_team_id || !subject || !body) {
+        if (!receiver_user_id || !subject || !body) {
             this.showFeedback('warning', this.translationsValue.warning_compose_fields || 'Prosím zvolte příjemce a vyplňte předmět i obsah zprávy.');
             return;
         }
@@ -170,7 +191,7 @@ export default class extends Controller {
             const response = await fetch('/api/v1/messages', {
                 method: 'POST',
                 headers: csrfHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({ receiver_team_id, subject, body })
+                body: JSON.stringify({ receiver_user_id, subject, body })
             });
 
             const data = await response.json();
@@ -209,16 +230,20 @@ export default class extends Controller {
             this.readBodyTarget.textContent = msg.body;
             this.readDateTarget.textContent = formattedDate;
 
-            if (this.currentFolder === 'sent') {
-                this.readSenderLabelTarget.textContent = `${this.translationsValue.col_recipient || 'Recipient'}:`;
-                this.readSenderNameTarget.textContent = msg.receiver_team.name;
-                applyTeamColors(this.readSenderColorTarget, msg.receiver_team.colors);
+            const participant = this.currentFolder === 'sent' ? msg.receiver : msg.sender;
+            const labelKey = this.currentFolder === 'sent'
+                ? this.translationsValue.col_recipient
+                : this.translationsValue.col_sender;
+
+            this.readSenderLabelTarget.textContent = `${labelKey}:`;
+            this.readSenderNameTarget.textContent = formatParticipantLabel(participant);
+
+            if (participant.team?.colors) {
+                applyTeamColors(this.readSenderColorTarget, participant.team.colors);
+                this.readSenderColorTarget.classList.remove('hidden');
             } else {
-                this.readSenderLabelTarget.textContent = `${this.translationsValue.col_sender || 'Sender'}:`;
-                this.readSenderNameTarget.textContent = msg.sender_team.name;
-                applyTeamColors(this.readSenderColorTarget, msg.sender_team.colors);
+                this.readSenderColorTarget.classList.add('hidden');
             }
-            this.readSenderColorTarget.classList.remove('hidden');
 
             window.dispatchEvent(new CustomEvent('modal:open-read-message'));
 

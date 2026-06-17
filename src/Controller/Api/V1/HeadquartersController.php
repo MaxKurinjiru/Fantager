@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Enum\FacilityType;
 use App\Service\Headquarters\HeadquartersService;
@@ -15,6 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/v1/hq')]
 class HeadquartersController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly HeadquartersService $hqService,
     ) {
@@ -25,13 +28,13 @@ class HeadquartersController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         try {
             $hq = $this->hqService->getForTeam($team);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 404);
+            return $this->jsonException($e, 404);
         }
 
         $facilities = [];
@@ -48,10 +51,6 @@ class HeadquartersController extends AbstractController
         return $this->json([
             'total_level' => $hq->getComputedTotalLevel(),
             'weekly_maintenance_fee' => $maintenance['total'],
-            'weekly_maintenance_breakdown' => [
-                'hq' => $maintenance['hq'],
-                'facilities' => $maintenance['facilities'],
-            ],
             'race_optimization' => $hq->getRaceOptimization(),
             'pending_race_optimization' => $hq->getPendingRaceOptimization(),
             'is_optimization_locked' => ($hq->hasPendingRaceOptimizationChange() || $hq->isRaceOptimizationLockCycle()),
@@ -70,7 +69,7 @@ class HeadquartersController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         /** @var array<string, mixed> $body */
@@ -81,14 +80,14 @@ class HeadquartersController extends AbstractController
         if (null === $type) {
             $valid = implode(', ', array_column(FacilityType::cases(), 'value'));
 
-            return $this->json(['error' => sprintf('Invalid facility type. Valid values: %s.', $valid)], 400);
+            return $this->jsonError('error.invalid_facility_type', 400, ['%values%' => $valid]);
         }
 
         try {
             $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
             $facility = $this->hqService->downgradeFacility($team, $type, $now);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json($this->hqService->serializeFacility($facility, $type, $this->hqService->getForTeam($team)));
@@ -99,7 +98,7 @@ class HeadquartersController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         /** @var array<string, mixed> $body */
@@ -110,25 +109,26 @@ class HeadquartersController extends AbstractController
         if (null === $type) {
             $valid = implode(', ', array_column(FacilityType::cases(), 'value'));
 
-            return $this->json(['error' => sprintf('Invalid facility type. Valid values: %s.', $valid)], 400);
+            return $this->jsonError('error.invalid_facility_type', 400, ['%values%' => $valid]);
         }
 
         try {
             $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
             $facility = $this->hqService->upgradeFacility($team, $type, $now);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json($this->hqService->serializeFacility($facility, $type, $this->hqService->getForTeam($team)));
     }
 
+    /** Schedule an arena adaptation change (route kept as `/optimize` for API stability). */
     #[Route('/optimize', name: 'api_hq_optimize', methods: ['POST'])]
     public function optimize(Request $request): JsonResponse
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         /** @var array<string, mixed> $body */
@@ -138,7 +138,7 @@ class HeadquartersController extends AbstractController
         try {
             $hq = $this->hqService->updateRaceOptimization($team, $raceValue);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json([

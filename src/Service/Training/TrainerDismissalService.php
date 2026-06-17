@@ -10,6 +10,7 @@ use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use App\Enum\HeroStatus;
 use App\Enum\MemorialCause;
+use App\Exception\UserFacingException;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
@@ -42,15 +43,15 @@ class TrainerDismissalService
     public function dismiss(Team $team, Hero $trainer): int
     {
         if (!$trainer->isTrainer()) {
-            throw new \DomainException('Entity is not a trainer.');
+            throw new UserFacingException('error.trainer_not_entity');
         }
 
         if ($trainer->getTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Trainer does not belong to your team.');
+            throw new UserFacingException('error.trainer_not_on_team');
         }
 
         if (HeroStatus::Available !== $trainer->getStatus()) {
-            throw new \DomainException('Only active trainers can be dismissed.');
+            throw new UserFacingException('error.trainer_only_active_dismiss');
         }
 
         $estimatedValue = $this->estimateTrainerValue($trainer);

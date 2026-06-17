@@ -10,6 +10,7 @@ export default class extends Controller {
         'defaultCheckbox',
         'gridSlot',
         'poolHero',
+        'rosterDropZone',
         'alert',
         'alertMessage'
     ];
@@ -28,17 +29,20 @@ export default class extends Controller {
         successDelete: String,
         successPromote: String,
         errorPromote: String,
+        promptPromoteName: String,
         levelLabel: String,
         races: Object
     };
 
     connect() {
         this.slotsState = {};
+        this.draggingElement = null;
         this.initializeSlotsState();
     }
 
     disconnect() {
         this.slotsState = {};
+        this.draggingElement = null;
     }
 
     initializeSlotsState() {
@@ -90,21 +94,13 @@ export default class extends Controller {
         e.preventDefault();
         const heroId = parseInt(e.currentTarget.dataset.heroId, 10);
         const position = e.currentTarget.dataset.position;
-
-        const oldPos = Object.keys(this.slotsState).find(pos => this.slotsState[pos] === heroId);
-        if (oldPos) {
-            this.slotsState[oldPos] = null;
-        }
-
-        this.slotsState[position] = heroId;
-        this.syncUI();
+        this.assignHeroToPosition(position, heroId);
     }
 
     removeHero(e) {
         e.preventDefault();
         const position = e.currentTarget.dataset.position;
-        this.slotsState[position] = null;
-        this.syncUI();
+        this.clearSlot(position);
     }
 
     quickAssign(e) {
@@ -114,24 +110,228 @@ export default class extends Controller {
         const position = select.dataset.position;
 
         if (!heroId) {
-            this.slotsState[position] = null;
-            this.syncUI();
+            this.clearSlot(position);
             return;
         }
 
-        const oldPos = Object.keys(this.slotsState).find(pos => this.slotsState[pos] === heroId);
-        if (oldPos) {
-            this.slotsState[oldPos] = null;
+        this.assignHeroToPosition(position, heroId);
+    }
+
+    poolDragStart(e) {
+        const card = e.currentTarget;
+        const heroId = parseInt(card.dataset.heroId, 10);
+        this.startDrag(e, { heroId, sourcePosition: null });
+        card.classList.add('formation-pool-item--dragging');
+        this.draggingElement = card;
+    }
+
+    slotDragStart(e) {
+        const slot = e.currentTarget.closest('[data-formation-target="gridSlot"]');
+        if (!slot) {
+            e.preventDefault();
+            return;
         }
 
-        this.slotsState[position] = heroId;
+        const position = slot.dataset.position;
+        const heroId = this.slotsState[position];
+        if (!heroId) {
+            e.preventDefault();
+            return;
+        }
+
+        this.startDrag(e, { heroId, sourcePosition: position });
+        slot.classList.add('formation-slot--dragging');
+        this.draggingElement = slot;
+    }
+
+    slotDragOver(e) {
+        if (!this.isFormationDrag(e)) {
+            return;
+        }
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    slotDragEnter(e) {
+        if (!this.isFormationDrag(e)) {
+            return;
+        }
+        e.preventDefault();
+        const slot = e.currentTarget.closest('[data-formation-target="gridSlot"]');
+        if (slot) {
+            slot.classList.add('formation-slot--drag-over');
+        }
+    }
+
+    slotDragLeave(e) {
+        const slot = e.currentTarget.closest('[data-formation-target="gridSlot"]');
+        if (slot && !slot.contains(e.relatedTarget)) {
+            slot.classList.remove('formation-slot--drag-over');
+        }
+    }
+
+    slotDrop(e) {
+        if (!this.isFormationDrag(e)) {
+            return;
+        }
+        e.preventDefault();
+
+        const slot = e.currentTarget.closest('[data-formation-target="gridSlot"]');
+        if (!slot) {
+            return;
+        }
+
+        const data = this.parseDragData(e);
+        if (!data) {
+            this.clearDragVisualState();
+            return;
+        }
+
+        this.assignHeroToPosition(slot.dataset.position, data.heroId, data.sourcePosition);
+        this.clearDragVisualState();
+    }
+
+    rosterDragOver(e) {
+        if (!this.isFormationDrag(e)) {
+            return;
+        }
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    rosterDragEnter(e) {
+        if (!this.isFormationDrag(e)) {
+            return;
+        }
+        e.preventDefault();
+        if (this.hasRosterDropZoneTarget) {
+            this.rosterDropZoneTarget.classList.add('formation-hero-roster--drag-over');
+        }
+    }
+
+    rosterDragLeave(e) {
+        if (!this.hasRosterDropZoneTarget) {
+            return;
+        }
+        if (!this.rosterDropZoneTarget.contains(e.relatedTarget)) {
+            this.rosterDropZoneTarget.classList.remove('formation-hero-roster--drag-over');
+        }
+    }
+
+    rosterDrop(e) {
+        if (!this.isFormationDrag(e)) {
+            return;
+        }
+        e.preventDefault();
+
+        const data = this.parseDragData(e);
+        if (data?.sourcePosition) {
+            this.clearSlot(data.sourcePosition);
+        }
+
+        this.clearDragVisualState();
+    }
+
+    dragEnd() {
+        this.clearDragVisualState();
+    }
+
+    assignHeroToPosition(targetPosition, heroId, sourcePosition = null) {
+        if (!heroId) {
+            this.clearSlot(targetPosition);
+            return;
+        }
+
+        const fromPosition = sourcePosition
+            ?? Object.keys(this.slotsState).find(pos => this.slotsState[pos] === heroId);
+        const targetHero = this.slotsState[targetPosition];
+
+        if (fromPosition === targetPosition) {
+            return;
+        }
+
+        if (fromPosition && targetHero) {
+            this.slotsState[targetPosition] = heroId;
+            this.slotsState[fromPosition] = targetHero;
+        } else if (fromPosition && !targetHero) {
+            this.slotsState[fromPosition] = null;
+            this.slotsState[targetPosition] = heroId;
+        } else if (targetHero) {
+            this.slotsState[targetPosition] = heroId;
+            if (fromPosition) {
+                this.slotsState[fromPosition] = null;
+            }
+        } else {
+            if (fromPosition) {
+                this.slotsState[fromPosition] = null;
+            }
+            this.slotsState[targetPosition] = heroId;
+        }
+
         this.syncUI();
+    }
+
+    clearSlot(position) {
+        this.slotsState[position] = null;
+        this.syncUI();
+    }
+
+    startDrag(e, payload) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('application/x-fantager-formation', JSON.stringify(payload));
+        e.dataTransfer.setData('text/plain', String(payload.heroId));
+    }
+
+    isFormationDrag(e) {
+        return Array.from(e.dataTransfer.types).includes('application/x-fantager-formation');
+    }
+
+    parseDragData(e) {
+        const raw = e.dataTransfer.getData('application/x-fantager-formation');
+        if (!raw) {
+            return null;
+        }
+
+        try {
+            const data = JSON.parse(raw);
+            if (!data.heroId) {
+                return null;
+            }
+
+            return {
+                heroId: parseInt(data.heroId, 10),
+                sourcePosition: data.sourcePosition ?? null
+            };
+        } catch {
+            return null;
+        }
+    }
+
+    clearDragVisualState() {
+        this.gridSlotTargets.forEach(slot => {
+            slot.classList.remove('formation-slot--drag-over', 'formation-slot--dragging');
+        });
+
+        if (this.hasRosterDropZoneTarget) {
+            this.rosterDropZoneTarget.classList.remove('formation-hero-roster--drag-over');
+        }
+
+        this.poolHeroTargets.forEach(card => {
+            card.classList.remove('formation-pool-item--dragging');
+        });
+
+        if (this.draggingElement) {
+            this.draggingElement.classList.remove('formation-pool-item--dragging', 'formation-slot--dragging');
+            this.draggingElement = null;
+        }
     }
 
     syncUI() {
         this.gridSlotTargets.forEach(slot => {
             const position = slot.dataset.position;
             const heroId = this.slotsState[position];
+
+            slot.dataset.heroId = heroId ? heroId.toString() : '';
 
             const emptyView = slot.querySelector('[data-empty-view]');
             const occupiedView = slot.querySelector('[data-occupied-view]');
@@ -144,13 +344,19 @@ export default class extends Controller {
 
                     const nameElem = occupiedView.querySelector('[data-hero-name]');
                     const detailsElem = occupiedView.querySelector('[data-hero-details]');
+                    const avatarElem = occupiedView.querySelector('[data-hero-avatar]');
                     const removeBtn = occupiedView.querySelector('[data-action="click->formation#removeHero"]');
 
                     const heroCard = this.poolHeroTargets.find(hc => parseInt(hc.dataset.heroId, 10) === heroId);
                     if (heroCard) {
                         nameElem.textContent = heroCard.dataset.name;
-                        const raceTranslated = (this.hasRacesValue && this.racesValue[heroCard.dataset.race]) || heroCard.dataset.race;
+                        const raceKey = heroCard.dataset.race;
+                        const raceTranslated = (this.hasRacesValue && this.racesValue[raceKey]) || raceKey;
                         detailsElem.textContent = `${this.levelLabelValue} ${heroCard.dataset.level} ${raceTranslated}`;
+                        if (avatarElem) {
+                            avatarElem.textContent = heroCard.dataset.raceIcon || '👤';
+                            avatarElem.title = raceTranslated;
+                        }
                     }
                     if (removeBtn) {
                         removeBtn.dataset.position = position;
@@ -177,10 +383,10 @@ export default class extends Controller {
             const badge = card.querySelector('[data-assigned-badge]');
 
             if (assignedIds.includes(heroId)) {
-                card.classList.add('opacity-40');
+                card.classList.add('formation-pool-item--assigned');
                 if (badge) badge.classList.remove('hidden');
             } else {
-                card.classList.remove('opacity-40');
+                card.classList.remove('formation-pool-item--assigned');
                 if (badge) badge.classList.add('hidden');
             }
         });
@@ -286,7 +492,7 @@ export default class extends Controller {
         e.preventDefault();
         const btn = e.currentTarget;
 
-        const name = prompt(this.nameInputTarget.value.trim() || 'Match formation');
+        const name = prompt(this.nameInputTarget.value.trim() || this.promptPromoteNameValue);
         if (!name || !name.trim()) {
             return;
         }

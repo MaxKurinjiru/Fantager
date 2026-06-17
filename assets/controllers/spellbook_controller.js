@@ -67,7 +67,7 @@ export default class extends Controller {
             }
 
             // Deduct Gold in header
-            const headerGold = document.querySelector('[title="Gold"] span:nth-child(2)');
+            const headerGold = document.querySelector('[data-resource="gold"] .resource-bar__item-value');
             if (headerGold && goldCost > 0) {
                 let gold = parseInt(headerGold.textContent.replace(/\s/g, ''), 10);
                 if (!isNaN(gold)) {

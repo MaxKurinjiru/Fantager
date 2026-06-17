@@ -3,10 +3,11 @@ import { showAlert, hideAlert } from '../utils/alert.js';
 
 export default class extends Controller {
     static targets = [
-        'tabButton', 'tabContent', 
+        'tabButton', 'tabContent',
         'browseContainer', 'myListingsContainer', 'historyContainer',
+        'browseFilterForm', 'browseTypeInput',
         'raceFilterContainer', 'rarityFilterContainer',
-        'sellCatButton', 'sellEntitiesContainer', 
+        'sellCatButton', 'sellEntitiesContainer',
         'selectedEntityLabel', 'sellIdInput',
         'listingModeSelect', 'buyoutFieldContainer', 'priceLabel',
         'alert', 'alertMessage'
@@ -22,18 +23,18 @@ export default class extends Controller {
         statuses: Object,
         translations: Object,
         initialTab: { type: String, default: 'browse' },
+        initialBrowseCategory: { type: String, default: 'hero' },
         initialHeroId: { type: Number, default: 0 }
     };
 
     connect() {
         this.activeTab = this.hasInitialTabValue ? this.initialTabValue : 'browse';
+        this.activeBrowseCategory = this.hasInitialBrowseCategoryValue ? this.initialBrowseCategoryValue : 'hero';
         this.activeSellCategory = 'hero';
         this.selectedEntityId = null;
 
         if (['browse', 'sell', 'mylistings', 'history'].includes(this.activeTab)) {
             this._showTab(this.activeTab);
-        } else {
-            this.loadListings();
         }
 
         if (this.initialHeroIdValue > 0 && this.activeTab === 'sell') {
@@ -59,7 +60,7 @@ export default class extends Controller {
         });
 
         if (tabName === 'browse') {
-            this.loadListings();
+            this.loadListings({ type: this.activeBrowseCategory });
         } else if (tabName === 'mylistings') {
             this.loadMyListings();
         } else if (tabName === 'history') {
@@ -67,9 +68,18 @@ export default class extends Controller {
         }
     }
 
-    onTypeChange(event) {
-        const type = event.target.value;
-        if (type === 'item') {
+    _setBrowseCategory(catName) {
+        this.activeBrowseCategory = catName;
+
+        if (this.hasBrowseTypeInputTarget) {
+            this.browseTypeInputTarget.value = catName;
+        }
+
+        if (!this.hasRaceFilterContainerTarget || !this.hasRarityFilterContainerTarget) {
+            return;
+        }
+
+        if (catName === 'item') {
             this.raceFilterContainerTarget.classList.add('hidden');
             this.rarityFilterContainerTarget.classList.remove('hidden');
         } else {
@@ -202,8 +212,8 @@ export default class extends Controller {
     resetFilters(event) {
         const form = event.currentTarget.closest('form');
         form.reset();
-        this.onTypeChange({ target: { value: '' } });
-        this.loadListings();
+        this._setBrowseCategory(this.activeBrowseCategory);
+        this.loadListings({ type: this.activeBrowseCategory });
     }
 
     renderBrowse(listings) {
@@ -542,8 +552,11 @@ export default class extends Controller {
             row.querySelector('.js-price').textContent = `🪙 ${listing.price_gold}`;
 
             const highestBid = listing.highest_bid
-                ? `🪙 ${listing.highest_bid.amount} (${listing.highest_bid.bidder_name})`
-                : (this.translationsValue.no_bids);
+                ? (this.translationsValue.highest_bid_format || '🪙 %amount% (%bidder%)')
+                    .replace('%amount%', listing.highest_bid.amount)
+                    .replace('%bidder%', listing.highest_bid.bidder_name)
+                : (this.translationsValue.no_bids || '🪙 %amount% (starting)')
+                    .replace('%amount%', listing.price_gold);
             row.querySelector('.js-highest-bid').textContent = highestBid;
 
             const expiresAt = new Date(listing.expires_at);

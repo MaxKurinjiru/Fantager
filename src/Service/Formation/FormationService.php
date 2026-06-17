@@ -10,6 +10,7 @@ use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
+use App\Exception\UserFacingException;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Formation\FormationSlotRepository;
 use App\Repository\Hero\HeroRepository;
@@ -58,7 +59,7 @@ class FormationService
     {
         $formation = $this->findDefaultForTeam($team);
         if (null === $formation) {
-            throw new \DomainException('Team has no default formation configured.');
+            throw new UserFacingException('error.formation_no_default');
         }
 
         return $formation;
@@ -81,14 +82,14 @@ class FormationService
     ): Formation {
         $name = trim($name);
         if ('' === $name) {
-            throw new \InvalidArgumentException('Formation name cannot be empty.');
+            throw new UserFacingException('error.formation_name_empty');
         }
 
         $formation = null;
         if (null !== $id) {
             $formation = $this->findForTeam($id, $team);
             if (null === $formation) {
-                throw new \DomainException('Formation not found.');
+                throw new UserFacingException('error.formation_not_found');
             }
         }
 
@@ -127,20 +128,20 @@ class FormationService
         array $slotsData,
     ): Formation {
         if ($formation->getTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Formation does not belong to your team.');
+            throw new UserFacingException('error.formation_not_on_team');
         }
 
         if (!$formation->isTemporary()) {
-            throw new \DomainException('Only temporary formations can be updated through match preparation.');
+            throw new UserFacingException('error.formation_only_temp_update');
         }
 
         if ($formation->getSourceFixture()?->getId() !== $fixture->getId()) {
-            throw new \DomainException('Temporary formation does not belong to this fixture.');
+            throw new UserFacingException('error.formation_wrong_fixture');
         }
 
         $name = trim($name);
         if ('' === $name) {
-            throw new \InvalidArgumentException('Formation name cannot be empty.');
+            throw new UserFacingException('error.formation_name_empty');
         }
 
         $formation->setName($name);
@@ -171,7 +172,7 @@ class FormationService
         $formation->setApproach($approach);
 
         if ('' === $formation->getName()) {
-            throw new \InvalidArgumentException('Formation name cannot be empty.');
+            throw new UserFacingException('error.formation_name_empty');
         }
 
         $this->em->persist($formation);
@@ -190,18 +191,18 @@ class FormationService
         bool $isDefault,
     ): Formation {
         if ($formation->getTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Formation does not belong to your team.');
+            throw new UserFacingException('error.formation_not_on_team');
         }
 
         if (!$formation->isTemporary()) {
-            throw new \DomainException('Only temporary formations can be promoted.');
+            throw new UserFacingException('error.formation_only_temp_promote');
         }
 
         $this->assertCanCreateSavedFormation($team);
 
         $name = trim($name);
         if ('' === $name) {
-            throw new \InvalidArgumentException('Formation name cannot be empty.');
+            throw new UserFacingException('error.formation_name_empty');
         }
 
         $formation->setName($name);
@@ -226,11 +227,11 @@ class FormationService
     public function delete(Formation $formation, Team $team): void
     {
         if ($formation->getTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Formation does not belong to your team.');
+            throw new UserFacingException('error.formation_not_on_team');
         }
 
         if ($formation->isTemporary()) {
-            throw new \DomainException('Temporary match formations cannot be deleted directly.');
+            throw new UserFacingException('error.formation_only_temp_delete');
         }
 
         $this->clearFixtureReferences($formation);
@@ -240,7 +241,7 @@ class FormationService
     public function deleteTemporary(Formation $formation): void
     {
         if (!$formation->isTemporary()) {
-            throw new \DomainException('Only temporary formations can be removed this way.');
+            throw new UserFacingException('error.formation_only_temp_delete');
         }
 
         $this->clearFixtureReferences($formation);
@@ -280,7 +281,7 @@ class FormationService
     public function assertCanCreateSavedFormation(Team $team): void
     {
         if ($this->formationRepository->countSavedByTeam($team) >= self::MAX_SAVED_FORMATIONS) {
-            throw new \DomainException(sprintf('Maximum of %d saved formations allowed.', self::MAX_SAVED_FORMATIONS));
+            throw new UserFacingException('error.formation_max_saved', ['%max%' => self::MAX_SAVED_FORMATIONS]);
         }
     }
 
@@ -302,7 +303,7 @@ class FormationService
             $positionValue = $slotData['position'];
             $position = FormationPosition::tryFrom($positionValue);
             if (null === $position) {
-                throw new \InvalidArgumentException(sprintf('Invalid position "%s".', $positionValue));
+                throw new UserFacingException('error.formation_invalid_position', ['%position%' => $positionValue]);
             }
 
             $hero = null;
@@ -310,7 +311,7 @@ class FormationService
             if (null !== $heroId && $heroId > 0) {
                 $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
                 if (null === $hero) {
-                    throw new \DomainException(sprintf('Hero %d not found in your team.', $heroId));
+                    throw new UserFacingException('error.formation_hero_not_on_team', ['%id%' => $heroId]);
                 }
             }
 

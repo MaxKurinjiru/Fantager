@@ -53,6 +53,44 @@ class FixtureFormationServiceTest extends TestCase
         $this->assertSame($savedFormation, $service->resolveFormation($fixture, $homeTeam));
     }
 
+    public function testGetFormationSummaryReflectsAssignmentMode(): void
+    {
+        $homeTeam = $this->createTeam(1);
+        $awayTeam = $this->createTeam(2);
+        $defaultFormation = $this->createSavedFormation($homeTeam, true);
+        $savedFormation = $this->createSavedFormation($homeTeam, false);
+        $tempFormation = $this->createTemporaryFormation($homeTeam);
+
+        $service = $this->createService($defaultFormation);
+
+        $defaultFixture = $this->createFixture($homeTeam, $awayTeam);
+        $defaultFixture->setHomeFormation(null);
+        $this->assertSame([
+            'mode' => 'default',
+            'formation_id' => null,
+            'formation_name' => null,
+            'is_temporary' => false,
+        ], $service->getFormationSummary($defaultFixture, $homeTeam));
+
+        $savedFixture = $this->createFixture($homeTeam, $awayTeam);
+        $savedFixture->setHomeFormation($savedFormation);
+        $this->assertSame([
+            'mode' => 'saved',
+            'formation_id' => $savedFormation->getId(),
+            'formation_name' => 'Alt',
+            'is_temporary' => false,
+        ], $service->getFormationSummary($savedFixture, $homeTeam));
+
+        $customFixture = $this->createFixture($homeTeam, $awayTeam);
+        $customFixture->setHomeFormation($tempFormation);
+        $this->assertSame([
+            'mode' => 'custom',
+            'formation_id' => $tempFormation->getId(),
+            'formation_name' => 'Match Custom',
+            'is_temporary' => true,
+        ], $service->getFormationSummary($customFixture, $homeTeam));
+    }
+
     public function testAssignDefaultClearsTemporaryFormation(): void
     {
         $homeTeam = $this->createTeam(1);

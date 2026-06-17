@@ -18,7 +18,11 @@ export default class extends Controller {
         const btn = e.currentTarget;
         const message = this.hasConfirmDismissValue
             ? this.confirmDismissValue
-            : 'Dismiss this hero?';
+            : '';
+
+        if (!message) {
+            return;
+        }
 
         if (!window.confirm(message)) {
             return;

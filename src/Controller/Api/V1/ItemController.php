@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Enum\ItemSlotType;
 use App\Repository\Hero\HeroRepository;
@@ -16,6 +17,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ItemController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly ItemService $itemService,
         private readonly HeroRepository $heroRepository,
@@ -29,7 +32,7 @@ class ItemController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $hero = null;
@@ -37,7 +40,7 @@ class ItemController extends AbstractController
         if ($heroId > 0) {
             $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
             if (null === $hero) {
-                return $this->json(['error' => 'Hero not found.'], 404);
+                return $this->jsonError('error.hero_not_found', 404);
             }
         }
 
@@ -57,12 +60,12 @@ class ItemController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
         if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
+            return $this->jsonError('error.hero_not_found', 404);
         }
 
         /** @var array<string, mixed> $body */
@@ -70,12 +73,12 @@ class ItemController extends AbstractController
 
         $itemId = (int) ($body['item_id'] ?? 0);
         if (0 === $itemId) {
-            return $this->json(['error' => 'Field "item_id" is required.'], 400);
+            return $this->jsonError('error.field_item_id_required', 400);
         }
 
         $item = $this->itemService->findForTeam($itemId, $team);
         if (null === $item) {
-            return $this->json(['error' => 'Item not found.'], 404);
+            return $this->jsonError('error.item_not_found', 404);
         }
 
         // slot: null means unequip
@@ -83,7 +86,7 @@ class ItemController extends AbstractController
             try {
                 $this->itemService->unequip($item);
             } catch (\DomainException $e) {
-                return $this->json(['error' => $e->getMessage()], 422);
+                return $this->jsonException($e, 422);
             }
 
             return $this->json($this->itemService->serialize($item));
@@ -94,13 +97,13 @@ class ItemController extends AbstractController
         if (null === $slot) {
             $valid = implode(', ', array_column(ItemSlotType::cases(), 'value'));
 
-            return $this->json(['error' => sprintf('Invalid slot. Valid values: %s.', $valid)], 400);
+            return $this->jsonError('error.invalid_slot', 400, ['%values%' => $valid]);
         }
 
         try {
             $this->itemService->equip($item, $hero, $slot);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json($this->itemService->serialize($item));
@@ -112,7 +115,7 @@ class ItemController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         /** @var array<string, mixed> $body */
@@ -120,18 +123,18 @@ class ItemController extends AbstractController
 
         $itemId = (int) ($body['item_id'] ?? 0);
         if (0 === $itemId) {
-            return $this->json(['error' => 'Field "item_id" is required.'], 400);
+            return $this->jsonError('error.field_item_id_required', 400);
         }
 
         $item = $this->itemService->findForTeam($itemId, $team);
         if (null === $item) {
-            return $this->json(['error' => 'Item not found.'], 404);
+            return $this->jsonError('error.item_not_found', 404);
         }
 
         try {
             $result = $this->itemService->dismantle($item, $team);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json($result);
@@ -143,18 +146,18 @@ class ItemController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $item = $this->itemService->findForTeam($id, $team);
         if (null === $item) {
-            return $this->json(['error' => 'Item not found.'], 404);
+            return $this->jsonError('error.item_not_found', 404);
         }
 
         try {
             $goldSpent = $this->itemService->repair($item, $team);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json([

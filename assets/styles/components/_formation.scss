@@ -5,23 +5,106 @@
 // =============================================================================
 
 @layer components {
-  .formation-section {
-    @apply space-y-4;
+  .formation-page {
+    @apply flex flex-col gap-6;
   }
 
-  .formation-pitch {
+  .formation-strategy-panel__body {
+    @apply flex flex-col gap-6;
+  }
+
+  .formation-strategy-panel__meta {
+    @apply flex flex-col gap-4;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+  }
+
+  .formation-strategy-panel__name {
+    @apply flex-1 min-w-0 space-y-2;
+  }
+
+  .formation-strategy-panel__default {
+    @apply shrink-0 pb-1;
+  }
+
+  .formation-strategy-panel__tactics {
+    @apply flex flex-col gap-3;
+  }
+
+  .formation-strategy-panel__tactics-grid {
     @apply grid gap-3;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
 
     @media (min-width: 768px) {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
+  .formation-match-prep-panel__actions {
+    @apply flex flex-col gap-3;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 1rem;
+    }
+  }
+
+  .formation-match-prep-panel__select {
+    @apply flex-1 min-w-0;
+  }
+
+  .formation-match-prep-panel__promote {
+    @apply w-full shrink-0;
+
+    @media (min-width: 640px) {
+      width: auto;
+    }
+  }
+
+  .formation-section {
+    @apply space-y-4;
+  }
+
+  .formation-pitch-board {
+    @apply relative flex flex-col gap-6;
+
+    &__midline {
+      @apply pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-dashed;
+      border-color: color-mix(in srgb, var(--color-border) 60%, transparent);
+    }
+  }
+
+  .formation-pitch {
+    @apply grid grid-cols-3 gap-3;
+  }
+
   .formation-slot {
-    @apply relative flex flex-col justify-between items-center text-center min-h-[140px] p-3 rounded-2xl shadow-sm;
+    @apply relative flex flex-col justify-between items-center text-center min-h-[140px] p-3 rounded-2xl shadow-sm transition-colors;
     background-color: color-mix(in srgb, var(--color-surface-base) 65%, transparent);
     border: 1px solid var(--color-border);
+
+    &--drag-over {
+      border-color: var(--color-brand-400);
+      background-color: color-mix(in srgb, var(--color-brand-500) 12%, transparent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-500) 25%, transparent);
+    }
+
+    &--dragging {
+      opacity: 0.55;
+    }
+
+    &__occupied {
+      @apply cursor-grab w-full h-full;
+
+      &:active {
+        cursor: grabbing;
+      }
+    }
 
     &__remove-btn {
       @apply absolute -right-1 -top-1 w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-extrabold transition-colors;
@@ -37,18 +120,48 @@
     }
   }
 
+  .formation-hero-roster {
+    @apply w-full transition-colors;
+
+    &--drag-over {
+      border-color: var(--color-brand-400);
+      background-color: color-mix(in srgb, var(--color-brand-500) 6%, transparent);
+    }
+  }
+
   .formation-pool {
-    @apply space-y-3 max-h-[350px] overflow-y-auto pr-1;
+    @apply grid gap-2;
+    grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr));
+    }
   }
 
   .formation-pool-item {
-    @apply flex items-center justify-between text-xs p-3 rounded-xl transition-opacity;
+    @apply relative flex flex-col items-center gap-1 p-2 rounded-lg text-center transition-opacity cursor-grab;
     background-color: var(--color-surface-base);
     border: 1px solid var(--color-border);
+    min-width: 0;
+
+    &:active {
+      cursor: grabbing;
+    }
 
     &--assigned {
-      opacity: 0.4;
+      opacity: 0.45;
     }
+
+    &--dragging {
+      opacity: 0.35;
+    }
+  }
+
+  .formation-pool-item__badge {
+    @apply absolute top-1 right-1 text-[7px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider leading-none;
+    background-color: color-mix(in srgb, var(--color-success-bg) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-success-border) 45%, transparent);
+    color: var(--color-success-text);
   }
 
   .formation-assigned-badge {
@@ -80,6 +193,7 @@
 }
 .formation-slot__quick-select { @apply w-full rounded text-[10px] p-1 select-none; }
 .formation-slot__hero-name { @apply text-xs font-bold truncate w-full; color: var(--color-text-primary); }
+.formation-slot__avatar { @apply leading-none; }
 .formation-slot__hero-details { @apply text-[9px]; color: var(--color-text-muted); }
 .formation-strategy__title { @apply text-base font-bold; color: var(--color-text-primary); }
 .formation-strategy__desc { @apply text-xs; color: var(--color-text-muted); }
@@ -93,15 +207,15 @@
   color: var(--color-text-muted);
 }
 .formation-pool-item__name {
-  @apply font-bold;
+  @apply text-[10px] font-bold truncate w-full leading-tight;
   color: var(--color-text-primary);
 }
 .formation-pool-item__meta {
-  @apply text-[9px];
+  @apply text-[8px] leading-tight truncate w-full;
   color: var(--color-text-muted);
 }
 .formation-pool-empty {
-  @apply text-center py-6 select-none italic text-xs;
+  @apply text-center py-4 select-none italic text-xs;
   color: var(--color-text-muted);
 }
 

@@ -8,6 +8,7 @@ use App\Exception\InactiveSeasonException;
 use App\Service\Auth\RegistrationService;
 use App\Service\Auth\VerificationService;
 use App\Service\Kingdom\KingdomService;
+use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,6 +29,7 @@ class RegisterController extends AbstractController
         private readonly RateLimiterFactoryInterface $registerLimiter,
         private readonly Security $security,
         private readonly TranslatorInterface $translator,
+        private readonly UserMessageTranslator $userMessages,
     ) {
     }
 
@@ -48,7 +50,7 @@ class RegisterController extends AbstractController
 
             if (!$limit->isAccepted()) {
                 return $this->json(
-                    ['error' => 'Too many registration attempts. Try again later.'],
+                    ['error' => $this->userMessages->trans('flash.too_many_registration_attempts')],
                     Response::HTTP_TOO_MANY_REQUESTS,
                     ['Retry-After' => $limit->getRetryAfter()->getTimestamp() - time()]
                 );
@@ -57,7 +59,7 @@ class RegisterController extends AbstractController
             // CSRF
             $csrfToken = $request->request->getString('_token');
             if (!$this->csrfTokenManager->isTokenValid(new CsrfToken('register', $csrfToken))) {
-                $this->addFlash('error', 'Invalid security token. Please try again.');
+                $this->addFlash('error', $this->userMessages->trans('flash.invalid_csrf'));
 
                 return $this->redirectToRoute('app_register');
             }
@@ -76,7 +78,7 @@ class RegisterController extends AbstractController
             );
 
             if ($result['success']) {
-                $this->addFlash('success', 'Account created! Check your email to verify your account.');
+                $this->addFlash('success', $this->userMessages->trans('flash.account_created'));
 
                 return $this->redirectToRoute('app_register_success');
             }
@@ -125,7 +127,7 @@ class RegisterController extends AbstractController
         // Auto-login the user
         $response = $this->security->login($user, 'form_login', 'main');
 
-        $this->addFlash('success', 'Email verified! Welcome to Fantager.');
+        $this->addFlash('success', $this->userMessages->trans('flash.email_verified'));
 
         return $response ?? $this->redirectToRoute('app_dashboard');
     }
@@ -137,14 +139,14 @@ class RegisterController extends AbstractController
         $limit = $limiter->consume(1);
 
         if (!$limit->isAccepted()) {
-            $this->addFlash('error', 'Too many requests. Try again later.');
+            $this->addFlash('error', $this->userMessages->trans('flash.too_many_requests'));
 
             return $this->redirectToRoute('app_register_success');
         }
 
         $csrfToken = $request->request->getString('_token');
         if (!$this->csrfTokenManager->isTokenValid(new CsrfToken('register_resend', $csrfToken))) {
-            $this->addFlash('error', 'Invalid security token.');
+            $this->addFlash('error', $this->userMessages->trans('error.invalid_csrf'));
 
             return $this->redirectToRoute('app_register_success');
         }
@@ -152,7 +154,7 @@ class RegisterController extends AbstractController
         $email = $request->request->getString('email');
         $this->registrationService->resendVerification($email);
 
-        $this->addFlash('success', 'If your account exists and is unverified, a new link has been sent.');
+        $this->addFlash('success', $this->userMessages->trans('flash.verification_resent'));
 
         return $this->redirectToRoute('app_register_success');
     }

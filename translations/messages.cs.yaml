@@ -12,7 +12,7 @@ nav:
   heroes: Hrdinové
   team: Tým
   chronicle: Kronika týmu
-  summon: Vyvolávání
+  summon: Vyvolávací síň
   hq: Základna
   training: Trénink
   inventory: Vybavení
@@ -23,11 +23,13 @@ nav:
   economy: Ekonomika
   settings: Nastavení
   toggle_menu: Zobrazit/skrýt menu
-  finance: Finanční kniha
+  finance: Ekonomický přehled
   community: Komunita
   mail: Hráčská pošta
+  notifications: Notifikace
   calendar: Kalendář
   arena: Aréna
+  graveyard: Hřbitov
 
 modal:
   close: Zavřít
@@ -79,12 +81,192 @@ homepage:
   cta_play: Hrát zdarma
   cta_login: Přihlásit se
   news_archive_link: Archiv novinek
+  latest_news: Nejnovější novinky
 
 flash:
   login_success: Přihlášení bylo úspěšné.
   register_success: Registrace byla úspěšná.
   logout_success: Byli jste odhlášeni.
   invalid_credentials: Neplatné přihlašovací údaje.
+  account_created: Účet byl vytvořen! Zkontrolujte e-mail a ověřte účet.
+  email_verified: E-mail ověřen! Vítejte ve hře Fantager.
+  too_many_requests: Příliš mnoho požadavků. Zkuste to později.
+  too_many_registration_attempts: Příliš mnoho pokusů o registraci. Zkuste to později.
+  invalid_csrf: Neplatný bezpečnostní token. Zkuste to znovu.
+  verification_resent: Pokud účet existuje a není ověřen, byl odeslán nový odkaz.
+  password_reset_sent: Pokud je e-mail registrován, byl odeslán odkaz pro obnovení hesla.
+  password_updated: Heslo bylo aktualizováno! Nyní se můžete přihlásit.
+  password_reset_failed: Nepodařilo se obnovit heslo.
+  email_confirm_old_sent: Současný e-mail potvrzen. Na novou adresu byl odeslán finální ověřovací odkaz.
+  email_updated: Vaše e-mailová adresa byla úspěšně aktualizována!
+  account_deleted: Váš účet byl trvale smazán.
+
+error:
+  no_team: K vašemu účtu není přiřazen žádný tým.
+  no_kingdom: K vašemu účtu není přiřazeno žádné království.
+  access_denied: Přístup odepřen.
+  invalid_csrf: Neplatný bezpečnostní token.
+  invalid_security_token: Neplatný bezpečnostní token. Zkuste to znovu.
+  invalid_email_format: Neplatný formát e-mailu.
+  invalid_request_payload: Neplatná data požadavku.
+  invalid_date_format: Neplatný formát data. Použijte ISO-8601 (např. 2026-06-08T00:00:00Z).
+  invalid_email_confirmation_link: Neplatný nebo expirovaný odkaz pro potvrzení e-mailu.
+  invalid_email_change_payload: Neplatná data požadavku o změnu e-mailu.
+  invalid_account_cancellation_link: Neplatný nebo expirovaný odkaz pro zrušení účtu.
+  email_already_current: Toto je již váš současný e-mail.
+  email_already_in_use: Tato e-mailová adresa je již používána jiným účtem.
+  no_preferences_provided: Nebyla poskytnuta žádná preference.
+  invalid_close_modal_on_backdrop: Neplatná hodnota closeModalOnBackdrop.
+  kingdom_not_found: Království nenalezeno.
+  hero_not_found: Hrdina nenalezen.
+  trainer_not_found: Trenér nenalezen.
+  spell_not_found: Kouzlo nenalezeno.
+  hero_spell_not_found: Kouzlo hrdiny nenalezeno.
+  item_not_found: Předmět nenalezen.
+  formation_not_found: Formace nenalezena.
+  fixture_not_found: Zápas nenalezen.
+  listing_not_found: Nabídka nenalezena.
+  memorial_not_found: Památník nenalezen.
+  message_not_found: Zpráva nenalezena.
+  thread_not_found: Téma nenalezeno.
+  notification_not_found: Notifikace nenalezena.
+  recipient_not_found: Příjemce nenalezen.
+  invalid_training_type: Neplatný typ tréninku.
+  invalid_facility_type: 'Neplatný typ zařízení. Povolené hodnoty: %values%.'
+  invalid_approach: 'Neplatný přístup. Povolené hodnoty: %values%.'
+  invalid_slot: 'Neplatný slot. Povolené hodnoty: %values%.'
+  invalid_mode: 'Neplatný režim. Použijte "default", "saved" nebo "custom".'
+  invalid_listing_mode: 'Neplatný režim nabídky "%mode%".'
+  invalid_listing_type: 'Neplatný typ nabídky "%type%".'
+  field_name_required: Pole "name" je povinné.
+  field_spell_id_required: Pole "spell_id" je povinné.
+  field_hero_spell_id_required: Pole "hero_spell_id" je povinné.
+  field_item_id_required: Pole "item_id" je povinné.
+  field_slot_required: Pole "slot" je povinné (1–magicCapacity).
+  field_formation_id_required: Pole "formation_id" je povinné pro režim saved.
+  field_name_required_custom: Pole "name" je povinné pro režim custom.
+  message_fields_required: ID příjemce, předmět a obsah zprávy jsou povinné.
+  thread_fields_required: Předmět, obsah a kategorie jsou povinné.
+  post_body_empty: Obsah příspěvku nemůže být prázdný.
+  thread_not_found_community: Téma nenalezeno.
+  community_own_kingdom_threads: Témata lze zakládat pouze ve svém království.
+  community_thread_locked: Toto téma je uzamčené.
+  community_own_kingdom_replies: Odpovědi lze přidávat pouze na nástěnce vašeho království.
+  community_cannot_message_self: Nemůžete poslat zprávu sami sobě.
+  community_own_kingdom_messages: Zprávy lze posílat pouze hráčům ve vašem království.
+  community_cannot_delete_message: Nemáte oprávnění smazat tuto zprávu.
+  community_thread_lock_permission: Zámek tématu může měnit pouze autor tématu.
+  hero_not_on_team: Hrdina nepatří k vašemu týmu.
+  hero_only_available_dismiss: Propustit lze pouze dostupné hrdiny.
+  hero_assigned_trainer_dismiss: Hrdina je přiřazen trenérovi. Před propuštěním ho odeberte z tréninku.
+  hero_only_available_roster: Z soupisky mohou odejít pouze dostupní hrdinové.
+  hero_roster_minimum: 'Tým musí mít alespoň %min% bojeschopných hrdinů pro zápasy.'
+  hero_name_empty: Jméno hrdiny nemůže být prázdné.
+  hero_name_too_long: Jméno hrdiny nesmí přesáhnout 100 znaků.
+  team_name_empty: Název týmu nemůže být prázdný.
+  team_name_too_long: Název týmu nesmí přesáhnout 100 znaků.
+  emblem_too_long: Hodnota emblému nesmí přesáhnout 255 znaků.
+  trainer_not_entity: Entita není trenér.
+  trainer_not_on_team: Trenér nepatří k vašemu týmu.
+  trainer_config_locked: Konfigurace tréninku je momentálně uzamčena.
+  trainer_assignments_locked: Přiřazení tréninku je momentálně uzamčeno.
+  trainer_only_combatant_assign: K trenérovi lze přiřadit pouze bojové hrdiny.
+  trainer_hero_not_on_team: Trenér nebo hrdina nepatří k vašemu týmu.
+  trainer_hero_already_assigned: Hrdina je již přiřazen trenérovi.
+  trainer_hero_only_available: K trenérovi lze přiřadit pouze dostupné hrdiny.
+  trainer_no_slots: Trenér nemá volné sloty.
+  trainer_hero_not_assigned: Hrdina není přiřazen tomuto trenérovi.
+  trainer_only_active_dismiss: Propustit lze pouze aktivní trenéry.
+  trainer_only_active_list: Na trh lze vystavit pouze aktivní trenéry.
+  invalid_attribute: 'Neplatný atribut. Povolené hodnoty: %values%.'
+  unknown_attribute: 'Neznámý atribut "%attribute%".'
+  marketplace_price_positive: Cena nebo vyvolávací cena musí být kladná.
+  marketplace_buyout_higher: Pevná cena musí být vyšší než vyvolávací cena.
+  marketplace_hero_not_found: Hrdina nenalezen nebo nepatří k vašemu týmu.
+  marketplace_hero_only_available: Na trh lze vystavit pouze dostupné hrdiny.
+  marketplace_hero_assigned_trainer: Hrdina je přiřazen trenérovi. Před vystavením ho odeberte z tréninku.
+  marketplace_item_not_found: Předmět nenalezen nebo nepatří k vašemu týmu.
+  marketplace_item_only_unequipped: Na trh lze vystavit pouze nevvybavené dostupné předměty.
+  marketplace_trainer_not_found: Trenér nenalezen nebo nepatří k vašemu týmu.
+  marketplace_only_active_cancel: Zrušit lze pouze aktivní nabídky.
+  marketplace_auction_has_bids: Aukce s příhozy nelze zrušit.
+  marketplace_listing_inactive: Nabídka již není aktivní.
+  marketplace_cannot_buy_own: Vlastní nabídku nelze koupit.
+  marketplace_no_instant_purchase: Tato nabídka nepodporuje okamžitý nákup.
+  marketplace_not_active: Nabídka není aktivní.
+  marketplace_no_bidding: Tato nabídka nepodporuje dražbu.
+  marketplace_auction_expired: Aukce již vypršela.
+  marketplace_cannot_bid_own: Na vlastní nabídku nelze přihazovat.
+  marketplace_first_bid_minimum: 'První příhoz musí být alespoň vyvolávací cena %amount% zlata.'
+  marketplace_bid_too_low: 'Příhoz je příliš nízký. Minimální další příhoz je %min% zlata (min. krok: %increment%).'
+  insufficient_gold: 'Nedostatek zlata. Potřeba: %required%, k dispozici: %available%.'
+  insufficient_essence: 'Nedostatek esence. Potřeba: %required%, k dispozici: %available%.'
+  insufficient_school_mastery: 'Nedostatečná úroveň školy. Potřeba: %required%, aktuální: %current%.'
+  insufficient_common_essence: Nedostatek běžné esence.
+  insufficient_uncommon_essence: Nedostatek neobvyklé esence.
+  insufficient_rare_essence: Nedostatek vzácné esence.
+  insufficient_epic_essence: Nedostatek epické esence.
+  insufficient_legendary_essence: Nedostatek legendární esence.
+  insufficient_mythic_essence: Nedostatek mýtické esence.
+  summoning_roster_full: Soupiska je plná.
+  summoning_limit_reached: Dosažen limit vyvolávání pro tento cyklus.
+  summoning_no_compatible_races: Nebyly nalezeny žádné kompatibilní rasy pro vyvolání.
+  summoning_insufficient_gold: 'Nedostatek zlata. Potřeba: %required%, k dispozici: %available%.'
+  hq_not_initialized: Základna pro tento tým není inicializována.
+  hq_facility_change_in_progress: Probíhá již jiná změna zařízení.
+  hq_downgrade_locked: Snížení úrovně zařízení je uzamčeno do dalšího týdenního cyklu.
+  hq_facility_not_found: 'Zařízení "%type%" nebylo v základně nalezeno.'
+  hq_facility_min_level: Zařízení je již na minimální úrovni.
+  hq_race_optimization_locked: Uzpůsobení arény je momentálně uzamčeno.
+  hq_invalid_race: 'Neplatná rasa: %race%.'
+  item_cannot_equip: Vystavené nebo nedostupné předměty nelze vybavit.
+  item_wrong_team: Předmět nepatří ke stejnému týmu jako hrdina.
+  item_slot_mismatch: 'Typ slotu předmětu "%item_slot%" nelze vybavit do slotu "%slot%".'
+  item_not_equipped: Předmět není vybaven.
+  item_cannot_dismantle: Vystavené nebo nedostupné předměty nelze rozložit.
+  item_not_on_team: Předmět nepatří k vašemu týmu.
+  item_cannot_dismantle_equipped: Vybavený předmět nelze rozložit. Nejprve ho sundejte.
+  item_cannot_repair: Vystavené nebo nedostupné předměty nelze opravit.
+  item_repair_insufficient_gold: 'Nedostatek zlata. Oprava stojí %cost%, k dispozici: %available%.'
+  spell_already_known: Hrdina toto kouzlo již zná.
+  spell_not_equipped: Kouzlo není vybaveno.
+  spell_slot_range: 'Slot musí být mezi 1 a %capacity% (magická kapacita hrdiny).'
+  formation_no_default: Tým nemá nastavenou výchozí formaci.
+  formation_name_empty: Název formace nemůže být prázdný.
+  formation_not_on_team: Formace nepatří k vašemu týmu.
+  formation_only_temp_update: Aktualizovat lze pouze dočasné formace z přípravy zápasu.
+  formation_wrong_fixture: Dočasná formace nepatří k tomuto zápasu.
+  formation_only_temp_promote: Propagovat lze pouze dočasné formace.
+  formation_only_temp_delete: Smazat lze pouze dočasné formace.
+  formation_max_saved: 'Maximálně %max% uložených formací.'
+  formation_invalid_position: 'Neplatná pozice "%position%".'
+  formation_hero_not_on_team: 'Hrdina %id% nebyl ve vašem týmu nalezen.'
+  formation_not_on_fixture: Tým není součástí tohoto zápasu.
+  formation_only_scheduled: Formaci lze měnit pouze u naplánovaných zápasů.
+  formation_not_belong_team: Přiřazená formace nepatří k týmu.
+  formation_no_match_to_promote: Neexistuje formace pro zápas k uložení.
+  financial_crisis_blocked: 'Tato akce je během finančních restrikcí (%level%) blokována. Prodejte majetek, propusťte hrdiny nebo snižte úroveň zařízení.'
+  graveyard_combatant_only: Odstranit lze pouze bojové hrdiny procesem propuštění hrdiny.
+  graveyard_trainer_only: Odstranit lze pouze trenéry procesem propuštění trenéra.
+  training_success_configure: Zaměření trenéra bylo úspěšně uloženo.
+  training_success_assign: Hrdina byl úspěšně přiřazen trenérovi.
+  training_success_unassign: Hrdina byl odebrán od trenéra.
+
+notification:
+  marketplace_outbid_title: Přehozen / vráceno
+  marketplace_outbid_body: 'Bylo vám vráceno %amount% zlata, protože nabídka #%listing% byla okamžitě koupena.'
+  marketplace_sold_title: Nabídka prodána
+  marketplace_sold_body: 'Vaše nabídka #%listing% byla koupena hráčem "%buyer%" za %amount% zlata.'
+  marketplace_new_bid_title: Nový příhoz
+  marketplace_new_bid_body: 'Na nabídku #%listing% byl učiněn nový příhoz %amount% zlata.'
+  marketplace_expired_title: Nabídka vypršela
+  marketplace_expired_body: 'Vaše nabídka #%listing% vypršela bez příhozů. Entita byla vrácena na soupisku nebo do vybavení.'
+  marketplace_bid_refunded_title: Příhoz vrácen
+  marketplace_bid_refunded_body: 'Váš příhoz %amount% zlata na nabídku #%listing% byl vrácen.'
+  marketplace_auction_won_seller_title: Aukce prodána
+  marketplace_auction_won_seller_body: 'Vaše aukce #%listing% byla prodána hráči "%buyer%" za %amount% zlata.'
+  marketplace_auction_won_buyer_title: Aukce vyhrána
+  marketplace_auction_won_buyer_body: 'Vyhráli jste aukci #%listing% za %amount% zlata.'
 
 dashboard:
   treasury: Pokladnice
@@ -102,7 +284,7 @@ dashboard:
   available_heroes: Dostupní hrdinové
   in_training: V tréninku
   hq_level: Úroveň základny
-  hq_optimization: Optimalizace rasy základny
+  hq_optimization: Uzpůsobení arény
   summons_cycle: Vyvolání v tomto cyklu
   next_match: Příští ligový zápas
   next_match_start: Ligové zápasy začínají v další fázi
@@ -139,8 +321,60 @@ chronicle:
     all: Všechny události
     ownership: Vlastnictví
     competition: Soutěž
-    roster: Roster
+    roster: Soupiska
     economy: Ekonomika
+
+graveyard:
+  title: Hřbitov
+  subtitle: Památníky hrdinů a trenérů, kteří opustili váš tým.
+  summary_total: Celkem památníků
+  summary_average_age: Průměrný věk při odchodu
+  years_suffix: let
+  filter_role: Role
+  filter_cause: Příčina
+  filter_race: Rasa
+  filter_search: Hledat
+  filter_all: Vše
+  search_placeholder: Hledat podle jména...
+  apply_filters: Použít
+  clear_filters: Zrušit filtry
+  empty: Zatím žádné památníky.
+  empty_filtered: Vybraným filtrům neodpovídá žádný památník.
+  view_detail: Zobrazit detail
+  close_detail: Zavřít detail
+  age: Věk
+  final_level: Finální level
+  role:
+    combatant: Bojovník
+    trainer: Trenér
+  cause:
+    dismissed: Propuštění
+    combat_death: Smrt v boji
+    age: Stáří
+    retired: Odchod do důchodu
+    death: Úmrtí
+  stat:
+    str: Síla
+    dex: Obratnost
+    kon: Odolnost
+    spd: Rychlost
+    int: Inteligence
+    wil: Vůle
+    cha: Charisma
+    lck: Štěstí
+    form: Forma
+    fatigue: Únava
+    morale: Morálka
+
+news:
+  title: Novinky
+  back_home: Zpět na úvodní stránku
+  empty: Zatím nebyly publikovány žádné novinky.
+  global: Globální
+  pagination: Stránkování novinek
+  prev_page: Předchozí
+  next_page: Další
+  page_info: "Strana %page% z %total%"
 
 activity:
   team_established: 'Tým založen v království %kingdom% (sezóna %season%).'
@@ -177,12 +411,12 @@ financial_crisis:
   title_warning: Finanční varování
   title_restricted: Finanční restrikce
   title_bankruptcy_pending: Hrozící bankrot
-  message_warning: "Tým má nedoplatek %debt% zlata nebo nízkou finanční rezervu vůči týdenní údržbě %maintenance% zlata. Snižte náklady, nebo prodejte aktiva."
+  message_warning: "Tým má neuhrazený dluh %debt% zlata (týdenní údržba %maintenance% zlata). Snižte náklady, nebo prodejte aktiva."
   message_restricted: "Tým je %weeks% týdnů v krizi. Pasivní bonusy základny jsou pozastaveny a některé akce jsou blokovány, dokud nesplátíte dluh."
-  message_bankruptcy_pending: "Bez zásahu bude tým brzy prohlášen bankrotem. Dluh %debt% zlata, gold na ruce je vyčerpán."
+  message_bankruptcy_pending: "Bez zásahu bude tým brzy prohlášen bankrotem. Dluh %debt% zlata, pokladnice je vyčerpána."
   unpaid_debt: Neuhrazený dluh
   weekly_maintenance: Týdenní údržba
-  gold_on_hand: Gold na ruce
+  gold_on_hand: Zlato k dispozici
   weeks_until_bankruptcy: Týdnů do bankrotu
   restricted_hint: "Blokováno: vylepšení základny, vyvolávání, nákupy na tržišti."
   hq_bonuses_suspended: Pasivní bonusy základny jsou dočasně vypnuty.
@@ -231,7 +465,7 @@ team_profile:
   submit: Uložit profil
 
 heroes:
-  title: Roster hrdinů
+  title: Soupiska hrdinů
   subtitle: "Spravujte, filtrujte a prohlížejte hrdiny vašeho týmu."
   search_placeholder: "Vyhledat hrdinu..."
   race_adjustment: "Rasová korekce: %bonus%"
@@ -241,6 +475,8 @@ heroes:
     veteran: Veterán
     elder: Starší
     phase: "Fáze: %phase%"
+  mortality_threshold: Práh mortality
+  mortality_threshold_warning: "Na prahu mortality nebo nad ním (%threshold%) — zvýšené riziko trvalé smrti po boji"
   inspect: Prohlédnout
   train_hero: Trénovat hrdinu
   equip_hero: Vybavit hrdinu
@@ -263,9 +499,9 @@ heroes:
   status_selling: Na prodej
   status_recovering: Zotavování
   status_dead: Mrtvý
-  no_heroes: V rosteru nejsou žádní hrdinové
+  no_heroes: Na soupisce nejsou žádní hrdinové
   no_heroes_desc: Jděte do vyvolávací síně a naverbujte své první hrdiny.
-  go_summoning: Přejít k vyvolávání
+  go_summoning: Přejít do vyvolávací síně
   tab_overview: Přehled
   tab_equipment: Vybavení
   tab_spells: Kouzla
@@ -273,7 +509,7 @@ heroes:
   tab_history: Historie
   current_trainer: Aktuální trenér
   manage_all_trainers: Spravovat všechny trenéry v základně
-  back_roster: Zpět na Roster
+  back_roster: Zpět na soupisku
   rename_title: Přejmenovat hrdinu
   save: Uložit
   cancel: Zrušit
@@ -297,9 +533,15 @@ heroes:
   abbr_str: SÍLA
   abbr_dex: OBR
   abbr_kon: KON
-  abbr_spd: RYC
+  abbr_spd: RYCH
+  abbr_int: INT
+  abbr_wil: VŮLE
+  abbr_cha: CHA
+  abbr_lck: ŠTĚ
   combat_form: Bojová forma
+  combat_form_short: Forma
   fatigue: Úroveň únavy
+  fatigue_short: Únava
   morale_label: Morálka
   equipped_gear: Vybavená výstroj
   equipped_gear_desc: Výměna vybavení se provádí v inventáři.
@@ -341,13 +583,13 @@ summoning:
   summons_used: Použitá vyvolání
   cost_per_summon: Cena za vyvolání
   summon_junior: Vyvolat mladého hrdiny
-  summon_junior_desc: "Nasměrujte své zlato k vyvolání nového hrdiny. Rasa vyvolaného hrdiny se volí na základě adaptace vaší Arény a rasových vztahů."
-  home_theme: Téma domácí arény
-  arena_theme_desc: "Rasy jsou losovány na základě tématu vaší arény a jejich vztahu/afinity (>= 50) k tématické rase."
+  summon_junior_desc: "Nasměrujte své zlato k vyvolání nového hrdiny. Rasa vyvolaného hrdiny se volí na základě uzpůsobení vaší arény a rasových vztahů."
+  home_theme: Uzpůsobení arény
+  arena_theme_desc: "Rasy jsou losovány podle uzpůsobení vaší arény a jejich vztahu/afinity (>= 50) k vybrané rase."
   potential_races: Potenciální vyvolatelné rasy
   portal_title: Vyvolávací portál
   race_placeholder: "Rasa"
-  portal_desc: Nasměrujte své zlato do portálu a přiveďte náhodného hrdinu kompatibilního s tématem vaší Arény.
+  portal_desc: Nasměrujte své zlato do portálu a přiveďte náhodného hrdinu kompatibilního s uzpůsobením vaší arény.
   portal_channeling: Kanálování portálu...
   portal_channeling_desc: Vyvolávání mladého hrdiny z prázdnoty.
   new_recruit: Nový rekrut
@@ -373,8 +615,16 @@ summoning:
   fallen_or_dismissed: Padlý nebo propuštěný
 
 finance:
-  title: Finanční kniha
-  subtitle: Auditní log všech transakcí se zlatem a esencemi pro váš tým.
+  title: Ekonomický přehled týmu
+  subtitle: Přehled příjmů, výdajů a finančních transakcí vašeho týmu.
+  summary_title: Souhrn
+  ledger_title: Finanční deník
+  summary_income_period: Příjmy (posledních %days% dní)
+  summary_expense_period: Výdaje (posledních %days% dní)
+  summary_net_period: Bilance (posledních %days% dní)
+  summary_transactions_period: Transakcí (posledních %days% dní)
+  summary_net_all_time: Celková bilance
+  summary_top_expenses: Největší výdaje (posledních %days% dní)
   filter_type: Filtrovat podle typu
   all_types: Všechny typy
   filter_actor: Filtrovat podle iniciátora
@@ -417,12 +667,11 @@ finance:
 
 hq:
   title: Základna
-  subtitle: "Rozšiřte sídlo svého cechu a odemkněte pasivní bonusy, zvyšte limity a zvyšte efektivitu."
-  compound_level: Úroveň sídla
+  subtitle: "Rozšiřte základnu a odemkněte pasivní bonusy, zvyšte limity a efektivitu."
+  compound_level: Úroveň základny
   weekly_maintenance: Týdenní údržba
   weekly_maintenance_hint: Strhává se každou neděli při týdenním resetu
-  weekly_maintenance_breakdown: "Sídlo %hq% + zařízení %facilities%"
-  active_optimization: Aktivní optimalizace
+  active_optimization: Uzpůsobení arény
   roster_limit: Limit soupisky
   facilities: Zařízení sídla
   passive_effects: Pasivní účinky
@@ -437,16 +686,16 @@ hq:
   downgrade_lock_active: Po nedávném snížení úrovně nelze zahájit další změnu do příštího týdenního resetu.
   operation_upgrade: vylepšení
   operation_downgrade: snížení úrovně
-  settings: Nastavení cechu
-  race_opt_title: Optimalizace rasy
-  race_opt_desc: "Cílení na konkrétní rasu optimalizuje zařízení pro jejich fyzické potřeby, což snižuje únavu během tréninku a zvyšuje násobiče rychlosti."
-  race_opt_confirm: "Opravdu chcete změnit optimalizaci rasy? Tato naplánovaná změna se neprojeví ihned, ale bude aplikována až v neděli v 9:30."
-  select_race: Vyberte cílovou rasu
-  save_opt: Uložit optimalizaci
-  no_opt: "-- Bez optimalizace --"
-  race_opt_pending: "Naplánovaná změna na: %race% (aplikuje se v neděli v 9:30)"
-  race_opt_locked: "Optimalizace je uzamčena do další neděle 9:30"
-  race_opt_active: "Aktivní optimalizace: %race%"
+  settings: Nastavení základny
+  race_opt_title: Uzpůsobení arény
+  race_opt_desc: "Určete rasu, pro kterou je aréna uzpůsobena. Ovlivňuje to, které rasy se objeví ve vyvolávání."
+  race_opt_confirm: "Opravdu chcete změnit uzpůsobení arény? Změna se neprojeví ihned, ale bude aplikována až v neděli v 9:30."
+  select_race: Vyberte rasu
+  save_opt: Uložit uzpůsobení
+  no_opt: "-- Bez uzpůsobení --"
+  race_opt_pending: "Naplánované uzpůsobení na: %race% (aplikuje se v neděli v 9:30)"
+  race_opt_locked: "Uzpůsobení arény je uzamčeno do další neděle 9:30"
+  race_opt_active: "Uzpůsobeno na: %race%"
   insufficient_gold: Nedostatek zlata
   manage_facility: Spravovat
   back_to_facilities: Zpět na budovy
@@ -485,7 +734,7 @@ hq:
   bonus_arena_capacity: Kapacita arény
 
 training:
-  title: Tréninkové kolbiště
+  title: Trénink
   subtitle: Naplánujte tréninky ke zlepšení atributů, rozšíření slotů pro kouzla nebo snížení únavy.
   status:
     completed: Hotovo
@@ -572,7 +821,7 @@ training:
   dismiss_confirm: Opravdu chcete propustit tohoto trenéra? Svěřenci budou odebráni z tréninku. Akce je nevratná.
 
 inventory:
-  title: Zbrojnice a batoh
+  title: Vybavení
   subtitle: Vybavte své hrdiny výstrojí, rozložte staré předměty na esenci nebo opravte jejich odolnost.
   equip_manager: Správce vybavení
   select_hero_opt: "-- Vyberte hrdinu k vybavení --"
@@ -587,7 +836,7 @@ inventory:
   dismantle: Rozložit
   equip_slot_btn: Vybavit slot
   rucksack_empty: Batoh je prázdný
-  rucksack_empty_desc: Nakupte zbraně a naplňte sklad svého cechu.
+  rucksack_empty_desc: Nakupte zbraně a naplňte sklad svého týmu.
   slot_head: Hlava
   slot_amulet: Amulet
   slot_body: Zbroj
@@ -610,6 +859,7 @@ inventory:
 
 spells:
   title: Kniha kouzel a akademie
+  tier_label: "Úroveň %tier%"
   subtitle: Učte své hrdiny svitky kouzel a spravujte jejich aktivní bojové sloty.
   slot_empty: "Slot %slot% prázdný"
   academy_desc: "V zápasech způsobuje efekty závislé na magické škole."
@@ -656,9 +906,13 @@ formation:
   prematch_approach: Předzápasový přístup
   set_default: Nastavit jako výchozí aktivní formaci
   save_lineup: Uložit sestavu
-  mage_pool: Pool učňů mágů
+  mage_pool: Trainee Mage Pool
+  hero_roster: Dostupní hrdinové
+  hero_roster_desc: Hrdinové týmu pro startovní sestavu. Přetáhněte kartu na slot na hřišti, mezi sloty pro výměnu, nebo zpět do rosteru pro odebrání. Přiřazení lze také vybrat v dropdownu slotu.
   assigned: Přiřazeno
+  remove_from_slot: Odebrat ze slotu
   no_trainees: V poolu sídla nejsou žádní učni.
+  no_heroes_roster: Žádní hrdinové k dispozici pro sestavu.
   tactics_aggressive: Agresivní taktika
   tactics_aggressive_desc: Zaměření na rychlost úderu přední řady a kritické hodnocení.
   tactics_balanced: Vyvážená pozice
@@ -715,8 +969,8 @@ js_flash:
     success_upgrade: Zařízení bylo úspěšně vylepšeno na úroveň %level%!
     success_downgrade: Snížení úrovně bylo naplánováno. Aktuální úroveň %level%.
     saving: Ukládání...
-    failed_optimize: Nepodařilo se aktualizovat optimalizaci.
-    success_optimize: Optimalizace rasy základny byla úspěšně aktualizována.
+    failed_optimize: Nepodařilo se aktualizovat uzpůsobení arény.
+    success_optimize: Uzpůsobení arény bylo úspěšně aktualizováno.
     lvl_short: Lvl
     gold_format: 🪙 %gold% Zlata
   heroes:
@@ -738,6 +992,7 @@ js_flash:
     success_delete: Formace byla úspěšně smazána.
     success_promote: Formace pro zápas byla uložena mezi vaše formace.
     failed_promote: Nepodařilo se uložit formaci pro zápas.
+    prompt_promote_name: Formace pro zápas
     lvl_short: Lvl
   inventory:
     equipping: Vybavování...
@@ -760,8 +1015,8 @@ js_flash:
     failed_preferences: Nepodařilo se uložit preference rozhraní.
   dashboard:
     saving: Ukládání...
-    failed: Nepodařilo se aktualizovat optimalizaci.
-    success: "Změna optimalizace byla úspěšně naplánována. Projeví se příští neděli v 09:30."
+    failed: Nepodařilo se aktualizovat uzpůsobení arény.
+    success: "Změna uzpůsobení arény byla úspěšně naplánována. Projeví se příští neděli v 09:30."
 
 school:
   fire: Oheň
@@ -815,9 +1070,22 @@ league:
   col_diff: Skóre
   col_form: Forma
   col_group: Skupina
+  col_rank_hint: Pozice v tabulce
+  col_team_hint: Název týmu
+  col_played_hint: Odehrané zápasy
+  col_wins_hint: Výhry
+  col_draws_hint: Remízy
+  col_losses_hint: Prohry
+  col_points_hint: Body (3 za výhru, 1 za remízu)
+  col_diff_hint: Rozdíl skóre (Zabití − Smrt)
+  col_form_hint: Forma z posledních 5 zápasů (V/R/P)
+  col_group_hint: Ligová skupina
   my_fixtures: Zápasy mého týmu
   group_fixtures: Zápasy skupiny
   round: Kolo
+  formation_status_default: Výchozí formace
+  formation_status_saved: 'Uložená: %name%'
+  formation_status_custom: Vlastní pro zápas
 
 calendar:
   title: Kalendář a události
@@ -833,6 +1101,27 @@ calendar:
   status_scheduled: Naplánováno
   status_completed: Dokončeno
   status_failed: Selhalo
+  league_fixture_desc: 'Ligový zápas — skupina %group%'
+  training_complete_title: 'Trénink dokončen: %hero%'
+  tick:
+    daily_reset_title: Denní reset a údržba
+    daily_reset_desc: Systémové čištění, reset stárnutí hrdinů
+    inactive_registration_title: Úklid neověřených registrací
+    inactive_registration_desc: Odebrání týmů a smazání neověřených účtů starších 1 dne
+    inactive_player_title: Úklid neaktivních hráčů
+    inactive_player_desc: Uvolnění týmů hráčů neaktivních 28+ dní
+    fatigue_recovery_title: Regenerace únavy a formy
+    fatigue_recovery_desc: Pasivní obnova únavy a kondice hrdinů
+    weekly_training_title: Týdenní trénink
+    weekly_training_desc: Vyhodnocení fronty tréninku a navýšení statistik hrdinů
+    league_match_title: Ligový zápas
+    league_match_desc: Simulace naplánovaných ligových zápasů
+    season_transition_title: Přechod sezóny
+    season_transition_desc: Postupy, sestupy, odměny a start další sezóny
+    weekly_reset_title: Týdenní reset
+    weekly_reset_desc: Reset cooldownů vyvolávací síně a týdenní údržba
+    race_optimization_title: Aktualizace uzpůsobení arény
+    race_optimization_desc: Aplikace naplánovaného uzpůsobení arény a stavů uzamčení
 
 arena:
   title: Správa arény
@@ -857,7 +1146,7 @@ arena:
   col_opponent: Soupeř
   col_attendance: Návštěvnost
   no_revenue_yet: Zatím žádné příjmy z domácích zápasů. Výplata proběhne po odehrání ligového zápasu.
-  view_full_ledger: Zobrazit celý finanční deník
+  view_full_ledger: Zobrazit finanční knihu
   how_it_works: Jak funguje příjem z arény
   rule_fixed_price: "Pevná cena vstupenky: 🪙 %price% za místo."
   rule_capacity: Kapacita hlediště roste s vylepšením arény v základně.
@@ -887,7 +1176,7 @@ marketplace:
   sort_price_desc: "Cena: Sestupně"
   sort_expires_asc: Končící brzy
   label_price: Minimální příhoz
-  label_buyout: Pevná cena (Buyout)
+  label_buyout: Pevná cena
   label_seller: Prodejce
   label_expires: Vyprší za
   label_highest_bid: Nejvyšší příhoz
@@ -926,7 +1215,7 @@ marketplace:
   error_bid: Nepodařilo se přihodit.
   error_purchase: Nepodařilo se koupit entitu.
   error_cancel: Nepodařilo se zrušit nabídku.
-  own_listing_hint: "Tato nabídka patří vašemu cechu."
+  own_listing_hint: "Tato nabídka patří vašemu týmu."
   select_entity_first: "Nejprve vyberte hrdinu, předmět nebo trenéra k prodeji."
   confirm_cancel: "Opravdu chcete zrušit tuto nabídku a vrátit entitu zpět?"
   confirm_bid: "Opravdu chcete na tuto aukci přihodit 🪙 %amount% gold (tato částka bude okamžitě rezervována)?"
@@ -973,8 +1262,29 @@ marketplace:
   no_trainers: "Žádní dostupní trenéři pro prodej."
   col_actions: "Akce"
 
+notifications:
+  empty: Zatím nemáte žádné notifikace.
+  col_status: Stav
+  col_title: Předmět
+  col_type: Typ
+  col_date: Datum
+  mark_all_read: Označit vše jako přečtené
+  error_load: Nepodařilo se načíst notifikace.
+  error_read: Nepodařilo se načíst notifikaci.
+  error_mark_all: Nepodařilo se označit notifikace jako přečtené.
+  success_mark_all: Všechny notifikace byly označeny jako přečtené.
+  type_system: Systém
+  type_marketplace_bid: Nabídka na tržišti
+  type_marketplace_sold: Prodej na tržišti
+  type_battle_result: Výsledek zápasu
+  type_training_complete: Trénink dokončen
+  type_league_update: Aktualizace ligy
+  type_event_started: Událost zahájena
+  type_hero_died: Hrdina zemřel
+  type_season_ended: Sezóna ukončena
+
 community:
-  title: Královská komunita
+  title: Komunita
   subtitle: Čtěte a zakládejte témata na nástěnce svého království.
   tab_forum: Diskusní fórum
   tab_mail: Hráčská pošta

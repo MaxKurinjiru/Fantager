@@ -2,57 +2,103 @@
 
 Reference: [game-summary.md](../game-summary.md#213-graveyard-system)
 
-Purpose: Permanent memorial records for heroes and staff who leave the team.
+Purpose: Permanent memorial records for heroes and trainers who leave the team.
 
-## Record Types
+---
 
-| Type | Entity | Triggers |
-|------|--------|----------|
-| **Hero memorial** | `GraveyardMemorial` | Dismissal, combat death (future), age (future) |
-| **Staff memorial** | `StaffRecord` | Trainer dismissal (future: retirement, death) |
+## Implementation Status
 
-Dismissed heroes are no longer hard-deleted — a snapshot is written to `graveyard_memorial` before the live `Hero` row is removed.
+| Layer | Status |
+|-------|--------|
+| **Entity & service** | Implemented — `GraveyardMemorial`, `GraveyardService` |
+| **Dismissal flows** | Implemented — hero and trainer dismiss write memorial snapshots before entity removal |
+| **Web UI** | Implemented — `Web\GraveyardController`, `/app/graveyard` |
+| **Read API** | Implemented — `Api\V1\GraveyardController`, `GET /api/v1/graveyard`, `GET /api/v1/graveyard/{id}` |
 
-## Hero Dismissal Flow
+Combat death memorials (`MemorialCause::CombatDeath`) remain reserved until the combat engine is implemented.
+
+---
+
+## Data Model
+
+All departures (combatant heroes and trainers) use a single entity:
+
+| Entity | Table | Key fields |
+|--------|-------|------------|
+| **GraveyardMemorial** | `graveyard` | `team_id`, `name`, `race`, `role_at_departure` (`HeroRole`), `cause` (`MemorialCause`), `age`, `final_level`, `final_stats` (JSON), `departed_at`, `original_hero_id` |
+
+There is **no separate `StaffRecord` entity**. Trainers are `Hero` rows with `role = trainer`; their memorial uses the same table with `role_at_departure = trainer`.
+
+### `MemorialCause` values (implemented)
+
+| Value | Used today |
+|-------|------------|
+| `dismissed` | Hero or trainer dismissal |
+| `combat_death` | Reserved — combat engine (Phase 5) |
+| `age` | Reserved |
+| `retired` | Reserved |
+| `death` | Reserved |
+
+---
+
+## Hero Dismissal Flow (implemented)
 
 1. Validate roster minimum (6 combat-ready heroes)
-2. `GraveyardService::prepareHeroRemoval()` — unequip items, clear formation, detach trainer, remove spells/masteries/queue
-3. `GraveyardService::recordHero()` — immutable snapshot with cause `dismissed`
-4. Pay 40% compensation via `HeroDismissalService`
-5. Remove hero entity
+2. `GraveyardService::prepareHeroRemoval()` — unequip items, clear formation slots, detach trainer, remove spells/masteries/training history
+3. `GraveyardService::recordMemorial($hero, $team, MemorialCause::Dismissed)` — immutable snapshot
+4. Pay 40% compensation via `HeroDismissalService` (`FinancialRecordType::HeroDismissalCompensation`)
+5. `GraveyardService::removeHero()` — delete live `Hero` row
 
-## Trainer Dismissal Flow
+**Endpoint:** `POST /api/v1/heroes/{id}/dismiss`
 
-1. Validate trainer is `active` (not listed on marketplace)
+---
+
+## Trainer Dismissal Flow (implemented)
+
+1. Validate trainer is not listed on marketplace (`HeroStatus::Selling`)
 2. `GraveyardService::prepareTrainerRemoval()` — unassign all trainees
-3. `GraveyardService::recordTrainer()` — snapshot with cause `dismissed`
-4. Pay 30% compensation via `TrainerDismissalService`
-5. Remove trainer entity
+3. `GraveyardService::recordMemorial($hero, $team, MemorialCause::Dismissed)` — snapshot with `role_at_departure = trainer`
+4. Pay 30% compensation via `TrainerDismissalService` (`FinancialRecordType::TrainerDismissalCompensation`)
+5. `GraveyardService::removeHero()` — delete trainer entity
 
 No minimum trainer count — trainers do not affect match eligibility.
 
-## API Endpoints
+**Endpoint:** `POST /api/v1/training/trainers/{id}/dismiss`
+
+---
+
+## Read API Endpoints
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/api/v1/graveyard` | List hero + staff memorial records |
-| GET | `/api/v1/graveyard/heroes/{id}` | Hero memorial detail |
-| GET | `/api/v1/graveyard/staff/{id}` | Staff memorial detail |
-| POST | `/api/v1/training/trainers/{id}/dismiss` | Dismiss trainer |
+| GET | `/app/graveyard` | Memorial wall (Twig) |
+| GET | `/api/v1/graveyard` | List memorial records (`?role=`, `?cause=`, `?race=`, `?search=`) + summary stats |
+| GET | `/api/v1/graveyard/{id}` | Memorial detail |
+
+See [route-map.md](../route-map.md#graveyard).
+
+---
 
 ## Web UI
 
 | Screen | Route | Notes |
 |--------|-------|-------|
-| Graveyard | `/app/graveyard` | Tabs: Heroes / Trainers |
-| Hero dismiss | Hero detail overview | Redirects to graveyard after success |
-| Trainer dismiss | Training page trainer card | Redirects to graveyard staff tab |
+| Graveyard | `/app/graveyard` | Filter by role (combatant / trainer), cause, race; summary stats; memorial detail via `?id=` |
+| Hero dismiss | Hero detail | Dismiss succeeds in-place; memorial visible on graveyard page |
+| Trainer dismiss | Training page | Dismiss succeeds in-place; memorial visible on graveyard page |
+
+---
 
 ## Services
 
-- `App\Service\Graveyard\GraveyardService` — snapshots and cleanup
-- `App\Service\Hero\HeroDismissalService` — hero dismissal + compensation
-- `App\Service\Training\TrainerDismissalService` — trainer dismissal + compensation
+| Service | Responsibility |
+|---------|----------------|
+| `App\Service\Graveyard\GraveyardService` | `recordMemorial()`, `prepareHeroRemoval()`, `prepareTrainerRemoval()`, `removeHero()`, `serializeMemorial()` |
+| `App\Service\Graveyard\GraveyardPresenter` | Summary stats and list presentation for Web/API |
+| `App\Service\Hero\HeroDismissalService` | Hero dismissal validation + compensation |
+| `App\Service\Training\TrainerDismissalService` | Trainer dismissal validation + compensation |
+
+---
 
 ## Financial Ledger
 

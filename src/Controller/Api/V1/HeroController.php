@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Service\Hero\HeroDismissalService;
 use App\Service\Hero\HeroService;
@@ -15,6 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/v1/heroes')]
 class HeroController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly HeroService $heroService,
         private readonly HeroDismissalService $heroDismissalService,
@@ -26,7 +29,7 @@ class HeroController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $heroes = $this->heroService->listByTeam($team);
@@ -39,12 +42,12 @@ class HeroController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $hero = $this->heroService->findForTeam($id, $team);
         if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
+            return $this->jsonError('error.hero_not_found', 404);
         }
 
         return $this->json($this->heroService->serialize($hero));
@@ -55,12 +58,12 @@ class HeroController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $hero = $this->heroService->findForTeam($id, $team);
         if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
+            return $this->jsonError('error.hero_not_found', 404);
         }
 
         /** @var array<string, mixed> $body */
@@ -70,7 +73,7 @@ class HeroController extends AbstractController
             try {
                 $this->heroService->rename($hero, (string) $body['name']);
             } catch (\InvalidArgumentException $e) {
-                return $this->json(['error' => $e->getMessage()], 400);
+                return $this->jsonException($e, 400);
             }
         }
 
@@ -82,18 +85,18 @@ class HeroController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $hero = $this->heroService->findForTeam($id, $team);
         if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
+            return $this->jsonError('error.hero_not_found', 404);
         }
 
         try {
             $compensation = $this->heroDismissalService->dismiss($team, $hero);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json([

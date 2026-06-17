@@ -178,7 +178,7 @@ When weekly HQ maintenance exceeds available gold, unpaid amounts accumulate as 
 
 | Phase | Effect |
 |-------|--------|
-| **Warning** | Low gold buffer or outstanding debt; player notified |
+| **Warning** | Outstanding debt; player notified |
 | **Restricted** (≥ 2 weeks) | HQ passive bonuses suspended; upgrades, summoning, and marketplace purchases blocked |
 | **Bankruptcy** (≥ 6 weeks, debt ≥ 4× weekly maintenance, no recovery) | Team released to NPC pool; player cooldown before claiming a new team |
 
@@ -265,7 +265,7 @@ Each race has natural affinities and conflicts with other races, affecting **tea
 | **Hostile (0–20)** | Severe chemistry penalties, significant morale loss, refusal of cooperative actions, reduced combat effectiveness |
 
 **Additional Relationship Mechanics:**
-- **Headquarters Optimization** — Applied bonuses benefit the chosen race and all races with *Positive* relationships (70+)
+- **Arena Adaptation** *(planned)* — Applied bonuses benefit the adapted race and all races with *Positive* relationships (70+)
 - **Relationship Impact** — Values affect hero interactions, group training efficiency, and formation effectiveness
 
 ### Primary Attributes
@@ -321,11 +321,11 @@ Each race has specific age milestones that determine hero performance and lifesp
 | **Minimum Age** | Lowest recruitment age for junior heroes |
 | **Max Junior Age** | Maximum age for junior-tier heroes |
 | **Prime Age Limit** | Maximum age for optimal training efficiency and peak performance |
-| **Death Expectation** | Age threshold where mortality risk begins to increase significantly |
+| **Mortality Threshold** | Age from which permanent death risk escalates after combat deaths |
 
 ### Race Age Milestones
 
-| Race | Min Age | Max Junior Age | Prime Age Limit | Death Expectation |
+| Race | Min Age | Max Junior Age | Prime Age Limit | Mortality Threshold |
 |:---|---:|---:|---:|---:|
 | Human | 16 | 20 | 50 | 80 |
 | Elf | 50 | 80 | 300 | 800 |
@@ -342,8 +342,8 @@ Each race has specific age milestones that determine hero performance and lifesp
 |:---|:---|:---|
 | **Junior** | Between Min Age and Max Junior Age | Recruited at random age in range; possess growth potential; bonus training efficiency |
 | **Prime** | ≤ Prime Age Limit | Full training efficiency, peak performance, no age penalties |
-| **Veteran** | > Prime Age, < Death Expectation | Gradually declining training efficiency, slight stat penalties, accumulated experience bonuses |
-| **Elder** | ≥ Death Expectation | Significantly reduced training efficiency, increased permanent death risk per combat death |
+| **Veteran** | > Prime Age, < Mortality Threshold | Gradually declining training efficiency, slight stat penalties, accumulated experience bonuses |
+| **Elder** | ≥ Mortality Threshold | Significantly reduced training efficiency, increased permanent death risk per combat death |
 
 *Undead do not age naturally; they only age through combat deaths. They use the same milestones as Elves.*
 
@@ -355,10 +355,10 @@ Each race has specific age milestones that determine hero performance and lifesp
 | **Age Accumulation** | Each combat death adds years to the hero's age, *including Undead*. **Multiple deaths in the same match stack** — each subsequent death applies an escalating age penalty *(e.g., 1st death: +1 year, 2nd death: +2 years, 3rd death: +3 years)* |
 | **Mid-Combat Revival** | A hero KO'd during combat can be revived mid-battle by a Light **Resurrection** spell, restoring them to partial HP so they can continue fighting. *This does not prevent the post-match age penalty — each KO still counts as a death for aging purposes* |
 | **Revival Constraints** | **Once per match** — only one Resurrection can be cast per combat. Requires **Light School Mastery Tier 8+** and high INT. The **caster suffers –50% stats** for the remainder of the match (exhaustion). The **revived hero returns at 30% HP and 50% reduced form**, severely limiting their effectiveness for the rest of the battle and subsequent matches |
-| **Mortality Threshold** | Heroes at or beyond Death Expectation face escalating permanent death chance per combat death. Multiple deaths in one match each trigger a separate mortality check |
+| **Mortality Threshold** | Heroes at or beyond Mortality Threshold face escalating permanent death chance per combat death. Multiple deaths in one match each trigger a separate mortality check |
 | **Permanent Death** | Final removal — hero is placed in the Graveyard and cannot return |
 
-> *Example: A Human hero (age 78, Death Expectation 80) dies in combat. Your Light mage (Mastery Tier 8) casts Resurrection — the hero revives at 30% HP with halved form, and the caster loses 50% of their stats for the rest of the match. The revived hero dies again later. No second Resurrection is possible (once per match). Post-match: the hero ages +1 year (1st death) and +2 years (2nd death) = total +3 years, pushing them to age 81 — past Death Expectation and at permanent death risk. The Light mage also carries fatigue into the next match from the casting exhaustion.*
+> *Example: A Human hero (age 78, Mortality Threshold 80) dies in combat. Your Light mage (Mastery Tier 8) casts Resurrection — the hero revives at 30% HP with halved form, and the caster loses 50% of their stats for the rest of the match. The revived hero dies again later. No second Resurrection is possible (once per match). Post-match: the hero ages +1 year (1st death) and +2 years (2nd death) = total +3 years, pushing them to age 81 — past Mortality Threshold and at permanent death risk. The Light mage also carries fatigue into the next match from the casting exhaustion.*
 
 ### Morale System
 
@@ -581,7 +581,7 @@ To train heroes, a player configures a trainer:
 | Modifier | Effect |
 |:---|:---|
 | **Training Facilities** (HQ) | +5–25% efficiency (scales with upgrade level) |
-| **Race Optimization** | Heroes of optimized race and positive relationship races gain +10–20% efficiency |
+| **Arena Adaptation** *(planned)* | Heroes of the adapted race and positive relationship races gain +10–20% training efficiency |
 | **High Morale** | +5–15% training effectiveness |
 | **Team Chemistry** | Training with compatible heroes (positive race relationships) grants efficiency bonus |
 | **Kingdom Modifiers** | Server-specific training speed multipliers |
@@ -910,22 +910,23 @@ Each team has its own **Headquarters** serving as their base of operations, prov
 | **Training Facilities** | Improve hero training efficiency and reduce fatigue accumulation |
 | **Medical Wing** | Faster recovery from injuries and form restoration |
 | **Library/Academy** | Enhances spell learning speed and magic school mastery gains |
-| **Forge/Workshop** | Improves crafting success rates and item durability |
 | **Treasury** | Increases passive gold generation and resource storage capacity |
 | **Barracks** | Hero roster capacity *(starting capacity: **10** heroes; upgrades expand beyond this)* and team morale recovery |
 | **Summoning Chamber** | Recruit junior heroes; time-limited *(e.g., 1 summon per week cycle)*; juniors aged between Min Age and Max Junior Age for their race; upgrading may reduce cooldown or improve quality |
 | **Arena** | Match venue with public seating; upgrading increases audience capacity, ticket revenue, and home advantage bonuses |
 
-### Race Optimization Settings
+### Arena Adaptation Settings
 
-**Racial Affinity** — Choose **1 preferred race** that receives bonuses within team.
+**Racial Affinity** — Choose **1 preferred race** that the arena is adapted for.
+
+> **Currently implemented:** Arena adaptation determines which races appear in the Summoning Chamber pool (see [Summoning System](systems/summoning-system.md)). Training and recovery bonuses below are **planned**, not yet active in gameplay.
 
 | Effect Type | Details |
 |:---|:---|
-| **Positive Effects** *(optimized race + positive relationship races)* | Higher training efficiency, faster form and morale recovery, reduced fatigue accumulation |
+| **Positive Effects** *(adapted race + positive relationship races)* | Higher training efficiency, faster form and morale recovery, reduced fatigue accumulation |
 | **Negative Effects** *(non-positive relationship races)* | Lower training efficiency, slower recovery rates, increased morale decay over time |
 
-> *Strategic Trade-off: Specializing in certain races provides strong bonuses but limits flexibility. A team optimized for Elves benefits Humans and Ents (positive relations) but penalizes Orcs and Undead.*
+> *Strategic Trade-off: Specializing in certain races provides strong bonuses but limits flexibility. A team adapted for Elves benefits Humans and Ents (positive relations) but penalizes Orcs and Undead.*
 
 ### Facility Upgrades
 
@@ -1165,7 +1166,7 @@ The Graveyard is a **permanent repository** for all heroes who have died permane
 
 | Mechanic | Description |
 |:---|:---|
-| **Permanent Death Storage** | When a hero dies permanently *(typically elder heroes at or beyond Death Expectation age)*, they are automatically moved to the Graveyard |
+| **Permanent Death Storage** | When a hero dies permanently *(typically elder heroes at or beyond Mortality Threshold age)*, they are automatically moved to the Graveyard |
 | **Historical Record** | Preserves complete hero information: final stats, level, age at death, team/player association, total battles fought, victories achieved, and cause of death |
 | **No Resurrection** | Heroes in the Graveyard **cannot** be revived or returned to active play |
 | **Memorial Function** | Players can visit the Graveyard to view their fallen heroes and team history |
@@ -1219,6 +1220,9 @@ Supports **player interaction**, strategy discussion, and **community building**
 
 ## 2.17 Crafting System
 
+> [!NOTE]
+> **Deferred feature:** Crafting backend and UI were removed from the codebase. The Forge HQ facility was removed with it. Design is preserved in [future/crafting-system.md](future/crafting-system.md).
+
 ### Concept
 
 - Players craft items from materials using Essence
@@ -1228,11 +1232,11 @@ Supports **player interaction**, strategy discussion, and **community building**
 ### Key Mechanics (to be defined)
 
 - Recipe model: inputs (materials + Essence) → output (item of specific rarity)
-- Success rate calculations (affected by HQ Forge level, Crafting Boost kingdom setting)
+- Success rate calculations (affected by Crafting Boost kingdom setting — Forge facility removed)
 - Crafting queue processing via server ticks
 - Dismantle rules: Essence return rates by item rarity
 
-> *See [systems/crafting-system.md](systems/crafting-system.md) for implementation details.*
+> *See [future/crafting-system.md](future/crafting-system.md) for the deferred design — not implemented.*
 
 ---
 

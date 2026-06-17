@@ -74,6 +74,7 @@
     background-color: color-mix(in srgb, var(--color-surface-base) 80%, transparent);
   }
   .league-table th, .league-table td { @apply py-3 px-4; }
+  .league-table th { cursor: help; }
   .league-table__col--center { @apply text-center; }
   .league-table__col--rank { @apply w-16 text-center; }
   .league-table__col--stat { @apply text-center w-16; }
@@ -143,11 +144,14 @@
     border-bottom: 1px solid var(--color-border);
   }
   .fixture-card {
-    @apply rounded p-4 flex flex-col sm:flex-row items-center justify-between gap-4;
+    @apply rounded p-4 flex flex-col gap-3;
     background-color: var(--color-surface-base);
     border: 1px solid var(--color-border);
   }
   .fixture-card--completed { opacity: 0.8; }
+  .fixture-card__main {
+    @apply flex flex-col sm:flex-row items-center justify-between gap-4;
+  }
   .fixture-card__date { @apply text-xs; color: var(--color-text-muted); }
   .fixture-card__date-day { @apply block font-semibold uppercase text-[9px]; color: var(--color-text-secondary); }
   .fixture-card__matchup { @apply flex items-center justify-center gap-3 text-sm flex-1; }
@@ -167,6 +171,35 @@
     background-color: color-mix(in srgb, var(--color-success-bg) 40%, transparent);
     color: var(--color-success-text);
     border: 1px solid color-mix(in srgb, var(--color-success-border) 20%, transparent);
+  }
+  .fixture-card__meta {
+    @apply flex flex-col items-center sm:items-end shrink-0;
+  }
+  .fixture-card__formation-row {
+    @apply flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-3 w-full;
+    border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  }
+  .fixture-card__formation {
+    @apply text-[10px] py-1 px-2.5 rounded font-medium select-none;
+    border: 1px solid transparent;
+  }
+  .fixture-card__formation--default {
+    background-color: var(--color-surface-overlay);
+    color: var(--color-text-muted);
+    border-color: color-mix(in srgb, var(--color-border) 40%, transparent);
+  }
+  .fixture-card__formation--saved {
+    background-color: color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+    color: var(--color-brand-400);
+    border-color: color-mix(in srgb, var(--color-brand-500) 25%, transparent);
+  }
+  .fixture-card__formation--custom {
+    background-color: color-mix(in srgb, var(--color-warning-bg) 50%, transparent);
+    color: var(--color-warning-text);
+    border-color: color-mix(in srgb, var(--color-warning-border) 30%, transparent);
+  }
+  .fixture-card__formation-btn {
+    @apply whitespace-nowrap w-full sm:w-auto sm:shrink-0;
   }
   .fixture-list { @apply flex flex-col gap-2.5; }
   .fixture-list-scroll { @apply flex flex-col gap-6 max-h-[70vh] overflow-y-auto pr-2; }

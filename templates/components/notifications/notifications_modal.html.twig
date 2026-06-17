@@ -1,0 +1,59 @@
+{# templates/components/notifications/notifications_modal.html.twig #}
+<div data-controller="modal" data-modal-event-name-value="modal:open-notifications" id="notifications-modal">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+
+        <div class="modal-box mail-modal p-8"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="notifications-modal-title">
+
+            <button type="button"
+                    data-action="click->modal#close"
+                    class="modal-close"
+                    aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="text-xl leading-none">✕</span>
+                <span class="sr-only">{{ 'modal.close'|trans }}</span>
+            </button>
+
+            <div class="modal-header modal-header--toolbar">
+                <h2 id="notifications-modal-title" class="modal-header__title">
+                    🔔 {{ 'nav.notifications'|trans }}
+                </h2>
+                <button type="button"
+                        data-action="click->notifications#markAllRead"
+                        data-notifications-target="markAllBtn"
+                        class="btn btn-outline btn--sm">
+                    {{ 'notifications.mark_all_read'|trans }}
+                </button>
+            </div>
+
+            <div class="modal-body mail-modal__body">
+                {% include 'components/ui/alert_box.html.twig' with {
+                    target: 'notifications',
+                    message_target: 'alertMessage',
+                    close_action: 'notifications#hideAlert',
+                    classes: 'mb-2'
+                } %}
+
+                <div class="mail-folder-panel">
+                    <div class="data-table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="data-table__col--center data-table__col--status">{{ 'notifications.col_status'|trans }}</th>
+                                    <th>{{ 'notifications.col_title'|trans }}</th>
+                                    <th>{{ 'notifications.col_type'|trans }}</th>
+                                    <th class="data-table__col--end">{{ 'notifications.col_date'|trans }}</th>
+                                </tr>
+                            </thead>
+                            <tbody data-notifications-target="tableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

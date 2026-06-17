@@ -1,5 +1,5 @@
 {# templates/components/finance/ledger_content.html.twig #}
-<form method="GET" action="{{ ledger_action|default(path('app_economy')) }}" class="finance-ledger__filters filter-form" data-controller="form-auto-submit">
+<form method="GET" action="{{ ledger_action|default(path('app_finance')) }}" class="finance-ledger__filters filter-form" data-controller="form-auto-submit">
     {% if ledger_tab_param|default(true) %}
         <input type="hidden" name="tab" value="ledger">
     {% endif %}

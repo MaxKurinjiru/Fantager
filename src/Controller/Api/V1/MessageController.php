@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Entity\Community\Message;
-use App\Entity\Team\Team;
 use App\Service\Community\CommunityService;
+use App\Service\Community\ForumThreadHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,9 +21,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_PLAYER')]
 class MessageController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly CommunityService $communityService,
+        private readonly ForumThreadHelper $authorHelper,
     ) {
     }
 
@@ -31,17 +35,13 @@ class MessageController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
-        }
 
         $folder = $request->query->get('folder', 'inbox');
 
         if ('sent' === $folder) {
-            $messages = $this->communityService->getSentMessages($team);
+            $messages = $this->communityService->getSentMessages($user);
         } else {
-            $messages = $this->communityService->getInboxMessages($team);
+            $messages = $this->communityService->getInboxMessages($user);
         }
 
         $data = array_map([$this, 'serializeMessage'], $messages);
@@ -54,12 +54,8 @@ class MessageController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
-        }
 
-        return $this->json(['count' => $this->communityService->countUnreadInbox($team)]);
+        return $this->json(['count' => $this->communityService->countUnreadInbox($user)]);
     }
 
     #[Route('/recipients', name: 'api_messages_recipients', methods: ['GET'])]
@@ -67,12 +63,8 @@ class MessageController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
-        }
 
-        return $this->json($this->communityService->getMessageRecipients($team));
+        return $this->json($this->communityService->getMessageRecipients($user));
     }
 
     #[Route('/{id}', name: 'api_messages_show', requirements: ['id' => '\d+'], methods: ['GET'])]
@@ -80,26 +72,20 @@ class MessageController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
-        }
 
         /** @var Message|null $message */
         $message = $this->em->getRepository(Message::class)->find($id);
         if (!$message) {
-            return $this->json(['error' => 'Message not found.'], Response::HTTP_NOT_FOUND);
+            return $this->jsonError('error.message_not_found', 404);
         }
 
-        // Check ownership/permissions
-        $isSender = $message->getSenderTeam() === $team && !$message->isDeletedBySender();
-        $isReceiver = $message->getReceiverTeam() === $team && !$message->isDeletedByReceiver();
+        $isSender = $message->getSenderUser() === $user && !$message->isDeletedBySender();
+        $isReceiver = $message->getReceiverUser() === $user && !$message->isDeletedByReceiver();
 
         if (!$isSender && !$isReceiver) {
-            return $this->json(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
+            return $this->jsonError('error.access_denied', 403);
         }
 
-        // Mark as read if viewing recipient
         if ($isReceiver) {
             $this->communityService->markMessageAsRead($message);
         }
@@ -112,31 +98,28 @@ class MessageController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
-        }
 
         $content = json_decode($request->getContent(), true) ?? [];
-        $receiverTeamId = (int) ($content['receiver_team_id'] ?? 0);
+        $receiverUserId = (int) ($content['receiver_user_id'] ?? 0);
         $subject = trim($content['subject'] ?? '');
         $body = trim($content['body'] ?? '');
 
-        if (0 === $receiverTeamId || '' === $subject || '' === $body) {
-            return $this->json(['error' => 'Receiver team ID, subject, and body are required.'], Response::HTTP_BAD_REQUEST);
+        if (0 === $receiverUserId || '' === $subject || '' === $body) {
+            return $this->jsonError('error.message_fields_required', 400);
         }
 
-        $receiver = $this->em->getRepository(Team::class)->find($receiverTeamId);
+        /** @var User|null $receiver */
+        $receiver = $this->em->getRepository(User::class)->find($receiverUserId);
         if (!$receiver) {
-            return $this->json(['error' => 'Recipient team not found.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.recipient_not_found', 400);
         }
 
         try {
-            $message = $this->communityService->sendMessage($team, $receiver, $subject, $body);
+            $message = $this->communityService->sendMessage($user, $receiver, $subject, $body);
 
             return $this->json($this->serializeMessage($message), Response::HTTP_CREATED);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->jsonException($e, 400);
         }
     }
 
@@ -145,17 +128,13 @@ class MessageController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
-        }
 
         try {
-            $this->communityService->deleteMessage($team, $id);
+            $this->communityService->deleteMessage($user, $id);
 
             return $this->json(['success' => true]);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->jsonException($e, 400);
         }
     }
 
@@ -168,16 +147,14 @@ class MessageController extends AbstractController
             'body' => $message->getBody(),
             'sentAt' => $message->getSentAt()->format(\DateTimeInterface::ATOM),
             'readAt' => $message->getReadAt()?->format(\DateTimeInterface::ATOM),
-            'sender_team' => [
-                'id' => $message->getSenderTeam()->getId(),
-                'name' => $message->getSenderTeam()->getName(),
-                'colors' => $message->getSenderTeam()->getColors(),
-            ],
-            'receiver_team' => [
-                'id' => $message->getReceiverTeam()->getId(),
-                'name' => $message->getReceiverTeam()->getName(),
-                'colors' => $message->getReceiverTeam()->getColors(),
-            ],
+            'sender' => $this->authorHelper->serializeAuthor(
+                $message->getSenderUser(),
+                $message->getSenderTeam(),
+            ),
+            'receiver' => $this->authorHelper->serializeAuthor(
+                $message->getReceiverUser(),
+                $message->getReceiverTeam(),
+            ),
         ];
     }
 }

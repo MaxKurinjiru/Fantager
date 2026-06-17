@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Entity\Team\FinancialRecord;
 use App\Repository\Team\FinancialRecordRepository;
 use App\Service\Economy\FinancialCrisisService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -18,6 +18,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_PLAYER')]
 class FinanceController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly FinancialRecordRepository $recordRepository,
         private readonly FinancialCrisisService $financialCrisisService,
@@ -31,7 +33,7 @@ class FinanceController extends AbstractController
         $user = $this->getUser();
         $team = $user->getTeam();
         if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.no_team', 400);
         }
 
         return $this->json($this->financialCrisisService->getStatus($team));
@@ -44,7 +46,7 @@ class FinanceController extends AbstractController
         $user = $this->getUser();
         $team = $user->getTeam();
         if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.no_team', 400);
         }
 
         $records = $this->recordRepository->findRecentByTeam($team, 10);

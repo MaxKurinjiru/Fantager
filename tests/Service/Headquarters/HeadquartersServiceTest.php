@@ -58,7 +58,7 @@ class HeadquartersServiceTest extends TestCase
             ->willReturn($hq);
 
         $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Race optimization is currently locked.');
+        $this->expectExceptionMessage('Arena adaptation is currently locked.');
 
         $this->service->updateRaceOptimization($team, 'orc');
     }

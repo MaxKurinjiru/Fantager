@@ -31,7 +31,7 @@
                                     <span class="text-2xl select-none">✨</span>
                                     <div>
                                         <h4 class="spell-slot__name">{{ hs.spell.name }}</h4>
-                                        <p class="spell-slot__meta">Tier {{ hs.spell.tier }} &bull; {{ ('school.' ~ hs.spell.school.value)|trans }}</p>
+                                        <p class="spell-slot__meta">{{ 'spells.tier_label'|trans({'%tier%': hs.spell.tier}) }} &bull; {{ ('school.' ~ hs.spell.school.value)|trans }}</p>
                                     </div>
                                 </div>
                                 

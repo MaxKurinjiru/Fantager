@@ -1,0 +1,49 @@
+{% extends 'layouts/public.html.twig' %}
+
+{% block title %}{{ 'news.title'|trans }} — Fantager{% endblock %}
+
+{% block guest_body %}
+<div class="news-page">
+    <div class="news-page__header">
+        <h1 class="news-page__title">{{ 'news.title'|trans }}</h1>
+        <a href="{{ path('app_home') }}" class="news-page__back">{{ 'news.back_home'|trans }}</a>
+    </div>
+
+    {% if articles is empty %}
+        <div class="news-empty">
+            <p class="news-empty__text">{{ 'news.empty'|trans }}</p>
+        </div>
+    {% else %}
+        <div class="news-list">
+            {% for article in articles %}
+                <article class="news-article">
+                    <header class="news-article__header">
+                        <h2 class="news-article__title">{{ article.title }}</h2>
+                        <div class="news-article__meta">
+                            <time datetime="{{ article.publishedAt|date('c') }}">{{ article.publishedAt|date('Y-m-d H:i') }}</time>
+                            {% if article.kingdom %}
+                                <span class="news-article__kingdom">{{ article.kingdom.name }}</span>
+                            {% else %}
+                                <span class="news-article__kingdom">{{ 'news.global'|trans }}</span>
+                            {% endif %}
+                        </div>
+                    </header>
+                    <div class="news-article__content">{{ article.content|nl2br }}</div>
+                </article>
+            {% endfor %}
+        </div>
+
+        {% if total_pages > 1 %}
+            <nav class="news-pagination" aria-label="{{ 'news.pagination'|trans }}">
+                {% if page > 1 %}
+                    <a href="{{ path('app_news', { page: page - 1 }) }}" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</a>
+                {% endif %}
+                <span class="news-pagination__info">{{ 'news.page_info'|trans({ '%page%': page, '%total%': total_pages }) }}</span>
+                {% if page < total_pages %}
+                    <a href="{{ path('app_news', { page: page + 1 }) }}" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

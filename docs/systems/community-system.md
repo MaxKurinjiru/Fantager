@@ -9,12 +9,12 @@ Purpose: Document leaderboards, private messages, forums, content moderation, an
 ## Overview
 
 The community system covers:
-1. **Private Messages** — team-to-team inbox/outbox within the same kingdom.
+1. **Private Messages** — player-to-player inbox/outbox within the same kingdom.
 2. **Forum** — kingdom-scoped threaded discussions with categories.
 3. **News Articles** — kingdom-scoped or global announcements.
 4. **Leaderboards & Public Profiles** — planned for a future phase.
 
-All community interactions are **kingdom-scoped**: teams can only send messages to or create threads for teams within their own kingdom.
+All community interactions are **kingdom-scoped**: players can only send messages to or create threads for players within their own kingdom.
 
 ---
 
@@ -24,8 +24,10 @@ All community interactions are **kingdom-scoped**: teams can only send messages 
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `sender_team_id` | FK → Team | Sending team |
-| `receiver_team_id` | FK → Team | Receiving team |
+| `sender_user_id` | FK → User | Sending player |
+| `receiver_user_id` | FK → User | Receiving player |
+| `sender_team_id` | FK → Team (nullable) | Sender's team at send time (snapshot) |
+| `receiver_team_id` | FK → Team (nullable) | Receiver's team at send time (snapshot) |
 | `subject` | string | Message subject (filtered) |
 | `body` | text | Message body (filtered) |
 | `read_at` | datetime (nullable) | When the receiver first read the message |
@@ -34,8 +36,9 @@ All community interactions are **kingdom-scoped**: teams can only send messages 
 | `deleted_by_receiver` | bool | Receiver has soft-deleted the message |
 
 ### Rules
-- A team cannot send a message to itself.
+- A player cannot send a message to themselves.
 - Sender and receiver must belong to the same kingdom.
+- Team references are **snapshots** captured at send time; they do not change if either player later switches teams.
 - All subject and body content passes through `ContentFilterService` before being stored.
 - Messages are **soft-deleted**: each party can delete independently. When both parties have deleted the message, it is permanently removed from the database.
 - Reading a message (via `GET /api/v1/messages/{id}`) sets `read_at` to the current timestamp.
@@ -46,8 +49,9 @@ All community interactions are **kingdom-scoped**: teams can only send messages 
 |--------|------|---------|
 | GET | `/api/v1/messages` | Inbox (excludes deleted by receiver) |
 | GET | `/api/v1/messages/{id}` | Read message (sets `read_at`) |
-| POST | `/api/v1/messages` | Send a message |
-| DELETE | `/api/v1/messages/{id}` | Soft-delete for the requesting team |
+| POST | `/api/v1/messages` | Send a message (`receiver_user_id`, `subject`, `body`) |
+| GET | `/api/v1/messages/recipients` | List eligible recipients in the same kingdom |
+| DELETE | `/api/v1/messages/{id}` | Soft-delete for the requesting player |
 
 ---
 
@@ -62,7 +66,8 @@ All community interactions are **kingdom-scoped**: teams can only send messages 
 | `kingdom_id` | FK → Kingdom | Kingdom the thread belongs to |
 | `category` | string | Thread category (free-form string, client-defined) |
 | `title` | string | Thread title (filtered) |
-| `author_team_id` | FK → Team | Team that created the thread |
+| `author_user_id` | FK → User | Player who created the thread |
+| `author_team_id` | FK → Team (nullable) | Author's team at creation time (snapshot) |
 | `created_at` | datetime | Creation timestamp |
 | `is_pinned` | bool | Whether the thread is pinned (admin use) |
 | `is_locked` | bool | Locked threads do not accept new replies |
@@ -72,12 +77,14 @@ All community interactions are **kingdom-scoped**: teams can only send messages 
 | Field | Type | Description |
 |-------|------|-------------|
 | `thread_id` | FK → ForumThread | Parent thread |
-| `author_team_id` | FK → Team | Team that wrote the post |
+| `author_user_id` | FK → User | Player who wrote the post |
+| `author_team_id` | FK → Team (nullable) | Author's team at post time (snapshot) |
 | `body` | text | Post content (filtered) |
 | `created_at` | datetime | Post timestamp |
 
 ### Rules
-- Teams can only create threads and posts in their own kingdom's board.
+- Players can only create threads and posts in their own kingdom's board.
+- Authors are identified by `User`; the optional team snapshot is shown in the UI when present.
 - New threads automatically create the **first post** from the author's body text.
 - Replies to a locked thread are rejected with a `DomainException`.
 - **Thread locking** is available to the thread **author only** via `POST /api/v1/forum/threads/{id}/lock` with `{"lock": true}` or `{"lock": false}`.
@@ -87,7 +94,7 @@ All community interactions are **kingdom-scoped**: teams can only send messages 
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/api/v1/forum/threads` | List threads for team's kingdom (optional `?category=` filter) |
+| GET | `/api/v1/forum/threads` | List threads for player's kingdom (optional `?category=` filter) |
 | POST | `/api/v1/forum/threads` | Create thread (`title`, `body`, `category` required) |
 | GET | `/api/v1/forum/threads/{id}` | Thread detail including all posts |
 | POST | `/api/v1/forum/threads/{id}/posts` | Reply to a thread (`body` required) |
@@ -125,6 +132,15 @@ The current blacklist contains Czech and English profanities. The list is define
 
 ## News Articles
 
+### Implementation Status
+
+| Layer | Status |
+|-------|--------|
+| **Entity** | Implemented — `App\Entity\Community\NewsArticle` (`news_article` table) |
+| **Repository** | Implemented — `NewsArticleRepository` (published listing, pagination) |
+| **Public Web UI** | Implemented — `GET /news` (`Web\NewsController`) |
+| **Admin / CMS** | Not implemented — articles must be seeded via DB or future admin UI |
+
 ### Model (`NewsArticle` entity)
 
 | Field | Type | Description |
@@ -132,6 +148,12 @@ The current blacklist contains Czech and English profanities. The list is define
 | `kingdom_id` | FK → Kingdom (nullable) | Kingdom scope; `null` = global article |
 | `title` | string | Article title |
 | `content` | text | Article body |
-| `published_at` | datetime | Publication timestamp |
+| `published_at` | datetime | Publication timestamp (articles with future `published_at` are hidden) |
 
-> A public news archive page (`GET /news`) and any management UI are planned but not yet implemented.
+### Public routes
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/news` | Paginated news archive (full content per item; no detail page) |
+
+Homepage links to the archive via `homepage.news_archive_link`. Guest navbar includes a News link.

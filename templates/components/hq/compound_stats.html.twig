@@ -15,12 +15,6 @@
         <span class="hq-stats-bar__item-value hq-stats-bar__item-value--gold" title="{{ 'hq.weekly_maintenance_hint'|trans }}">
             🪙 {{ maintenance.total|number_format(0, '.', ' ') }}
         </span>
-        <span class="hq-stats-bar__item-detail">
-            {{ 'hq.weekly_maintenance_breakdown'|trans({
-                '%hq%': maintenance.hq|number_format(0, '.', ' '),
-                '%facilities%': maintenance.facilities|number_format(0, '.', ' ')
-            }) }}
-        </span>
     </div>
     <div class="hq-stats-bar__divider" aria-hidden="true"></div>
     <div class="hq-stats-bar__item">

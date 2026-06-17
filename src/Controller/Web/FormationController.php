@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
+use App\Enum\HeroStatus;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Formation\FixtureFormationService;
+use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,6 +23,7 @@ class FormationController extends AbstractController
         private readonly HeroRepository $heroRepository,
         private readonly FormationRepository $formationRepository,
         private readonly FixtureFormationService $fixtureFormationService,
+        private readonly UserMessageTranslator $userMessages,
     ) {
     }
 
@@ -32,12 +35,15 @@ class FormationController extends AbstractController
         $team = $user->getTeam();
 
         if (!$team) {
-            $this->addFlash('error', 'No team assigned to your account.');
+            $this->addFlash('error', $this->userMessages->trans('error.no_team'));
 
             return $this->redirectToRoute('app_home');
         }
 
-        $heroes = $this->heroRepository->findBy(['team' => $team]);
+        $heroes = array_values(array_filter(
+            $this->heroRepository->findCombatantsByTeam($team),
+            static fn ($hero) => HeroStatus::Dead !== $hero->getStatus(),
+        ));
         $formations = $this->formationRepository->findSavedByTeam($team);
 
         $fixture = null;

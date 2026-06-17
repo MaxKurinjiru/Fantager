@@ -18,7 +18,7 @@
     
     <div>
         {# Card Header #}
-        <div class="hero-card__header pr-16">
+        <div class="hero-card__header">
             <div class="flex items-center gap-3">
                 {% include 'components/hero/avatar.html.twig' with { race: hero.race } %}
                 <div>
@@ -30,11 +30,6 @@
             </div>
         </div>
 
-        {# Status Badge #}
-        <div class="absolute top-4 right-4">
-            {% include 'components/hero/status_badge.html.twig' with { status: hero.status } %}
-        </div>
-
         {# Secondary Attributes List #}
         <div class="hero-stats-box">
             <div>
@@ -42,11 +37,11 @@
                 <span class="hero-attr-cell__value" title="{{ 'heroes.age_phase.phase'|trans({'%phase%': ('heroes.age_phase.' ~ phase|lower)|trans}) }}">{{ hero.age }} {{ p_icon }}</span>
             </div>
             <div>
-                <span class="hero-attr-cell__label">{{ 'heroes.combat_form'|trans }}</span>
+                <span class="hero-attr-cell__label" title="{{ 'heroes.combat_form'|trans }}">{{ 'heroes.combat_form_short'|trans }}</span>
                 <span class="hero-attr-cell__value">{{ hero.form }}%</span>
             </div>
             <div>
-                <span class="hero-attr-cell__label">{{ 'heroes.fatigue'|trans }}</span>
+                <span class="hero-attr-cell__label" title="{{ 'heroes.fatigue'|trans }}">{{ 'heroes.fatigue_short'|trans }}</span>
                 <span class="hero-attr-cell__value">{{ hero.fatigue }}%</span>
             </div>
         </div>
@@ -60,11 +55,6 @@
         <a href="{{ path('app_heroes_detail', {id: hero.id}) }}" class="btn btn-outline btn--sm flex-1">
             {{ 'heroes.inspect'|trans }}
         </a>
-        <a href="{{ path('app_heroes_detail', { id: hero.id, tab: 'training' }) }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.train_hero'|trans }}" aria-label="{{ 'heroes.train_hero'|trans }}">
-            🏋️
-        </a>
-        <a href="{{ path('app_heroes_detail', { id: hero.id, tab: 'equipment' }) }}" class="btn btn-ghost btn--sm p-2" title="{{ 'heroes.equip_hero'|trans }}" aria-label="{{ 'heroes.equip_hero'|trans }}">
-            🎒
-        </a>
+        {% include 'components/hero/status_badge.html.twig' with { status: hero.status } %}
     </div>
 </div>

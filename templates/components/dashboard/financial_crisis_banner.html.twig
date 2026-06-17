@@ -58,7 +58,7 @@
                 {% endif %}
 
                 <div class="financial-crisis-banner__actions">
-                    <a href="{{ path('app_economy', { tab: 'sell' }) }}" class="btn btn-outline btn--sm">
+                    <a href="{{ path('app_marketplace', { tab: 'sell' }) }}" class="btn btn-outline btn--sm">
                         {{ 'financial_crisis.action_sell'|trans }}
                     </a>
                     <a href="{{ path('app_hq') }}" class="btn btn-outline btn--sm">
@@ -67,7 +67,7 @@
                     <a href="{{ path('app_heroes') }}" class="btn btn-outline btn--sm">
                         {{ 'financial_crisis.action_dismiss'|trans }}
                     </a>
-                    <a href="{{ path('app_economy', { tab: 'ledger' }) }}" class="btn btn-ghost btn--sm">
+                    <a href="{{ path('app_finance') }}" class="btn btn-ghost btn--sm">
                         {{ 'financial_crisis.action_ledger'|trans }}
                     </a>
                 </div>

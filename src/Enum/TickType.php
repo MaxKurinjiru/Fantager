@@ -12,6 +12,7 @@ enum TickType: string
     case WeeklyTraining = 'weekly_training';
     case SeasonTransition = 'season_transition';
     case WeeklyReset = 'weekly_reset';
+    /** Arena adaptation tick (Sunday 09:30). Persisted as `race_optimization`. */
     case RaceOptimization = 'race_optimization';
     case InactiveRegistrationCleanup = 'inactive_registration_cleanup';
     case InactivePlayerCleanup = 'inactive_player_cleanup';

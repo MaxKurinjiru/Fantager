@@ -3,133 +3,30 @@
 {% block title %}{{ 'finance.title'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="finance-ledger page-shell">
-    {# --- Header Section --- #}
+<div class="finance-ledger page-shell space-y-6">
+    {% set right_content %}
+        <div class="treasury-badge">
+            <span class="treasury-badge__label">{{ 'dashboard.treasury'|trans }}:</span>
+            <span class="treasury-badge__value">🪙 {{ team.gold|number_format(0, '.', ' ') }}</span>
+        </div>
+    {% endset %}
+
     {% include 'components/ui/page_header.html.twig' with {
         title: 'finance.title',
-        subtitle: 'finance.subtitle'
+        subtitle: 'finance.subtitle',
+        right_content: right_content
     } %}
 
-    {# --- Filters and Sorting Bar --- #}
-    <form method="GET" action="{{ path('app_finance') }}" class="finance-ledger__filters filter-form" data-controller="form-auto-submit">
-        <div class="filter-form__fields">
-            {# Type Filter #}
-            <div>
-                <label for="finance-type-filter" class="sr-only">{{ 'finance.filter_type'|trans }}</label>
-                <select id="finance-type-filter" name="type" data-action="change->form-auto-submit#submit" class="form-input">
-                    <option value="">{{ 'finance.all_types'|trans }}</option>
-                    {% for type in types %}
-                        <option value="{{ type.value }}" {% if current_type == type.value %}selected{% endif %}>
-                            {{ ('finance.type_' ~ type.value)|trans }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
+    {% include 'components/dashboard/financial_crisis_banner.html.twig' with { team: team } %}
 
-            {# Actor Filter #}
-            <div>
-                <label for="finance-actor-filter" class="sr-only">{{ 'finance.filter_actor'|trans }}</label>
-                <select id="finance-actor-filter" name="actor" data-action="change->form-auto-submit#submit" class="form-input">
-                    <option value="">{{ 'finance.all_actors'|trans }}</option>
-                    {% for actor in actors %}
-                        <option value="{{ actor.value }}" {% if current_actor == actor.value %}selected{% endif %}>
-                            {{ ('finance.actor_' ~ actor.value)|trans }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
+    {% include 'components/finance/summary_stats.html.twig' %}
 
-        {# Sort Selector #}
-        <div class="filter-form__sort">
-            <label for="finance-sort-by" class="filter-form__sort-label">{{ 'summoning.sort_by'|trans }}</label>
-            <select id="finance-sort-by" name="sort" data-action="change->form-auto-submit#submit" class="form-input">
-                <option value="date-desc" {% if current_sort == 'date-desc' %}selected{% endif %}>{{ 'finance.sort_date_desc'|trans }}</option>
-                <option value="date-asc" {% if current_sort == 'date-asc' %}selected{% endif %}>{{ 'finance.sort_date_asc'|trans }}</option>
-                <option value="amount-desc" {% if current_sort == 'amount-desc' %}selected{% endif %}>{{ 'finance.sort_amount_desc'|trans }}</option>
-                <option value="amount-asc" {% if current_sort == 'amount-asc' %}selected{% endif %}>{{ 'finance.sort_amount_asc'|trans }}</option>
-            </select>
-        </div>
-    </form>
-
-    {# --- Ledger Table --- #}
-    <div class="finance-ledger__table-container">
-        {% if records|length > 0 %}
-            <div class="overflow-x-auto">
-                <table class="finance-ledger-table">
-                    <thead>
-                        <tr>
-                            <th class="finance-ledger-table__cell">{{ 'finance.col_type'|trans }}</th>
-                            <th class="finance-ledger-table__cell">{{ 'finance.col_actor'|trans }}</th>
-                            <th class="finance-ledger-table__cell">{{ 'finance.col_changes'|trans }}</th>
-                            <th class="finance-ledger-table__cell">{{ 'finance.col_context'|trans }}</th>
-                            <th class="finance-ledger-table__cell finance-ledger-table__cell--right">{{ 'finance.col_date'|trans }}</th>
-                        </tr>
-                    </thead>
-                    <tbody >
-                        {% for item in records %}
-                            <tr class="finance-ledger-table__row">
-                                <td class="p-4 font-semibold">
-                                    {{ ('finance.type_' ~ item.type.value)|trans }}
-                                </td>
-                                <td class="finance-ledger-table__cell">
-                                    <span class="finance-actor-badge finance-actor-badge--{{ item.actor.value }}">
-                                        {{ ('finance.actor_' ~ item.actor.value)|trans }}
-                                    </span>
-                                </td>
-                                <td class="finance-ledger-table__cell">
-                                    <div class="finance-changes">
-                                        {% if item.goldChange != 0 %}
-                                            <span class="finance-changes__item {{ item.goldChange > 0 ? 'finance-changes__item--positive' : 'finance-changes__item--negative' }}">
-                                                {{ item.goldChange > 0 ? '+' : '' }}{{ item.goldChange|number_format(0, '.', ' ') }} 🪙
-                                            </span>
-                                        {% endif %}
-                                        
-                                        {% set essences = {
-                                            'common': item.essenceCommonChange,
-                                            'uncommon': item.essenceUncommonChange,
-                                            'rare': item.essenceRareChange,
-                                            'epic': item.essenceEpicChange,
-                                            'legendary': item.essenceLegendaryChange,
-                                            'mythic': item.essenceMythicChange
-                                        } %}
-                                        {% for rarity, change in essences %}
-                                            {% if change != 0 %}
-                                                <span class="finance-changes__item {{ change > 0 ? 'finance-changes__item--positive' : 'finance-changes__item--negative' }} finance-changes__item--essence-{{ rarity }}">
-                                                    {{ change > 0 ? '+' : '' }}{{ change|number_format(0, '.', ' ') }} ✨ ({{ ('inventory.rarity_' ~ rarity)|trans }})
-                                                </span>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </td>
-                                <td class="finance-ledger-table__cell">
-                                    {% if item.context is not empty %}
-                                        <div class="finance-context-tags">
-                                            {% for k, v in item.context %}
-                                                <span class="finance-context-tag">
-                                                    {{ k }}: {{ v }}
-                                                </span>
-                                            {% endfor %}
-                                        </div>
-                                    {% else %}
-                                        <span class="text-text-muted italic">-</span>
-                                    {% endif %}
-                                </td>
-                                <td class="p-4 text-right text-text-secondary text-xs whitespace-nowrap">
-                                    {{ item.createdAt|date('Y-m-d H:i:s') }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="finance-ledger__empty">
-                <span class="finance-ledger__empty-icon">📭</span>
-                <p>{{ 'finance.no_records'|trans }}</p>
-            </div>
-        {% endif %}
-    </div>
+    <section class="finance-ledger__section" aria-label="{{ 'finance.ledger_title'|trans }}">
+        <h2 class="finance-ledger__section-title">{{ 'finance.ledger_title'|trans }}</h2>
+        {% include 'components/finance/ledger_content.html.twig' with {
+            ledger_action: path('app_finance'),
+            ledger_tab_param: false
+        } %}
+    </section>
 </div>
 {% endblock %}
-

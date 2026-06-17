@@ -27,8 +27,8 @@ export default class extends Controller {
         }
         if (this.hasPriceLabelTarget) {
             this.priceLabelTarget.textContent = isAuction
-                ? (this.priceLabelAuctionValue || 'Starting bid')
-                : (this.priceLabelBuyNowValue || 'Price');
+                ? this.priceLabelAuctionValue
+                : this.priceLabelBuyNowValue;
         }
     }
 
@@ -39,7 +39,11 @@ export default class extends Controller {
 
         const message = this.hasConfirmSellValue
             ? this.confirmSellValue
-            : 'List this hero on the marketplace?';
+            : '';
+
+        if (!message) {
+            return;
+        }
 
         if (!window.confirm(message)) {
             return;
@@ -78,7 +82,7 @@ export default class extends Controller {
             this.showAlert('success', this.successSellValue);
 
             setTimeout(() => {
-                window.location.href = '/app/economy?tab=mylistings';
+                window.location.href = '/app/marketplace?tab=mylistings';
             }, 1200);
         } catch (error) {
             this.showAlert('error', error.message);

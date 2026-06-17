@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity\Community;
 
+use App\Entity\Auth\User;
 use App\Entity\Team\Team;
 use App\Repository\Community\MessageRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -19,11 +20,19 @@ class Message
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private Team $senderTeam;
+    private User $senderUser;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private Team $receiverTeam;
+    private User $receiverUser;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Team $senderTeam = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Team $receiverTeam = null;
 
     #[ORM\Column(length: 200)]
     private string $subject;
@@ -53,24 +62,48 @@ class Message
         return $this->id;
     }
 
-    public function getSenderTeam(): Team
+    public function getSenderUser(): User
+    {
+        return $this->senderUser;
+    }
+
+    public function setSenderUser(User $senderUser): static
+    {
+        $this->senderUser = $senderUser;
+
+        return $this;
+    }
+
+    public function getReceiverUser(): User
+    {
+        return $this->receiverUser;
+    }
+
+    public function setReceiverUser(User $receiverUser): static
+    {
+        $this->receiverUser = $receiverUser;
+
+        return $this;
+    }
+
+    public function getSenderTeam(): ?Team
     {
         return $this->senderTeam;
     }
 
-    public function setSenderTeam(Team $senderTeam): static
+    public function setSenderTeam(?Team $senderTeam): static
     {
         $this->senderTeam = $senderTeam;
 
         return $this;
     }
 
-    public function getReceiverTeam(): Team
+    public function getReceiverTeam(): ?Team
     {
         return $this->receiverTeam;
     }
 
-    public function setReceiverTeam(Team $receiverTeam): static
+    public function setReceiverTeam(?Team $receiverTeam): static
     {
         $this->receiverTeam = $receiverTeam;
 

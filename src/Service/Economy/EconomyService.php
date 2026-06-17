@@ -8,6 +8,7 @@ use App\Entity\Team\FinancialRecord;
 use App\Entity\Team\Team;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
+use App\Exception\UserFacingException;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -40,7 +41,7 @@ class EconomyService
         }
 
         if ($team->getGold() < $amount) {
-            throw new \DomainException(sprintf('Insufficient gold. Required: %d, available: %d.', $amount, $team->getGold()));
+            throw new UserFacingException('error.insufficient_gold', ['%required%' => $amount, '%available%' => $team->getGold()]);
         }
 
         $team->setGold($team->getGold() - $amount);
@@ -150,42 +151,42 @@ class EconomyService
         switch (strtolower($rarity)) {
             case 'common':
                 if ($team->getEssenceCommon() < $amount) {
-                    throw new \DomainException('Insufficient common essence.');
+                    throw new UserFacingException('error.insufficient_common_essence');
                 }
                 $team->setEssenceCommon($team->getEssenceCommon() - $amount);
                 $common = -$amount;
                 break;
             case 'uncommon':
                 if ($team->getEssenceUncommon() < $amount) {
-                    throw new \DomainException('Insufficient uncommon essence.');
+                    throw new UserFacingException('error.insufficient_uncommon_essence');
                 }
                 $team->setEssenceUncommon($team->getEssenceUncommon() - $amount);
                 $uncommon = -$amount;
                 break;
             case 'rare':
                 if ($team->getEssenceRare() < $amount) {
-                    throw new \DomainException('Insufficient rare essence.');
+                    throw new UserFacingException('error.insufficient_rare_essence');
                 }
                 $team->setEssenceRare($team->getEssenceRare() - $amount);
                 $rare = -$amount;
                 break;
             case 'epic':
                 if ($team->getEssenceEpic() < $amount) {
-                    throw new \DomainException('Insufficient epic essence.');
+                    throw new UserFacingException('error.insufficient_epic_essence');
                 }
                 $team->setEssenceEpic($team->getEssenceEpic() - $amount);
                 $epic = -$amount;
                 break;
             case 'legendary':
                 if ($team->getEssenceLegendary() < $amount) {
-                    throw new \DomainException('Insufficient legendary essence.');
+                    throw new UserFacingException('error.insufficient_legendary_essence');
                 }
                 $team->setEssenceLegendary($team->getEssenceLegendary() - $amount);
                 $legendary = -$amount;
                 break;
             case 'mythic':
                 if ($team->getEssenceMythic() < $amount) {
-                    throw new \DomainException('Insufficient mythic essence.');
+                    throw new UserFacingException('error.insufficient_mythic_essence');
                 }
                 $team->setEssenceMythic($team->getEssenceMythic() - $amount);
                 $mythic = -$amount;

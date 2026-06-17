@@ -9,6 +9,7 @@ use App\Entity\Team\Team;
 use App\Entity\Team\TeamSummonHistory;
 use App\Enum\Race;
 use App\Enum\RoyalTreasuryContributionSource;
+use App\Exception\UserFacingException;
 use App\Service\Config\RaceConfig;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
@@ -60,7 +61,14 @@ class SummoningService
     /**
      * Returns summoning availability status for the team.
      *
-     * @return array{available: bool, reason: string|null, gold_cost: int, summons_used: int, summons_max: int}
+     * @return array{
+     *     available: bool,
+     *     reason: string|null,
+     *     gold_cost: int,
+     *     summons_used: int,
+     *     summons_max: int,
+     *     reason_parameters?: array<string, int|string|float>
+     * }
      */
     public function getStatus(Team $team): array
     {
@@ -73,7 +81,7 @@ class SummoningService
         if ($heroCount >= $rosterLimit) {
             return [
                 'available' => false,
-                'reason' => 'Roster is full.',
+                'reason' => 'error.summoning_roster_full',
                 'gold_cost' => $cost,
                 'summons_used' => $used,
                 'summons_max' => $maxSummons,
@@ -83,7 +91,7 @@ class SummoningService
         if ($used >= $maxSummons) {
             return [
                 'available' => false,
-                'reason' => 'Summoning limit reached for this cycle.',
+                'reason' => 'error.summoning_limit_reached',
                 'gold_cost' => $cost,
                 'summons_used' => $used,
                 'summons_max' => $maxSummons,
@@ -92,6 +100,15 @@ class SummoningService
 
         try {
             $this->financialCrisisService->assertSpendingAllowed($team, 'summon');
+        } catch (UserFacingException $e) {
+            return [
+                'available' => false,
+                'reason' => $e->getTranslationKey(),
+                'reason_parameters' => $e->getParameters(),
+                'gold_cost' => $cost,
+                'summons_used' => $used,
+                'summons_max' => $maxSummons,
+            ];
         } catch (\DomainException $e) {
             return [
                 'available' => false,
@@ -105,7 +122,7 @@ class SummoningService
         if ($team->getGold() < $cost) {
             return [
                 'available' => false,
-                'reason' => sprintf('Insufficient gold. Required: %d, available: %d.', $cost, $team->getGold()),
+                'reason' => 'error.summoning_insufficient_gold',
                 'gold_cost' => $cost,
                 'summons_used' => $used,
                 'summons_max' => $maxSummons,
@@ -121,6 +138,7 @@ class SummoningService
         ];
     }
 
+    /** Arena adaptation for summoning — reads HQ `race_optimization`. */
     public function getArenaRaceTheme(Team $team): ?Race
     {
         $hq = $this->em->getRepository(\App\Entity\Headquarters\Headquarters::class)->findOneBy(['team' => $team]);
@@ -128,7 +146,7 @@ class SummoningService
             return null;
         }
 
-        // Read HQ raceOptimization directly
+        // Active arena adaptation stored in HQ `race_optimization`.
         $opt = $hq->getRaceOptimization();
         if (is_string($opt)) {
             return Race::tryFrom($opt);
@@ -170,7 +188,7 @@ class SummoningService
     }
 
     /**
-     * Summon a new hero for the team, picking their race based on Arena optimization and relationships.
+     * Summon a new hero for the team, picking their race based on arena adaptation and relationships.
      *
      * @throws \DomainException when gold is insufficient, cycle limit is reached, or no compatible race is available
      */
@@ -179,12 +197,12 @@ class SummoningService
         $rosterLimit = $this->hqService->getRosterLimit($team);
         $heroCount = $this->em->getRepository(Hero::class)->count(['team' => $team]);
         if ($heroCount >= $rosterLimit) {
-            throw new \DomainException('Roster is full.');
+            throw new UserFacingException('error.summoning_roster_full');
         }
 
         $maxSummons = (int) max(1, round(self::MAX_SUMMONS_PER_CYCLE * (float) $team->getKingdom()->getGameSpeed()));
         if ($team->getSummonsThisCycle() >= $maxSummons) {
-            throw new \DomainException('Summoning limit reached for this cycle.');
+            throw new UserFacingException('error.summoning_limit_reached');
         }
 
         $this->financialCrisisService->assertSpendingAllowed($team, 'summon');
@@ -206,7 +224,7 @@ class SummoningService
 
         $compatibleRaces = $this->getCompatibleRacesForTeam($team);
         if ([] === $compatibleRaces) {
-            throw new \DomainException('No compatible races found for summoning.');
+            throw new UserFacingException('error.summoning_no_compatible_races');
         }
 
         $race = $compatibleRaces[array_rand($compatibleRaces)];

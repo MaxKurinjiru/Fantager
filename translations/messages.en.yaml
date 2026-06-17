@@ -23,11 +23,13 @@ nav:
   economy: Economy
   settings: Settings
   toggle_menu: Toggle menu
-  finance: Ledger
+  finance: Team overview
   community: Community
   mail: Player Mail
+  notifications: Notifications
   calendar: Calendar
   arena: Arena
+  graveyard: Graveyard
 
 modal:
   close: Close
@@ -79,12 +81,192 @@ homepage:
   cta_play: Play Free
   cta_login: Log In
   news_archive_link: News archive
+  latest_news: Latest news
 
 flash:
   login_success: Login successful.
   register_success: Registration successful.
   logout_success: You have been logged out.
   invalid_credentials: Invalid credentials.
+  account_created: Account created! Check your email to verify your account.
+  email_verified: Email verified! Welcome to Fantager.
+  too_many_requests: Too many requests. Try again later.
+  too_many_registration_attempts: Too many registration attempts. Try again later.
+  invalid_csrf: Invalid security token. Please try again.
+  verification_resent: If your account exists and is unverified, a new link has been sent.
+  password_reset_sent: If that email is registered, a password reset link has been sent.
+  password_updated: Password updated! You can now log in.
+  password_reset_failed: Could not reset password.
+  email_confirm_old_sent: Current email confirmed. A final verification link has been sent to your new email address.
+  email_updated: Your email address has been successfully updated!
+  account_deleted: Your account has been permanently deleted.
+
+error:
+  no_team: No team assigned to your account.
+  no_kingdom: No kingdom assigned to your account.
+  access_denied: Access denied.
+  invalid_csrf: Invalid security token.
+  invalid_security_token: Invalid security token. Please try again.
+  invalid_email_format: Invalid email format.
+  invalid_request_payload: Invalid request payload.
+  invalid_date_format: Invalid date format. Please use ISO-8601 (e.g. 2026-06-08T00:00:00Z).
+  invalid_email_confirmation_link: Invalid or expired email confirmation link.
+  invalid_email_change_payload: Invalid email change request payload.
+  invalid_account_cancellation_link: Invalid or expired account cancellation link.
+  email_already_current: This is already your current email address.
+  email_already_in_use: This email address is already in use by another account.
+  no_preferences_provided: No preferences provided.
+  invalid_close_modal_on_backdrop: Invalid closeModalOnBackdrop value.
+  kingdom_not_found: Kingdom not found.
+  hero_not_found: Hero not found.
+  trainer_not_found: Trainer not found.
+  spell_not_found: Spell not found.
+  hero_spell_not_found: Hero spell not found.
+  item_not_found: Item not found.
+  formation_not_found: Formation not found.
+  fixture_not_found: Fixture not found.
+  listing_not_found: Listing not found.
+  memorial_not_found: Memorial not found.
+  message_not_found: Message not found.
+  thread_not_found: Thread not found.
+  notification_not_found: Notification not found.
+  recipient_not_found: Recipient not found.
+  invalid_training_type: Invalid training type.
+  invalid_facility_type: 'Invalid facility type. Valid values: %values%.'
+  invalid_approach: 'Invalid approach. Valid values: %values%.'
+  invalid_slot: 'Invalid slot. Valid values: %values%.'
+  invalid_mode: 'Invalid mode. Use "default", "saved", or "custom".'
+  invalid_listing_mode: 'Invalid listing mode "%mode%".'
+  invalid_listing_type: 'Invalid listing type "%type%".'
+  field_name_required: Field "name" is required.
+  field_spell_id_required: Field "spell_id" is required.
+  field_hero_spell_id_required: Field "hero_spell_id" is required.
+  field_item_id_required: Field "item_id" is required.
+  field_slot_required: Field "slot" is required (1–magicCapacity).
+  field_formation_id_required: Field "formation_id" is required for saved mode.
+  field_name_required_custom: Field "name" is required for custom mode.
+  message_fields_required: Receiver user ID, subject, and body are required.
+  thread_fields_required: Title, body and category are required.
+  post_body_empty: Post body cannot be empty.
+  thread_not_found_community: Thread not found.
+  community_own_kingdom_threads: You can only post threads in your own kingdom.
+  community_thread_locked: This thread is locked.
+  community_own_kingdom_replies: You can only post replies in your own kingdom's board.
+  community_cannot_message_self: You cannot send a message to yourself.
+  community_own_kingdom_messages: You can only message players in your own kingdom.
+  community_cannot_delete_message: You do not have permission to delete this message.
+  community_thread_lock_permission: Only the thread author can modify its lock status.
+  hero_not_on_team: Hero does not belong to your team.
+  hero_only_available_dismiss: Only available heroes can be dismissed.
+  hero_assigned_trainer_dismiss: Hero is assigned to a trainer. Unassign before dismissing.
+  hero_only_available_roster: Only available heroes can leave the roster.
+  hero_roster_minimum: 'Team must keep at least %min% combat-ready heroes to play matches.'
+  hero_name_empty: Hero name cannot be empty.
+  hero_name_too_long: Hero name must not exceed 100 characters.
+  team_name_empty: Team name cannot be empty.
+  team_name_too_long: Team name must not exceed 100 characters.
+  emblem_too_long: Emblem value must not exceed 255 characters.
+  trainer_not_entity: Entity is not a trainer.
+  trainer_not_on_team: Trainer does not belong to your team.
+  trainer_config_locked: Training configuration is currently locked.
+  trainer_assignments_locked: Training assignments are currently locked.
+  trainer_only_combatant_assign: Only combatant heroes can be assigned to a trainer.
+  trainer_hero_not_on_team: Trainer or Hero does not belong to your team.
+  trainer_hero_already_assigned: Hero is already assigned to a trainer.
+  trainer_hero_only_available: Only available heroes can be assigned to a trainer.
+  trainer_no_slots: Trainer does not have any available slots.
+  trainer_hero_not_assigned: Hero is not assigned to this trainer.
+  trainer_only_active_dismiss: Only active trainers can be dismissed.
+  trainer_only_active_list: Only active trainers can be listed.
+  invalid_attribute: 'Invalid attribute. Valid values: %values%.'
+  unknown_attribute: 'Unknown attribute "%attribute%".'
+  marketplace_price_positive: Price or starting bid must be positive.
+  marketplace_buyout_higher: Buyout price must be higher than starting bid.
+  marketplace_hero_not_found: Hero not found or does not belong to your team.
+  marketplace_hero_only_available: Only available heroes can be listed.
+  marketplace_hero_assigned_trainer: Hero is assigned to a trainer. Unassign before listing.
+  marketplace_item_not_found: Item not found or does not belong to your team.
+  marketplace_item_only_unequipped: Only unequipped available items can be listed.
+  marketplace_trainer_not_found: Trainer not found or does not belong to your team.
+  marketplace_only_active_cancel: Only active listings can be cancelled.
+  marketplace_auction_has_bids: Auctions with bids cannot be cancelled.
+  marketplace_listing_inactive: Listing is no longer active.
+  marketplace_cannot_buy_own: You cannot purchase your own listing.
+  marketplace_no_instant_purchase: This listing does not support instant purchase.
+  marketplace_not_active: Listing is not active.
+  marketplace_no_bidding: This listing does not support bidding.
+  marketplace_auction_expired: The auction has already expired.
+  marketplace_cannot_bid_own: You cannot bid on your own listing.
+  marketplace_first_bid_minimum: 'First bid must be at least the starting bid of %amount% gold.'
+  marketplace_bid_too_low: 'Bid is too low. Minimum next bid is %min% gold (min increment: %increment%).'
+  insufficient_gold: 'Insufficient gold. Required: %required%, available: %available%.'
+  insufficient_essence: 'Insufficient essence. Required: %required%, available: %available%.'
+  insufficient_school_mastery: 'Insufficient school mastery. Required: %required%, current: %current%.'
+  insufficient_common_essence: Insufficient common essence.
+  insufficient_uncommon_essence: Insufficient uncommon essence.
+  insufficient_rare_essence: Insufficient rare essence.
+  insufficient_epic_essence: Insufficient epic essence.
+  insufficient_legendary_essence: Insufficient legendary essence.
+  insufficient_mythic_essence: Insufficient mythic essence.
+  summoning_roster_full: Roster is full.
+  summoning_limit_reached: Summoning limit reached for this cycle.
+  summoning_no_compatible_races: No compatible races found for summoning.
+  summoning_insufficient_gold: 'Insufficient gold. Required: %required%, available: %available%.'
+  hq_not_initialized: Headquarters not initialized for this team.
+  hq_facility_change_in_progress: Another facility change is already in progress.
+  hq_downgrade_locked: Facility downgrade is locked until the next weekly cycle.
+  hq_facility_not_found: 'Facility "%type%" not found in HQ.'
+  hq_facility_min_level: Facility is already at minimum level.
+  hq_race_optimization_locked: Arena adaptation is currently locked.
+  hq_invalid_race: 'Invalid race: %race%.'
+  item_cannot_equip: Listed or unavailable items cannot be equipped.
+  item_wrong_team: Item does not belong to the same team as the hero.
+  item_slot_mismatch: 'Item slot type "%item_slot%" cannot be equipped in slot "%slot%".'
+  item_not_equipped: Item is not equipped.
+  item_cannot_dismantle: Listed or unavailable items cannot be dismantled.
+  item_not_on_team: Item does not belong to your team.
+  item_cannot_dismantle_equipped: Cannot dismantle an equipped item. Unequip it first.
+  item_cannot_repair: Listed or unavailable items cannot be repaired.
+  item_repair_insufficient_gold: 'Insufficient gold. Repair costs %cost%, available: %available%.'
+  spell_already_known: Hero already knows this spell.
+  spell_not_equipped: Spell is not equipped.
+  spell_slot_range: 'Slot must be between 1 and %capacity% (hero magic capacity).'
+  formation_no_default: Team has no default formation configured.
+  formation_name_empty: Formation name cannot be empty.
+  formation_not_on_team: Formation does not belong to your team.
+  formation_only_temp_update: Only temporary formations can be updated through match preparation.
+  formation_wrong_fixture: Temporary formation does not belong to this fixture.
+  formation_only_temp_promote: Only temporary formations can be promoted.
+  formation_only_temp_delete: Only temporary formations can be deleted.
+  formation_max_saved: 'Maximum of %max% saved formations allowed.'
+  formation_invalid_position: 'Invalid position "%position%".'
+  formation_hero_not_on_team: 'Hero %id% not found in your team.'
+  formation_not_on_fixture: Team is not part of this fixture.
+  formation_only_scheduled: Formation can only be changed for scheduled fixtures.
+  formation_not_belong_team: Assigned formation does not belong to the team.
+  formation_no_match_to_promote: No match-specific formation to promote.
+  financial_crisis_blocked: 'This action is blocked during financial restrictions (%level%). Sell assets, dismiss heroes, or downgrade facilities to recover.'
+  graveyard_combatant_only: Only combatant heroes can be removed through hero dismissal flow.
+  graveyard_trainer_only: Only trainer heroes can be removed through trainer dismissal flow.
+  training_success_configure: Trainer configured successfully.
+  training_success_assign: Hero assigned to trainer successfully.
+  training_success_unassign: Hero unassigned from trainer successfully.
+
+notification:
+  marketplace_outbid_title: Outbid / Refunded
+  marketplace_outbid_body: 'You were refunded %amount% gold as listing #%listing% was bought out.'
+  marketplace_sold_title: Listing Sold
+  marketplace_sold_body: 'Your listing #%listing% was bought by "%buyer%" for %amount% gold.'
+  marketplace_new_bid_title: New Bid
+  marketplace_new_bid_body: 'A new bid of %amount% gold was placed on listing #%listing%.'
+  marketplace_expired_title: Listing Expired
+  marketplace_expired_body: 'Your listing #%listing% expired with no bids. The entity has been returned to your roster/inventory.'
+  marketplace_bid_refunded_title: Bid Refunded
+  marketplace_bid_refunded_body: 'Your bid of %amount% gold on listing #%listing% was refunded.'
+  marketplace_auction_won_seller_title: Auction Sold
+  marketplace_auction_won_seller_body: 'Your auction #%listing% sold to "%buyer%" for %amount% gold.'
+  marketplace_auction_won_buyer_title: Auction Won
+  marketplace_auction_won_buyer_body: 'You won the auction #%listing% for %amount% gold.'
 
 dashboard:
   treasury: Treasury
@@ -102,7 +284,7 @@ dashboard:
   available_heroes: Available Heroes
   in_training: In Training
   hq_level: Headquarters Level
-  hq_optimization: HQ Race Optimization
+  hq_optimization: Arena Adaptation
   summons_cycle: Summons this Cycle
   next_match: Next League Match
   next_match_start: League Matches start next phase
@@ -142,6 +324,58 @@ chronicle:
     roster: Roster
     economy: Economy
 
+graveyard:
+  title: Graveyard
+  subtitle: Memorial records for heroes and trainers who left your team.
+  summary_total: Total memorials
+  summary_average_age: Average age at departure
+  years_suffix: years
+  filter_role: Role
+  filter_cause: Cause
+  filter_race: Race
+  filter_search: Search
+  filter_all: All
+  search_placeholder: Search by name...
+  apply_filters: Apply
+  clear_filters: Clear filters
+  empty: No memorial records yet.
+  empty_filtered: No memorials match the selected filters.
+  view_detail: View detail
+  close_detail: Close detail
+  age: Age
+  final_level: Final level
+  role:
+    combatant: Combatant
+    trainer: Trainer
+  cause:
+    dismissed: Dismissed
+    combat_death: Combat death
+    age: Old age
+    retired: Retired
+    death: Death
+  stat:
+    str: Strength
+    dex: Dexterity
+    kon: Constitution
+    spd: Speed
+    int: Intelligence
+    wil: Willpower
+    cha: Charisma
+    lck: Luck
+    form: Form
+    fatigue: Fatigue
+    morale: Morale
+
+news:
+  title: News
+  back_home: Back to homepage
+  empty: No news articles have been published yet.
+  global: Global
+  pagination: News pagination
+  prev_page: Previous
+  next_page: Next
+  page_info: "Page %page% of %total%"
+
 activity:
   team_established: 'Team established in kingdom %kingdom% (season %season%).'
   player_joined: '%player% took over the team.'
@@ -177,12 +411,12 @@ financial_crisis:
   title_warning: Financial Warning
   title_restricted: Financial Restrictions
   title_bankruptcy_pending: Bankruptcy Imminent
-  message_warning: "The team has %debt% gold in unpaid debt or a low cash buffer against %maintenance% gold weekly maintenance. Cut costs or sell assets."
+  message_warning: "The team has %debt% gold in unpaid debt (weekly maintenance %maintenance% gold). Cut costs or sell assets."
   message_restricted: "The team has been in crisis for %weeks% weeks. HQ passive bonuses are suspended and some actions are blocked until debt is repaid."
   message_bankruptcy_pending: "Without action, the team will soon be declared bankrupt. Debt is %debt% gold and cash reserves are exhausted."
   unpaid_debt: Unpaid Debt
   weekly_maintenance: Weekly Maintenance
-  gold_on_hand: Gold on Hand
+  gold_on_hand: Cash Reserves
   weeks_until_bankruptcy: Weeks Until Bankruptcy
   restricted_hint: "Blocked: HQ upgrades, summoning, marketplace purchases."
   hq_bonuses_suspended: HQ passive bonuses are temporarily disabled.
@@ -242,6 +476,8 @@ heroes:
     veteran: Veteran
     elder: Elder
     phase: "%phase% Phase"
+  mortality_threshold: Mortality Threshold
+  mortality_threshold_warning: "At or above Mortality Threshold (%threshold%) — increased permanent death risk after combat"
   inspect: Inspect
   train_hero: Train Hero
   equip_hero: Equip Hero
@@ -299,8 +535,14 @@ heroes:
   abbr_dex: DEX
   abbr_kon: KON
   abbr_spd: SPD
+  abbr_int: INT
+  abbr_wil: WIL
+  abbr_cha: CHA
+  abbr_lck: LCK
   combat_form: Combat Form
+  combat_form_short: Form
   fatigue: Fatigue Level
+  fatigue_short: Fatigue
   morale_label: Morale
   equipped_gear: Equipped Gear
   equipped_gear_desc: Swapping equipment is handled inside inventory.
@@ -342,13 +584,13 @@ summoning:
   summons_used: Summons Used
   cost_per_summon: Cost per Summon
   summon_junior: Summon Junior Hero
-  summon_junior_desc: "Channel your gold to summon a new hero. The summoned hero's race is chosen based on your Arena's adaptation and race relations."
-  home_theme: Home Arena Theme
-  arena_theme_desc: "Races are drawn based on your Arena's theme adaptation and their relationship/affinity (>= 50) to the theme race."
+  summon_junior_desc: "Channel your gold to summon a new hero. The summoned hero's race is chosen based on your arena's adaptation and race relations."
+  home_theme: Arena Adaptation
+  arena_theme_desc: "Races are drawn based on your arena's adaptation and their relationship/affinity (>= 50) to the selected race."
   potential_races: Potential Summonable Races
   portal_title: Summoning Portal
   race_placeholder: "Race"
-  portal_desc: Channel your gold into the portal to draw a random hero compatible with your Arena theme.
+  portal_desc: Channel your gold into the portal to draw a random hero compatible with your arena's adaptation.
   portal_channeling: Channelling Portal...
   portal_channeling_desc: Summoning junior hero from the void.
   new_recruit: New Recruit
@@ -374,8 +616,16 @@ summoning:
   fallen_or_dismissed: Fallen or Dismissed
 
 finance:
-  title: Financial Ledger
-  subtitle: Audit log of all currency and essence transactions for your team.
+  title: Team economic overview
+  subtitle: Overview of your team's income, expenses, and financial transactions.
+  summary_title: Summary
+  ledger_title: Financial ledger
+  summary_income_period: Income (last %days% days)
+  summary_expense_period: Expenses (last %days% days)
+  summary_net_period: Balance (last %days% days)
+  summary_transactions_period: Transactions (last %days% days)
+  summary_net_all_time: All-time balance
+  summary_top_expenses: Top expenses (last %days% days)
   filter_type: Filter by Type
   all_types: All Types
   filter_actor: Filter by Actor
@@ -422,8 +672,7 @@ hq:
   compound_level: Compound Level
   weekly_maintenance: Weekly Maintenance
   weekly_maintenance_hint: Charged every Sunday at the weekly reset
-  weekly_maintenance_breakdown: "HQ %hq% + facilities %facilities%"
-  active_optimization: Active Optimization
+  active_optimization: Arena Adaptation
   roster_limit: Roster Limit
   facilities: Compound Facilities
   passive_effects: Passive Effects
@@ -439,15 +688,15 @@ hq:
   operation_upgrade: Upgrade
   operation_downgrade: Downgrade
   settings: Guild Settings
-  race_opt_title: Race Optimization
-  race_opt_desc: "Targeting a specific race optimizes facilities for their physical needs, reducing fatigue buildup during training and increasing speed multipliers."
-  race_opt_confirm: "Are you sure you want to change the race optimization? This scheduled change is not immediate and will apply next Sunday at 09:30."
-  select_race: Select Target Race
-  save_opt: Save Optimization
-  no_opt: "-- No Optimization --"
-  race_opt_pending: "Pending change to: %race% (applies Sunday at 09:30)"
-  race_opt_locked: "Race optimization is locked until next Sunday at 09:30"
-  race_opt_active: "Active optimization: %race%"
+  race_opt_title: Arena Adaptation
+  race_opt_desc: "Choose which race your arena is adapted for. This affects which races appear in summoning."
+  race_opt_confirm: "Are you sure you want to change the arena adaptation? This scheduled change is not immediate and will apply next Sunday at 09:30."
+  select_race: Select Race
+  save_opt: Save Adaptation
+  no_opt: "-- No Adaptation --"
+  race_opt_pending: "Pending adaptation to: %race% (applies Sunday at 09:30)"
+  race_opt_locked: "Arena adaptation is locked until next Sunday at 09:30"
+  race_opt_active: "Adapted to: %race%"
   insufficient_gold: Insufficient Gold
   manage_facility: Manage
   back_to_facilities: Back to facilities
@@ -611,6 +860,7 @@ inventory:
 
 spells:
   title: Spellbook & Academy
+  tier_label: "Tier %tier%"
   subtitle: Learn new spell scrolls for your heroes and manage their active combat slots.
   slot_empty: "Slot %slot% Empty"
   academy_desc: "In matches, causes effects depending on the magic school."
@@ -658,8 +908,12 @@ formation:
   set_default: Set as Default Active Formation
   save_lineup: Save Lineup
   mage_pool: Trainee Mage Pool
+  hero_roster: Available Heroes
+  hero_roster_desc: Team heroes for the starting lineup. Drag a card onto a pitch slot, between slots to swap, or back to the roster to remove. You can also assign via the slot dropdown.
   assigned: Assigned
+  remove_from_slot: Remove from slot
   no_trainees: No trainees in compound pool.
+  no_heroes_roster: No heroes available for the lineup.
   tactics_aggressive: Aggressive Tactics
   tactics_aggressive_desc: Focus on front line strike speed and critical rating.
   tactics_balanced: Balanced Position
@@ -716,8 +970,8 @@ js_flash:
     success_upgrade: Facility upgraded successfully to level %level%!
     success_downgrade: Downgrade scheduled. Current level %level%.
     saving: Saving...
-    failed_optimize: Failed to update optimization.
-    success_optimize: Headquarters race optimization updated successfully.
+    failed_optimize: Failed to update arena adaptation.
+    success_optimize: Arena adaptation updated successfully.
     lvl_short: Lvl
     gold_format: 🪙 %gold% Gold
   heroes:
@@ -739,6 +993,7 @@ js_flash:
     success_delete: Formation deleted successfully.
     success_promote: Match formation saved to your formations.
     failed_promote: Failed to save match formation.
+    prompt_promote_name: Match formation
     lvl_short: Lvl
   inventory:
     equipping: Equipping...
@@ -761,8 +1016,8 @@ js_flash:
     failed_preferences: Failed to save interface preferences.
   dashboard:
     saving: Saving...
-    failed: Failed to update optimization.
-    success: "Optimization change scheduled successfully. It will apply next Sunday at 09:30."
+    failed: Failed to update arena adaptation.
+    success: "Arena adaptation change scheduled successfully. It will apply next Sunday at 09:30."
 
 school:
   fire: Fire
@@ -816,9 +1071,22 @@ league:
   col_diff: GD
   col_form: Form
   col_group: Group
+  col_rank_hint: Table position
+  col_team_hint: Team name
+  col_played_hint: Matches played
+  col_wins_hint: Wins
+  col_draws_hint: Draws
+  col_losses_hint: Losses
+  col_points_hint: Points (3 for a win, 1 for a draw)
+  col_diff_hint: Score difference (Kills − Deaths)
+  col_form_hint: Form from the last 5 matches (W/D/L)
+  col_group_hint: League group
   my_fixtures: My Team's Matches
   group_fixtures: Group Matches
   round: Round
+  formation_status_default: Default formation
+  formation_status_saved: 'Saved: %name%'
+  formation_status_custom: Custom for match
 
 calendar:
   title: Calendar & Events
@@ -834,6 +1102,27 @@ calendar:
   status_scheduled: Scheduled
   status_completed: Completed
   status_failed: Failed
+  league_fixture_desc: 'League Fixture - Group %group%'
+  training_complete_title: 'Training complete: %hero%'
+  tick:
+    daily_reset_title: Daily Reset & Maintenance
+    daily_reset_desc: System cleanup, hero aging reset
+    inactive_registration_title: Inactive Registration Cleanup
+    inactive_registration_desc: Remove team assignments and delete unverified accounts older than 1 day
+    inactive_player_title: Inactive Player Cleanup
+    inactive_player_desc: Release teams from verified players inactive for 28+ days
+    fatigue_recovery_title: Fatigue & Form Recovery
+    fatigue_recovery_desc: Passive restoration of hero fatigue and condition
+    weekly_training_title: Weekly Training Process
+    weekly_training_desc: Calculate queued hero stat increases and finalize jobs
+    league_match_title: League Match Tick
+    league_match_desc: Trigger scheduled league fixtures simulation
+    season_transition_title: Season Transition Tick
+    season_transition_desc: Resolve promotions, relegations, rewards, and initialize next season
+    weekly_reset_title: Weekly Reset
+    weekly_reset_desc: Reset summoning chamber cooldowns and weekly maintenance
+    race_optimization_title: Arena Adaptation Update
+    race_optimization_desc: Apply pending arena adaptation settings and update lock states
 
 arena:
   title: Arena Management
@@ -973,6 +1262,27 @@ marketplace:
   no_heroes: "No available heroes for sale."
   no_trainers: "No available trainers for sale."
   col_actions: "Actions"
+
+notifications:
+  empty: You have no notifications yet.
+  col_status: Status
+  col_title: Title
+  col_type: Type
+  col_date: Date
+  mark_all_read: Mark all as read
+  error_load: Failed to load notifications.
+  error_read: Failed to read notification.
+  error_mark_all: Failed to mark all notifications as read.
+  success_mark_all: All notifications marked as read.
+  type_system: System
+  type_marketplace_bid: Marketplace bid
+  type_marketplace_sold: Marketplace sale
+  type_battle_result: Battle result
+  type_training_complete: Training complete
+  type_league_update: League update
+  type_event_started: Event started
+  type_hero_died: Hero died
+  type_season_ended: Season ended
 
 community:
   title: Kingdom Community

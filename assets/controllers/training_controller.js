@@ -186,7 +186,11 @@ export default class extends Controller {
 
         const message = this.hasConfirmDismissValue
             ? this.confirmDismissValue
-            : 'Dismiss this trainer?';
+            : '';
+
+        if (!message) {
+            return;
+        }
 
         if (!window.confirm(message)) {
             return;
@@ -214,7 +218,7 @@ export default class extends Controller {
             }
 
             const compensation = result.compensation ?? 0;
-            const successMsg = (this.successDismissValue || 'Trainer dismissed. Compensation: %gold% gold.')
+            const successMsg = (this.successDismissValue || '')
                 .replace('%gold%', compensation.toLocaleString('cs-CZ'));
             this.showAlert('success', successMsg);
 

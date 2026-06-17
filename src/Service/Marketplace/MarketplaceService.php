@@ -21,6 +21,7 @@ use App\Enum\ListingType;
 use App\Enum\NotificationType;
 use App\Enum\RoyalTreasuryContributionSource;
 use App\Enum\TransactionType;
+use App\Exception\UserFacingException;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
@@ -51,24 +52,24 @@ class MarketplaceService
         \DateTimeImmutable $now,
     ): MarketplaceListing {
         if ($priceGold <= 0) {
-            throw new \DomainException('Price or starting bid must be positive.');
+            throw new UserFacingException('error.marketplace_price_positive');
         }
 
         $listingMode = ListingMode::tryFrom($mode);
         if (null === $listingMode) {
-            throw new \InvalidArgumentException(sprintf('Invalid listing mode "%s".', $mode));
+            throw new UserFacingException('error.invalid_listing_mode', ['%mode%' => $mode]);
         }
 
         $listingType = ListingType::tryFrom($type);
         if (null === $listingType) {
-            throw new \InvalidArgumentException(sprintf('Invalid listing type "%s".', $type));
+            throw new UserFacingException('error.invalid_listing_type', ['%type%' => $type]);
         }
 
         if (ListingMode::BuyNow === $listingMode) {
             $buyoutPriceGold = $priceGold;
         } else { // Auction
             if (null !== $buyoutPriceGold && $buyoutPriceGold <= $priceGold) {
-                throw new \DomainException('Buyout price must be higher than starting bid.');
+                throw new UserFacingException('error.marketplace_buyout_higher');
             }
         }
 
@@ -87,14 +88,14 @@ class MarketplaceService
             /** @var Hero|null $hero */
             $hero = $this->em->getRepository(Hero::class)->find($entityId);
             if (null === $hero || $hero->getTeam()->getId() !== $seller->getId()) {
-                throw new \DomainException('Hero not found or does not belong to your team.');
+                throw new UserFacingException('error.marketplace_hero_not_found');
             }
             if (HeroStatus::Available !== $hero->getStatus()) {
-                throw new \DomainException('Only available heroes can be listed.');
+                throw new UserFacingException('error.marketplace_hero_only_available');
             }
 
             if (null !== $hero->getTrainer()) {
-                throw new \DomainException('Hero is assigned to a trainer. Unassign before listing.');
+                throw new UserFacingException('error.marketplace_hero_assigned_trainer');
             }
 
             $this->teamRosterService->assertCanRemoveCombatReadyHero($seller, $hero);
@@ -113,10 +114,10 @@ class MarketplaceService
             /** @var Item|null $item */
             $item = $this->em->getRepository(Item::class)->find($entityId);
             if (null === $item || $item->getOwnerTeam()->getId() !== $seller->getId()) {
-                throw new \DomainException('Item not found or does not belong to your team.');
+                throw new UserFacingException('error.marketplace_item_not_found');
             }
             if (ItemStatus::Available !== $item->getStatus() || null !== $item->getEquippedHero()) {
-                throw new \DomainException('Only unequipped available items can be listed.');
+                throw new UserFacingException('error.marketplace_item_only_unequipped');
             }
 
             // Escrow item
@@ -126,10 +127,10 @@ class MarketplaceService
             /** @var Hero|null $trainer */
             $trainer = $this->em->getRepository(Hero::class)->find($entityId);
             if (null === $trainer || $trainer->getTeam()->getId() !== $seller->getId() || !$trainer->isTrainer()) {
-                throw new \DomainException('Trainer not found or does not belong to your team.');
+                throw new UserFacingException('error.marketplace_trainer_not_found');
             }
             if (HeroStatus::Available !== $trainer->getStatus()) {
-                throw new \DomainException('Only active trainers can be listed.');
+                throw new UserFacingException('error.trainer_only_active_list');
             }
 
             foreach ($trainer->getTrainees() as $hero) {
@@ -151,15 +152,15 @@ class MarketplaceService
         /** @var MarketplaceListing|null $listing */
         $listing = $this->em->getRepository(MarketplaceListing::class)->find($listingId);
         if (null === $listing || $listing->getSellerTeam()->getId() !== $seller->getId()) {
-            throw new \DomainException('Listing not found.');
+            throw new UserFacingException('error.listing_not_found');
         }
 
         if (ListingStatus::Active !== $listing->getStatus()) {
-            throw new \DomainException('Only active listings can be cancelled.');
+            throw new UserFacingException('error.marketplace_only_active_cancel');
         }
 
         if (count($listing->getBids()) > 0) {
-            throw new \DomainException('Auctions with bids cannot be cancelled.');
+            throw new UserFacingException('error.marketplace_auction_has_bids');
         }
 
         $listing->setStatus(ListingStatus::Cancelled);
@@ -181,24 +182,24 @@ class MarketplaceService
         /** @var MarketplaceListing|null $listing */
         $listing = $this->em->getRepository(MarketplaceListing::class)->find($listingId);
         if (null === $listing) {
-            throw new \DomainException('Listing not found.');
+            throw new UserFacingException('error.listing_not_found');
         }
 
         if (ListingStatus::Active !== $listing->getStatus()) {
-            throw new \DomainException('Listing is no longer active.');
+            throw new UserFacingException('error.marketplace_listing_inactive');
         }
 
         if ($listing->getSellerTeam()->getId() === $buyer->getId()) {
-            throw new \DomainException('You cannot purchase your own listing.');
+            throw new UserFacingException('error.marketplace_cannot_buy_own');
         }
 
         $buyoutPrice = $listing->getBuyoutPriceGold();
         if (null === $buyoutPrice) {
-            throw new \DomainException('This listing does not support instant purchase.');
+            throw new UserFacingException('error.marketplace_no_instant_purchase');
         }
 
         if ($buyer->getGold() < $buyoutPrice) {
-            throw new \DomainException(sprintf('Insufficient gold. Required: %d, available: %d.', $buyoutPrice, $buyer->getGold()));
+            throw new UserFacingException('error.insufficient_gold', ['%required%' => $buyoutPrice, '%available%' => $buyer->getGold()]);
         }
 
         $this->financialCrisisService->assertSpendingAllowed($buyer, 'marketplace_purchase');
@@ -237,11 +238,13 @@ class MarketplaceService
             $this->em->remove($bid);
 
             if (null !== $bid->getBidderTeam()->getUser()) {
-                $this->notificationHelper->sendNotification(
+                $this->notificationHelper->sendTranslatedNotification(
                     $bid->getBidderTeam()->getUser(),
                     NotificationType::MarketplaceBid,
-                    'Outbid / Refunded',
-                    sprintf('You were refunded %d gold as listing #%d was bought out.', $bid->getBidAmount(), $listing->getId())
+                    'notification.marketplace_outbid_title',
+                    'notification.marketplace_outbid_body',
+                    [],
+                    ['%amount%' => $bid->getBidAmount(), '%listing%' => (int) $listing->getId()]
                 );
             }
         }
@@ -278,11 +281,13 @@ class MarketplaceService
 
         // Send Notification to Seller
         if (null !== $seller->getUser()) {
-            $this->notificationHelper->sendNotification(
+            $this->notificationHelper->sendTranslatedNotification(
                 $seller->getUser(),
                 NotificationType::MarketplaceSold,
-                'Listing Sold',
-                sprintf('Your listing #%d was bought by "%s" for %d gold.', $listing->getId(), $buyer->getName(), $buyoutPrice)
+                'notification.marketplace_sold_title',
+                'notification.marketplace_sold_body',
+                [],
+                ['%listing%' => (int) $listing->getId(), '%buyer%' => $buyer->getName(), '%amount%' => $buyoutPrice]
             );
         }
     }
@@ -292,27 +297,27 @@ class MarketplaceService
         /** @var MarketplaceListing|null $listing */
         $listing = $this->em->getRepository(MarketplaceListing::class)->find($listingId);
         if (null === $listing) {
-            throw new \DomainException('Listing not found.');
+            throw new UserFacingException('error.listing_not_found');
         }
 
         if (ListingStatus::Active !== $listing->getStatus()) {
-            throw new \DomainException('Listing is not active.');
+            throw new UserFacingException('error.marketplace_not_active');
         }
 
         if (ListingMode::Auction !== $listing->getListingMode()) {
-            throw new \DomainException('This listing does not support bidding.');
+            throw new UserFacingException('error.marketplace_no_bidding');
         }
 
         if ($listing->getExpiresAt() <= $now) {
-            throw new \DomainException('The auction has already expired.');
+            throw new UserFacingException('error.marketplace_auction_expired');
         }
 
         if ($listing->getSellerTeam()->getId() === $bidder->getId()) {
-            throw new \DomainException('You cannot bid on your own listing.');
+            throw new UserFacingException('error.marketplace_cannot_bid_own');
         }
 
         if ($bidder->getGold() < $bidAmount) {
-            throw new \DomainException(sprintf('Insufficient gold. Required: %d, available: %d.', $bidAmount, $bidder->getGold()));
+            throw new UserFacingException('error.insufficient_gold', ['%required%' => $bidAmount, '%available%' => $bidder->getGold()]);
         }
 
         $this->financialCrisisService->assertSpendingAllowed($bidder, 'marketplace_bid');
@@ -327,14 +332,14 @@ class MarketplaceService
 
         if (null === $currentHighestBid) {
             if ($bidAmount < $listing->getPriceGold()) {
-                throw new \DomainException(sprintf('First bid must be at least the starting bid of %d gold.', $listing->getPriceGold()));
+                throw new UserFacingException('error.marketplace_first_bid_minimum', ['%amount%' => $listing->getPriceGold()]);
             }
         } else {
             // Bid increment rule: 5% of highest bid, rounded to whole tens
             $minIncrement = (int) ceil(($currentHighestBid->getBidAmount() * 0.05) / 10) * 10;
             $minNextBid = $currentHighestBid->getBidAmount() + $minIncrement;
             if ($bidAmount < $minNextBid) {
-                throw new \DomainException(sprintf('Bid is too low. Minimum next bid is %d gold (min increment: %d).', $minNextBid, $minIncrement));
+                throw new UserFacingException('error.marketplace_bid_too_low', ['%min%' => $minNextBid, '%increment%' => $minIncrement]);
             }
         }
 
@@ -352,11 +357,13 @@ class MarketplaceService
 
         // Send Notification to Seller
         if (null !== $listing->getSellerTeam()->getUser()) {
-            $this->notificationHelper->sendNotification(
+            $this->notificationHelper->sendTranslatedNotification(
                 $listing->getSellerTeam()->getUser(),
                 NotificationType::MarketplaceBid,
-                'New Bid Placed',
-                sprintf('A new bid of %d gold was placed on listing #%d.', $bidAmount, $listing->getId())
+                'notification.marketplace_new_bid_title',
+                'notification.marketplace_new_bid_body',
+                [],
+                ['%amount%' => $bidAmount, '%listing%' => (int) $listing->getId()]
             );
         }
     }
@@ -394,11 +401,13 @@ class MarketplaceService
                 }
 
                 if (null !== $listing->getSellerTeam()->getUser()) {
-                    $this->notificationHelper->sendNotification(
+                    $this->notificationHelper->sendTranslatedNotification(
                         $listing->getSellerTeam()->getUser(),
                         NotificationType::System,
-                        'Listing Expired',
-                        sprintf('Your listing #%d expired with no bids. The entity has been returned to your roster/inventory.', $listing->getId())
+                        'notification.marketplace_expired_title',
+                        'notification.marketplace_expired_body',
+                        [],
+                        ['%listing%' => (int) $listing->getId()]
                     );
                 }
             } else {
@@ -436,11 +445,13 @@ class MarketplaceService
                         );
 
                         if (null !== $bid->getBidderTeam()->getUser()) {
-                            $this->notificationHelper->sendNotification(
+                            $this->notificationHelper->sendTranslatedNotification(
                                 $bid->getBidderTeam()->getUser(),
                                 NotificationType::MarketplaceBid,
-                                'Auction Refund',
-                                sprintf('Your bid of %d gold on listing #%d was refunded.', $bid->getBidAmount(), $listing->getId())
+                                'notification.marketplace_bid_refunded_title',
+                                'notification.marketplace_bid_refunded_body',
+                                [],
+                                ['%amount%' => $bid->getBidAmount(), '%listing%' => (int) $listing->getId()]
                             );
                         }
                     }
@@ -478,20 +489,24 @@ class MarketplaceService
 
                 // Notifications
                 if (null !== $seller->getUser()) {
-                    $this->notificationHelper->sendNotification(
+                    $this->notificationHelper->sendTranslatedNotification(
                         $seller->getUser(),
                         NotificationType::MarketplaceSold,
-                        'Auction Closed',
-                        sprintf('Your auction #%d sold to "%s" for %d gold.', $listing->getId(), $winner->getName(), $winningBidAmount)
+                        'notification.marketplace_auction_won_seller_title',
+                        'notification.marketplace_auction_won_seller_body',
+                        [],
+                        ['%listing%' => (int) $listing->getId(), '%buyer%' => $winner->getName(), '%amount%' => $winningBidAmount]
                     );
                 }
 
                 if (null !== $winner->getUser()) {
-                    $this->notificationHelper->sendNotification(
+                    $this->notificationHelper->sendTranslatedNotification(
                         $winner->getUser(),
                         NotificationType::MarketplaceSold,
-                        'Auction Won',
-                        sprintf('You won the auction #%d for %d gold.', $listing->getId(), $winningBidAmount)
+                        'notification.marketplace_auction_won_buyer_title',
+                        'notification.marketplace_auction_won_buyer_body',
+                        [],
+                        ['%listing%' => (int) $listing->getId(), '%amount%' => $winningBidAmount]
                     );
                 }
             }

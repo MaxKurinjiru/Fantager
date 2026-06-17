@@ -7,6 +7,7 @@ namespace App\Service\Team;
 use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
 use App\Enum\HeroStatus;
+use App\Exception\UserFacingException;
 use App\Repository\Hero\HeroRepository;
 
 class TeamRosterService
@@ -43,11 +44,11 @@ class TeamRosterService
     public function assertCanRemoveCombatReadyHero(Team $team, Hero $hero): void
     {
         if (!$this->isCombatReady($hero)) {
-            throw new \DomainException('Only available heroes can leave the roster.');
+            throw new UserFacingException('error.hero_only_available_roster');
         }
 
         if ($this->countCombatReadyHeroes($team) <= self::MIN_COMBAT_READY_HEROES) {
-            throw new \DomainException(sprintf('Cannot remove hero. Team must keep at least %d combat-ready heroes to play matches.', self::MIN_COMBAT_READY_HEROES));
+            throw new UserFacingException('error.hero_roster_minimum', ['%min%' => self::MIN_COMBAT_READY_HEROES]);
         }
     }
 }

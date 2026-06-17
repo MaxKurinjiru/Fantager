@@ -20,8 +20,8 @@ The game world operates on automated server ticks executed at scheduled times. T
 | **Friday** | 10:00 | **Weekly Training** | Process active trainer assignments. Calculate stat gains (non-linear formulas, raw x10 scaling) and apply to heroes. |
 | **Friday** | 18:00 | **League Match (End-Week)** | Process scheduled end-week league fixtures. **Currently implemented:** home-team arena ticket revenue. **Planned (Phase 5):** combat resolution, match XP, post-match fatigue/form/morale/aging. |
 | **Friday** | 19:00 | **Season Transition** *(Week 11 only)* | Run season resolution service: finalize standings, distribute tier promotion/relegation rewards, execute team transfers (promotions/relegations), initialize the next season. |
-| **Sunday** | 09:30 | **Race Optimization** | Apply pending headquarters race optimization changes and manage weekly optimization lock cycles. |
-| **Weekly** | Sun 23:59 | **Weekly Reset** | Reset summoning chamber cooldowns, process HQ maintenance fees, facility downgrade lock expiry, and weekly financial-crisis checks. |
+| **Sunday** | 09:30 | **Arena Adaptation** | Apply pending headquarters arena adaptation changes and manage weekly adaptation lock cycles. |
+| **Weekly** | Sun 23:59 | **Weekly Reset** | Reset summoning chamber cooldowns, process HQ maintenance fees, **Royal Treasury distribution**, facility downgrade lock expiry, and weekly financial-crisis checks. |
 
 ---
 
@@ -132,7 +132,7 @@ Within the message handler (`ProcessKingdomTicksHandler`):
   2. **Priority 3: League Match** (Tuesday/Friday 18:00) — arena revenue and formation cleanup.
   3. **Priority 4: Season Transition** (Friday 19:00, Week 11 only).
   4. **Priority 5: Fatigue & Form Recovery** (Daily 04:00).
-  5. **Priority 6: Reset / Maintenance / Cleanup** — `DailyReset` (00:00, includes HQ facility upgrade completion), `InactiveRegistrationCleanup` (03:30), `InactivePlayerCleanup` (03:45), `RaceOptimization` (Sun 09:30), `WeeklyReset` (Sun 23:59).
+  5. **Priority 6: Reset / Maintenance / Cleanup** — `DailyReset` (00:00, includes HQ facility upgrade completion), `InactiveRegistrationCleanup` (03:30), `InactivePlayerCleanup` (03:45), `RaceOptimization` / Arena Adaptation (Sun 09:30), `WeeklyReset` (Sun 23:59).
 
 Team-scoped asynchronous work is handled **inside** these ticks — for example HQ facility upgrades complete during `DailyReset`, and trainer-based training resolves during `WeeklyTraining`.
 

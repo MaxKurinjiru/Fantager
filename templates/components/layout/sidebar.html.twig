@@ -24,6 +24,7 @@
         {% set team_links = [
             { route: 'app_heroes', emoji: '👥', label: 'nav.team', active_check: 'starts_with' },
             { route: 'app_team_chronicle', emoji: '📜', label: 'nav.chronicle', active_check: 'exact' },
+            { route: 'app_graveyard', emoji: '🪦', label: 'nav.graveyard', active_check: 'exact' },
             { route: 'app_hq', emoji: '🏰', label: 'nav.hq', active_check: 'exact' },
             { route: 'app_formation', emoji: '🛡️', label: 'nav.formation', active_check: 'exact' }
         ] %}
@@ -43,7 +44,8 @@
 
         <div class="game-sidebar__section-label">{{ 'sidebar.section_social'|trans }}</div>
         {% set social_links = [
-            { route: 'app_economy', emoji: '💰', label: 'nav.economy', active_check: 'exact' },
+            { route: 'app_marketplace', emoji: '⚖️', label: 'nav.marketplace', active_check: 'exact' },
+            { route: 'app_finance', emoji: '📒', label: 'nav.finance', active_check: 'exact' },
             { route: 'app_community', emoji: '💬', label: 'nav.community', active_check: 'starts_with' }
         ] %}
         {% for link in social_links %}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\Community;
 
+use App\Entity\Auth\User;
 use App\Entity\Community\ForumPost;
 use App\Entity\Community\ForumThread;
 use App\Entity\Team\Team;
@@ -41,23 +42,54 @@ final class ForumThreadHelperTest extends TestCase
 
     public function testGetPreviewTruncatesLongBody(): void
     {
-        $thread = $this->createThread(false, '2024-01-01', [str_repeat('a', 200)]);
+        $thread = $this->createThread(false, '2024-01-01', ['2024-01-01'], [str_repeat('a', 200)]);
 
         self::assertSame(140, mb_strlen($this->helper->getPreview($thread)));
         self::assertStringEndsWith('…', $this->helper->getPreview($thread));
     }
 
-    /** @param list<string> $postDates */
-    private function createThread(bool $pinned, string $threadDate, array $postDates): ForumThread
+    public function testSerializeAuthorIncludesTeamWhenPresent(): void
     {
-        $team = $this->createMock(Team::class);
-        $team->method('getId')->willReturn(1);
-        $team->method('getName')->willReturn('Test Team');
-        $team->method('getEmblem')->willReturn('🛡️');
-        $team->method('getColors')->willReturn(['primary' => '#10b981', 'secondary' => '#0f1720']);
+        $user = new User();
+        $user->setDisplayName('Player One');
+
+        $team = new Team();
+        $team->setName('Dragons FC');
+        $team->setEmblem('🐉');
+        $team->setColors(['primary' => '#10b981', 'secondary' => '#0f1720']);
+
+        $serialized = $this->helper->serializeAuthor($user, $team);
+
+        self::assertSame('Player One', $serialized['display_name']);
+        self::assertSame('Dragons FC', $serialized['team']['name']);
+    }
+
+    public function testSerializeAuthorOmitsTeamWhenAbsent(): void
+    {
+        $user = new User();
+        $user->setDisplayName('Player One');
+
+        $serialized = $this->helper->serializeAuthor($user, null);
+
+        self::assertSame('Player One', $serialized['display_name']);
+        self::assertNull($serialized['team']);
+    }
+
+    /** @param list<string> $postDates @param list<string> $postBodies */
+    private function createThread(bool $pinned, string $threadDate, array $postDates, ?array $postBodies = null): ForumThread
+    {
+        $user = new User();
+        $user->setDisplayName('Test Player');
+
+        $team = new Team();
+        $team->setName('Test Team');
+        $team->setEmblem('🛡️');
+        $team->setColors(['primary' => '#10b981', 'secondary' => '#0f1720']);
 
         $thread = new ForumThread();
         $thread->setIsPinned($pinned);
+        $thread->setAuthorUser($user);
+        $thread->setAuthorTeam($team);
 
         $reflection = new \ReflectionClass($thread);
         $createdAt = $reflection->getProperty('createdAt');
@@ -66,8 +98,9 @@ final class ForumThreadHelperTest extends TestCase
 
         foreach ($postDates as $index => $date) {
             $post = new ForumPost();
+            $post->setAuthorUser($user);
             $post->setAuthorTeam($team);
-            $post->setBody('Body '.$index);
+            $post->setBody($postBodies[$index] ?? ('Body '.$index));
             $post->setThread($thread);
 
             $postReflection = new \ReflectionClass($post);

@@ -6,6 +6,7 @@ namespace App\Service\Hero;
 
 use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
+use App\Exception\UserFacingException;
 use App\Repository\Hero\HeroRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -32,11 +33,11 @@ class HeroService
     {
         $name = trim($name);
         if ('' === $name) {
-            throw new \InvalidArgumentException('Hero name cannot be empty.');
+            throw new UserFacingException('error.hero_name_empty');
         }
 
         if (mb_strlen($name) > 100) {
-            throw new \InvalidArgumentException('Hero name must not exceed 100 characters.');
+            throw new UserFacingException('error.hero_name_too_long');
         }
 
         $hero->setName($name);

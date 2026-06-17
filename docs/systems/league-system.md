@@ -50,7 +50,7 @@ The config can be changed per Kingdom at creation time. The number of tiers, gro
 
 When a new Kingdom is created, the league is set up automatically as part of Kingdom initialization (see [kingdom-system.md](kingdom-system.md#kingdom-initialization)):
 
-1. **`LeagueSeason`** (season 1) is created (`status = upcoming` or `active` based on start date).
+1. **`LeagueSeason`** (season 1) is created (`status = scheduled` or `active` based on start date).
 2. **`LeagueTier` and `LeagueGroup` rows** are created from `league_tiers_config` — the bracket skeleton exists but is empty.
 3. **NPC teams are created and immediately placed** into groups — each new NPC team gets a `LeagueStanding` row in its assigned group in the same step. All groups are filled before the Kingdom opens.
 4. **Heroes are generated** and assigned to each NPC team — **10 heroes per team** so every team is fully staffed from day one.
@@ -198,11 +198,8 @@ $$\text{Gold Granted} = \text{Base\_Gold}(T_{old}) \times M_{pos}(P) \times M_{s
 
 
 
-Summary:
-- League seasons run for configured durations per-kingdom; players are grouped by tier and group, with promotion/relegation at season end. Matches scheduled and processed by server ticks.
+## API Endpoints
 
-APIs:
-- GET /api/league/standings — current standings
-- GET /api/league/fixtures — upcoming fixtures
-- POST /api/league/process-season — admin/scheduler endpoint
+League data is rendered server-side on `GET /app/league`. JSON API endpoints are **planned/deferred** — see [route-map.md](../route-map.md#league).
 
+Season transition runs as a **`season_transition` server tick**, not a player-facing API.

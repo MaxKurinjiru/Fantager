@@ -26,12 +26,15 @@
 @use "components/flash";
 @use "components/dashboard";
 @use "components/chronicle";
+@use "components/graveyard";
+@use "components/news";
 @use "components/navbar";
 @use "components/summoning";
 @use "components/finance";
 @use "components/marketplace";
 @use "components/community";
 @use "components/mail";
+@use "components/notifications";
 @use "components/roster_badge";
 @use "components/page_header";
 @use "components/shared";

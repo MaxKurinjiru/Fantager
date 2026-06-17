@@ -8,6 +8,7 @@ use App\Entity\Auth\User;
 use App\Entity\Community\ForumThread;
 use App\Repository\Community\ForumThreadRepository;
 use App\Service\Community\ForumThreadHelper;
+use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +24,7 @@ class CommunityController extends AbstractController
     public function __construct(
         private readonly ForumThreadRepository $threadRepository,
         private readonly ForumThreadHelper $threadHelper,
+        private readonly UserMessageTranslator $userMessages,
     ) {
     }
 
@@ -31,15 +33,14 @@ class CommunityController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
+        $kingdom = $user->getKingdom();
 
-        if (!$team) {
-            $this->addFlash('error', 'No team assigned to your account.');
+        if (null === $kingdom) {
+            $this->addFlash('error', $this->userMessages->trans('error.no_kingdom'));
 
             return $this->redirectToRoute('app_home');
         }
 
-        $kingdom = $team->getKingdom();
         $activeCategory = $request->query->getString('category', 'all');
         if ('all' !== $activeCategory && !in_array($activeCategory, self::CATEGORIES, true)) {
             $activeCategory = 'all';
@@ -57,7 +58,7 @@ class CommunityController extends AbstractController
         $regularThreads = array_values(array_filter($threads, static fn (ForumThread $t): bool => !$t->isPinned()));
 
         return $this->render('community/index.html.twig', [
-            'team' => $team,
+            'team' => $user->getTeam(),
             'kingdom' => $kingdom,
             'threads' => $threads,
             'pinned_threads' => $pinnedThreads,
@@ -73,17 +74,17 @@ class CommunityController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
+        $kingdom = $user->getKingdom();
 
-        if (!$team) {
-            $this->addFlash('error', 'No team assigned to your account.');
+        if (null === $kingdom) {
+            $this->addFlash('error', $this->userMessages->trans('error.no_kingdom'));
 
             return $this->redirectToRoute('app_home');
         }
 
         /** @var ForumThread|null $thread */
         $thread = $this->threadRepository->find($id);
-        if (null === $thread || $thread->getKingdom() !== $team->getKingdom()) {
+        if (null === $thread || $thread->getKingdom() !== $kingdom) {
             throw new NotFoundHttpException('Thread not found.');
         }
 
@@ -96,12 +97,12 @@ class CommunityController extends AbstractController
         }
 
         return $this->render('community/thread.html.twig', [
-            'team' => $team,
+            'team' => $user->getTeam(),
             'thread' => $thread,
             'original_post' => $originalPost,
             'replies' => $posts,
             'active_category' => $activeCategory,
-            'is_author' => $thread->getAuthorTeam()->getId() === $team->getId(),
+            'is_author' => $thread->getAuthorUser()->getId() === $user->getId(),
         ]);
     }
 }

@@ -23,13 +23,13 @@ Displayed Information:
 	- Link **Full chronicle** → `/app/chronicle` (`app_team_chronicle`)
 	- Includes ownership changes, season results, summons, etc. (see [team-chronicle-system.md](../systems/team-chronicle-system.md))
 - **Shortcuts:**
-	- Quick access to Formation, Training, Marketplace, League
+	- Quick access to Formation, Training, Economy (`/app/economy`), League
 
 Possible Actions/Buttons:
 - **View Full Roster** - navigate to Hero Roster Screen
 - **Manage Headquarters** - navigate to HQ Screen
 - **Check League** - navigate to League Screen
-- **Go to Marketplace** - navigate to Marketplace
+- **Go to Economy / Marketplace** - navigate to `/app/economy`
 - **View Calendar** - navigate to Calendar
 - **View Team Chronicle** - navigate to `/app/chronicle`
 - **Team Settings** - change name, emblem, colors

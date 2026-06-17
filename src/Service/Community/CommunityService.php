@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Service\Community;
 
+use App\Entity\Auth\User;
 use App\Entity\Community\ForumPost;
 use App\Entity\Community\ForumThread;
 use App\Entity\Community\Message;
 use App\Entity\Kingdom\Kingdom;
-use App\Entity\Team\Team;
+use App\Exception\UserFacingException;
 use Doctrine\ORM\EntityManagerInterface;
 
 class CommunityService
@@ -23,28 +24,31 @@ class CommunityService
      * Create a new forum thread and its first post.
      */
     public function createThread(
-        Team $author,
+        User $author,
         Kingdom $kingdom,
         string $category,
         string $title,
         string $body,
     ): ForumThread {
         if ($author->getKingdom() !== $kingdom) {
-            throw new \DomainException('You can only post threads in your own kingdom.');
+            throw new UserFacingException('error.community_own_kingdom_threads');
         }
 
         $filteredTitle = $this->filterService->filterContent($title);
         $filteredBody = $this->filterService->filterContent($body);
+        $authorTeam = $author->getTeam();
 
         $thread = new ForumThread();
         $thread->setKingdom($kingdom);
-        $thread->setAuthorTeam($author);
+        $thread->setAuthorUser($author);
+        $thread->setAuthorTeam($authorTeam);
         $thread->setCategory($category);
         $thread->setTitle($filteredTitle);
 
         $post = new ForumPost();
         $post->setThread($thread);
-        $post->setAuthorTeam($author);
+        $post->setAuthorUser($author);
+        $post->setAuthorTeam($authorTeam);
         $post->setBody($filteredBody);
 
         $thread->getPosts()->add($post);
@@ -59,21 +63,23 @@ class CommunityService
     /**
      * Add a reply post to a thread.
      */
-    public function createPost(Team $author, ForumThread $thread, string $body): ForumPost
+    public function createPost(User $author, ForumThread $thread, string $body): ForumPost
     {
         if ($thread->isLocked()) {
-            throw new \DomainException('This thread is locked.');
+            throw new UserFacingException('error.community_thread_locked');
         }
 
         if ($author->getKingdom() !== $thread->getKingdom()) {
-            throw new \DomainException('You can only post replies in your own kingdom\'s board.');
+            throw new UserFacingException('error.community_own_kingdom_replies');
         }
 
         $filteredBody = $this->filterService->filterContent($body);
+        $authorTeam = $author->getTeam();
 
         $post = new ForumPost();
         $post->setThread($thread);
-        $post->setAuthorTeam($author);
+        $post->setAuthorUser($author);
+        $post->setAuthorTeam($authorTeam);
         $post->setBody($filteredBody);
 
         $thread->getPosts()->add($post);
@@ -85,24 +91,26 @@ class CommunityService
     }
 
     /**
-     * Send a private mail message to another team in the same kingdom.
+     * Send a private mail message to another player in the same kingdom.
      */
-    public function sendMessage(Team $sender, Team $receiver, string $subject, string $body): Message
+    public function sendMessage(User $sender, User $receiver, string $subject, string $body): Message
     {
         if ($sender === $receiver) {
-            throw new \DomainException('You cannot send a message to yourself.');
+            throw new UserFacingException('error.community_cannot_message_self');
         }
 
         if ($sender->getKingdom() !== $receiver->getKingdom()) {
-            throw new \DomainException('You can only message teams in your own kingdom.');
+            throw new UserFacingException('error.community_own_kingdom_messages');
         }
 
         $filteredSubject = $this->filterService->filterContent($subject);
         $filteredBody = $this->filterService->filterContent($body);
 
         $message = new Message();
-        $message->setSenderTeam($sender);
-        $message->setReceiverTeam($receiver);
+        $message->setSenderUser($sender);
+        $message->setReceiverUser($receiver);
+        $message->setSenderTeam($sender->getTeam());
+        $message->setReceiverTeam($receiver->getTeam());
         $message->setSubject($filteredSubject);
         $message->setBody($filteredBody);
 
@@ -113,56 +121,61 @@ class CommunityService
     }
 
     /**
-     * Count unread inbox messages for a team.
+     * Count unread inbox messages for a player.
      */
-    public function countUnreadInbox(Team $team): int
+    public function countUnreadInbox(User $user): int
     {
         return (int) $this->em->getRepository(Message::class)->count([
-            'receiverTeam' => $team,
+            'receiverUser' => $user,
             'deletedByReceiver' => false,
             'readAt' => null,
         ]);
     }
 
     /**
-     * Get teams in the same kingdom that can receive mail (excluding self and NPCs).
+     * Get players in the same kingdom that can receive mail (excluding self).
      *
-     * @return array<int, array{id: int|null, name: string}>
+     * @return array<int, array{id: int|null, display_name: string, team_name: string|null}>
      */
-    public function getMessageRecipients(Team $team): array
+    public function getMessageRecipients(User $user): array
     {
-        $kingdom = $team->getKingdom();
+        $kingdom = $user->getKingdom();
+        if (null === $kingdom) {
+            return [];
+        }
 
-        /** @var array<int, Team> $teams */
-        $teams = $this->em->getRepository(Team::class)->createQueryBuilder('t')
-            ->where('t.kingdom = :kingdom')
-            ->andWhere('t.id != :teamId')
-            ->andWhere('t.isNpc = false')
+        /** @var array<int, User> $users */
+        $users = $this->em->getRepository(User::class)->createQueryBuilder('u')
+            ->leftJoin('u.team', 't')->addSelect('t')
+            ->where('u.kingdom = :kingdom')
+            ->andWhere('u.id != :userId')
+            ->andWhere('u.isVerified = true')
             ->setParameter('kingdom', $kingdom)
-            ->setParameter('teamId', $team->getId())
-            ->orderBy('t.name', 'ASC')
+            ->setParameter('userId', $user->getId())
+            ->orderBy('u.displayName', 'ASC')
             ->getQuery()
             ->getResult();
 
         return array_map(
-            static fn (Team $recipient): array => [
+            static fn (User $recipient): array => [
                 'id' => $recipient->getId(),
-                'name' => $recipient->getName(),
+                'display_name' => $recipient->getDisplayName(),
+                'team_name' => $recipient->getTeam()?->getName(),
             ],
-            $teams
+            $users
         );
     }
 
     /**
-     * Get inbox messages for a team.
+     * Get inbox messages for a player.
      *
      * @return array<int, Message>
      */
-    public function getInboxMessages(Team $team): array
+    public function getInboxMessages(User $user): array
     {
         /** @var array<int, Message> $result */
         $result = $this->em->getRepository(Message::class)->findBy(
-            ['receiverTeam' => $team, 'deletedByReceiver' => false],
+            ['receiverUser' => $user, 'deletedByReceiver' => false],
             ['id' => 'DESC']
         );
 
@@ -170,15 +183,15 @@ class CommunityService
     }
 
     /**
-     * Get sent messages for a team.
+     * Get sent messages for a player.
      *
      * @return array<int, Message>
      */
-    public function getSentMessages(Team $team): array
+    public function getSentMessages(User $user): array
     {
         /** @var array<int, Message> $result */
         $result = $this->em->getRepository(Message::class)->findBy(
-            ['senderTeam' => $team, 'deletedBySender' => false],
+            ['senderUser' => $user, 'deletedBySender' => false],
             ['id' => 'DESC']
         );
 
@@ -186,33 +199,32 @@ class CommunityService
     }
 
     /**
-     * Soft delete a message for a team.
+     * Soft delete a message for a player.
      */
-    public function deleteMessage(Team $team, int $messageId): void
+    public function deleteMessage(User $user, int $messageId): void
     {
         /** @var Message|null $message */
         $message = $this->em->getRepository(Message::class)->find($messageId);
         if (!$message) {
-            throw new \DomainException('Message not found.');
+            throw new UserFacingException('error.message_not_found');
         }
 
         $updated = false;
 
-        if ($message->getSenderTeam() === $team) {
+        if ($message->getSenderUser() === $user) {
             $message->setDeletedBySender(true);
             $updated = true;
         }
 
-        if ($message->getReceiverTeam() === $team) {
+        if ($message->getReceiverUser() === $user) {
             $message->setDeletedByReceiver(true);
             $updated = true;
         }
 
         if (!$updated) {
-            throw new \DomainException('You do not have permission to delete this message.');
+            throw new UserFacingException('error.community_cannot_delete_message');
         }
 
-        // If deleted by both parties, we can completely remove it from the DB
         if ($message->isDeletedBySender() && $message->isDeletedByReceiver()) {
             $this->em->remove($message);
         }
@@ -234,10 +246,10 @@ class CommunityService
     /**
      * Lock or unlock a thread.
      */
-    public function lockThread(Team $actor, ForumThread $thread, bool $lock): void
+    public function lockThread(User $actor, ForumThread $thread, bool $lock): void
     {
-        if ($thread->getAuthorTeam() !== $actor) {
-            throw new \DomainException('Only the thread author can modify its lock status.');
+        if ($thread->getAuthorUser() !== $actor) {
+            throw new UserFacingException('error.community_thread_lock_permission');
         }
 
         $thread->setIsLocked($lock);

@@ -1,32 +1,8 @@
 {# templates/components/formation/pitch_grid.html.twig #}
-<div class="formation-pitch">
-    {# Grid midfield line #}
-    <div class="formation-pitch__midline"></div>
-    
-    {# BACK LINE ROW (3 Slots) #}
-    <div class="space-y-2 relative z-10">
-        <span class="formation-pitch-board__line-label">{{ 'formation.back_line'|trans }}</span>
-        <div class="formation-pitch">
-            {% set back_slots = [
-                {pos: 'back_1'},
-                {pos: 'back_2'},
-                {pos: 'back_3'}
-            ] %}
-            
-            {% for slot in back_slots %}
-                {% set hero = current_slots[slot.pos] ?? null %}
-                {% include 'components/formation/pitch_slot.html.twig' with {
-                    slot: slot,
-                    hero: hero,
-                    default_emoji: '🛡️',
-                    title_class: 'formation-slot__pos-label',
-                    heroes: heroes
-                } %}
-            {% endfor %}
-        </div>
-    </div>
+<div class="formation-pitch-board">
+    <div class="formation-pitch-board__midline" aria-hidden="true"></div>
 
-    {# FRONT LINE ROW (3 Slots) #}
+    {# FRONT LINE ROW (3 Slots) — closer to opponent / top of pitch #}
     <div class="space-y-2 relative z-10">
         <span class="formation-pitch-board__line-label">{{ 'formation.front_line'|trans }}</span>
         <div class="formation-pitch">
@@ -35,13 +11,36 @@
                 {pos: 'front_2'},
                 {pos: 'front_3'}
             ] %}
-            
+
             {% for slot in front_slots %}
                 {% set hero = current_slots[slot.pos] ?? null %}
                 {% include 'components/formation/pitch_slot.html.twig' with {
                     slot: slot,
                     hero: hero,
                     default_emoji: '⚔️',
+                    title_class: 'formation-slot__pos-label',
+                    heroes: heroes
+                } %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {# BACK LINE ROW (3 Slots) — defense / bottom of pitch #}
+    <div class="space-y-2 relative z-10">
+        <span class="formation-pitch-board__line-label">{{ 'formation.back_line'|trans }}</span>
+        <div class="formation-pitch">
+            {% set back_slots = [
+                {pos: 'back_1'},
+                {pos: 'back_2'},
+                {pos: 'back_3'}
+            ] %}
+
+            {% for slot in back_slots %}
+                {% set hero = current_slots[slot.pos] ?? null %}
+                {% include 'components/formation/pitch_slot.html.twig' with {
+                    slot: slot,
+                    hero: hero,
+                    default_emoji: '🛡️',
                     title_class: 'formation-slot__pos-label',
                     heroes: heroes
                 } %}

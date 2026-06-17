@@ -20,7 +20,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/` | Web\DefaultController | Homepage |
-| GET | `/news` | Web\NewsController | News archive (each item displayed in full; no detail page) — **planned** |
+| GET | `/news` | Web\NewsController | News archive (each item displayed in full; no detail page) |
 | GET | `/wiki` | Web\WikiController | Help/wiki section — **planned** |
 
 ---
@@ -82,8 +82,9 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/api/v1/heroes` | Api\V1\HeroController | List heroes (filterable) |
 | GET | `/api/v1/heroes/{id}` | Api\V1\HeroController | Hero full detail |
 | PUT | `/api/v1/heroes/{id}` | Api\V1\HeroController | Update hero (rename) |
+| POST | `/api/v1/heroes/{id}/dismiss` | Api\V1\HeroController | Dismiss hero for partial compensation (financial crisis recovery) |
 | POST | `/api/v1/heroes/{id}/train` | Api\V1\HeroController | Trigger training — **planned** |
-| POST | `/api/v1/heroes/{id}/convert-trainer` | Api\V1\HeroController | Convert to trainer — **planned** |
+| POST | `/api/v1/heroes/{id}/convert-trainer` | Api\V1\HeroController | Convert hero to trainer — **planned** (trainers are created separately today) |
 
 ---
 
@@ -96,6 +97,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | POST | `/api/v1/training/trainers/{id}/configure` | Api\V1\TrainingController | Configure trainer focus (type, target attribute) |
 | POST | `/api/v1/training/trainers/{id}/assign` | Api\V1\TrainingController | Assign hero to trainer |
 | POST | `/api/v1/training/trainers/{id}/unassign` | Api\V1\TrainingController | Remove assignment of hero from trainer |
+| POST | `/api/v1/training/trainers/{id}/dismiss` | Api\V1\TrainingController | Dismiss trainer for partial compensation (financial crisis recovery) |
 
 ---
 
@@ -118,10 +120,13 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/hq` | Web\HeadquartersController | HQ page |
+| GET | `/app/hq` | Web\HeadquartersController | HQ hub (facility panels: training, medical, library, treasury, barracks, summoning chamber, arena) |
 | GET | `/api/v1/hq` | Api\V1\HeadquartersController | Facility levels + bonuses |
 | POST | `/api/v1/hq/upgrade` | Api\V1\HeadquartersController | Upgrade facility |
-| POST | `/api/v1/hq/optimize` | Api\V1\HeadquartersController | Change race optimization |
+| POST | `/api/v1/hq/downgrade` | Api\V1\HeadquartersController | Downgrade facility (financial crisis recovery) |
+| POST | `/api/v1/hq/optimize` | Api\V1\HeadquartersController | Change arena adaptation |
+
+> Legacy shortcuts `/app/arena` and `/app/summon` redirect into HQ (`?facility=arena` / `?facility=summoning_chamber`).
 
 ---
 
@@ -129,8 +134,8 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/summon` | Web\SummoningController | Summoning Chamber page |
-| GET | `/app/summon/history` | Web\SummoningController | Summon history page |
+| GET | `/app/summon` | Web\SummoningController | Redirect → `/app/hq?facility=summoning_chamber` |
+| GET | `/app/summon/history` | Web\SummoningController | Redirect → `/app/hq?facility=summoning_chamber&subtab=history` |
 | GET | `/api/v1/summoning/status` | Api\V1\SummoningController | Cooldown/availability |
 | POST | `/api/v1/summoning` | Api\V1\SummoningController | Summon new hero |
 
@@ -190,11 +195,17 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ---
 
-## Marketplace
+## Economy & Marketplace
+
+The player-facing **Economy hub** combines marketplace browsing, selling, transaction history, and the financial ledger in one page.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/marketplace` | Web\MarketplaceController | Marketplace page |
+| GET | `/app/economy` | Web\EconomyController | Economy hub (tabs: `browse`, `sell`, `mylistings`, `history`, `ledger`) |
+| GET | `/app/marketplace` | Web\MarketplaceController | Redirect → `/app/economy?tab=browse` (legacy alias) |
+| GET | `/app/finance` | Web\FinanceController | Redirect → `/app/economy?tab=ledger` (legacy alias) |
+| GET | `/api/v1/finance/status` | Api\V1\FinanceController | Financial crisis status |
+| GET | `/api/v1/finance/recent` | Api\V1\FinanceController | Recent financial ledger entries |
 | GET | `/api/v1/marketplace` | Api\V1\MarketplaceController | Search listings |
 | POST | `/api/v1/marketplace/listings` | Api\V1\MarketplaceController | Create listing |
 | DELETE | `/api/v1/marketplace/listings/{id}` | Api\V1\MarketplaceController | Cancel listing |
@@ -226,17 +237,29 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ---
 
-## Crafting
-> **Planned** — routes below are not implemented in the current codebase.
+## Crafting (Deferred — design only)
 
+> Design preserved in [future/crafting-system.md](future/crafting-system.md). No routes or controllers in the codebase.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/crafting` | Web\CraftingController | Crafting page — **planned** |
-| GET | `/api/v1/crafting/recipes` | Api\V1\CraftingController | Recipe list — **planned** |
-| POST | `/api/v1/crafting` | Api\V1\CraftingController | Start crafting — **planned** |
-| GET | `/api/v1/crafting/queue` | Api\V1\CraftingController | Active jobs — **planned** |
-| DELETE | `/api/v1/crafting/queue/{id}` | Api\V1\CraftingController | Cancel job — **planned** |
+| GET | `/crafting` | Web\CraftingController | Crafting page |
+| GET | `/api/v1/crafting/recipes` | Api\V1\CraftingController | Recipe list |
+| POST | `/api/v1/crafting` | Api\V1\CraftingController | Start crafting |
+| GET | `/api/v1/crafting/queue` | Api\V1\CraftingController | Active jobs |
+| DELETE | `/api/v1/crafting/queue/{id}` | Api\V1\CraftingController | Cancel job |
+
+---
+
+## Quests (Deferred — design only)
+
+> Design preserved in [future/quest-system.md](future/quest-system.md). No routes or controllers in the codebase.
+
+| Method | Path | Controller | Purpose |
+|--------|------|-----------|---------|
+| GET | `/api/v1/quests` | Api\V1\QuestController | Available and active quests |
+| POST | `/api/v1/quests/{id}/accept` | Api\V1\QuestController | Accept a quest |
+| POST | `/api/v1/quests/{id}/claim` | Api\V1\QuestController | Claim quest rewards |
 
 
 ---
@@ -254,6 +277,8 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/api/v1/players/{id}/profile` | Api\V1\CommunityController | Public player profile — **planned** |
 | GET | `/api/v1/messages` | Api\V1\MessageController | Inbox |
 | POST | `/api/v1/messages` | Api\V1\MessageController | Send message |
+| GET | `/api/v1/messages/unread-count` | Api\V1\MessageController | Unread message count |
+| GET | `/api/v1/messages/recipients` | Api\V1\MessageController | Valid message recipient teams |
 | GET | `/api/v1/messages/{id}` | Api\V1\MessageController | Read message |
 | DELETE | `/api/v1/messages/{id}` | Api\V1\MessageController | Delete message |
 | GET | `/api/v1/forum/threads` | Api\V1\ForumController | Thread list |
@@ -266,14 +291,11 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ## Graveyard
 
-> [!NOTE]
-> Not yet implemented — planned for Phase 6.
-
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/graveyard` | Web\GraveyardController | Graveyard memorial page |
-| GET | `/api/v1/graveyard` | Api\V1\GraveyardController | Fallen heroes list |
-| GET | `/api/v1/graveyard/{id}` | Api\V1\GraveyardController | Fallen hero detail |
+| GET | `/app/graveyard` | Web\GraveyardController | Graveyard memorial page |
+| GET | `/api/v1/graveyard` | Api\V1\GraveyardController | List memorial records (filterable by role, cause, race, search) |
+| GET | `/api/v1/graveyard/{id}` | Api\V1\GraveyardController | Memorial detail |
 
 ---
 
@@ -281,7 +303,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/arena` | Web\ArenaController | Arena overview (capacity, fan appeal, home-match revenue projection) |
+| GET | `/app/arena` | Web\ArenaController | Redirect → `/app/hq?facility=arena` (legacy alias; panel shows capacity, fan appeal, revenue projection) |
 | GET | `/api/v1/arena` | Api\V1\ArenaController | Arena status (read-only) |
 | POST | `/api/v1/arena/schedule-match` | Api\V1\ArenaController | Schedule friendly match — **planned** (requires combat engine) |
 
@@ -305,13 +327,15 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ## Notifications
 
-> [!NOTE]
-> Not yet implemented — planned for a future phase.
-
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/api/v1/notifications` | Api\NotificationController | Get notifications — **planned** |
-| PUT | `/api/v1/notifications/{id}/read` | Api\NotificationController | Mark as read — **planned** |
+| GET | `/api/v1/notifications` | Api\V1\NotificationController | List notifications (`?unread_only=1`, `?limit=50`) |
+| GET | `/api/v1/notifications/unread-count` | Api\V1\NotificationController | Unread count for navbar badge |
+| PUT | `/api/v1/notifications/read-all` | Api\V1\NotificationController | Mark all as read |
+| GET | `/api/v1/notifications/{id}` | Api\V1\NotificationController | Notification detail (marks read) |
+| PUT | `/api/v1/notifications/{id}/read` | Api\V1\NotificationController | Mark one as read |
+
+In-game UI: navbar dropdown → **Notifications** modal (`notifications_controller.js`). See [notification-system.md](systems/notification-system.md).
 
 ---
 
@@ -330,9 +354,9 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | | Web | API | Total |
 |--|-----|-----|-------|
-| Routes (implemented) | 21 | 52 | **74** |
-| Routes (planned) | 8 | 35+ | — |
-| Controllers (Web, implemented) | 15 | — | — |
-| Controllers (API, implemented) | — | 12 | — |
+| Routes (implemented) | 26 | 65 | **91** |
+| Routes (planned) | 7 | 32+ | — |
+| Controllers (Web, implemented) | 24 | — | — |
+| Controllers (API, implemented) | — | 18 | — |
 
 > Routes marked **planned** have no controller implementation yet. Route counts reflect the state of the codebase; the original total of 116 includes all planned future routes.

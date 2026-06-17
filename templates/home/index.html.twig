@@ -25,5 +25,23 @@
             </a>
         {% endif %}
     </div>
+    <p class="text-center mt-6">
+        <a href="{{ path('app_news') }}" class="link">{{ 'homepage.news_archive_link'|trans }}</a>
+    </p>
+
+    {% if latest_news is not empty %}
+        <section class="homepage-news">
+            <h2 class="homepage-news__title">{{ 'homepage.latest_news'|trans }}</h2>
+            <div class="homepage-news__list">
+                {% for article in latest_news %}
+                    <article class="homepage-news__item">
+                        <h3 class="homepage-news__item-title">{{ article.title }}</h3>
+                        <time class="homepage-news__item-date" datetime="{{ article.publishedAt|date('c') }}">{{ article.publishedAt|date('Y-m-d') }}</time>
+                        <p class="homepage-news__item-content">{{ article.content|nl2br }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
 </div>
 {% endblock %}

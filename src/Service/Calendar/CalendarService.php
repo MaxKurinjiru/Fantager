@@ -11,6 +11,7 @@ use App\Repository\Hero\HeroTrainingHistoryRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
+use App\Service\Translation\UserMessageTranslator;
 
 class CalendarService
 {
@@ -21,6 +22,7 @@ class CalendarService
         private readonly LeagueFixtureRepository $leagueFixtureRepository,
         private readonly LeagueSeasonRepository $seasonRepository,
         private readonly HeroRepository $heroRepository,
+        private readonly UserMessageTranslator $userMessages,
     ) {
     }
 
@@ -43,6 +45,7 @@ class CalendarService
         \DateTimeImmutable $start,
         \DateTimeImmutable $end,
         ?int $teamId = null,
+        ?string $locale = null,
     ): array {
         /** @var list<array{id: string, type: string, title: string, description: string, scheduledAt: string, visibility: string, status: string, metadata: array<string, mixed>}> $feed */
         $feed = [];
@@ -85,48 +88,48 @@ class CalendarService
 
             switch ($type) {
                 case TickType::DailyReset:
-                    $title = 'Daily Reset & Maintenance';
-                    $description = 'System cleanup, hero aging reset';
+                    $title = $this->userMessages->trans('calendar.tick.daily_reset_title', [], $locale);
+                    $description = $this->userMessages->trans('calendar.tick.daily_reset_desc', [], $locale);
                     $visibility = 'system_only';
                     break;
                 case TickType::InactiveRegistrationCleanup:
-                    $title = 'Inactive Registration Cleanup';
-                    $description = 'Remove team assignments and delete unverified accounts older than 1 day';
+                    $title = $this->userMessages->trans('calendar.tick.inactive_registration_title', [], $locale);
+                    $description = $this->userMessages->trans('calendar.tick.inactive_registration_desc', [], $locale);
                     $visibility = 'system_only';
                     break;
                 case TickType::InactivePlayerCleanup:
-                    $title = 'Inactive Player Cleanup';
-                    $description = 'Release teams from verified players inactive for 28+ days';
+                    $title = $this->userMessages->trans('calendar.tick.inactive_player_title', [], $locale);
+                    $description = $this->userMessages->trans('calendar.tick.inactive_player_desc', [], $locale);
                     $visibility = 'system_only';
                     break;
                 case TickType::FatigueRecovery:
-                    $title = 'Fatigue & Form Recovery';
-                    $description = 'Passive restoration of hero fatigue and condition';
+                    $title = $this->userMessages->trans('calendar.tick.fatigue_recovery_title', [], $locale);
+                    $description = $this->userMessages->trans('calendar.tick.fatigue_recovery_desc', [], $locale);
                     $visibility = 'system_only';
                     break;
                 case TickType::WeeklyTraining:
-                    $title = 'Weekly Training Process';
-                    $description = 'Calculate queued hero stat increases and finalize jobs';
+                    $title = $this->userMessages->trans('calendar.tick.weekly_training_title', [], $locale);
+                    $description = $this->userMessages->trans('calendar.tick.weekly_training_desc', [], $locale);
                     $visibility = 'system_only';
                     break;
                 case TickType::LeagueMatch:
-                    $title = 'League Match Tick';
-                    $description = 'Trigger scheduled league fixtures simulation';
+                    $title = $this->userMessages->trans('calendar.tick.league_match_title', [], $locale);
+                    $description = $this->userMessages->trans('calendar.tick.league_match_desc', [], $locale);
                     $visibility = 'system_only';
                     break;
                 case TickType::SeasonTransition:
-                    $title = 'Season Transition Tick';
-                    $description = 'Resolve promotions, relegations, rewards, and initialize next season';
+                    $title = $this->userMessages->trans('calendar.tick.season_transition_title', [], $locale);
+                    $description = $this->userMessages->trans('calendar.tick.season_transition_desc', [], $locale);
                     $visibility = 'public';
                     break;
                 case TickType::WeeklyReset:
-                    $title = 'Weekly Reset';
-                    $description = 'Reset summoning chamber cooldowns and weekly maintenance';
+                    $title = $this->userMessages->trans('calendar.tick.weekly_reset_title', [], $locale);
+                    $description = $this->userMessages->trans('calendar.tick.weekly_reset_desc', [], $locale);
                     $visibility = 'system_only';
                     break;
                 case TickType::RaceOptimization:
-                    $title = 'Race Optimization Update';
-                    $description = 'Apply pending race optimization settings and update lock states';
+                    $title = $this->userMessages->trans('calendar.tick.race_optimization_title', [], $locale);
+                    $description = $this->userMessages->trans('calendar.tick.race_optimization_desc', [], $locale);
                     $visibility = 'system_only';
                     break;
             }
@@ -161,7 +164,7 @@ class CalendarService
                 'id' => sprintf('league_match_%d', $fixture->getId()),
                 'type' => 'league_match',
                 'title' => sprintf('%s vs %s', $fixture->getHomeTeam()->getName(), $fixture->getAwayTeam()->getName()),
-                'description' => sprintf('League Fixture - Group %s', $fixture->getGroup()->getGroupName()),
+                'description' => $this->userMessages->trans('calendar.league_fixture_desc', ['%group%' => $fixture->getGroup()->getGroupName()], $locale),
                 'scheduledAt' => $fixture->getScheduledAt()->format(\DateTimeInterface::ATOM),
                 'visibility' => $isOwnMatch ? 'team_only' : 'public',
                 'status' => $fixture->getStatus()->value,
@@ -188,7 +191,7 @@ class CalendarService
                 $feed[] = [
                     'id' => sprintf('hero_training_history_%d', $entry->getId()),
                     'type' => 'hero_training_history',
-                    'title' => sprintf('Training complete: %s', $entry->getHero()->getName()),
+                    'title' => $this->userMessages->trans('calendar.training_complete_title', ['%hero%' => $entry->getHero()->getName()], $locale),
                     'description' => sprintf(
                         'Scheduled training for %s (%s)',
                         $entry->getHero()->getName(),
@@ -228,7 +231,7 @@ class CalendarService
                         $feed[] = [
                             'id' => sprintf('active_training_%d_%s', $hero->getId(), $occTime->format('YmdHis')),
                             'type' => 'hero_training_history',
-                            'title' => sprintf('Training complete: %s', $hero->getName()),
+                            'title' => $this->userMessages->trans('calendar.training_complete_title', ['%hero%' => $hero->getName()], $locale),
                             'description' => sprintf(
                                 'Scheduled training for %s (%s)',
                                 $hero->getName(),

@@ -79,6 +79,20 @@
                     <span class="next-match-meta__icon">🏆</span>
                     <span class="next-match-meta__text">{{ match.group_name }}</span>
                 </div>
+                {% if match.formation|default() is not empty %}
+                    <div class="next-match-meta__item">
+                        <span class="next-match-meta__icon">🛡️</span>
+                        <span class="next-match-meta__text">
+                            {% if match.formation.mode == 'default' %}
+                                {{ 'league.formation_status_default'|trans }}
+                            {% elseif match.formation.mode == 'saved' %}
+                                {{ 'league.formation_status_saved'|trans({'%name%': match.formation.formation_name}) }}
+                            {% elseif match.formation.mode == 'custom' %}
+                                {{ 'league.formation_status_custom'|trans }}
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endif %}
             </div>
 
             <div class="next-match-actions">

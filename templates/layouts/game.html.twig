@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
 
 {% block layout_content %}
-    <div data-controller="mobile-menu mail ledger"
+    <div data-controller="mobile-menu mail ledger notifications"
          data-user-pref-close-modal-on-backdrop="{{ app.user.closeModalOnBackdrop ? 'true' : 'false' }}"
          data-mail-unread-count-value="{{ unread_mail_count() }}"
-         data-mail-active-team-id-value="{{ app.user.team.id }}"
+         data-notifications-unread-count-value="{{ unread_notification_count() }}"
          data-ledger-translations-value="{{ {
              'type_league_reward': 'finance.type_league_reward'|trans,
              'type_arena_revenue': 'finance.type_arena_revenue'|trans,
@@ -47,6 +47,22 @@
              'send_msg': 'community.send_msg'|trans,
              'delete_msg': 'community.delete_msg'|trans
          }|json_encode|e('html_attr') }}"
+         data-notifications-empty-msg-value="{{ 'notifications.empty'|trans }}"
+         data-notifications-translations-value="{{ {
+             'error_load': 'notifications.error_load'|trans,
+             'error_read': 'notifications.error_read'|trans,
+             'error_mark_all': 'notifications.error_mark_all'|trans,
+             'success_mark_all': 'notifications.success_mark_all'|trans,
+             'type_system': 'notifications.type_system'|trans,
+             'type_marketplace_bid': 'notifications.type_marketplace_bid'|trans,
+             'type_marketplace_sold': 'notifications.type_marketplace_sold'|trans,
+             'type_battle_result': 'notifications.type_battle_result'|trans,
+             'type_training_complete': 'notifications.type_training_complete'|trans,
+             'type_league_update': 'notifications.type_league_update'|trans,
+             'type_event_started': 'notifications.type_event_started'|trans,
+             'type_hero_died': 'notifications.type_hero_died'|trans,
+             'type_season_ended': 'notifications.type_season_ended'|trans
+         }|json_encode|e('html_attr') }}"
          class="min-h-screen flex flex-col">
         {# Sidebar + Main Layout #}
         <div class="flex flex-1 relative min-h-0">
@@ -73,6 +89,9 @@
         {% include 'components/mail/compose_message_modal.html.twig' %}
         {% include 'components/mail/read_message_modal.html.twig' %}
         {% include 'components/mail/js_templates.html.twig' %}
+        {% include 'components/notifications/notifications_modal.html.twig' %}
+        {% include 'components/notifications/read_notification_modal.html.twig' %}
+        {% include 'components/notifications/js_templates.html.twig' %}
         {% include 'components/layout/ledger_modal.html.twig' %}
     </div>
 {% endblock %}

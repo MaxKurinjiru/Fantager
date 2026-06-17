@@ -20,7 +20,7 @@ Each player (User + Team) belongs to exactly one Kingdom, chosen once at account
 When a new Kingdom is created (by an admin or automated setup), the following steps happen automatically in order:
 
 1. **Kingdom is persisted** with all settings (language, timezone, game_speed, `league_tiers_config`, etc.).
-2. **First LeagueSeason is created** (`season_number = 1`, status `upcoming` or `active` depending on the start date). `LeagueTier` and `LeagueGroup` rows are created from `league_tiers_config` — the bracket skeleton exists but is empty.
+2. **First LeagueSeason is created** (`season_number = 1`, status `scheduled` or `active` depending on the start date). `LeagueTier` and `LeagueGroup` rows are created from `league_tiers_config` — the bracket skeleton exists but is empty.
 3. **NPC teams are created and immediately seeded** into the league groups. Each team (`is_npc = true`, `user_id = NULL`) is created with generated name and emblem and placed directly into a `LeagueGroup`, and a `LeagueStanding` row is created for it. Each new team receives a chronicle entry `team_established` in `team_chronicle`. All groups are filled in one pass.
 4. **Heroes are generated and assigned** to each NPC team — **10 heroes per team**, fully staffed and functional before the Kingdom opens to players.
 
@@ -38,7 +38,7 @@ Sections to fill:
 
 Summary (to extract from game-summary):
 - Kingdom-specific global settings: language, timezone, gameSpeed, startingResources, marketplaceTaxRate, seasonLength, **leagueTiersConfig** (tiers, groups per tier, teams per group — player capacity is derived from this), theme, levelCap, xpModifier, craftingBoost.
-- Server tick responsibilities: fatigue recovery, league match processing, dungeon processing, training/crafting queue ticks, marketplace auction processing, hero aging.
+- Server tick responsibilities: fatigue recovery, league match processing, training tick, marketplace auction processing, hero aging, Royal Treasury distribution, fan club evolution, inactive player cleanup. *(Dungeon and crafting ticks deferred.)*
 
 APIs (examples):
 - GET /api/kingdoms — list kingdoms (id, name, status, playerCount, **capacity** (computed from leagueTiersConfig), settings)

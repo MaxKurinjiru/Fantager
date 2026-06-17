@@ -128,7 +128,7 @@ export default class extends Controller {
         }
 
         // Proactively refresh team wallet if header resource bar is visible
-        const headerGold = document.querySelector('[title="Gold"] span:nth-child(2)');
+        const headerGold = document.querySelector('[data-resource="gold"] .resource-bar__item-value');
         if (headerGold) {
             let gold = parseInt(headerGold.textContent.replace(/\s/g, ''), 10);
             if (!isNaN(gold)) {

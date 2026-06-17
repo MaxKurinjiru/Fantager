@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Entity\Hero\Hero;
 use App\Enum\HeroRole;
@@ -19,6 +20,8 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/v1')]
 class TrainingController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly TrainingService $trainingService,
         private readonly TrainerDismissalService $trainerDismissalService,
@@ -32,7 +35,7 @@ class TrainingController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $now = new \DateTimeImmutable();
@@ -79,12 +82,12 @@ class TrainingController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $trainer = $this->findTeamTrainer($id, $team);
         if (null === $trainer) {
-            return $this->json(['error' => 'Trainer not found.'], 404);
+            return $this->jsonError('error.trainer_not_found', 404);
         }
 
         /** @var array<string, mixed> $body */
@@ -95,7 +98,7 @@ class TrainingController extends AbstractController
         if (null !== $typeValue && '' !== $typeValue) {
             $type = TrainingType::tryFrom($typeValue);
             if (null === $type) {
-                return $this->json(['error' => 'Invalid training type.'], 400);
+                return $this->jsonError('error.invalid_training_type', 400);
             }
         }
 
@@ -104,11 +107,11 @@ class TrainingController extends AbstractController
         try {
             $this->trainingService->configureTrainer($trainer, $type, $attribute, $team, new \DateTimeImmutable());
         } catch (\DomainException|\InvalidArgumentException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json([
-            'message' => 'Trainer configured successfully.',
+            'message' => $this->transMessage('error.training_success_configure'),
             'training_type' => $trainer->getTrainingType()?->value,
             'target_attribute' => $trainer->getTargetAttribute(),
         ]);
@@ -120,12 +123,12 @@ class TrainingController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $trainer = $this->findTeamTrainer($id, $team);
         if (null === $trainer) {
-            return $this->json(['error' => 'Trainer not found.'], 404);
+            return $this->jsonError('error.trainer_not_found', 404);
         }
 
         /** @var array<string, mixed> $body */
@@ -134,17 +137,17 @@ class TrainingController extends AbstractController
 
         $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team, 'role' => HeroRole::Combatant]);
         if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
+            return $this->jsonError('error.hero_not_found', 404);
         }
 
         try {
             $this->trainingService->assignHero($trainer, $hero, $team, new \DateTimeImmutable());
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json([
-            'message' => 'Hero assigned to trainer successfully.',
+            'message' => $this->transMessage('error.training_success_assign'),
             'hero_id' => $hero->getId(),
             'trainer_id' => $trainer->getId(),
         ]);
@@ -156,12 +159,12 @@ class TrainingController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $trainer = $this->findTeamTrainer($id, $team);
         if (null === $trainer) {
-            return $this->json(['error' => 'Trainer not found.'], 404);
+            return $this->jsonError('error.trainer_not_found', 404);
         }
 
         /** @var array<string, mixed> $body */
@@ -170,17 +173,17 @@ class TrainingController extends AbstractController
 
         $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team, 'role' => HeroRole::Combatant]);
         if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
+            return $this->jsonError('error.hero_not_found', 404);
         }
 
         try {
             $this->trainingService->unassignHero($trainer, $hero, $team, new \DateTimeImmutable());
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json([
-            'message' => 'Hero unassigned from trainer successfully.',
+            'message' => $this->transMessage('error.training_success_unassign'),
             'hero_id' => $hero->getId(),
         ]);
     }
@@ -190,18 +193,18 @@ class TrainingController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $trainer = $this->findTeamTrainer($id, $team);
         if (null === $trainer) {
-            return $this->json(['error' => 'Trainer not found.'], 404);
+            return $this->jsonError('error.trainer_not_found', 404);
         }
 
         try {
             $compensation = $this->trainerDismissalService->dismiss($team, $trainer);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json([

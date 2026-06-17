@@ -2,9 +2,16 @@
 <article class="forum-post{% if is_original|default(false) %} forum-post--original{% endif %} game-panel">
     <header class="forum-post__header">
         <div class="forum-post__author">
-            <span class="forum-post__emblem">{{ post.authorTeam.emblem ?: '🛡️' }}</span>
+            {% if post.authorTeam %}
+                <span class="forum-post__emblem">{{ post.authorTeam.emblem ?: '🛡️' }}</span>
+            {% else %}
+                <span class="forum-post__emblem">👤</span>
+            {% endif %}
             <div>
-                <strong class="forum-post__author-name">{{ post.authorTeam.name }}</strong>
+                <strong class="forum-post__author-name">{{ post.authorUser.displayName }}</strong>
+                {% if post.authorTeam %}
+                    <span class="forum-post__team-name">{{ post.authorTeam.name }}</span>
+                {% endif %}
                 {% if is_original|default(false) %}
                     <span class="forum-post__role">{{ 'community.thread_starter'|trans }}</span>
                 {% endif %}

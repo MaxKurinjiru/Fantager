@@ -179,7 +179,10 @@
              data-training-text-removing-value="{{ 'js_flash.training.text_removing'|trans }}"
              data-training-error-save-focus-value="{{ 'js_flash.training.error_save_focus'|trans }}"
              data-training-error-assign-hero-value="{{ 'js_flash.training.error_assign_hero'|trans }}"
-             data-training-error-remove-hero-value="{{ 'js_flash.training.error_remove_hero'|trans }}">
+             data-training-error-remove-hero-value="{{ 'js_flash.training.error_remove_hero'|trans }}"
+             data-training-confirm-dismiss-value="{{ 'training.dismiss_confirm'|trans }}"
+             data-training-error-dismiss-value="{{ 'js_flash.training.failed_dismiss'|trans }}"
+             data-training-success-dismiss-value="{{ 'js_flash.training.success_dismiss'|trans }}">
             {% include 'components/ui/alert_box.html.twig' with { target: 'training', message_target: 'alertMessage', close_action: 'training#closeAlert' } %}
 
             {% if hero.trainer %}

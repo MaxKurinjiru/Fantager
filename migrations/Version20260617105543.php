@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260616213709 extends AbstractMigration
+final class Version20260617105543 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -24,12 +24,12 @@ final class Version20260616213709 extends AbstractMigration
         $this->addSql('CREATE TABLE auth_user_settings (id INT AUTO_INCREMENT NOT NULL, close_modal_on_backdrop TINYINT DEFAULT 0 NOT NULL, updated_at DATETIME NOT NULL, user_id INT NOT NULL, UNIQUE INDEX UNIQ_25B98D5A76ED395 (user_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('CREATE TABLE auth_verification_token (id INT AUTO_INCREMENT NOT NULL, token VARCHAR(64) NOT NULL, type VARCHAR(20) NOT NULL, expires_at DATETIME NOT NULL, used_at DATETIME DEFAULT NULL, data JSON DEFAULT NULL, user_id INT NOT NULL, UNIQUE INDEX UNIQ_7DBA01A65F37A13B (token), INDEX IDX_7DBA01A6A76ED395 (user_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('CREATE TABLE combat_battle (id INT AUTO_INCREMENT NOT NULL, match_type VARCHAR(15) NOT NULL, result VARCHAR(10) DEFAULT NULL, score_a INT DEFAULT 0 NOT NULL, score_b INT DEFAULT 0 NOT NULL, combat_log JSON NOT NULL, xp_awarded INT DEFAULT 0 NOT NULL, processed_at DATETIME DEFAULT NULL, kingdom_id INT NOT NULL, team_a_id INT NOT NULL, team_b_id INT NOT NULL, formation_a_id INT DEFAULT NULL, formation_b_id INT DEFAULT NULL, INDEX IDX_BC1D295D6976FEC0 (kingdom_id), INDEX IDX_BC1D295DEA3FA723 (team_a_id), INDEX IDX_BC1D295DF88A08CD (team_b_id), INDEX IDX_BC1D295D6C01B618 (formation_a_id), INDEX IDX_BC1D295D7EB419F6 (formation_b_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
-        $this->addSql('CREATE TABLE community_forum_post (id INT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, created_at DATETIME NOT NULL, thread_id INT NOT NULL, author_team_id INT NOT NULL, INDEX IDX_A8A0BA46E2904019 (thread_id), INDEX IDX_A8A0BA466C5647ED (author_team_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
-        $this->addSql('CREATE TABLE community_forum_thread (id INT AUTO_INCREMENT NOT NULL, category VARCHAR(100) NOT NULL, title VARCHAR(200) NOT NULL, created_at DATETIME NOT NULL, is_pinned TINYINT DEFAULT 0 NOT NULL, is_locked TINYINT DEFAULT 0 NOT NULL, kingdom_id INT NOT NULL, author_team_id INT NOT NULL, INDEX IDX_769EC7CD6976FEC0 (kingdom_id), INDEX IDX_769EC7CD6C5647ED (author_team_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
-        $this->addSql('CREATE TABLE community_message (id INT AUTO_INCREMENT NOT NULL, subject VARCHAR(200) NOT NULL, body LONGTEXT NOT NULL, read_at DATETIME DEFAULT NULL, sent_at DATETIME NOT NULL, deleted_by_sender TINYINT DEFAULT 0 NOT NULL, deleted_by_receiver TINYINT DEFAULT 0 NOT NULL, sender_team_id INT NOT NULL, receiver_team_id INT NOT NULL, INDEX IDX_9278592CA49A1E65 (sender_team_id), INDEX IDX_9278592C5455E90C (receiver_team_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+        $this->addSql('CREATE TABLE community_forum_post (id INT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, created_at DATETIME NOT NULL, thread_id INT NOT NULL, author_user_id INT NOT NULL, author_team_id INT DEFAULT NULL, INDEX IDX_A8A0BA46E2904019 (thread_id), INDEX IDX_A8A0BA46E2544CD6 (author_user_id), INDEX IDX_A8A0BA466C5647ED (author_team_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+        $this->addSql('CREATE TABLE community_forum_thread (id INT AUTO_INCREMENT NOT NULL, category VARCHAR(100) NOT NULL, title VARCHAR(200) NOT NULL, created_at DATETIME NOT NULL, is_pinned TINYINT DEFAULT 0 NOT NULL, is_locked TINYINT DEFAULT 0 NOT NULL, kingdom_id INT NOT NULL, author_user_id INT NOT NULL, author_team_id INT DEFAULT NULL, INDEX IDX_769EC7CD6976FEC0 (kingdom_id), INDEX IDX_769EC7CDE2544CD6 (author_user_id), INDEX IDX_769EC7CD6C5647ED (author_team_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+        $this->addSql('CREATE TABLE community_message (id INT AUTO_INCREMENT NOT NULL, subject VARCHAR(200) NOT NULL, body LONGTEXT NOT NULL, read_at DATETIME DEFAULT NULL, sent_at DATETIME NOT NULL, deleted_by_sender TINYINT DEFAULT 0 NOT NULL, deleted_by_receiver TINYINT DEFAULT 0 NOT NULL, sender_user_id INT NOT NULL, receiver_user_id INT NOT NULL, sender_team_id INT DEFAULT NULL, receiver_team_id INT DEFAULT NULL, INDEX IDX_9278592C2A98155E (sender_user_id), INDEX IDX_9278592CDA57E237 (receiver_user_id), INDEX IDX_9278592CA49A1E65 (sender_team_id), INDEX IDX_9278592C5455E90C (receiver_team_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('CREATE TABLE formation (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(100) NOT NULL, is_default TINYINT DEFAULT 0 NOT NULL, approach VARCHAR(15) NOT NULL, is_temporary TINYINT DEFAULT 0 NOT NULL, team_id INT NOT NULL, source_fixture_id INT DEFAULT NULL, INDEX IDX_404021BF296CD8AE (team_id), INDEX IDX_404021BF99901049 (source_fixture_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('CREATE TABLE formation_slot (id INT AUTO_INCREMENT NOT NULL, position VARCHAR(10) NOT NULL, strategy JSON NOT NULL, spell_priorities JSON NOT NULL, formation_id INT NOT NULL, hero_id INT DEFAULT NULL, INDEX IDX_FBD1C5275200282E (formation_id), INDEX IDX_FBD1C52745B0BCD (hero_id), UNIQUE INDEX UNIQ_FORMATION_POSITION (formation_id, position), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
-        $this->addSql('CREATE TABLE graveyard_memorial (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(100) NOT NULL, race VARCHAR(10) NOT NULL, role_at_departure VARCHAR(15) NOT NULL, cause VARCHAR(20) NOT NULL, age INT NOT NULL, final_level INT DEFAULT NULL, final_stats JSON NOT NULL, departed_at DATE NOT NULL, original_hero_id INT DEFAULT NULL, team_id INT NOT NULL, INDEX IDX_B402F248296CD8AE (team_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+        $this->addSql('CREATE TABLE graveyard (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(100) NOT NULL, race VARCHAR(10) NOT NULL, role_at_departure VARCHAR(15) NOT NULL, cause VARCHAR(20) NOT NULL, age INT NOT NULL, final_level INT DEFAULT NULL, final_stats JSON NOT NULL, departed_at DATE NOT NULL, original_hero_id INT DEFAULT NULL, team_id INT NOT NULL, INDEX IDX_99E2CFAA296CD8AE (team_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('CREATE TABLE headquarters (id INT AUTO_INCREMENT NOT NULL, total_level INT DEFAULT 1 NOT NULL, race_optimization VARCHAR(20) DEFAULT NULL, pending_race_optimization VARCHAR(20) DEFAULT NULL, has_pending_race_optimization_change TINYINT DEFAULT 0 NOT NULL, race_optimization_lock_cycle TINYINT DEFAULT 0 NOT NULL, upgrade_completed_at DATETIME DEFAULT NULL, facility_operation VARCHAR(10) DEFAULT NULL, facility_downgrade_lock_cycle TINYINT DEFAULT 0 NOT NULL, team_id INT NOT NULL, upgrading_facility_id INT DEFAULT NULL, UNIQUE INDEX UNIQ_ABF65D25296CD8AE (team_id), INDEX IDX_ABF65D255DF6B900 (upgrading_facility_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('CREATE TABLE headquarters_facility (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(30) NOT NULL, level INT DEFAULT 1 NOT NULL, metadata JSON NOT NULL, headquarters_id INT NOT NULL, INDEX IDX_4CA91EE730C35A0 (headquarters_id), UNIQUE INDEX UNIQ_HQ_TYPE (headquarters_id, type), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
         $this->addSql('CREATE TABLE hero (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(100) NOT NULL, race VARCHAR(10) NOT NULL, role VARCHAR(15) DEFAULT \'combatant\' NOT NULL, level INT DEFAULT 1 NOT NULL, xp INT DEFAULT 0 NOT NULL, age INT NOT NULL, form INT DEFAULT 100 NOT NULL, fatigue INT DEFAULT 0 NOT NULL, morale INT DEFAULT 50 NOT NULL, magic_capacity INT DEFAULT 0 NOT NULL, str INT NOT NULL, dex INT NOT NULL, kon INT NOT NULL, spd INT NOT NULL, intel INT NOT NULL, wil INT NOT NULL, cha INT NOT NULL, lck INT NOT NULL, status VARCHAR(15) NOT NULL, training_type VARCHAR(15) DEFAULT NULL, target_attribute VARCHAR(20) DEFAULT NULL, team_id INT NOT NULL, trainer_id INT DEFAULT NULL, INDEX IDX_51CE6E86296CD8AE (team_id), INDEX IDX_51CE6E86FB08EDF6 (trainer_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
@@ -64,16 +64,20 @@ final class Version20260616213709 extends AbstractMigration
         $this->addSql('ALTER TABLE combat_battle ADD CONSTRAINT FK_BC1D295D6C01B618 FOREIGN KEY (formation_a_id) REFERENCES formation (id) ON DELETE SET NULL');
         $this->addSql('ALTER TABLE combat_battle ADD CONSTRAINT FK_BC1D295D7EB419F6 FOREIGN KEY (formation_b_id) REFERENCES formation (id) ON DELETE SET NULL');
         $this->addSql('ALTER TABLE community_forum_post ADD CONSTRAINT FK_A8A0BA46E2904019 FOREIGN KEY (thread_id) REFERENCES community_forum_thread (id)');
+        $this->addSql('ALTER TABLE community_forum_post ADD CONSTRAINT FK_A8A0BA46E2544CD6 FOREIGN KEY (author_user_id) REFERENCES auth_user (id)');
         $this->addSql('ALTER TABLE community_forum_post ADD CONSTRAINT FK_A8A0BA466C5647ED FOREIGN KEY (author_team_id) REFERENCES team (id)');
         $this->addSql('ALTER TABLE community_forum_thread ADD CONSTRAINT FK_769EC7CD6976FEC0 FOREIGN KEY (kingdom_id) REFERENCES kingdom (id)');
+        $this->addSql('ALTER TABLE community_forum_thread ADD CONSTRAINT FK_769EC7CDE2544CD6 FOREIGN KEY (author_user_id) REFERENCES auth_user (id)');
         $this->addSql('ALTER TABLE community_forum_thread ADD CONSTRAINT FK_769EC7CD6C5647ED FOREIGN KEY (author_team_id) REFERENCES team (id)');
+        $this->addSql('ALTER TABLE community_message ADD CONSTRAINT FK_9278592C2A98155E FOREIGN KEY (sender_user_id) REFERENCES auth_user (id)');
+        $this->addSql('ALTER TABLE community_message ADD CONSTRAINT FK_9278592CDA57E237 FOREIGN KEY (receiver_user_id) REFERENCES auth_user (id)');
         $this->addSql('ALTER TABLE community_message ADD CONSTRAINT FK_9278592CA49A1E65 FOREIGN KEY (sender_team_id) REFERENCES team (id)');
         $this->addSql('ALTER TABLE community_message ADD CONSTRAINT FK_9278592C5455E90C FOREIGN KEY (receiver_team_id) REFERENCES team (id)');
         $this->addSql('ALTER TABLE formation ADD CONSTRAINT FK_404021BF296CD8AE FOREIGN KEY (team_id) REFERENCES team (id)');
         $this->addSql('ALTER TABLE formation ADD CONSTRAINT FK_404021BF99901049 FOREIGN KEY (source_fixture_id) REFERENCES league_fixture (id) ON DELETE SET NULL');
         $this->addSql('ALTER TABLE formation_slot ADD CONSTRAINT FK_FBD1C5275200282E FOREIGN KEY (formation_id) REFERENCES formation (id)');
         $this->addSql('ALTER TABLE formation_slot ADD CONSTRAINT FK_FBD1C52745B0BCD FOREIGN KEY (hero_id) REFERENCES hero (id)');
-        $this->addSql('ALTER TABLE graveyard_memorial ADD CONSTRAINT FK_B402F248296CD8AE FOREIGN KEY (team_id) REFERENCES team (id)');
+        $this->addSql('ALTER TABLE graveyard ADD CONSTRAINT FK_99E2CFAA296CD8AE FOREIGN KEY (team_id) REFERENCES team (id)');
         $this->addSql('ALTER TABLE headquarters ADD CONSTRAINT FK_ABF65D25296CD8AE FOREIGN KEY (team_id) REFERENCES team (id)');
         $this->addSql('ALTER TABLE headquarters ADD CONSTRAINT FK_ABF65D255DF6B900 FOREIGN KEY (upgrading_facility_id) REFERENCES headquarters_facility (id) ON DELETE SET NULL');
         $this->addSql('ALTER TABLE headquarters_facility ADD CONSTRAINT FK_4CA91EE730C35A0 FOREIGN KEY (headquarters_id) REFERENCES headquarters (id)');
@@ -129,16 +133,20 @@ final class Version20260616213709 extends AbstractMigration
         $this->addSql('ALTER TABLE combat_battle DROP FOREIGN KEY FK_BC1D295D6C01B618');
         $this->addSql('ALTER TABLE combat_battle DROP FOREIGN KEY FK_BC1D295D7EB419F6');
         $this->addSql('ALTER TABLE community_forum_post DROP FOREIGN KEY FK_A8A0BA46E2904019');
+        $this->addSql('ALTER TABLE community_forum_post DROP FOREIGN KEY FK_A8A0BA46E2544CD6');
         $this->addSql('ALTER TABLE community_forum_post DROP FOREIGN KEY FK_A8A0BA466C5647ED');
         $this->addSql('ALTER TABLE community_forum_thread DROP FOREIGN KEY FK_769EC7CD6976FEC0');
+        $this->addSql('ALTER TABLE community_forum_thread DROP FOREIGN KEY FK_769EC7CDE2544CD6');
         $this->addSql('ALTER TABLE community_forum_thread DROP FOREIGN KEY FK_769EC7CD6C5647ED');
+        $this->addSql('ALTER TABLE community_message DROP FOREIGN KEY FK_9278592C2A98155E');
+        $this->addSql('ALTER TABLE community_message DROP FOREIGN KEY FK_9278592CDA57E237');
         $this->addSql('ALTER TABLE community_message DROP FOREIGN KEY FK_9278592CA49A1E65');
         $this->addSql('ALTER TABLE community_message DROP FOREIGN KEY FK_9278592C5455E90C');
         $this->addSql('ALTER TABLE formation DROP FOREIGN KEY FK_404021BF296CD8AE');
         $this->addSql('ALTER TABLE formation DROP FOREIGN KEY FK_404021BF99901049');
         $this->addSql('ALTER TABLE formation_slot DROP FOREIGN KEY FK_FBD1C5275200282E');
         $this->addSql('ALTER TABLE formation_slot DROP FOREIGN KEY FK_FBD1C52745B0BCD');
-        $this->addSql('ALTER TABLE graveyard_memorial DROP FOREIGN KEY FK_B402F248296CD8AE');
+        $this->addSql('ALTER TABLE graveyard DROP FOREIGN KEY FK_99E2CFAA296CD8AE');
         $this->addSql('ALTER TABLE headquarters DROP FOREIGN KEY FK_ABF65D25296CD8AE');
         $this->addSql('ALTER TABLE headquarters DROP FOREIGN KEY FK_ABF65D255DF6B900');
         $this->addSql('ALTER TABLE headquarters_facility DROP FOREIGN KEY FK_4CA91EE730C35A0');
@@ -189,7 +197,7 @@ final class Version20260616213709 extends AbstractMigration
         $this->addSql('DROP TABLE community_message');
         $this->addSql('DROP TABLE formation');
         $this->addSql('DROP TABLE formation_slot');
-        $this->addSql('DROP TABLE graveyard_memorial');
+        $this->addSql('DROP TABLE graveyard');
         $this->addSql('DROP TABLE headquarters');
         $this->addSql('DROP TABLE headquarters_facility');
         $this->addSql('DROP TABLE hero');

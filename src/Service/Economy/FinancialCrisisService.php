@@ -13,6 +13,7 @@ use App\Enum\FinancialCrisisLevel;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use App\Enum\NotificationType;
+use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Headquarters\HqMaintenanceCalculator;
 use App\Service\Notification\NotificationHelper;
@@ -22,7 +23,6 @@ use Psr\Log\LoggerInterface;
 
 class FinancialCrisisService
 {
-    public const WARNING_GOLD_MULTIPLIER = 2;
     public const RESTRICTED_WEEKS = 2;
     public const BANKRUPTCY_WEEKS = 6;
     public const BANKRUPTCY_DEBT_MULTIPLIER = 4;
@@ -58,7 +58,6 @@ class FinancialCrisisService
             'crisis_weeks' => $team->getCrisisWeeks(),
             'weekly_maintenance' => $weeklyMaintenance,
             'gold' => $team->getGold(),
-            'warning_gold_threshold' => $weeklyMaintenance * self::WARNING_GOLD_MULTIPLIER,
             'bankruptcy_debt_threshold' => $weeklyMaintenance * self::BANKRUPTCY_DEBT_MULTIPLIER,
             'weeks_until_bankruptcy' => $weeksUntilBankruptcy,
             'hq_bonuses_active' => $this->areHqBonusesActive($team, $level),
@@ -81,8 +80,7 @@ class FinancialCrisisService
         $debt = $team->getUnpaidDebt();
         $crisisWeeks = $team->getCrisisWeeks();
 
-        if ($debt <= 0
-            && $team->getGold() >= $weeklyMaintenance * self::WARNING_GOLD_MULTIPLIER) {
+        if ($debt <= 0) {
             return FinancialCrisisLevel::None;
         }
 
@@ -90,15 +88,11 @@ class FinancialCrisisService
             return FinancialCrisisLevel::BankruptcyPending;
         }
 
-        if ($debt > 0 && $crisisWeeks >= self::RESTRICTED_WEEKS) {
+        if ($crisisWeeks >= self::RESTRICTED_WEEKS) {
             return FinancialCrisisLevel::Restricted;
         }
 
-        if ($debt > 0 || $team->getGold() < $weeklyMaintenance * self::WARNING_GOLD_MULTIPLIER) {
-            return FinancialCrisisLevel::Warning;
-        }
-
-        return FinancialCrisisLevel::None;
+        return FinancialCrisisLevel::Warning;
     }
 
     public function areHqBonusesActive(Team $team, ?FinancialCrisisLevel $level = null): bool
@@ -138,14 +132,14 @@ class FinancialCrisisService
 
         $blockedActions = [
             'hq_upgrade',
-            'hq_optimize',
+            'hq_arena_adaptation',
             'summon',
             'marketplace_purchase',
             'marketplace_bid',
         ];
 
         if (in_array($action, $blockedActions, true)) {
-            throw new \DomainException(sprintf('This action is blocked during financial restrictions (%s). Sell assets, dismiss heroes, or downgrade facilities to recover.', $level->value));
+            throw new UserFacingException('error.financial_crisis_blocked', ['%level%' => $level->value]);
         }
     }
 
@@ -252,18 +246,14 @@ class FinancialCrisisService
     private function evaluateCrisisProgress(Team $team, int $weeklyMaintenance): void
     {
         $debt = $team->getUnpaidDebt();
-        $isStable = 0 === $debt
-            && $team->getGold() >= $weeklyMaintenance * self::WARNING_GOLD_MULTIPLIER;
 
-        if ($isStable) {
+        if (0 === $debt) {
             $team->setCrisisWeeks(0);
 
             return;
         }
 
-        if ($debt > 0 || (0 === $team->getGold() && $weeklyMaintenance > 0)) {
-            $team->setCrisisWeeks($team->getCrisisWeeks() + 1);
-        }
+        $team->setCrisisWeeks($team->getCrisisWeeks() + 1);
     }
 
     private function isBankruptcyPending(Team $team, int $weeklyMaintenance): bool
@@ -329,7 +319,7 @@ class FinancialCrisisService
 
         return [
             'hq_upgrade',
-            'hq_optimize',
+            'hq_arena_adaptation',
             'summon',
             'marketplace_purchase',
             'marketplace_bid',

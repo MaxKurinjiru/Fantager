@@ -15,7 +15,7 @@ races:
       min: 16
       max_junior: 20
       prime_limit: 50
-      death_expectation: 80
+      mortality_threshold: 80
     combat_bonus: "Adaptable — +5% XP gain from victories"
     equipment_restrictions: []
 
@@ -27,7 +27,7 @@ races:
       min: 50
       max_junior: 80
       prime_limit: 300
-      death_expectation: 800
+      mortality_threshold: 800
     combat_bonus: "+10% accuracy and dodge chance (natural grace)"
     equipment_restrictions: []
 
@@ -39,7 +39,7 @@ races:
       min: 20
       max_junior: 30
       prime_limit: 100
-      death_expectation: 250
+      mortality_threshold: 250
     combat_bonus: "+15% armor effectiveness and critical resistance"
     equipment_restrictions: []
 
@@ -51,7 +51,7 @@ races:
       min: 12
       max_junior: 16
       prime_limit: 35
-      death_expectation: 60
+      mortality_threshold: 60
     combat_bonus: "+20% melee damage against non-Orc enemies; -10% against Orc allies (bloodlust)"
     equipment_restrictions: []
 
@@ -63,7 +63,7 @@ races:
       min: 50
       max_junior: 80
       prime_limit: 300
-      death_expectation: 800
+      mortality_threshold: 800
     combat_bonus: "Immune to poison and disease; 50% reduced external healing (use drain/curse instead)"
     equipment_restrictions: []
 
@@ -75,7 +75,7 @@ races:
       min: 15
       max_junior: 25
       prime_limit: 60
-      death_expectation: 150
+      mortality_threshold: 150
     combat_bonus: "+10% damage with main-hand weapons; cannot use off-hand (size limitation)"
     equipment_restrictions: [off_hand]
 
@@ -87,7 +87,7 @@ races:
       min: 30
       max_junior: 50
       prime_limit: 200
-      death_expectation: 1000
+      mortality_threshold: 1000
     combat_bonus: "+20% Constitution defensive calculations; -20% speed-based actions (rooted nature)"
     equipment_restrictions: [weapon, shield, armor]
 
@@ -99,6 +99,6 @@ races:
       min: 100
       max_junior: 150
       prime_limit: 500
-      death_expectation: 2000
+      mortality_threshold: 2000
     combat_bonus: "+15% spell effectiveness and spell critical hit chance (magical essence)"
     equipment_restrictions: []

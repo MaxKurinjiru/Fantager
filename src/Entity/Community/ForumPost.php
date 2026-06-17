@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity\Community;
 
+use App\Entity\Auth\User;
 use App\Entity\Team\Team;
 use App\Repository\Community\ForumPostRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -23,7 +24,11 @@ class ForumPost
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private Team $authorTeam;
+    private User $authorUser;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Team $authorTeam = null;
 
     #[ORM\Column(type: 'text')]
     private string $body;
@@ -53,12 +58,24 @@ class ForumPost
         return $this;
     }
 
-    public function getAuthorTeam(): Team
+    public function getAuthorUser(): User
+    {
+        return $this->authorUser;
+    }
+
+    public function setAuthorUser(User $authorUser): static
+    {
+        $this->authorUser = $authorUser;
+
+        return $this;
+    }
+
+    public function getAuthorTeam(): ?Team
     {
         return $this->authorTeam;
     }
 
-    public function setAuthorTeam(Team $authorTeam): static
+    public function setAuthorTeam(?Team $authorTeam): static
     {
         $this->authorTeam = $authorTeam;
 

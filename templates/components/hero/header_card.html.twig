@@ -46,6 +46,11 @@
                     <span class="hero-header__phase-badge">
                         {{ ('heroes.age_phase.' ~ hero_age_phase(hero)|lower)|trans }}
                     </span>
+                    {% if hero_at_mortality_threshold(hero) %}
+                        <span class="hero-header__mortality-warning" title="{{ 'heroes.mortality_threshold_warning'|trans({'%threshold%': hero_mortality_threshold(hero)}) }}">
+                            ⚠️
+                        </span>
+                    {% endif %}
                 </span>
                 <span class="hero-header__divider"></span>
                 <span class="flex items-center gap-1.5">

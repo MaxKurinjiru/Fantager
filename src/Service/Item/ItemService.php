@@ -10,6 +10,7 @@ use App\Entity\Team\Team;
 use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemStatus;
+use App\Exception\UserFacingException;
 use App\Repository\Item\ItemRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -68,15 +69,15 @@ class ItemService
     public function equip(Item $item, Hero $hero, ItemSlotType $slot): void
     {
         if (ItemStatus::Available !== $item->getStatus()) {
-            throw new \DomainException('Listed or unavailable items cannot be equipped.');
+            throw new UserFacingException('error.item_cannot_equip');
         }
 
         if ($item->getOwnerTeam()->getId() !== $hero->getTeam()->getId()) {
-            throw new \DomainException('Item does not belong to the same team as the hero.');
+            throw new UserFacingException('error.item_wrong_team');
         }
 
         if ($item->getSlotType() !== $slot) {
-            throw new \DomainException(sprintf('Item slot type "%s" cannot be equipped in slot "%s".', $item->getSlotType()->value, $slot->value));
+            throw new UserFacingException('error.item_slot_mismatch', ['%item_slot%' => $item->getSlotType()->value, '%slot%' => $slot->value]);
         }
 
         // Unequip whatever is currently in that slot for this hero
@@ -109,7 +110,7 @@ class ItemService
     public function unequip(Item $item): void
     {
         if (null === $item->getEquippedHero()) {
-            throw new \DomainException('Item is not equipped.');
+            throw new UserFacingException('error.item_not_equipped');
         }
 
         $item->setEquippedHero(null);
@@ -128,15 +129,15 @@ class ItemService
     public function dismantle(Item $item, Team $team): array
     {
         if (ItemStatus::Available !== $item->getStatus()) {
-            throw new \DomainException('Listed or unavailable items cannot be dismantled.');
+            throw new UserFacingException('error.item_cannot_dismantle');
         }
 
         if ($item->getOwnerTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Item does not belong to your team.');
+            throw new UserFacingException('error.item_not_on_team');
         }
 
         if (null !== $item->getEquippedHero()) {
-            throw new \DomainException('Cannot dismantle an equipped item. Unequip it first.');
+            throw new UserFacingException('error.item_cannot_dismantle_equipped');
         }
 
         $rarity = $item->getRarity();
@@ -157,11 +158,11 @@ class ItemService
     public function repair(Item $item, Team $team): int
     {
         if (ItemStatus::Available !== $item->getStatus()) {
-            throw new \DomainException('Listed or unavailable items cannot be repaired.');
+            throw new UserFacingException('error.item_cannot_repair');
         }
 
         if ($item->getOwnerTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Item does not belong to your team.');
+            throw new UserFacingException('error.item_not_on_team');
         }
 
         $missing = 100 - $item->getDurability();
@@ -173,7 +174,7 @@ class ItemService
         $cost = $missing * $ratePerPoint;
 
         if ($team->getGold() < $cost) {
-            throw new \DomainException(sprintf('Insufficient gold. Repair costs %d, available: %d.', $cost, $team->getGold()));
+            throw new UserFacingException('error.item_repair_insufficient_gold', ['%cost%' => $cost, '%available%' => $team->getGold()]);
         }
 
         $team->setGold($team->getGold() - $cost);

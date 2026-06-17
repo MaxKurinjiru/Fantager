@@ -1,0 +1,23 @@
+@reference "tailwindcss";
+
+@layer components {
+  .notification-row {
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    border-bottom: 1px solid var(--color-border);
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    &--unread .js-title {
+      color: var(--color-text-primary);
+    }
+  }
+
+  .notification-type-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-brand-400);
+  }
+}

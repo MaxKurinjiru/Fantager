@@ -135,6 +135,19 @@
     white-space: nowrap;
   }
 
+  .thread-card__author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .forum-post__team-name,
+  .thread-card__team-name {
+    display: block;
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+  }
+
   .forum-empty-state {
     display: flex;
     flex-direction: column;

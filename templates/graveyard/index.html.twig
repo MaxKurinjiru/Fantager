@@ -1,0 +1,146 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'graveyard.title'|trans }} — {{ team.name }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="graveyard-page page-shell">
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'graveyard.title',
+        subtitle: 'graveyard.subtitle'
+    } %}
+
+    <div class="graveyard-summary">
+        <div class="graveyard-summary__card">
+            <span class="graveyard-summary__label">{{ 'graveyard.summary_total'|trans }}</span>
+            <span class="graveyard-summary__value">{{ summary.total }}</span>
+        </div>
+        <div class="graveyard-summary__card">
+            <span class="graveyard-summary__label">{{ 'graveyard.summary_average_age'|trans }}</span>
+            <span class="graveyard-summary__value">
+                {% if summary.average_age is not null %}
+                    {{ summary.average_age }} {{ 'graveyard.years_suffix'|trans }}
+                {% else %}
+                    —
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <form method="GET" action="{{ path('app_graveyard') }}" class="graveyard-filters" data-controller="form-auto-submit">
+        <div class="graveyard-filters__grid">
+            <div class="graveyard-filters__field">
+                <label for="graveyard-role" class="form-label">{{ 'graveyard.filter_role'|trans }}</label>
+                <select id="graveyard-role" name="role" class="form-input" data-action="change->form-auto-submit#submit">
+                    <option value="">{{ 'graveyard.filter_all'|trans }}</option>
+                    {% for role in roles %}
+                        <option value="{{ role.value }}" {% if current_role == role.value %}selected{% endif %}>
+                            {{ ('graveyard.role.' ~ role.value)|trans }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="graveyard-filters__field">
+                <label for="graveyard-cause" class="form-label">{{ 'graveyard.filter_cause'|trans }}</label>
+                <select id="graveyard-cause" name="cause" class="form-input" data-action="change->form-auto-submit#submit">
+                    <option value="">{{ 'graveyard.filter_all'|trans }}</option>
+                    {% for cause in causes %}
+                        <option value="{{ cause.value }}" {% if current_cause == cause.value %}selected{% endif %}>
+                            {{ ('graveyard.cause.' ~ cause.value)|trans }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="graveyard-filters__field">
+                <label for="graveyard-race" class="form-label">{{ 'graveyard.filter_race'|trans }}</label>
+                <select id="graveyard-race" name="race" class="form-input" data-action="change->form-auto-submit#submit">
+                    <option value="">{{ 'graveyard.filter_all'|trans }}</option>
+                    {% for race in races %}
+                        <option value="{{ race.value }}" {% if current_race == race.value %}selected{% endif %}>
+                            {{ ('heroes.race_' ~ race.value)|trans }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="graveyard-filters__field">
+                <label for="graveyard-search" class="form-label">{{ 'graveyard.filter_search'|trans }}</label>
+                <input id="graveyard-search"
+                       type="search"
+                       name="search"
+                       value="{{ current_search }}"
+                       placeholder="{{ 'graveyard.search_placeholder'|trans }}"
+                       class="form-input">
+            </div>
+        </div>
+        <div class="graveyard-filters__actions">
+            <button type="submit" class="btn btn-primary btn--sm">{{ 'graveyard.apply_filters'|trans }}</button>
+            <a href="{{ path('app_graveyard') }}" class="btn btn-outline btn--sm">{{ 'graveyard.clear_filters'|trans }}</a>
+        </div>
+    </form>
+
+    {% if selected_memorial %}
+        <section class="graveyard-detail" aria-labelledby="graveyard-detail-title">
+            <div class="graveyard-detail__header">
+                <h2 id="graveyard-detail-title" class="graveyard-detail__title">{{ selected_memorial.name }}</h2>
+                <a href="{{ path('app_graveyard', { role: current_role, cause: current_cause, race: current_race, search: current_search }) }}"
+                   class="graveyard-detail__close">{{ 'graveyard.close_detail'|trans }}</a>
+            </div>
+            <div class="graveyard-detail__meta">
+                <span>{{ ('heroes.race_' ~ selected_memorial.race.value)|trans }}</span>
+                <span>{{ ('graveyard.role.' ~ selected_memorial.roleAtDeparture.value)|trans }}</span>
+                <span>{{ ('graveyard.cause.' ~ selected_memorial.cause.value)|trans }}</span>
+                <time datetime="{{ selected_memorial.departedAt|date('Y-m-d') }}">{{ selected_memorial.departedAt|date('Y-m-d') }}</time>
+            </div>
+            <dl class="graveyard-detail__stats">
+                <div><dt>{{ 'graveyard.age'|trans }}</dt><dd>{{ selected_memorial.age }} {{ 'graveyard.years_suffix'|trans }}</dd></div>
+                {% if selected_memorial.finalLevel %}
+                    <div><dt>{{ 'graveyard.final_level'|trans }}</dt><dd>{{ selected_memorial.finalLevel }}</dd></div>
+                {% endif %}
+                {% for stat_key, stat_value in selected_memorial.finalStats %}
+                    <div><dt>{{ ('graveyard.stat.' ~ stat_key)|trans }}</dt><dd>{{ stat_value }}</dd></div>
+                {% endfor %}
+            </dl>
+        </section>
+    {% endif %}
+
+    <div class="graveyard-list">
+        {% if memorials is empty %}
+            <div class="graveyard-empty">
+                <div class="graveyard-empty__emoji">🪦</div>
+                <h3 class="graveyard-empty__title">{{ 'graveyard.empty'|trans }}</h3>
+                <p class="graveyard-empty__desc">{{ 'graveyard.empty_filtered'|trans }}</p>
+            </div>
+        {% else %}
+            {% for memorial in memorials %}
+                <article class="graveyard-entry">
+                    <div class="graveyard-entry__icon" aria-hidden="true">🪦</div>
+                    <div class="graveyard-entry__body">
+                        <div class="graveyard-entry__meta">
+                            <span class="graveyard-entry__name">{{ memorial.name }}</span>
+                            <span class="graveyard-entry__badge">{{ ('graveyard.role.' ~ memorial.type)|trans }}</span>
+                            <time class="graveyard-entry__time" datetime="{{ memorial.date }}">{{ memorial.date }}</time>
+                        </div>
+                        <p class="graveyard-entry__details">
+                            {{ ('heroes.race_' ~ memorial.race)|trans }}
+                            {% if memorial.final_level %}
+                                &bull; {{ 'graveyard.final_level'|trans }} {{ memorial.final_level }}
+                            {% endif %}
+                            &bull; {{ 'graveyard.age'|trans }} {{ memorial.age }} {{ 'graveyard.years_suffix'|trans }}
+                            &bull; {{ ('graveyard.cause.' ~ memorial.cause)|trans }}
+                        </p>
+                        <a href="{{ path('app_graveyard', {
+                            id: memorial.id,
+                            role: current_role,
+                            cause: current_cause,
+                            race: current_race,
+                            search: current_search
+                        }) }}" class="graveyard-entry__link">{{ 'graveyard.view_detail'|trans }}</a>
+                    </div>
+                </article>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

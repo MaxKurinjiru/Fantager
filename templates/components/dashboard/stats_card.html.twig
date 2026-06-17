@@ -9,7 +9,7 @@
 ] %}
 {% if crisis.unpaid_debt > 0 %}
     {% set stats = stats|merge([
-        { label: 'financial_crisis.unpaid_debt', value: '🪙 ' ~ crisis.unpaid_debt|number_format(0, '.', ' '), modifier: 'danger', route: 'app_economy', params: { tab: 'ledger' } }
+        { label: 'financial_crisis.unpaid_debt', value: '🪙 ' ~ crisis.unpaid_debt|number_format(0, '.', ' '), modifier: 'danger', route: 'app_finance', params: {} }
     ]) %}
 {% endif %}
 

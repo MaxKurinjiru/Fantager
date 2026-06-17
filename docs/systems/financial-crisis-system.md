@@ -14,8 +14,8 @@ The system uses four crisis levels:
 
 | Level | Trigger | Player impact |
 |-------|---------|---------------|
-| `none` | Debt = 0 and gold ≥ 2× weekly maintenance | Normal play |
-| `warning` | Debt > 0 OR low gold buffer | Dashboard warning, full gameplay |
+| `none` | Debt = 0 | Normal play |
+| `warning` | Debt > 0 | Dashboard warning, full gameplay |
 | `restricted` | Debt > 0 for ≥ 2 consecutive crisis weeks | HQ passive bonuses disabled; upgrades, summoning, marketplace purchases blocked |
 | `bankruptcy_pending` | Debt ≥ 4× weekly maintenance, gold = 0, ≥ 6 crisis weeks, no recent recovery | Team released to NPC pool on next weekly tick |
 
@@ -36,9 +36,10 @@ The system uses four crisis levels:
 ## Weekly Tick Flow (`weekly_reset`)
 
 1. Reset summon cycle counters
-2. `HeadquartersService::processMaintenanceTick()` — deduct available gold; remainder → `unpaid_debt`
-3. `HeadquartersService::processFacilityDowngradeLockTick()` — clear downgrade lock cycle
-4. `FinancialCrisisService::processWeeklyCrisisTick()` — auto-pay debt from gold, evaluate crisis weeks, execute bankruptcy if needed
+2. `HeadquartersService::processMaintenanceTick()` — deduct available gold; remainder → `unpaid_debt`; portion may route to Royal Treasury
+3. `RoyalTreasuryService::processWeeklyDistribution()` — redistribute up to 50% of kingdom pool to teams (`kingdom_reward`)
+4. `HeadquartersService::processFacilityDowngradeLockTick()` — clear downgrade lock cycle
+5. `FinancialCrisisService::processWeeklyCrisisTick()` — auto-pay debt from gold, evaluate crisis weeks, execute bankruptcy if needed
 
 ---
 
@@ -69,7 +70,7 @@ The system uses four crisis levels:
 ## Blocked Actions (Restricted / Bankruptcy Pending)
 
 - HQ upgrade (`POST /api/v1/hq/upgrade`)
-- Race optimization change (`POST /api/v1/hq/optimize`)
+- Arena adaptation change (`POST /api/v1/hq/optimize`)
 - Summoning (`POST /api/v1/summoning`)
 - Marketplace purchase / bid
 
@@ -131,7 +132,6 @@ Twig helpers: `team_financial_crisis(team)`, `hq_downgrade_refund(type, level, t
 
 | Constant | Value |
 |----------|-------|
-| `WARNING_GOLD_MULTIPLIER` | 2 |
 | `RESTRICTED_WEEKS` | 2 |
 | `BANKRUPTCY_WEEKS` | 6 |
 | `BANKRUPTCY_DEBT_MULTIPLIER` | 4 |

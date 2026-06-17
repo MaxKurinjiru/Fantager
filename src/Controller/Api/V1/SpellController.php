@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Enum\School;
 use App\Repository\Hero\HeroRepository;
@@ -17,6 +18,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class SpellController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly SpellService $spellService,
         private readonly HeroRepository $heroRepository,
@@ -45,12 +48,12 @@ class SpellController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
         if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
+            return $this->jsonError('error.hero_not_found', 404);
         }
 
         $heroSpells = $this->spellService->listForHero($hero);
@@ -67,12 +70,12 @@ class SpellController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
         if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
+            return $this->jsonError('error.hero_not_found', 404);
         }
 
         /** @var array<string, mixed> $body */
@@ -80,18 +83,18 @@ class SpellController extends AbstractController
 
         $spellId = (int) ($body['spell_id'] ?? 0);
         if (0 === $spellId) {
-            return $this->json(['error' => 'Field "spell_id" is required.'], 400);
+            return $this->jsonError('error.field_spell_id_required', 400);
         }
 
         $spell = $this->spellRepository->find($spellId);
         if (null === $spell) {
-            return $this->json(['error' => 'Spell not found.'], 404);
+            return $this->jsonError('error.spell_not_found', 404);
         }
 
         try {
             $heroSpell = $this->spellService->learn($hero, $spell, $team);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json($this->spellService->serializeHeroSpell($heroSpell), 201);
@@ -106,12 +109,12 @@ class SpellController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
         if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
+            return $this->jsonError('error.hero_not_found', 404);
         }
 
         /** @var array<string, mixed> $body */
@@ -119,23 +122,23 @@ class SpellController extends AbstractController
 
         $heroSpellId = (int) ($body['hero_spell_id'] ?? 0);
         if (0 === $heroSpellId) {
-            return $this->json(['error' => 'Field "hero_spell_id" is required.'], 400);
+            return $this->jsonError('error.field_hero_spell_id_required', 400);
         }
 
         $heroSpell = $this->heroSpellRepository->findOneBy(['id' => $heroSpellId, 'hero' => $hero]);
         if (null === $heroSpell) {
-            return $this->json(['error' => 'Hero spell not found.'], 404);
+            return $this->jsonError('error.hero_spell_not_found', 404);
         }
 
         $slot = (int) ($body['slot'] ?? 0);
         if (0 === $slot) {
-            return $this->json(['error' => 'Field "slot" is required (1–magicCapacity).'], 400);
+            return $this->jsonError('error.field_slot_required', 400);
         }
 
         try {
             $this->spellService->equip($heroSpell, $slot);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json($this->spellService->serializeHeroSpell($heroSpell));
@@ -150,12 +153,12 @@ class SpellController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
         if (null === $hero) {
-            return $this->json(['error' => 'Hero not found.'], 404);
+            return $this->jsonError('error.hero_not_found', 404);
         }
 
         /** @var array<string, mixed> $body */
@@ -163,18 +166,18 @@ class SpellController extends AbstractController
 
         $heroSpellId = (int) ($body['hero_spell_id'] ?? 0);
         if (0 === $heroSpellId) {
-            return $this->json(['error' => 'Field "hero_spell_id" is required.'], 400);
+            return $this->jsonError('error.field_hero_spell_id_required', 400);
         }
 
         $heroSpell = $this->heroSpellRepository->findOneBy(['id' => $heroSpellId, 'hero' => $hero]);
         if (null === $heroSpell) {
-            return $this->json(['error' => 'Hero spell not found.'], 404);
+            return $this->jsonError('error.hero_spell_not_found', 404);
         }
 
         try {
             $this->spellService->unequip($heroSpell);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json($this->spellService->serializeHeroSpell($heroSpell));

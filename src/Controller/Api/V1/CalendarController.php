@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Service\Calendar\CalendarService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,6 +14,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class CalendarController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly CalendarService $calendarService,
         private readonly KingdomRepository $kingdomRepository,
@@ -25,7 +28,7 @@ class CalendarController extends AbstractController
         /** @var \App\Entity\Kingdom\Kingdom|null $kingdom */
         $kingdom = $this->kingdomRepository->find($id);
         if (null === $kingdom) {
-            return $this->json(['error' => 'Kingdom not found.'], 404);
+            return $this->jsonError('error.kingdom_not_found', 404);
         }
 
         $startStr = $request->query->get('start');
@@ -37,12 +40,12 @@ class CalendarController extends AbstractController
             $start = $startStr ? new \DateTimeImmutable($startStr) : new \DateTimeImmutable('-1 day');
             $end = $endStr ? new \DateTimeImmutable($endStr) : new \DateTimeImmutable('+7 days');
         } catch (\Exception) {
-            return $this->json(['error' => 'Invalid date format. Please use ISO-8601 (e.g. 2026-06-08T00:00:00Z).'], 400);
+            return $this->jsonError('error.invalid_date_format', 400);
         }
 
         $teamId = $teamIdStr ? (int) $teamIdStr : null;
 
-        $feed = $this->calendarService->getCalendarFeed($kingdom, $start, $end, $teamId);
+        $feed = $this->calendarService->getCalendarFeed($kingdom, $start, $end, $teamId, $request->getLocale());
 
         // Filter out system-only events if not requested
         if (!$includeSystem) {

@@ -85,4 +85,64 @@ class FinancialRecordRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return array{income: int, expense: int, net: int, transaction_count: int}
+     */
+    public function getGoldSummarySince(\App\Entity\Team\Team $team, ?\DateTimeImmutable $since = null): array
+    {
+        $qb = $this->createQueryBuilder('f')
+            ->select('SUM(CASE WHEN f.goldChange > 0 THEN f.goldChange ELSE 0 END) AS income')
+            ->addSelect('SUM(CASE WHEN f.goldChange < 0 THEN f.goldChange ELSE 0 END) AS expense_raw')
+            ->addSelect('COUNT(f.id) AS transaction_count')
+            ->where('f.team = :team')
+            ->setParameter('team', $team);
+
+        if (null !== $since) {
+            $qb->andWhere('f.createdAt >= :since')
+                ->setParameter('since', $since);
+        }
+
+        /** @var array{income: numeric-string|null, expense_raw: numeric-string|null, transaction_count: numeric-string|null} $result */
+        $result = $qb->getQuery()->getSingleResult();
+
+        $income = (int) ($result['income'] ?? 0);
+        $expenseRaw = (int) ($result['expense_raw'] ?? 0);
+
+        return [
+            'income' => $income,
+            'expense' => abs($expenseRaw),
+            'net' => $income + $expenseRaw,
+            'transaction_count' => (int) ($result['transaction_count'] ?? 0),
+        ];
+    }
+
+    /**
+     * @return list<array{type: string, amount: int}>
+     */
+    public function getTopExpenseTypesSince(\App\Entity\Team\Team $team, \DateTimeImmutable $since, int $limit = 5): array
+    {
+        /** @var list<array{type: \App\Enum\FinancialRecordType, total: numeric-string}> $rows */
+        $rows = $this->createQueryBuilder('f')
+            ->select('f.type AS type')
+            ->addSelect('SUM(f.goldChange) AS total')
+            ->where('f.team = :team')
+            ->andWhere('f.goldChange < 0')
+            ->andWhere('f.createdAt >= :since')
+            ->setParameter('team', $team)
+            ->setParameter('since', $since)
+            ->groupBy('f.type')
+            ->orderBy('total', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return array_map(
+            static fn (array $row): array => [
+                'type' => $row['type']->value,
+                'amount' => abs((int) $row['total']),
+            ],
+            $rows
+        );
+    }
 }

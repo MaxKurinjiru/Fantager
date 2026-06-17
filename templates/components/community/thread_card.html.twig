@@ -34,7 +34,7 @@
         <div class="thread-card__meta">
             <span class="category-badge">{{ ('community.category_' ~ thread.category)|trans }}</span>
             <span class="thread-card__meta-item">
-                💬 {{ 'community.replies_count'|trans({'count': replies_count}) }}
+                💬 {{ 'community.replies_count'|trans({'%count%': replies_count}) }}
             </span>
             <span class="thread-card__meta-item thread-card__meta-item--muted">
                 {{ 'community.last_activity'|trans }} {{ last_post_at|date('d. m. Y H:i') }}
@@ -43,7 +43,16 @@
     </div>
 
     <div class="thread-card__author">
-        <span class="thread-card__emblem">{{ thread.authorTeam.emblem ?: '🛡️' }}</span>
-        <span class="thread-card__author-name">{{ thread.authorTeam.name }}</span>
+        {% if thread.authorTeam %}
+            <span class="thread-card__emblem">{{ thread.authorTeam.emblem ?: '🛡️' }}</span>
+        {% else %}
+            <span class="thread-card__emblem">👤</span>
+        {% endif %}
+        <div class="thread-card__author-info">
+            <span class="thread-card__author-name">{{ thread.authorUser.displayName }}</span>
+            {% if thread.authorTeam %}
+                <span class="thread-card__team-name">{{ thread.authorTeam.name }}</span>
+            {% endif %}
+        </div>
     </div>
 </a>

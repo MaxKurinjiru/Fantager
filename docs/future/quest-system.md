@@ -1,6 +1,6 @@
-# Quest System
+# Quest System (Deferred)
 
-> **Status:** Planned — not implemented. This document is a design reference for a possible future feature. No database tables, entities, or API endpoints exist yet.
+> **Status:** Not implemented and not currently planned. This document preserves the intended design for a possible future phase. No database tables, entities, or API endpoints exist yet.
 
 Purpose: Detail quest mechanics, requirements, rewards, and progression flows.
 

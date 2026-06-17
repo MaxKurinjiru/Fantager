@@ -7,11 +7,13 @@ namespace App\Service\Team;
 use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\HeroStatus;
+use App\Exception\UserFacingException;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Service\Economy\FinancialCrisisService;
+use App\Service\Formation\FixtureFormationService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TeamService
@@ -22,6 +24,7 @@ class TeamService
         private readonly HeadquartersRepository $hqRepository,
         private readonly LeagueFixtureRepository $leagueFixtureRepository,
         private readonly FinancialCrisisService $financialCrisisService,
+        private readonly FixtureFormationService $fixtureFormationService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -127,10 +130,10 @@ class TeamService
         if (isset($data['name'])) {
             $name = trim((string) $data['name']);
             if ('' === $name) {
-                throw new \InvalidArgumentException('Team name cannot be empty.');
+                throw new UserFacingException('error.team_name_empty');
             }
             if (mb_strlen($name) > 100) {
-                throw new \InvalidArgumentException('Team name must not exceed 100 characters.');
+                throw new UserFacingException('error.team_name_too_long');
             }
             $team->setName($name);
         }
@@ -138,7 +141,7 @@ class TeamService
         if (array_key_exists('emblem', $data)) {
             $emblem = null !== $data['emblem'] ? (string) $data['emblem'] : null;
             if (null !== $emblem && mb_strlen($emblem) > 255) {
-                throw new \InvalidArgumentException('Emblem value must not exceed 255 characters.');
+                throw new UserFacingException('error.emblem_too_long');
             }
             $team->setEmblem($emblem);
         }
@@ -154,20 +157,6 @@ class TeamService
     /** @return array<string, mixed> */
     private function serializeFixtureFormation(LeagueFixture $fixture, Team $team): array
     {
-        $assigned = $fixture->getHomeTeam()->getId() === $team->getId()
-            ? $fixture->getHomeFormation()
-            : $fixture->getAwayFormation();
-
-        $mode = 'default';
-        if (null !== $assigned) {
-            $mode = $assigned->isTemporary() ? 'custom' : 'saved';
-        }
-
-        return [
-            'mode' => $mode,
-            'formation_id' => $assigned?->getId(),
-            'formation_name' => $assigned?->getName(),
-            'is_temporary' => null !== $assigned && $assigned->isTemporary(),
-        ];
+        return $this->fixtureFormationService->getFormationSummary($fixture, $team);
     }
 }

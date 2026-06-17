@@ -1,8 +1,8 @@
-# Crafting System
+# Crafting System (Deferred)
 
-> **Status: Planned future extension — not implemented.** The crafting backend and UI were removed from the codebase. This document describes the intended design for a future implementation.
+> **Status:** Not implemented and not currently planned. The crafting backend and UI were removed from the codebase; this document preserves the intended design for a possible future phase. The Forge HQ facility was removed with it.
 
-Reference: [game-summary.md](../game-summary.md#217-crafting-system) and [20-crafting.md](../screens/20-crafting.md)
+Reference: [game-summary.md](../game-summary.md#217-crafting-system) and [crafting-screen.md](crafting-screen.md)
 
 Purpose: Detail crafting mechanics, recipes, and queue processing.
 
@@ -54,4 +54,3 @@ Nothing is implemented in the current codebase. Crafting entities, services, API
 * `POST /api/v1/crafting` — Start a crafting job.
 * `GET /api/v1/crafting/queue` — List active crafting jobs for the team.
 * `DELETE /api/v1/crafting/queue/{id}` — Cancel a queued crafting job (refunds materials based on refund policy).
-

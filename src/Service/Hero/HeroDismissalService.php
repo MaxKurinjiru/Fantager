@@ -10,6 +10,7 @@ use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use App\Enum\HeroStatus;
 use App\Enum\MemorialCause;
+use App\Exception\UserFacingException;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
@@ -53,15 +54,15 @@ class HeroDismissalService
     public function dismiss(Team $team, Hero $hero): int
     {
         if ($hero->getTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Hero does not belong to your team.');
+            throw new UserFacingException('error.hero_not_on_team');
         }
 
         if (HeroStatus::Available !== $hero->getStatus()) {
-            throw new \DomainException('Only available heroes can be dismissed.');
+            throw new UserFacingException('error.hero_only_available_dismiss');
         }
 
         if (null !== $hero->getTrainer()) {
-            throw new \DomainException('Hero is assigned to a trainer. Unassign before dismissing.');
+            throw new UserFacingException('error.hero_assigned_trainer_dismiss');
         }
 
         $this->teamRosterService->assertCanRemoveCombatReadyHero($team, $hero);

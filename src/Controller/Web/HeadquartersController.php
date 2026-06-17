@@ -13,6 +13,7 @@ use App\Repository\Team\TeamSummonHistoryRepository;
 use App\Service\Headquarters\ArenaService;
 use App\Service\Summoning\SummoningService;
 use App\Service\Training\TrainingService;
+use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,6 +37,7 @@ class HeadquartersController extends AbstractController
         private readonly TeamSummonHistoryRepository $historyRepository,
         private readonly HeroRepository $heroRepository,
         private readonly TrainingService $trainingService,
+        private readonly UserMessageTranslator $userMessages,
     ) {
     }
 
@@ -47,7 +49,7 @@ class HeadquartersController extends AbstractController
         $team = $user->getTeam();
 
         if (!$team) {
-            $this->addFlash('error', 'No team assigned to your account.');
+            $this->addFlash('error', $this->userMessages->trans('error.no_team'));
 
             return $this->redirectToRoute('app_home');
         }

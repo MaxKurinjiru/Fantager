@@ -113,15 +113,15 @@
                         <table class="league-table">
                             <thead>
                                 <tr>
-                                    <th class="league-table__col--rank">{{ 'league.col_rank'|trans }}</th>
-                                    <th>{{ 'league.col_team'|trans }}</th>
-                                    <th class="league-table__col--stat">{{ 'league.col_played'|trans }}</th>
-                                    <th class="league-table__col--stat">{{ 'league.col_wins'|trans }}</th>
-                                    <th class="league-table__col--stat">{{ 'league.col_draws'|trans }}</th>
-                                    <th class="league-table__col--stat">{{ 'league.col_losses'|trans }}</th>
-                                    <th class="league-table__col--stat-wide">{{ 'league.col_diff'|trans }}</th>
-                                    <th class="league-table__col--stat-wide">{{ 'league.col_points'|trans }}</th>
-                                    <th class="league-table__col--form">{{ 'league.col_form'|trans }}</th>
+                                    <th class="league-table__col--rank" title="{{ 'league.col_rank_hint'|trans }}">{{ 'league.col_rank'|trans }}</th>
+                                    <th title="{{ 'league.col_team_hint'|trans }}">{{ 'league.col_team'|trans }}</th>
+                                    <th class="league-table__col--stat" title="{{ 'league.col_played_hint'|trans }}">{{ 'league.col_played'|trans }}</th>
+                                    <th class="league-table__col--stat" title="{{ 'league.col_wins_hint'|trans }}">{{ 'league.col_wins'|trans }}</th>
+                                    <th class="league-table__col--stat" title="{{ 'league.col_draws_hint'|trans }}">{{ 'league.col_draws'|trans }}</th>
+                                    <th class="league-table__col--stat" title="{{ 'league.col_losses_hint'|trans }}">{{ 'league.col_losses'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_diff_hint'|trans }}">{{ 'league.col_diff'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_points_hint'|trans }}">{{ 'league.col_points'|trans }}</th>
+                                    <th class="league-table__col--form" title="{{ 'league.col_form_hint'|trans }}">{{ 'league.col_form'|trans }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -148,7 +148,7 @@
                                                 {{ loop.index }}
                                             </div>
                                         </td>
-                                        
+
                                         {# Team Name #}
                                         <td class="standings-row__cell--dense">
                                             <div class="standings-row__team-inner">
@@ -163,21 +163,21 @@
                                                 {% endif %}
                                             </div>
                                         </td>
-                                        
+
                                         {# Stats #}
                                         <td class="standings-row__cell--dense standings-row__stat">{{ standing.played }}</td>
                                         <td class="standings-row__cell--dense standings-row__stat">{{ standing.wins }}</td>
                                         <td class="standings-row__cell--dense standings-row__stat">{{ standing.draws }}</td>
                                         <td class="standings-row__cell--dense standings-row__stat">{{ standing.losses }}</td>
-                                        
+
                                         {# Goal Diff #}
                                         <td class="standings-row__cell--dense league-goal-diff{% if standing.goalDifference > 0 %} league-goal-diff--positive{% elseif standing.goalDifference < 0 %} league-goal-diff--negative{% else %} league-goal-diff--neutral{% endif %}">
                                             {{ standing.goalDifference > 0 ? '+' : '' }}{{ standing.goalDifference }}
                                         </td>
-                                        
+
                                         {# Points #}
                                         <td class="standings-row__cell--dense standings-row__points">{{ standing.points }}</td>
-                                        
+
                                         {# Form #}
                                         <td class="standings-row__cell--dense">
                                             <div class="league-form-badges">
@@ -213,7 +213,7 @@
                         <h3 class="league-section__title">
                             👤 {{ 'league.my_fixtures'|trans }}
                         </h3>
-                        
+
                         {% if myFixtures is empty %}
                             <p class="league-empty-message">{{ 'dashboard.no_matches'|trans }}</p>
                         {% else %}
@@ -221,41 +221,53 @@
                                 {% for f in myFixtures %}
                                     {% set is_home = f.homeTeam.id == team.id %}
                                     {% set is_completed = f.status.value == 'completed' %}
-                                    
+
                                     <div class="fixture-card{% if is_completed %} fixture-card--completed{% endif %}">
-                                        <div class="fixture-card__date">
-                                            <span class="fixture-card__date-day">
-                                                {{ f.scheduledAt|date('d. m. Y') }}
-                                            </span>
-                                            {{ f.scheduledAt|date('H:i') }}
-                                        </div>
-                                        
-                                        {# Match Score Board #}
-                                        <div class="fixture-card__matchup">
-                                            <span class="fixture-card__team fixture-card__team--home{% if is_home %} fixture-card__team--highlight{% endif %}">{{ f.homeTeam.name }}</span>
-                                            
-                                            <span class="fixture-card__score">
+                                        <div class="fixture-card__main">
+                                            <div class="fixture-card__date">
+                                                <span class="fixture-card__date-day">
+                                                    {{ f.scheduledAt|date('d. m. Y') }}
+                                                </span>
+                                                {{ f.scheduledAt|date('H:i') }}
+                                            </div>
+
+                                            <div class="fixture-card__matchup">
+                                                <span class="fixture-card__team fixture-card__team--home{% if is_home %} fixture-card__team--highlight{% endif %}">{{ f.homeTeam.name }}</span>
+
+                                                <span class="fixture-card__score">
+                                                    {% if is_completed and f.battle %}
+                                                        {{ f.battle.scoreA }} — {{ f.battle.scoreB }}
+                                                    {% else %}
+                                                        VS
+                                                    {% endif %}
+                                                </span>
+
+                                                <span class="fixture-card__team fixture-card__team--away{% if not is_home %} fixture-card__team--highlight{% endif %}">{{ f.awayTeam.name }}</span>
+                                            </div>
+
+                                            <div class="fixture-card__meta">
                                                 {% if is_completed and f.battle %}
-                                                    {{ f.battle.scoreA }} — {{ f.battle.scoreB }}
+                                                    <span class="fixture-card__status fixture-card__status--completed">
+                                                        {{ 'training.status.completed'|trans }}
+                                                    </span>
                                                 {% else %}
-                                                    VS
+                                                    <span class="fixture-card__status fixture-card__status--pending">
+                                                        {{ 'training.status.pending'|trans }}
+                                                    </span>
                                                 {% endif %}
-                                            </span>
-                                            
-                                            <span class="fixture-card__team fixture-card__team--away{% if not is_home %} fixture-card__team--highlight{% endif %}">{{ f.awayTeam.name }}</span>
+                                            </div>
                                         </div>
-                                        
-                                        <div>
-                                            {% if is_completed and f.battle %}
-                                                <span class="fixture-card__status fixture-card__status--completed">
-                                                    {{ 'training.status.completed'|trans }}
-                                                </span>
-                                            {% else %}
-                                                <span class="fixture-card__status fixture-card__status--pending">
-                                                    {{ 'training.status.pending'|trans }}
-                                                </span>
-                                            {% endif %}
-                                        </div>
+
+                                        {% if not is_completed %}
+                                            <div class="fixture-card__formation-row">
+                                                {% include 'components/league/fixture_formation_status.html.twig' with {
+                                                    formation: fixtureFormations[f.id]|default(null)
+                                                } %}
+                                                <a href="{{ path('app_formation', { fixture_id: f.id }) }}" class="btn btn-primary btn--sm fixture-card__formation-btn">
+                                                    🛡️ {{ 'dashboard.prepare_formation'|trans }}
+                                                </a>
+                                            </div>
+                                        {% endif %}
                                     </div>
                                 {% endfor %}
                             </div>
@@ -290,7 +302,7 @@
                                         <div class="fixture-row__team fixture-row__team--home{% if f.homeTeam.id == team.id %} fixture-row__team--highlight{% endif %}" title="{{ f.homeTeam.name }}">
                                             {{ f.homeTeam.name }}
                                         </div>
-                                        
+
                                         <div class="fixture-row__score">
                                             {% if f.status.value == 'completed' and f.battle %}
                                                 {{ f.battle.scoreA }}-{{ f.battle.scoreB }}
@@ -298,7 +310,7 @@
                                                 VS
                                             {% endif %}
                                         </div>
-                                        
+
                                         <div class="fixture-row__team fixture-row__team--away{% if f.awayTeam.id == team.id %} fixture-row__team--highlight{% endif %}" title="{{ f.awayTeam.name }}">
                                             {{ f.awayTeam.name }}
                                         </div>
@@ -319,16 +331,15 @@
                         <table class="league-table">
                             <thead>
                                 <tr>
-                                    <th class="league-table__col--rank">{{ 'league.col_rank'|trans }}</th>
-                                    <th>{{ 'league.col_team'|trans }}</th>
-                                    <th class="league-table__col--tier">{{ 'auth.choose_kingdom'|trans }} Tier</th>
-                                    <th class="league-table__col--group">{{ 'league.col_group'|trans }}</th>
-                                    <th class="league-table__col--stat-wide">{{ 'league.col_played'|trans }}</th>
-                                    <th class="league-table__col--stat-wide">{{ 'league.col_wins'|trans }}</th>
-                                    <th class="league-table__col--stat-wide">{{ 'league.col_draws'|trans }}</th>
-                                    <th class="league-table__col--stat-wide">{{ 'league.col_losses'|trans }}</th>
-                                    <th class="league-table__col--tier">{{ 'league.col_diff'|trans }}</th>
-                                    <th class="league-table__col--points">{{ 'league.col_points'|trans }}</th>
+                                    <th class="league-table__col--rank" title="{{ 'league.col_rank_hint'|trans }}">{{ 'league.col_rank'|trans }}</th>
+                                    <th title="{{ 'league.col_team_hint'|trans }}">{{ 'league.col_team'|trans }}</th>
+                                    <th class="league-table__col--group" title="{{ 'league.col_group_hint'|trans }}">{{ 'league.col_group'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_played_hint'|trans }}">{{ 'league.col_played'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_wins_hint'|trans }}">{{ 'league.col_wins'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_draws_hint'|trans }}">{{ 'league.col_draws'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_losses_hint'|trans }}">{{ 'league.col_losses'|trans }}</th>
+                                    <th class="league-table__col--tier" title="{{ 'league.col_diff_hint'|trans }}">{{ 'league.col_diff'|trans }}</th>
+                                    <th class="league-table__col--points" title="{{ 'league.col_points_hint'|trans }}">{{ 'league.col_points'|trans }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -349,7 +360,6 @@
                                                 {% endif %}
                                             </div>
                                         </td>
-                                        <td class="standings-row__stat">{{ standing.group.tier.tierName }}</td>
                                         <td class="standings-row__stat">{{ standing.group.groupName }}</td>
                                         <td class="standings-row__stat-muted">{{ standing.played }}</td>
                                         <td class="standings-row__stat-muted">{{ standing.wins }}</td>

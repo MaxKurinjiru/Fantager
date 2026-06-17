@@ -3,7 +3,10 @@
 {% block title %}{{ 'marketplace.title'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-6" data-controller="marketplace"
+<div class="page-shell" data-controller="marketplace"
+     data-marketplace-initial-tab-value="{{ tab }}"
+     data-marketplace-initial-browse-category-value="{{ category }}"
+     data-marketplace-initial-hero-id-value="{{ sell_hero_id|default(0) }}"
      data-marketplace-tax-rate-value="{{ taxRate }}"
      data-marketplace-current-team-id-value="{{ team.id }}"
      data-marketplace-csrf-token-value="{{ csrf_token('api') }}"
@@ -82,13 +85,12 @@
          'flash_cancelled': 'marketplace.flash_cancelled'|trans,
          'unknown_entity': 'marketplace.col_entity'|trans,
          'label_processing': 'marketplace.label_processing'|trans
-     }|json_encode|e('html_attr') }}">    {# Hub Header #}
+     }|json_encode|e('html_attr') }}">
+
     {% set right_content %}
         <div class="treasury-badge">
             <span class="treasury-badge__label">{{ 'dashboard.treasury'|trans }}:</span>
-            <span class="treasury-badge__value">
-                <span class="mr-1">🪙</span> {{ team.gold }} {{ 'dashboard.gold'|trans }}
-            </span>
+            <span class="treasury-badge__value">🪙 {{ team.gold|number_format(0, '.', ' ') }}</span>
         </div>
     {% endset %}
 
@@ -98,54 +100,32 @@
         right_content: right_content
     } %}
 
-    {# --- Alert Box --- #}
     {% include 'components/ui/alert_box.html.twig' with {
         target: 'marketplace',
         message_target: 'alertMessage',
         close_action: 'marketplace#hideAlert'
     } %}
 
-    {# Hub Tabs #}
     <div class="tab-nav-bar">
-        <button type="button" data-action="click->marketplace#switchTab" data-tab="browse" data-marketplace-target="tabButton"
-                class="tab-btn tab-btn--active">
+        <a href="{{ path('app_marketplace', { tab: 'browse', category: category }) }}" class="tab-btn {{ tab == 'browse' ? 'tab-btn--active' : '' }}">
             ⚖️ {{ 'marketplace.tab_browse'|trans }}
-        </button>
-        <button type="button" data-action="click->marketplace#switchTab" data-tab="sell" data-marketplace-target="tabButton"
-                class="tab-btn">
+        </a>
+        <a href="{{ path('app_marketplace', { tab: 'sell' }) }}" class="tab-btn {{ tab == 'sell' ? 'tab-btn--active' : '' }}">
             💰 {{ 'marketplace.tab_sell'|trans }}
-        </button>
-        <button type="button" data-action="click->marketplace#switchTab" data-tab="mylistings" data-marketplace-target="tabButton"
-                class="tab-btn">
+        </a>
+        <a href="{{ path('app_marketplace', { tab: 'mylistings' }) }}" class="tab-btn {{ tab == 'mylistings' ? 'tab-btn--active' : '' }}">
             📦 {{ 'marketplace.tab_my_listings'|trans }}
-        </button>
-        <button type="button" data-action="click->marketplace#switchTab" data-tab="history" data-marketplace-target="tabButton"
-                class="tab-btn">
+        </a>
+        <a href="{{ path('app_marketplace', { tab: 'history' }) }}" class="tab-btn {{ tab == 'history' ? 'tab-btn--active' : '' }}">
             📜 {{ 'marketplace.tab_history'|trans }}
-        </button>
+        </a>
     </div>
 
-    {# TABS CONTENT #}
-    
-    {# 1. BROWSE TAB #}
     {% include 'components/marketplace/browse_tab.html.twig' %}
-
-    {# 2. SELL TAB #}
-    {% include 'components/marketplace/sell_tab.html.twig' with {
-        heroes: heroes,
-        items: items,
-        trainers: trainers,
-        taxRate: taxRate,
-        team: team
-    } %}
-
-    {# 3. MY LISTINGS TAB #}
+    {% include 'components/marketplace/sell_tab.html.twig' with { heroes: heroes, items: items, trainers: trainers, taxRate: taxRate, team: team } %}
     {% include 'components/marketplace/mylistings_tab.html.twig' %}
-
-    {# 4. TRANSACTION HISTORY TAB #}
     {% include 'components/marketplace/history_tab.html.twig' %}
 </div>
 
-{# HTML TEMPLATES #}
 {% include 'components/marketplace/js_templates.html.twig' %}
 {% endblock %}

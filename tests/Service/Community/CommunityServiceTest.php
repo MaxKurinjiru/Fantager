@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\Community;
 
+use App\Entity\Auth\User;
 use App\Entity\Community\ForumThread;
 use App\Entity\Kingdom\Kingdom;
-use App\Entity\Team\Team;
 use App\Service\Community\CommunityService;
 use App\Service\Community\ContentFilterService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,7 +29,7 @@ class CommunityServiceTest extends TestCase
 
     public function testCreateThreadRejectsCrossKingdomAuthor(): void
     {
-        $author = new Team();
+        $author = new User();
         $authorKingdom = new Kingdom();
         $author->setKingdom($authorKingdom);
 
@@ -43,7 +43,7 @@ class CommunityServiceTest extends TestCase
 
     public function testCreatePostRejectsLockedThread(): void
     {
-        $author = new Team();
+        $author = new User();
         $kingdom = new Kingdom();
         $author->setKingdom($kingdom);
 
@@ -59,13 +59,13 @@ class CommunityServiceTest extends TestCase
 
     public function testSendMessageRejectsSelfMessage(): void
     {
-        $team = new Team();
+        $user = new User();
         $kingdom = new Kingdom();
-        $team->setKingdom($kingdom);
+        $user->setKingdom($kingdom);
 
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('You cannot send a message to yourself.');
 
-        $this->communityService->sendMessage($team, $team, 'Hello', 'Body');
+        $this->communityService->sendMessage($user, $user, 'Hello', 'Body');
     }
 }

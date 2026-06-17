@@ -60,6 +60,7 @@
      data-formation-success-delete-value="{{ 'js_flash.formation.success_delete'|trans }}"
      data-formation-success-promote-value="{{ 'js_flash.formation.success_promote'|trans }}"
      data-formation-error-promote-value="{{ 'js_flash.formation.failed_promote'|trans }}"
+     data-formation-prompt-promote-name-value="{{ 'js_flash.formation.prompt_promote_name'|trans }}"
      data-formation-level-label-value="{{ 'js_flash.formation.lvl_short'|trans }}"
      data-formation-races-value="{{ {
          human: 'heroes.race_human'|trans,
@@ -106,36 +107,30 @@
         close_action: 'formation#closeAlert'
     } %}
 
-    <div class="screen-grid">
-        <div class="screen-grid__main">
-            <div class="feature-panel formation-lineup-panel">
-                <div>
-                    <h2 class="feature-panel__title">{{ 'formation.starting_lineup'|trans }}</h2>
-                    <p class="feature-panel__desc">{{ 'formation.starting_lineup_desc'|trans }}</p>
-                </div>
+    {% if is_match_prep %}
+        {% include 'components/formation/match_prep_panel.html.twig' with {
+            fixture: fixture,
+            fixture_assignment: fixture_assignment,
+            formations: formations,
+            team: team
+        } %}
+    {% endif %}
 
-                {% include 'components/formation/pitch_grid.html.twig' with { current_slots: current_slots, heroes: heroes } %}
-            </div>
+    {% include 'components/formation/strategy_settings.html.twig' with {
+        selected_formation: is_match_prep ? null : selected_formation,
+        match_edit_source: match_edit_source
+    } %}
+
+    <div class="feature-panel formation-lineup-panel">
+        <div>
+            <h2 class="feature-panel__title">{{ 'formation.starting_lineup'|trans }}</h2>
+            <p class="feature-panel__desc">{{ 'formation.starting_lineup_desc'|trans }}</p>
         </div>
 
-        <div class="screen-grid__aside">
-            {% if is_match_prep %}
-                {% include 'components/formation/match_prep_panel.html.twig' with {
-                    fixture: fixture,
-                    fixture_assignment: fixture_assignment,
-                    formations: formations,
-                    team: team
-                } %}
-            {% endif %}
-
-            {% include 'components/formation/strategy_settings.html.twig' with {
-                selected_formation: is_match_prep ? null : selected_formation,
-                match_edit_source: match_edit_source
-            } %}
-
-            {% include 'components/formation/hero_pool.html.twig' with { heroes: heroes } %}
-        </div>
+        {% include 'components/formation/pitch_grid.html.twig' with { current_slots: current_slots, heroes: heroes } %}
     </div>
+
+    {% include 'components/formation/hero_pool.html.twig' with { heroes: heroes } %}
 
 </div>
 {% endblock %}

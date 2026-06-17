@@ -10,6 +10,7 @@ use App\Entity\Hero\SchoolMastery;
 use App\Entity\Spell\Spell;
 use App\Entity\Team\Team;
 use App\Enum\School;
+use App\Exception\UserFacingException;
 use App\Repository\Hero\HeroSpellRepository;
 use App\Repository\Hero\SchoolMasteryRepository;
 use App\Repository\Spell\SpellRepository;
@@ -64,22 +65,22 @@ class SpellService
         // Duplicate check
         $existing = $this->heroSpellRepository->findOneBy(['hero' => $hero, 'spell' => $spell]);
         if (null !== $existing) {
-            throw new \DomainException('Hero already knows this spell.');
+            throw new UserFacingException('error.spell_already_known');
         }
 
         // Mastery check
         $mastery = $this->getMasteryForSchool($hero, $spell->getSchool());
         $currentTier = $mastery?->getMasteryTier() ?? 0;
         if ($currentTier < $spell->getRequiredMasteryTier()) {
-            throw new \DomainException(sprintf('Insufficient school mastery. Required tier: %d, current: %d.', $spell->getRequiredMasteryTier(), $currentTier));
+            throw new UserFacingException('error.insufficient_school_mastery', ['%required%' => $spell->getRequiredMasteryTier(), '%current%' => $currentTier]);
         }
 
         // Cost check
         if ($team->getGold() < $spell->getLearningCostGold()) {
-            throw new \DomainException(sprintf('Insufficient gold. Required: %d, available: %d.', $spell->getLearningCostGold(), $team->getGold()));
+            throw new UserFacingException('error.insufficient_gold', ['%required%' => $spell->getLearningCostGold(), '%available%' => $team->getGold()]);
         }
         if ($team->getEssenceCommon() < $spell->getLearningCostEssence()) {
-            throw new \DomainException(sprintf('Insufficient essence. Required: %d, available: %d.', $spell->getLearningCostEssence(), $team->getEssenceCommon()));
+            throw new UserFacingException('error.insufficient_essence', ['%required%' => $spell->getLearningCostEssence(), '%available%' => $team->getEssenceCommon()]);
         }
 
         $team->setGold($team->getGold() - $spell->getLearningCostGold());
@@ -106,7 +107,7 @@ class SpellService
         $capacity = $hero->getMagicCapacity();
 
         if ($slot < 1 || $slot > $capacity) {
-            throw new \DomainException(sprintf('Slot must be between 1 and %d (hero magic capacity).', $capacity));
+            throw new UserFacingException('error.spell_slot_range', ['%capacity%' => $capacity]);
         }
 
         // Unequip any spell already in that slot
@@ -134,7 +135,7 @@ class SpellService
     public function unequip(HeroSpell $heroSpell): void
     {
         if (!$heroSpell->isEquipped()) {
-            throw new \DomainException('Spell is not equipped.');
+            throw new UserFacingException('error.spell_not_equipped');
         }
 
         $heroSpell->setIsEquipped(false);

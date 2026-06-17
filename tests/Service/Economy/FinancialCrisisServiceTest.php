@@ -59,6 +59,16 @@ class FinancialCrisisServiceTest extends TestCase
         );
     }
 
+    public function testResolveCrisisLevelNoneWithLowGoldButNoDebt(): void
+    {
+        $team = $this->createPlayerTeam(gold: 300, debt: 0, crisisWeeks: 0);
+
+        $this->assertSame(
+            FinancialCrisisLevel::None,
+            $this->service->resolveCrisisLevel($team, 271)
+        );
+    }
+
     public function testResolveCrisisLevelWarningForDebt(): void
     {
         $team = $this->createPlayerTeam(gold: 100, debt: 200, crisisWeeks: 0);

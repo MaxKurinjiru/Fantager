@@ -43,7 +43,7 @@ The site is divided into two main sections:
 - [17. Community Screen](#17-community-screen)
 - [18. Arena Management Screen (Optional/Extended Feature)](#18-arena-management-screen-optionalextended-feature)
 - [19. Player Profile & Settings Screen](#19-player-profile--settings-screen)
-- [20. Crafting Screen (if implemented)](#20-crafting-screen-if-implemented)
+- [20. Crafting Screen (Deferred)](#20-crafting-screen-deferred)
 - [Notes for Further Specification](#notes-for-further-specification)
 - [UX/UI Design Requirements](#uxui-design-requirements)
 - [Backend Requirements](#backend-requirements)
@@ -238,7 +238,7 @@ The site is divided into two main sections:
   - Trainer name
   - Original race
   - Attribute values (STR–LCK, frozen at conversion, 1–20)
-  - Age (+ Death Expectation warning)
+  - Age (+ Mortality Threshold warning when at or above threshold)
   - Status (Active, Aging risk)
 - **Trainer Detail (when selected):**
   - Full stats and training caps
@@ -316,16 +316,17 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 8. Headquarters Screen
 **When:** Managing headquarters and facilities
 
+> **Implementation note:** HQ is a unified hub at `/app/hq`. Arena and Summoning Chamber open as facility panels (`?facility=`). Seven facilities (Forge removed — crafting deferred).
+
 ### Displayed Information:
 - **HQ Overview:**
   - Headquarters Level (total)
   - Visual theme preview (icon/illustration)
-  - Race Optimization (currently selected race + effects)
-- **Facilities List:**
+  - Arena Adaptation (currently selected race + summoning effects)
+- **Facilities List (7):**
   - **Training Facilities:** Level, Bonus (efficiency %), Upgrade Cost (Gold), Next Level Bonus
   - **Medical Wing:** Level, Bonus (recovery %), Upgrade Cost
   - **Library/Academy:** Level, Bonus (magic training %), Upgrade Cost
-  - **Forge/Workshop:** Level, Bonus (crafting success %), Upgrade Cost
   - **Treasury:** Level, Bonus (passive income), Storage Capacity, Upgrade Cost
   - **Barracks:** Level, Roster Capacity (starting: 10), Morale Recovery Bonus, Upgrade Cost
   - **Summoning Chamber:** Level, Summon Quality, Upgrade Cost, Summons Used, Max Summons per Cycle (based on Kingdom game speed)
@@ -336,7 +337,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 
 ### Possible Actions/Buttons:
 - **Upgrade Facility** - confirm upgrade (modal with cost confirmation)
-- **Change Race Optimization** - dropdown with races, confirm modal (may have cooldown/cost)
+- **Change Arena Adaptation** - dropdown with races, confirm modal (weekly lock cycle)
 - **Customize Theme** - navigate to visual customization (if implemented)
 - **Visit Summoning Chamber** - navigate to Summoning Screen
 - **HQ Settings** - access settings, visibility for community
@@ -344,7 +345,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ### Backend Requirements:
 - HQ data endpoint
 - Facility upgrade endpoint (validation, cost deduction)
-- Race optimization change endpoint
+- Arena adaptation change endpoint
 - Passive bonuses calculation
 
 ---
@@ -352,13 +353,15 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 9. Summoning Chamber Screen
 **When:** Recruiting new junior heroes
 
+> **Implemented** as an HQ facility panel (`/app/hq?facility=summoning_chamber`). See [09-summoning-chamber.md](screens/09-summoning-chamber.md).
+
 ### Displayed Information:
 - **Summon Status:**
   - Summons Used this Cycle
   - Max Summons per Cycle (based on Kingdom game speed)
 - **Summon Parameters:**
-  - Arena Theme Adaptation (displaying the theme race of the home Arena)
-  - Potential summonable races list (based on affinity and relations with theme race)
+  - Arena Adaptation (displaying the adapted race of the home arena)
+  - Potential summonable races list (based on affinity and relations with the adapted race)
   - Starting level: **1**
   - Age range preview (Min Age - Max Junior Age for summonable races)
   - Expected stat range (based on race flat bonuses and Summoning Chamber level)
@@ -591,6 +594,8 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 15. Marketplace Screen
 **When:** Buying and selling heroes, items, trainers
 
+> **Implemented** as part of the Economy hub at `/app/economy` (legacy `/app/marketplace` redirects). See [15-marketplace.md](screens/15-marketplace.md).
+
 ### Displayed Information:
 - **Marketplace Tabs:**
   - **Heroes**
@@ -642,7 +647,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Race
   - Final Level
   - Age at Death
-  - Death Expectation (reached/exceeded)
+  - Mortality Threshold (reached/exceeded)
   - Cause of Death (Combat, Mortality Roll, etc.)
   - Total Battles Fought
   - Wins
@@ -732,6 +737,8 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 18. Arena Management Screen (Optional/Extended Feature)
 **When:** Managing home arena for home matches
 
+> **Implemented** as an HQ facility panel (`/app/hq?facility=arena`). Fixed ticket price; revenue on league match tick. See [18-arena-management.md](screens/18-arena-management.md).
+
 ### Displayed Information:
 - **Arena Status:**
   - Arena Level
@@ -799,39 +806,9 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 
 ---
 
-## 20. Crafting Screen (if implemented)
-**When:** Creating new items from materials
+## 20. Crafting Screen (Deferred)
 
-### Displayed Information:
-- **Crafting Recipe List:**
-  - Available recipes (filtered by unlock level, HQ facility)
-  - Each recipe:
-    - Result item (icon, name, rarity)
-    - Required Materials (materials + quantity)
-    - Essence Cost (type + amount)
-    - Gold Cost
-    - Success Rate (%)
-    - Crafting Time (server ticks)
-- **Material Inventory:**
-  - Available materials for crafting
-  - Quantity
-- **Crafting Queue:**
-  - Active crafting jobs
-  - Estimated completion time
-  - Progress indicator
-
-### Possible Actions/Buttons:
-- **Start Crafting** - begin crafting job (cost deduction)
-- **Queue Craft** - add to queue
-- **Cancel Craft** - cancel (partial refund possible)
-- **View Recipe Details** - expand full materials, effects
-- **Acquire Materials** - navigate to Marketplace or Dismantle
-
-### Backend Requirements:
-- Crafting recipes endpoint
-- Crafting queue endpoint
-- Crafting success calculation (RNG)
-- Server tick processing
+> Crafting backend and UI were removed from the codebase. Design preserved in [future/crafting-system.md](future/crafting-system.md) and [future/crafting-screen.md](future/crafting-screen.md).
 
 ---
 

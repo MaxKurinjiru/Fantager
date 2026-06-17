@@ -10,6 +10,7 @@ use App\Entity\Item\Item;
 use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\MemorialCause;
+use App\Exception\UserFacingException;
 use Doctrine\ORM\EntityManagerInterface;
 
 class GraveyardService
@@ -43,7 +44,7 @@ class GraveyardService
     public function prepareHeroRemoval(Hero $hero): void
     {
         if (!$hero->isCombatant()) {
-            throw new \DomainException('Only combatant heroes can be removed through hero dismissal flow.');
+            throw new UserFacingException('error.graveyard_combatant_only');
         }
 
         /** @var list<Item> $equippedItems */
@@ -82,7 +83,7 @@ class GraveyardService
     public function prepareTrainerRemoval(Hero $trainer): void
     {
         if (!$trainer->isTrainer()) {
-            throw new \DomainException('Only trainer heroes can be removed through trainer dismissal flow.');
+            throw new UserFacingException('error.graveyard_trainer_only');
         }
 
         foreach ($trainer->getTrainees()->toArray() as $hero) {

@@ -126,10 +126,10 @@
             </section>
         {% endif %}
     {% endif %}
-</div>
 
-{% include 'components/community/new_thread_modal.html.twig' with {
-    categories: categories,
-    controller_name: 'community-forum'
-} %}
+    {% include 'components/community/new_thread_modal.html.twig' with {
+        categories: categories,
+        controller_name: 'community-forum'
+    } %}
+</div>
 {% endblock %}

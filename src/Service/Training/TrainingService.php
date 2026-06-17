@@ -10,6 +10,7 @@ use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use App\Enum\TrainingType;
+use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
@@ -71,7 +72,7 @@ class TrainingService
     public function getTrainerSlotsLimit(Hero $trainer): int
     {
         if (!$trainer->isTrainer()) {
-            throw new \InvalidArgumentException('Hero is not a trainer.');
+            throw new UserFacingException('error.trainer_not_entity');
         }
 
         $team = $trainer->getTeam();
@@ -95,21 +96,21 @@ class TrainingService
     public function configureTrainer(Hero $trainer, ?TrainingType $type, ?string $attribute, Team $team, \DateTimeImmutable $now): void
     {
         if (!$trainer->isTrainer()) {
-            throw new \DomainException('Entity is not a trainer.');
+            throw new UserFacingException('error.trainer_not_entity');
         }
 
         if ($trainer->getTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Trainer does not belong to your team.');
+            throw new UserFacingException('error.trainer_not_on_team');
         }
 
         if ($this->isTrainingLockedForTeam($team, $now)) {
-            throw new \DomainException('Training configuration is currently locked.');
+            throw new UserFacingException('error.trainer_config_locked');
         }
 
         if (null !== $type) {
             if (TrainingType::Attribute === $type) {
                 if (null === $attribute || !in_array($attribute, self::PRIMARY_ATTRIBUTES, true)) {
-                    throw new \InvalidArgumentException(sprintf('Invalid attribute. Valid values: %s.', implode(', ', self::PRIMARY_ATTRIBUTES)));
+                    throw new UserFacingException('error.invalid_attribute', ['%values%' => implode(', ', self::PRIMARY_ATTRIBUTES)]);
                 }
             } else {
                 $attribute = null; // for magic and form
@@ -126,31 +127,31 @@ class TrainingService
     public function assignHero(Hero $trainer, Hero $hero, Team $team, \DateTimeImmutable $now): void
     {
         if (!$trainer->isTrainer()) {
-            throw new \DomainException('Entity is not a trainer.');
+            throw new UserFacingException('error.trainer_not_entity');
         }
 
         if (!$hero->isCombatant()) {
-            throw new \DomainException('Only combatant heroes can be assigned to a trainer.');
+            throw new UserFacingException('error.trainer_only_combatant_assign');
         }
 
         if ($trainer->getTeam()->getId() !== $team->getId() || $hero->getTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Trainer or Hero does not belong to your team.');
+            throw new UserFacingException('error.trainer_hero_not_on_team');
         }
 
         if ($this->isTrainingLockedForTeam($team, $now)) {
-            throw new \DomainException('Training assignments are currently locked.');
+            throw new UserFacingException('error.trainer_assignments_locked');
         }
 
         if (null !== $hero->getTrainer()) {
-            throw new \DomainException('Hero is already assigned to a trainer.');
+            throw new UserFacingException('error.trainer_hero_already_assigned');
         }
 
         if (HeroStatus::Available !== $hero->getStatus()) {
-            throw new \DomainException('Only available heroes can be assigned to a trainer.');
+            throw new UserFacingException('error.trainer_hero_only_available');
         }
 
         if (count($trainer->getTrainees()) >= $this->getTrainerSlotsLimit($trainer)) {
-            throw new \DomainException('Trainer does not have any available slots.');
+            throw new UserFacingException('error.trainer_no_slots');
         }
 
         $trainer->addTrainee($hero);
@@ -160,19 +161,19 @@ class TrainingService
     public function unassignHero(Hero $trainer, Hero $hero, Team $team, \DateTimeImmutable $now): void
     {
         if (!$trainer->isTrainer()) {
-            throw new \DomainException('Entity is not a trainer.');
+            throw new UserFacingException('error.trainer_not_entity');
         }
 
         if ($trainer->getTeam()->getId() !== $team->getId() || $hero->getTeam()->getId() !== $team->getId()) {
-            throw new \DomainException('Trainer or Hero does not belong to your team.');
+            throw new UserFacingException('error.trainer_hero_not_on_team');
         }
 
         if ($this->isTrainingLockedForTeam($team, $now)) {
-            throw new \DomainException('Training assignments are currently locked.');
+            throw new UserFacingException('error.trainer_assignments_locked');
         }
 
         if ($hero->getTrainer()?->getId() !== $trainer->getId()) {
-            throw new \DomainException('Hero is not assigned to this trainer.');
+            throw new UserFacingException('error.trainer_hero_not_assigned');
         }
 
         $trainer->removeTrainee($hero);
@@ -350,7 +351,7 @@ class TrainingService
             'wil' => $hero->getWil(),
             'cha' => $hero->getCha(),
             'lck' => $hero->getLck(),
-            default => throw new \InvalidArgumentException(sprintf('Unknown attribute "%s".', $attr)),
+            default => throw new UserFacingException('error.unknown_attribute', ['%attribute%' => $attr]),
         };
     }
 
@@ -365,7 +366,7 @@ class TrainingService
             'wil' => $hero->getWilRaw(),
             'cha' => $hero->getChaRaw(),
             'lck' => $hero->getLckRaw(),
-            default => throw new \InvalidArgumentException(sprintf('Unknown attribute "%s".', $attr)),
+            default => throw new UserFacingException('error.unknown_attribute', ['%attribute%' => $attr]),
         };
     }
 
@@ -388,7 +389,7 @@ class TrainingService
                 break;
             case 'lck': $hero->setLckRaw($value);
                 break;
-            default: throw new \InvalidArgumentException(sprintf('Unknown attribute "%s".', $attr));
+            default: throw new UserFacingException('error.unknown_attribute', ['%attribute%' => $attr]);
         }
     }
 }

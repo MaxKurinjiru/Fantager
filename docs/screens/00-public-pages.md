@@ -62,7 +62,7 @@ Authentication (login/register) is implemented as **standalone pages** (`/login`
 - **Back to Homepage** — return to main page
 
 ### Backend Requirements:
-- `GET /news` — paginated news list (full content per item)
+- `GET /news` — paginated news list (full content per item) — **implemented** (`NewsArticle` entity + `Web\NewsController`)
 - Admin interface for creating/editing news (future)
 
 ---

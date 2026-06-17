@@ -45,8 +45,13 @@
             </div>
             <h1 class="thread-detail-header__title">{{ thread.title }}</h1>
             <p class="thread-detail-header__meta">
-                <span class="thread-detail-header__emblem">{{ thread.authorTeam.emblem ?: '🛡️' }}</span>
-                {{ thread.authorTeam.name }}
+                {% if thread.authorTeam %}
+                    <span class="thread-detail-header__emblem">{{ thread.authorTeam.emblem ?: '🛡️' }}</span>
+                    {{ thread.authorUser.displayName }} · {{ thread.authorTeam.name }}
+                {% else %}
+                    <span class="thread-detail-header__emblem">👤</span>
+                    {{ thread.authorUser.displayName }}
+                {% endif %}
                 · {{ 'community.started_at'|trans }} {{ thread.createdAt|date('d. m. Y H:i') }}
             </p>
         </div>
@@ -77,7 +82,7 @@
     {% if replies is not empty %}
         <section class="forum-replies">
             <h2 class="forum-replies__title">
-                {{ 'community.replies_heading'|trans({'count': replies|length}) }}
+                {{ 'community.replies_heading'|trans({'%count%': replies|length}) }}
             </h2>
             {% for post in replies %}
                 {% include 'components/community/forum_post.html.twig' with { post: post } %}

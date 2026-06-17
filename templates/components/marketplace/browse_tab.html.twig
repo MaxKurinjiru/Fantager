@@ -1,8 +1,26 @@
 {# templates/components/marketplace/browse_tab.html.twig #}
-<div data-marketplace-target="tabContent" data-tab-name="browse" class="space-y-6">
+<div data-marketplace-target="tabContent" data-tab-name="browse" class="space-y-6{% if tab|default('browse') != 'browse' %} hidden{% endif %}">
+    {# Category tabs #}
+    <div class="segmented-control">
+        <a href="{{ path('app_marketplace', { tab: 'browse', category: 'hero' }) }}"
+           class="segmented-btn {{ category|default('hero') == 'hero' ? 'segmented-btn--active' : '' }}">
+            👥 {{ 'marketplace.type_hero'|trans }}
+        </a>
+        <a href="{{ path('app_marketplace', { tab: 'browse', category: 'trainer' }) }}"
+           class="segmented-btn {{ category|default('hero') == 'trainer' ? 'segmented-btn--active' : '' }}">
+            🏋️ {{ 'marketplace.type_trainer'|trans }}
+        </a>
+        <a href="{{ path('app_marketplace', { tab: 'browse', category: 'item' }) }}"
+           class="segmented-btn {{ category|default('hero') == 'item' ? 'segmented-btn--active' : '' }}">
+            🎒 {{ 'marketplace.type_item'|trans }}
+        </a>
+    </div>
+
     {# Filters Grid #}
     <div class="game-panel">
-        <form data-action="submit->marketplace#applyFilters" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <form data-marketplace-target="browseFilterForm" data-action="submit->marketplace#applyFilters" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="hidden" name="type" value="{{ category|default('hero') }}" data-marketplace-target="browseTypeInput">
+
             {# Search #}
             <div class="flex flex-col gap-1">
                 <label for="filter-search" class="form-label">{{ 'heroes.search_placeholder'|trans }}</label>
@@ -10,19 +28,8 @@
                        class="form-input">
             </div>
 
-            {# Type #}
-            <div class="flex flex-col gap-1">
-                <label for="filter-type" class="form-label">{{ 'marketplace.type_label'|trans }}</label>
-                <select id="filter-type" name="type" data-action="change->marketplace#onTypeChange" class="form-input">
-                    <option value="">{{ 'marketplace.filter_all'|trans }}</option>
-                    <option value="hero">{{ 'marketplace.type_hero'|trans }}</option>
-                    <option value="item">{{ 'marketplace.type_item'|trans }}</option>
-                    <option value="trainer">{{ 'marketplace.type_trainer'|trans }}</option>
-                </select>
-            </div>
-
             {# Race Filter (Heroes/Trainers) #}
-            <div class="flex flex-col gap-1" data-marketplace-target="raceFilterContainer">
+            <div class="flex flex-col gap-1{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="raceFilterContainer">
                 <label for="filter-race" class="form-label">{{ 'heroes.race'|trans }}</label>
                 <select id="filter-race" name="race" class="form-input">
                     <option value="">{{ 'marketplace.filter_all_races'|trans }}</option>
@@ -38,7 +45,7 @@
             </div>
 
             {# Rarity Filter (Items) #}
-            <div class="flex flex-col gap-1 hidden" data-marketplace-target="rarityFilterContainer">
+            <div class="flex flex-col gap-1{% if category|default('hero') != 'item' %} hidden{% endif %}" data-marketplace-target="rarityFilterContainer">
                 <label for="filter-rarity" class="form-label">{{ 'marketplace.rarity_label'|trans }}</label>
                 <select id="filter-rarity" name="rarity" class="form-input">
                     <option value="">{{ 'marketplace.filter_all_rarities'|trans }}</option>

@@ -12,6 +12,7 @@ use App\Enum\FacilityType;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use App\Enum\RoyalTreasuryContributionSource;
+use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
@@ -88,7 +89,7 @@ class HeadquartersService
     {
         $hq = $this->hqRepository->findOneBy(['team' => $team]);
         if (null === $hq) {
-            throw new \DomainException('Headquarters not initialized for this team.');
+            throw new UserFacingException('error.hq_not_initialized');
         }
 
         return $hq;
@@ -105,11 +106,11 @@ class HeadquartersService
         $hq = $this->getForTeam($team);
 
         if (null !== $hq->getUpgradingFacility()) {
-            throw new \DomainException('Another facility change is already in progress.');
+            throw new UserFacingException('error.hq_facility_change_in_progress');
         }
 
         if ($hq->isFacilityDowngradeLockCycle()) {
-            throw new \DomainException('Facility downgrade is locked until the next weekly cycle.');
+            throw new UserFacingException('error.hq_downgrade_locked');
         }
 
         $this->financialCrisisService->assertSpendingAllowed($team, 'hq_upgrade');
@@ -123,7 +124,7 @@ class HeadquartersService
         }
 
         if (null === $facility) {
-            throw new \DomainException(sprintf('Facility "%s" not found in HQ.', $type->value));
+            throw new UserFacingException('error.hq_facility_not_found', ['%type%' => $type->value]);
         }
 
         $cost = $this->calculateUpgradeCost($type, $facility->getLevel(), $hq->getComputedTotalLevel());
@@ -169,11 +170,11 @@ class HeadquartersService
         $hq = $this->getForTeam($team);
 
         if (null !== $hq->getUpgradingFacility()) {
-            throw new \DomainException('Another facility change is already in progress.');
+            throw new UserFacingException('error.hq_facility_change_in_progress');
         }
 
         if ($hq->isFacilityDowngradeLockCycle()) {
-            throw new \DomainException('Facility downgrade is locked until the next weekly cycle.');
+            throw new UserFacingException('error.hq_downgrade_locked');
         }
 
         $facility = null;
@@ -185,11 +186,11 @@ class HeadquartersService
         }
 
         if (null === $facility) {
-            throw new \DomainException(sprintf('Facility "%s" not found in HQ.', $type->value));
+            throw new UserFacingException('error.hq_facility_not_found', ['%type%' => $type->value]);
         }
 
         if ($facility->getLevel() <= 1) {
-            throw new \DomainException('Facility is already at minimum level.');
+            throw new UserFacingException('error.hq_facility_min_level');
         }
 
         $speed = (float) $team->getKingdom()->getGameSpeed();
@@ -351,15 +352,16 @@ class HeadquartersService
         ];
     }
 
+    /** Request a pending arena adaptation change (stored in `pending_race_optimization`). */
     public function updateRaceOptimization(Team $team, ?string $raceValue): Headquarters
     {
         $hq = $this->getForTeam($team);
 
         if ($hq->hasPendingRaceOptimizationChange() || $hq->isRaceOptimizationLockCycle()) {
-            throw new \DomainException('Race optimization is currently locked.');
+            throw new UserFacingException('error.hq_race_optimization_locked');
         }
 
-        $this->financialCrisisService->assertSpendingAllowed($team, 'hq_optimize');
+        $this->financialCrisisService->assertSpendingAllowed($team, 'hq_arena_adaptation');
 
         $current = $hq->getRaceOptimization();
 
@@ -367,7 +369,7 @@ class HeadquartersService
         if (null !== $raceValue && '' !== trim($raceValue)) {
             $race = \App\Enum\Race::tryFrom($raceValue);
             if (null === $race) {
-                throw new \DomainException(sprintf('Invalid race: %s.', $raceValue));
+                throw new UserFacingException('error.hq_invalid_race', ['%race%' => $raceValue]);
             }
             $target = $race->value;
         }
@@ -405,6 +407,7 @@ class HeadquartersService
         return 10 + (int) round($barracksBonus);
     }
 
+    /** Apply pending arena adaptation changes for all HQ in the kingdom (Sunday tick). */
     public function processRaceOptimizationTick(Kingdom $kingdom): void
     {
         $hqs = $this->hqRepository->findByKingdom($kingdom);

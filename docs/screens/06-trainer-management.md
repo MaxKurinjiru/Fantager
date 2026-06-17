@@ -9,7 +9,7 @@ Displayed Information:
 	- Trainer name
 	- Original race
 	- Attribute values (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) — frozen at conversion, range 1–20
-	- Age (+ Death Expectation warning)
+	- Age (+ Mortality Threshold warning when at or above threshold)
 	- Status (Active, Aging risk)
 - Trainer Detail (when selected):
 	- Full stats (per-attribute training caps)

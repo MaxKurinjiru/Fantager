@@ -133,7 +133,7 @@ class TickScheduleCalculator
                 }
             }
 
-            // 7. Race Optimization (Sunday 09:30)
+            // 7. Arena Adaptation (Sunday 09:30; TickType::RaceOptimization)
             if (7 === (int) $current->format('N')) {
                 $tRaceOpt = new \DateTimeImmutable($dateStr.' 09:30:00', $tz);
                 if ($tRaceOpt > $fromLocal && $tRaceOpt <= $toLocal) {

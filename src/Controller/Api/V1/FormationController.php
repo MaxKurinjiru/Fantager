@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Enum\FormationApproach;
 use App\Service\Formation\FormationService;
@@ -15,6 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/v1/formations')]
 class FormationController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly FormationService $formationService,
     ) {
@@ -25,7 +28,7 @@ class FormationController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $formations = $this->formationService->listByTeam($team);
@@ -53,7 +56,7 @@ class FormationController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         /** @var array<string, mixed> $body */
@@ -61,7 +64,7 @@ class FormationController extends AbstractController
 
         $name = (string) ($body['name'] ?? '');
         if ('' === $name) {
-            return $this->json(['error' => 'Field "name" is required.'], 400);
+            return $this->jsonError('error.field_name_required', 400);
         }
 
         $approachValue = (string) ($body['approach'] ?? FormationApproach::Balanced->value);
@@ -69,7 +72,7 @@ class FormationController extends AbstractController
         if (null === $approach) {
             $valid = implode(', ', array_column(FormationApproach::cases(), 'value'));
 
-            return $this->json(['error' => sprintf('Invalid approach. Valid values: %s.', $valid)], 400);
+            return $this->jsonError('error.invalid_approach', 400, ['%values%' => $valid]);
         }
 
         $id = isset($body['id']) ? (int) $body['id'] : null;
@@ -81,7 +84,7 @@ class FormationController extends AbstractController
         try {
             $formation = $this->formationService->save($team, $id, $name, $approach, $slots, $isDefault);
         } catch (\DomainException|\InvalidArgumentException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json($this->formationService->serialize($formation), null === $id ? 201 : 200);
@@ -92,18 +95,18 @@ class FormationController extends AbstractController
     {
         $team = $this->getPlayerTeam();
         if (null === $team) {
-            return $this->json(['error' => 'No team assigned to your account.'], 422);
+            return $this->jsonError('error.no_team', 422);
         }
 
         $formation = $this->formationService->findForTeam($id, $team);
         if (null === $formation) {
-            return $this->json(['error' => 'Formation not found.'], 404);
+            return $this->jsonError('error.formation_not_found', 404);
         }
 
         try {
             $this->formationService->delete($formation, $team);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], 422);
+            return $this->jsonException($e, 422);
         }
 
         return $this->json(['message' => 'Formation deleted.']);

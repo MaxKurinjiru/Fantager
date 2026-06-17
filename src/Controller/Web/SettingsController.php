@@ -13,6 +13,7 @@ use App\Repository\Auth\VerificationTokenRepository;
 use App\Repository\Notification\NotificationRepository;
 use App\Service\Auth\UserSettingsService;
 use App\Service\TeamChronicle\TeamChronicleService;
+use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,6 +30,7 @@ class SettingsController extends AbstractController
     public function __construct(
         private readonly string $mailerFrom,
         private readonly \Symfony\Contracts\Translation\TranslatorInterface $translator,
+        private readonly UserMessageTranslator $userMessages,
     ) {
     }
 
@@ -49,24 +51,24 @@ class SettingsController extends AbstractController
     ): JsonResponse {
         $csrfToken = $request->headers->get('X-CSRF-Token');
         if (!$this->isCsrfTokenValid('api', $csrfToken)) {
-            return $this->json(['error' => 'Invalid security token.'], Response::HTTP_FORBIDDEN);
+            return $this->json(['error' => $this->userMessages->trans('error.invalid_csrf')], Response::HTTP_FORBIDDEN);
         }
 
         $data = json_decode($request->getContent(), true);
         $newEmail = strtolower(trim($data['email'] ?? ''));
 
         if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
-            return $this->json(['error' => 'Invalid email format.'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => $this->userMessages->trans('error.invalid_email_format')], Response::HTTP_BAD_REQUEST);
         }
 
         /** @var User $user */
         $user = $this->getUser();
         if ($user->getEmail() === $newEmail) {
-            return $this->json(['error' => 'This is already your current email address.'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => $this->userMessages->trans('error.email_already_current')], Response::HTTP_BAD_REQUEST);
         }
 
         if ($userRepository->findOneBy(['email' => $newEmail])) {
-            return $this->json(['error' => 'This email address is already in use by another account.'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => $this->userMessages->trans('error.email_already_in_use')], Response::HTTP_BAD_REQUEST);
         }
 
         // Generate token for current email confirmation
@@ -109,7 +111,7 @@ class SettingsController extends AbstractController
         $token = $tokenRepository->findActiveByToken($rawToken);
 
         if (!$token || TokenType::ChangeEmailOld !== $token->getType()) {
-            $this->addFlash('error', 'Invalid or expired email confirmation link.');
+            $this->addFlash('error', $this->userMessages->trans('error.invalid_email_confirmation_link'));
 
             return $this->redirectToRoute('app_home');
         }
@@ -119,7 +121,7 @@ class SettingsController extends AbstractController
 
         $newEmail = $token->getData()['new_email'] ?? null;
         if (!$newEmail) {
-            $this->addFlash('error', 'Invalid email change request payload.');
+            $this->addFlash('error', $this->userMessages->trans('error.invalid_email_change_payload'));
 
             return $this->redirectToRoute('app_home');
         }
@@ -149,7 +151,7 @@ class SettingsController extends AbstractController
 
         $mailer->send($emailObj);
 
-        $this->addFlash('success', 'Current email confirmed. A final verification link has been sent to your new email address.');
+        $this->addFlash('success', $this->userMessages->trans('flash.email_confirm_old_sent'));
 
         return $this->redirectToRoute('app_home');
     }
@@ -165,7 +167,7 @@ class SettingsController extends AbstractController
         $token = $tokenRepository->findActiveByToken($rawToken);
 
         if (!$token || TokenType::ChangeEmailNew !== $token->getType()) {
-            $this->addFlash('error', 'Invalid or expired email confirmation link.');
+            $this->addFlash('error', $this->userMessages->trans('error.invalid_email_confirmation_link'));
 
             return $this->redirectToRoute('app_home');
         }
@@ -175,13 +177,13 @@ class SettingsController extends AbstractController
 
         $newEmail = $token->getData()['new_email'] ?? null;
         if (!$newEmail) {
-            $this->addFlash('error', 'Invalid email change request payload.');
+            $this->addFlash('error', $this->userMessages->trans('error.invalid_email_change_payload'));
 
             return $this->redirectToRoute('app_home');
         }
 
         if ($userRepository->findOneBy(['email' => $newEmail])) {
-            $this->addFlash('error', 'The new email address is already in use by another account.');
+            $this->addFlash('error', $this->userMessages->trans('error.email_already_in_use'));
 
             return $this->redirectToRoute('app_home');
         }
@@ -189,7 +191,7 @@ class SettingsController extends AbstractController
         $user->setEmail($newEmail);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Your email address has been successfully updated!');
+        $this->addFlash('success', $this->userMessages->trans('flash.email_updated'));
 
         return $this->redirectToRoute('app_home');
     }
@@ -203,20 +205,20 @@ class SettingsController extends AbstractController
     ): JsonResponse {
         $csrfToken = $request->headers->get('X-CSRF-Token');
         if (!$this->isCsrfTokenValid('api', $csrfToken)) {
-            return $this->json(['error' => 'Invalid security token.'], Response::HTTP_FORBIDDEN);
+            return $this->json(['error' => $this->userMessages->trans('error.invalid_csrf')], Response::HTTP_FORBIDDEN);
         }
 
         $data = json_decode($request->getContent(), true);
         if (!\is_array($data)) {
-            return $this->json(['error' => 'Invalid request payload.'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => $this->userMessages->trans('error.invalid_request_payload')], Response::HTTP_BAD_REQUEST);
         }
 
         if (!\array_key_exists('closeModalOnBackdrop', $data)) {
-            return $this->json(['error' => 'No preferences provided.'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => $this->userMessages->trans('error.no_preferences_provided')], Response::HTTP_BAD_REQUEST);
         }
 
         if (!\is_bool($data['closeModalOnBackdrop'])) {
-            return $this->json(['error' => 'Invalid closeModalOnBackdrop value.'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => $this->userMessages->trans('error.invalid_close_modal_on_backdrop')], Response::HTTP_BAD_REQUEST);
         }
 
         /** @var User $user */
@@ -240,7 +242,7 @@ class SettingsController extends AbstractController
     ): JsonResponse {
         $csrfToken = $request->headers->get('X-CSRF-Token');
         if (!$this->isCsrfTokenValid('api', $csrfToken)) {
-            return $this->json(['error' => 'Invalid security token.'], Response::HTTP_FORBIDDEN);
+            return $this->json(['error' => $this->userMessages->trans('error.invalid_csrf')], Response::HTTP_FORBIDDEN);
         }
 
         /** @var User $user */
@@ -285,7 +287,7 @@ class SettingsController extends AbstractController
         $token = $tokenRepository->findActiveByToken($rawToken);
 
         if (!$token || TokenType::DeleteAccount !== $token->getType()) {
-            $this->addFlash('error', 'Invalid or expired account cancellation link.');
+            $this->addFlash('error', $this->userMessages->trans('error.invalid_account_cancellation_link'));
 
             return $this->redirectToRoute('app_home');
         }
@@ -324,7 +326,7 @@ class SettingsController extends AbstractController
         $entityManager->remove($user);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Your account has been permanently deleted.');
+        $this->addFlash('success', $this->userMessages->trans('flash.account_deleted'));
 
         return $this->redirectToRoute('app_home');
     }

@@ -12,7 +12,7 @@ use App\Repository\Graveyard\GraveyardMemorialRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: GraveyardMemorialRepository::class)]
-#[ORM\Table(name: 'graveyard_memorial')]
+#[ORM\Table(name: 'graveyard')]
 class GraveyardMemorial
 {
     #[ORM\Id]

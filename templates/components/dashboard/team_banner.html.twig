@@ -1,12 +1,12 @@
 {# templates/components/dashboard/team_banner.html.twig #}
-<div class="db-banner">
+<div class="db-banner" data-controller="dashboard-banner">
     <div class="db-banner__grid-bg"></div>
     
     {# Edit button — opens team profile modal via window CustomEvent (§4.1: type attribute required) #}
     <button type="button"
             class="db-banner__edit-btn"
             aria-label="{{ 'dashboard.edit_profile'|trans }}"
-            data-action="click->dashboard-optimization#openProfileModal">
+            data-action="click->dashboard-banner#openProfileModal">
         <span aria-hidden="true" class="db-banner__edit-icon">⚙️</span>
         <span class="sr-only">{{ 'dashboard.edit_profile'|trans }}</span>
     </button>

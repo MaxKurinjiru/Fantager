@@ -5,10 +5,10 @@
         <p class="text-text-secondary text-sm">{{ 'hq.facilities_list.barracks.desc'|trans }}</p>
     </div>
 
-    <div class="game-panel db-opt" data-controller="hq"
+    <div class="game-panel db-adapt" data-controller="hq"
          data-hq-text-saving-value="{{ 'js_flash.hq.saving'|trans }}"
-         data-hq-error-optimize-value="{{ 'js_flash.hq.failed_optimize'|trans }}"
-         data-hq-success-optimize-value="{{ 'js_flash.hq.success_optimize'|trans }}">
+         data-hq-error-adaptation-value="{{ 'js_flash.hq.failed_optimize'|trans }}"
+         data-hq-success-adaptation-value="{{ 'js_flash.hq.success_optimize'|trans }}">
         {% include 'components/ui/alert_box.html.twig' with {
             target: 'hq',
             message_target: 'alertMessage',
@@ -17,8 +17,8 @@
 
         <h3 class="font-bold text-white mb-4">{{ 'hq.race_opt_title'|trans }}</h3>
 
-        <div class="db-opt__row">
-            <select data-hq-target="raceSelect" class="form-input db-opt__select"
+        <div class="db-adapt__row">
+            <select data-hq-target="raceSelect" class="form-input db-adapt__select"
                     {% if is_optimization_locked %}disabled{% endif %}>
                 <option value="">{{ 'hq.no_opt'|trans }}</option>
                 {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
@@ -29,15 +29,15 @@
             </select>
 
             {% if pending_race_optimization %}
-                <div class="db-opt__status db-opt__status--pending">
+                <div class="db-adapt__status db-adapt__status--pending">
                     ⏳ {{ 'hq.race_opt_pending'|trans({'%race%': ('heroes.race_' ~ pending_race_optimization)|trans}) }}
                 </div>
             {% elseif is_optimization_locked %}
-                <div class="db-opt__status db-opt__status--locked">
+                <div class="db-adapt__status db-adapt__status--locked">
                     🔒 {{ 'hq.race_opt_locked'|trans }}
                 </div>
             {% else %}
-                <button type="button" data-hq-target="optimizeBtn" data-action="click->hq#optimize"
+                <button type="button" data-hq-target="saveAdaptationBtn" data-action="click->hq#saveArenaAdaptation"
                         class="btn btn-primary btn--sm">
                     {{ 'hq.save_opt'|trans }}
                 </button>

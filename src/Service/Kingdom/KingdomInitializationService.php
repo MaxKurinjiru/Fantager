@@ -318,7 +318,7 @@ class KingdomInitializationService
     {
         $hq = new Headquarters();
         $hq->setTeam($team);
-        // Set race_optimization from the team's assigned race (overrides the config default).
+        // Initial arena adaptation (`race_optimization`) from the team's assigned race (overrides config default).
         $hq->setRaceOptimization($teamRace->value);
         $this->em->persist($hq);
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Entity\Community\ForumThread;
 use App\Repository\Community\ForumThreadRepository;
@@ -20,6 +21,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_PLAYER')]
 class ForumController extends AbstractController
 {
+    use ApiControllerTrait;
+
     public function __construct(
         private readonly ForumThreadRepository $threadRepository,
         private readonly CommunityService $communityService,
@@ -32,16 +35,16 @@ class ForumController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+        $kingdom = $user->getKingdom();
+        if (null === $kingdom) {
+            return $this->jsonError('error.no_kingdom', 400);
         }
 
         $category = $request->query->get('category');
         $search = trim($request->query->getString('q', ''));
 
         $threads = $this->threadRepository->findForKingdomListing(
-            $team->getKingdom(),
+            $kingdom,
             is_string($category) && 'all' !== $category ? $category : null,
             '' !== $search ? $search : null,
         );
@@ -60,9 +63,9 @@ class ForumController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+        $kingdom = $user->getKingdom();
+        if (null === $kingdom) {
+            return $this->jsonError('error.no_kingdom', 400);
         }
 
         $content = json_decode($request->getContent(), true) ?? [];
@@ -71,13 +74,13 @@ class ForumController extends AbstractController
         $category = trim($content['category'] ?? '');
 
         if ('' === $title || '' === $body || '' === $category) {
-            return $this->json(['error' => 'Title, body and category are required.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.thread_fields_required', 400);
         }
 
         try {
             $thread = $this->communityService->createThread(
-                $team,
-                $team->getKingdom(),
+                $user,
+                $kingdom,
                 $category,
                 $title,
                 $body
@@ -85,7 +88,7 @@ class ForumController extends AbstractController
 
             return $this->json($this->threadHelper->serializeThread($thread), Response::HTTP_CREATED);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->jsonException($e, 400);
         }
     }
 
@@ -94,29 +97,24 @@ class ForumController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
+        $kingdom = $user->getKingdom();
+        if (null === $kingdom) {
+            return $this->jsonError('error.no_kingdom', 400);
         }
 
         /** @var ForumThread|null $thread */
         $thread = $this->threadRepository->find($id);
         if (!$thread) {
-            return $this->json(['error' => 'Thread not found.'], Response::HTTP_NOT_FOUND);
+            return $this->jsonError('error.thread_not_found', 404);
         }
 
-        if ($thread->getKingdom() !== $team->getKingdom()) {
-            return $this->json(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
+        if ($thread->getKingdom() !== $kingdom) {
+            return $this->jsonError('error.access_denied', 403);
         }
 
         $postsData = [];
         foreach ($this->threadHelper->getSortedPosts($thread) as $post) {
-            $postsData[] = [
-                'id' => $post->getId(),
-                'body' => $post->getBody(),
-                'createdAt' => $post->getCreatedAt()->format(\DateTimeInterface::ATOM),
-                'author_team' => $this->threadHelper->serializeTeam($post->getAuthorTeam()),
-            ];
+            $postsData[] = $this->threadHelper->serializePost($post);
         }
 
         $threadData = $this->threadHelper->serializeThread($thread);
@@ -130,35 +128,26 @@ class ForumController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
-        }
 
         /** @var ForumThread|null $thread */
         $thread = $this->threadRepository->find($id);
         if (!$thread) {
-            return $this->json(['error' => 'Thread not found.'], Response::HTTP_NOT_FOUND);
+            return $this->jsonError('error.thread_not_found', 404);
         }
 
         $content = json_decode($request->getContent(), true) ?? [];
         $body = trim($content['body'] ?? '');
 
         if ('' === $body) {
-            return $this->json(['error' => 'Post body cannot be empty.'], Response::HTTP_BAD_REQUEST);
+            return $this->jsonError('error.post_body_empty', 400);
         }
 
         try {
-            $post = $this->communityService->createPost($team, $thread, $body);
+            $post = $this->communityService->createPost($user, $thread, $body);
 
-            return $this->json([
-                'id' => $post->getId(),
-                'body' => $post->getBody(),
-                'createdAt' => $post->getCreatedAt()->format(\DateTimeInterface::ATOM),
-                'author_team' => $this->threadHelper->serializeTeam($post->getAuthorTeam()),
-            ], Response::HTTP_CREATED);
+            return $this->json($this->threadHelper->serializePost($post), Response::HTTP_CREATED);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->jsonException($e, 400);
         }
     }
 
@@ -167,26 +156,22 @@ class ForumController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $team = $user->getTeam();
-        if (!$team) {
-            return $this->json(['error' => 'No team assigned.'], Response::HTTP_BAD_REQUEST);
-        }
 
         /** @var ForumThread|null $thread */
         $thread = $this->threadRepository->find($id);
         if (!$thread) {
-            return $this->json(['error' => 'Thread not found.'], Response::HTTP_NOT_FOUND);
+            return $this->jsonError('error.thread_not_found', 404);
         }
 
         $content = json_decode($request->getContent(), true) ?? [];
         $lock = (bool) ($content['lock'] ?? true);
 
         try {
-            $this->communityService->lockThread($team, $thread, $lock);
+            $this->communityService->lockThread($user, $thread, $lock);
 
             return $this->json(['success' => true, 'isLocked' => $thread->isLocked()]);
         } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->jsonException($e, 400);
         }
     }
 }

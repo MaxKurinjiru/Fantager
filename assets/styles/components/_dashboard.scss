@@ -1,7 +1,7 @@
 @reference "tailwindcss";
 
 // =============================================================================
-//  DASHBOARD — team banner, race optimization, next match card, BEM styles
+//  DASHBOARD — team banner, arena adaptation panel, next match card, BEM styles
 // =============================================================================
 
 @layer components {
@@ -73,26 +73,26 @@
     }
   }
 
-  // ── Race Optimization ──────────────────────────────────────────────────────
-  .db-opt {
+  // ── Arena Adaptation (HQ Barracks panel) ───────────────────────────────────
+  .db-adapt {
     @apply border-t pt-4 w-full;
     border-color: rgba(55, 65, 81, 0.3);
   }
 
-  .db-opt__row {
+  .db-adapt__row {
     @apply flex flex-col sm:flex-row sm:items-center justify-center md:justify-start gap-3 text-xs;
   }
 
-  .db-opt__label {
+  .db-adapt__label {
     @apply flex items-center justify-center gap-1.5 font-semibold select-none shrink-0;
     color: var(--color-text-secondary);
   }
 
-  .db-opt__controls {
+  .db-adapt__controls {
     @apply flex flex-wrap items-center justify-center md:justify-start gap-3;
   }
 
-  .db-opt__select {
+  .db-adapt__select {
     @apply rounded-lg px-3 py-1.5 text-xs focus:outline-none font-medium disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer;
     background-color: var(--color-surface-page);
     border: 1px solid var(--color-border);
@@ -103,7 +103,7 @@
     }
   }
 
-  .db-opt__status {
+  .db-adapt__status {
     @apply rounded-lg px-3 py-1.5 text-[10px] flex items-center gap-1.5 border;
     
     &--pending {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Service\Auth\PasswordResetService;
+use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,6 +20,7 @@ class PasswordResetController extends AbstractController
         private readonly PasswordResetService $passwordResetService,
         private readonly CsrfTokenManagerInterface $csrfTokenManager,
         private readonly RateLimiterFactoryInterface $passwordResetLimiter,
+        private readonly UserMessageTranslator $userMessages,
     ) {
     }
 
@@ -31,7 +33,7 @@ class PasswordResetController extends AbstractController
 
             if (!$limit->isAccepted()) {
                 return $this->json(
-                    ['error' => 'Too many requests. Try again later.'],
+                    ['error' => $this->userMessages->trans('flash.too_many_requests')],
                     Response::HTTP_TOO_MANY_REQUESTS,
                     ['Retry-After' => $limit->getRetryAfter()->getTimestamp() - time()]
                 );
@@ -39,7 +41,7 @@ class PasswordResetController extends AbstractController
 
             $csrfToken = $request->request->getString('_token');
             if (!$this->csrfTokenManager->isTokenValid(new CsrfToken('password_reset_request', $csrfToken))) {
-                $this->addFlash('error', 'Invalid security token. Please try again.');
+                $this->addFlash('error', $this->userMessages->trans('flash.invalid_csrf'));
 
                 return $this->redirectToRoute('app_password_reset');
             }
@@ -49,7 +51,7 @@ class PasswordResetController extends AbstractController
             );
 
             // Always show the same message (don't reveal whether email exists)
-            $this->addFlash('success', 'If that email is registered, a password reset link has been sent.');
+            $this->addFlash('success', $this->userMessages->trans('flash.password_reset_sent'));
 
             return $this->redirectToRoute('app_password_reset');
         }
@@ -65,7 +67,7 @@ class PasswordResetController extends AbstractController
         if ($request->isMethod('POST')) {
             $csrfToken = $request->request->getString('_token');
             if (!$this->csrfTokenManager->isTokenValid(new CsrfToken('password_reset_confirm', $csrfToken))) {
-                $this->addFlash('error', 'Invalid security token.');
+                $this->addFlash('error', $this->userMessages->trans('error.invalid_csrf'));
 
                 return $this->redirectToRoute('app_password_reset_confirm', ['token' => $rawToken]);
             }
@@ -76,12 +78,12 @@ class PasswordResetController extends AbstractController
             );
 
             if ($result['success']) {
-                $this->addFlash('success', 'Password updated! You can now log in.');
+                $this->addFlash('success', $this->userMessages->trans('flash.password_updated'));
 
                 return $this->redirectToRoute('app_login');
             }
 
-            $this->addFlash('error', $result['error'] ?? 'Could not reset password.');
+            $this->addFlash('error', $result['error'] ?? $this->userMessages->trans('flash.password_reset_failed'));
         }
 
         return $this->render('auth/password_reset_confirm.html.twig', [

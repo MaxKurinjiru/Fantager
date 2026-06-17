@@ -42,11 +42,47 @@ class RaceConfig
         return $this->get($race)['stat_bonuses'] ?? [];
     }
 
-    /** @return array{min: int, max_junior: int, prime_limit: int, death_expectation: int} */
+    /** @return array{min: int, max_junior: int, prime_limit: int, mortality_threshold: int} */
     public function getAge(Race $race): array
     {
-        /* @var array{min: int, max_junior: int, prime_limit: int, death_expectation: int} */
-        return $this->get($race)['age'] ?? ['min' => 16, 'max_junior' => 20, 'prime_limit' => 35, 'death_expectation' => 70];
+        $age = $this->get($race)['age'] ?? [];
+
+        return [
+            'min' => (int) ($age['min'] ?? 16),
+            'max_junior' => (int) ($age['max_junior'] ?? 20),
+            'prime_limit' => (int) ($age['prime_limit'] ?? 35),
+            'mortality_threshold' => (int) ($age['mortality_threshold'] ?? $age['death_expectation'] ?? 70),
+        ];
+    }
+
+    public function getMortalityThreshold(Race $race): int
+    {
+        return $this->getAge($race)['mortality_threshold'];
+    }
+
+    /**
+     * Returns Junior, Prime, Veteran, or Elder for the given age.
+     */
+    public function resolveAgePhase(Race $race, int $age): string
+    {
+        $milestones = $this->getAge($race);
+
+        if ($age <= $milestones['max_junior']) {
+            return 'Junior';
+        }
+        if ($age <= $milestones['prime_limit']) {
+            return 'Prime';
+        }
+        if ($age < $milestones['mortality_threshold']) {
+            return 'Veteran';
+        }
+
+        return 'Elder';
+    }
+
+    public function isAtOrAboveMortalityThreshold(Race $race, int $age): bool
+    {
+        return $age >= $this->getMortalityThreshold($race);
     }
 
     public function getTrainingSpeedModifier(Race $race): float

@@ -3,7 +3,7 @@ import { showAlert, hideAlert } from '../utils/alert.js';
 import { csrfHeaders } from '../utils/csrf.js';
 
 export default class extends Controller {
-    static targets = ['totalLevel', 'alert', 'alertMessage', 'raceSelect', 'optimizeBtn'];
+    static targets = ['totalLevel', 'alert', 'alertMessage', 'raceSelect', 'saveAdaptationBtn'];
 
     static values = {
         textUpgrading: String,
@@ -14,8 +14,8 @@ export default class extends Controller {
         successDowngrade: String,
         confirmDowngrade: String,
         textSaving: String,
-        errorOptimize: String,
-        successOptimize: String,
+        errorAdaptation: String,
+        successAdaptation: String,
         levelLabel: String,
         goldFormat: String,
         bonuses: Object,
@@ -88,7 +88,7 @@ export default class extends Controller {
             }
 
             // Fetch current wallet gold from header resource bar
-            const headerGold = document.querySelector('[title="Gold"] span:nth-child(2)');
+            const headerGold = document.querySelector('[data-resource="gold"] .resource-bar__item-value');
             if (headerGold) {
                 let gold = parseInt(headerGold.textContent.replace(/\s/g, ''), 10);
                 const spent = parseInt(btn.dataset.costOriginal || btn.dataset.cost || '0', 10);
@@ -158,13 +158,14 @@ export default class extends Controller {
         }
     }
 
-    async optimize(e) {
+    /** Save a pending arena adaptation change (POST /api/v1/hq/optimize). */
+    async saveArenaAdaptation(e) {
         e.preventDefault();
         const selectedRace = this.raceSelectTarget.value;
 
-        this.optimizeBtnTarget.disabled = true;
-        const originalText = this.optimizeBtnTarget.textContent;
-        this.optimizeBtnTarget.textContent = this.textSavingValue;
+        this.saveAdaptationBtnTarget.disabled = true;
+        const originalText = this.saveAdaptationBtnTarget.textContent;
+        this.saveAdaptationBtnTarget.textContent = this.textSavingValue;
 
         try {
             const response = await fetch('/api/v1/hq/optimize', {
@@ -176,10 +177,10 @@ export default class extends Controller {
             const result = await response.json();
 
             if (!response.ok || result.error) {
-                throw new Error(result.error || this.errorOptimizeValue);
+                throw new Error(result.error || this.errorAdaptationValue);
             }
 
-            this.showAlert('success', this.successOptimizeValue);
+            this.showAlert('success', this.successAdaptationValue);
             
             setTimeout(() => {
                 window.location.reload();
@@ -187,8 +188,8 @@ export default class extends Controller {
 
         } catch (error) {
             this.showAlert('error', error.message);
-            this.optimizeBtnTarget.disabled = false;
-            this.optimizeBtnTarget.textContent = originalText;
+            this.saveAdaptationBtnTarget.disabled = false;
+            this.saveAdaptationBtnTarget.textContent = originalText;
         }
     }
 

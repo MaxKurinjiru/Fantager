@@ -8,7 +8,9 @@ use App\Entity\Auth\User;
 use App\Entity\League\LeagueFixture;
 use App\Entity\League\LeagueGroup;
 use App\Entity\League\LeagueStanding;
+use App\Service\Formation\FixtureFormationService;
 use App\Service\League\LeagueService;
+use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +23,9 @@ class LeagueController extends AbstractController
 {
     public function __construct(
         private readonly LeagueService $leagueService,
+        private readonly FixtureFormationService $fixtureFormationService,
         private readonly EntityManagerInterface $em,
+        private readonly UserMessageTranslator $userMessages,
     ) {
     }
 
@@ -33,7 +37,7 @@ class LeagueController extends AbstractController
         $team = $user->getTeam();
 
         if (!$team) {
-            $this->addFlash('error', 'No team assigned to your account.');
+            $this->addFlash('error', $this->userMessages->trans('error.no_team'));
 
             return $this->redirectToRoute('app_home');
         }
@@ -58,6 +62,7 @@ class LeagueController extends AbstractController
                 'myFixtures' => [],
                 'globalLeaderboard' => [],
                 'forms' => [],
+                'fixtureFormations' => [],
             ]);
         }
 
@@ -111,6 +116,7 @@ class LeagueController extends AbstractController
         $myFixtures = [];
         $globalLeaderboard = [];
         $forms = [];
+        $fixtureFormations = [];
 
         if (null !== $selectedGroup) {
             $standings = $this->leagueService->getSortedStandings($selectedGroup);
@@ -137,6 +143,10 @@ class LeagueController extends AbstractController
                 ->getQuery()
                 ->getResult();
 
+            foreach ($myFixtures as $fixture) {
+                $fixtureFormations[$fixture->getId() ?? 0] = $this->fixtureFormationService->getFormationSummary($fixture, $team);
+            }
+
             // Get global leaderboard
             $globalLeaderboard = $this->leagueService->getGlobalLeaderboard($season);
         }
@@ -153,6 +163,7 @@ class LeagueController extends AbstractController
             'myFixtures' => $myFixtures,
             'globalLeaderboard' => $globalLeaderboard,
             'forms' => $forms,
+            'fixtureFormations' => $fixtureFormations,
         ]);
     }
 }
