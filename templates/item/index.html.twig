@@ -20,7 +20,7 @@
     {% endfor %}
 {% endif %}
 
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="equipment"
+<div class="page-shell" data-controller="equipment"
      data-equipment-text-equipping-value="{{ 'js_flash.inventory.equipping'|trans }}"
      data-equipment-error-equip-value="{{ 'js_flash.inventory.failed_equip'|trans }}"
      data-equipment-success-equip-value="{{ 'js_flash.inventory.success_equip'|trans }}"
@@ -50,10 +50,10 @@
     } %}
 
     {# --- Main Inventory Layout --- #}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="screen-3col screen-3col--gap-lg">
         
         {# LEFT COLUMN: Hero Equipment Paperdoll (1 Column) #}
-        <div class="lg:col-span-1 space-y-6">
+        <div class="screen-3col__aside">
             {% include 'components/item/equip_manager.html.twig' with {
                 selected_hero_id: selected_hero_id,
                 selected_hero: selected_hero,

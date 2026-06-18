@@ -99,7 +99,7 @@
     }
 
     &__occupied {
-      @apply cursor-grab w-full h-full;
+      @apply cursor-grab w-full h-full flex flex-col justify-between items-center relative;
 
       &:active {
         cursor: grabbing;
@@ -191,9 +191,15 @@
   @apply text-[9px] font-extrabold uppercase tracking-wider mb-2;
   color: var(--color-text-muted);
 }
-.formation-slot__quick-select { @apply w-full rounded text-[10px] p-1 select-none; }
-.formation-slot__hero-name { @apply text-xs font-bold truncate w-full; color: var(--color-text-primary); }
-.formation-slot__avatar { @apply leading-none; }
+.formation-slot__empty-view { width: 100%; }
+.formation-slot__empty-icon {
+  display: block;
+  font-size: 1.5rem;
+  user-select: none;
+  opacity: 0.4;
+  line-height: 1;
+}
+.formation-slot__avatar { @apply leading-none text-3xl mb-1 select-none; }
 .formation-slot__hero-details { @apply text-[9px]; color: var(--color-text-muted); }
 .formation-strategy__title { @apply text-base font-bold; color: var(--color-text-primary); }
 .formation-strategy__desc { @apply text-xs; color: var(--color-text-muted); }
@@ -201,11 +207,27 @@
 .tactic-option__desc { @apply text-[10px] leading-tight; color: var(--color-text-muted); }
 .form-control-accent { accent-color: var(--color-brand-500); }
 .formation-strategy__footer { @apply border-t pt-4 flex justify-end; border-color: var(--color-border); }
+.formation-strategy__save-btn {
+  @apply px-6 py-2.5 font-bold uppercase tracking-wider text-xs;
+  box-shadow: var(--shadow-brand-soft);
+}
 
 .formation-pitch-board__line-label {
   @apply block text-[9px] font-extrabold uppercase tracking-wide text-center;
   color: var(--color-text-muted);
 }
+.formation-pitch-board__row {
+  position: relative;
+  z-index: 10;
+}
+.tactic-option__radio { margin-top: 0.25rem; }
+.tactic-option__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.formation-slot__quick-select { @apply w-full rounded text-[10px] p-1 select-none; }
+.formation-slot__hero-name { @apply text-xs font-bold truncate w-full; color: var(--color-text-primary); }
 .formation-pool-item__name {
   @apply text-[10px] font-bold truncate w-full leading-tight;
   color: var(--color-text-primary);

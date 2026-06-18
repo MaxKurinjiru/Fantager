@@ -1,0 +1,33 @@
+name: UI Compliance
+
+on:
+  pull_request:
+    paths:
+      - 'templates/**'
+      - 'assets/styles/**'
+      - 'assets/**/*.js'
+      - 'scripts/check-ui-compliance.sh'
+      - '.github/workflows/ui-compliance.yml'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'templates/**'
+      - 'assets/styles/**'
+      - 'assets/**/*.js'
+      - 'scripts/check-ui-compliance.sh'
+
+jobs:
+  ui-compliance:
+    name: UI guidelines (Twig/SCSS)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      - name: Run UI compliance script
+        run: bash scripts/check-ui-compliance.sh

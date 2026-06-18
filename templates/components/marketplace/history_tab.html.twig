@@ -1,6 +1,6 @@
 {# templates/components/marketplace/history_tab.html.twig #}
-<div data-marketplace-target="tabContent" data-tab-name="history" class="space-y-6{% if tab|default('browse') != 'history' %} hidden{% endif %}">
-    <div class="game-panel overflow-x-auto">
+<div data-marketplace-target="tabContent" data-tab-name="history" class="layout-stack{% if tab|default('browse') != 'history' %} hidden{% endif %}">
+    <div class="game-panel game-panel--scroll">
         <table class="data-table">
             <thead>
                 <tr>
@@ -16,7 +16,7 @@
             <tbody data-marketplace-target="historyContainer">
                 {# AJAX Loaded list #}
                 <tr>
-                    <td colspan="7" class="text-center">
+                    <td colspan="7" class="data-table__col--center">
                         <div class="loading-spinner loading-spinner--table"><div class="loading-spinner__icon loading-spinner__icon--sm" aria-hidden="true"></div></div>
                     </td>
                 </tr>

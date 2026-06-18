@@ -5,10 +5,10 @@
 {% set taxRate = taxRate|default(0) %}
 {% set team = team|default(null) %}
 
-<div data-marketplace-target="tabContent" data-tab-name="sell" class="space-y-6{% if tab|default('browse') != 'sell' %} hidden{% endif %}">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div data-marketplace-target="tabContent" data-tab-name="sell" class="layout-stack{% if tab|default('browse') != 'sell' %} hidden{% endif %}">
+    <div class="screen-3col">
         {# Category Selector & Roster list #}
-        <div class="lg:col-span-2 game-panel space-y-6">
+        <div class="screen-3col__main game-panel">
             <div>
                 <h2 class="feature-panel__title">{{ 'marketplace.select_entity'|trans }}</h2>
                 <p class="panel-lead">{{ 'marketplace.sell_desc'|trans }}</p>
@@ -31,7 +31,7 @@
             </div>
 
             {# Heroes list #}
-            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="hero" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[450px] overflow-y-auto pr-2">
+            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="hero" class="scroll-grid">
                 {% for hero in heroes %}
                     {% set can_sell = hero_can_leave_roster(team, hero) and hero.trainer is null %}
                     <div {% if can_sell %}data-action="click->marketplace#selectEntityToSell"{% endif %}
@@ -39,9 +39,9 @@
                          data-entity-name="{{ hero.name }}"
                          data-locked="{{ can_sell ? '0' : '1' }}"
                          title="{{ can_sell ? '' : 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}"
-                         class="sell-card flex items-center justify-between {{ can_sell ? '' : 'sell-card--locked opacity-50 cursor-not-allowed' }}">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl select-none">👥</span>
+                         class="sell-card {{ can_sell ? '' : 'sell-card--locked' }}">
+                        <div class="entity-row__main">
+                            <span class="emoji-icon">👥</span>
                             <div>
                                 <h4 class="sell-card__name">{{ hero.name }}</h4>
                                 <span class="sell-card__meta">{{ 'js_flash.hq.lvl_short'|trans }} {{ hero.level }} &bull; {{ hero.race.value|trans }}</span>
@@ -52,19 +52,19 @@
                         </span>
                     </div>
                 {% else %}
-                    <div class="col-span-2 empty-state">{{ 'marketplace.no_heroes'|trans }}</div>
+                    <div class="scroll-grid__span-full empty-state">{{ 'marketplace.no_heroes'|trans }}</div>
                 {% endfor %}
             </div>
 
             {# Items list #}
-            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="item" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[450px] overflow-y-auto pr-2 hidden">
+            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="item" class="scroll-grid hidden">
                 {% for item in items %}
                     <div data-action="click->marketplace#selectEntityToSell"
                          data-entity-id="{{ item.id }}"
                          data-entity-name="{{ item.name }}"
-                         class="sell-card flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl select-none">🗡️</span>
+                         class="sell-card">
+                        <div class="entity-row__main">
+                            <span class="emoji-icon">🗡️</span>
                             <div>
                                 <h4 class="sell-card__name">{{ item.name }}</h4>
                                 <span class="sell-card__meta">{{ item.slotType.value|trans }} &bull; {{ 'inventory.durability'|trans }}: {{ item.durability }}%</span>
@@ -75,19 +75,19 @@
                         </span>
                     </div>
                 {% else %}
-                    <div class="col-span-2 empty-state">{{ 'marketplace.no_items'|trans }}</div>
+                    <div class="scroll-grid__span-full empty-state">{{ 'marketplace.no_items'|trans }}</div>
                 {% endfor %}
             </div>
 
             {# Trainers list #}
-            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="trainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[450px] overflow-y-auto pr-2 hidden">
+            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="trainer" class="scroll-grid hidden">
                 {% for trainer in trainers %}
                     <div data-action="click->marketplace#selectEntityToSell"
                          data-entity-id="{{ trainer.id }}"
                          data-entity-name="{{ trainer.name }}"
-                         class="sell-card flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl select-none">🏋️</span>
+                         class="sell-card">
+                        <div class="entity-row__main">
+                            <span class="emoji-icon">🏋️</span>
                             <div>
                                 <h4 class="sell-card__name">{{ trainer.name }}</h4>
                                 <span class="sell-card__meta">{{ trainer.race.value|trans }} &bull; {{ 'heroes.age'|trans }}: {{ trainer.age }} {{ 'marketplace.years_suffix'|trans }}</span>
@@ -95,27 +95,27 @@
                         </div>
                     </div>
                 {% else %}
-                    <div class="col-span-2 empty-state">{{ 'marketplace.no_trainers'|trans }}</div>
+                    <div class="scroll-grid__span-full empty-state">{{ 'marketplace.no_trainers'|trans }}</div>
                 {% endfor %}
             </div>
         </div>
 
         {# Listing Form Options #}
-        <div class="game-panel space-y-6 flex flex-col justify-between">
-            <form data-action="submit->marketplace#submitListing" class="space-y-5">
+        <div class="game-panel panel-column">
+            <form data-action="submit->marketplace#submitListing" class="layout-stack layout-stack--form">
                 <div>
                     <h2 class="feature-panel__title">{{ 'marketplace.btn_sell'|trans }}</h2>
                     <p class="panel-lead">{{ 'marketplace.sell_opts_title'|trans }}</p>
                 </div>
 
-                <div class="marketplace-notice flex items-center justify-between">
+                <div class="marketplace-notice">
                     <span class="marketplace-notice__label">{{ 'marketplace.selected_label'|trans }}</span>
-                    <span data-marketplace-target="selectedEntityLabel" class="font-bold text-white text-sm">{{ 'marketplace.select_entity_placeholder'|trans }}</span>
+                    <span data-marketplace-target="selectedEntityLabel" class="marketplace-notice__value">{{ 'marketplace.select_entity_placeholder'|trans }}</span>
                 </div>
 
                 <input type="hidden" name="sell_id" data-marketplace-target="sellIdInput" value="">
 
-                <div class="flex flex-col gap-1.5">
+                <div class="form-field-group">
                     <label for="listing-mode" class="form-label">{{ 'marketplace.listing_mode_label'|trans }}</label>
                     <select id="listing-mode" name="mode" data-action="change->marketplace#onListingModeChange" data-marketplace-target="listingModeSelect"
                             class="form-input">
@@ -124,29 +124,29 @@
                     </select>
                 </div>
 
-                <div class="flex flex-col gap-1.5">
+                <div class="form-field-group">
                     <label for="listing-price" data-marketplace-target="priceLabel" class="form-label">
                         {{ 'marketplace.price_gold'|trans }}
                     </label>
                     <div class="form-input-affix">
                         <span class="form-input-affix__icon">🪙</span>
                         <input type="number" id="listing-price" name="price" required min="1" placeholder="{{ 'marketplace.price_placeholder'|trans }}"
-                               class="form-input pl-8">
+                               class="form-input">
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-1.5 hidden" data-marketplace-target="buyoutFieldContainer">
+                <div class="form-field-group hidden" data-marketplace-target="buyoutFieldContainer">
                     <label for="listing-buyout" class="form-label">
                         {{ 'marketplace.buyout_gold'|trans }}
                     </label>
                     <div class="form-input-affix">
                         <span class="form-input-affix__icon">🪙</span>
                         <input type="number" id="listing-buyout" name="buyout" min="1" placeholder="{{ 'marketplace.buyout_placeholder'|trans }}"
-                               class="form-input pl-8">
+                               class="form-input">
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-1.5">
+                <div class="form-field-group">
                     <label for="listing-duration" class="form-label">
                         {{ 'marketplace.duration_days'|trans }}
                     </label>
@@ -157,11 +157,11 @@
                     </select>
                 </div>
 
-                <div class="marketplace-notice text-xs">
+                <div class="marketplace-notice marketplace-notice--hint">
                     ⚠️ {{ 'marketplace.tax_hint'|trans({'%tax%': taxRate}) }}
                 </div>
 
-                <button type="submit" class="btn btn-primary w-full">
+                <button type="submit" class="btn btn-primary btn--block">
                     {{ 'marketplace.btn_list'|trans }}
                 </button>
             </form>

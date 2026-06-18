@@ -40,7 +40,7 @@
 
 <div class="finance-ledger__table-container">
     {% if records|length > 0 %}
-        <div class="overflow-x-auto">
+        <div class="data-table-wrap">
             <table class="finance-ledger-table">
                 <thead>
                     <tr>
@@ -53,7 +53,7 @@
                 <tbody>
                     {% for item in records %}
                         <tr class="finance-ledger-table__row">
-                            <td class="p-4 font-semibold">{{ ('finance.type_' ~ item.type.value)|trans }}</td>
+                            <td class="finance-ledger-table__cell finance-ledger-table__cell--type">{{ ('finance.type_' ~ item.type.value)|trans }}</td>
                             <td class="finance-ledger-table__cell">
                                 <span class="finance-actor-badge finance-actor-badge--{{ item.actor.value }}">
                                     {{ ('finance.actor_' ~ item.actor.value)|trans }}
@@ -66,8 +66,11 @@
                                     </span>
                                 {% endif %}
                             </td>
-                            <td class="p-4 text-right text-text-secondary text-xs whitespace-nowrap">
-                                {{ item.createdAt|date('Y-m-d H:i') }}
+                            <td class="finance-ledger-table__cell finance-ledger-table__cell--date">
+                                <time datetime="{{ item.createdAt|date('c') }}"
+                                      {% if item.processedAt %}title="{{ 'js_flash.common.processed_at_title'|trans({'%date%': item.processedAt|date('Y-m-d H:i:s')}) }}"{% endif %}>
+                                    {{ item.createdAt|date('Y-m-d H:i') }}
+                                </time>
                             </td>
                         </tr>
                     {% endfor %}

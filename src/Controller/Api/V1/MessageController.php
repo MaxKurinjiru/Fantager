@@ -6,10 +6,8 @@ namespace App\Controller\Api\V1;
 
 use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
-use App\Entity\Community\Message;
 use App\Service\Community\CommunityService;
 use App\Service\Community\ForumThreadHelper;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,7 +22,6 @@ class MessageController extends AbstractController
     use ApiControllerTrait;
 
     public function __construct(
-        private readonly EntityManagerInterface $em,
         private readonly CommunityService $communityService,
         private readonly ForumThreadHelper $authorHelper,
     ) {
@@ -44,7 +41,10 @@ class MessageController extends AbstractController
             $messages = $this->communityService->getInboxMessages($user);
         }
 
-        $data = array_map([$this, 'serializeMessage'], $messages);
+        $data = array_map(
+            fn ($message) => $this->communityService->serializeMessage($message, $this->authorHelper),
+            $messages,
+        );
 
         return $this->json($data);
     }
@@ -73,24 +73,15 @@ class MessageController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        /** @var Message|null $message */
-        $message = $this->em->getRepository(Message::class)->find($id);
-        if (!$message) {
-            return $this->jsonError('error.message_not_found', 404);
+        try {
+            $message = $this->communityService->getMessageForUser($user, $id);
+        } catch (\DomainException $e) {
+            $status = 'error.access_denied' === $e->getMessage() ? 403 : 404;
+
+            return $this->jsonException($e, $status);
         }
 
-        $isSender = $message->getSenderUser() === $user && !$message->isDeletedBySender();
-        $isReceiver = $message->getReceiverUser() === $user && !$message->isDeletedByReceiver();
-
-        if (!$isSender && !$isReceiver) {
-            return $this->jsonError('error.access_denied', 403);
-        }
-
-        if ($isReceiver) {
-            $this->communityService->markMessageAsRead($message);
-        }
-
-        return $this->json($this->serializeMessage($message));
+        return $this->json($this->communityService->serializeMessage($message, $this->authorHelper));
     }
 
     #[Route('', name: 'api_messages_create', methods: ['POST'])]
@@ -108,16 +99,14 @@ class MessageController extends AbstractController
             return $this->jsonError('error.message_fields_required', 400);
         }
 
-        /** @var User|null $receiver */
-        $receiver = $this->em->getRepository(User::class)->find($receiverUserId);
-        if (!$receiver) {
-            return $this->jsonError('error.recipient_not_found', 400);
-        }
-
         try {
+            $receiver = $this->communityService->findMessageRecipient($user, $receiverUserId);
             $message = $this->communityService->sendMessage($user, $receiver, $subject, $body);
 
-            return $this->json($this->serializeMessage($message), Response::HTTP_CREATED);
+            return $this->json(
+                $this->communityService->serializeMessage($message, $this->authorHelper),
+                Response::HTTP_CREATED,
+            );
         } catch (\DomainException $e) {
             return $this->jsonException($e, 400);
         }
@@ -136,25 +125,5 @@ class MessageController extends AbstractController
         } catch (\DomainException $e) {
             return $this->jsonException($e, 400);
         }
-    }
-
-    /** @return array<string, mixed> */
-    private function serializeMessage(Message $message): array
-    {
-        return [
-            'id' => $message->getId(),
-            'subject' => $message->getSubject(),
-            'body' => $message->getBody(),
-            'sentAt' => $message->getSentAt()->format(\DateTimeInterface::ATOM),
-            'readAt' => $message->getReadAt()?->format(\DateTimeInterface::ATOM),
-            'sender' => $this->authorHelper->serializeAuthor(
-                $message->getSenderUser(),
-                $message->getSenderTeam(),
-            ),
-            'receiver' => $this->authorHelper->serializeAuthor(
-                $message->getReceiverUser(),
-                $message->getReceiverTeam(),
-            ),
-        ];
     }
 }

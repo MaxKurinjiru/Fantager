@@ -1,0 +1,61 @@
+---
+description: Fantager SCSS UI rules — tokens, layers, component file placement
+globs: assets/styles/**/*.scss
+alwaysApply: false
+---
+
+# SCSS UI (Fantager)
+
+Authoritative doc: `docs/ui-guidelines.md`. Layout catalog: section 3.1.
+
+## File placement
+
+| Content | File |
+|---------|------|
+| Design tokens only | `assets/styles/abstracts/_tokens.scss` |
+| Cross-cutting layout, tables, copy helpers | `assets/styles/components/_layout.scss`, `_shared.scss` |
+| Atoms (btn, form, alert) | `_buttons.scss`, `_forms.scss`, `_flash.scss`, `_links.scss` |
+| Screen/feature UI | `_hero.scss`, `_marketplace.scss`, `_formation.scss`, … |
+| New component | Extend existing file for that domain; register in `app.scss` via `@use` if new file |
+
+Use `@layer components { }` in component files. Tailwind `@apply` is OK **inside SCSS**, not in Twig.
+
+## Colors & surfaces
+
+- **Never** hard-code hex/rgba in component SCSS
+- Use `var(--color-…)`, `var(--overlay-…)`, `var(--shadow-…)`
+- Status tints: `color-mix(in srgb, var(--color-success-bg) 30%, transparent)`
+
+## Naming (BEM-inspired)
+
+```
+.block              .btn  .game-panel
+.block--modifier    .btn--sm  .layout-stack--lg
+.block__element     .game-panel__title  .hero-panel__desc
+.block-variant      .btn-primary  .alert-error
+```
+
+- lowercase-with-dashes
+- Do not style `#id` selectors
+- Prefix JS hooks with `js-` (never style `js-*` in SCSS)
+
+## New layout or component class workflow
+
+1. Check `_layout.scss` and domain `_*.scss` for existing class
+2. Add semantic class with responsive rules in SCSS
+3. Document in `docs/ui-guidelines.md` §3.1 if it is a reusable layout primitive
+4. Use class from Twig — no utility mirror in templates
+
+## Transitions & focus
+
+- Hovers: `var(--transition-fast)`
+- Focus rings: preserve `:focus-visible`; use `var(--focus-ring-color)`
+
+## Optional verification (user-requested only)
+
+Do not run automatically. When the user asks:
+
+```bash
+bash scripts/check-ui-compliance.sh
+npm run build
+```

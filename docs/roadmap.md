@@ -2,6 +2,8 @@
 
 Purpose: Define a logical, step-by-step implementation path for the Fantager project. Unlike pure backend/frontend phase separation, this roadmap is organized by functional **Milestones (Vertical Slices)**. Each milestone builds a complete, testable, and visual slice of a feature—from database schema and service logic to internal APIs and interactive web interfaces.
 
+**AI agents:** Follow [AGENTS.md](../AGENTS.md) for task routing. Write tests when implementing a step; do not run PHPUnit, migrations, or other verification commands unless the user explicitly asks.
+
 ---
 
 ## Guiding Principles
@@ -9,7 +11,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Vertical Slice Development**: Implement database, service logic, API endpoints, and frontend views together for each feature. This ensures every step produces a runnable, visually testable increment.
 - **Dependency Flow**: Do not skip ahead. Later milestones depend on the foundational entities and calculations established in earlier ones.
 - **Aesthetic Excellence**: Every frontend step must align with the UI specifications (`docs/ui-guidelines.md`), utilizing customized colors, typography, micro-animations, and responsive designs.
-- **Verification First**: Every step must include unit/integration tests and manual walkthrough verification.
+- **Verification**: Each step should include unit/integration tests where applicable and a clear manual walkthrough for humans. **Running** tests, linters, builds, and migrations is done by maintainers, CI, or when explicitly requested — AI agents write tests and follow [AGENTS.md](../AGENTS.md); they do not execute verification commands to finish a task.
 
 ---
 

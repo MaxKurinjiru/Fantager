@@ -3,7 +3,7 @@
 {% block title %}{{ 'training.title'|trans }} — Fantager{% endblock %}
 
 {% block body %}
-<div class="space-y-8 max-w-7xl mx-auto" data-controller="training"
+<div class="page-shell" data-controller="training"
      data-training-success-configure-value="{{ 'training.success_configure'|trans }}"
      data-training-success-assign-value="{{ 'training.success_assign'|trans }}"
      data-training-success-unassign-value="{{ 'training.success_unassign'|trans }}"
@@ -29,11 +29,11 @@
             <div>
                 <span class="training-schedule-widget__label">{{ 'training.next_lock'|trans }}</span>
                 {% if isLocked %}
-                    <span class="block text-red-400 font-extrabold text-sm flex items-center gap-1">
+                    <span class="schedule-value schedule-value--locked">
                         <span>🔒</span> {{ 'training.locked'|trans }}
                     </span>
                 {% else %}
-                    <span data-countdown-target="{{ nextLock|date('c') }}" class="block text-yellow-500 font-extrabold text-sm">--h --m --s</span>
+                    <span data-countdown-target="{{ nextLock|date('c') }}" class="schedule-value schedule-value--countdown training-schedule-widget__value">--h --m --s</span>
                 {% endif %}
                 <span class="training-schedule-widget__sub">{{ nextLockFormatted }}</span>
             </div>
@@ -43,7 +43,7 @@
         <div class="training-schedule-widget">
             <div>
                 <span class="training-schedule-widget__label">{{ 'training.next_evaluation'|trans }}</span>
-                <span data-countdown-target="{{ nextTick|date('c') }}" class="block text-white font-extrabold text-sm">--h --m --s</span>
+                <span data-countdown-target="{{ nextTick|date('c') }}" class="schedule-value schedule-value--active training-schedule-widget__value">--h --m --s</span>
                 <span class="training-schedule-widget__sub">{{ nextTickFormatted }}</span>
             </div>
         </div>
@@ -92,14 +92,14 @@
     </div>
 
     {# --- Content: Trainers Tab --- #}
-    <div id="trainers-tab" class="tab-content space-y-6">
+    <div id="trainers-tab" class="tab-content">
         <div class="training-limit-bar">
             <span class="training-limit-bar__text">
                 {{ 'training.trainer_limit'|trans({'%count%': trainers|length, '%limit%': trainerLimit}) }}
             </span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="training-trainer-grid">
             {% for trainer in trainers %}
                 {% include 'components/training/trainer_card.html.twig' with {
                     trainer: trainer,
@@ -108,8 +108,8 @@
                 } %}
             {% else %}
                 <div class="training-empty-state">
-                    <span class="text-5xl block mb-2">📭</span>
-                    <h3 class="font-bold text-white">{{ 'training.no_trainers_title'|trans }}</h3>
+                    <span class="training-empty-state__icon">📭</span>
+                    <h3 class="game-panel__title">{{ 'training.no_trainers_title'|trans }}</h3>
                     <p class="training-empty-state__desc">{{ 'training.no_trainers_desc'|trans }}</p>
                 </div>
             {% endfor %}
@@ -117,7 +117,7 @@
     </div>
 
     {# --- Content: Active Trainees Tab --- #}
-    <div id="active-tab" class="tab-content hidden space-y-6">
+    <div id="active-tab" class="tab-content hidden">
         {% include 'components/training/active_trainees_table.html.twig' with {
             trainers: trainers
         } %}

@@ -1,9 +1,10 @@
 {# templates/components/spell/trainee_manager.html.twig #}
-<div class="game-panel space-y-6">
+<div class="game-panel">
     <div>
-        <h2 class="hero-panel__title mb-2">{{ 'spells.trainee_mage'|trans }}</h2>
-        <select data-spellbook-target="heroSelect" data-action="change->spellbook#changeHero"
-                class="form-input font-medium">
+        <h2 class="hero-panel__title">{{ 'spells.trainee_mage'|trans }}</h2>
+        <label for="spellbook-hero-select" class="form-label">{{ 'spells.select_hero_opt'|trans }}</label>
+        <select id="spellbook-hero-select" data-spellbook-target="heroSelect" data-action="change->spellbook#changeHero"
+                class="form-input form-input--medium">
             <option value="">{{ 'spells.select_hero_opt'|trans }}</option>
             {% for h in heroes %}
                 <option value="{{ h.id }}" {% if selected_hero_id == h.id %}selected{% endif %}>
@@ -15,20 +16,20 @@
 
     {% if selected_hero %}
         {# Active Slots #}
-        <div class="space-y-4">
-            <div class="flex justify-between items-center">
+        <div class="layout-stack layout-stack--md">
+            <div class="spell-slot-header">
                 <span class="section-label--xs">{{ 'spells.equipped_slots'|trans }}</span>
                 <span class="spell-capacity-label">{{ 'spells.capacity_limit'|trans({'%current%': selected_hero.magicCapacity, '%max%': 5}) }}</span>
             </div>
 
-            <div class="space-y-3">
+            <div class="layout-stack layout-stack--sm">
                 {% if selected_hero.magicCapacity > 0 %}
                     {% for i in 1..selected_hero.magicCapacity %}
                         {% set hs = equipped[i] ?? null %}
                         {% if hs %}
                             <div class="spell-slot">
-                                <div class="flex items-center gap-2.5">
-                                    <span class="text-2xl select-none">✨</span>
+                                <div class="layout-cluster layout-cluster--sm">
+                                    <span class="emoji-icon">✨</span>
                                     <div>
                                         <h4 class="spell-slot__name">{{ hs.spell.name }}</h4>
                                         <p class="spell-slot__meta">{{ 'spells.tier_label'|trans({'%tier%': hs.spell.tier}) }} &bull; {{ ('school.' ~ hs.spell.school.value)|trans }}</p>
@@ -36,7 +37,7 @@
                                 </div>
                                 
                                 <button type="button" data-action="click->spellbook#unequip" data-hero-spell-id="{{ hs.id }}"
-                                        class="btn btn-danger btn--sm p-1.5"
+                                        class="btn btn-danger btn--sm btn--compact"
                                         aria-label="{{ 'inventory.unequip'|trans }}">
                                     ✕
                                 </button>
@@ -49,7 +50,7 @@
                     {% endfor %}
                 {% else %}
                     <div class="hero-spell-locked">
-                        <span class="text-3xl block mb-2">🔒</span>
+                        <span class="hero-spell-locked__icon">🔒</span>
                         <h4 class="spell-empty-state__title">{{ 'heroes.no_slots_unlocked'|trans }}</h4>
                         <p class="spell-empty-state__desc">{{ 'heroes.no_slots_desc'|trans }}</p>
                     </div>
@@ -58,14 +59,14 @@
         </div>
 
         {# School Mastery #}
-        <div class="panel-divider space-y-3">
-            <span class="block section-label--xs">{{ 'heroes.school_mastery'|trans }}</span>
-            <div class="grid grid-cols-2 gap-3">
+        <div class="panel-divider panel-divider--stack">
+            <span class="section-label--xs">{{ 'heroes.school_mastery'|trans }}</span>
+            <div class="spell-mastery-grid">
                 {% set schools = ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
                 {% for school in schools %}
                     {% set level = masteries[school] ?? 1 %}
                     <div class="spell-mastery-cell">
-                        <span class="copy-secondary font-semibold">{{ ('school.' ~ school)|trans }}</span>
+                        <span class="spell-mastery-cell__label">{{ ('school.' ~ school)|trans }}</span>
                         <span class="spell-mastery-tier">T{{ level }}</span>
                     </div>
                 {% endfor %}
@@ -73,7 +74,7 @@
         </div>
     {% else %}
         <div class="spell-empty-state">
-            <span class="text-5xl block mb-2">🧙</span>
+            <span class="spell-empty-state__icon">🧙</span>
             <h4 class="spell-empty-state__title">{{ 'inventory.select_hero_manage'|trans }}</h4>
             <p class="spell-empty-state__desc">{{ 'spells.select_hero_manage_desc'|trans }}</p>
         </div>

@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { formatBadgeCount, formatDateTime } from '../utils/locale.js';
 
 export default class extends Controller {
     static targets = [
@@ -79,7 +80,7 @@ export default class extends Controller {
             rowNode.querySelector('.js-title').textContent = notification.title;
             rowNode.querySelector('.js-type').textContent = this.typeLabel(notification.type);
 
-            const formattedDate = new Date(notification.created_at).toLocaleString(undefined, {
+            const formattedDate = formatDateTime(notification.created_at, {
                 day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
             });
             rowNode.querySelector('.js-created-at').textContent = formattedDate;
@@ -112,7 +113,7 @@ export default class extends Controller {
             this.readTypeTarget.textContent = this.typeLabel(notification.type);
             this.readBodyTarget.textContent = notification.body;
 
-            const formattedDate = new Date(notification.created_at).toLocaleString(undefined, {
+            const formattedDate = formatDateTime(notification.created_at, {
                 day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
             });
             this.readDateTarget.textContent = formattedDate;
@@ -165,7 +166,8 @@ export default class extends Controller {
         const count = this.unreadCountValue;
         this.badgeTargets.forEach((badge) => {
             if (count > 0) {
-                badge.textContent = count > 99 ? '99+' : String(count);
+                const overflow = this.translationsValue.badge_overflow || '99+';
+                badge.textContent = formatBadgeCount(count, overflow);
                 badge.classList.remove('hidden');
             } else {
                 badge.classList.add('hidden');

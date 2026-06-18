@@ -1,6 +1,6 @@
 {# templates/components/hq/facility_panel/_training.html.twig #}
 {% set subtab = training_subtab|default('trainers') %}
-<div class="hq-facility-panel space-y-6" data-controller="training"
+<div class="hq-facility-panel" data-controller="training"
      data-training-success-configure-value="{{ 'training.success_configure'|trans }}"
      data-training-success-assign-value="{{ 'training.success_assign'|trans }}"
      data-training-success-unassign-value="{{ 'training.success_unassign'|trans }}"
@@ -19,20 +19,20 @@
      data-training-success-dismiss-value="{{ 'js_flash.training.success_dismiss'|trans }}">
 
     <div class="hq-facility-panel__header">
-        <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="layout-toolbar">
             <h2 class="hq-facility-panel__title">🏋️ {{ 'hq.facilities_list.training.name'|trans }}</h2>
-            <div class="flex gap-4">
+            <div class="hq-facility-schedule-row">
                 <div class="training-schedule-widget">
                     <span class="training-schedule-widget__label">{{ 'training.next_lock'|trans }}</span>
                     {% if is_locked %}
-                        <span class="text-red-400 font-bold text-sm">🔒 {{ 'training.locked'|trans }}</span>
+                        <span class="schedule-value schedule-value--locked">🔒 {{ 'training.locked'|trans }}</span>
                     {% else %}
-                        <span data-countdown-target="{{ next_lock|date('c') }}" class="text-yellow-500 font-bold text-sm">--h --m --s</span>
+                        <span data-countdown-target="{{ next_lock|date('c') }}" class="schedule-value schedule-value--countdown">--h --m --s</span>
                     {% endif %}
                 </div>
                 <div class="training-schedule-widget">
                     <span class="training-schedule-widget__label">{{ 'training.next_evaluation'|trans }}</span>
-                    <span data-countdown-target="{{ next_tick|date('c') }}" class="text-white font-bold text-sm">--h --m --s</span>
+                    <span data-countdown-target="{{ next_tick|date('c') }}" class="schedule-value schedule-value--active">--h --m --s</span>
                 </div>
             </div>
         </div>
@@ -61,11 +61,11 @@
         </button>
     </div>
 
-    <div id="hq-trainers-tab" class="{{ subtab != 'trainers' ? 'hidden' : '' }} space-y-6">
+    <div id="hq-trainers-tab" class="tab-content{% if subtab != 'trainers' %} hidden{% endif %}">
         <div class="training-limit-bar">
             <span>{{ 'training.trainer_limit'|trans({'%count%': trainers|length, '%limit%': trainer_limit}) }}</span>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="training-trainer-grid">
             {% for trainer in trainers %}
                 {% include 'components/training/trainer_card.html.twig' with {
                     trainer: trainer,
@@ -74,7 +74,7 @@
                     trainingService: training_service
                 } %}
             {% else %}
-                <p class="text-text-muted">{{ 'training.no_trainers_desc'|trans }}</p>
+                <p class="copy-muted">{{ 'training.no_trainers_desc'|trans }}</p>
             {% endfor %}
         </div>
     </div>

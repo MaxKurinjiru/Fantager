@@ -1,11 +1,11 @@
 {# templates/components/hero/combat_stats.html.twig #}
-<div class="hero-panel space-y-6">
+<div class="hero-panel">
     <div>
         <h2 class="hero-panel__title hero-panel__title--tight">{{ 'heroes.combat_stats'|trans }}</h2>
         <p class="hero-panel__desc">{{ 'heroes.combat_stats_desc'|trans }}</p>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 text-center">
+    <div class="stat-tile-grid">
         {# Show realistic mockup stats as required #}
         <div class="stat-tile">
             <span class="stat-tile__label">{{ 'heroes.matches'|trans }}</span>

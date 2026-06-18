@@ -8,7 +8,7 @@
     {{ encore_entry_link_tags('app') }}
     {{ encore_entry_script_tags('app') }}
 </head>
-<body class="min-h-screen"
+<body class="site-root"
       data-controller="auth-modal"
       {% if open_modal is defined and open_modal %}data-auth-modal-open-value="{{ open_modal }}"{% endif %}>
 

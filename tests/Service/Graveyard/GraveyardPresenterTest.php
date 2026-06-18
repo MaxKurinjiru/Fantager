@@ -35,10 +35,10 @@ class GraveyardPresenterTest extends TestCase
         $memorial->setDepartedAt(new \DateTimeImmutable('2026-06-01'));
 
         $repository = $this->createMock(GraveyardMemorialRepository::class);
-        $repository->method('countByTeam')->with($team)->willReturn(1);
-        $repository->method('countByCauseForTeam')->with($team)->willReturn(['dismissed' => 1]);
-        $repository->method('averageAgeForTeam')->with($team)->willReturn(250.0);
-        $repository->method('findByTeamFiltered')
+        $repository->expects($this->once())->method('countByTeam')->with($team)->willReturn(1);
+        $repository->expects($this->once())->method('countByCauseForTeam')->with($team)->willReturn(['dismissed' => 1]);
+        $repository->expects($this->once())->method('averageAgeForTeam')->with($team)->willReturn(250.0);
+        $repository->expects($this->once())->method('findByTeamFiltered')
             ->with($team, null, null, null, null)
             ->willReturn([$memorial]);
 

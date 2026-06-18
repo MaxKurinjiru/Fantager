@@ -1,7 +1,7 @@
 {# templates/components/hq/facility_panel/_summoning.html.twig #}
 {% set status = summon_status %}
 {% set subtab = summon_subtab|default('summon') %}
-<div class="hq-facility-panel space-y-6" data-controller="summoning"
+<div class="hq-facility-panel" data-controller="summoning"
      data-summoning-gold-cost-value="{{ status.gold_cost }}"
      data-summoning-error-failed-value="{{ 'js_flash.summoning.failed'|trans }}"
      data-summoning-limit-reached-value="{{ 'js_flash.summoning.limit_reached'|trans }}"
@@ -28,7 +28,7 @@
      }|json_encode|e('html_attr') }}">
 
     <div class="hq-facility-panel__header">
-        <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="layout-toolbar">
             <h2 class="hq-facility-panel__title">🌀 {{ 'hq.facilities_list.summoning_chamber.name'|trans }}</h2>
             {% include 'components/summoning/cycle_status.html.twig' with { status: status } %}
         </div>
@@ -84,7 +84,8 @@
             <input type="hidden" name="facility" value="summoning_chamber">
             <input type="hidden" name="subtab" value="history">
             <div class="filter-form__fields">
-                <select name="race" data-action="change->form-auto-submit#submit" class="form-input">
+                <label for="summon-history-race" class="sr-only">{{ 'summoning.all_races'|trans }}</label>
+                <select id="summon-history-race" name="race" data-action="change->form-auto-submit#submit" class="form-input">
                     <option value="">{{ 'summoning.all_races'|trans }}</option>
                     {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
                         <option value="{{ race }}" {% if summon_history_race == race %}selected{% endif %}>
@@ -94,7 +95,8 @@
                 </select>
             </div>
             <div class="filter-form__sort">
-                <select name="sort" data-action="change->form-auto-submit#submit" class="form-input">
+                <label for="summon-history-sort" class="sr-only">{{ 'summoning.sort_date_desc'|trans }}</label>
+                <select id="summon-history-sort" name="sort" data-action="change->form-auto-submit#submit" class="form-input">
                     <option value="date-desc" {% if summon_history_sort == 'date-desc' %}selected{% endif %}>{{ 'summoning.sort_date_desc'|trans }}</option>
                     <option value="date-asc" {% if summon_history_sort == 'date-asc' %}selected{% endif %}>{{ 'summoning.sort_date_asc'|trans }}</option>
                 </select>
@@ -102,7 +104,7 @@
         </form>
 
         {% if summon_history|length > 0 %}
-            <table class="summon-history-table mt-4">
+            <table class="summon-history-table summon-history-table--spaced">
                 <thead>
                     <tr>
                         <th>{{ 'summoning.col_hero'|trans }}</th>
@@ -118,7 +120,7 @@
                             {% if item.hero %}
                                 <a href="{{ path('app_heroes_detail', { id: item.hero.id }) }}" class="link">{{ item.hero.name }}</a>
                             {% else %}
-                                <span class="text-text-muted italic">{{ 'summoning.fallen_or_dismissed'|trans }}</span>
+                                <span class="copy-muted copy-muted--italic">{{ 'summoning.fallen_or_dismissed'|trans }}</span>
                             {% endif %}
                         </td>
                         <td>{{ ('heroes.race_' ~ item.raceSelected.value)|trans }}</td>
@@ -129,7 +131,7 @@
                 </tbody>
             </table>
         {% else %}
-            <p class="mt-4 text-text-muted">{{ 'summoning.no_history'|trans }}</p>
+            <p class="summon-history-empty-note">{{ 'summoning.no_history'|trans }}</p>
         {% endif %}
     </div>
 </div>

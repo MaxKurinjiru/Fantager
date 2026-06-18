@@ -1,6 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
 import { csrfHeaders } from '../utils/csrf.js';
+import { formatNumber } from '../utils/locale.js';
 
 export default class extends Controller {
     static targets = ['dismissAlert', 'dismissAlertMessage'];
@@ -11,6 +12,7 @@ export default class extends Controller {
         errorDismiss: String,
         successDismiss: String,
         compensationHint: String,
+        textLoading: String,
     };
 
     async dismiss(e) {
@@ -30,7 +32,7 @@ export default class extends Controller {
 
         btn.disabled = true;
         const originalText = btn.textContent;
-        btn.textContent = '…';
+        btn.textContent = this.textLoadingValue;
 
         try {
             const response = await fetch(`/api/v1/heroes/${this.heroIdValue}/dismiss`, {
@@ -45,7 +47,7 @@ export default class extends Controller {
             }
 
             const compensation = result.compensation ?? 0;
-            const successMsg = this.successDismissValue.replace('%gold%', compensation.toLocaleString('cs-CZ'));
+            const successMsg = this.successDismissValue.replace('%gold%', formatNumber(compensation));
             this.showAlert('success', successMsg);
 
             setTimeout(() => {

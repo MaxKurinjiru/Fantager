@@ -2,6 +2,8 @@
 
 nav:
   home: Domů
+  locale_cs: Čeština
+  locale_en: English
   login: Přihlásit se
   register: Registrace
   logout: Odhlásit se
@@ -98,7 +100,11 @@ flash:
   password_updated: Heslo bylo aktualizováno! Nyní se můžete přihlásit.
   password_reset_failed: Nepodařilo se obnovit heslo.
   email_confirm_old_sent: Současný e-mail potvrzen. Na novou adresu byl odeslán finální ověřovací odkaz.
+  email_change_link_sent: Na vaši současnou e-mailovou adresu byl odeslán potvrzovací odkaz.
   email_updated: Vaše e-mailová adresa byla úspěšně aktualizována!
+  account_deletion_link_sent: Na váš e-mail byl odeslán odkaz pro potvrzení smazání účtu.
+  preferences_saved: Předvolby byly uloženy.
+  formation_deleted: Formace byla úspěšně smazána.
   account_deleted: Váš účet byl trvale smazán.
 
 error:
@@ -435,6 +441,8 @@ economy:
 settings:
   title: Nastavení účtu
   language: Jazyk hry
+  locale_cs: "Čeština (CS)"
+  locale_en: "English (EN)"
   interface: Rozhraní
   modal_backdrop_close: Backdrop zavírání modalů
   email:
@@ -932,6 +940,12 @@ formation:
   save_match_lineup: Uložit sestavu pro zápas
 
 js_flash:
+  common:
+    badge_overflow: 99+
+    text_loading: …
+    text_processing: …
+    processed_at_title: 'Zpracováno: %date% UTC'
+    hero_level_short: 'Úr. %level%'
   training:
     success_queue: Trénink byl úspěšně zařazen do fronty.
     success_cancel: Trénink byl úspěšně zrušen.
@@ -1093,6 +1107,8 @@ league:
 calendar:
   title: Kalendář a události
   subtitle: Plán království — ligové zápasy, tréninkové ticky a týmové události.
+  prev_week: Předchozí týden
+  next_week: Další týden
   loading: Načítání kalendáře...
   empty: V tomto období nejsou žádné události.
   error: Nepodařilo se načíst kalendář.
@@ -1230,6 +1246,7 @@ marketplace:
   empty_my_listings: "Nemáte žádné vystavené nabídky."
   empty_history: "Žádná historie transakcí."
   label_min_bid: "Počáteční příhoz / Min bid"
+  bid_amount: Částka příhozu
   label_buyout_price: "Pevná cena (Buyout)"
   label_no_bonuses: "Bez bonusů"
   label_highest_bid_val: "🪙 %amount% (%bidder%)"
@@ -1350,6 +1367,7 @@ community:
   compose_title: "Napsat zprávu"
   recipient_label: "Příjemce (týmy ve vašem království)"
   select_recipient: "Vyberte příjemce"
+  select_placeholder: '-- %label% --'
   send_msg: "Odeslat zprávu"
   delete_msg: "Smazat zprávu"
   close: "Zavřít"

@@ -70,7 +70,8 @@ class SeasonTransitionServiceTest extends TestCase
         $seasonRepoMock->method('findOneBy')
             ->willReturn(null); // No previous season
 
-        $this->entityManagerMock->method('getRepository')
+        $this->entityManagerMock->expects($this->once())
+            ->method('getRepository')
             ->with(LeagueSeason::class)
             ->willReturn($seasonRepoMock);
 
@@ -212,7 +213,8 @@ class SeasonTransitionServiceTest extends TestCase
                 [['kingdom' => $kingdom, 'status' => LeagueSeasonStatus::Scheduled], null, $upcomingSeason],
             ]);
 
-        $this->entityManagerMock->method('getRepository')
+        $this->entityManagerMock->expects($this->atLeastOnce())
+            ->method('getRepository')
             ->with(LeagueSeason::class)
             ->willReturn($seasonRepoMock);
 
@@ -263,7 +265,8 @@ class SeasonTransitionServiceTest extends TestCase
         $seasonRepoMock->method('findOneBy')
             ->willReturn(null); // No previous season
 
-        $this->entityManagerMock->method('getRepository')
+        $this->entityManagerMock->expects($this->once())
+            ->method('getRepository')
             ->with(LeagueSeason::class)
             ->willReturn($seasonRepoMock);
 

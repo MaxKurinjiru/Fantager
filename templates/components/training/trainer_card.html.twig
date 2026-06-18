@@ -93,13 +93,13 @@
 
         {% if trainer.status.value == 'available' %}
             <div class="trainer-card__section trainer-card__dismiss">
-                <p class="trainer-card__dismiss-desc text-text-muted text-sm">
+                <p class="trainer-card__dismiss-desc copy-muted">
                     {{ 'training.dismiss_desc'|trans }}
                 </p>
                 <button type="button"
                         data-action="click->training#dismissTrainer"
                         data-trainer-id="{{ trainer.id }}"
-                        class="btn btn-outline btn--sm text-red-400 border-red-400/30 hover:border-red-400">
+                        class="btn btn-outline-danger btn--sm">
                     {{ 'training.dismiss_btn'|trans }}
                 </button>
             </div>

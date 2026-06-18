@@ -236,7 +236,8 @@ export default class extends Controller {
                 card = template.content.cloneNode(true).querySelector('.marketplace-card');
                 const hero = listing.entity;
 
-                card.querySelector('.js-level').textContent = `Lvl ${hero.level}`;
+                card.querySelector('.js-level').textContent = (this.translationsValue.hero_level_short || '%level%')
+                    .replace('%level%', hero.level);
                 card.querySelector('.js-name').textContent = hero.name;
                 card.querySelector('.js-race').textContent = this.racesValue[hero.race] || hero.race;
                 card.querySelector('.js-age').textContent = `${hero.age} ${this.translationsValue.years_suffix || ''}`;
@@ -437,7 +438,7 @@ export default class extends Controller {
 
         const originalText = button.textContent;
         button.disabled = true;
-        button.textContent = '...';
+        button.textContent = this.translationsValue.text_loading || '';
 
         try {
             const response = await fetch('/api/v1/marketplace/purchase', {
@@ -476,7 +477,7 @@ export default class extends Controller {
 
         const originalText = button.textContent;
         button.disabled = true;
-        button.textContent = '...';
+        button.textContent = this.translationsValue.text_loading || '';
 
         try {
             const response = await fetch('/api/v1/marketplace/bid', {
@@ -601,7 +602,7 @@ export default class extends Controller {
 
         const originalText = button.textContent;
         button.disabled = true;
-        button.textContent = '...';
+        button.textContent = this.translationsValue.text_loading || '';
 
         try {
             const response = await fetch(`/api/v1/marketplace/listings/${listingId}`, {

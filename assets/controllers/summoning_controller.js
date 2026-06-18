@@ -1,6 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
 import { csrfHeaders } from '../utils/csrf.js';
+import { formatNumber } from '../utils/locale.js';
 
 export default class extends Controller {
     static targets = [
@@ -16,7 +17,8 @@ export default class extends Controller {
         'errorAlert',
         'summonsUsed',
         'summonsMax',
-        'goldDisplay'
+        'goldDisplay',
+        'inspectBtn'
     ];
 
     static values = {
@@ -101,10 +103,10 @@ export default class extends Controller {
             this.heroStatsTarget.appendChild(statNode);
         });
 
-        // Set inspect link action
-        const inspectLink = this.revealTarget.querySelector('#inspect-summoned');
-        if (inspectLink) {
-            inspectLink.href = `/app/heroes/${hero.id}`;
+        // Enable inspect action
+        if (this.hasInspectBtnTarget) {
+            this.inspectBtnTarget.dataset.heroId = String(hero.id);
+            this.inspectBtnTarget.disabled = false;
         }
 
         // Show reveal card with animation
@@ -133,7 +135,7 @@ export default class extends Controller {
             let gold = parseInt(headerGold.textContent.replace(/\s/g, ''), 10);
             if (!isNaN(gold)) {
                 const cost = this.hasGoldCostValue ? this.goldCostValue : 500;
-                headerGold.textContent = (gold - cost).toLocaleString('cs-CZ'); // format with spaces
+                headerGold.textContent = formatNumber(gold - cost);
             }
         }
     }
@@ -146,6 +148,14 @@ export default class extends Controller {
     reloadPage(event) {
         event?.preventDefault();
         window.location.reload();
+    }
+
+    inspectHero(event) {
+        event?.preventDefault();
+        const heroId = this.inspectBtnTarget?.dataset.heroId;
+        if (heroId) {
+            window.location.href = `/app/heroes/${heroId}`;
+        }
     }
 
     hideError() {

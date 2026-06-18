@@ -35,7 +35,7 @@
     border: 1px solid var(--color-border);
     background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
     backdrop-filter: blur(12px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--shadow-panel);
     text-decoration: none;
     color: inherit;
     transition:
@@ -50,12 +50,12 @@
     }
 
     &:hover {
-      border-color: rgba(16, 185, 129, 0.35);
+      border-color: var(--overlay-brand-35);
       background-color: color-mix(in srgb, var(--color-surface-overlay) 75%, transparent);
     }
 
     &--pinned {
-      border-color: rgba(16, 185, 129, 0.25);
+      border-color: color-mix(in srgb, var(--color-brand-500) 25%, transparent);
     }
   }
 
@@ -231,7 +231,7 @@
     gap: 1rem;
 
     &--original {
-      border-color: rgba(16, 185, 129, 0.25);
+      border-color: color-mix(in srgb, var(--color-brand-500) 25%, transparent);
     }
   }
 
@@ -388,7 +388,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    background-color: rgba(22, 32, 48, 0.6);
+    background-color: var(--overlay-surface-raised-60);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
     padding: 1rem;

@@ -10,10 +10,11 @@
      class="formation-slot">
     <span class="{{ title_class }}">{{ ('formation.slots.' ~ slot.pos)|trans }}</span>
 
-    <div data-empty-view class="w-full space-y-2 {% if hero %}hidden{% endif %}">
-        <span class="text-2xl block select-none opacity-40">{{ default_emoji }}</span>
+    <div data-empty-view class="formation-slot__empty-view layout-stack layout-stack--sm {% if hero %}hidden{% endif %}">
+        <span class="formation-slot__empty-icon">{{ default_emoji }}</span>
         <select data-quick-select data-action="change->formation#quickAssign" data-position="{{ slot.pos }}"
-                class="form-input formation-slot__quick-select">
+                class="form-input formation-slot__quick-select"
+                aria-label="{{ 'formation.assign'|trans }}">
             <option value="">-- {{ 'formation.assign'|trans }} --</option>
             {% for h in heroes %}
                 <option value="{{ h.id }}">{{ h.name }}</option>
@@ -24,7 +25,7 @@
     <div data-occupied-view
          draggable="true"
          data-action="dragstart->formation#slotDragStart dragend->formation#dragEnd"
-         class="formation-slot__occupied w-full h-full flex flex-col justify-between items-center relative {% if not hero %}hidden{% endif %}">
+         class="formation-slot__occupied {% if not hero %}hidden{% endif %}">
         <button type="button"
                 draggable="false"
                 data-action="click->formation#removeHero" data-position="{{ slot.pos }}"
@@ -32,7 +33,7 @@
                 aria-label="{{ 'formation.remove_from_slot'|trans }}">
             <span aria-hidden="true">✕</span>
         </button>
-        <span data-hero-avatar class="formation-slot__avatar hero-avatar-emoji text-3xl mb-1 select-none" title="{{ hero ? ('heroes.race_' ~ hero.race.value)|trans : '' }}">{{ hero ? race_icon(hero.race) : '' }}</span>
+        <span data-hero-avatar class="formation-slot__avatar hero-avatar-emoji" title="{{ hero ? ('heroes.race_' ~ hero.race.value)|trans : '' }}">{{ hero ? race_icon(hero.race) : '' }}</span>
         <h4 data-hero-name class="formation-slot__hero-name">{{ hero ? hero.name : '' }}</h4>
         <p data-hero-details class="formation-slot__hero-details">{{ hero ? 'js_flash.hq.lvl_short'|trans ~ ' ' ~ hero.level ~ ' ' ~ ('heroes.race_' ~ hero.race.value)|trans : '' }}</p>
     </div>

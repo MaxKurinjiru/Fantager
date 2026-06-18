@@ -11,6 +11,7 @@ use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemStatus;
 use App\Repository\Item\ItemRepository;
+use App\Exception\UserFacingException;
 use App\Service\Item\ItemService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -40,8 +41,8 @@ class ItemServiceTest extends TestCase
         $item->setEquippedHero($hero);
         $item->setRarity(ItemRarity::Common);
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Cannot dismantle an equipped item.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.item_cannot_dismantle_equipped');
 
         $this->itemService->dismantle($item, $team);
     }
@@ -66,8 +67,8 @@ class ItemServiceTest extends TestCase
         $item->setStatus(ItemStatus::Available);
         $item->setSlotType(ItemSlotType::Head);
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('cannot be equipped in slot');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.item_slot_mismatch');
 
         $this->itemService->equip($item, $hero, ItemSlotType::Body);
     }

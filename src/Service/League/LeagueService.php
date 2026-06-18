@@ -179,4 +179,96 @@ class LeagueService
 
         return $this->compareStandings($a, $b);
     }
+
+    /**
+     * @return list<LeagueGroup>
+     */
+    public function getGroupsForSeason(LeagueSeason $season): array
+    {
+        /** @var list<LeagueGroup> $groups */
+        $groups = $this->em->getRepository(LeagueGroup::class)->createQueryBuilder('g')
+            ->join('g.tier', 't')
+            ->where('t.season = :season')
+            ->setParameter('season', $season)
+            ->orderBy('t.id', 'ASC')
+            ->addOrderBy('g.groupName', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $groups;
+    }
+
+    public function findStandingForTeam(LeagueSeason $season, Team $team): ?LeagueStanding
+    {
+        /** @var LeagueStanding|null $standing */
+        $standing = $this->em->getRepository(LeagueStanding::class)->createQueryBuilder('ls')
+            ->join('ls.group', 'g')
+            ->join('g.tier', 't')
+            ->where('t.season = :season')
+            ->andWhere('ls.team = :team')
+            ->setParameter('season', $season)
+            ->setParameter('team', $team)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $standing;
+    }
+
+    /**
+     * @param list<LeagueGroup> $groups
+     */
+    public function resolveSelectedGroup(
+        LeagueSeason $season,
+        ?LeagueStanding $userStanding,
+        ?int $groupId,
+        array $groups,
+    ): ?LeagueGroup {
+        if (null !== $groupId) {
+            /** @var LeagueGroup|null $selectedGroup */
+            $selectedGroup = $this->em->getRepository(LeagueGroup::class)->find($groupId);
+            if ($selectedGroup && $selectedGroup->getTier()->getSeason() === $season) {
+                return $selectedGroup;
+            }
+        }
+
+        if (null !== $userStanding) {
+            return $userStanding->getGroup();
+        }
+
+        return $groups[0] ?? null;
+    }
+
+    /**
+     * @return list<LeagueFixture>
+     */
+    public function getFixturesForGroup(LeagueGroup $group): array
+    {
+        /** @var list<LeagueFixture> $fixtures */
+        $fixtures = $this->em->getRepository(LeagueFixture::class)->findBy(
+            ['group' => $group],
+            ['scheduledAt' => 'ASC']
+        );
+
+        return $fixtures;
+    }
+
+    /**
+     * @return list<LeagueFixture>
+     */
+    public function getTeamFixturesForSeason(LeagueSeason $season, Team $team): array
+    {
+        /** @var list<LeagueFixture> $fixtures */
+        $fixtures = $this->em->getRepository(LeagueFixture::class)->createQueryBuilder('lf')
+            ->join('lf.group', 'g')
+            ->join('g.tier', 't')
+            ->where('t.season = :season')
+            ->andWhere('(lf.homeTeam = :team OR lf.awayTeam = :team)')
+            ->setParameter('season', $season)
+            ->setParameter('team', $team)
+            ->orderBy('lf.scheduledAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $fixtures;
+    }
 }

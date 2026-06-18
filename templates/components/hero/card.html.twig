@@ -19,10 +19,10 @@
     <div>
         {# Card Header #}
         <div class="hero-card__header">
-            <div class="flex items-center gap-3">
+            <div class="layout-cluster">
                 {% include 'components/hero/avatar.html.twig' with { race: hero.race } %}
                 <div>
-                    <h3 class="font-bold text-white leading-tight hover:text-emerald-400">
+                    <h3 class="hero-card__name">
                         <a href="{{ path('app_heroes_detail', {id: hero.id}) }}">{{ hero.name }}</a>
                     </h3>
                     <p class="hero-card__meta">{{ 'heroes.level'|trans }} {{ hero.level }} &bull; {{ ('heroes.race_' ~ hero.race.value)|trans }}</p>
@@ -52,7 +52,7 @@
 
     {# Actions #}
     <div class="hero-card__actions">
-        <a href="{{ path('app_heroes_detail', {id: hero.id}) }}" class="btn btn-outline btn--sm flex-1">
+        <a href="{{ path('app_heroes_detail', {id: hero.id}) }}" class="btn btn-outline btn--sm">
             {{ 'heroes.inspect'|trans }}
         </a>
         {% include 'components/hero/status_badge.html.twig' with { status: hero.status } %}

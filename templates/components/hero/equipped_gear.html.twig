@@ -1,11 +1,11 @@
 {# templates/components/hero/equipped_gear.html.twig #}
 <div class="hero-panel">
-    <div class="flex justify-between items-center mb-6">
+    <div class="hero-panel__header">
         <div>
             <h2 class="hero-panel__title">{{ 'heroes.equipped_gear'|trans }}</h2>
             <p class="hero-panel__desc">{{ 'heroes.equipped_gear_desc'|trans }}</p>
         </div>
-        <a href="{{ path('app_heroes_detail', { id: hero.id, tab: 'equipment' }) }}" class="btn btn-outline btn--sm gap-1">
+        <a href="{{ path('app_heroes_detail', { id: hero.id, tab: 'equipment' }) }}" class="btn btn-outline btn--sm btn--icon-lead">
             🎒 {{ 'heroes.manage_gear'|trans }}
         </a>
     </div>
@@ -26,9 +26,9 @@
             {% set item = equipped[slot.key] ?? null %}
             {% if item %}
                 {# Active Item Slot #}
-                <div class="hero-gear-slot hero-gear-slot--filled relative">
+                <div class="hero-gear-slot hero-gear-slot--filled">
                     <span class="hero-gear-slot__label">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
-                    <span class="text-3xl mb-1 select-none">
+                    <span class="hero-gear-slot__icon">
                         {% if item.slotType.value == 'main_hand' or item.slotType.value == 'weapon' %}🗡️
                         {% elseif item.slotType.value == 'head' %}🪖
                         {% elseif item.slotType.value == 'body' %}🛡️
@@ -44,7 +44,7 @@
                 {# Empty Slot Placeholder #}
                 <div class="hero-gear-slot hero-gear-slot--empty">
                     <span class="hero-gear-slot__label hero-gear-slot__label--faint">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
-                    <span class="text-2xl mb-1">{{ slot.emoji }}</span>
+                    <span class="hero-gear-slot__icon">{{ slot.emoji }}</span>
                     <span class="hero-gear-slot__empty-hint">{{ 'inventory.empty_slot'|trans }}</span>
                 </div>
             {% endif %}

@@ -9,6 +9,7 @@ use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use App\Repository\Hero\HeroRepository;
+use App\Exception\UserFacingException;
 use App\Service\Team\TeamRosterService;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -24,7 +25,7 @@ class TeamRosterServiceTest extends TestCase
         $hero->setStatus(HeroStatus::Available);
 
         $repo = $this->createMock(HeroRepository::class);
-        $repo->method('countCombatReadyByTeam')->with($team)->willReturn(7);
+        $repo->expects($this->once())->method('countCombatReadyByTeam')->with($team)->willReturn(7);
 
         $service = new TeamRosterService($repo);
 
@@ -39,7 +40,7 @@ class TeamRosterServiceTest extends TestCase
         $hero->setStatus(HeroStatus::Available);
 
         $repo = $this->createMock(HeroRepository::class);
-        $repo->method('countCombatReadyByTeam')->with($team)->willReturn(6);
+        $repo->expects($this->once())->method('countCombatReadyByTeam')->with($team)->willReturn(6);
 
         $service = new TeamRosterService($repo);
 
@@ -83,12 +84,12 @@ class TeamRosterServiceTest extends TestCase
         $hero->setStatus(HeroStatus::Available);
 
         $repo = $this->createMock(HeroRepository::class);
-        $repo->method('countCombatReadyByTeam')->with($team)->willReturn(6);
+        $repo->expects($this->once())->method('countCombatReadyByTeam')->with($team)->willReturn(6);
 
         $service = new TeamRosterService($repo);
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Cannot remove hero. Team must keep at least 6 combat-ready heroes');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.hero_roster_minimum');
 
         $service->assertCanRemoveCombatReadyHero($team, $hero);
     }

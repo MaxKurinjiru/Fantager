@@ -7,6 +7,7 @@ namespace App\Tests\Service\Community;
 use App\Entity\Auth\User;
 use App\Entity\Community\ForumThread;
 use App\Entity\Kingdom\Kingdom;
+use App\Exception\UserFacingException;
 use App\Service\Community\CommunityService;
 use App\Service\Community\ContentFilterService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -35,8 +36,8 @@ class CommunityServiceTest extends TestCase
 
         $otherKingdom = new Kingdom();
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('You can only post threads in your own kingdom.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.community_own_kingdom_threads');
 
         $this->communityService->createThread($author, $otherKingdom, 'general', 'Title', 'Body');
     }
@@ -51,8 +52,8 @@ class CommunityServiceTest extends TestCase
         $thread->setKingdom($kingdom);
         $thread->setIsLocked(true);
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('This thread is locked.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.community_thread_locked');
 
         $this->communityService->createPost($author, $thread, 'Reply body');
     }
@@ -63,8 +64,8 @@ class CommunityServiceTest extends TestCase
         $kingdom = new Kingdom();
         $user->setKingdom($kingdom);
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('You cannot send a message to yourself.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.community_cannot_message_self');
 
         $this->communityService->sendMessage($user, $user, 'Hello', 'Body');
     }

@@ -1,9 +1,9 @@
 <div class="summoning-theme-banner">
-    <div class="space-y-1">
+    <div class="layout-stack layout-stack--sm">
         <span class="summoning-theme-banner__label">{{ 'summoning.home_theme'|trans }}</span>
         <div class="summoning-theme-banner__race">
             {% if arena_theme %}
-                <span class="text-3xl">{{ race_icon(arena_theme) }}</span>
+                <span class="summoning-theme-banner__icon">{{ race_icon(arena_theme) }}</span>
                 <span>{{ ('heroes.race_' ~ arena_theme.value)|trans }}</span>
             {% else %}
                 <span>{{ 'dashboard.none'|trans }}</span>
@@ -15,14 +15,14 @@
     </p>
 </div>
 
-<div class="space-y-3">
+<div class="layout-stack layout-stack--sm">
     <h3 class="section-label">{{ 'summoning.potential_races'|trans }}</h3>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="summoning-race-grid">
         {% for race_info in compatible_races %}
             <div class="summoning-race-card">
-                {% include 'components/hero/avatar.html.twig' with { race: race_info.race, text_size: 'text-4xl' } %}
-                <div class="space-y-1">
-                    <h3 class="font-bold text-white leading-none">{{ ('heroes.race_' ~ race_info.race.value)|trans }}</h3>
+                {% include 'components/hero/avatar.html.twig' with { race: race_info.race, text_size: 'hero-avatar-emoji--xl' } %}
+                <div class="layout-stack layout-stack--sm">
+                    <h3 class="feature-panel__title">{{ ('heroes.race_' ~ race_info.race.value)|trans }}</h3>
                     <p class="summoning-race-card__bonus">{{ ('races.combat_bonus.' ~ race_info.race.value)|trans }}</p>
                 </div>
             </div>

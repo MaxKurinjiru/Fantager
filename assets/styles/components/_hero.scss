@@ -19,8 +19,28 @@
       @apply flex justify-between items-start gap-2 mb-4;
     }
 
+    &__name {
+      font-weight: 700;
+      color: var(--color-text-primary);
+      line-height: 1.25;
+      margin: 0;
+
+      a {
+        color: inherit;
+        transition: color var(--transition-fast);
+
+        &:hover {
+          color: var(--color-brand-400);
+        }
+      }
+    }
+
     &__actions {
       @apply flex items-center gap-2 mt-4;
+
+      .btn {
+        flex: 1;
+      }
 
       .hero-status {
         @apply shrink-0;
@@ -29,12 +49,17 @@
   }
 
   .hero-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
     background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
     padding: 1.5rem;
     backdrop-filter: blur(12px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--shadow-panel);
   }
 
   .hero-status {
@@ -84,6 +109,16 @@
 
   .hero-attr-grid {
     @apply grid grid-cols-4 gap-1.5 sm:gap-2.5;
+
+    &--spaced {
+      margin-bottom: 1.5rem;
+    }
+
+    &--bordered {
+      padding: 0.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+    }
   }
 
   .hero-attr-cell {
@@ -170,10 +205,27 @@
   }
 
   .hero-avatar-box--lg { @apply w-24 h-24 sm:w-28 sm:h-28 text-5xl sm:text-6xl; }
+  .hero-avatar-box--header {
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.875rem;
+
+    @media (min-width: 640px) {
+      width: 5rem;
+      height: 5rem;
+      font-size: 2.25rem;
+    }
+  }
   .hero-avatar-emoji { @apply select-none; }
   .hero-avatar-emoji--md { @apply text-3xl; }
+  .hero-avatar-emoji--lg { @apply text-2xl; }
+  .hero-avatar-emoji--xl { @apply text-4xl; }
 
-  .hero-attr-bar { @apply relative; }
+  .hero-bar-row__value--cluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
   .hero-attr-bar__header { @apply flex justify-between items-center mb-1 text-xs font-semibold; }
   .hero-attr-bar__label { color: var(--color-text-secondary); }
   .hero-attr-bar__values { @apply flex items-center gap-1.5; }
@@ -199,6 +251,99 @@
 }
 
 @layer components {
+  .hq-facility-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .hero-header {
+    &__layout {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+
+      @media (min-width: 768px) {
+        flex-direction: row;
+        gap: 2rem;
+        align-items: flex-start;
+      }
+    }
+
+    &__body {
+      flex: 1;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      @media (min-width: 768px) {
+        text-align: left;
+      }
+    }
+
+    &__title-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      justify-content: center;
+
+      @media (min-width: 640px) {
+        flex-direction: row;
+      }
+
+      @media (min-width: 768px) {
+        justify-content: flex-start;
+      }
+    }
+
+    &__rename-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    &__rename-actions {
+      display: flex;
+      gap: 0.375rem;
+    }
+
+    &__title {
+      font-size: 1.875rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--color-text-primary);
+    }
+
+    &__meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    &__meta-strong {
+      color: var(--color-text-primary);
+      font-weight: 700;
+    }
+
+    &__xp-track {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      max-width: 28rem;
+      margin-inline: auto;
+
+      @media (min-width: 768px) {
+        margin-inline: 0;
+      }
+    }
+  }
+
   .hero-header__meta {
     @apply flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-sm;
     color: var(--color-text-secondary);
@@ -230,6 +375,14 @@
   }
   .hero-activity-empty { @apply text-center py-6 select-none opacity-50; }
   .hero-gear-grid { @apply grid grid-cols-2 sm:grid-cols-4 gap-4; }
+
+  .hero-panel__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
   .hero-gear-slot {
     @apply p-3 rounded-xl flex flex-col items-center justify-between text-center min-h-[110px] transition-all;
     &--filled {
@@ -246,6 +399,12 @@
     &__label--faint { color: color-mix(in srgb, var(--color-text-muted) 70%, transparent); }
     &__name { @apply text-xs font-semibold truncate w-full; color: var(--color-text-primary); }
     &__empty-hint { @apply text-[10px] font-medium; color: var(--color-text-muted); }
+    &__icon {
+      font-size: 1.875rem;
+      margin-bottom: 0.25rem;
+      user-select: none;
+      line-height: 1;
+    }
   }
   .hero-spell-row {
     @apply p-3 rounded-xl flex items-center justify-between;
@@ -270,6 +429,11 @@
   .hero-card__meta {
     @apply text-xs mt-0.5;
     color: var(--color-text-muted);
+  }
+
+  .hero-school-mastery__icon {
+    font-size: 1.125rem;
+    line-height: 1;
   }
 
   .hero-school-mastery__cell {

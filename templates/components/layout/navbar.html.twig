@@ -10,7 +10,7 @@
                         data-action="click->mobile-menu#toggle" 
                         class="navbar-hamburger" 
                         aria-label="{{ 'nav.toggle_menu'|trans }}">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="navbar-hamburger__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
@@ -36,8 +36,8 @@
                     <button type="button"
                             data-action="click->dropdown#toggle" 
                             class="navbar-dropdown__trigger">
-                        <span class="text-lg select-none">{{ app.user.team.emblem ?: '🛡️' }}</span>
-                        <span class="font-semibold text-xs sm:text-sm hidden sm:inline">{{ app.user.displayName }}</span>
+                        <span class="navbar-dropdown__emblem">{{ app.user.team.emblem ?: '🛡️' }}</span>
+                        <span class="navbar-dropdown__username">{{ app.user.displayName }}</span>
                         <svg class="navbar-dropdown__chevron navbar-dropdown__chevron--md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
@@ -104,8 +104,8 @@
 {% else %}
     {# Guest navigation bar #}
     {% set locales = {
-        'cs': { 'label': 'Čeština', 'flag': 'cs' },
-        'en': { 'label': 'English', 'flag': 'en' }
+        'cs': { 'label': 'nav.locale_cs'|trans, 'flag': 'cs' },
+        'en': { 'label': 'nav.locale_en'|trans, 'flag': 'en' }
     } %}
     {% set current_locale = app.request.locale %}
     {% set current_info = locales[current_locale]|default({ 'label': current_locale|upper, 'flag': '🌐' }) %}
@@ -114,13 +114,13 @@
         <div class="navbar-guest__inner">
             <a href="{{ path('app_home') }}" class="navbar-logo">Fantager</a>
             <div class="navbar-guest__right">
-            <a href="{{ path('app_news') }}" class="link hover:text-emerald-400 self-center">{{ 'nav.news'|trans }}</a>
+            <a href="{{ path('app_news') }}" class="link navbar-guest__link">{{ 'nav.news'|trans }}</a>
             {# Guest Language Switcher Dropdown #}
             <div class="navbar-dropdown" data-controller="dropdown">
                 <button type="button"
                         data-action="click->dropdown#toggle" 
                         class="navbar-dropdown__trigger navbar-dropdown__trigger--compact">
-                    <span class="flex items-center gap-1">
+                    <span class="layout-cluster layout-cluster--sm">
                         <span>{{ current_locale }}</span>
                     </span>
                     <svg class="navbar-dropdown__chevron navbar-dropdown__chevron--sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +134,7 @@
                     {% for code, info in locales %}
                         <a href="{{ path('app_change_locale', { locale: code }) }}" 
                            class="dropdown-item {{ current_locale == code ? 'dropdown-item--active' }}">
-                            <span class="text-sm select-none">{{ info.flag }}</span> {{ info.label }}
+                            <span class="navbar-locale-label">{{ info.flag }}</span> {{ info.label }}
                         </a>
                     {% endfor %}
                 </div>
@@ -144,7 +144,7 @@
                 <a href="{{ path('app_dashboard') }}" class="btn btn-primary">
                     {{ 'nav.enter_game'|trans }}
                 </a>
-                <a href="{{ path('app_logout') }}" class="link hover:text-emerald-400 self-center">{{ 'nav.logout'|trans }}</a>
+                <a href="{{ path('app_logout') }}" class="link navbar-guest__link">{{ 'nav.logout'|trans }}</a>
             {% else %}
                 <a href="{{ path('app_login') }}"
                     data-action="click->auth-modal#openLogin"

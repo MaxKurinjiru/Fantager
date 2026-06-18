@@ -109,7 +109,7 @@ class FormationController extends AbstractController
             return $this->jsonException($e, 422);
         }
 
-        return $this->json(['message' => 'Formation deleted.']);
+        return $this->json(['message' => $this->transMessage('flash.formation_deleted')]);
     }
 
     private function getPlayerTeam(): ?\App\Entity\Team\Team

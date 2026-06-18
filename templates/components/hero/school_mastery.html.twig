@@ -1,11 +1,11 @@
 {# templates/components/hero/school_mastery.html.twig #}
-<div class="hero-panel space-y-6">
+<div class="hero-panel">
     <div>
         <h2 class="hero-panel__title">{{ 'heroes.school_mastery'|trans }}</h2>
         <p class="hero-panel__desc">{{ 'heroes.school_mastery_desc'|trans }}</p>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="hero-school-mastery__grid">
         {% set schools = ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
         {% for school in schools %}
             {% set mastery_tier = 1 %}
@@ -16,8 +16,8 @@
             {% endfor %}
             
             <div class="hero-school-mastery__cell">
-                <div class="flex items-center gap-1.5">
-                    <span class="text-lg">
+                <div class="layout-cluster layout-cluster--sm">
+                    <span class="hero-school-mastery__icon">
                         {% if school == 'fire' %}🔥
                         {% elseif school == 'water' %}💧
                         {% elseif school == 'air' %}💨

@@ -1,6 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
 import { csrfHeaders } from '../utils/csrf.js';
+import { formatNumber } from '../utils/locale.js';
 
 export default class extends Controller {
     static targets = [
@@ -17,7 +18,8 @@ export default class extends Controller {
         successEquip: String,
         errorUnequip: String,
         successUnequip: String,
-        textEquipping: String
+        textEquipping: String,
+        textUnequipping: String
     };
 
     connect() {
@@ -71,7 +73,7 @@ export default class extends Controller {
             if (headerGold && goldCost > 0) {
                 let gold = parseInt(headerGold.textContent.replace(/\s/g, ''), 10);
                 if (!isNaN(gold)) {
-                    headerGold.textContent = (gold - goldCost).toLocaleString('cs-CZ');
+                    headerGold.textContent = formatNumber(gold - goldCost);
                 }
             }
 
@@ -131,7 +133,7 @@ export default class extends Controller {
 
         btn.disabled = true;
         const originalText = btn.textContent;
-        btn.textContent = '...';
+        btn.textContent = this.textUnequippingValue;
 
         try {
             const response = await fetch(`/api/v1/heroes/${heroId}/spells/unequip`, {

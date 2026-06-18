@@ -9,6 +9,7 @@ use App\Entity\Team\Team;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
 use App\Exception\UserFacingException;
+use App\Service\Calendar\TickClock;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -19,6 +20,7 @@ class EconomyService
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly TickClock $tickClock,
     ) {
     }
 
@@ -248,6 +250,8 @@ class EconomyService
         $record->setEssenceLegendaryChange($essenceLegendaryChange);
         $record->setEssenceMythicChange($essenceMythicChange);
         $record->setContext($context);
+        $record->setCreatedAt($this->tickClock->getCurrentTime());
+        $record->setProcessedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
 
         $this->em->persist($record);
     }

@@ -27,7 +27,8 @@ class TeamChroniclePresenter
      *     category: string,
      *     icon: string,
      *     message: string,
-     *     created_at: \DateTimeImmutable
+     *     created_at: \DateTimeImmutable,
+     *     processed_at: ?\DateTimeImmutable
      * }>
      */
     public function presentRecentForTeam(Team $team, int $limit = 5, ?string $locale = null): array
@@ -48,7 +49,8 @@ class TeamChroniclePresenter
      *     category: string,
      *     icon: string,
      *     message: string,
-     *     created_at: \DateTimeImmutable
+     *     created_at: \DateTimeImmutable,
+     *     processed_at: ?\DateTimeImmutable
      * }>
      */
     public function presentFilteredForTeam(
@@ -81,7 +83,8 @@ class TeamChroniclePresenter
      *     category: string,
      *     icon: string,
      *     message: string,
-     *     created_at: \DateTimeImmutable
+     *     created_at: \DateTimeImmutable,
+     *     processed_at: ?\DateTimeImmutable
      * }
      */
     public function presentEntry(TeamChronicle $entry, ?string $locale = null): array
@@ -123,6 +126,7 @@ class TeamChroniclePresenter
                 $locale,
             ),
             'created_at' => $entry->getCreatedAt(),
+            'processed_at' => $entry->getProcessedAt(),
         ];
     }
 

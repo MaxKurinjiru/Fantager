@@ -255,4 +255,63 @@ class CommunityService
         $thread->setIsLocked($lock);
         $this->em->flush();
     }
+
+    public function findMessageRecipient(User $sender, int $receiverUserId): User
+    {
+        if ($receiverUserId <= 0) {
+            throw new UserFacingException('error.recipient_not_found');
+        }
+
+        /** @var User|null $receiver */
+        $receiver = $this->em->getRepository(User::class)->find($receiverUserId);
+        if (!$receiver) {
+            throw new UserFacingException('error.recipient_not_found');
+        }
+
+        return $receiver;
+    }
+
+    public function getMessageForUser(User $user, int $messageId): Message
+    {
+        /** @var Message|null $message */
+        $message = $this->em->getRepository(Message::class)->find($messageId);
+        if (!$message) {
+            throw new UserFacingException('error.message_not_found');
+        }
+
+        $isSender = $message->getSenderUser() === $user && !$message->isDeletedBySender();
+        $isReceiver = $message->getReceiverUser() === $user && !$message->isDeletedByReceiver();
+
+        if (!$isSender && !$isReceiver) {
+            throw new UserFacingException('error.access_denied');
+        }
+
+        if ($isReceiver) {
+            $this->markMessageAsRead($message);
+        }
+
+        return $message;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function serializeMessage(Message $message, ForumThreadHelper $authorHelper): array
+    {
+        return [
+            'id' => $message->getId(),
+            'subject' => $message->getSubject(),
+            'body' => $message->getBody(),
+            'sent_at' => $message->getSentAt()->format(\DateTimeInterface::ATOM),
+            'read_at' => $message->getReadAt()?->format(\DateTimeInterface::ATOM),
+            'sender' => $authorHelper->serializeAuthor(
+                $message->getSenderUser(),
+                $message->getSenderTeam(),
+            ),
+            'receiver' => $authorHelper->serializeAuthor(
+                $message->getReceiverUser(),
+                $message->getReceiverTeam(),
+            ),
+        ];
+    }
 }

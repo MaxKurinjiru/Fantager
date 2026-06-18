@@ -1,6 +1,23 @@
 @reference "tailwindcss";
 
 @layer components {
+  .game-layout {
+    @apply min-h-screen flex flex-col;
+  }
+
+  .game-layout__row {
+    @apply flex flex-1 relative min-h-0;
+  }
+
+  .mobile-menu-backdrop {
+    @apply fixed inset-0 z-30 hidden;
+    background-color: var(--overlay-backdrop-60);
+
+    @media (min-width: 768px) {
+      display: none !important;
+    }
+  }
+
   .game-content-column {
     @apply flex flex-col flex-1 min-w-0 min-h-0;
   }

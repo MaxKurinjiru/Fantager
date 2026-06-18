@@ -1,5 +1,5 @@
 {# templates/components/marketplace/browse_tab.html.twig #}
-<div data-marketplace-target="tabContent" data-tab-name="browse" class="space-y-6{% if tab|default('browse') != 'browse' %} hidden{% endif %}">
+<div data-marketplace-target="tabContent" data-tab-name="browse" class="layout-stack{% if tab|default('browse') != 'browse' %} hidden{% endif %}">
     {# Category tabs #}
     <div class="segmented-control">
         <a href="{{ path('app_marketplace', { tab: 'browse', category: 'hero' }) }}"
@@ -18,18 +18,18 @@
 
     {# Filters Grid #}
     <div class="game-panel">
-        <form data-marketplace-target="browseFilterForm" data-action="submit->marketplace#applyFilters" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <form data-marketplace-target="browseFilterForm" data-action="submit->marketplace#applyFilters" class="marketplace-filter-grid">
             <input type="hidden" name="type" value="{{ category|default('hero') }}" data-marketplace-target="browseTypeInput">
 
             {# Search #}
-            <div class="flex flex-col gap-1">
+            <div class="form-field-group form-field-group--tight">
                 <label for="filter-search" class="form-label">{{ 'heroes.search_placeholder'|trans }}</label>
                 <input type="text" id="filter-search" name="search" placeholder="{{ 'marketplace.filter_search'|trans }}"
                        class="form-input">
             </div>
 
             {# Race Filter (Heroes/Trainers) #}
-            <div class="flex flex-col gap-1{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="raceFilterContainer">
+            <div class="form-field-group form-field-group--tight{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="raceFilterContainer">
                 <label for="filter-race" class="form-label">{{ 'heroes.race'|trans }}</label>
                 <select id="filter-race" name="race" class="form-input">
                     <option value="">{{ 'marketplace.filter_all_races'|trans }}</option>
@@ -45,7 +45,7 @@
             </div>
 
             {# Rarity Filter (Items) #}
-            <div class="flex flex-col gap-1{% if category|default('hero') != 'item' %} hidden{% endif %}" data-marketplace-target="rarityFilterContainer">
+            <div class="form-field-group form-field-group--tight{% if category|default('hero') != 'item' %} hidden{% endif %}" data-marketplace-target="rarityFilterContainer">
                 <label for="filter-rarity" class="form-label">{{ 'marketplace.rarity_label'|trans }}</label>
                 <select id="filter-rarity" name="rarity" class="form-input">
                     <option value="">{{ 'marketplace.filter_all_rarities'|trans }}</option>
@@ -59,7 +59,7 @@
             </div>
 
             {# Sort #}
-            <div class="flex flex-col gap-1">
+            <div class="form-field-group form-field-group--tight">
                 <label for="filter-sort" class="form-label">{{ 'marketplace.filter_sort'|trans }}</label>
                 <select id="filter-sort" name="sort" class="form-input">
                     <option value="newest">{{ 'marketplace.sort_newest'|trans }}</option>
@@ -70,7 +70,7 @@
             </div>
 
             {# Submit / Reset Buttons #}
-            <div class="md:col-span-4 flex justify-end gap-3 mt-2">
+            <div class="marketplace-filter-actions">
                 <button type="button" data-action="click->marketplace#resetFilters" class="btn btn-outline">
                     {{ 'marketplace.btn_reset'|trans }}
                 </button>
@@ -82,9 +82,9 @@
     </div>
 
     {# Listings Grid #}
-    <div data-marketplace-target="browseContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div data-marketplace-target="browseContainer" class="marketplace-browse-grid">
         {# AJAX Loaded cards #}
-        <div class="col-span-3 loading-spinner">
+        <div class="grid-span-full loading-spinner">
             <div class="loading-spinner__icon" aria-hidden="true"></div>
         </div>
     </div>

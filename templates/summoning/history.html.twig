@@ -6,7 +6,7 @@
 <div class="summon-history page-shell">
     {# --- Header Section --- #}
     {% set right_content %}
-        <a href="{{ path('app_summon') }}" class="btn btn-outline gap-1.5 shadow-lg">
+        <a href="{{ path('app_summon') }}" class="btn btn-outline btn--icon-lead btn--elevated">
             ⬅️ {{ 'summoning.back_to_summoning'|trans }}
         </a>
     {% endset %}
@@ -61,11 +61,11 @@
                 <tbody >
                     {% for item in history %}
                         <tr class="summon-history-table__row">
-                            <td class="p-4 font-semibold">
+                            <td class="summon-history-table__cell summon-history-table__cell--name">
                                 {% if item.hero is not null %}
                                     <a href="{{ path('app_heroes_detail', { id: item.hero.id }) }}" class="link">{{ item.hero.name }}</a>
                                 {% else %}
-                                    <span class="text-text-muted italic">{{ 'summoning.fallen_or_dismissed'|trans }}</span>
+                                    <span class="copy-muted copy-muted--italic">{{ 'summoning.fallen_or_dismissed'|trans }}</span>
                                 {% endif %}
                             </td>
                             <td class="summon-history-table__cell">
@@ -76,7 +76,7 @@
                             <td class="summon-history-table__cell summon-history-table__cell--right summon-history-table__cell--gold">
                                 🪙 {{ item.goldCost|number_format(0, '.', ' ') }}
                             </td>
-                            <td class="p-4 text-right text-text-secondary text-xs">
+                            <td class="summon-history-table__cell summon-history-table__cell--date">
                                 {{ item.summonedAt|date('Y-m-d H:i:s') }}
                             </td>
                         </tr>

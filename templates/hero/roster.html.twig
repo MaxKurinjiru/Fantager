@@ -8,7 +8,7 @@
     {% set right_content %}
         <div class="page-header-actions">
             {% include 'components/ui/roster_badge.html.twig' with { team: team } %}
-            <a href="{{ path('app_hq', { facility: 'summoning_chamber' }) }}" class="btn btn-primary gap-1.5 shadow-lg shadow-emerald-950/20">
+            <a href="{{ path('app_hq', { facility: 'summoning_chamber' }) }}" class="btn btn-primary btn-primary--prominent">
                 <span>🌀</span> {{ 'heroes.summon_btn'|trans }}
             </a>
         </div>

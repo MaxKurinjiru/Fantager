@@ -1,11 +1,11 @@
 {# templates/components/hero/attributes_panel.html.twig #}
-<div class="hero-panel space-y-6">
+<div class="hero-panel">
     <div>
         <h2 class="hero-panel__title hero-panel__title--spaced">{{ 'heroes.primary_attrs'|trans }}</h2>
         <p class="hero-panel__desc">{{ 'heroes.primary_attrs_desc'|trans }}</p>
     </div>
 
-    <div class="space-y-4">
+    <div class="layout-stack layout-stack--md">
         {% set attr_keys = ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'] %}
 
         {% for attr_key in attr_keys %}

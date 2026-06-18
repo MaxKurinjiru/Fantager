@@ -62,6 +62,10 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 
 **Meta**
 - [UI & CSS Design Guidelines](ui-guidelines.md) — Design tokens, atomic component model (atoms/molecules), BEM naming, Tailwind usage rules, Stimulus controller conventions, and accessibility requirements
+- [UI Agent Cheatsheet](ui-agent-cheatsheet.md) — One-page UI reference for agents (layout decision tree, forbidden utilities)
+- [Backend Agent Cheatsheet](backend-agent-cheatsheet.md) — PHP/Symfony reference; `bash scripts/check-backend-docs.sh` (routes, entities, enums, i18n)
+- [Screen → Code Map](screen-code-map.md) — Which controllers, templates, and Stimulus implement each screen
+- [AGENTS.md](../AGENTS.md) — Entry point for AI assistants (task routing, Cursor rules/skills, no automatic commands)
 - [README.md](../README.md) — Project overview and dev setup
 - [`future/`](future/) — Deferred features not currently planned (world events, dungeons, quests, crafting)
 - [`_deferred/`](../_deferred/) — Parked files (CHANGELOG.md, CONTRIBUTING.md, legacy-migration.md); not actively maintained until the project reaches a stable version

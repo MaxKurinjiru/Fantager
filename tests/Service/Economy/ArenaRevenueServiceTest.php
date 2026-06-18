@@ -190,11 +190,13 @@ class ArenaRevenueServiceTest extends TestCase
         $scheduledAt = new \DateTimeImmutable('2026-06-10 18:00:00');
 
         $home = new Team();
+        $home->setName('Home FC');
         $home->setFanBase(350);
         $home->setReputation(10);
         $home->setMorale(50);
         $home->setChemistry(0);
         $away = new Team();
+        $away->setName('Away FC');
         $away->setFanBase(350);
         $away->setReputation(10);
         $away->setMorale(50);

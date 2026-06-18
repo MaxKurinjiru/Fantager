@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { formatBadgeCount, formatDateTime } from '../utils/locale.js';
 import { csrfHeaders } from '../utils/csrf.js';
 import { applyTeamColors } from '../utils/team_color.js';
 
@@ -118,7 +119,7 @@ export default class extends Controller {
             row.dataset.action = 'click->mail#readMessage';
             row.dataset.messageId = msg.id;
 
-            const indicator = msg.readAt ? '📖' : '✉️';
+            const indicator = msg.read_at ? '📖' : '✉️';
             const unreadSpan = rowNode.querySelector('.js-unread-indicator');
             unreadSpan.dataset.mailUnreadIndicatorId = msg.id;
             unreadSpan.textContent = this.currentFolder === 'sent' ? '📤' : indicator;
@@ -135,7 +136,7 @@ export default class extends Controller {
             }
             rowNode.querySelector('.js-team-name').textContent = formatParticipantLabel(participant);
 
-            const formattedDate = new Date(msg.sentAt).toLocaleString('cs-CZ', {
+            const formattedDate = formatDateTime(msg.sent_at, {
                 day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
             });
             rowNode.querySelector('.js-sent-at').textContent = formattedDate;
@@ -160,7 +161,9 @@ export default class extends Controller {
             const recipients = await response.json();
             const select = this.composeRecipientTarget;
             const placeholder = this.translationsValue.select_recipient || '';
-            select.innerHTML = `<option value="">-- ${placeholder} --</option>`;
+            const optionLabel = (this.translationsValue.select_placeholder || '%label%')
+                .replace('%label%', placeholder);
+            select.innerHTML = `<option value="">${optionLabel}</option>`;
 
             recipients.forEach(recipient => {
                 const option = document.createElement('option');
@@ -222,7 +225,7 @@ export default class extends Controller {
             if (!response.ok) throw new Error();
 
             const msg = await response.json();
-            const formattedDate = new Date(msg.sentAt).toLocaleString('cs-CZ', {
+            const formattedDate = formatDateTime(msg.sent_at, {
                 day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
             });
 
@@ -303,7 +306,8 @@ export default class extends Controller {
         const count = this.unreadCountValue;
         this.badgeTargets.forEach(badge => {
             if (count > 0) {
-                badge.textContent = count > 99 ? '99+' : String(count);
+                const overflow = this.translationsValue.badge_overflow || '99+';
+                badge.textContent = formatBadgeCount(count, overflow);
                 badge.classList.remove('hidden');
             } else {
                 badge.classList.add('hidden');

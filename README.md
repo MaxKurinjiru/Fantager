@@ -55,9 +55,19 @@ docker exec -u apache fantager-web php bin/console app:user:create-test "Main Ki
 
 ## Where to look
 
+- **AI assistants:** [AGENTS.md](AGENTS.md) — task routing, UI/backend cheatsheets, Cursor rules
 - Documentation Index: [docs/README.md](docs/README.md)
+- UI Guidelines: [docs/ui-guidelines.md](docs/ui-guidelines.md) · Cheatsheet: [docs/ui-agent-cheatsheet.md](docs/ui-agent-cheatsheet.md)
 - Architecture Specification: [docs/arch-spec.md](docs/arch-spec.md)
 - API Design Guide: [docs/api-design.md](docs/api-design.md)
+
+```bash
+# Verify Twig templates follow UI guidelines (also runs in CI)
+bash scripts/check-ui-compliance.sh
+
+# Verify routes and entities are documented (also runs in CI)
+bash scripts/check-backend-docs.sh
+```
 
 ## Notes
 

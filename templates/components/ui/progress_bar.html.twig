@@ -8,5 +8,5 @@
 {% set progress_class = progress_class|default('ui-progress__fill ui-progress__fill--accent') %}
 
 <div class="{{ container_class }}">
-    <div class="{{ progress_class }}" style="width: {{ pct }}%"></div>
+    <div class="{{ progress_class }}" style="--ui-progress-pct: {{ pct }}%"></div>
 </div>

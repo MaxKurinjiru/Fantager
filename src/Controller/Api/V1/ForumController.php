@@ -169,7 +169,7 @@ class ForumController extends AbstractController
         try {
             $this->communityService->lockThread($user, $thread, $lock);
 
-            return $this->json(['success' => true, 'isLocked' => $thread->isLocked()]);
+            return $this->json(['success' => true, 'is_locked' => $thread->isLocked()]);
         } catch (\DomainException $e) {
             return $this->jsonException($e, 400);
         }

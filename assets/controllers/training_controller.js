@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { formatNumber } from '../utils/locale.js';
 
 export default class extends Controller {
     static targets = [
@@ -198,7 +199,7 @@ export default class extends Controller {
 
         btn.disabled = true;
         const originalText = btn.textContent;
-        btn.textContent = this.textProcessingValue || '…';
+        btn.textContent = this.textProcessingValue;
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -219,7 +220,7 @@ export default class extends Controller {
 
             const compensation = result.compensation ?? 0;
             const successMsg = (this.successDismissValue || '')
-                .replace('%gold%', compensation.toLocaleString('cs-CZ'));
+                .replace('%gold%', formatNumber(compensation));
             this.showAlert('success', successMsg);
 
             setTimeout(() => {

@@ -11,10 +11,11 @@
     </div>
 
     <div class="formation-match-prep-panel__actions">
-        <div class="space-y-2 formation-match-prep-panel__select">
+        <div class="layout-stack layout-stack--sm formation-match-prep-panel__select">
             <span class="section-label--xs">{{ 'formation.match_assignment'|trans }}</span>
-            <select data-formation-target="fixtureFormationSelect" data-action="change->formation#changeFixtureFormation"
-                    class="form-input font-semibold w-full">
+            <label for="fixture-formation-select" class="sr-only">{{ 'formation.match_assignment'|trans }}</label>
+            <select id="fixture-formation-select" data-formation-target="fixtureFormationSelect" data-action="change->formation#changeFixtureFormation"
+                    class="form-input form-input--emphasis">
                 <option value="default" {% if assignment.mode == 'default' %}selected{% endif %}>
                     {{ 'formation.use_default_for_match'|trans }}
                 </option>

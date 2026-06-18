@@ -9,16 +9,22 @@
         display: block;
     }
 
+    .finance-ledger.page-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
     .finance-ledger__filters {
         border: 1px solid var(--color-border);
         border-radius: var(--radius-xl);
-        background-color: rgba(11, 18, 32, 0.4); // surface-base
+        background-color: var(--overlay-surface-base-40);
     }
 
     .finance-ledger__table-container {
         border: 1px solid var(--color-border);
         border-radius: var(--radius-xl);
-        background-color: rgba(22, 32, 48, 0.2); // surface-raised
+        background-color: var(--overlay-surface-raised-20);
     }
 
     .finance-ledger-table {
@@ -29,12 +35,12 @@
             padding: 1rem;
             color: var(--color-text-secondary);
             border-bottom: 1px solid var(--color-border);
-            background-color: rgba(11, 18, 32, 0.6); // surface-base
+            background-color: var(--overlay-surface-base-60);
         }
 
         td {
             padding: 1rem;
-            border-bottom: 1px solid rgba(55, 65, 81, 0.4); // border with opacity
+            border-bottom: 1px solid var(--overlay-border-40);
             vertical-align: middle;
         }
     }
@@ -43,7 +49,7 @@
         transition: background-color var(--transition-fast);
 
         &:hover {
-            background-color: rgba(26, 37, 53, 0.3); // surface-overlay
+            background-color: var(--overlay-surface-overlay-30);
         }
     }
 
@@ -87,34 +93,34 @@
 
     .finance-changes__item--positive {
         color: var(--color-success-text);
-        background-color: rgba(5, 46, 22, 0.3); // success-bg with opacity
-        border: 1px solid rgba(21, 128, 61, 0.4);
+        background-color: var(--overlay-success-bg-30);
+        border: 1px solid var(--overlay-success-border-40);
     }
 
     .finance-changes__item--negative {
         color: var(--color-error-text);
-        background-color: rgba(69, 10, 10, 0.3); // error-bg with opacity
-        border: 1px solid rgba(185, 28, 28, 0.4);
+        background-color: var(--overlay-error-bg-30);
+        border: 1px solid var(--overlay-error-border-40);
     }
 
     // Custom essence rarities colors styling for visual touch (matching standard inventory rarities)
     .finance-changes__item--essence-common {
-        border-color: rgba(156, 163, 175, 0.4); // gray-400
+        border-color: color-mix(in srgb, var(--color-text-secondary) 40%, transparent); // gray-400
     }
     .finance-changes__item--essence-uncommon {
-        border-color: rgba(16, 185, 129, 0.4); // brand-500
+        border-color: var(--overlay-brand-35); // brand-500
     }
     .finance-changes__item--essence-rare {
-        border-color: rgba(59, 130, 246, 0.4); // blue-500
+        border-color: color-mix(in srgb, var(--color-blue-400) 40%, transparent); // blue-500
     }
     .finance-changes__item--essence-epic {
-        border-color: rgba(168, 85, 247, 0.4); // purple-500
+        border-color: color-mix(in srgb, var(--color-purple-400) 40%, transparent); // purple-500
     }
     .finance-changes__item--essence-legendary {
-        border-color: rgba(245, 158, 11, 0.4); // amber-500
+        border-color: color-mix(in srgb, var(--color-amber-400) 40%, transparent); // amber-500
     }
     .finance-changes__item--essence-mythic {
-        border-color: rgba(239, 68, 68, 0.4); // red-500
+        border-color: color-mix(in srgb, var(--color-error-border) 40%, transparent); // red-500
     }
 
     .finance-context-tag {
@@ -129,6 +135,13 @@
 @layer components {
   .finance-ledger-table__cell { padding: 1rem; }
   .finance-ledger-table__cell--right { text-align: right; }
+  .finance-ledger-table__cell--type { font-weight: 600; }
+  .finance-ledger-table__cell--date {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
   .finance-context-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; }
   .finance-changes { display: flex; flex-wrap: wrap; gap: 0.5rem; }
   .finance-ledger__empty { padding: 3rem; text-align: center; color: var(--color-text-muted); }
@@ -174,7 +187,7 @@
     padding: 1rem 1.125rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
-    background-color: rgba(22, 32, 48, 0.35);
+    background-color: var(--overlay-surface-raised-35);
   }
 
   .finance-summary__card--compact {

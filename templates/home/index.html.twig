@@ -6,7 +6,7 @@
 <div class="homepage-hero">
     <h1 class="homepage-hero__title">{{ 'homepage.title'|trans }}</h1>
     <p class="homepage-hero__tagline">{{ 'homepage.tagline'|trans }}</p>
-    <div class="flex justify-center gap-4">
+    <div class="homepage-hero__actions">
         {% if app.user %}
             <a href="{{ path('app_dashboard') }}"
                class="btn btn-primary btn--lg">
@@ -25,7 +25,7 @@
             </a>
         {% endif %}
     </div>
-    <p class="text-center mt-6">
+    <p class="homepage-hero__footer-link">
         <a href="{{ path('app_news') }}" class="link">{{ 'homepage.news_archive_link'|trans }}</a>
     </p>
 

@@ -25,13 +25,24 @@
   }
 
   .game-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
     background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
     padding: 1.5rem;
     backdrop-filter: blur(12px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--shadow-panel);
     transition: border-color var(--transition-fast);
+  }
+
+  .public-main {
+    width: 100%;
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 2rem 1rem;
   }
 
   .filter-bar {
@@ -63,7 +74,7 @@
       transition: background-color var(--transition-fast);
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.03);
+        background-color: var(--overlay-white-03);
       }
     }
   }
@@ -75,8 +86,8 @@
     color: var(--color-text-secondary);
 
     &--accent {
-      background-color: rgba(16, 185, 129, 0.12);
-      border-color: rgba(16, 185, 129, 0.35);
+      background-color: var(--overlay-brand-12);
+      border-color: var(--overlay-brand-35);
       color: var(--color-brand-400);
     }
   }
@@ -320,6 +331,53 @@
       color: var(--color-text-muted);
     }
   }
+
+  .kingdom-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .kingdom-select-mobile {
+    display: block;
+    margin-bottom: 0.5rem;
+
+    @media (min-width: 640px) {
+      display: none;
+    }
+  }
+
+  .kingdom-list--desktop {
+    display: none;
+
+    @media (min-width: 640px) {
+      display: block;
+    }
+  }
+
+  .kingdom-card__radio {
+    margin-top: 0.25rem;
+    accent-color: var(--color-brand-400);
+  }
+
+  .alert-box--compact {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .alert-box--spaced {
+    margin-bottom: 1.5rem;
+  }
+
+  .dashboard-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
 }
 @layer components {
 
@@ -352,7 +410,7 @@
     border-radius: var(--radius-xl);
     padding: 1.5rem;
     backdrop-filter: blur(12px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--shadow-panel);
     @apply flex flex-col gap-6;
   }
 
@@ -456,6 +514,92 @@
     @apply mb-4;
   }
 
+  .hero-panel__title--tight {
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-panel__hint {
+    @apply text-xs;
+    margin-top: 0.5rem;
+
+    &--warning {
+      color: var(--color-warning-text);
+    }
+
+    &--muted {
+      color: var(--color-text-muted);
+    }
+  }
+
+  .hero-sell-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .stat-tile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .hero-school-mastery__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .hero-activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 175px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+
+  .hero-activity-item__aside {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .hero-activity-empty__icon {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+    line-height: 1;
+  }
+
+  .subtab-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .filter-bar--spaced {
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-bar__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .alert--spaced {
+    margin-bottom: 1.5rem;
+  }
+
+  .db-panel-empty__icon {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+    line-height: 1;
+  }
+
   .hero-panel__desc {
     @apply text-xs;
     color: var(--color-text-muted);
@@ -474,11 +618,185 @@
   .section-label--xs {
     @apply block text-[10px] font-extrabold uppercase tracking-wide;
     color: var(--color-text-muted);
+
+    &--center {
+      text-align: center;
+    }
   }
 
   .copy-muted { color: var(--color-text-muted); }
+
+  .copy-muted--italic {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
   .copy-secondary { color: var(--color-text-secondary); }
   .copy-primary { color: var(--color-text-primary); }
+
+  .copy-xs { font-size: 0.75rem; }
+
+  .copy-status-success { color: var(--color-success-text); }
+  .copy-status-error { color: var(--color-error-text); }
+  .copy-status-warning { color: var(--color-warning-text); }
+  .copy-status-info { color: var(--color-info-text); }
+  .copy-status-purple { color: var(--color-purple-400); }
+  .copy-status-amber { color: var(--color-amber-400); }
+  .copy-status-indigo { color: var(--color-indigo-400); }
+  .copy-status-brand { color: var(--color-brand-400); }
+
+  .status-chip {
+    @apply inline-flex text-[10px] font-bold px-2 py-0.5 rounded border;
+
+    &--success {
+      color: var(--color-success-text);
+      background-color: var(--overlay-success-bg-40);
+      border-color: var(--overlay-success-border-30);
+    }
+
+    &--error {
+      color: var(--color-error-text);
+      background-color: var(--overlay-error-bg-30);
+      border-color: var(--overlay-error-border-30);
+    }
+
+    &--warning {
+      color: var(--color-warning-text);
+      background-color: var(--overlay-warning-bg-40);
+      border-color: var(--overlay-warning-border-40);
+    }
+
+    &--info {
+      color: var(--color-info-text);
+      background-color: var(--overlay-indigo-bg-40);
+      border-color: var(--overlay-indigo-border-30);
+    }
+
+    &--purple {
+      color: var(--color-purple-400);
+      background-color: var(--overlay-purple-bg-40);
+      border-color: var(--overlay-purple-border-40);
+    }
+
+    &--indigo {
+      color: var(--color-indigo-400);
+      background-color: var(--overlay-indigo-bg-40);
+      border-color: var(--overlay-indigo-border-30);
+    }
+  }
+
+  .schedule-value {
+    @apply font-bold text-sm;
+
+    &--locked {
+      color: var(--color-error-text);
+    }
+
+    &--countdown {
+      color: var(--color-warning-text);
+    }
+
+    &--active {
+      color: var(--color-text-primary);
+    }
+  }
+
+  .auth-page {
+    max-width: 28rem;
+    margin: 2rem auto 0;
+  }
+
+  .auth-page__footer {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+
+  .auth-panel {
+    padding: 2rem;
+  }
+
+  .auth-panel__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-brand-400);
+    margin: 0 0 1.5rem;
+  }
+
+  .auth-panel__footer {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+
+  .auth-panel__footer p + p {
+    margin-top: 0.25rem;
+  }
+
+  .auth-success-page {
+    max-width: 28rem;
+    margin: 2rem auto 0;
+    text-align: center;
+  }
+
+  .auth-success-page__icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .auth-success-page__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-brand-400);
+    margin: 0 0 0.75rem;
+  }
+
+  .auth-success-page__body {
+    margin-bottom: 0.75rem;
+  }
+
+  .auth-success-page__hint {
+    font-size: 0.875rem;
+    font-style: italic;
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+  }
+
+  .auth-success-page__resend {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+
+  .auth-success-page__resend-form {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 0.75rem;
+  }
+
+  .ledger-modal-empty {
+    text-align: center;
+    padding: 1rem 0;
+    color: var(--color-text-muted);
+  }
+
+  .ledger-modal-footer-link {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  .finance-ledger-table__th {
+    padding: 0.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+
+    &--end {
+      text-align: right;
+    }
+  }
 
   .stat-tile {
     background-color: var(--color-surface-base);
@@ -504,6 +822,10 @@
 
   .form-input-affix {
     @apply relative;
+
+    .form-input {
+      padding-left: 2rem;
+    }
 
     &__icon {
       @apply absolute left-3 top-2 text-sm;
@@ -550,6 +872,7 @@
 
     &__fill {
       @apply h-full rounded-full transition-all;
+      width: var(--ui-progress-pct, 0%);
 
       &--accent {
         background-color: var(--color-brand-400);
@@ -578,6 +901,17 @@
     &__tagline {
       @apply text-lg mb-8;
       color: var(--color-text-secondary);
+    }
+
+    &__actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    &__footer-link {
+      text-align: center;
+      margin-top: 1.5rem;
     }
   }
 

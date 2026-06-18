@@ -1,0 +1,53 @@
+name: Backend Docs
+
+on:
+  pull_request:
+    paths:
+      - 'src/Controller/**'
+      - 'src/Entity/**'
+      - 'src/Enum/**'
+      - 'src/**/*.php'
+      - 'translations/**'
+      - 'docs/route-map.md'
+      - 'docs/entity-reference.md'
+      - 'scripts/check-backend-docs.sh'
+      - 'scripts/extract-routes.php'
+      - 'scripts/extract-translation-keys.php'
+      - 'scripts/flatten-yaml-keys.php'
+      - '.github/workflows/backend-docs.yml'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/Controller/**'
+      - 'src/Entity/**'
+      - 'src/Enum/**'
+      - 'src/**/*.php'
+      - 'translations/**'
+      - 'docs/route-map.md'
+      - 'docs/entity-reference.md'
+      - 'scripts/check-backend-docs.sh'
+      - 'scripts/extract-routes.php'
+      - 'scripts/extract-translation-keys.php'
+      - 'scripts/flatten-yaml-keys.php'
+
+jobs:
+  backend-docs:
+    name: Backend docs (routes & entities)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      - name: Run backend docs check
+        run: bash scripts/check-backend-docs.sh

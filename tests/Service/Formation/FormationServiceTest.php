@@ -10,6 +10,7 @@ use App\Repository\Formation\FormationRepository;
 use App\Repository\Formation\FormationSlotRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Repository\League\LeagueFixtureRepository;
+use App\Exception\UserFacingException;
 use App\Service\Formation\FormationService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -32,8 +33,8 @@ class FormationServiceTest extends TestCase
             $this->createMock(EntityManagerInterface::class),
         );
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Maximum of 4 saved formations allowed.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.formation_max_saved');
 
         $service->assertCanCreateSavedFormation($team);
     }

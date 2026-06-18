@@ -28,6 +28,22 @@
     &--wide {
       max-width: 72rem;
     }
+
+    &--spacious {
+      padding: 1.25rem;
+
+      @media (min-width: 640px) {
+        padding: 2rem;
+      }
+    }
+
+    &--facility {
+      padding: 1.5rem;
+
+      @media (min-width: 640px) {
+        padding: 2rem;
+      }
+    }
   }
 
   // Responsive inner padding (tighter on small screens)
@@ -63,7 +79,7 @@
       transform        var(--transition-fast);
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.05);
+      background-color: var(--overlay-white-05);
       color: var(--color-success-text);
       transform: scale(1.05);
     }
@@ -72,5 +88,9 @@
       outline: 3px solid var(--focus-ring-color);
       outline-offset: 2px;
     }
+  }
+
+  .modal-close__icon {
+    @apply text-xl leading-none;
   }
 }

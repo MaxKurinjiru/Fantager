@@ -16,7 +16,7 @@
   .graveyard-summary__card {
     @apply p-4 rounded-xl border flex flex-col gap-1;
     border-color: var(--color-border);
-    background-color: rgba(11, 18, 32, 0.4);
+    background-color: var(--overlay-surface-base-40);
   }
 
   .graveyard-summary__label {
@@ -31,7 +31,7 @@
   .graveyard-filters {
     @apply p-4 rounded-xl border space-y-4;
     border-color: var(--color-border);
-    background-color: rgba(11, 18, 32, 0.4);
+    background-color: var(--overlay-surface-base-40);
   }
 
   .graveyard-filters__grid {
@@ -49,7 +49,7 @@
   .graveyard-detail {
     @apply p-5 rounded-xl border space-y-4;
     border-color: var(--color-brand-500);
-    background-color: rgba(22, 32, 48, 0.45);
+    background-color: var(--overlay-surface-raised-45);
   }
 
   .graveyard-detail__header {
@@ -95,11 +95,11 @@
 
   .graveyard-entry {
     @apply flex gap-4 p-4 rounded-xl border transition-colors;
-    background-color: rgba(22, 32, 48, 0.25);
+    background-color: var(--overlay-surface-raised-25);
     border-color: var(--color-border);
 
     &:hover {
-      background-color: rgba(26, 37, 53, 0.35);
+      background-color: var(--overlay-surface-overlay-35);
     }
   }
 
@@ -141,7 +141,7 @@
   .graveyard-empty {
     @apply text-center py-16 px-6 rounded-xl border;
     border-color: var(--color-border);
-    background-color: rgba(11, 18, 32, 0.35);
+    background-color: var(--overlay-surface-base-35);
   }
 
   .graveyard-empty__emoji {

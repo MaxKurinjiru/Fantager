@@ -1,9 +1,10 @@
 {# templates/components/item/equip_manager.html.twig #}
-<div class="game-panel space-y-6">
+<div class="game-panel">
     <div>
-        <h2 class="hero-panel__title mb-2">{{ 'inventory.equip_manager'|trans }}</h2>
-        <select data-equipment-target="heroSelect" data-action="change->equipment#loadHeroEquipment"
-                class="form-input font-medium">
+        <h2 class="hero-panel__title">{{ 'inventory.equip_manager'|trans }}</h2>
+        <label for="equip-hero-select" class="form-label">{{ 'inventory.select_hero_opt'|trans }}</label>
+        <select id="equip-hero-select" data-equipment-target="heroSelect" data-action="change->equipment#loadHeroEquipment"
+                class="form-input form-input--medium">
             <option value="">{{ 'inventory.select_hero_opt'|trans }}</option>
             {% for h in heroes %}
                 <option value="{{ h.id }}" {% if selected_hero_id == h.id %}selected{% endif %}>
@@ -15,10 +16,10 @@
 
     {# Paperdoll Grid #}
     {% if selected_hero %}
-        <div class="space-y-4">
-            <span class="section-label--xs text-center">{{ 'inventory.paperdoll'|trans }}</span>
+        <div class="layout-stack layout-stack--md">
+            <span class="section-label--xs section-label--xs--center">{{ 'inventory.paperdoll'|trans }}</span>
             
-            <div class="grid grid-cols-2 gap-4">
+            <div class="paperdoll-grid">
                 {% set slots = [
                     {key: 'head', emoji: '🪖'},
                     {key: 'amulet', emoji: '📿'},
@@ -36,13 +37,13 @@
                         <div class="paperdoll-slot paperdoll-slot--equipped">
                             {# Unequip Button #}
                             <button type="button" data-action="click->equipment#unequip" data-item-id="{{ item.id }}"
-                                    class="btn btn-danger btn--sm absolute right-1.5 top-1.5 w-5 h-5 p-0 flex items-center justify-center text-[8px]"
+                                    class="btn btn-danger btn--sm paperdoll-slot__unequip"
                                     aria-label="{{ 'inventory.unequip'|trans }}">
                                 ✕
                             </button>
 
                             <span class="paperdoll-slot__label">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
-                            <span class="text-2xl mb-1 select-none">
+                            <span class="paperdoll-slot__icon">
                                 {% if slot.key == 'main_hand' %}🗡️
                                 {% elseif slot.key == 'head' %}🪖
                                 {% elseif slot.key == 'body' %}🛡️
@@ -55,7 +56,7 @@
                     {% else %}
                         <div class="paperdoll-slot paperdoll-slot--empty">
                             <span class="paperdoll-slot__label">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
-                            <span class="text-2xl mb-1">{{ slot.emoji }}</span>
+                            <span class="paperdoll-slot__icon">{{ slot.emoji }}</span>
                             <span class="paperdoll-slot__empty-hint">{{ 'inventory.empty_slot'|trans }}</span>
                         </div>
                     {% endif %}
@@ -64,7 +65,7 @@
         </div>
     {% else %}
         <div class="empty-placeholder">
-            <span class="text-5xl block mb-2">🧑</span>
+            <span class="empty-placeholder__icon">🧑</span>
             <h4 class="spell-empty-state__title">{{ 'inventory.select_hero_manage'|trans }}</h4>
             <p class="spell-empty-state__desc">{{ 'inventory.select_hero_manage_desc'|trans }}</p>
         </div>

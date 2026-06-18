@@ -5,13 +5,8 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
-use App\Entity\Hero\Hero;
-use App\Entity\Item\Item;
-use App\Enum\HeroRole;
-use App\Enum\HeroStatus;
-use App\Enum\ItemStatus;
+use App\Service\Marketplace\MarketplaceService;
 use App\Service\Translation\UserMessageTranslator;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +17,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class MarketplaceController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
+        private readonly MarketplaceService $marketplaceService,
         private readonly UserMessageTranslator $userMessages,
     ) {
     }
@@ -50,21 +45,7 @@ class MarketplaceController extends AbstractController
             $category = 'hero';
         }
 
-        $heroes = $this->em->getRepository(Hero::class)->findBy([
-            'team' => $team,
-            'role' => HeroRole::Combatant,
-            'status' => HeroStatus::Available,
-        ]);
-        $items = $this->em->getRepository(Item::class)->findBy([
-            'ownerTeam' => $team,
-            'status' => ItemStatus::Available,
-            'equippedHero' => null,
-        ]);
-        $trainers = $this->em->getRepository(Hero::class)->findBy([
-            'team' => $team,
-            'role' => HeroRole::Trainer,
-            'status' => HeroStatus::Available,
-        ]);
+        $assets = $this->marketplaceService->getSellableAssets($team);
 
         $sellHeroId = $request->query->getInt('hero');
         if ($sellHeroId <= 0) {
@@ -75,9 +56,9 @@ class MarketplaceController extends AbstractController
             'team' => $team,
             'tab' => $tab,
             'category' => $category,
-            'heroes' => $heroes,
-            'items' => $items,
-            'trainers' => $trainers,
+            'heroes' => $assets['heroes'],
+            'items' => $assets['items'],
+            'trainers' => $assets['trainers'],
             'taxRate' => (float) $team->getKingdom()->getMarketplaceTaxRate(),
             'sell_hero_id' => $sellHeroId,
         ]);

@@ -12,6 +12,7 @@ export default class extends Controller {
         successSell: String,
         priceLabelBuyNow: String,
         priceLabelAuction: String,
+        textLoading: String,
     };
 
     connect() {
@@ -51,7 +52,7 @@ export default class extends Controller {
 
         submitBtn.disabled = true;
         const originalText = submitBtn.textContent;
-        submitBtn.textContent = '…';
+        submitBtn.textContent = this.textLoadingValue;
 
         const formData = new FormData(form);
         const payload = {

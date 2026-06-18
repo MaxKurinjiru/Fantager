@@ -127,15 +127,15 @@ class RegistrationService
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'register.email.invalid';
         } elseif (strlen($email) > 180) {
-            $errors['email'] = 'register.email.too_long';
+            $errors['email'] = 'register.email.max_length';
         } elseif ($this->userRepository->findOneBy(['email' => strtolower(trim($email))])) {
-            $errors['email'] = 'register.email.already_registered';
+            $errors['email'] = 'register.email.taken';
         }
 
         if (strlen($password) < 8) {
-            $errors['password'] = 'register.password.too_short';
+            $errors['password'] = 'register.password.min_length';
         } elseif (strlen($password) > 4096) {
-            $errors['password'] = 'register.password.too_long';
+            $errors['password'] = 'register.password.max_length';
         }
 
         $trimmedName = trim($displayName);

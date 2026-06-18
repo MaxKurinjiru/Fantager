@@ -7,6 +7,7 @@ namespace App\Tests\Service\Headquarters;
 use App\Entity\Headquarters\Headquarters;
 use App\Entity\Team\Team;
 use App\Entity\Kingdom\Kingdom;
+use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
@@ -57,8 +58,8 @@ class HeadquartersServiceTest extends TestCase
             ->with(['team' => $team])
             ->willReturn($hq);
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Arena adaptation is currently locked.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.hq_race_optimization_locked');
 
         $this->service->updateRaceOptimization($team, 'orc');
     }
@@ -214,8 +215,8 @@ class HeadquartersServiceTest extends TestCase
             ->with(['team' => $team])
             ->willReturn($hq);
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Another facility change is already in progress.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.hq_facility_change_in_progress');
 
         $this->service->upgradeFacility($team, \App\Enum\FacilityType::Library);
     }
@@ -371,7 +372,10 @@ class HeadquartersServiceTest extends TestCase
     public function testProcessFacilityUpgradesTickCompletesUpgrades(): void
     {
         $kingdom = new Kingdom();
+        $team = new Team();
+        $team->setName('Test Team');
         $hq = new Headquarters();
+        $hq->setTeam($team);
         $facility = new \App\Entity\Headquarters\Facility();
         $facility->setType(\App\Enum\FacilityType::Library);
         $facility->setLevel(2);

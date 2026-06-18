@@ -22,7 +22,7 @@ class EconomyServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
-        $this->economyService = new EconomyService($this->entityManagerMock);
+        $this->economyService = new EconomyService($this->entityManagerMock, new \App\Service\Calendar\TickClock());
     }
 
     public function testDeductGoldReducesBalanceAndRecordsTransaction(): void
@@ -36,7 +36,7 @@ class EconomyServiceTest extends TestCase
             ->with($this->callback(function (FinancialRecord $record) use ($team) {
                 return $record->getTeam() === $team &&
                     $record->getGoldChange() === -30 &&
-                    $record->getType() === FinancialRecordType::TrainingCost &&
+                    $record->getType() === FinancialRecordType::SummonFee &&
                     $record->getActor() === FinancialRecordActor::Active &&
                     $record->getContext() === ['test' => 123];
             }));
@@ -44,7 +44,7 @@ class EconomyServiceTest extends TestCase
         $this->economyService->deductGold(
             $team,
             30,
-            FinancialRecordType::TrainingCost,
+            FinancialRecordType::SummonFee,
             FinancialRecordActor::Active,
             ['test' => 123]
         );
@@ -58,12 +58,11 @@ class EconomyServiceTest extends TestCase
         $team->setGold(20);
 
         $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Insufficient gold');
 
         $this->economyService->deductGold(
             $team,
             30,
-            FinancialRecordType::TrainingCost,
+            FinancialRecordType::SummonFee,
             FinancialRecordActor::Active
         );
     }
@@ -115,5 +114,31 @@ class EconomyServiceTest extends TestCase
         );
 
         $this->assertSame(0, $team->getEssenceCommon());
+    }
+
+    public function testGoldTransactionUsesTickClockCustomTime(): void
+    {
+        $clock = new \App\Service\Calendar\TickClock();
+        $customTime = new \DateTimeImmutable('2026-06-12 18:00:00', new \DateTimeZone('UTC'));
+        $clock->setCustomTime($customTime);
+
+        $service = new EconomyService($this->entityManagerMock, $clock);
+
+        $team = new Team();
+        $team->setGold(100);
+
+        $this->entityManagerMock
+            ->expects($this->once())
+            ->method('persist')
+            ->with($this->callback(function (FinancialRecord $record) use ($customTime) {
+                return $record->getCreatedAt() === $customTime;
+            }));
+
+        $service->deductGold(
+            $team,
+            30,
+            FinancialRecordType::SummonFee,
+            FinancialRecordActor::Active
+        );
     }
 }

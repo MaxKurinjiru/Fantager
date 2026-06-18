@@ -34,6 +34,9 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $entityManagerMock;
     private $loggerMock;
     private $seasonTransitionServiceMock;
+    private $playerInactivityServiceMock;
+    private $fixtureFormationServiceMock;
+    private $marketplaceServiceMock;
     private ProcessKingdomTicksHandler $handler;
 
     protected function setUp(): void
@@ -71,6 +74,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->loggerMock,
             $this->seasonTransitionServiceMock,
             $this->createMock(\App\Service\TeamChronicle\TeamChronicleService::class),
+            new \App\Service\Calendar\TickClock(),
         );
     }
 

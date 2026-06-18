@@ -76,8 +76,9 @@
     
     {% set right_content %}
         {% if not is_match_prep %}
-            <select data-formation-target="formationSelect" data-action="change->formation#changeFormation"
-                    class="form-input font-semibold w-full sm:min-w-[200px]">
+            <label for="formation-select" class="sr-only">{{ 'formation.title'|trans }}</label>
+            <select id="formation-select" data-formation-target="formationSelect" data-action="change->formation#changeFormation"
+                    class="form-input form-input--emphasis form-input--formation-select">
                 <option value="">{{ 'formation.create_new'|trans }}</option>
                 {% for f in formations %}
                     <option value="{{ f.id }}" {% if selected_formation and selected_formation.id == f.id %}selected{% endif %}>

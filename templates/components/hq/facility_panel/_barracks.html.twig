@@ -1,8 +1,8 @@
 {# templates/components/hq/facility_panel/_barracks.html.twig #}
-<div class="hq-facility-panel space-y-6">
+<div class="hq-facility-panel">
     <div class="hq-facility-panel__header">
         <h2 class="hq-facility-panel__title">⛺ {{ 'hq.facilities_list.barracks.name'|trans }}</h2>
-        <p class="text-text-secondary text-sm">{{ 'hq.facilities_list.barracks.desc'|trans }}</p>
+        <p class="panel-lead">{{ 'hq.facilities_list.barracks.desc'|trans }}</p>
     </div>
 
     <div class="game-panel db-adapt" data-controller="hq"
@@ -15,10 +15,11 @@
             close_action: 'hq#closeAlert'
         } %}
 
-        <h3 class="font-bold text-white mb-4">{{ 'hq.race_opt_title'|trans }}</h3>
+        <h3 class="game-panel__title">{{ 'hq.race_opt_title'|trans }}</h3>
 
         <div class="db-adapt__row">
-            <select data-hq-target="raceSelect" class="form-input db-adapt__select"
+            <label for="hq-race-opt-select" class="sr-only">{{ 'hq.race_opt_title'|trans }}</label>
+            <select id="hq-race-opt-select" data-hq-target="raceSelect" class="form-input db-adapt__select"
                     {% if is_optimization_locked %}disabled{% endif %}>
                 <option value="">{{ 'hq.no_opt'|trans }}</option>
                 {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}

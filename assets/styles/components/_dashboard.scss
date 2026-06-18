@@ -8,15 +8,15 @@
   // ── Dashboard Banner ───────────────────────────────────────────────────────
   .db-banner {
     @apply relative rounded-xl p-6 md:p-8 shadow-xl overflow-hidden flex flex-col md:flex-row items-center md:items-start gap-6;
-    background-image: linear-gradient(to bottom right, rgba(6, 78, 59, 0.2), rgba(15, 23, 42, 0.4), rgba(3, 7, 18, 0.8));
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background-image: linear-gradient(to bottom right, color-mix(in srgb, var(--color-brand-800) 20%, transparent), color-mix(in srgb, var(--color-surface-page) 40%, transparent), color-mix(in srgb, var(--color-surface-base) 80%, transparent));
+    border: 1px solid var(--overlay-brand-20);
   }
 
   .db-banner__emblem {
     @apply w-24 h-24 rounded-2xl flex items-center justify-center text-5xl select-none shrink-0 shadow-inner;
-    background-color: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+    background-color: var(--overlay-brand-10);
+    border: 1px solid var(--overlay-brand-30);
+    box-shadow: 0 0 20px var(--overlay-brand-10);
   }
 
   .db-banner__content {
@@ -38,37 +38,41 @@
 
   .db-banner__badge {
     @apply flex items-center gap-2 border px-3 py-1.5 rounded-xl text-xs select-none shadow-sm;
+
+    &-label {
+      font-weight: 500;
+    }
     
     &--morale {
-      background-color: rgba(16, 185, 129, 0.1);
+      background-color: var(--overlay-brand-10);
       color: var(--color-brand-400);
-      border-color: rgba(16, 185, 129, 0.2);
+      border-color: var(--overlay-brand-20);
     }
     
     &--chemistry {
-      background-color: rgba(99, 102, 241, 0.1);
+      background-color: var(--overlay-indigo-10);
       color: var(--color-indigo-400);
-      border-color: rgba(99, 102, 241, 0.2);
+      border-color: var(--overlay-indigo-10);
     }
     
     &--reputation {
-      background-color: rgba(245, 158, 11, 0.1);
+      background-color: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
       color: var(--color-amber-400);
-      border-color: rgba(245, 158, 11, 0.2);
+      border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
     }
   }
 
   .db-banner__edit-btn {
     @apply absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-lg;
-    background-color: rgba(3, 7, 18, 0.6);
+    background-color: color-mix(in srgb, var(--color-surface-base) 60%, transparent);
     border: 1px solid var(--color-border);
     color: var(--color-text-secondary);
     cursor: pointer;
     transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 
     &:hover {
-      background-color: rgba(15, 23, 42, 0.8);
-      border-color: rgba(16, 185, 129, 0.3);
+      background-color: color-mix(in srgb, var(--color-surface-page) 80%, transparent);
+      border-color: var(--overlay-brand-30);
       color: var(--color-white);
     }
   }
@@ -76,7 +80,7 @@
   // ── Arena Adaptation (HQ Barracks panel) ───────────────────────────────────
   .db-adapt {
     @apply border-t pt-4 w-full;
-    border-color: rgba(55, 65, 81, 0.3);
+    border-color: var(--overlay-border-30);
   }
 
   .db-adapt__row {
@@ -107,14 +111,14 @@
     @apply rounded-lg px-3 py-1.5 text-[10px] flex items-center gap-1.5 border;
     
     &--pending {
-      background-color: rgba(66, 32, 6, 0.4);
-      border-color: rgba(146, 64, 14, 0.4);
+      background-color: var(--overlay-warning-bg-40);
+      border-color: var(--overlay-warning-border-40);
       color: var(--color-warning-text);
     }
     
     &--locked {
-      background-color: rgba(69, 10, 10, 0.4);
-      border-color: rgba(185, 28, 28, 0.4);
+      background-color: var(--overlay-error-bg-30);
+      border-color: var(--overlay-error-border-40);
       color: var(--color-error-text);
     }
   }
@@ -122,7 +126,7 @@
   // ── Next Match Widget ──────────────────────────────────────────────────────
   .next-match-card {
     @apply rounded-xl p-6 border relative overflow-hidden shadow-lg;
-    background-color: rgba(17, 24, 39, 0.6);
+    background-color: color-mix(in srgb, var(--color-surface-base) 60%, transparent);
     border-color: var(--color-border);
     backdrop-filter: blur(12px);
   }
@@ -150,9 +154,9 @@
     border: 1px solid var(--color-border);
     
     &--highlight {
-      border-color: rgba(16, 185, 129, 0.5);
-      background-color: rgba(16, 185, 129, 0.05);
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+      border-color: var(--focus-ring-color);
+      background-color: var(--overlay-brand-05);
+      box-shadow: 0 0 15px color-mix(in srgb, var(--color-brand-500) 15%, transparent);
     }
   }
 
@@ -172,14 +176,14 @@
     
     &--npc {
       color: var(--color-error-text);
-      background-color: rgba(69, 10, 10, 0.2);
-      border-color: rgba(185, 28, 28, 0.3);
+      background-color: var(--overlay-error-bg-20);
+      border-color: var(--overlay-error-border-30);
     }
     
     &--player {
       color: var(--color-brand-400);
-      background-color: rgba(16, 185, 129, 0.2);
-      border-color: rgba(16, 185, 129, 0.3);
+      background-color: var(--overlay-brand-20);
+      border-color: var(--overlay-brand-30);
     }
   }
 
@@ -196,20 +200,20 @@
 
   .next-match-meta {
     @apply border-t pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs;
-    border-color: rgba(55, 65, 81, 0.3);
+    border-color: var(--overlay-border-30);
     color: var(--color-text-secondary);
   }
 
   .next-match-meta__item {
     @apply flex items-center gap-2 border px-3 py-1.5 rounded-lg;
-    background-color: rgba(3, 7, 18, 0.5);
-    border-color: rgba(55, 65, 81, 0.5);
+    background-color: color-mix(in srgb, var(--color-surface-base) 50%, transparent);
+    border-color: var(--overlay-border-50);
   }
 
   .next-match-empty {
     @apply rounded-xl p-6 text-center border shadow-inner;
-    background-color: rgba(3, 7, 18, 0.6);
-    border-color: rgba(55, 65, 81, 0.5);
+    background-color: color-mix(in srgb, var(--color-surface-base) 60%, transparent);
+    border-color: var(--overlay-border-50);
   }
 
   .next-match-empty__title {
@@ -379,7 +383,7 @@
 
   .next-match-actions {
     @apply flex flex-wrap gap-2 mt-4 pt-4;
-    border-top: 1px solid rgba(16, 185, 129, 0.15);
+    border-top: 1px solid color-mix(in srgb, var(--color-brand-500) 15%, transparent);
   }
 
   .db-stats-card__row--link {
@@ -486,5 +490,74 @@
     background-color: var(--color-surface-base);
     border: 1px solid var(--color-border);
     color: var(--color-text-secondary);
+  }
+
+  .team-profile-emblem {
+    &__row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    &__preview {
+      width: 4rem;
+      height: 4rem;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.875rem;
+      user-select: none;
+      flex-shrink: 0;
+      background-color: var(--color-surface-base);
+      box-shadow: inset 0 2px 4px color-mix(in srgb, black 20%, transparent);
+    }
+
+    &__grid {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 0.25rem;
+      padding: 0.5rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      background-color: var(--color-surface-base);
+    }
+
+    &__grow {
+      flex: 1;
+    }
+  }
+
+  .team-profile-colors {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .color-input-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .color-input-swatch {
+    width: 2.5rem;
+    height: 2.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: transparent;
+    padding: 0.125rem;
+    cursor: pointer;
+  }
+
+  .form-field {
+    margin-bottom: 1rem;
+  }
+
+  .modal-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
   }
 }

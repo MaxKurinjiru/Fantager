@@ -5,13 +5,9 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
-use App\Entity\League\LeagueFixture;
-use App\Entity\League\LeagueGroup;
-use App\Entity\League\LeagueStanding;
 use App\Service\Formation\FixtureFormationService;
 use App\Service\League\LeagueService;
 use App\Service\Translation\UserMessageTranslator;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +20,6 @@ class LeagueController extends AbstractController
     public function __construct(
         private readonly LeagueService $leagueService,
         private readonly FixtureFormationService $fixtureFormationService,
-        private readonly EntityManagerInterface $em,
         private readonly UserMessageTranslator $userMessages,
     ) {
     }
@@ -66,50 +61,15 @@ class LeagueController extends AbstractController
             ]);
         }
 
-        // Fetch all groups in the active season, sorted by tier
-        $groups = $this->em->getRepository(LeagueGroup::class)->createQueryBuilder('g')
-            ->join('g.tier', 't')
-            ->where('t.season = :season')
-            ->setParameter('season', $season)
-            ->orderBy('t.id', 'ASC')
-            ->addOrderBy('g.groupName', 'ASC')
-            ->getQuery()
-            ->getResult();
+        $groups = $this->leagueService->getGroupsForSeason($season);
+        $userStanding = $this->leagueService->findStandingForTeam($season, $team);
 
-        // Find the user's team's standing in the current season
-        /** @var LeagueStanding|null $userStanding */
-        $userStanding = $this->em->getRepository(LeagueStanding::class)->createQueryBuilder('ls')
-            ->join('ls.group', 'g')
-            ->join('g.tier', 't')
-            ->where('t.season = :season')
-            ->andWhere('ls.team = :team')
-            ->setParameter('season', $season)
-            ->setParameter('team', $team)
-            ->getQuery()
-            ->getOneOrNullResult();
-
-        $userGroup = $userStanding ? $userStanding->getGroup() : null;
-
-        // Check if a specific group is selected via request
         $groupIdStr = $request->query->get('groupId');
-        $selectedGroup = null;
+        $groupId = null !== $groupIdStr && '' !== $groupIdStr && is_numeric($groupIdStr)
+            ? (int) $groupIdStr
+            : null;
 
-        if (null !== $groupIdStr && '' !== $groupIdStr && is_numeric($groupIdStr)) {
-            /** @var LeagueGroup|null $selectedGroup */
-            $selectedGroup = $this->em->getRepository(LeagueGroup::class)->find((int) $groupIdStr);
-            // Verify group belongs to the active season
-            if ($selectedGroup && $selectedGroup->getTier()->getSeason() !== $season) {
-                $selectedGroup = null;
-            }
-        }
-
-        if (null === $selectedGroup) {
-            $selectedGroup = $userGroup;
-        }
-
-        if (null === $selectedGroup && !empty($groups)) {
-            $selectedGroup = $groups[0];
-        }
+        $selectedGroup = $this->leagueService->resolveSelectedGroup($season, $userStanding, $groupId, $groups);
 
         $standings = [];
         $fixtures = [];
@@ -120,34 +80,19 @@ class LeagueController extends AbstractController
 
         if (null !== $selectedGroup) {
             $standings = $this->leagueService->getSortedStandings($selectedGroup);
-            $fixtures = $this->em->getRepository(LeagueFixture::class)->findBy(
-                ['group' => $selectedGroup],
-                ['scheduledAt' => 'ASC']
-            );
+            $fixtures = $this->leagueService->getFixturesForGroup($selectedGroup);
 
-            // Get team forms for this group's standings
             foreach ($standings as $standing) {
-                $t = $standing->getTeam();
-                $forms[$t->getId() ?? 0] = $this->leagueService->getTeamForm($t, $season);
+                $standingTeam = $standing->getTeam();
+                $forms[$standingTeam->getId() ?? 0] = $this->leagueService->getTeamForm($standingTeam, $season);
             }
 
-            // Get user's own fixtures for the active season
-            $myFixtures = $this->em->getRepository(LeagueFixture::class)->createQueryBuilder('lf')
-                ->join('lf.group', 'g')
-                ->join('g.tier', 't')
-                ->where('t.season = :season')
-                ->andWhere('(lf.homeTeam = :team OR lf.awayTeam = :team)')
-                ->setParameter('season', $season)
-                ->setParameter('team', $team)
-                ->orderBy('lf.scheduledAt', 'ASC')
-                ->getQuery()
-                ->getResult();
+            $myFixtures = $this->leagueService->getTeamFixturesForSeason($season, $team);
 
             foreach ($myFixtures as $fixture) {
                 $fixtureFormations[$fixture->getId() ?? 0] = $this->fixtureFormationService->getFormationSummary($fixture, $team);
             }
 
-            // Get global leaderboard
             $globalLeaderboard = $this->leagueService->getGlobalLeaderboard($season);
         }
 

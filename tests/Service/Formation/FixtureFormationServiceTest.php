@@ -246,7 +246,6 @@ class FixtureFormationServiceTest extends TestCase
     {
         $team = new Team();
         $reflection = new \ReflectionProperty(Team::class, 'id');
-        $reflection->setAccessible(true);
         $reflection->setValue($team, $id);
 
         return $team;
@@ -261,7 +260,6 @@ class FixtureFormationServiceTest extends TestCase
         $fixture->setStatus(LeagueFixtureStatus::Scheduled);
 
         $reflection = new \ReflectionProperty(LeagueFixture::class, 'id');
-        $reflection->setAccessible(true);
         $reflection->setValue($fixture, 100);
 
         return $fixture;
@@ -279,7 +277,6 @@ class FixtureFormationServiceTest extends TestCase
         $formation->setIsTemporary(false);
 
         $reflection = new \ReflectionProperty(Formation::class, 'id');
-        $reflection->setAccessible(true);
         $reflection->setValue($formation, $nextId++);
 
         $slot = new FormationSlot();

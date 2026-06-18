@@ -1,48 +1,45 @@
 {# templates/components/hero/header_card.html.twig #}
-<div class="hero-panel relative overflow-hidden">
-    {# Subtle glowing background orb #}
+<div class="hero-panel">
     <div class="panel-accent-glow panel-accent-glow--lg"></div>
-    
-    <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start relative z-10">
-        {# Race Avatar Box #}
-        {% include 'components/hero/avatar.html.twig' with { race: hero.race, style: 'box', size_class: 'w-16 h-16 sm:w-20 sm:h-20 text-3xl sm:text-4xl' } %}
 
-        {# Main Info #}
-        <div class="flex-1 w-full text-center md:text-left space-y-4">
-            <div class="flex flex-col sm:flex-row items-center gap-3 justify-center md:justify-start">
-                {# Rename Container #}
-                <div class="flex items-center gap-2 group">
-                    <h1 data-hero-rename-target="nameDisplay" class="text-3xl font-extrabold tracking-tight text-white">
+    <div class="hero-header__layout">
+        {% include 'components/hero/avatar.html.twig' with { race: hero.race, style: 'box', size_class: 'hero-avatar-box--header' } %}
+
+        <div class="hero-header__body">
+            <div class="hero-header__title-row">
+                <div class="hero-header__rename-group group">
+                    <h1 data-hero-rename-target="nameDisplay" class="hero-header__title">
                         {{ hero.name }}
                     </h1>
                     <label for="hero-rename-input" class="sr-only">{{ 'heroes.rename_title'|trans }}</label>
                     <input type="text" id="hero-rename-input" data-hero-rename-target="nameInput" data-action="keydown.enter->hero-rename#save keydown.esc->hero-rename#cancel"
-                           class="form-input hidden text-2xl font-semibold">
-                    
-                    <button type="button" data-hero-rename-target="editBtn" data-action="click->hero-rename#edit" 
-                            class="hero-header__rename-btn" 
+                           class="form-input form-input--rename hidden">
+
+                    <button type="button" data-hero-rename-target="editBtn" data-action="click->hero-rename#edit"
+                            class="hero-header__rename-btn"
                             title="{{ 'heroes.rename_title'|trans }}"
                             aria-label="{{ 'heroes.rename_title'|trans }}">
                         ✏️
                     </button>
-                    
-                    <div data-hero-rename-target="actions" class="hidden flex gap-1.5">
+
+                    <div data-hero-rename-target="actions" class="hero-header__rename-actions hidden">
                         <button type="button" data-action="click->hero-rename#save" class="btn btn-primary btn--sm">{{ 'heroes.save'|trans }}</button>
                         <button type="button" data-action="click->hero-rename#cancel" class="btn btn-outline btn--sm">{{ 'heroes.cancel'|trans }}</button>
                     </div>
                 </div>
 
-                {# Status Badge #}
                 {% include 'components/hero/status_badge.html.twig' with { status: hero.status, rounded_full: true } %}
             </div>
 
             <div class="hero-header__meta">
-                <span class="flex items-center gap-1.5">
-                    <span class="text-base">🧬</span> {{ 'heroes.race'|trans }}: <strong class="text-white capitalize">{{ ('heroes.race_' ~ hero.race.value)|trans }}</strong>
+                <span class="hero-header__meta-item">
+                    <span class="emoji-icon emoji-icon--sm">🧬</span>
+                    {{ 'heroes.race'|trans }}: <strong class="hero-header__meta-strong">{{ ('heroes.race_' ~ hero.race.value)|trans }}</strong>
                 </span>
                 <span class="hero-header__divider"></span>
-                <span class="flex items-center gap-1.5">
-                    <span class="text-base">{{ hero_age_phase_icon(hero) }}</span> {{ 'heroes.age'|trans }}: <strong class="text-white">{{ hero.age }} {{ 'heroes.years'|trans }}</strong>
+                <span class="hero-header__meta-item">
+                    <span class="emoji-icon emoji-icon--sm">{{ hero_age_phase_icon(hero) }}</span>
+                    {{ 'heroes.age'|trans }}: <strong class="hero-header__meta-strong">{{ hero.age }} {{ 'heroes.years'|trans }}</strong>
                     <span class="hero-header__phase-badge">
                         {{ ('heroes.age_phase.' ~ hero_age_phase(hero)|lower)|trans }}
                     </span>
@@ -53,16 +50,16 @@
                     {% endif %}
                 </span>
                 <span class="hero-header__divider"></span>
-                <span class="flex items-center gap-1.5">
-                    <span class="text-base">🔥</span> {{ 'heroes.level'|trans }}: <strong class="text-white">{{ hero.level }}</strong>
+                <span class="hero-header__meta-item">
+                    <span class="emoji-icon emoji-icon--sm">🔥</span>
+                    {{ 'heroes.level'|trans }}: <strong class="hero-header__meta-strong">{{ hero.level }}</strong>
                 </span>
             </div>
 
-            {# XP Bar #}
-            <div class="space-y-1.5 max-w-md mx-auto md:mx-0">
+            <div class="hero-header__xp-track">
                 <div class="hero-header__xp-labels">
                     <span>{{ 'heroes.xp'|trans }}</span>
-                    {% set next_level_xp = 1000 * hero.level %} {# Simple illustrative formula #}
+                    {% set next_level_xp = 1000 * hero.level %}
                     <span>{{ hero.xp }} / {{ next_level_xp }} XP</span>
                 </div>
                 {% set xp_pct = min(100, (hero.xp / next_level_xp) * 100) %}

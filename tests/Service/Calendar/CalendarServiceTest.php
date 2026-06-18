@@ -8,6 +8,9 @@ use App\Entity\Kingdom\Kingdom;
 use App\Enum\TickType;
 use App\Service\Calendar\CalendarService;
 use App\Service\Calendar\TickScheduleCalculator;
+use App\Service\Translation\UserMessageTranslator;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\Hero\HeroTrainingHistoryRepository;
 use App\Repository\League\LeagueFixtureRepository;
@@ -25,6 +28,7 @@ class CalendarServiceTest extends TestCase
     private $leagueFixtureRepositoryMock;
     private $seasonRepositoryMock;
     private $heroRepositoryMock;
+    private UserMessageTranslator $userMessages;
     private CalendarService $service;
 
     protected function setUp(): void
@@ -35,6 +39,18 @@ class CalendarServiceTest extends TestCase
         $this->leagueFixtureRepositoryMock = $this->createMock(LeagueFixtureRepository::class);
         $this->seasonRepositoryMock = $this->createMock(LeagueSeasonRepository::class);
         $this->heroRepositoryMock = $this->createMock(HeroRepository::class);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(
+            static fn (string $id): string => match ($id) {
+                'calendar.tick.fatigue_recovery_title' => 'Fatigue & Form Recovery',
+                'calendar.tick.fatigue_recovery_desc' => 'Fatigue recovery tick',
+                default => $id,
+            }
+        );
+        $this->userMessages = new UserMessageTranslator(
+            $translator,
+            $this->createMock(RequestStack::class),
+        );
 
         $this->service = new CalendarService(
             $this->scheduleCalculatorMock,
@@ -42,7 +58,8 @@ class CalendarServiceTest extends TestCase
             $this->heroTrainingHistoryRepositoryMock,
             $this->leagueFixtureRepositoryMock,
             $this->seasonRepositoryMock,
-            $this->heroRepositoryMock
+            $this->heroRepositoryMock,
+            $this->userMessages,
         );
     }
 

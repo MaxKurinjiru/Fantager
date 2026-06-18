@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { formatDateTime, formatNumber } from '../utils/locale.js';
 
 export default class extends Controller {
     static targets = ['tableBody', 'emptyMessage'];
@@ -28,7 +29,7 @@ export default class extends Controller {
     async loadRecent() {
         if (!this.hasTableBodyTarget) return;
 
-        this.tableBodyTarget.innerHTML = '<tr><td colspan="3" class="ledger-modal-loading">…</td></tr>';
+        this._renderLoadingRow();
 
         try {
             const response = await fetch('/api/v1/finance/recent');
@@ -37,13 +38,13 @@ export default class extends Controller {
             this.renderRecords(records);
         } catch {
             const errMsg = (this.hasTranslationsValue && this.translationsValue.error_fetch) || '';
-            this.tableBodyTarget.innerHTML = `<tr><td colspan="3" class="ledger-modal-error">${this.escapeHtml(errMsg)}</td></tr>`;
+            this._renderErrorRow(errMsg);
         }
     }
 
     renderRecords(records) {
         if (!records.length) {
-            this.tableBodyTarget.innerHTML = '';
+            this.tableBodyTarget.replaceChildren();
             if (this.hasEmptyMessageTarget) {
                 this.emptyMessageTarget.classList.remove('hidden');
             }
@@ -54,25 +55,55 @@ export default class extends Controller {
             this.emptyMessageTarget.classList.add('hidden');
         }
 
+        const rowTemplate = document.getElementById('template-ledger-row');
+        if (!rowTemplate) {
+            return;
+        }
+
         this.tableBodyTarget.replaceChildren();
         records.forEach(record => {
-            const row = document.createElement('tr');
-            row.className = 'finance-ledger-table__row';
-            const date = new Date(record.created_at);
-            const goldClass = record.gold_change > 0 ? 'finance-changes__item--positive' : 'finance-changes__item--negative';
+            const rowNode = rowTemplate.content.cloneNode(true);
+            const row = rowNode.querySelector('tr');
+            const goldClass = record.gold_change > 0
+                ? 'finance-changes__item--positive'
+                : 'finance-changes__item--negative';
             const goldPrefix = record.gold_change > 0 ? '+' : '';
-            row.innerHTML = `
-                <td class="ledger-modal-cell">${this.escapeHtml(this.typeLabel(record.type))}</td>
-                <td class="ledger-modal-cell"><span class="finance-changes__item ${goldClass}">${goldPrefix}${record.gold_change.toLocaleString('cs-CZ')} 🪙</span></td>
-                <td class="ledger-modal-cell--date">${date.toLocaleString()}</td>
-            `;
+            const date = new Date(record.created_at);
+
+            rowNode.querySelector('.js-type').textContent = this.typeLabel(record.type);
+
+            const goldSpan = rowNode.querySelector('.js-gold');
+            goldSpan.classList.add(goldClass);
+            goldSpan.textContent = `${goldPrefix}${formatNumber(record.gold_change)} 🪙`;
+
+            rowNode.querySelector('.js-date').textContent = formatDateTime(date);
+
             this.tableBodyTarget.appendChild(row);
         });
     }
 
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+    _renderLoadingRow() {
+        const template = document.getElementById('template-ledger-loading');
+        if (template) {
+            this.tableBodyTarget.replaceChildren(template.content.cloneNode(true));
+            return;
+        }
+
+        this.tableBodyTarget.replaceChildren();
+    }
+
+    _renderErrorRow(message) {
+        const template = document.getElementById('template-ledger-error');
+        if (!template) {
+            this.tableBodyTarget.replaceChildren();
+            return;
+        }
+
+        const node = template.content.cloneNode(true);
+        const textTarget = node.querySelector('.js-error-text');
+        if (textTarget) {
+            textTarget.textContent = message;
+        }
+        this.tableBodyTarget.replaceChildren(node);
     }
 }

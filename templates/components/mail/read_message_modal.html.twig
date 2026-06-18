@@ -4,7 +4,7 @@
          class="hidden modal-overlay modal-overlay--stacked"
          data-action="click->modal#closeBackdrop">
 
-        <div class="modal-box p-8"
+        <div class="modal-box modal-box--spacious"
              role="dialog"
              aria-modal="true"
              aria-labelledby="mail-read-message-title">
@@ -13,7 +13,7 @@
                     data-action="click->modal#close"
                     class="modal-close"
                     aria-label="{{ 'modal.close'|trans }}">
-                <span aria-hidden="true" class="text-xl leading-none">✕</span>
+                <span aria-hidden="true" class="modal-close__icon">✕</span>
                 <span class="sr-only">{{ 'modal.close'|trans }}</span>
             </button>
 

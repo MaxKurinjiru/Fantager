@@ -93,7 +93,6 @@ final class ForumThreadHelperTest extends TestCase
 
         $reflection = new \ReflectionClass($thread);
         $createdAt = $reflection->getProperty('createdAt');
-        $createdAt->setAccessible(true);
         $createdAt->setValue($thread, new \DateTimeImmutable($threadDate));
 
         foreach ($postDates as $index => $date) {
@@ -105,7 +104,6 @@ final class ForumThreadHelperTest extends TestCase
 
             $postReflection = new \ReflectionClass($post);
             $postCreatedAt = $postReflection->getProperty('createdAt');
-            $postCreatedAt->setAccessible(true);
             $postCreatedAt->setValue($post, new \DateTimeImmutable($date));
 
             $thread->getPosts()->add($post);

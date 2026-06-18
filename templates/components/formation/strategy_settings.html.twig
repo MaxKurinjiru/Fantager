@@ -13,15 +13,15 @@
                 <input type="text" id="formation-name" data-formation-target="nameInput"
                        value="{{ match_edit_source ? match_edit_source.name : (selected_formation ? selected_formation.name : 'formation.tactics_slot'|trans) }}"
                        placeholder="{{ 'formation.name_placeholder'|trans }}"
-                       class="form-input font-semibold">
+                       class="form-input form-input--emphasis">
             </div>
 
             <div class="form-check formation-strategy-panel__default">
                 <input type="checkbox" id="set-default" data-formation-target="defaultCheckbox"
-                       class="rounded form-control-accent"
+                       class="form-check__input"
                        {% if selected_formation and selected_formation.isDefault %}checked{% endif %}
                        {% if match_edit_source %}disabled{% endif %}>
-                <label for="set-default" class="cursor-pointer">{{ 'formation.set_default'|trans }}</label>
+                <label for="set-default">{{ 'formation.set_default'|trans }}</label>
             </div>
         </div>
 
@@ -40,9 +40,9 @@
                         or (not match_edit_source and not selected_formation and app.key == 'balanced') %}
                     <label class="tactic-option{% if approach_selected %} tactic-option--selected{% endif %}">
                         <input type="radio" data-formation-target="approachRadio" name="approach" value="{{ app.key }}"
-                               class="mt-1 form-control-accent"
+                               class="tactic-option__radio form-control-accent"
                                {% if approach_selected %}checked{% endif %}>
-                        <div class="space-y-0.5">
+                        <div class="tactic-option__body">
                             <span class="tactic-option__title">{{ app.label }}</span>
                             <p class="tactic-option__desc">{{ app.desc }}</p>
                         </div>
@@ -55,7 +55,7 @@
     <div class="formation-strategy__footer">
         <button type="button"
                 data-action="click->formation#save"
-                class="btn btn-primary px-6 py-2.5 font-bold uppercase tracking-wider text-xs shadow-md shadow-emerald-950/10">
+                class="btn btn-primary formation-strategy__save-btn">
             {{ match_edit_source ? 'formation.save_match_lineup'|trans : 'formation.save_lineup'|trans }}
         </button>
     </div>

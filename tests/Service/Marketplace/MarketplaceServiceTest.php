@@ -13,6 +13,7 @@ use App\Enum\ListingStatus;
 use App\Enum\ListingType;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
+use App\Exception\UserFacingException;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Notification\NotificationHelper;
 use App\Service\Team\TeamRosterService;
@@ -54,8 +55,8 @@ class MarketplaceServiceTest extends TestCase
     {
         $seller = new Team();
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Price or starting bid must be positive.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.marketplace_price_positive');
 
         $this->marketplaceService->createListing(
             $seller,
@@ -73,7 +74,8 @@ class MarketplaceServiceTest extends TestCase
     {
         $seller = new Team();
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.invalid_listing_mode');
 
         $this->marketplaceService->createListing(
             $seller,
@@ -100,9 +102,10 @@ class MarketplaceServiceTest extends TestCase
         $listing->setStatus(ListingStatus::Active);
 
         $listingRepo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
-        $listingRepo->method('find')->with(42)->willReturn($listing);
+        $listingRepo->expects($this->once())->method('find')->with(42)->willReturn($listing);
 
         $this->entityManagerMock
+            ->expects($this->once())
             ->method('getRepository')
             ->with(MarketplaceListing::class)
             ->willReturn($listingRepo);

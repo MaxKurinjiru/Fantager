@@ -15,6 +15,7 @@ use App\Repository\Hero\HeroRepository;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Service\Auth\PlayerInactivityService;
+use App\Service\Calendar\TickClock;
 use App\Service\Economy\ArenaRevenueService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
@@ -60,6 +61,7 @@ class ProcessKingdomTicksHandler
         private readonly LoggerInterface $logger,
         private readonly \App\Service\League\SeasonTransitionService $seasonTransitionService,
         private readonly TeamChronicleService $teamChronicleService,
+        private readonly TickClock $tickClock,
     ) {
     }
 
@@ -99,6 +101,7 @@ class ProcessKingdomTicksHandler
 
         foreach ($logs as $log) {
             /* @var KingdomTickLog $log */
+            $this->tickClock->setCustomTime($log->getScheduledAt());
             $this->em->beginTransaction();
             try {
                 $this->executeTick($kingdom, $log);
@@ -135,6 +138,8 @@ class ProcessKingdomTicksHandler
 
                 // Halt execution for this Kingdom entirely to maintain chronological order
                 break;
+            } finally {
+                $this->tickClock->setCustomTime(null);
             }
         }
     }

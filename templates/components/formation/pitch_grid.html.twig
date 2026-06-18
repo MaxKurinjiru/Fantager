@@ -3,7 +3,7 @@
     <div class="formation-pitch-board__midline" aria-hidden="true"></div>
 
     {# FRONT LINE ROW (3 Slots) — closer to opponent / top of pitch #}
-    <div class="space-y-2 relative z-10">
+    <div class="layout-stack layout-stack--sm formation-pitch-board__row">
         <span class="formation-pitch-board__line-label">{{ 'formation.front_line'|trans }}</span>
         <div class="formation-pitch">
             {% set front_slots = [
@@ -26,7 +26,7 @@
     </div>
 
     {# BACK LINE ROW (3 Slots) — defense / bottom of pitch #}
-    <div class="space-y-2 relative z-10">
+    <div class="layout-stack layout-stack--sm formation-pitch-board__row">
         <span class="formation-pitch-board__line-label">{{ 'formation.back_line'|trans }}</span>
         <div class="formation-pitch">
             {% set back_slots = [

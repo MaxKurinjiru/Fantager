@@ -12,12 +12,14 @@ use App\Entity\Team\TeamChronicle;
 use App\Enum\ChronicleEventType;
 use App\Enum\ChronicleReleaseReason;
 use App\Enum\Race;
+use App\Service\Calendar\TickClock;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TeamChronicleService
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly TickClock $tickClock,
     ) {
     }
 
@@ -129,6 +131,8 @@ class TeamChronicleService
         $entry->setSubjectKey($subjectKey);
         $entry->setSubjectParams($subjectParams);
         $entry->setData($data);
+        $entry->setCreatedAt($this->tickClock->getCurrentTime());
+        $entry->setProcessedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
 
         $this->em->persist($entry);
 

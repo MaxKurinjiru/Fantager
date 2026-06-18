@@ -10,6 +10,7 @@ All contributors — human and AI alike — must follow these rules to keep the 
 1. [Architecture Overview](#1-architecture-overview)
 2. [Design Tokens](#2-design-tokens)
 3. [Atomic Component Model](#3-atomic-component-model)
+   - [Layout Primitives (Twig-safe)](#31-layout-primitives-twig-safe)
 4. [Atoms](#4-atoms)
    - [Buttons](#41-buttons)
    - [Form Elements](#42-form-elements)
@@ -37,24 +38,31 @@ Styles are organised in three layers, loaded via [`app.scss`](../assets/styles/a
 ```
 assets/styles/
 ├── abstracts/
-│   └── _tokens.scss      ← design tokens (single source of truth)
+│   └── _tokens.scss          ← design tokens (single source of truth)
 ├── base/
-│   └── _base.scss        ← element-level resets & typographic defaults
+│   └── _base.scss            ← element-level resets & typographic defaults
 └── components/
-    ├── _buttons.scss
-    ├── _flash.scss
-    ├── _forms.scss
-    ├── _links.scss
-    └── _modal.scss
+    ├── _buttons.scss         ← atoms: .btn, .tab-btn, …
+    ├── _flash.scss           ← atoms: .alert
+    ├── _forms.scss           ← atoms: .form-input, .form-label, …
+    ├── _links.scss           ← atoms: bare <a>, .link
+    ├── _modal.scss           ← molecules: .modal-overlay, .modal-box
+    ├── _shared.scss          ← layout primitives, copy/status helpers, tables
+    ├── _navbar.scss          ← organism: navigation bars & dropdowns
+    ├── _sidebar.scss         ← organism: game sidebar & layout shell
+    ├── _page_header.scss     ← organism: page titles & actions
+    └── _<screen>.scss        ← screen-specific organisms (dashboard, hero, …)
 ```
 
 | Layer | Purpose | Do |
 |---|---|---|
 | `abstracts/` | Variables only — no output CSS | Define tokens here, nowhere else |
 | `base/` | Bare HTML element defaults | Use `@layer base` |
-| `components/` | Reusable class-based UI atoms | Use `@layer components` |
+| `components/` | Reusable class-based UI (atoms → organisms) | Use `@layer components` |
 
-> **Rule:** Never hard-code a colour, radius, or transition speed outside `_tokens.scss`. Always reference a CSS custom property (`var(--…)`).
+Shared JS utilities live under `assets/utils/` — notably [`locale.js`](../assets/utils/locale.js) for number/date formatting and [`alert.js`](../assets/utils/alert.js) for flash-style feedback in Stimulus controllers.
+
+> **Rule:** Never hard-code a colour, radius, or transition speed outside `_tokens.scss`. In component SCSS, reference semantic tokens via `var(--…)` or `color-mix(in srgb, var(--color-…) …%)` — not raw hex/rgba literals.
 
 ---
 
@@ -105,6 +113,22 @@ Each status has three tokens — always use all three together:
 | `--transition-base` | `160ms ease` | Appearing elements |
 | `--focus-ring` | `0 0 0 3px rgba(16,185,129,.5)` | Keyboard focus ring |
 
+### Overlay & Shadow Tokens (`:root`)
+
+Derived surface overlays use `color-mix` so components never hard-code rgba. Examples:
+
+| Token | Usage |
+|---|---|
+| `--overlay-backdrop-60` | Mobile menu backdrop |
+| `--overlay-surface-base-40` | Inset panel backgrounds |
+| `--overlay-surface-raised-20` | Subtle card/table wells |
+| `--overlay-brand-10` / `--overlay-brand-12` | Brand-tinted highlights |
+| `--overlay-success-bg-30` / `--overlay-error-bg-30` | Status-tinted backgrounds |
+| `--shadow-panel` | Standard elevated panel shadow |
+| `--shadow-brand-soft` | CTA / accent glow |
+
+Status text in Twig should use semantic copy classes (e.g. `.copy-status-error`, `.copy-status-success`) defined in [`_shared.scss`](../assets/styles/components/_shared.scss) — not Tailwind colour utilities like `text-red-400`.
+
 ### Adding New Tokens
 
 1. Add the value to `_tokens.scss` inside the appropriate block.
@@ -129,6 +153,73 @@ Organisms  → page sections built from molecules (nav, sidebar, …)
 - **Molecules** use atoms as building blocks — never duplicate atom styles.
 - **Organisms** are composed in Twig templates using the classes documented here.
 - **Never create a one-off style** for something that looks like an existing atom — extend it instead.
+
+### 3.1 Layout Primitives (Twig-safe)
+
+Use these **semantic classes in Twig** instead of Tailwind layout utilities (`flex`, `grid`, `gap-*`, `space-y-*`, etc.).  
+Source files: [`_layout.scss`](../assets/styles/components/_layout.scss), [`_shared.scss`](../assets/styles/components/_shared.scss).
+
+**Agent quick reference:** [ui-agent-cheatsheet.md](ui-agent-cheatsheet.md)
+
+#### Page & screen shells
+
+| Class | Purpose | SCSS |
+|---|---|---|
+| `.page-shell` | Standard page max-width wrapper | `_shared.scss` |
+| `.public-main` | Public/guest layout main area | `_shared.scss` |
+| `.screen-grid` / `__main` / `__aside` | Two-column main + sidebar | `_shared.scss` |
+| `.screen-3col` / `__main` / `__aside` | Three-column grid (main spans 2) | `_layout.scss` |
+| `.dashboard-grid-2` | Two equal columns (dashboard-style) | `_shared.scss` |
+
+#### Flex & stack layout
+
+| Class | Purpose | SCSS |
+|---|---|---|
+| `.layout-stack` (+ `--sm`, `--md`, `--lg`, `--form`) | Vertical section stack | `_layout.scss` |
+| `.layout-cluster` (+ `--between`, `--sm`, `--wrap`, …) | Horizontal icon/text rows | `_layout.scss` |
+| `.layout-toolbar` | Title + actions row | `_layout.scss` |
+| `.form-field-group` (+ `--tight`) | Label + input column | `_layout.scss` |
+| `.tab-content` / `.subtab-content` | Tab panel vertical spacing | `_shared.scss` / `_training.scss` |
+
+#### Grids & pickers
+
+| Class | Purpose | SCSS |
+|---|---|---|
+| `.scroll-grid` / `__span-full` | Scrollable entity picker grid | `_layout.scss` |
+| `.grid-span-full` | Full-width grid cell | `_layout.scss` |
+| `.stat-grid` | Arena/stat summary row | `_layout.scss` |
+| `.stat-tile-grid` | 2×2 stat tiles | `_shared.scss` |
+| `.marketplace-filter-grid` | Marketplace filter form | `_marketplace.scss` |
+| `.marketplace-browse-grid` | Marketplace listing cards | `_marketplace.scss` |
+| `.paperdoll-grid` / `.item-cards-grid` | Equipment / inventory grids | `_item.scss` |
+| `.training-trainer-grid` | Trainer card grid | `_training.scss` |
+| `.summoning-race-grid` | Compatible race cards | `_summoning.scss` |
+
+#### Tables & panels
+
+| Class | Purpose | SCSS |
+|---|---|---|
+| `.game-panel` / `__title` | Standard content panel | `_shared.scss` |
+| `.game-panel--scroll` | Panel with horizontal scroll | `_marketplace.scss` |
+| `.data-table-wrap` | Table overflow wrapper | `_shared.scss` |
+| `.data-table__col--center` / `--end` | Cell alignment | `_shared.scss` |
+| `.filter-bar` / `__controls` / `--spaced` | Filter toolbars | `_shared.scss` |
+
+#### Allowed Tailwind utilities in Twig (exceptions only)
+
+| Class | Reason |
+|---|---|
+| `hidden` | Stimulus visibility toggles |
+| `sr-only` | Screen-reader-only text |
+| `group` | Hover group states (rare) |
+
+#### Automated check
+
+```bash
+bash scripts/check-ui-compliance.sh
+```
+
+Runs in CI (`.github/workflows/ui-compliance.yml`) on Twig/SCSS changes.
 
 ---
 
@@ -411,7 +502,7 @@ block-variant    .btn-primary  .alert-success
 - Use **lowercase-with-dashes** for all class names.
 - Never use `id` attributes for styling — only for accessibility (`aria-*`, `for`/`id` pairing) and JS hooks.
 - Prefix JS-only hooks with `js-` (e.g., `js-toggle-nav`) so they are never accidentally styled.
-- Do not use Tailwind utility classes directly in Twig templates for component-level styling — always wrap in a semantic component class.
+- Do not use Tailwind utility classes directly in Twig templates for component-level styling — always wrap in a semantic component class (defined in `components/*.scss`). Layout shell classes (`.game-layout`, `.page-shell`, `.auth-panel`) are the preferred pattern.
 
 ---
 
@@ -431,7 +522,9 @@ block-variant    .btn-primary  .alert-success
 
 ### ❌ Don't
 
-- Hard-code hex colours in Twig templates or component SCSS.
+- Hard-code hex colours in Twig templates or component SCSS (use `var(--…)` or `color-mix` with token colours).
+- Hard-code locale strings like `'cs-CZ'` in JavaScript — use [`locale.js`](../assets/utils/locale.js) (`formatNumber`, `formatDateTime`, `formatBadgeCount`).
+- Embed user-facing strings in JavaScript — pass translations via `data-*-value` from Twig (`js_flash.*` keys in `translations/messages.*.yaml`).
 - Use inline `style="…"` attributes (except for truly dynamic values like chart colours).
 - Create a new class that duplicates an existing atom's styles.
 - Remove `:focus-visible` styles for "aesthetic" reasons.
@@ -500,6 +593,8 @@ export default class extends Controller {
   const csrfMeta = document.querySelector('meta[name="csrf-token"]');
   const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
   ```
+  Prefer the shared [`csrf.js`](../assets/utils/csrf.js) helper (`csrfHeaders()`).
+- **Locale formatting**: Use [`locale.js`](../assets/utils/locale.js) for numbers and dates — locale is read from `<html lang="…">`.
 - **UX States**:
   - Disable buttons during active requests and show feedback (e.g. `Saving...`, `Processing...`).
   - Re-enable and restore text in `finally` blocks or error handlers.
@@ -518,6 +613,6 @@ export default class extends Controller {
 ### 9.6 Strict Rules & Constraints
 
 - **No Hardcoded Tailwind**: Never add or remove lists of raw Tailwind color or padding classes (e.g. `bg-green-950/40 text-green-300`) in Javascript. Use semantic custom CSS properties and components.
-- **No Dynamic HTML Strings with Utilities**: Never construct HTML elements in JS using raw style/class names. If dynamic markup is needed, use `<template>` elements or read configuration options via `data-` values.
+- **No Dynamic HTML Strings with Utilities**: Never construct HTML elements in JS using raw style/class names. If dynamic markup is needed, use `<template>` elements in Twig (see ledger modal, marketplace cards) or read configuration options via `data-` values.
 - **No Logic Duplication**: If a method is identical across multiple controllers, extract it to a shared utility under `assets/utils/`.
 - **No Hardcoded User-Facing Text**: Never embed raw user-facing strings directly in Javascript code. Use translation mechanisms or pass localized strings via `data-` attributes/values from Twig templates.

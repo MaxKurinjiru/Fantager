@@ -25,7 +25,8 @@
              'type_trainer_dismissal_compensation': 'finance.type_trainer_dismissal_compensation'|trans,
              'type_hq_downgrade_refund': 'finance.type_hq_downgrade_refund'|trans,
              'type_kingdom_reward': 'finance.type_kingdom_reward'|trans,
-             'error_fetch': 'finance.error_fetch'|trans
+             'error_fetch': 'finance.error_fetch'|trans,
+             'text_loading': 'js_flash.common.text_loading'|trans
          }|json_encode|e('html_attr') }}"
          data-mail-empty-inbox-msg-value="{{ 'community.empty_inbox'|trans }}"
          data-mail-empty-sent-msg-value="{{ 'community.empty_sent'|trans }}"
@@ -45,8 +46,10 @@
              'col_sender': 'community.col_sender'|trans,
              'col_recipient': 'community.col_recipient'|trans,
              'select_recipient': 'community.select_recipient'|trans,
+             'select_placeholder': 'community.select_placeholder'|trans,
              'send_msg': 'community.send_msg'|trans,
-             'delete_msg': 'community.delete_msg'|trans
+             'delete_msg': 'community.delete_msg'|trans,
+             'badge_overflow': 'js_flash.common.badge_overflow'|trans
          }|json_encode|e('html_attr') }}"
          data-notifications-empty-msg-value="{{ 'notifications.empty'|trans }}"
          data-notifications-translations-value="{{ {
@@ -62,13 +65,14 @@
              'type_league_update': 'notifications.type_league_update'|trans,
              'type_event_started': 'notifications.type_event_started'|trans,
              'type_hero_died': 'notifications.type_hero_died'|trans,
-             'type_season_ended': 'notifications.type_season_ended'|trans
+             'type_season_ended': 'notifications.type_season_ended'|trans,
+             'badge_overflow': 'js_flash.common.badge_overflow'|trans
          }|json_encode|e('html_attr') }}"
-         class="min-h-screen flex flex-col">
+         class="game-layout">
         {# Sidebar + Main Layout #}
-        <div class="flex flex-1 relative min-h-0">
+        <div class="game-layout__row">
             {# Backdrop #}
-            <div data-mobile-menu-target="backdrop" data-action="click->mobile-menu#close" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden"></div>
+            <div data-mobile-menu-target="backdrop" data-action="click->mobile-menu#close" class="mobile-menu-backdrop hidden"></div>
 
             {% include 'components/layout/sidebar.html.twig' %}
 

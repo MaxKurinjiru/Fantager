@@ -1,0 +1,48 @@
+---
+description: Fantager Stimulus UI rules — translations, templates, no utility HTML in JS
+globs: assets/**/*.{js,ts}
+alwaysApply: false
+---
+
+# Stimulus UI (Fantager)
+
+Full spec: `docs/ui-guidelines.md` §9.
+
+## Translations
+
+- **Never** hardcode user-facing strings in JS
+- Pass copy via `data-*-value` from Twig (`js_flash.*` keys in `translations/messages.*.yaml`)
+- Format numbers/dates with `assets/utils/locale.js` — not `'cs-CZ'` literals
+
+## DOM & styling
+
+- Toggle **existing** classes from Twig (e.g. `hidden`, `alert-success`) — do not inject Tailwind utilities
+- Dynamic markup: clone `<template id="template-…">` nodes from Twig (marketplace, notifications, ledger)
+- Do not build HTML strings with `class="flex gap-2 …"` in controllers
+
+## Alerts
+
+Use `assets/utils/alert.js`. Target elements must already have `.alert` base class in Twig; JS toggles type modifier + `hidden`.
+
+## Structure
+
+```javascript
+static targets = ['…'];
+static values = { confirmMessage: String };
+
+connect() { /* bind */ }
+disconnect() { /* cleanup timers/listeners if added globally */ }
+```
+
+## a11y
+
+- After opening modals, manage focus
+- Icon buttons in injected content must keep `aria-label` from template
+
+## Optional verification (user-requested only)
+
+Do not run automatically. When the user asks:
+
+```bash
+bash scripts/check-ui-compliance.sh
+```

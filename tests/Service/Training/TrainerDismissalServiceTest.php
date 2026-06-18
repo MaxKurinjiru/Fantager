@@ -12,6 +12,7 @@ use App\Enum\Race;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
+use App\Exception\UserFacingException;
 use App\Service\Training\TrainerDismissalService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -60,8 +61,8 @@ class TrainerDismissalServiceTest extends TestCase
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setStatus(HeroStatus::Selling);
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Only active trainers can be dismissed.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.trainer_only_active_dismiss');
 
         $service->dismiss($team, $trainer);
     }

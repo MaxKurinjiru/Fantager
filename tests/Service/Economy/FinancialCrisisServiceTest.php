@@ -124,6 +124,7 @@ class FinancialCrisisServiceTest extends TestCase
         $team = $this->createPlayerTeam(gold: 0, debt: 1200, crisisWeeks: 6);
         $team->setName('Bankrupt FC');
         $user = new User();
+        $user->setEmail('player@example.com');
         $user->setTeam($team);
         $team->setUser($user);
 

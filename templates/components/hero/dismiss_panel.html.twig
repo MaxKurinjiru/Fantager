@@ -15,7 +15,7 @@
                 {% endif %}
             </p>
             {% if not can_leave %}
-                <p class="hero-panel__hint text-warning mt-2">
+                <p class="hero-panel__hint hero-panel__hint--warning">
                     {{ 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}
                 </p>
             {% endif %}

@@ -7,9 +7,9 @@
      data-controller="modal"
      data-{{ controller_name }}-target="newThreadModal"
      data-modal-event-name-value="modal:open-new-thread">
-    <div class="modal-box max-w-lg p-8" data-modal-target="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title-new-thread">
+    <div class="modal-box modal-box--spacious" data-modal-target="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title-new-thread">
         <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
-            <span aria-hidden="true" class="text-xl leading-none">✕</span>
+            <span aria-hidden="true" class="modal-close__icon">✕</span>
             <span class="sr-only">{{ 'modal.close'|trans }}</span>
         </button>
 

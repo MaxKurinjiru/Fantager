@@ -60,7 +60,7 @@
   .chronicle-filters {
     @apply p-4 rounded-xl border;
     border-color: var(--color-border);
-    background-color: rgba(11, 18, 32, 0.4);
+    background-color: var(--overlay-surface-base-40);
   }
 
   .chronicle-filters__grid {
@@ -77,11 +77,11 @@
 
   .chronicle-entry {
     @apply flex gap-4 p-4 rounded-xl border transition-colors;
-    background-color: rgba(22, 32, 48, 0.25);
+    background-color: var(--overlay-surface-raised-25);
     border-color: var(--color-border);
 
     &:hover {
-      background-color: rgba(26, 37, 53, 0.35);
+      background-color: var(--overlay-surface-overlay-35);
     }
   }
 
@@ -114,7 +114,7 @@
   .chronicle-empty {
     @apply text-center py-16 px-6 rounded-xl border;
     border-color: var(--color-border);
-    background-color: rgba(11, 18, 32, 0.35);
+    background-color: var(--overlay-surface-base-35);
   }
 
   .chronicle-empty__emoji {

@@ -1,6 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
 import { csrfHeaders } from '../utils/csrf.js';
+import { formatNumber } from '../utils/locale.js';
 
 export default class extends Controller {
     static targets = ['totalLevel', 'alert', 'alertMessage', 'raceSelect', 'saveAdaptationBtn'];
@@ -67,7 +68,7 @@ export default class extends Controller {
                 }
                 
                 if (costElem) {
-                    const formattedGold = result.upgrade_cost.toLocaleString('cs-CZ');
+                    const formattedGold = formatNumber(result.upgrade_cost);
                     costElem.textContent = this.goldFormatValue.replace('%gold%', formattedGold);
                     btn.dataset.cost = result.upgrade_cost;
                 }
@@ -93,7 +94,7 @@ export default class extends Controller {
                 let gold = parseInt(headerGold.textContent.replace(/\s/g, ''), 10);
                 const spent = parseInt(btn.dataset.costOriginal || btn.dataset.cost || '0', 10);
                 if (!isNaN(gold)) {
-                    headerGold.textContent = (gold - spent).toLocaleString('cs-CZ');
+                    headerGold.textContent = formatNumber(gold - spent);
                 }
             }
 
@@ -124,7 +125,7 @@ export default class extends Controller {
         const facilityType = btn.dataset.facility;
         const refund = btn.dataset.refund || '0';
 
-        if (!window.confirm(this.confirmDowngradeValue.replace('%refund%', Number(refund).toLocaleString('cs-CZ')))) {
+        if (!window.confirm(this.confirmDowngradeValue.replace('%refund%', formatNumber(refund)))) {
             return;
         }
 

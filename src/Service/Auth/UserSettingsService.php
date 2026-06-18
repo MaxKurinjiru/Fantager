@@ -30,4 +30,13 @@ class UserSettingsService
 
         return $settings;
     }
+
+    public function updateCloseModalOnBackdrop(User $user, bool $enabled): UserSettings
+    {
+        $settings = $this->getOrCreate($user);
+        $settings->setCloseModalOnBackdrop($enabled);
+        $this->entityManager->flush();
+
+        return $settings;
+    }
 }

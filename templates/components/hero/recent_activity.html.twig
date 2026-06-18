@@ -1,19 +1,19 @@
 {# templates/components/hero/recent_activity.html.twig #}
-<div class="hero-panel space-y-6">
+<div class="hero-panel">
     <div>
         <h2 class="hero-panel__title hero-panel__title--tight">{{ 'heroes.recent_activity'|trans }}</h2>
         <p class="hero-panel__desc">{{ 'heroes.recent_activity_desc'|trans }}</p>
     </div>
 
-    <div class="space-y-3 max-h-[175px] overflow-y-auto pr-1">
+    <div class="hero-activity-list">
         {% if summonRecord %}
             <div class="hero-activity-item">
                 <div>
                     <div class="hero-activity-item__title">🌀 {{ 'heroes.summoned'|trans }}</div>
                     <div class="hero-activity-item__time">{{ summonRecord.summonedAt|date('Y-m-d H:i') }}</div>
                 </div>
-                <div class="text-right shrink-0">
-                    <span class="text-[10px] font-bold text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/30">
+                <div class="hero-activity-item__aside">
+                    <span class="status-chip status-chip--indigo">
                         {{ ('heroes.race_' ~ summonRecord.raceSelected.value)|trans }}
                     </span>
                 </div>
@@ -33,8 +33,8 @@
                     </div>
                     <div class="hero-activity-item__time">{{ log.completedAt|date('Y-m-d H:i') }}</div>
                 </div>
-                <div class="text-right shrink-0">
-                    <span class="text-[10px] font-bold text-green-400 bg-green-950/40 px-2 py-0.5 rounded border border-green-900/30">
+                <div class="hero-activity-item__aside">
+                    <span class="status-chip status-chip--success">
                         {% if log.statGain is not null and log.statGain > 0 %}
                             +{{ (log.statGain / 10)|number_format(1) }}
                         {% else %}
@@ -45,7 +45,7 @@
             </div>
         {% else %}
             <div class="hero-activity-empty">
-                <span class="text-2xl block mb-1">💤</span>
+                <span class="hero-activity-empty__icon">💤</span>
                 <span class="hero-panel__desc">{{ 'heroes.no_activity'|trans }}</span>
             </div>
         {% endfor %}

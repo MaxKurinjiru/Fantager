@@ -6,6 +6,7 @@ namespace App\Tests\Service\Spell;
 
 use App\Entity\Hero\Hero;
 use App\Entity\Spell\Spell;
+use App\Exception\UserFacingException;
 use App\Entity\Team\Team;
 use App\Enum\School;
 use App\Repository\Hero\HeroSpellRepository;
@@ -57,8 +58,8 @@ class SpellServiceTest extends TestCase
             ->method('findOneBy')
             ->willReturn(new \App\Entity\Hero\HeroSpell());
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Hero already knows this spell.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.spell_already_known');
 
         $this->spellService->learn($hero, $spell, $team);
     }
@@ -68,8 +69,8 @@ class SpellServiceTest extends TestCase
         $heroSpell = new \App\Entity\Hero\HeroSpell();
         $heroSpell->setIsEquipped(false);
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Spell is not equipped.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.spell_not_equipped');
 
         $this->spellService->unequip($heroSpell);
     }

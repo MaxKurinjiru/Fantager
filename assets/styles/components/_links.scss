@@ -24,4 +24,10 @@
     a:not([class]):focus-visible {
         color: var(--color-brand-500);
     }
+
+    a.link--block {
+        display: inline-block;
+        margin-top: 1rem;
+        font-size: 0.875rem;
+    }
 }

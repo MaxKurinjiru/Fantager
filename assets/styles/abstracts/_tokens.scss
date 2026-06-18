@@ -97,4 +97,55 @@
   // Transition speeds
   --transition-fast:   120ms ease;
   --transition-base:   160ms ease;
+
+  // Derived surface overlays (use color-mix — no hard-coded hex in components)
+  --overlay-backdrop-60:       color-mix(in srgb, black 60%, transparent);
+  --overlay-surface-base-40:   color-mix(in srgb, var(--color-surface-base) 40%, transparent);
+  --overlay-surface-base-60:   color-mix(in srgb, var(--color-surface-base) 60%, transparent);
+  --overlay-surface-raised-20: color-mix(in srgb, var(--color-surface-raised) 20%, transparent);
+  --overlay-surface-raised-35: color-mix(in srgb, var(--color-surface-raised) 35%, transparent);
+  --overlay-surface-overlay-30: color-mix(in srgb, var(--color-surface-overlay) 30%, transparent);
+  --overlay-surface-overlay-35: color-mix(in srgb, var(--color-surface-overlay) 35%, transparent);
+  --overlay-brand-10:          color-mix(in srgb, var(--color-brand-500) 10%, transparent);
+  --overlay-brand-12:          color-mix(in srgb, var(--color-brand-500) 12%, transparent);
+  --overlay-brand-20:          color-mix(in srgb, var(--color-brand-500) 20%, transparent);
+  --overlay-brand-35:          color-mix(in srgb, var(--color-brand-500) 35%, transparent);
+  --overlay-success-bg-30:     color-mix(in srgb, var(--color-success-bg) 30%, transparent);
+  --overlay-success-border-40: color-mix(in srgb, var(--color-success-border) 40%, transparent);
+  --overlay-error-bg-30:       color-mix(in srgb, var(--color-error-bg) 30%, transparent);
+  --overlay-error-border-40:   color-mix(in srgb, var(--color-error-border) 40%, transparent);
+  --overlay-warning-bg-40:     color-mix(in srgb, var(--color-warning-bg) 40%, transparent);
+  --overlay-warning-border-40: color-mix(in srgb, var(--color-warning-border) 40%, transparent);
+  --overlay-border-30:         color-mix(in srgb, var(--color-border) 30%, transparent);
+  --overlay-border-40:         color-mix(in srgb, var(--color-border) 40%, transparent);
+  --overlay-border-50:         color-mix(in srgb, var(--color-border) 50%, transparent);
+  --overlay-white-03:          color-mix(in srgb, white 3%, transparent);
+  --overlay-white-04:          color-mix(in srgb, white 4%, transparent);
+  --overlay-white-05:          color-mix(in srgb, white 5%, transparent);
+  --overlay-white-06:          color-mix(in srgb, white 6%, transparent);
+  --overlay-brand-05:          color-mix(in srgb, var(--color-brand-500) 5%, transparent);
+  --overlay-brand-30:          color-mix(in srgb, var(--color-brand-500) 30%, transparent);
+  --overlay-brand-50:          color-mix(in srgb, var(--color-brand-500) 50%, transparent);
+  --overlay-indigo-10:         color-mix(in srgb, var(--color-indigo-400) 10%, transparent);
+  --overlay-indigo-bg-40:      color-mix(in srgb, var(--color-info-bg) 40%, transparent);
+  --overlay-indigo-border-30:  color-mix(in srgb, var(--color-info-border) 30%, transparent);
+  --overlay-success-bg-40:     color-mix(in srgb, var(--color-success-bg) 40%, transparent);
+  --overlay-success-border-30: color-mix(in srgb, var(--color-success-border) 30%, transparent);
+  --overlay-purple-bg-40:      color-mix(in srgb, var(--color-purple-400) 12%, var(--color-surface-base));
+  --overlay-purple-border-40:  color-mix(in srgb, var(--color-purple-400) 40%, transparent);
+  --overlay-error-bg-20:       color-mix(in srgb, var(--color-error-bg) 20%, transparent);
+  --overlay-error-border-10:   color-mix(in srgb, var(--color-error-border) 10%, transparent);
+  --overlay-error-border-30:   color-mix(in srgb, var(--color-error-border) 30%, transparent);
+  --overlay-warning-border-40: color-mix(in srgb, var(--color-warning-border) 40%, transparent);
+  --overlay-surface-base-35:   color-mix(in srgb, var(--color-surface-base) 35%, transparent);
+  --overlay-surface-base-45:   color-mix(in srgb, var(--color-surface-base) 45%, transparent);
+  --overlay-surface-raised-25: color-mix(in srgb, var(--color-surface-raised) 25%, transparent);
+  --overlay-surface-raised-45: color-mix(in srgb, var(--color-surface-raised) 45%, transparent);
+  --overlay-surface-raised-60: color-mix(in srgb, var(--color-surface-raised) 60%, transparent);
+  --shadow-panel:              0 10px 15px -3px color-mix(in srgb, black 35%, transparent);
+  --shadow-panel-sm:           0 4px 6px -1px color-mix(in srgb, black 25%, transparent);
+  --shadow-dropdown:           0 25px 50px -12px color-mix(in srgb, black 25%, transparent);
+  --shadow-brand-glow:         0 0 20px var(--overlay-brand-10);
+  --shadow-brand-soft:         0 0 15px color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+  --shadow-brand-cta:          0 10px 15px -3px color-mix(in srgb, var(--color-brand-900) 20%, transparent);
 }

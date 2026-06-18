@@ -29,7 +29,7 @@
   .news-article {
     @apply p-6 rounded-xl border;
     border-color: var(--color-border);
-    background-color: rgba(11, 18, 32, 0.45);
+    background-color: var(--overlay-surface-base-45);
   }
 
   .news-article__header {
@@ -58,7 +58,7 @@
   .news-empty {
     @apply text-center py-12 rounded-xl border;
     border-color: var(--color-border);
-    background-color: rgba(11, 18, 32, 0.35);
+    background-color: var(--overlay-surface-base-35);
   }
 
   .news-empty__text {
@@ -90,7 +90,7 @@
   .homepage-news__item {
     @apply p-5 rounded-xl border;
     border-color: var(--color-border);
-    background-color: rgba(11, 18, 32, 0.35);
+    background-color: var(--overlay-surface-base-35);
   }
 
   .homepage-news__item-title {

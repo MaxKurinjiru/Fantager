@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Repository\Kingdom\KingdomRepository;
+use App\Service\Calendar\TickClock;
 use App\Service\Economy\ArenaRevenueService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -22,6 +23,7 @@ class DistributeArenaRevenueCommand extends Command
     public function __construct(
         private readonly ArenaRevenueService $arenaRevenueService,
         private readonly KingdomRepository $kingdomRepository,
+        private readonly TickClock $tickClock,
     ) {
         parent::__construct();
     }
@@ -54,9 +56,14 @@ class DistributeArenaRevenueCommand extends Command
             : $this->kingdomRepository->findAll();
 
         $allReports = [];
-        foreach ($kingdoms as $kingdom) {
-            $reports = $this->arenaRevenueService->processLeagueMatchTick($kingdom, $scheduledAt);
-            $allReports = array_merge($allReports, $reports);
+        $this->tickClock->setCustomTime($scheduledAt);
+        try {
+            foreach ($kingdoms as $kingdom) {
+                $reports = $this->arenaRevenueService->processLeagueMatchTick($kingdom, $scheduledAt);
+                $allReports = array_merge($allReports, $reports);
+            }
+        } finally {
+            $this->tickClock->setCustomTime(null);
         }
 
         if ([] === $allReports) {

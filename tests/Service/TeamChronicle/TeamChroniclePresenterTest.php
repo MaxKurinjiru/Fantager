@@ -22,15 +22,15 @@ class TeamChroniclePresenterTest extends TestCase
         $repository = $this->createMock(TeamChronicleRepository::class);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(
-            static fn (string $id, array $params = []): string => match ($id) {
+            static fn (string $id, array $params = [], ?string $domain = null, ?string $locale = null): string => match ($id) {
                 'activity.type.season_ended' => 'Season ended',
                 'activity.season_status.promoted' => 'promoted',
                 'activity.season_ended' => sprintf(
                     'Season %s ended in tier %s (position %s, %s).',
-                    $params['season'] ?? '',
-                    $params['tier'] ?? '',
-                    $params['position'] ?? '',
-                    $params['status'] ?? '',
+                    $params['%season%'] ?? $params['season'] ?? '',
+                    $params['%tier%'] ?? $params['tier'] ?? '',
+                    $params['%position%'] ?? $params['position'] ?? '',
+                    $params['%status%'] ?? $params['status'] ?? '',
                 ),
                 default => $id,
             }
@@ -55,6 +55,7 @@ class TeamChroniclePresenterTest extends TestCase
         $this->assertSame('🏆', $entry['icon']);
         $this->assertSame('competition', $entry['category']);
         $this->assertStringContainsString('promoted', $entry['message']);
+        $this->assertSame('Season 1 ended in tier T1 (position 2, promoted).', $entry['message']);
     }
 
     public function testPresentEntryTranslatesTeamEstablishedParams(): void
@@ -62,7 +63,7 @@ class TeamChroniclePresenterTest extends TestCase
         $repository = $this->createMock(TeamChronicleRepository::class);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(
-            static fn (string $id, array $params = []): string => match ($id) {
+            static fn (string $id, array $params = [], ?string $domain = null, ?string $locale = null): string => match ($id) {
                 'activity.type.team_established' => 'Team established',
                 'activity.team_established' => sprintf(
                     'Team established in kingdom %s (season %s).',

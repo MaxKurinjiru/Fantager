@@ -2,6 +2,8 @@
 
 nav:
   home: Home
+  locale_cs: Czech
+  locale_en: English
   login: Login
   register: Register
   logout: Logout
@@ -98,7 +100,11 @@ flash:
   password_updated: Password updated! You can now log in.
   password_reset_failed: Could not reset password.
   email_confirm_old_sent: Current email confirmed. A final verification link has been sent to your new email address.
+  email_change_link_sent: Confirmation link sent to your current email address.
   email_updated: Your email address has been successfully updated!
+  account_deletion_link_sent: A deletion confirmation link has been sent to your email.
+  preferences_saved: Preferences saved.
+  formation_deleted: Formation deleted successfully.
   account_deleted: Your account has been permanently deleted.
 
 error:
@@ -434,6 +440,8 @@ economy:
 settings:
   title: Account Settings
   language: Game Language
+  locale_cs: "Čeština (CS)"
+  locale_en: "English (EN)"
   interface: Interface
   modal_backdrop_close: Close modals on backdrop click
   email:
@@ -933,6 +941,12 @@ formation:
   save_match_lineup: Save lineup for fixture
 
 js_flash:
+  common:
+    badge_overflow: 99+
+    text_loading: …
+    text_processing: …
+    processed_at_title: 'Processed: %date% UTC'
+    hero_level_short: 'Lvl %level%'
   training:
     success_queue: Training job successfully queued.
     success_cancel: Training job successfully cancelled.
@@ -1094,6 +1108,8 @@ league:
 calendar:
   title: Calendar & Events
   subtitle: Kingdom schedule — league matches, training ticks, and team-specific events.
+  prev_week: Previous week
+  next_week: Next week
   loading: Loading calendar...
   empty: No events in this period.
   error: Failed to load calendar feed.
@@ -1231,6 +1247,7 @@ marketplace:
   empty_my_listings: "You have no active or past listings."
   empty_history: "No transaction history."
   label_min_bid: "Starting bid / Min bid"
+  bid_amount: Bid amount
   label_buyout_price: "Buyout Price"
   label_no_bonuses: "No bonuses"
   label_highest_bid_val: "🪙 %amount% (%bidder%)"
@@ -1351,6 +1368,7 @@ community:
   compose_title: "Write Message"
   recipient_label: "Recipient (teams in your kingdom)"
   select_recipient: "Select Recipient"
+  select_placeholder: '-- %label% --'
   send_msg: "Send Message"
   delete_msg: "Delete Message"
   close: "Close"

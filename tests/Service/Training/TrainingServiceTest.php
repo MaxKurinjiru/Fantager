@@ -18,6 +18,7 @@ use App\Enum\TrainingType;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
+use App\Exception\UserFacingException;
 use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -127,8 +128,8 @@ class TrainingServiceTest extends TestCase
 
         $now = new \DateTimeImmutable('2026-06-04 10:00:00');
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Training configuration is currently locked.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.trainer_config_locked');
 
         $this->trainingService->configureTrainer($trainer, TrainingType::Attribute, 'str', $team, $now);
     }
@@ -195,8 +196,8 @@ class TrainingServiceTest extends TestCase
 
         $now = new \DateTimeImmutable('2026-06-01 10:00:00');
 
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Trainer does not have any available slots.');
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.trainer_no_slots');
 
         $this->trainingService->assignHero($trainer, $newHero, $team, $now);
     }

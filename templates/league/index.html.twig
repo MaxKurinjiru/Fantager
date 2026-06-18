@@ -347,7 +347,7 @@
                                     {% set is_own_team = standing.team.id == team.id %}
                                     <tr class="standings-row{% if is_own_team %} standings-row--own{% endif %}">
                                         <td class="standings-row__stat-muted">{{ loop.index }}</td>
-                                        <td class="py-3 px-4">
+                                        <td class="standings-row__team-cell">
                                             <div class="standings-row__team-inner">
                                                 {% if standing.team.emblem %}
                                                     <span class="standings-row__emblem">{{ standing.team.emblem }}</span>

@@ -2,6 +2,8 @@
 
 Single source of truth for documentation gaps, design questions, and known inconsistencies.
 
+**AI agents:** Do not invent mechanics for open items below (especially combat formulas #1 and enchanting #2). Read [roadmap.md](roadmap.md) and [screen-code-map.md](screen-code-map.md) before implementing related screens.
+
 **Legend:** `Blocks` = what implementation phase is waiting on this item.
 
 | ID | Area | Issue | Severity | Blocks | Status |
