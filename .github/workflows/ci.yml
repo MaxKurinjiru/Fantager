@@ -6,27 +6,37 @@ on:
   pull_request:
     branches: [main, develop]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-          extensions: mbstring, intl, pdo_mysql
-          coverage: none
+      - name: Start Docker environment
+        run: docker compose up -d --build
+
+      - name: Wait for database connection
+        run: |
+          docker exec fantager-web sh -c "until nc -z db 3306; do echo 'waiting for database...'; sleep 1; done"
 
       - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: docker exec fantager-web composer install --no-interaction --prefer-dist
+
+      - name: Install npm dependencies
+        run: docker exec fantager-web npm ci
+
+      - name: Build frontend assets
+        run: docker exec fantager-web npm run build
 
       - name: PHP-CS-Fixer
-        run: composer php-cs
+        run: docker exec fantager-web composer php-cs
 
       - name: PHPStan
-        run: composer phpstan
+        run: docker exec fantager-web composer phpstan
 
       - name: PHPUnit
-        run: composer test
+        run: docker exec fantager-web composer test
+
