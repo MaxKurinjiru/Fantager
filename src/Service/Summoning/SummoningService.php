@@ -22,7 +22,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class SummoningService
 {
     private const BASE_GOLD_COST = 500;
-    private const MAX_SUMMONS_PER_CYCLE = 3;
+    private const MAX_SUMMONS_PER_CYCLE = 1;
 
     public function __construct(
         private readonly HeroGenerator $heroGenerator,

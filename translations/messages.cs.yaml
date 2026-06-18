@@ -303,6 +303,8 @@ dashboard:
   prepare_formation: Připravit formaci
   view_in_league: Zobrazit v lize
   home_arena: Domácí aréna
+  league_this_week: Liga tento týden
+  no_week_match: Tento týden žádný zápas
 
 chronicle:
   title: Kronika týmu
@@ -624,7 +626,7 @@ finance:
   summary_net_period: Bilance (posledních %days% dní)
   summary_transactions_period: Transakcí (posledních %days% dní)
   summary_net_all_time: Celková bilance
-  summary_top_expenses: Největší výdaje (posledních %days% dní)
+  summary_recent_expenses: Poslední výdaje
   filter_type: Filtrovat podle typu
   all_types: Všechny typy
   filter_actor: Filtrovat podle iniciátora

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Economy;
 
+use App\Entity\Team\FinancialRecord;
 use App\Entity\Team\Team;
 use App\Repository\Team\FinancialRecordRepository;
 
@@ -23,7 +24,7 @@ class FinanceSummaryService
      *     period_days: int,
      *     period: array{income: int, expense: int, net: int, transaction_count: int},
      *     all_time: array{income: int, expense: int, net: int, transaction_count: int},
-     *     top_expenses: list<array{type: string, amount: int}>
+     *     recent_expenses: list<array{type: string, amount: int, created_at: \DateTimeImmutable}>
      * }
      */
     public function buildOverview(Team $team): array
@@ -38,7 +39,14 @@ class FinanceSummaryService
             'period_days' => self::PERIOD_DAYS,
             'period' => $this->recordRepository->getGoldSummarySince($team, $since),
             'all_time' => $this->recordRepository->getGoldSummarySince($team),
-            'top_expenses' => $this->recordRepository->getTopExpenseTypesSince($team, $since),
+            'recent_expenses' => array_map(
+                static fn (FinancialRecord $record): array => [
+                    'type' => $record->getType()->value,
+                    'amount' => abs($record->getGoldChange()),
+                    'created_at' => $record->getCreatedAt(),
+                ],
+                $this->recordRepository->findRecentExpensesByTeam($team),
+            ),
         ];
     }
 }

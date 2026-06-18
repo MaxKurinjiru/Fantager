@@ -145,7 +145,7 @@
     font-size: 1.125rem;
     font-weight: 700;
     color: var(--color-text-primary);
-    margin-bottom: 1rem;
+    margin: 0 0 1rem;
   }
 
   .finance-summary__grid {
@@ -199,55 +199,6 @@
   .finance-summary__value--success { color: var(--color-success-text); }
   .finance-summary__value--danger { color: var(--color-error-text); }
   .finance-summary__value--muted { color: var(--color-text-secondary); }
-
-  .finance-summary__breakdown {
-    padding: 1.25rem;
-  }
-
-  .finance-summary__breakdown-title {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--color-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.75rem;
-  }
-
-  .finance-summary__breakdown-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .finance-summary__breakdown-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(55, 65, 81, 0.35);
-
-    &:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-  }
-
-  .finance-summary__breakdown-label {
-    font-size: 0.875rem;
-    color: var(--color-text-primary);
-  }
-
-  .finance-summary__breakdown-amount {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--color-error-text);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
 
   .ledger-modal-cell {
     font-size: 0.875rem;

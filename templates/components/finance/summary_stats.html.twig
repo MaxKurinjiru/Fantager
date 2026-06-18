@@ -55,18 +55,4 @@
             </span>
         </article>
     </div>
-
-    {% if summary.top_expenses is not empty %}
-        <div class="finance-summary__breakdown game-panel">
-            <h3 class="finance-summary__breakdown-title">{{ 'finance.summary_top_expenses'|trans({'%days%': summary.period_days}) }}</h3>
-            <ul class="finance-summary__breakdown-list">
-                {% for item in summary.top_expenses %}
-                    <li class="finance-summary__breakdown-item">
-                        <span class="finance-summary__breakdown-label">{{ ('finance.type_' ~ item.type)|trans }}</span>
-                        <span class="finance-summary__breakdown-amount">−{{ item.amount|number_format(0, '.', ' ') }} 🪙</span>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
 </section>

@@ -3,10 +3,33 @@
 JSON placeholders loaded by `KingdomInitConfig` when running:
 
 ```bash
-php bin/console app:kingdom:initialize "Kingdom Name" [--test]
+php bin/console app:kingdom:initialize "Kingdom Name" [--test] [--start-offset-days=-21] [--catch-up-ticks]
 ```
 
-With `--test`, the season starts on the previous Monday and three default test users are created (`player1@example.com` … `player3@example.com`, password `password`).
+## Quick start (local dev)
+
+**Fresh kingdom at season start** (no simulated history):
+
+```bash
+php bin/console app:kingdom:initialize "Main Kingdom" --test
+```
+
+**Kingdom ~1 month into season 1** (recommended for testing mid-season UI and ticks):
+
+```bash
+php bin/console app:kingdom:initialize "Main Kingdom" \
+  --test \
+  --start-offset-days=-21 \
+  --catch-up-ticks
+```
+
+| Flag | Effect |
+|------|--------|
+| `--test` | Season starts on **last Monday** (not next Monday). Also creates 3 test users (`player1@example.com` … `player3@example.com`, password `password`). |
+| `--start-offset-days` | Shifts season start relative to that Monday anchor. **Negative** = further in the past. Overrides `season.defaults.json` → `start_offset_days`. |
+| `--catch-up-ticks` | Synchronously runs all server ticks from season start through now (training, aging, league matches, economy). Without it, run `php bin/console app:ticks:run --kingdom-id=<id>` later (async via Messenger). |
+
+Rough guide: `--test` alone ≈ 0–6 days in; `--test --start-offset-days=-21` ≈ 4 calendar weeks; `-28` ≈ 5 weeks. Season length is 77 days (11 weeks) — do not offset beyond that.
 
 | File | Purpose |
 |------|---------|

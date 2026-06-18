@@ -118,31 +118,17 @@ class FinancialRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return list<array{type: string, amount: int}>
+     * @return list<FinancialRecord>
      */
-    public function getTopExpenseTypesSince(\App\Entity\Team\Team $team, \DateTimeImmutable $since, int $limit = 5): array
+    public function findRecentExpensesByTeam(\App\Entity\Team\Team $team, int $limit = 5): array
     {
-        /** @var list<array{type: \App\Enum\FinancialRecordType, total: numeric-string}> $rows */
-        $rows = $this->createQueryBuilder('f')
-            ->select('f.type AS type')
-            ->addSelect('SUM(f.goldChange) AS total')
+        return $this->createQueryBuilder('f')
             ->where('f.team = :team')
             ->andWhere('f.goldChange < 0')
-            ->andWhere('f.createdAt >= :since')
             ->setParameter('team', $team)
-            ->setParameter('since', $since)
-            ->groupBy('f.type')
-            ->orderBy('total', 'ASC')
+            ->orderBy('f.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
-
-        return array_map(
-            static fn (array $row): array => [
-                'type' => $row['type']->value,
-                'amount' => abs((int) $row['total']),
-            ],
-            $rows
-        );
     }
 }

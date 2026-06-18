@@ -303,6 +303,8 @@ dashboard:
   prepare_formation: Prepare Formation
   view_in_league: View in League
   home_arena: Home Arena
+  league_this_week: League this week
+  no_week_match: No match this week
 
 chronicle:
   title: Team Chronicle
@@ -625,7 +627,7 @@ finance:
   summary_net_period: Balance (last %days% days)
   summary_transactions_period: Transactions (last %days% days)
   summary_net_all_time: All-time balance
-  summary_top_expenses: Top expenses (last %days% days)
+  summary_recent_expenses: Recent expenses
   filter_type: Filter by Type
   all_types: All Types
   filter_actor: Filter by Actor

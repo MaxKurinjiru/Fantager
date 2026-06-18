@@ -148,9 +148,24 @@
     background-color: var(--color-surface-base);
     border: 1px solid var(--color-border);
   }
+  .fixture-card--dashboard {
+    @apply h-full;
+  }
   .fixture-card--completed { opacity: 0.8; }
   .fixture-card__main {
     @apply flex flex-col sm:flex-row items-center justify-between gap-4;
+  }
+  .fixture-card__main--dashboard {
+    @apply flex-col items-stretch gap-3;
+  }
+  .fixture-card--dashboard .fixture-card__matchup {
+    @apply text-xs gap-2;
+  }
+  .fixture-card--dashboard .fixture-card__team {
+    @apply text-[11px] leading-snug;
+  }
+  .fixture-card--dashboard .fixture-card__meta {
+    @apply items-start;
   }
   .fixture-card__date { @apply text-xs; color: var(--color-text-muted); }
   .fixture-card__date-day { @apply block font-semibold uppercase text-[9px]; color: var(--color-text-secondary); }

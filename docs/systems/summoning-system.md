@@ -29,11 +29,11 @@ Summoning is blocked if `hero_count >= roster_limit`.
 Each team may only summon a limited number of heroes per **weekly cycle**. The limit resets every Sunday at 23:59 as part of the `weekly_reset` tick.
 
 ```
-Max Summons per Cycle = round(3 × game_speed)
+Max Summons per Cycle = round(1 × game_speed)
                       minimum: 1
 ```
 
-At default game speed (`1.0`): **3 summons per cycle**.
+At default game speed (`1.0`): **1 summon per cycle**.
 
 ---
 
@@ -153,9 +153,9 @@ The summon history is displayed in the **Summoning Chamber panel** on the HQ pag
 {
   "available": true,
   "reason": null,
-  "gold_cost": 750,
-  "summons_used": 1,
-  "summons_max": 3
+  "gold_cost": 500,
+  "summons_used": 0,
+  "summons_max": 1
 }
 ```
 

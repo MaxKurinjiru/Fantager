@@ -19,7 +19,7 @@
 
     {% include 'components/dashboard/financial_crisis_banner.html.twig' with { team: team } %}
 
-    {% include 'components/finance/summary_stats.html.twig' %}
+    {% include 'components/finance/summary_stats.html.twig' with { summary: summary } %}
 
     <section class="finance-ledger__section" aria-label="{{ 'finance.ledger_title'|trans }}">
         <h2 class="finance-ledger__section-title">{{ 'finance.ledger_title'|trans }}</h2>

@@ -8,10 +8,12 @@ use App\Command\ProcessTicksCommand;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Kingdom\KingdomTickLog;
 use App\Enum\TickType;
+use App\Message\ProcessKingdomTicksHandler;
 use App\Message\ProcessKingdomTicksMessage;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\League\LeagueSeasonRepository;
+use App\Service\Calendar\KingdomTickRunnerService;
 use App\Service\Calendar\TickScheduleCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -75,12 +77,18 @@ class ProcessTicksCommandTest extends TestCase
             ->with($this->isInstanceOf(ProcessKingdomTicksMessage::class))
             ->willReturn(new Envelope(new ProcessKingdomTicksMessage(1)));
 
-        $command = new ProcessTicksCommand(
-            $kingdomRepository,
+        $ticksHandler = $this->createMock(ProcessKingdomTicksHandler::class);
+        $tickRunner = new KingdomTickRunnerService(
             $tickLogRepository,
             $seasonRepository,
             $scheduleCalculator,
+            $ticksHandler,
             $entityManager,
+        );
+
+        $command = new ProcessTicksCommand(
+            $kingdomRepository,
+            $tickRunner,
             $messageBus,
         );
 

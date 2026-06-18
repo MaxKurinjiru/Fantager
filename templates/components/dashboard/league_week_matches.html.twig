@@ -1,0 +1,77 @@
+{# templates/components/dashboard/league_week_matches.html.twig #}
+{% set matches = dashboard.week_matches|default([]) %}
+
+<div class="db-league-card">
+    <div class="db-league-card__header">
+        <h3 class="db-league-card__title">{{ 'dashboard.league_this_week'|trans }}</h3>
+        <a href="{{ path('app_league', { tab: 'fixtures' }) }}" class="db-league-card__link">{{ 'dashboard.view_in_league'|trans }}</a>
+    </div>
+
+    <div class="db-league-card__grid">
+        {% for i in 0..1 %}
+            {% set match = matches[i]|default(null) %}
+            {% if match %}
+                {% set is_home = match.home_team.id == team.id %}
+                {% set is_completed = match.is_completed %}
+
+                <div class="fixture-card fixture-card--dashboard{% if is_completed %} fixture-card--completed{% endif %}">
+                    <div class="fixture-card__main fixture-card__main--dashboard">
+                        <div class="fixture-card__date">
+                            <span class="fixture-card__date-day">
+                                {{ is_home ? 'dashboard.home_team'|trans : 'dashboard.away_team'|trans }}
+                            </span>
+                            {{ match.scheduled_at|date('d. m. Y') }}
+                            {{ match.scheduled_at|date('H:i') }}
+                        </div>
+
+                        <div class="fixture-card__matchup">
+                            <span class="fixture-card__team fixture-card__team--home{% if is_home %} fixture-card__team--highlight{% endif %}" title="{{ match.home_team.name }}">
+                                {{ match.home_team.name }}
+                            </span>
+
+                            <span class="fixture-card__score">
+                                {% if match.score %}
+                                    {{ match.score.home }} — {{ match.score.away }}
+                                {% else %}
+                                    VS
+                                {% endif %}
+                            </span>
+
+                            <span class="fixture-card__team fixture-card__team--away{% if not is_home %} fixture-card__team--highlight{% endif %}" title="{{ match.away_team.name }}">
+                                {{ match.away_team.name }}
+                            </span>
+                        </div>
+
+                        <div class="fixture-card__meta">
+                            {% if is_completed %}
+                                <span class="fixture-card__status fixture-card__status--completed">
+                                    {{ 'training.status.completed'|trans }}
+                                </span>
+                            {% else %}
+                                <span class="fixture-card__status fixture-card__status--pending">
+                                    {{ 'training.status.pending'|trans }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if not is_completed %}
+                        <div class="fixture-card__formation-row">
+                            {% include 'components/league/fixture_formation_status.html.twig' with {
+                                formation: match.formation|default(null)
+                            } %}
+                            <a href="{{ path('app_formation', { fixture_id: match.id }) }}" class="btn btn-primary btn--sm fixture-card__formation-btn">
+                                🛡️ {{ 'dashboard.prepare_formation'|trans }}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="db-league-card__empty">
+                    <span class="text-2xl block mb-1">🏆</span>
+                    <span>{{ 'dashboard.no_week_match'|trans }}</span>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

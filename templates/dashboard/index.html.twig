@@ -9,26 +9,21 @@
 
     {% include 'components/dashboard/financial_crisis_banner.html.twig' with { team: team } %}
 
-    {# --- Main Grid --- #}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {# --- Left Column: Next Match & Quick Actions --- #}
-        <div class="lg:col-span-2 space-y-6">
-            {# Next Match Card #}
-            {% include 'components/dashboard/next_match.html.twig' %}
+    {% include 'components/finance/summary_stats.html.twig' with { summary: finance_summary } %}
 
-            {# Quick Actions Grid #}
-            {% include 'components/dashboard/quick_actions.html.twig' %}
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% include 'components/dashboard/recent_expenses.html.twig' with { recent_expenses: finance_summary.recent_expenses } %}
+        {% include 'components/dashboard/recent_chronicle.html.twig' with { recent_chronicle: recent_chronicle } %}
+    </div>
 
-        {# --- Right Column: Stats Card --- #}
-        <div class="space-y-6">
-            {% include 'components/dashboard/stats_card.html.twig' %}
-            {% include 'components/dashboard/recent_chronicle.html.twig' with { recent_chronicle: recent_chronicle } %}
-        </div>
+    {% include 'components/dashboard/league_week_matches.html.twig' %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% include 'components/dashboard/quick_actions.html.twig' %}
+        {% include 'components/dashboard/stats_card.html.twig' %}
     </div>
 </div>
 
 {# Team Profile Settings Modal #}
 {% include 'dashboard/_team_profile_modal.html.twig' %}
 {% endblock %}
-

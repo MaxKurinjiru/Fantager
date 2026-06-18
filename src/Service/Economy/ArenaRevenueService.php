@@ -122,10 +122,22 @@ class ArenaRevenueService
 
         $bonuses = $this->getFacilityBonuses($homeTeam);
         $baseRevenue = $attendanceData['attendance'] * self::TICKET_PRICE;
+        $speed = 1.0;
+        try {
+            $kingdom = $homeTeam->getKingdom();
+            $speed = (float) $kingdom->getGameSpeed();
+        } catch (\Throwable) {
+            $speed = 1.0;
+        }
+        if ($speed <= 0.0) {
+            $speed = 1.0;
+        }
+
         $goldEarned = (int) round(
             $baseRevenue
             * (1.0 + $bonuses['ticket_revenue_pct'] / 100.0)
             * (1.0 + $bonuses['gold_income_pct'] / 100.0)
+            * $speed
         );
 
         return [

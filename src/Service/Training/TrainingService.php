@@ -289,10 +289,10 @@ class TrainingService
                         }
 
                         $raceMod = $this->raceConfig->getTrainingSpeedModifier($hero->getRace());
-                        $finalRawGainExt = $baseGainScaled * (1.0 + $facilityEfficiency) * $raceMod;
+                        $finalRawGainExt = $baseGainScaled * (1.0 + $facilityEfficiency) * $raceMod * $speed;
 
                         $gainRaw = (int) round($finalRawGainExt * 10);
-                        $gainRaw = max(1, min(9, $gainRaw));
+                        $gainRaw = max(1, min((int) round(9 * $speed), $gainRaw));
 
                         if ($heroStatRaw + $gainRaw > $cap) {
                             $gainRaw = max(0, $cap - $heroStatRaw);
@@ -306,8 +306,10 @@ class TrainingService
                 } elseif (TrainingType::Magic === $type) {
                     $cap = $hero->getMagicCapacity();
                     if ($cap < 5) {
-                        $hero->setMagicCapacity($cap + 1);
-                        $gainRaw = 1;
+                        $magicIncrement = (int) max(1, round(1 * $speed));
+                        $newCap = min(5, $cap + $magicIncrement);
+                        $hero->setMagicCapacity($newCap);
+                        $gainRaw = $newCap - $cap;
                     }
 
                     // Magic training adds +20 fatigue (capped at 100)
@@ -315,7 +317,7 @@ class TrainingService
                 } elseif (TrainingType::Form === $type) {
                     $form = $hero->getForm();
                     if ($form < 100) {
-                        $recovery = 20;
+                        $recovery = (int) round(20 * $speed);
                         $newForm = min(100, $form + $recovery);
                         $hero->setForm($newForm);
                         $gainRaw = $newForm - $form;

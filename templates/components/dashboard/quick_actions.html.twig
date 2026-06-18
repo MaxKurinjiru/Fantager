@@ -2,7 +2,7 @@
 {% set actions = [] %}
 {% if dashboard.next_match|default() is not empty %}
     {% set actions = actions|merge([
-        { path: 'app_formation', emoji: '🛡️', label: 'dashboard.action_formation', params: {} }
+        { path: 'app_formation', emoji: '🛡️', label: 'dashboard.action_formation', params: { fixture_id: dashboard.next_match.id } }
     ]) %}
 {% endif %}
 {% set actions = actions|merge([

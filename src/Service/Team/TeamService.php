@@ -7,6 +7,7 @@ namespace App\Service\Team;
 use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\HeroStatus;
+use App\Enum\LeagueFixtureStatus;
 use App\Exception\UserFacingException;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
@@ -55,6 +56,7 @@ class TeamService
         $formationCount = $this->formationRepository->countSavedByTeam($team);
 
         $nextFixture = $this->leagueFixtureRepository->findNextFixtureForTeam($team);
+        $weekMatches = $this->resolveWeekMatches($team);
 
         return [
             'team' => [
@@ -94,26 +96,8 @@ class TeamService
                 'summons_this_cycle' => $team->getSummonsThisCycle(),
                 'last_summon_at' => $team->getLastSummonAt()?->format(\DateTimeInterface::ATOM),
             ],
-            'next_match' => $nextFixture ? [
-                'id' => $nextFixture->getId(),
-                'home_team' => [
-                    'id' => $nextFixture->getHomeTeam()->getId(),
-                    'name' => $nextFixture->getHomeTeam()->getName(),
-                    'emblem' => $nextFixture->getHomeTeam()->getEmblem(),
-                    'is_npc' => $nextFixture->getHomeTeam()->isNpc(),
-                    'owner_name' => $nextFixture->getHomeTeam()->getUser()?->getDisplayName(),
-                ],
-                'away_team' => [
-                    'id' => $nextFixture->getAwayTeam()->getId(),
-                    'name' => $nextFixture->getAwayTeam()->getName(),
-                    'emblem' => $nextFixture->getAwayTeam()->getEmblem(),
-                    'is_npc' => $nextFixture->getAwayTeam()->isNpc(),
-                    'owner_name' => $nextFixture->getAwayTeam()->getUser()?->getDisplayName(),
-                ],
-                'scheduled_at' => $nextFixture->getScheduledAt()->format(\DateTimeInterface::ATOM),
-                'group_name' => $nextFixture->getGroup()->getGroupName(),
-                'formation' => $this->serializeFixtureFormation($nextFixture, $team),
-            ] : null,
+            'next_match' => $nextFixture ? $this->serializeFixture($nextFixture, $team) : null,
+            'week_matches' => $weekMatches,
             'financial_crisis' => $this->financialCrisisService->getStatus($team),
         ];
     }
@@ -152,6 +136,58 @@ class TeamService
         }
 
         $this->em->flush();
+    }
+
+    /** @return array<string, mixed> */
+    private function serializeFixture(LeagueFixture $fixture, Team $team): array
+    {
+        $battle = $fixture->getBattle();
+        $isCompleted = LeagueFixtureStatus::Completed === $fixture->getStatus();
+
+        return [
+            'id' => $fixture->getId(),
+            'status' => $fixture->getStatus()->value,
+            'is_completed' => $isCompleted,
+            'home_team' => [
+                'id' => $fixture->getHomeTeam()->getId(),
+                'name' => $fixture->getHomeTeam()->getName(),
+                'emblem' => $fixture->getHomeTeam()->getEmblem(),
+                'is_npc' => $fixture->getHomeTeam()->isNpc(),
+                'owner_name' => $fixture->getHomeTeam()->getUser()?->getDisplayName(),
+            ],
+            'away_team' => [
+                'id' => $fixture->getAwayTeam()->getId(),
+                'name' => $fixture->getAwayTeam()->getName(),
+                'emblem' => $fixture->getAwayTeam()->getEmblem(),
+                'is_npc' => $fixture->getAwayTeam()->isNpc(),
+                'owner_name' => $fixture->getAwayTeam()->getUser()?->getDisplayName(),
+            ],
+            'scheduled_at' => $fixture->getScheduledAt()->format(\DateTimeInterface::ATOM),
+            'group_name' => $fixture->getGroup()->getGroupName(),
+            'formation' => $this->serializeFixtureFormation($fixture, $team),
+            'score' => $isCompleted && null !== $battle ? [
+                'home' => $battle->getScoreA(),
+                'away' => $battle->getScoreB(),
+            ] : null,
+        ];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function resolveWeekMatches(Team $team): array
+    {
+        $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
+        $now = new \DateTimeImmutable('now', $tz);
+        $weekStart = $now->modify('monday this week')->setTime(0, 0, 0);
+        $weekEnd = $weekStart->modify('+6 days')->setTime(23, 59, 59);
+
+        $fixtures = $this->leagueFixtureRepository->findFixturesForTeamInPeriod($team, $weekStart, $weekEnd);
+
+        return array_map(
+            fn (LeagueFixture $fixture): array => $this->serializeFixture($fixture, $team),
+            array_slice($fixtures, 0, 2),
+        );
     }
 
     /** @return array<string, mixed> */

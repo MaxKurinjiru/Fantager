@@ -42,11 +42,14 @@ class KingdomInitializationService
     }
 
     /**
+     * @param int|null $startOffsetDaysOverride When set, overrides config/kingdom/season.defaults.json
+     *                                          `start_offset_days` (negative values shift season start into the past).
+     *
      * @return array{kingdom: Kingdom, teams: int, heroes: int}
      *
      * @throws \DomainException when kingdom name already exists or config is invalid
      */
-    public function initialize(string $name, bool $testMode = false): array
+    public function initialize(string $name, bool $testMode = false, ?int $startOffsetDaysOverride = null): array
     {
         $name = trim($name);
         if ('' === $name) {
@@ -76,7 +79,7 @@ class KingdomInitializationService
         }
 
         $kingdom = $this->createKingdom($name, $kingdomSettings, $leagueConfig);
-        $season = $this->createSeason($kingdom, $kingdomSettings, $seasonConfig, $testMode);
+        $season = $this->createSeason($kingdom, $kingdomSettings, $seasonConfig, $testMode, $startOffsetDaysOverride);
 
         $teamIndex = 0;
         $heroTotal = 0;
@@ -157,9 +160,14 @@ class KingdomInitializationService
     }
 
     /** @param array<string, mixed> $kingdomSettings @param array<string, mixed> $seasonConfig */
-    private function createSeason(Kingdom $kingdom, array $kingdomSettings, array $seasonConfig, bool $testMode): LeagueSeason
-    {
-        $offsetDays = (int) ($seasonConfig['start_offset_days'] ?? 0);
+    private function createSeason(
+        Kingdom $kingdom,
+        array $kingdomSettings,
+        array $seasonConfig,
+        bool $testMode,
+        ?int $startOffsetDaysOverride = null,
+    ): LeagueSeason {
+        $offsetDays = $startOffsetDaysOverride ?? (int) ($seasonConfig['start_offset_days'] ?? 0);
         $length = (int) $kingdomSettings['season_length'];
 
         // Align season start to the next Monday (or last Monday in test mode), modified by config offset

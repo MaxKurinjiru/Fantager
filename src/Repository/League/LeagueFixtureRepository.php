@@ -49,6 +49,22 @@ class LeagueFixtureRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @return list<LeagueFixture>
+     */
+    public function findFixturesForTeamInPeriod(Team $team, \DateTimeImmutable $start, \DateTimeImmutable $end): array
+    {
+        return $this->createQueryBuilder('f')
+            ->where('(f.homeTeam = :team OR f.awayTeam = :team)')
+            ->andWhere('f.scheduledAt BETWEEN :start AND :end')
+            ->setParameter('team', $team)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('f.scheduledAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findNextHomeFixtureForTeam(Team $team): ?LeagueFixture
     {
         return $this->createQueryBuilder('f')

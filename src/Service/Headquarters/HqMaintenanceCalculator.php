@@ -37,10 +37,25 @@ final class HqMaintenanceCalculator
             $facilitiesFee += $base * $facility->getLevel();
         }
 
+        $speed = 1.0;
+        try {
+            $team = $hq->getTeam();
+            $kingdom = $team->getKingdom();
+            $speed = (float) $kingdom->getGameSpeed();
+        } catch (\Throwable) {
+            $speed = 1.0;
+        }
+        if ($speed <= 0.0) {
+            $speed = 1.0;
+        }
+
+        $hqFeeScaled = (int) round($hqFee * $speed);
+        $facilitiesFeeScaled = (int) round($facilitiesFee * $speed);
+
         return [
-            'total' => $hqFee + $facilitiesFee,
-            'hq' => $hqFee,
-            'facilities' => $facilitiesFee,
+            'total' => $hqFeeScaled + $facilitiesFeeScaled,
+            'hq' => $hqFeeScaled,
+            'facilities' => $facilitiesFeeScaled,
         ];
     }
 

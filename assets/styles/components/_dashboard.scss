@@ -395,4 +395,96 @@
   .db-banner__badge-max { @apply text-[10px]; color: var(--color-text-muted); }
   .db-banner__badge-value { @apply font-bold; color: var(--color-text-primary); }
   .db-banner__edit-icon { @apply text-sm; }
+
+  .db-expenses-card {
+    @apply rounded-xl p-6 border shadow-md backdrop-blur-md;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+    border-color: var(--color-border);
+  }
+
+  .db-expenses-card__header {
+    @apply flex items-center justify-between gap-3 mb-4;
+  }
+
+  .db-expenses-card__title {
+    @apply text-base font-bold text-white m-0;
+  }
+
+  .db-expenses-card__link {
+    @apply text-[11px] font-bold uppercase tracking-wide no-underline;
+    color: var(--color-brand-400);
+
+    &:hover {
+      color: var(--color-brand-300);
+    }
+  }
+
+  .db-expenses-card__list {
+    @apply space-y-2 max-h-[220px] overflow-y-auto pr-1;
+  }
+
+  .db-expenses-item {
+    @apply p-2.5 rounded-xl;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+  }
+
+  .db-expenses-item__row {
+    @apply flex items-start justify-between gap-2;
+  }
+
+  .db-expenses-item__title {
+    @apply text-xs font-bold leading-snug min-w-0;
+    color: var(--color-text-secondary);
+  }
+
+  .db-expenses-item__amount {
+    @apply text-xs font-bold shrink-0;
+    color: var(--color-error-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .db-expenses-item__time {
+    @apply text-[9px] mt-1;
+    color: var(--color-text-muted);
+  }
+
+  .db-expenses-empty {
+    @apply text-center py-6 select-none opacity-60 text-xs;
+    color: var(--color-text-secondary);
+  }
+
+  .db-league-card {
+    @apply rounded-xl p-6 border shadow-md backdrop-blur-md;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+    border-color: var(--color-border);
+  }
+
+  .db-league-card__header {
+    @apply flex items-center justify-between gap-3 mb-4;
+  }
+
+  .db-league-card__title {
+    @apply text-base font-bold text-white m-0;
+  }
+
+  .db-league-card__link {
+    @apply text-[11px] font-bold uppercase tracking-wide no-underline;
+    color: var(--color-brand-400);
+
+    &:hover {
+      color: var(--color-brand-300);
+    }
+  }
+
+  .db-league-card__grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-3;
+  }
+
+  .db-league-card__empty {
+    @apply rounded-xl p-6 text-center select-none opacity-60 text-xs flex flex-col items-center justify-center min-h-[140px];
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+  }
 }

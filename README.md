@@ -34,6 +34,9 @@ After running the migrations, bootstrap your local development database with a d
 ```bash
 # Initialize default kingdom (NPCs, heroes, league standings) and 3 test users
 docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom" --test
+
+# Mid-season dev setup (~1 month of simulated game time)
+docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom" --test --start-offset-days=-21
 ```
 
 The `--test` flag also creates three verified users, each assigned to an NPC team:

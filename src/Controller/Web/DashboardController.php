@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
+use App\Service\Economy\FinanceSummaryService;
 use App\Service\Team\TeamService;
 use App\Service\TeamChronicle\TeamChroniclePresenter;
 use App\Service\Translation\UserMessageTranslator;
@@ -19,6 +20,7 @@ class DashboardController extends AbstractController
     public function __construct(
         private readonly TeamService $teamService,
         private readonly TeamChroniclePresenter $teamChroniclePresenter,
+        private readonly FinanceSummaryService $financeSummaryService,
         private readonly UserMessageTranslator $userMessages,
     ) {
     }
@@ -38,12 +40,14 @@ class DashboardController extends AbstractController
 
         $dashboardData = $this->teamService->getDashboardData($team);
         $recentChronicle = $this->teamChroniclePresenter->presentRecentForTeam($team, 5, $user->getLocale());
+        $financeSummary = $this->financeSummaryService->buildOverview($team);
 
         return $this->render('dashboard/index.html.twig', [
             'user' => $user,
             'team' => $team,
             'dashboard' => $dashboardData,
             'recent_chronicle' => $recentChronicle,
+            'finance_summary' => $financeSummary,
         ]);
     }
 }
