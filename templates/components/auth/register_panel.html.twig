@@ -66,7 +66,7 @@
 
         {# Kingdom selection #}
         <div class="mb-3 sm:mb-4">
-            <label class="form-label">
+            <label for="modal_reg_kingdom" class="form-label">
                 {{ 'auth.choose_kingdom'|trans }}
                 <span class="text-text-muted">{{ 'auth.kingdom_permanent_warn'|trans }}</span>
             </label>
@@ -76,11 +76,11 @@
 
             {% if modal_kingdoms is empty %}
                 <div class="alert alert-warning" role="alert">{{ 'auth.kingdom_no_available'|trans }}</div>
-                <input type="hidden" name="kingdom_id" value="0">
+                <input type="hidden" name="kingdom_id" id="modal_reg_kingdom" value="0">
             {% else %}
                 {# Compact mobile select dropdown #}
                 <div class="block sm:hidden mb-2">
-                    <select name="kingdom_id" class="form-input" data-action="change->auth-modal#syncKingdomSelect">
+                    <select name="kingdom_id" id="modal_reg_kingdom" class="form-input" data-action="change->auth-modal#syncKingdomSelect">
                         <option value="" disabled {{ (modal_form_data.kingdom_id ?? 0) == 0 ? 'selected' : '' }}>
                             {{ 'auth.choose_kingdom'|trans }}
                         </option>
@@ -101,10 +101,10 @@
                     {% for entry in modal_kingdoms %}
                         {% set k    = entry.kingdom %}
                         {% set full = entry.capacity > 0 and entry.playerCount >= entry.capacity %}
-                        <label class="flex items-start gap-3 p-3 rounded border cursor-pointer
+                        <label for="modal_reg_kingdom_radio_{{ k.id }}" class="flex items-start gap-3 p-3 rounded border cursor-pointer
                                       {{ full ? 'border-border opacity-50 cursor-not-allowed' : 'border-border-strong hover:border-brand-400 kingdom-card' }}
                                       {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'kingdom-card--selected' : '' }}">
-                            <input type="radio" name="kingdom_id" value="{{ k.id }}"
+                            <input type="radio" name="kingdom_id" id="modal_reg_kingdom_radio_{{ k.id }}" value="{{ k.id }}"
                                    {{ full ? 'disabled' : '' }}
                                    {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'checked' : '' }}
                                    data-action="change->auth-modal#syncKingdomRadio"

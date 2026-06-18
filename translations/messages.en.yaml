@@ -643,6 +643,7 @@ finance:
   no_records: No financial records found.
   recent_title: Recent Transactions
   view_full_ledger: View Full Ledger
+  error_fetch: Failed to load financial records.
   type_league_reward: League Reward
   type_arena_revenue: Arena Revenue
   type_summon_fee: Summoning Fee

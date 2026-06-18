@@ -106,7 +106,7 @@ export default class extends Controller {
         // Clear selection
         this.selectedEntityId = null;
         this.sellIdInputTarget.value = '';
-        this.selectedEntityLabelTarget.textContent = this.translationsValue.none_selected || '-- Nic --';
+        this.selectedEntityLabelTarget.textContent = this.translationsValue.none_selected || '';
 
         // Unhighlight any selected card
         this.sellEntitiesContainerTargets.forEach(container => {
@@ -428,7 +428,7 @@ export default class extends Controller {
         const listingId = button.dataset.id;
         const price = button.dataset.price;
 
-        const confirmMsg = (this.translationsValue.confirm_buyout || 'Opravdu chcete koupit tuto nabídku okamžitě za 🪙 %amount% gold?')
+        const confirmMsg = (this.translationsValue.confirm_buyout || '')
             .replace('%amount%', price);
 
         if (!confirm(confirmMsg)) {
@@ -467,7 +467,7 @@ export default class extends Controller {
         const input = document.getElementById(`bid-input-${listingId}`);
         const bidAmount = parseInt(input.value);
 
-        const confirmMsg = (this.translationsValue.confirm_bid || 'Opravdu chcete na tuto aukci přihodit 🪙 %amount% gold (tato částka bude okamžitě rezervována)?')
+        const confirmMsg = (this.translationsValue.confirm_bid || '')
             .replace('%amount%', bidAmount);
 
         if (!confirm(confirmMsg)) {
@@ -593,7 +593,7 @@ export default class extends Controller {
         const button = event.currentTarget;
         const listingId = button.dataset.id;
 
-        const confirmMsg = this.translationsValue.confirm_cancel || 'Opravdu chcete zrušit tuto nabídku a vrátit entitu zpět?';
+        const confirmMsg = this.translationsValue.confirm_cancel || '';
 
         if (!confirm(confirmMsg)) {
             return;
@@ -681,19 +681,19 @@ export default class extends Controller {
     formatTimeRemaining(expiresAt) {
         const now = new Date();
         const diffMs = expiresAt - now;
-        if (diffMs <= 0) return this.translationsValue.time_expired || 'Vypršelo';
+        if (diffMs <= 0) return this.translationsValue.time_expired || '';
 
         const diffHrs = Math.floor(diffMs / 3600000);
         if (diffHrs < 24) {
             const mins = Math.floor((diffMs % 3600000) / 60000);
-            return (this.translationsValue.time_remaining_hours || '%hours%h %minutes%m zbývá')
+            return (this.translationsValue.time_remaining_hours || '')
                 .replace('%hours%', diffHrs)
                 .replace('%minutes%', mins);
         }
 
         const diffDays = Math.floor(diffHrs / 24);
         const remainingHrs = diffHrs % 24;
-        return (this.translationsValue.time_remaining || '%days%d %hours%h zbývá')
+        return (this.translationsValue.time_remaining || '')
             .replace('%days%', diffDays)
             .replace('%hours%', remainingHrs);
     }

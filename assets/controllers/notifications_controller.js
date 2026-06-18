@@ -46,7 +46,7 @@ export default class extends Controller {
             const notifications = await response.json();
             this.renderNotifications(notifications);
         } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_load || 'Nepodařilo se načíst notifikace.');
+            this.showFeedback('error', this.translationsValue.error_load || '');
         }
     }
 
@@ -121,7 +121,7 @@ export default class extends Controller {
             await this.refreshUnreadCount();
             await this.refreshNotifications();
         } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_read || 'Nepodařilo se načíst notifikaci.');
+            this.showFeedback('error', this.translationsValue.error_read || '');
         }
     }
 
@@ -136,11 +136,11 @@ export default class extends Controller {
                 throw new Error();
             }
 
-            this.showFeedback('success', this.translationsValue.success_mark_all || 'Všechny notifikace byly označeny jako přečtené.');
+            this.showFeedback('success', this.translationsValue.success_mark_all || '');
             await this.refreshUnreadCount();
             await this.refreshNotifications();
         } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_mark_all || 'Nepodařilo se označit notifikace jako přečtené.');
+            this.showFeedback('error', this.translationsValue.error_mark_all || '');
         } finally {
             this.markAllBtnTarget.disabled = false;
         }

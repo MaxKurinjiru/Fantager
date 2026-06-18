@@ -560,7 +560,7 @@
         background: linear-gradient(
           to right,
           var(--color-brand-500),
-          color-mix(in srgb, var(--color-brand-400) 70%, #2dd4bf)
+          color-mix(in srgb, var(--color-brand-400) 70%, var(--color-cyan-400))
         );
         box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--color-brand-500) 20%, transparent);
       }

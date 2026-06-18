@@ -76,11 +76,11 @@ export default class extends Controller {
         });
 
         if (folder === 'sent') {
-            this.mailFolderTitleTarget.textContent = this.translationsValue.sent_title || 'Odeslané zprávy';
-            this.mailSenderColTitleTarget.textContent = this.translationsValue.col_recipient || 'Příjemce';
+            this.mailFolderTitleTarget.textContent = this.translationsValue.sent_title || '';
+            this.mailSenderColTitleTarget.textContent = this.translationsValue.col_recipient || '';
         } else {
-            this.mailFolderTitleTarget.textContent = this.translationsValue.inbox_title || 'Doručené zprávy';
-            this.mailSenderColTitleTarget.textContent = this.translationsValue.col_sender || 'Odesílatel';
+            this.mailFolderTitleTarget.textContent = this.translationsValue.inbox_title || '';
+            this.mailSenderColTitleTarget.textContent = this.translationsValue.col_sender || '';
         }
 
         await this.refreshMessages();
@@ -94,7 +94,7 @@ export default class extends Controller {
             const messages = await response.json();
             this.renderMessages(messages);
         } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_load_mail || 'Nepodařilo se načíst poštu.');
+            this.showFeedback('error', this.translationsValue.error_load_mail || '');
         }
     }
 
@@ -159,7 +159,7 @@ export default class extends Controller {
 
             const recipients = await response.json();
             const select = this.composeRecipientTarget;
-            const placeholder = this.translationsValue.select_recipient || 'Vyberte příjemce';
+            const placeholder = this.translationsValue.select_recipient || '';
             select.innerHTML = `<option value="">-- ${placeholder} --</option>`;
 
             recipients.forEach(recipient => {
@@ -169,7 +169,7 @@ export default class extends Controller {
                 select.appendChild(option);
             });
         } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_load_recipients || 'Nepodařilo se načíst seznam příjemců.');
+            this.showFeedback('error', this.translationsValue.error_load_recipients || '');
         }
     }
 
@@ -180,12 +180,12 @@ export default class extends Controller {
         const body = this.composeBodyTarget.value.trim();
 
         if (!receiver_user_id || !subject || !body) {
-            this.showFeedback('warning', this.translationsValue.warning_compose_fields || 'Prosím zvolte příjemce a vyplňte předmět i obsah zprávy.');
+            this.showFeedback('warning', this.translationsValue.warning_compose_fields || '');
             return;
         }
 
         this.submitComposeBtnTarget.disabled = true;
-        this.submitComposeBtnTarget.textContent = this.translationsValue.text_sending || 'Odesílám...';
+        this.submitComposeBtnTarget.textContent = this.translationsValue.text_sending || '';
 
         try {
             const response = await fetch('/api/v1/messages', {
@@ -196,11 +196,11 @@ export default class extends Controller {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.error ?? (this.translationsValue.error_send_msg || 'Nepodařilo se odeslat zprávu.'));
+                throw new Error(data.error ?? (this.translationsValue.error_send_msg || ''));
             }
 
             this.composeModalTarget.querySelector('.modal-close').click();
-            this.showFeedback('success', this.translationsValue.success_send_msg || 'Zpráva byla úspěšně odeslána.');
+            this.showFeedback('success', this.translationsValue.success_send_msg || '');
 
             if (this.currentFolder === 'sent') {
                 await this.refreshMessages();
@@ -209,7 +209,7 @@ export default class extends Controller {
             this.showFeedback('error', err.message);
         } finally {
             this.submitComposeBtnTarget.disabled = false;
-            this.submitComposeBtnTarget.textContent = this.translationsValue.send_msg || 'Odeslat zprávu';
+            this.submitComposeBtnTarget.textContent = this.translationsValue.send_msg || '';
         }
     }
 
@@ -254,7 +254,7 @@ export default class extends Controller {
 
             await this.refreshUnreadCount();
         } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_read_msg || 'Nepodařilo se přečíst zprávu.');
+            this.showFeedback('error', this.translationsValue.error_read_msg || '');
         }
     }
 
@@ -263,7 +263,7 @@ export default class extends Controller {
         if (!this.activeMessageId) return;
 
         this.deleteMsgBtnTarget.disabled = true;
-        this.deleteMsgBtnTarget.textContent = this.translationsValue.text_deleting || 'Mažu...';
+        this.deleteMsgBtnTarget.textContent = this.translationsValue.text_deleting || '';
 
         try {
             const response = await fetch(`/api/v1/messages/${this.activeMessageId}`, {
@@ -274,14 +274,14 @@ export default class extends Controller {
             if (!response.ok) throw new Error();
 
             this.readMessageModalTarget.querySelector('.modal-close').click();
-            this.showFeedback('success', this.translationsValue.success_delete_msg || 'Zpráva byla smazána.');
+            this.showFeedback('success', this.translationsValue.success_delete_msg || '');
             await this.refreshMessages();
             await this.refreshUnreadCount();
         } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_delete_msg || 'Nepodařilo se smazat zprávu.');
+            this.showFeedback('error', this.translationsValue.error_delete_msg || '');
         } finally {
             this.deleteMsgBtnTarget.disabled = false;
-            this.deleteMsgBtnTarget.textContent = `🗑️ ${this.translationsValue.delete_msg || 'Smazat zprávu'}`;
+            this.deleteMsgBtnTarget.textContent = `🗑️ ${this.translationsValue.delete_msg || ''}`;
             this.activeMessageId = null;
         }
     }

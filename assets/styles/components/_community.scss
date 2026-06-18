@@ -419,7 +419,7 @@
   .cal-event__day {
     font-size: 1.125rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--color-white);
   }
 
   .cal-event__time {
@@ -511,7 +511,7 @@
   .summoning-stat__value {
     font-size: 0.875rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--color-white);
   }
 
   .marketplace-bonus-tag {

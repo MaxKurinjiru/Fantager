@@ -231,7 +231,7 @@
   .dropdown-menu__title {
     font-size: 0.875rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--color-white);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -310,7 +310,7 @@
     padding: 0 0.25rem;
     border-radius: 9999px;
     background-color: var(--color-error-text);
-    color: #fff;
+    color: var(--color-white);
     font-size: 0.625rem;
     font-weight: 700;
     line-height: 1;
@@ -326,7 +326,7 @@
     padding: 0 0.25rem;
     border-radius: 9999px;
     background-color: var(--color-error-text);
-    color: #fff;
+    color: var(--color-white);
     font-size: 0.625rem;
     font-weight: 700;
     line-height: 1;

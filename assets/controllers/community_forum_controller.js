@@ -33,12 +33,12 @@ export default class extends Controller {
         const body = this.newThreadBodyTarget.value.trim();
 
         if (!title || !body) {
-            this.showFeedback('warning', this.translationsValue.warning_fill_fields || 'Vyplňte prosím předmět i obsah zprávy.');
+            this.showFeedback('warning', this.translationsValue.warning_fill_fields || '');
             return;
         }
 
         this.submitNewThreadBtnTarget.disabled = true;
-        this.submitNewThreadBtnTarget.textContent = this.translationsValue.text_sending || 'Odesílám...';
+        this.submitNewThreadBtnTarget.textContent = this.translationsValue.text_sending || '';
 
         try {
             const response = await fetch('/api/v1/forum/threads', {
@@ -49,7 +49,7 @@ export default class extends Controller {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.error ?? (this.translationsValue.error_create_thread || 'Nepodařilo se založit téma.'));
+                throw new Error(data.error ?? (this.translationsValue.error_create_thread || ''));
             }
 
             this.newThreadModalTarget.querySelector('.modal-close').click();
@@ -57,7 +57,7 @@ export default class extends Controller {
         } catch (err) {
             this.showFeedback('error', err.message);
             this.submitNewThreadBtnTarget.disabled = false;
-            this.submitNewThreadBtnTarget.textContent = this.translationsValue.create_thread || 'Vytvořit téma';
+            this.submitNewThreadBtnTarget.textContent = this.translationsValue.create_thread || '';
         }
     }
 }

@@ -66,7 +66,7 @@ export default class extends Controller {
 
         btn.disabled = true;
         const originalText = btn.textContent;
-        btn.textContent = this.textSavingValue || 'Ukládání...';
+        btn.textContent = this.textSavingValue || '';
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -148,7 +148,7 @@ export default class extends Controller {
 
         btn.disabled = true;
         const originalText = btn.textContent;
-        btn.textContent = this.textRemovingValue || 'Odebírání...';
+        btn.textContent = this.textRemovingValue || '';
 
         try {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -242,7 +242,7 @@ export default class extends Controller {
                 const diff = targetTime - now;
 
                 if (diff <= 0) {
-                    elem.textContent = this.textProcessingValue || 'Zpracování...';
+                    elem.textContent = this.textProcessingValue || '';
                     if (interval) {
                         clearInterval(interval);
                     }

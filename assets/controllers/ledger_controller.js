@@ -28,7 +28,7 @@ export default class extends Controller {
     async loadRecent() {
         if (!this.hasTableBodyTarget) return;
 
-        this.tableBodyTarget.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-text-muted">…</td></tr>';
+        this.tableBodyTarget.innerHTML = '<tr><td colspan="3" class="ledger-modal-loading">…</td></tr>';
 
         try {
             const response = await fetch('/api/v1/finance/recent');
@@ -36,7 +36,8 @@ export default class extends Controller {
             const records = await response.json();
             this.renderRecords(records);
         } catch {
-            this.tableBodyTarget.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-400">Error</td></tr>';
+            const errMsg = (this.hasTranslationsValue && this.translationsValue.error_fetch) || '';
+            this.tableBodyTarget.innerHTML = `<tr><td colspan="3" class="ledger-modal-error">${this.escapeHtml(errMsg)}</td></tr>`;
         }
     }
 
@@ -56,14 +57,14 @@ export default class extends Controller {
         this.tableBodyTarget.replaceChildren();
         records.forEach(record => {
             const row = document.createElement('tr');
-            row.className = 'ledger-modal__row';
+            row.className = 'finance-ledger-table__row';
             const date = new Date(record.created_at);
             const goldClass = record.gold_change > 0 ? 'finance-changes__item--positive' : 'finance-changes__item--negative';
             const goldPrefix = record.gold_change > 0 ? '+' : '';
             row.innerHTML = `
-                <td class="p-3 text-sm">${this.escapeHtml(this.typeLabel(record.type))}</td>
-                <td class="p-3 text-sm ${goldClass}">${goldPrefix}${record.gold_change.toLocaleString('cs-CZ')} 🪙</td>
-                <td class="p-3 text-xs text-text-secondary text-right">${date.toLocaleString()}</td>
+                <td class="ledger-modal-cell">${this.escapeHtml(this.typeLabel(record.type))}</td>
+                <td class="ledger-modal-cell"><span class="finance-changes__item ${goldClass}">${goldPrefix}${record.gold_change.toLocaleString('cs-CZ')} 🪙</span></td>
+                <td class="ledger-modal-cell--date">${date.toLocaleString()}</td>
             `;
             this.tableBodyTarget.appendChild(row);
         });

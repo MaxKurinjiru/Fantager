@@ -42,6 +42,7 @@
   --color-error-bg:     #450a0a;
   --color-error-border: #b91c1c;
   --color-error-text:   #fca5a5;
+  --color-error-hover:  #dc2626;
 
   // --- Status: success -----------------------------------------------------
   --color-success-bg:     #052e16;
@@ -57,6 +58,14 @@
   --color-info-bg:     #082f49;
   --color-info-border: #1e40af;
   --color-info-text:   #93c5fd;
+
+  // --- Extra Palette Colors ------------------------------------------------
+  --color-white:      #ffffff;
+  --color-indigo-400: #818cf8;
+  --color-amber-400:  #fbbf24;
+  --color-purple-400: #c084fc;
+  --color-blue-400:   #60a5fa;
+  --color-cyan-400:   #2dd4bf;
 
   // --- Typography ----------------------------------------------------------
   //  Change --font-sans to switch the UI typeface globally.

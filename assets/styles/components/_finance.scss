@@ -248,4 +248,29 @@
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
+
+  .ledger-modal-cell {
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+  }
+
+  .ledger-modal-cell--date {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    text-align: right;
+  }
+
+  .ledger-modal-error {
+    padding: 1rem;
+    text-align: center;
+    color: var(--color-error-text);
+    font-size: 0.875rem;
+  }
+
+  .ledger-modal-loading {
+    padding: 1rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
 }

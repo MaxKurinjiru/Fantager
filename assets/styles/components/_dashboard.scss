@@ -41,19 +41,19 @@
     
     &--morale {
       background-color: rgba(16, 185, 129, 0.1);
-      color: #34d399;
+      color: var(--color-brand-400);
       border-color: rgba(16, 185, 129, 0.2);
     }
     
     &--chemistry {
       background-color: rgba(99, 102, 241, 0.1);
-      color: #818cf8;
+      color: var(--color-indigo-400);
       border-color: rgba(99, 102, 241, 0.2);
     }
     
     &--reputation {
       background-color: rgba(245, 158, 11, 0.1);
-      color: #fbbf24;
+      color: var(--color-amber-400);
       border-color: rgba(245, 158, 11, 0.2);
     }
   }
@@ -69,7 +69,7 @@
     &:hover {
       background-color: rgba(15, 23, 42, 0.8);
       border-color: rgba(16, 185, 129, 0.3);
-      color: #fff;
+      color: var(--color-white);
     }
   }
 
@@ -109,13 +109,13 @@
     &--pending {
       background-color: rgba(66, 32, 6, 0.4);
       border-color: rgba(146, 64, 14, 0.4);
-      color: #fde68a;
+      color: var(--color-warning-text);
     }
     
     &--locked {
       background-color: rgba(69, 10, 10, 0.4);
       border-color: rgba(185, 28, 28, 0.4);
-      color: #fca5a5;
+      color: var(--color-error-text);
     }
   }
 
@@ -171,13 +171,13 @@
     @apply text-[10px] font-semibold px-2.5 py-0.5 rounded-full select-none border;
     
     &--npc {
-      color: #fca5a5;
+      color: var(--color-error-text);
       background-color: rgba(69, 10, 10, 0.2);
       border-color: rgba(185, 28, 28, 0.3);
     }
     
     &--player {
-      color: #34d399;
+      color: var(--color-brand-400);
       background-color: rgba(16, 185, 129, 0.2);
       border-color: rgba(16, 185, 129, 0.3);
     }

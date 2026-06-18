@@ -174,7 +174,7 @@
   .rarity-tag--epic {
     background-color: rgba(88, 28, 135, 0.2); // purple-955/20
     border-color: rgba(126, 34, 206, 0.4);
-    color: #c084fc; // purple-400
+    color: var(--color-purple-400); // purple-400
   }
 
   .rarity-tag--legendary {
@@ -269,19 +269,19 @@
   }
 
   .marketplace-card__type-badge--hero {
-    color: #60a5fa;
+    color: var(--color-blue-400);
     background-color: rgba(30, 58, 138, 0.35);
     border-color: rgba(30, 58, 138, 0.6);
   }
 
   .marketplace-card__type-badge--item {
-    color: #34d399;
+    color: var(--color-brand-400);
     background-color: rgba(6, 78, 59, 0.35);
     border-color: rgba(6, 78, 59, 0.6);
   }
 
   .marketplace-card__type-badge--trainer {
-    color: #fbbf24;
+    color: var(--color-amber-400);
     background-color: rgba(120, 53, 4, 0.35);
     border-color: rgba(120, 53, 4, 0.6);
   }

@@ -84,10 +84,10 @@
     // Danger variant
     .btn-danger {
         background-color: var(--color-error-border);
-        color: #fff;
+        color: var(--color-white);
 
         &:hover {
-            background-color: #dc2626;
+            background-color: var(--color-error-hover);
         }
     }
 

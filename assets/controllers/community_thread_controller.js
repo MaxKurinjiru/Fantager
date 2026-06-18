@@ -26,12 +26,12 @@ export default class extends Controller {
         e.preventDefault();
         const body = this.replyInputTarget.value.trim();
         if (!body) {
-            this.showFeedback('warning', this.translationsValue.warning_fill_fields || 'Vyplňte prosím obsah odpovědi.');
+            this.showFeedback('warning', this.translationsValue.warning_fill_fields || '');
             return;
         }
 
         this.submitReplyBtnTarget.disabled = true;
-        this.submitReplyBtnTarget.textContent = this.translationsValue.text_sending || 'Odesílám...';
+        this.submitReplyBtnTarget.textContent = this.translationsValue.text_sending || '';
 
         try {
             const response = await fetch(`/api/v1/forum/threads/${this.threadIdValue}/posts`, {
@@ -42,14 +42,14 @@ export default class extends Controller {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.error ?? (this.translationsValue.error_send_reply || 'Nepodařilo se odeslat odpověď.'));
+                throw new Error(data.error ?? (this.translationsValue.error_send_reply || ''));
             }
 
             window.location.reload();
         } catch (err) {
             this.showFeedback('error', err.message);
             this.submitReplyBtnTarget.disabled = false;
-            this.submitReplyBtnTarget.textContent = this.translationsValue.post_reply || 'Odeslat odpověď';
+            this.submitReplyBtnTarget.textContent = this.translationsValue.post_reply || '';
         }
     }
 
@@ -77,10 +77,10 @@ export default class extends Controller {
             this.replyFormContainerTarget.classList.toggle('hidden', newLockState);
             this.lockedNoticeTarget.classList.toggle('hidden', !newLockState);
             btn.textContent = newLockState
-                ? `🔓 ${this.translationsValue.btn_unlock || 'Odemknout'}`
-                : `🔒 ${this.translationsValue.btn_lock || 'Zamknout'}`;
+                ? `🔓 ${this.translationsValue.btn_unlock || ''}`
+                : `🔒 ${this.translationsValue.btn_lock || ''}`;
         } catch (err) {
-            this.showFeedback('error', this.translationsValue.error_toggle_lock || 'Nepodařilo se změnit zámek tématu.');
+            this.showFeedback('error', this.translationsValue.error_toggle_lock || '');
             btn.textContent = originalText;
         } finally {
             btn.disabled = false;

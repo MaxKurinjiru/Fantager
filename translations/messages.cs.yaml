@@ -642,6 +642,7 @@ finance:
   no_records: Nebyly nalezeny žádné finanční záznamy.
   recent_title: Nedávné transakce
   view_full_ledger: Zobrazit celý deník
+  error_fetch: Nepodařilo se načíst finanční záznamy.
   type_league_reward: Ligová odměna
   type_arena_revenue: Příjmy z arény
   type_summon_fee: Poplatek za vyvolání
