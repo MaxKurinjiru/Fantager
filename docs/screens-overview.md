@@ -213,8 +213,8 @@ The site is divided into two main sections:
     - Slots occupied vs. slots limit
     - List of assigned heroes currently training under this Trainer
 - **Active Team Status:**
-  - Whether training assignments and focus changes are currently **locked** (from Wednesday 12:00 to Friday 10:00)
-  - Next training tick execution time (weekly Friday at 10:00)
+  - Whether training assignments and focus changes are currently **locked** (from Tuesday 12:00 to Thursday 10:00)
+  - Next training tick execution time (weekly Thursday at 10:00)
 
 ### Possible Actions/Buttons:
 - **Configure Trainer Focus** - change focus type (Attribute, Magic, Form, Idle) and target attribute

@@ -31,15 +31,14 @@ The League Screen is rendered in `templates/league/index.html.twig` and uses the
 
 ### 3. Kingdom Leaderboard (Globální žebříček)
 - Shows a list of all teams in the active season ranked kingdom-wide.
-- Ordered by:
-  1. Tier ID / level ASC
-  2. Total Points DESC
-  3. Goal Difference DESC
-  4. Wins DESC
-  5. Player Type (Real players first)
-  6. Team Reputation DESC
-  7. Team Chemistry DESC
-  8. Team ID ASC
+- Ordered kingdom-wide using the standard standing tie-breakers:
+  1. Total Points DESC
+  2. Goal Difference DESC
+  3. Wins DESC
+  4. Player Type (Real players first)
+  5. Team Reputation DESC
+  6. Team Chemistry DESC
+  7. Team ID ASC
 
 ---
 

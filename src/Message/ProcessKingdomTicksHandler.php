@@ -57,6 +57,7 @@ class ProcessKingdomTicksHandler
         private readonly PlayerInactivityService $playerInactivityService,
         private readonly FixtureFormationService $fixtureFormationService,
         private readonly MarketplaceService $marketplaceService,
+        private readonly \App\Service\League\LeagueMatchResolutionService $leagueMatchResolutionService,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
         private readonly \App\Service\League\SeasonTransitionService $seasonTransitionService,
@@ -184,8 +185,9 @@ class ProcessKingdomTicksHandler
 
             case TickType::LeagueMatch:
                 $this->arenaRevenueService->processLeagueMatchTick($kingdom, $scheduledAt);
+                $this->leagueMatchResolutionService->processLeagueMatchTick($kingdom, $scheduledAt);
                 $this->cleanupStaleTemporaryFormations($kingdom);
-                $this->logger->debug(sprintf('Processed league match tick (arena revenue) for Kingdom %s', $kingdom->getName()));
+                $this->logger->debug(sprintf('Processed league match tick for Kingdom %s', $kingdom->getName()));
                 break;
 
             case TickType::SeasonTransition:

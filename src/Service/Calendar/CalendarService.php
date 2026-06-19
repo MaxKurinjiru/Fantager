@@ -68,6 +68,10 @@ class CalendarService
         );
         foreach ($occurrences as $occurrence) {
             $type = $occurrence['type'];
+            if (TickType::LeagueMatch === $type) {
+                continue;
+            }
+
             $time = $occurrence['time'];
             $timeStr = $time->format(\DateTimeInterface::ATOM);
 
@@ -110,12 +114,7 @@ class CalendarService
                 case TickType::WeeklyTraining:
                     $title = $this->userMessages->trans('calendar.tick.weekly_training_title', [], $locale);
                     $description = $this->userMessages->trans('calendar.tick.weekly_training_desc', [], $locale);
-                    $visibility = 'system_only';
-                    break;
-                case TickType::LeagueMatch:
-                    $title = $this->userMessages->trans('calendar.tick.league_match_title', [], $locale);
-                    $description = $this->userMessages->trans('calendar.tick.league_match_desc', [], $locale);
-                    $visibility = 'system_only';
+                    $visibility = 'public';
                     break;
                 case TickType::SeasonTransition:
                     $title = $this->userMessages->trans('calendar.tick.season_transition_title', [], $locale);
@@ -125,12 +124,12 @@ class CalendarService
                 case TickType::WeeklyReset:
                     $title = $this->userMessages->trans('calendar.tick.weekly_reset_title', [], $locale);
                     $description = $this->userMessages->trans('calendar.tick.weekly_reset_desc', [], $locale);
-                    $visibility = 'system_only';
+                    $visibility = 'public';
                     break;
                 case TickType::RaceOptimization:
                     $title = $this->userMessages->trans('calendar.tick.race_optimization_title', [], $locale);
                     $description = $this->userMessages->trans('calendar.tick.race_optimization_desc', [], $locale);
-                    $visibility = 'system_only';
+                    $visibility = 'public';
                     break;
             }
 

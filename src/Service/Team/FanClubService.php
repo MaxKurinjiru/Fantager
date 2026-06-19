@@ -105,10 +105,7 @@ class FanClubService
             $delta = $target > $current ? 1 : -1;
         }
 
-        $newBase = max(self::MIN_FAN_BASE, min(self::MAX_FAN_BASE, $current + $delta));
-        $team->setFanBase($newBase);
-
-        return $newBase;
+        return $this->setFanBaseWithTracking($team, $current + $delta);
     }
 
     public function applyMatchResult(Team $team, MatchResult $result): int
@@ -119,10 +116,41 @@ class FanClubService
             MatchResult::Draw => self::MATCH_DRAW_DELTA,
         };
 
-        $newBase = max(self::MIN_FAN_BASE, min(self::MAX_FAN_BASE, $team->getFanBase() + $delta));
-        $team->setFanBase($newBase);
+        return $this->setFanBaseWithTracking($team, $team->getFanBase() + $delta);
+    }
 
-        return $newBase;
+    public function applyFixtureResult(Team $homeTeam, Team $awayTeam, int $homeScore, int $awayScore): void
+    {
+        if ($homeScore > $awayScore) {
+            $this->applyMatchResult($homeTeam, MatchResult::Win);
+            $this->applyMatchResult($awayTeam, MatchResult::Loss);
+
+            return;
+        }
+
+        if ($homeScore < $awayScore) {
+            $this->applyMatchResult($homeTeam, MatchResult::Loss);
+            $this->applyMatchResult($awayTeam, MatchResult::Win);
+
+            return;
+        }
+
+        $this->applyMatchResult($homeTeam, MatchResult::Draw);
+        $this->applyMatchResult($awayTeam, MatchResult::Draw);
+    }
+
+    private function setFanBaseWithTracking(Team $team, int $newBase): int
+    {
+        $current = $team->getFanBase();
+        $clamped = max(self::MIN_FAN_BASE, min(self::MAX_FAN_BASE, $newBase));
+        $delta = $clamped - $current;
+
+        if (0 !== $delta) {
+            $team->setFanBase($clamped);
+            $team->setLastFanBaseDelta($delta);
+        }
+
+        return $clamped;
     }
 
     public function processDailyEvolutionTick(Kingdom $kingdom): int

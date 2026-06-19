@@ -48,28 +48,28 @@ class TrainingServiceTest extends TestCase
         );
     }
 
-    public function testGetNextTrainingTimeBeforeFriday(): void
+    public function testGetNextTrainingTimeBeforeThursday(): void
     {
-        $now = new \DateTimeImmutable('2026-06-04 15:30:00');
+        $now = new \DateTimeImmutable('2026-06-03 15:30:00');
         $next = $this->trainingService->getNextTrainingTime($now);
 
-        $this->assertSame('2026-06-05 10:00:00', $next->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-06-04 10:00:00', $next->format('Y-m-d H:i:s'));
     }
 
-    public function testGetNextTrainingTimeOnFridayBeforeTen(): void
+    public function testGetNextTrainingTimeOnThursdayBeforeTen(): void
     {
-        $now = new \DateTimeImmutable('2026-06-05 09:00:00');
+        $now = new \DateTimeImmutable('2026-06-04 09:00:00');
         $next = $this->trainingService->getNextTrainingTime($now);
 
-        $this->assertSame('2026-06-05 10:00:00', $next->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-06-04 10:00:00', $next->format('Y-m-d H:i:s'));
     }
 
-    public function testGetNextTrainingTimeOnFridayAfterTen(): void
+    public function testGetNextTrainingTimeOnThursdayAfterTen(): void
     {
-        $now = new \DateTimeImmutable('2026-06-05 10:30:00');
+        $now = new \DateTimeImmutable('2026-06-04 10:30:00');
         $next = $this->trainingService->getNextTrainingTime($now);
 
-        $this->assertSame('2026-06-12 10:00:00', $next->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-06-11 10:00:00', $next->format('Y-m-d H:i:s'));
     }
 
     public function testIsTrainingLockedDuringLockPeriod(): void

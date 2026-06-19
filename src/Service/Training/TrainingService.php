@@ -31,12 +31,12 @@ class TrainingService
 
     public function getNextTrainingTime(\DateTimeImmutable $now): \DateTimeImmutable
     {
-        $fridayThisWeek = $now->modify('this week Friday 10:00:00');
-        if ($now < $fridayThisWeek) {
-            return $fridayThisWeek;
+        $thursdayThisWeek = $now->modify('this week Thursday 10:00:00');
+        if ($now < $thursdayThisWeek) {
+            return $thursdayThisWeek;
         }
 
-        return $now->modify('next week Friday 10:00:00');
+        return $now->modify('next week Thursday 10:00:00');
     }
 
     public function isTrainingLockedForTeam(Team $team, \DateTimeImmutable $now): bool
@@ -45,7 +45,7 @@ class TrainingService
         $nowLocal = $now->setTimezone($tz);
 
         $nextTickLocal = $this->getNextTrainingTime($nowLocal);
-        $lockStartLocal = $nextTickLocal->modify('-46 hours'); // Wednesday 12:00:00
+        $lockStartLocal = $nextTickLocal->modify('-46 hours'); // Tuesday 12:00:00
 
         return $nowLocal >= $lockStartLocal && $nowLocal < $nextTickLocal;
     }

@@ -73,8 +73,8 @@ class TickScheduleCalculator
                 ];
             }
 
-            // 3. Weekly Training (Friday 10:00)
-            if (5 === (int) $current->format('N')) {
+            // 3. Weekly Training (Thursday 10:00)
+            if (4 === (int) $current->format('N')) {
                 $tTraining = new \DateTimeImmutable($dateStr.' 10:00:00', $tz);
                 if ($tTraining > $fromLocal && $tTraining <= $toLocal) {
                     $occurrences[] = [

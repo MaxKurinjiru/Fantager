@@ -48,6 +48,9 @@ class Team
     private int $fanBase = 350;
 
     #[ORM\Column(options: ['default' => 0])]
+    private int $lastFanBaseDelta = 0;
+
+    #[ORM\Column(options: ['default' => 0])]
     private int $gold = 0;
 
     #[ORM\Column(options: ['default' => 0])]
@@ -195,6 +198,18 @@ class Team
     public function setFanBase(int $fanBase): static
     {
         $this->fanBase = $fanBase;
+
+        return $this;
+    }
+
+    public function getLastFanBaseDelta(): int
+    {
+        return $this->lastFanBaseDelta;
+    }
+
+    public function setLastFanBaseDelta(int $lastFanBaseDelta): static
+    {
+        $this->lastFanBaseDelta = $lastFanBaseDelta;
 
         return $this;
     }

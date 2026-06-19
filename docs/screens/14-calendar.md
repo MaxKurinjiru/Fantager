@@ -7,8 +7,8 @@ Purpose: Per-screen API, UI data requirements, and implementation notes for the 
 ## Displayed Information
 
 - **Weekly calendar feed:**
-  - Scheduled server ticks (fatigue recovery, training, league processing, maintenance, etc.)
-  - League fixtures (home/away matches)
+  - Scheduled server ticks (fatigue recovery, training, season transition, maintenance, etc.)
+  - League fixtures (home/away matches; league match ticks are not shown separately)
   - Team-specific training queue completions (when scoped to a team)
 - **Filters:**
   - Show/hide system-only ticks
@@ -68,7 +68,7 @@ The calendar screen retrieves all entries via a unified JSON endpoint:
   ]
   ```
 
-Feed entry types today: `system_tick`, `league_match`, `hero_training_history`. Dynamic world events are deferred — see [future/world-events-system.md](../future/world-events-system.md).
+Feed entry types today: `system_tick`, `league_match`, `hero_training_history`. League fixtures are shown only as `league_match` entries (not as a separate `league_match` system tick). Dynamic world events are deferred — see [future/world-events-system.md](../future/world-events-system.md).
 
 ---
 

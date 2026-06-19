@@ -134,6 +134,7 @@
 
 @layer components {
   .finance-ledger-table__cell { padding: 1rem; }
+  .finance-ledger-table__cell--left { text-align: left; }
   .finance-ledger-table__cell--right { text-align: right; }
   .finance-ledger-table__cell--type { font-weight: 600; }
   .finance-ledger-table__cell--date {

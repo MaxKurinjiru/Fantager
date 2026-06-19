@@ -11,6 +11,7 @@ Displayed Information:
 	- Win/Loss record
 	- Team Morale (value + indicator)
 	- Team Chemistry (value + indicator)
+	- **Fan club size** and most recent change (background stat; read-only badge in team banner)
 - **Quick Stats:**
 	- Number of heroes in roster
 	- Current Gold, Essence, **unpaid debt** (when > 0)

@@ -64,7 +64,7 @@ class LeagueService
             ->getQuery()
             ->getResult();
 
-        usort($standings, [$this, 'compareGlobalStandings']);
+        usort($standings, [$this, 'compareStandings']);
 
         return $standings;
     }
@@ -129,7 +129,7 @@ class LeagueService
     }
 
     /**
-     * Comparison function for standings within a group.
+     * Comparison function for standings (group table and kingdom-wide leaderboard).
      */
     public function compareStandings(LeagueStanding $a, LeagueStanding $b): int
     {
@@ -162,22 +162,6 @@ class LeagueService
 
         // 7. Entity ID ASC
         return $a->getTeam()->getId() <=> $b->getTeam()->getId();
-    }
-
-    /**
-     * Comparison function for global standings (across different tiers and groups).
-     */
-    public function compareGlobalStandings(LeagueStanding $a, LeagueStanding $b): int
-    {
-        $tierA = $a->getGroup()->getTier();
-        $tierB = $b->getGroup()->getTier();
-
-        if ($tierA->getId() !== $tierB->getId()) {
-            // Lower tier ID is created first (T1 is created before T2, etc.)
-            return $tierA->getId() <=> $tierB->getId();
-        }
-
-        return $this->compareStandings($a, $b);
     }
 
     /**

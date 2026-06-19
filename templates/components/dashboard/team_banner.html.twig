@@ -56,6 +56,19 @@
                     {{ 'dashboard.reputation'|trans }}: <span class="db-banner__badge-value">{{ team.reputation }}</span>
                 </span>
             </div>
+
+            {# Fanklub #}
+            <div class="db-banner__badge db-banner__badge--fan-base">
+                <span>📣</span>
+                <span class="db-banner__badge-label">
+                    {{ 'dashboard.fan_base'|trans }}: <span class="db-banner__badge-value">{{ team.fanBase }}</span>
+                    {% if team.lastFanBaseDelta != 0 %}
+                        <span class="db-banner__badge-delta db-banner__badge-delta--{% if team.lastFanBaseDelta > 0 %}up{% else %}down{% endif %}">
+                            {{ team.lastFanBaseDelta > 0 ? '+' : '' }}{{ team.lastFanBaseDelta }}
+                        </span>
+                    {% endif %}
+                </span>
+            </div>
         </div>
 
     </div>

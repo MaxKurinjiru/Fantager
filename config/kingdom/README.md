@@ -31,6 +31,12 @@ php bin/console app:kingdom:initialize "Main Kingdom" \
 
 Rough guide: `--test` alone ≈ 0–6 days in; `--test --start-offset-days=-21` ≈ 4 calendar weeks; `-28` ≈ 5 weeks. Season length is 77 days (11 weeks) — do not offset beyond that.
 
+If league fixtures stayed **scheduled** after catch-up (timezone mismatch on older bootstraps), resolve them manually:
+
+```bash
+php bin/console app:league:resolve-pending-fixtures --kingdom-id=<id>
+```
+
 | File | Purpose |
 |------|---------|
 | `kingdom.defaults.json` | Kingdom entity settings (language, timezone, game_speed, level_cap, xp_modifier, marketplace_tax_rate, season_length) |

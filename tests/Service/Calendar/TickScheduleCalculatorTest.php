@@ -100,19 +100,15 @@ class TickScheduleCalculatorTest extends TestCase
 
         // Expected on Friday:
         // Fatigue Recovery (04:00)
-        // Weekly Training (10:00)
         // League Match (18:00)
         // Season Transition (19:00)
         
         $this->assertContains(TickType::FatigueRecovery->value, $types);
-        $this->assertContains(TickType::WeeklyTraining->value, $types);
+        $this->assertNotContains(TickType::WeeklyTraining->value, $types);
         $this->assertContains(TickType::LeagueMatch->value, $types);
         $this->assertContains(TickType::SeasonTransition->value, $types);
 
         foreach ($occurrences as $o) {
-            if ($o['type'] === TickType::WeeklyTraining) {
-                $this->assertSame('2026-06-12T10:00:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
-            }
             if ($o['type'] === TickType::SeasonTransition) {
                 $this->assertSame('2026-06-12T19:00:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
             }
@@ -133,9 +129,29 @@ class TickScheduleCalculatorTest extends TestCase
         $types = array_map(static fn(array $o): string => $o['type']->value, $occurrences);
 
         $this->assertContains(TickType::FatigueRecovery->value, $types);
-        $this->assertContains(TickType::WeeklyTraining->value, $types);
+        $this->assertNotContains(TickType::WeeklyTraining->value, $types);
         $this->assertContains(TickType::LeagueMatch->value, $types);
         $this->assertNotContains(TickType::SeasonTransition->value, $types);
+    }
+
+    public function testGenerateOccurrencesThursdayWithTraining(): void
+    {
+        $from = new \DateTimeImmutable('2026-06-11T00:00:00Z');
+        $to = new \DateTimeImmutable('2026-06-11T23:59:59Z');
+
+        $occurrences = $this->calculator->generateOccurrences($from, $to, 'UTC');
+
+        $types = array_map(static fn(array $o): string => $o['type']->value, $occurrences);
+
+        $this->assertContains(TickType::FatigueRecovery->value, $types);
+        $this->assertContains(TickType::WeeklyTraining->value, $types);
+        $this->assertNotContains(TickType::LeagueMatch->value, $types);
+
+        foreach ($occurrences as $o) {
+            if ($o['type'] === TickType::WeeklyTraining) {
+                $this->assertSame('2026-06-11T10:00:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
+            }
+        }
     }
 
     public function testGenerateOccurrencesRaceOptimizationOnSunday(): void

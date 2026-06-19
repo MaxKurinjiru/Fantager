@@ -8,9 +8,11 @@ use App\Entity\Kingdom\Kingdom;
 use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\LeagueFixtureStatus;
+use App\Service\League\LeagueFixtureKickoffMatcher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/** @extends ServiceEntityRepository<LeagueFixture> */
 class LeagueFixtureRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -79,18 +81,52 @@ class LeagueFixtureRepository extends ServiceEntityRepository
     }
 
     /**
+     * Scheduled fixtures for a league-match tick instant.
+     *
+     * Ticks are stored in UTC (kingdom-local 18:00 converted). Older fixtures were stored
+     * as naive wall-clock UTC (18:00 without conversion) — both shapes are matched.
+     *
      * @return list<LeagueFixture>
      */
     public function findScheduledFixturesAtTime(Kingdom $kingdom, \DateTimeImmutable $scheduledAt): array
     {
+        [$utcInstant, $legacyWallClockUtc] = LeagueFixtureKickoffMatcher::resolveMatchCandidates($kingdom, $scheduledAt);
+
+        $qb = $this->createQueryBuilder('f')
+            ->join('f.homeTeam', 'home')
+            ->where('home.kingdom = :kingdom')
+            ->andWhere('f.status = :status')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('status', LeagueFixtureStatus::Scheduled);
+
+        if ($utcInstant == $legacyWallClockUtc) {
+            $qb->andWhere('f.scheduledAt = :scheduledAt')
+                ->setParameter('scheduledAt', $utcInstant);
+        } else {
+            $qb->andWhere('f.scheduledAt = :utcInstant OR f.scheduledAt = :legacyWallClockUtc')
+                ->setParameter('utcInstant', $utcInstant)
+                ->setParameter('legacyWallClockUtc', $legacyWallClockUtc);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * All scheduled fixtures whose kickoff is at or before the given instant.
+     *
+     * @return list<LeagueFixture>
+     */
+    public function findPendingFixturesUntil(Kingdom $kingdom, \DateTimeImmutable $until): array
+    {
         return $this->createQueryBuilder('f')
             ->join('f.homeTeam', 'home')
             ->where('home.kingdom = :kingdom')
-            ->andWhere('f.scheduledAt = :scheduledAt')
             ->andWhere('f.status = :status')
+            ->andWhere('f.scheduledAt <= :until')
             ->setParameter('kingdom', $kingdom)
-            ->setParameter('scheduledAt', $scheduledAt)
             ->setParameter('status', LeagueFixtureStatus::Scheduled)
+            ->setParameter('until', $until)
+            ->orderBy('f.scheduledAt', 'ASC')
             ->getQuery()
             ->getResult();
     }

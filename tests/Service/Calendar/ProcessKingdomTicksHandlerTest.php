@@ -37,6 +37,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $playerInactivityServiceMock;
     private $fixtureFormationServiceMock;
     private $marketplaceServiceMock;
+    private $leagueMatchResolutionServiceMock;
     private ProcessKingdomTicksHandler $handler;
 
     protected function setUp(): void
@@ -53,6 +54,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
         $this->playerInactivityServiceMock = $this->createMock(\App\Service\Auth\PlayerInactivityService::class);
         $this->fixtureFormationServiceMock = $this->createMock(\App\Service\Formation\FixtureFormationService::class);
         $this->marketplaceServiceMock = $this->createMock(\App\Service\Marketplace\MarketplaceService::class);
+        $this->leagueMatchResolutionServiceMock = $this->createMock(\App\Service\League\LeagueMatchResolutionService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
         $this->seasonTransitionServiceMock = $this->createMock(\App\Service\League\SeasonTransitionService::class);
@@ -70,6 +72,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->playerInactivityServiceMock,
             $this->fixtureFormationServiceMock,
             $this->marketplaceServiceMock,
+            $this->leagueMatchResolutionServiceMock,
             $this->entityManagerMock,
             $this->loggerMock,
             $this->seasonTransitionServiceMock,

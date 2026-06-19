@@ -554,7 +554,7 @@ Training is the primary method for improving hero attributes, expanding magic ca
 - **Hero slot limits** — Each trainer has a dynamic number of hero slots: `3 + floor((trainingFacilityLevel - 1) / 2)`.
 - **Single Active Training** — A hero can be assigned to at most one Trainer. While assigned, the hero status is set to `Training`.
 - **Trainer Aging** — Trainers age during each **training tick** (weekly cycle) by the same amount a hero would age from a combat death. This applies universally to **all races, including Undead** *(overrides the Undead race exception of aging only through combat deaths)*.
-- **Lock Period** — Training configurations and assignments are locked starting on **Wednesday at 12:00:00** (server local time) and ending when the weekly tick processes on **Friday at 10:00:00**. During this time, players cannot configure trainers or change hero assignments.
+- **Lock Period** — Training configurations and assignments are locked starting on **Tuesday at 12:00:00** (server local time) and ending when the weekly tick processes on **Thursday at 10:00:00**. During this time, players cannot configure trainers or change hero assignments.
 
 #### Training Setup
 
@@ -604,8 +604,8 @@ To train heroes, a player configures a trainer:
 - **Fatigue Cost**: Standard training (Attribute/Magic) increases fatigue by +20 per tick. Recovery training (Form) decreases fatigue by -20 per tick.
 
 #### Time Investment
-- **Weekly Cycle**: Training runs in a weekly cycle, processed during the server tick every Friday at 10:00.
-- **Pre-tick Lock**: Setting changes and assignments are locked from Wednesday 12:00:00 to Friday 10:00:00 local time.
+- **Weekly Cycle**: Training runs in a weekly cycle, processed during the server tick every Thursday at 10:00.
+- **Pre-tick Lock**: Setting changes and assignments are locked from Tuesday 12:00:00 to Thursday 10:00:00 local time.
 
 ---
 
@@ -633,7 +633,7 @@ To train heroes, a player configures a trainer:
 
 | Limitation | Details |
 |:---|:---|
-| **Lock Period** | No trainer configuration or hero assignment changes can be made between Wednesday 12:00:00 and Friday 10:00:00. |
+| **Lock Period** | No trainer configuration or hero assignment changes can be made between Tuesday 12:00:00 and Thursday 10:00:00. |
 | **Trainer Limits** | Maximum `2 + floor((trainingFacilityLevel - 1) / 2)` trainers per team. |
 | **Slot Limits** | Maximum `3 + floor((trainingFacilityLevel - 1) / 2)` heroes assigned per trainer. |
 | **Fatigue Constraints** | Standard training adds fatigue (+20). High fatigue (100) blocks further training gains until fatigue is reduced (e.g., via Form recovery focus or rest). |

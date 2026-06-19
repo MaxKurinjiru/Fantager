@@ -94,6 +94,7 @@ class SeasonTransitionServiceTest extends TestCase
     {
         $kingdom = new Kingdom();
         $kingdom->setName('Test Kingdom');
+        $kingdom->setTimezone('UTC');
         $kingdom->setSeasonLength(77);
         $kingdom->setLeagueTiersConfig([
             'teams_per_group' => 10,

@@ -384,47 +384,88 @@
     padding: 2rem 0;
   }
 
-  .cal-event {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  .cal-day-group {
     background-color: var(--overlay-surface-raised-60);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
-    padding: 1rem;
-    backdrop-filter: blur(12px);
+    overflow: hidden;
 
-    @media (min-width: 768px) {
-      flex-direction: row;
-      align-items: center;
+    &--today {
+      border-color: var(--color-brand-500);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-500) 25%, transparent);
+    }
+
+    &__header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.375rem 0.75rem;
+      padding: 0.75rem 1rem;
+      background-color: var(--color-surface-base);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    &__weekday {
+      font-weight: 800;
+      color: var(--color-text-primary);
+      text-transform: capitalize;
+    }
+
+    &__date {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+    }
+
+    &__today {
+      font-size: 0.625rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.125rem 0.5rem;
+      border-radius: var(--radius-sm);
+      background-color: color-mix(in srgb, var(--color-brand-500) 20%, transparent);
+      color: var(--color-brand-400);
+    }
+
+    &__events {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.75rem;
+    }
+
+    &__empty {
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+      font-style: italic;
     }
   }
 
-  .cal-event__date {
-    flex-shrink: 0;
-    text-align: center;
-
-    @media (min-width: 768px) {
-      width: 6rem;
-    }
+  .cal-event {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem;
   }
 
-  .cal-event__weekday {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    font-weight: 700;
-  }
-
-  .cal-event__day {
-    font-size: 1.125rem;
-    font-weight: 800;
-    color: var(--color-white);
+  .cal-day-group .cal-event {
+    backdrop-filter: none;
   }
 
   .cal-event__time {
+    flex-shrink: 0;
+    width: 3.25rem;
     font-size: 0.75rem;
+    font-weight: 700;
     color: var(--color-text-secondary);
+    padding-top: 0.125rem;
+    font-variant-numeric: tabular-nums;
   }
 
   .cal-event__body {
@@ -484,6 +525,75 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .cal-event__batch-count {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  .cal-event__batch {
+    margin-top: 0.125rem;
+  }
+
+  .cal-event__batch-summary {
+    cursor: pointer;
+    list-style: none;
+    font-weight: 700;
+    color: var(--color-text-primary);
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::before {
+      content: '▸';
+      display: inline-block;
+      margin-right: 0.375rem;
+      transition: transform var(--transition-fast);
+    }
+  }
+
+  .cal-event__batch[open] .cal-event__batch-summary::before {
+    transform: rotate(90deg);
+  }
+
+  .cal-event__fixtures {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    max-height: 12rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .cal-event__fixture {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 40%, transparent);
+
+    &--own {
+      border: 1px solid var(--color-brand-500);
+      background-color: color-mix(in srgb, var(--color-brand-500) 12%, transparent);
+    }
+  }
+
+  .cal-event__fixture-match {
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .cal-event__fixture-group {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
   }
 
   .summoning-stat {

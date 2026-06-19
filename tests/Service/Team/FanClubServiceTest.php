@@ -82,6 +82,7 @@ class FanClubServiceTest extends TestCase
 
         $this->assertGreaterThan(100, $newBase);
         $this->assertLessThan($target, $newBase);
+        $this->assertSame($newBase - 100, $team->getLastFanBaseDelta());
     }
 
     public function testApplyMatchResultAdjustsFanBase(): void
@@ -91,9 +92,26 @@ class FanClubServiceTest extends TestCase
 
         $this->fanClubService->applyMatchResult($team, MatchResult::Win);
         $this->assertSame(312, $team->getFanBase());
+        $this->assertSame(12, $team->getLastFanBaseDelta());
 
         $this->fanClubService->applyMatchResult($team, MatchResult::Loss);
         $this->assertSame(302, $team->getFanBase());
+        $this->assertSame(-10, $team->getLastFanBaseDelta());
+    }
+
+    public function testApplyFixtureResultUpdatesBothTeams(): void
+    {
+        $home = new Team();
+        $home->setFanBase(400);
+        $away = new Team();
+        $away->setFanBase(400);
+
+        $this->fanClubService->applyFixtureResult($home, $away, 2, 1);
+
+        $this->assertSame(412, $home->getFanBase());
+        $this->assertSame(12, $home->getLastFanBaseDelta());
+        $this->assertSame(390, $away->getFanBase());
+        $this->assertSame(-10, $away->getLastFanBaseDelta());
     }
 
     public function testProcessDailyEvolutionTickUpdatesAllTeams(): void

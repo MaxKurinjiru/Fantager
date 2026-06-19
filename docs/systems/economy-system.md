@@ -74,12 +74,14 @@ See [calendar-system.md](calendar-system.md) for tick schedule.
 
 **Service:** `App\Service\Team\FanClubService`
 
-Each team has a **`fan_base`** (default 350, range 0–10 000) that drives arena match attendance and therefore ticket revenue.
+> **Not a player-facing feature.** Fan club is a **background mechanic** only — there is no dedicated screen, management UI, or player actions. It affects arena attendance and ticket revenue; size is surfaced on the **dashboard banner** and in the **HQ arena panel** (read-only).
+
+Each team has a **`fan_base`** (default 350, range 0–10 000) that drives arena match attendance and therefore ticket revenue. **`last_fan_base_delta`** stores the most recent change (daily drift or match result) for dashboard display.
 
 | Mechanism | Tick | Effect |
 |-----------|------|--------|
 | **Daily evolution** | `daily_reset` | `fan_base` drifts 3% per day toward a target derived from reputation, morale, chemistry |
-| **Match result delta** | League match *(planned with combat)* | Win +12, loss −10, draw +2 |
+| **Match result delta** | League match | Win +12, loss −10, draw +2 — applied in `LeagueMatchResolutionService` |
 | **Show-up rate** | On demand | Short-term multiplier from reputation, morale, chemistry — used by `ArenaRevenueService` |
 
 Attendance formula (home match): home fans × show-up rate + away fans × 35% travel rate, capped by arena seating capacity.

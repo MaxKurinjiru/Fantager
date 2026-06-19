@@ -89,8 +89,8 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Headquarters** | Fully Implemented | Implemented | Implemented | 7 facilities (no Forge); HQ hub with facility panels; upgrades/downgrades, arena adaptation, passive bonuses. Arena & Summoning panels via `?facility=`. |
 | **Items** | Fully Implemented | Implemented | Implemented | Inventory, equip/unequip, dismantle. |
 | **Spells** | Fully Implemented | Implemented | Implemented | Spell library, learning, slot equipping. |
-| **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, and `LeagueService` implemented; match result processing is pending. |
-| **Combat** | Partially Implemented | Not Implemented | Not Implemented | Data models and entity schemas defined; combat simulator, formulas, and battle execution are missing (Phase 5). |
+| **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, and `LeagueService` implemented; league match tick resolves fixtures via stub random simulator and updates standings. |
+| **Combat** | Partially Implemented | Not Implemented | Not Implemented | Data models and entity schemas defined; `StubRandomMatchSimulator` drives league results until the full combat engine ships (Phase 5). |
 | **World Events** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/world-events-system.md](future/world-events-system.md). |
 | **Dungeons** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/dungeon-system.md](future/dungeon-system.md). Backend removed from codebase. |
 | **Marketplace** | Fully Implemented | Implemented | Implemented | Economy hub at `/app/economy`; listings, bids, transactions, Royal Treasury fee collection, background cron processing. |

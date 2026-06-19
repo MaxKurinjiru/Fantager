@@ -13,7 +13,8 @@
 
         <div class="game-sidebar__section-label">{{ 'sidebar.section_overview'|trans }}</div>
         {% set overview_links = [
-            { route: 'app_dashboard', emoji: '📊', label: 'nav.dashboard', active_check: 'exact' }
+            { route: 'app_dashboard', emoji: '📊', label: 'nav.dashboard', active_check: 'exact' },
+            { route: 'app_calendar', emoji: '📅', label: 'nav.calendar', active_check: 'exact' }
         ] %}
         {% for link in overview_links %}
             {% set is_active = route == link.route %}

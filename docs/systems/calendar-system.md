@@ -17,7 +17,7 @@ The game world operates on automated server ticks executed at scheduled times. T
 | **Daily** | 03:45 | **Inactive Player Cleanup** | Release teams from verified players inactive for 28+ days. |
 | **Daily** | 04:00 | **Fatigue & Form Recovery** | Recovery tick for hero fatigue and form (passive restoration). |
 | **Tuesday** | 18:00 | **League Match (Mid-Week)** | Process scheduled mid-week league fixtures. **Currently implemented:** home-team arena ticket revenue. **Planned (Phase 5):** combat resolution, match XP, post-match fatigue/form/morale/aging. |
-| **Friday** | 10:00 | **Weekly Training** | Process active trainer assignments. Calculate stat gains (non-linear formulas, raw x10 scaling) and apply to heroes. |
+| **Thursday** | 10:00 | **Weekly Training** | Process active trainer assignments. Calculate stat gains (non-linear formulas, raw x10 scaling) and apply to heroes. |
 | **Friday** | 18:00 | **League Match (End-Week)** | Process scheduled end-week league fixtures. **Currently implemented:** home-team arena ticket revenue. **Planned (Phase 5):** combat resolution, match XP, post-match fatigue/form/morale/aging. |
 | **Friday** | 19:00 | **Season Transition** *(Week 11 only)* | Run season resolution service: finalize standings, distribute tier promotion/relegation rewards, execute team transfers (promotions/relegations), initialize the next season. |
 | **Sunday** | 09:30 | **Arena Adaptation** | Apply pending headquarters arena adaptation changes and manage weekly adaptation lock cycles. |
@@ -128,7 +128,7 @@ For each active Kingdom:
 Within the message handler (`ProcessKingdomTicksHandler`):
 - All pending tick logs for the specified Kingdom are processed sequentially.
 - Ticks are sorted first by `scheduledAt ASC` (chronological order) and second by **logical priority** to avoid dependency conflicts when multiple ticks share the same timestamp:
-  1. **Priority 2: Weekly Training** (Friday 10:00) — applies hero stat gains from active trainers.
+  1. **Priority 2: Weekly Training** (Thursday 10:00) — applies hero stat gains from active trainers.
   2. **Priority 3: League Match** (Tuesday/Friday 18:00) — arena revenue and formation cleanup.
   3. **Priority 4: Season Transition** (Friday 19:00, Week 11 only).
   4. **Priority 5: Fatigue & Form Recovery** (Daily 04:00).

@@ -18,7 +18,11 @@
          'type_hero_training_history': 'calendar.type_hero_training_history'|trans,
          'status_scheduled': 'calendar.status_scheduled'|trans,
          'status_completed': 'calendar.status_completed'|trans,
-         'status_failed': 'calendar.status_failed'|trans
+         'status_failed': 'calendar.status_failed'|trans,
+         'today': 'calendar.today'|trans,
+         'day_empty': 'calendar.day_empty'|trans,
+         'league_round_title': 'calendar.league_round_title'|trans,
+         'league_round_count': 'calendar.league_round_count'|trans
      }|json_encode|e('html_attr') }}">
 
     {% include 'components/ui/page_header.html.twig' with {
@@ -56,21 +60,25 @@
         </div>
     </template>
 
-    <template id="template-calendar-empty">
-        <p class="cal-feed-empty js-cal-empty"></p>
-    </template>
-
     <template id="template-calendar-error">
         <p class="cal-feed-error js-cal-error"></p>
     </template>
 
+    <template id="template-calendar-day">
+        <section class="cal-day-group">
+            <header class="cal-day-group__header">
+                <span class="cal-day-group__weekday js-cal-day-weekday"></span>
+                <span class="cal-day-group__date js-cal-day-date"></span>
+                <span class="cal-day-group__today js-cal-day-today hidden">{{ 'calendar.today'|trans }}</span>
+            </header>
+            <div class="cal-day-group__events js-cal-day-events"></div>
+            <p class="cal-day-group__empty js-cal-day-empty hidden"></p>
+        </section>
+    </template>
+
     <template id="template-calendar-event">
         <article class="cal-event">
-            <div class="cal-event__date">
-                <div class="cal-event__weekday js-cal-weekday"></div>
-                <div class="cal-event__day js-cal-day"></div>
-                <div class="cal-event__time js-cal-time"></div>
-            </div>
+            <time class="cal-event__time js-cal-time"></time>
             <div class="cal-event__body">
                 <div class="cal-event__meta">
                     <span class="cal-event__type js-cal-type"></span>
@@ -80,6 +88,32 @@
                 <p class="cal-event__description js-cal-description"></p>
             </div>
         </article>
+    </template>
+
+    <template id="template-calendar-league-batch">
+        <article class="cal-event cal-event--league-batch">
+            <time class="cal-event__time js-cal-time"></time>
+            <div class="cal-event__body">
+                <div class="cal-event__meta">
+                    <span class="cal-event__type js-cal-type"></span>
+                    <span class="cal-event__batch-count js-cal-batch-count"></span>
+                    <span class="cal-event__status js-cal-status"></span>
+                </div>
+                <details class="cal-event__batch">
+                    <summary class="cal-event__batch-summary">
+                        <span class="cal-event__batch-title js-cal-batch-title"></span>
+                    </summary>
+                    <ul class="cal-event__fixtures js-cal-fixtures"></ul>
+                </details>
+            </div>
+        </article>
+    </template>
+
+    <template id="template-calendar-fixture">
+        <li class="cal-event__fixture js-cal-fixture">
+            <span class="cal-event__fixture-match js-cal-fixture-match"></span>
+            <span class="cal-event__fixture-group js-cal-fixture-group"></span>
+        </li>
     </template>
 </div>
 {% endblock %}

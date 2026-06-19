@@ -10,6 +10,7 @@ use App\Enum\LeagueSeasonStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/** @extends ServiceEntityRepository<LeagueStanding> */
 class LeagueStandingRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

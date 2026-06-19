@@ -22,9 +22,14 @@ class LeagueFixtureScheduler
     /**
      * Schedules 18 rounds of league fixtures for a group of teams.
      * Ensures weekly home/away balance and double round-robin constraints.
+     *
+     * Kickoff times are stored in UTC (18:00 kingdom-local converted), aligned with league-match ticks.
      */
-    public function scheduleFixturesForGroup(LeagueGroup $group, \DateTimeImmutable $startDate): void
-    {
+    public function scheduleFixturesForGroup(
+        LeagueGroup $group,
+        \DateTimeImmutable $startDate,
+        string $timezone,
+    ): void {
         /** @var list<Team> $teams */
         $teams = [];
         foreach ($group->getStandings() as $standing) {
@@ -54,10 +59,17 @@ class LeagueFixtureScheduler
             throw new \RuntimeException('Failed to generate a valid league schedule satisfying Home/Away constraints.');
         }
 
-        // 4. Calculate calendar dates aligned to Monday of the next calendar week
-        $prepMonday = (1 === (int) $startDate->format('N'))
-            ? $startDate->setTime(0, 0, 0)
-            : $startDate->modify('next monday')->setTime(0, 0, 0);
+        // 4. Calculate calendar dates aligned to Monday of the next calendar week (kingdom-local)
+        try {
+            $tz = new \DateTimeZone($timezone);
+        } catch (\Exception) {
+            $tz = new \DateTimeZone('UTC');
+        }
+
+        $startLocal = new \DateTimeImmutable($startDate->format('Y-m-d').' 00:00:00', $tz);
+        $prepMonday = (1 === (int) $startLocal->format('N'))
+            ? $startLocal->setTime(0, 0, 0)
+            : $startLocal->modify('next monday')->setTime(0, 0, 0);
 
         for ($r = 0; $r < 18; ++$r) {
             $wPlay = (int) ($r / 2); // 0-indexed week of play (0 to 8)
@@ -66,7 +78,10 @@ class LeagueFixtureScheduler
             $mondayOfWeek = $prepMonday->modify(sprintf('+%d weeks', $calendarWeek - 1));
 
             $dayOffset = (0 === $r % 2) ? 1 : 4; // Tuesday (Monday + 1) or Friday (Monday + 4)
-            $scheduledAt = $mondayOfWeek->modify(sprintf('+%d days', $dayOffset))->setTime(18, 0, 0);
+            $scheduledAt = $mondayOfWeek
+                ->modify(sprintf('+%d days', $dayOffset))
+                ->setTime(18, 0, 0)
+                ->setTimezone(new \DateTimeZone('UTC'));
 
             $pairings = $allRoundsPairings[$r];
             foreach ($pairings as $m => $pair) {

@@ -128,7 +128,7 @@ class KingdomInitializationService
 
         // Schedule fixtures for each group
         foreach ($groups as $group) {
-            $this->fixtureScheduler->scheduleFixturesForGroup($group, $season->getStartDate());
+            $this->fixtureScheduler->scheduleFixturesForGroup($group, $season->getStartDate(), $kingdom->getTimezone());
         }
 
         $this->em->flush();

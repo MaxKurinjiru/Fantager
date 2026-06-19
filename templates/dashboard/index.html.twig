@@ -12,7 +12,7 @@
     {% include 'components/finance/summary_stats.html.twig' with { summary: finance_summary } %}
 
     <div class="dashboard-grid-2">
-        {% include 'components/dashboard/recent_expenses.html.twig' with { recent_expenses: finance_summary.recent_expenses } %}
+        {% include 'components/dashboard/recent_expenses.html.twig' with { recent_transactions: finance_summary.recent_transactions } %}
         {% include 'components/dashboard/recent_chronicle.html.twig' with { recent_chronicle: recent_chronicle } %}
     </div>
 

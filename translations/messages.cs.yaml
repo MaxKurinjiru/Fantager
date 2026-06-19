@@ -286,6 +286,7 @@ dashboard:
   quick_actions: Rychlé akce
   stats: Statistiky týmu
   reputation: Reputace týmu
+  fan_base: Fanklub
   total_heroes: Celkem hrdinů
   available_heroes: Dostupní hrdinové
   in_training: V tréninku
@@ -634,7 +635,7 @@ finance:
   summary_net_period: Bilance (posledních %days% dní)
   summary_transactions_period: Transakcí (posledních %days% dní)
   summary_net_all_time: Celková bilance
-  summary_recent_expenses: Poslední výdaje
+  summary_recent_transactions: Poslední transakce
   filter_type: Filtrovat podle typu
   all_types: Všechny typy
   filter_actor: Filtrovat podle iniciátora
@@ -753,7 +754,7 @@ training:
     in_progress: Zpracovává se
     cancelled: Zrušeno
   scheduled_ticks: Naplánované týdenní vyhodnocení
-  ticks_schedule: "Pátky v 10:00 UTC"
+  ticks_schedule: "Čtvrtky v 10:00 UTC"
   select_trainee: Vyberte svěřence (Hrdinu)
   choose_trainee_opt: "-- Vyberte svěřence --"
   assign_trainer: Přiřadit trenéra (Volitelné)
@@ -826,7 +827,7 @@ training:
   no_trainers_desc: "Váš tým momentálně nevlastní žádné trenéry."
   forecast: "Předpověď"
   average: "Průměr"
-  lock_desc: "Od středy 12:00 do pátku 10:00 jsou tréninky uzamčeny a nelze měnit konfiguraci ani přiřazovat hrdiny."
+  lock_desc: "Od úterý 12:00 do čtvrtku 10:00 jsou tréninky uzamčeny a nelze měnit konfiguraci ani přiřazovat hrdiny."
   dismiss_desc: Propustíte trenéra z týmu. Svěřenci budou automaticky odebráni a obdržíte odstupné (30 % odhadované hodnoty).
   dismiss_btn: Propustit trenéra
   dismiss_confirm: Opravdu chcete propustit tohoto trenéra? Svěřenci budou odebráni z tréninku. Akce je nevratná.
@@ -1096,6 +1097,9 @@ league:
   col_points_hint: Body (3 za výhru, 1 za remízu)
   col_diff_hint: Rozdíl skóre (Zabití − Smrt)
   col_form_hint: Forma z posledních 5 zápasů (V/R/P)
+  form_win_hint: Výhra
+  form_draw_hint: Remíza
+  form_loss_hint: Prohra
   col_group_hint: Ligová skupina
   my_fixtures: Zápasy mého týmu
   group_fixtures: Zápasy skupiny
@@ -1111,6 +1115,10 @@ calendar:
   next_week: Další týden
   loading: Načítání kalendáře...
   empty: V tomto období nejsou žádné události.
+  day_empty: Žádné události
+  today: Dnes
+  league_round_title: Ligové zápasy
+  league_round_count: '%count% zápasů'
   error: Nepodařilo se načíst kalendář.
   filter_team_only: Pouze můj tým
   filter_show_system: Zobrazit systémové ticky

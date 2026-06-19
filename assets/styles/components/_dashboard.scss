@@ -60,6 +60,24 @@
       color: var(--color-amber-400);
       border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
     }
+
+    &--fan-base {
+      background-color: color-mix(in srgb, var(--color-purple-400) 10%, transparent);
+      color: var(--color-purple-400);
+      border-color: color-mix(in srgb, var(--color-purple-400) 20%, transparent);
+    }
+  }
+
+  .db-banner__badge-delta {
+    @apply font-bold ml-1 tabular-nums;
+
+    &--up {
+      color: var(--color-success-text);
+    }
+
+    &--down {
+      color: var(--color-error-text);
+    }
   }
 
   .db-banner__edit-btn {
@@ -446,6 +464,10 @@
     @apply text-xs font-bold shrink-0;
     color: var(--color-error-text);
     font-variant-numeric: tabular-nums;
+
+    &--positive {
+      color: var(--color-success-text);
+    }
   }
 
   .db-expenses-item__time {

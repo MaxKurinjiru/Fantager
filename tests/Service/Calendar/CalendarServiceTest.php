@@ -99,4 +99,35 @@ class CalendarServiceTest extends TestCase
         $this->assertSame('system_only', $feed[0]['visibility']);
         $this->assertSame('scheduled', $feed[0]['status']);
     }
+
+    public function testGetCalendarFeedExcludesLeagueMatchTick(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setTimezone('UTC');
+
+        $start = new \DateTimeImmutable('2026-06-09T00:00:00Z');
+        $end = new \DateTimeImmutable('2026-06-09T23:59:59Z');
+
+        $this->seasonRepositoryMock
+            ->expects($this->exactly(2))
+            ->method('findOneBy')
+            ->willReturnMap([
+                [['kingdom' => $kingdom, 'status' => \App\Enum\LeagueSeasonStatus::Active], null, null],
+                [['kingdom' => $kingdom], ['seasonNumber' => 'DESC'], null],
+            ]);
+
+        $this->scheduleCalculatorMock
+            ->method('generateOccurrences')
+            ->willReturn([
+                ['type' => TickType::LeagueMatch, 'time' => new \DateTimeImmutable('2026-06-09T18:00:00Z')],
+            ]);
+
+        $this->leagueFixtureRepositoryMock
+            ->method('findFixturesInPeriod')
+            ->willReturn([]);
+
+        $feed = $this->service->getCalendarFeed($kingdom, $start, $end, null);
+
+        $this->assertCount(0, $feed);
+    }
 }

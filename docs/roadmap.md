@@ -98,7 +98,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Service Layer**: Training rate calculations. Weekly training tick (`TickType::WeeklyTraining`) processed by `ProcessKingdomTicksHandler`.
 - **API Contracts**: `POST /api/v1/training/trainers/{id}/assign` (assign hero to trainer), `POST /api/v1/training/trainers/{id}/unassign`, `POST /api/v1/training/trainers/{id}/configure`.
 - **Frontend Views**: Trainers dashboard panel, trainers selection list, and assigned trainees list.
-- **Verification**: Assign a hero to a trainer, configure trainer focus, run `bin/console app:ticks:run --time="YYYY-MM-DD 10:00:00"` after the scheduled Friday training tick, and verify hero stats increase correctly.
+- **Verification**: Assign a hero to a trainer, configure trainer focus, run `bin/console app:ticks:run --time="YYYY-MM-DD 10:00:00"` after the scheduled Thursday training tick, and verify hero stats increase correctly.
 - **Status**: ✅ Complete (`TrainingService`, `ProcessKingdomTicksHandler` weekly training tick, `Web\TrainingController`, `Api\V1\TrainingController`, Stimulus: `training_controller.js`).
 
 ---

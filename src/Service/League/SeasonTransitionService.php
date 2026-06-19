@@ -327,7 +327,12 @@ class SeasonTransitionService
                 }
 
                 // Schedule fixtures for this newly seeded group
-                $this->fixtureScheduler->scheduleFixturesForGroup($group, $upcomingSeason->getStartDate());
+                $kingdom = $upcomingSeason->getKingdom();
+                $this->fixtureScheduler->scheduleFixturesForGroup(
+                    $group,
+                    $upcomingSeason->getStartDate(),
+                    $kingdom->getTimezone(),
+                );
             }
         }
 

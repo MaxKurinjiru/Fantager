@@ -49,6 +49,10 @@ Every team in the system, including AI-controlled opponents, is represented by t
 
 Teams aggregate heroes, formations, HQ, and economic resources. Team-level stats include morale, chemistry, and reputation. Roster depth (10 heroes at start) ensures teams can field 6-hero lineups; understaffed teams forfeit matches automatically.
 
+## Team-Level Stats
+
+Morale, chemistry, reputation, and **fan club size** (`fan_base`) are team-level attributes. Fan club is a **background mechanic** — no dedicated screen or player management; it drives arena attendance. Current size and the most recent change (`last_fan_base_delta`) appear on the **dashboard banner**. See [economy-system.md](economy-system.md#fan-club--arena-attendance).
+
 ## Financial Crisis
 
 Player teams track financial health via `unpaid_debt`, `crisis_weeks`, and `last_recovery_action_at`. Prolonged insolvency escalates from warning to restricted play, and ultimately **bankruptcy** (team released to NPC pool).

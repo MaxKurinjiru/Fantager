@@ -152,7 +152,21 @@
   .fixture-card--dashboard {
     @apply h-full;
   }
-  .fixture-card--completed { opacity: 0.8; }
+  .fixture-card--completed {
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, var(--color-surface-base));
+    border-color: color-mix(in srgb, var(--color-border) 70%, transparent);
+    .fixture-card__team { color: var(--color-text-muted); }
+    .fixture-card__team--highlight { color: color-mix(in srgb, var(--color-brand-400) 70%, var(--color-text-muted)); }
+    .fixture-card__date { color: var(--color-text-muted); }
+    .fixture-card__score {
+      background-color: var(--color-surface-overlay);
+      color: var(--color-text-secondary);
+    }
+  }
+  .fixture-card--upcoming {
+    border-color: color-mix(in srgb, var(--color-brand-500) 25%, var(--color-border));
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--color-brand-500) 60%, transparent);
+  }
   .fixture-card__main {
     @apply flex flex-col sm:flex-row items-center justify-between gap-4;
   }
@@ -218,7 +232,7 @@
     @apply whitespace-nowrap w-full sm:w-auto sm:shrink-0;
   }
   .fixture-list { @apply flex flex-col gap-2.5; }
-  .fixture-list-scroll { @apply flex flex-col gap-6 max-h-[70vh] overflow-y-auto pr-2; }
+  .fixture-list--rounds { @apply gap-6; }
   .fixture-round-header { @apply pb-2 pt-2; border-bottom: 1px solid var(--color-border); &:first-child { padding-top: 0; } }
   .fixture-round-header__title { @apply text-xs font-bold uppercase tracking-wide; color: color-mix(in srgb, var(--color-brand-500) 80%, transparent); }
   .fixture-row {
@@ -228,6 +242,27 @@
     &:hover {
       background-color: color-mix(in srgb, var(--color-surface-overlay) 20%, transparent);
       border-color: color-mix(in srgb, var(--color-border) 40%, transparent);
+    }
+  }
+  .fixture-row--completed {
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 50%, transparent);
+    border-color: color-mix(in srgb, var(--color-border) 40%, transparent);
+    .fixture-row__team { color: var(--color-text-muted); }
+    .fixture-row__team--highlight { color: color-mix(in srgb, var(--color-brand-400) 65%, var(--color-text-muted)); }
+    .fixture-row__score {
+      background-color: var(--color-surface-overlay);
+      color: var(--color-text-secondary);
+      font-weight: 600;
+    }
+  }
+  .fixture-row--upcoming {
+    background-color: color-mix(in srgb, var(--color-surface-base) 80%, transparent);
+    border-color: color-mix(in srgb, var(--color-brand-500) 20%, var(--color-border));
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--color-brand-500) 55%, transparent);
+    .fixture-row__score {
+      background-color: color-mix(in srgb, var(--color-success-bg) 35%, var(--color-surface-page));
+      color: var(--color-success-text);
+      border-color: color-mix(in srgb, var(--color-success-border) 25%, transparent);
     }
   }
   .fixture-row__team { @apply truncate; }

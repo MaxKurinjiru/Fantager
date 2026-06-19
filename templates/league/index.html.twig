@@ -58,10 +58,6 @@
                    class="tab-btn {{ tab == 'leaderboard' ? 'tab-btn--active' : '' }}">
                     🌎 {{ 'league.tab_leaderboard'|trans }}
                 </a>
-                <a href="{{ path('app_league', selectedGroup ? { tab: 'calendar', groupId: selectedGroup.id } : { tab: 'calendar' }) }}"
-                   class="tab-btn {{ tab == 'calendar' ? 'tab-btn--active' : '' }}">
-                    🗓️ {{ 'league.tab_calendar'|trans }}
-                </a>
             </div>
 
             {# ==================== TAB 1: STANDINGS ==================== #}
@@ -187,11 +183,11 @@
                                                 {% else %}
                                                     {% for result in team_form %}
                                                         {% if result == 'W' %}
-                                                            <span class="league-form-badge league-form-badge--win" title="{{ 'finance.actor_active'|trans }}">W</span>
+                                                            <span class="league-form-badge league-form-badge--win" title="{{ 'league.form_win_hint'|trans }}">W</span>
                                                         {% elseif result == 'D' %}
-                                                            <span class="league-form-badge league-form-badge--draw" title="{{ 'finance.actor_passive'|trans }}">D</span>
+                                                            <span class="league-form-badge league-form-badge--draw" title="{{ 'league.form_draw_hint'|trans }}">D</span>
                                                         {% else %}
-                                                            <span class="league-form-badge league-form-badge--loss" title="{{ 'flash.invalid_credentials'|trans }}">L</span>
+                                                            <span class="league-form-badge league-form-badge--loss" title="{{ 'league.form_loss_hint'|trans }}">L</span>
                                                         {% endif %}
                                                     {% endfor %}
                                                 {% endif %}
@@ -222,7 +218,7 @@
                                     {% set is_home = f.homeTeam.id == team.id %}
                                     {% set is_completed = f.status.value == 'completed' %}
 
-                                    <div class="fixture-card{% if is_completed %} fixture-card--completed{% endif %}">
+                                    <div class="fixture-card{% if is_completed %} fixture-card--completed{% else %} fixture-card--upcoming{% endif %}">
                                         <div class="fixture-card__main">
                                             <div class="fixture-card__date">
                                                 <span class="fixture-card__date-day">
@@ -283,7 +279,7 @@
                         {% if fixtures is empty %}
                             <p class="league-empty-message">{{ 'dashboard.no_matches'|trans }}</p>
                         {% else %}
-                            <div class="fixture-list-scroll">
+                            <div class="fixture-list fixture-list--rounds">
                                 {% set current_date = null %}
                                 {% set round_count = 0 %}
                                 {% for f in fixtures %}
@@ -298,7 +294,8 @@
                                         </div>
                                     {% endif %}
 
-                                    <div class="fixture-row">
+                                    {% set is_group_completed = f.status.value == 'completed' %}
+                                    <div class="fixture-row{% if is_group_completed %} fixture-row--completed{% else %} fixture-row--upcoming{% endif %}">
                                         <div class="fixture-row__team fixture-row__team--home{% if f.homeTeam.id == team.id %} fixture-row__team--highlight{% endif %}" title="{{ f.homeTeam.name }}">
                                             {{ f.homeTeam.name }}
                                         </div>
@@ -377,7 +374,6 @@
                 {% endif %}
             </div>
 
-            {% include 'components/league/calendar_tab.html.twig' %}
         </div>
     {% endif %}
 </div>

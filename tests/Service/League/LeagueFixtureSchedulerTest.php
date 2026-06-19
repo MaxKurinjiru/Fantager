@@ -50,7 +50,7 @@ class LeagueFixtureSchedulerTest extends TestCase
         // Round 1 (Fri): June 19th at 18:00
 
         // 2. Run the scheduler
-        $scheduler->scheduleFixturesForGroup($group, $startDate);
+        $scheduler->scheduleFixturesForGroup($group, $startDate, 'UTC');
 
         $fixtures = $group->getFixtures();
 
@@ -138,5 +138,35 @@ class LeagueFixtureSchedulerTest extends TestCase
                 $this->assertEquals(1, $weeklyHomeAway[$w][$t]['A'], "Team $t did not play exactly 1 Away match in week $w");
             }
         }
+    }
+
+    public function testScheduleFixturesForGroupStoresUtcKickoffForNonUtcKingdom(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $scheduler = new LeagueFixtureScheduler($em);
+
+        $group = new LeagueGroup();
+        for ($i = 1; $i <= 10; ++$i) {
+            $team = $this->createStub(Team::class);
+            $team->method('getId')->willReturn($i);
+            $standing = new LeagueStanding();
+            $standing->setGroup($group);
+            $standing->setTeam($team);
+            $group->getStandings()->add($standing);
+        }
+
+        $captured = [];
+        $em->method('persist')->willReturnCallback(function (LeagueFixture $fixture) use (&$captured): void {
+            $captured[] = $fixture;
+        });
+
+        $startDate = new \DateTimeImmutable('2026-06-04');
+        $scheduler->scheduleFixturesForGroup($group, $startDate, 'Europe/Prague');
+
+        $this->assertNotEmpty($captured);
+        $first = $captured[0];
+        $local = $first->getScheduledAt()->setTimezone(new \DateTimeZone('Europe/Prague'));
+        $this->assertSame('18:00:00', $local->format('H:i:s'));
+        $this->assertContains((int) $local->format('w'), [2, 5]);
     }
 }

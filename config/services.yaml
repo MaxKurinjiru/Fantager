@@ -30,3 +30,5 @@ services:
     arguments:
       $projectDir: '%kernel.project_dir%'
     public: true
+
+  App\Service\Combat\MatchSimulatorInterface: '@App\Service\Combat\StubRandomMatchSimulator'

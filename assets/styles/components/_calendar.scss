@@ -1,55 +1,14 @@
 @reference "tailwindcss";
 
 // =============================================================================
-//  CALENDAR — event feed and status modifiers
+//  CALENDAR — week navigation (day groups live in _community.scss)
 // =============================================================================
 
-@layer components {
-  .cal-feed {
-    @apply space-y-3;
-  }
+.cal-week-nav {
+  @apply flex gap-2;
 
-  .cal-event {
-    @apply flex flex-col md:flex-row md:items-center gap-3 p-4 rounded-xl backdrop-blur-md;
-    background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
-    border: 1px solid var(--color-border);
-
-    &__date {
-      @apply text-xs font-bold uppercase tracking-wider shrink-0;
-      color: var(--color-text-secondary);
-      min-width: 5rem;
-    }
-
-    &__title {
-      @apply font-semibold flex-1;
-      color: var(--color-text-primary);
-    }
-
-    &__meta {
-      @apply text-xs;
-      color: var(--color-text-muted);
-    }
-
-    &__status {
-      @apply text-[10px] font-bold uppercase;
-
-      &--completed {
-        color: var(--color-success-text);
-      }
-
-      &--scheduled {
-        color: var(--color-warning-text);
-      }
-    }
+  &__label {
+    @apply text-sm font-semibold min-w-[180px] text-center;
+    color: var(--color-text-secondary);
   }
 }
-
-  .cal-week-nav {
-    @apply flex gap-2;
-
-    &__label {
-      @apply text-sm font-semibold min-w-[180px] text-center;
-      color: var(--color-text-secondary);
-    }
-  }
-

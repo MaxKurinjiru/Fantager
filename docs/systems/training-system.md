@@ -25,8 +25,8 @@ Training is configured directly on the **Trainer** instead of individual trainin
 ### Lock Period
 
 To prevent last-minute manipulation before weekly ticks, training configurations and assignments are **locked** during the following period:
-- **Lock Start**: Wednesday at 12:00:00 (server local time)
-- **Lock End**: Friday at 10:00:00 (when the weekly tick processes)
+- **Lock Start**: Tuesday at 12:00:00 (server local time)
+- **Lock End**: Thursday at 10:00:00 (when the weekly tick processes)
 
 During the lock period, players cannot configure trainers, assign heroes, or unassign heroes.
 
@@ -52,7 +52,7 @@ Primary attributes (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) are scaled internall
 
 ## Training Types & Weekly Tick Processing
 
-Every Friday at 10:00, the server processes the training tick for all trainers that have a configured training type.
+Every Thursday at 10:00, the server processes the training tick for all trainers that have a configured training type.
 
 ### 1. Attribute Training
 Trains a primary attribute (STR, DEX, KON, SPD, INT, WIL, CHA, LCK).

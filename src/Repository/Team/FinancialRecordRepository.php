@@ -116,19 +116,4 @@ class FinancialRecordRepository extends ServiceEntityRepository
             'transaction_count' => (int) ($result['transaction_count'] ?? 0),
         ];
     }
-
-    /**
-     * @return list<FinancialRecord>
-     */
-    public function findRecentExpensesByTeam(\App\Entity\Team\Team $team, int $limit = 5): array
-    {
-        return $this->createQueryBuilder('f')
-            ->where('f.team = :team')
-            ->andWhere('f.goldChange < 0')
-            ->setParameter('team', $team)
-            ->orderBy('f.createdAt', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
-    }
 }
