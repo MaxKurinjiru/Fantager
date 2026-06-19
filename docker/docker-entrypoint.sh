@@ -15,4 +15,11 @@ chown -R apache:apache "$APP_DIR/var" || true
 chmod -R 0777 "$APP_DIR/var" || true
 mkdir -p /var/www/opcache && chown -R apache:apache /var/www/opcache || true
 
+# Run database migrations on startup in production environment
+if [ "${APP_ENV:-dev}" = "prod" ]; then
+    echo "Running database migrations..."
+    # We run it as the apache user to ensure correct file permissions on cache/logs generated during console commands
+    su -s /bin/sh -c "php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing" apache
+fi
+
 exec httpd -D FOREGROUND

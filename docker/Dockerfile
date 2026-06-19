@@ -1,5 +1,14 @@
 FROM node:24-alpine AS node
 
+# Build stage for frontend assets
+FROM node:24-alpine AS asset-builder
+WORKDIR /app
+COPY package*.json webpack.config.js postcss.config.cjs tailwind.config.cjs ./
+COPY assets/ ./assets/
+COPY templates/ ./templates/
+COPY translations/ ./translations/
+RUN npm ci && npm run build
+
 FROM alpine:3.23
 
 ENV TZ=Europe/Prague
@@ -37,8 +46,21 @@ COPY docker/apache/localhost.conf /etc/apache2/conf.d/localhost.conf
 
 WORKDIR /var/www/html
 
-
+# Copy application code
 COPY --chown=apache:apache . /var/www/html
+
+# Copy pre-compiled frontend assets
+COPY --chown=apache:apache --from=asset-builder /app/public/build /var/www/html/public/build
+
+# Install dependencies for production
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Warm up Symfony cache for production
+RUN mkdir -p var/cache var/log var/sessions var/share \
+    && chown -R apache:apache var \
+    && APP_ENV=prod php bin/console cache:warmup --env=prod \
+    && chown -R apache:apache var
 
 # Copy reusable entrypoint script and make it executable
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh

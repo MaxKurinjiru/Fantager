@@ -1,0 +1,62 @@
+name: PHPStan
+
+on:
+  pull_request:
+    paths:
+      - 'src/**/*.php'
+      - 'tests/**/*.php'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpstan.neon'
+      - 'phpstan-baseline.neon'
+      - '.github/workflows/phpstan.yml'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/**/*.php'
+      - 'tests/**/*.php'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpstan.neon'
+      - 'phpstan-baseline.neon'
+
+jobs:
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Build Symfony cache
+        run: |
+          php bin/console cache:warmup --env=dev
+          sudo mkdir -p /tmp/fantager
+          sudo ln -s "$GITHUB_WORKSPACE/var/cache" /tmp/fantager/cache
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --no-progress
