@@ -59,6 +59,16 @@ class GraveyardController extends AbstractController
             $search = null;
         }
 
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 20;
+
+        $totalItems = $this->graveyardPresenter->countFilteredForTeam($team, $role, $cause, $race, $search);
+        $totalPages = max(1, (int) ceil($totalItems / $limit));
+
+        if ($page > $totalPages && $totalItems > 0) {
+            return $this->redirectToRoute('app_graveyard', array_merge($request->query->all(), ['page' => $totalPages]));
+        }
+
         $detailId = (int) $request->query->get('id', 0);
         $selectedMemorial = $detailId > 0
             ? $this->graveyardPresenter->findForTeam($detailId, $team)
@@ -67,7 +77,7 @@ class GraveyardController extends AbstractController
         return $this->render('graveyard/index.html.twig', [
             'team' => $team,
             'summary' => $this->graveyardPresenter->presentSummary($team),
-            'memorials' => $this->graveyardPresenter->presentListForTeam($team, $role, $cause, $race, $search),
+            'memorials' => $this->graveyardPresenter->presentListForTeam($team, $role, $cause, $race, $search, $page, $limit),
             'selected_memorial' => $selectedMemorial,
             'current_role' => $role?->value,
             'current_cause' => $cause?->value,
@@ -76,6 +86,8 @@ class GraveyardController extends AbstractController
             'roles' => HeroRole::cases(),
             'causes' => MemorialCause::cases(),
             'races' => Race::cases(),
+            'page' => $page,
+            'total_pages' => $totalPages,
         ]);
     }
 }

@@ -49,7 +49,17 @@ class FinanceController extends AbstractController
         }
         $sort = $request->query->get('sort', 'date-desc');
 
-        $records = $this->recordRepository->findByTeamFiltered($team, $type, $actor, $sort);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 50;
+
+        $total = $this->recordRepository->countByTeamFiltered($team, $type, $actor);
+        $totalPages = max(1, (int) ceil($total / $limit));
+
+        if ($page > $totalPages && $total > 0) {
+            return $this->redirectToRoute('app_finance', array_merge($request->query->all(), ['page' => $totalPages]));
+        }
+
+        $records = $this->recordRepository->findByTeamFiltered($team, $type, $actor, $sort, $page, $limit);
         $summary = $this->financeSummaryService->buildOverview($team);
 
         return $this->render('finance/index.html.twig', [
@@ -61,6 +71,9 @@ class FinanceController extends AbstractController
             'current_sort' => $sort,
             'types' => FinancialRecordType::cases(),
             'actors' => FinancialRecordActor::cases(),
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total' => $total,
         ]);
     }
 }

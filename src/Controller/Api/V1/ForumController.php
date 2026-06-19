@@ -27,6 +27,7 @@ class ForumController extends AbstractController
         private readonly ForumThreadRepository $threadRepository,
         private readonly CommunityService $communityService,
         private readonly ForumThreadHelper $threadHelper,
+        private readonly \App\Repository\Community\ForumPostRepository $postRepository,
     ) {
     }
 
@@ -50,12 +51,25 @@ class ForumController extends AbstractController
         );
         $threads = $this->threadHelper->sortForListing($threads);
 
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = min(100, max(1, (int) $request->query->get('limit', 20)));
+
+        $totalItems = count($threads);
+        $totalPages = max(1, (int) ceil($totalItems / $limit));
+
+        $slicedThreads = array_slice($threads, ($page - 1) * $limit, $limit);
+
         $data = array_map(
             fn (ForumThread $thread): array => $this->threadHelper->serializeThread($thread),
-            $threads
+            $slicedThreads
         );
 
-        return $this->json($data);
+        return $this->json([
+            'items' => $data,
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total_items' => $totalItems,
+        ]);
     }
 
     #[Route('/threads', name: 'api_forum_threads_create', methods: ['POST'])]
@@ -93,7 +107,7 @@ class ForumController extends AbstractController
     }
 
     #[Route('/threads/{id}', name: 'api_forum_threads_show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(int $id): JsonResponse
+    public function show(int $id, Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -112,13 +126,30 @@ class ForumController extends AbstractController
             return $this->jsonError('error.access_denied', 403);
         }
 
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = min(100, max(1, (int) $request->query->get('limit', 20)));
+
+        $originalPost = $this->postRepository->getOriginalPost($thread);
+        $totalReplies = $this->postRepository->countReplies($thread);
+        $totalPages = max(1, (int) ceil($totalReplies / $limit));
+
+        $replies = $this->postRepository->findRepliesPage($thread, $page, $limit);
+
         $postsData = [];
-        foreach ($this->threadHelper->getSortedPosts($thread) as $post) {
+        if (1 === $page && $originalPost) {
+            $postsData[] = $this->threadHelper->serializePost($originalPost);
+        }
+        foreach ($replies as $post) {
             $postsData[] = $this->threadHelper->serializePost($post);
         }
 
         $threadData = $this->threadHelper->serializeThread($thread);
-        $threadData['posts'] = $postsData;
+        $threadData['posts'] = [
+            'items' => $postsData,
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total_items' => $totalReplies + ($originalPost ? 1 : 0),
+        ];
 
         return $this->json($threadData);
     }

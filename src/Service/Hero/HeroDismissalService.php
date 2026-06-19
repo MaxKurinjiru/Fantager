@@ -15,6 +15,7 @@ use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
 use App\Service\Team\TeamRosterService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class HeroDismissalService
@@ -28,6 +29,7 @@ class HeroDismissalService
         private readonly GraveyardService $graveyardService,
         private readonly EconomyService $economyService,
         private readonly FinancialCrisisService $financialCrisisService,
+        private readonly TeamChronicleService $teamChronicleService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -86,6 +88,8 @@ class HeroDismissalService
                 ]
             );
         }
+
+        $this->teamChronicleService->recordHeroDismissed($team, $hero, $compensation);
 
         $this->financialCrisisService->recordRecoveryAction($team);
         $this->graveyardService->removeHero($hero);

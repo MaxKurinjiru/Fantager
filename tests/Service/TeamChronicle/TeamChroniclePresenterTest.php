@@ -104,8 +104,46 @@ class TeamChroniclePresenterTest extends TestCase
             $presenter->resolveCategory(ChronicleEventType::PlayerJoined),
         );
         $this->assertSame(
+            ChronicleCategory::Ownership,
+            $presenter->resolveCategory(ChronicleEventType::TeamRenamed),
+        );
+        $this->assertSame(
             ChronicleCategory::Roster,
             $presenter->resolveCategory(ChronicleEventType::SummonCompleted),
         );
+    }
+
+    public function testPresentTeamRenamedEntry(): void
+    {
+        $repository = $this->createMock(TeamChronicleRepository::class);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(
+            static fn (string $id, array $params = [], ?string $domain = null, ?string $locale = null): string => match ($id) {
+                'activity.type.team_renamed' => 'Team renamed',
+                'activity.team_renamed' => sprintf(
+                    'Team was renamed from %s to %s.',
+                    $params['%old_name%'] ?? $params['old_name'] ?? '',
+                    $params['%new_name%'] ?? $params['new_name'] ?? '',
+                ),
+                default => $id,
+            }
+        );
+
+        $log = new TeamChronicle();
+        $log->setTeam(new Team());
+        $log->setType(ChronicleEventType::TeamRenamed);
+        $log->setSubjectKey('activity.team_renamed');
+        $log->setSubjectParams([
+            'old_name' => 'Old Name',
+            'new_name' => 'New Name',
+        ]);
+
+        $presenter = new TeamChroniclePresenter($repository, $translator);
+        $entry = $presenter->presentEntry($log, 'en');
+
+        $this->assertSame('team_renamed', $entry['type']);
+        $this->assertSame('🏷️', $entry['icon']);
+        $this->assertSame('ownership', $entry['category']);
+        $this->assertSame('Team was renamed from Old Name to New Name.', $entry['message']);
     }
 }

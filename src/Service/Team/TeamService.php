@@ -15,6 +15,7 @@ use App\Repository\Hero\HeroRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Formation\FixtureFormationService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TeamService
@@ -26,6 +27,7 @@ class TeamService
         private readonly LeagueFixtureRepository $leagueFixtureRepository,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly FixtureFormationService $fixtureFormationService,
+        private readonly TeamChronicleService $teamChronicleService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -119,7 +121,11 @@ class TeamService
             if (mb_strlen($name) > 100) {
                 throw new UserFacingException('error.team_name_too_long');
             }
-            $team->setName($name);
+            $oldName = $team->getName();
+            if ($oldName !== $name) {
+                $team->setName($name);
+                $this->teamChronicleService->recordTeamRenamed($team, $oldName, $name);
+            }
         }
 
         if (array_key_exists('emblem', $data)) {

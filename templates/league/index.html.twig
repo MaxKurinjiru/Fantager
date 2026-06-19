@@ -153,7 +153,7 @@
                                                 {% else %}
                                                     <span class="standings-row__emblem">🛡️</span>
                                                 {% endif %}
-                                                <span>{{ standing.team.name }}</span>
+                                                <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ standing.team.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': standing.team.name}) }}">{{ standing.team.name }}</button>
                                                 {% if standing.team.isNpc %}
                                                     <span class="league-npc-tag">{{ 'dashboard.npc'|trans }}</span>
                                                 {% endif %}
@@ -228,7 +228,9 @@
                                             </div>
 
                                             <div class="fixture-card__matchup">
-                                                <span class="fixture-card__team fixture-card__team--home{% if is_home %} fixture-card__team--highlight{% endif %}">{{ f.homeTeam.name }}</span>
+                                                <span class="fixture-card__team fixture-card__team--home{% if is_home %} fixture-card__team--highlight{% endif %}">
+                                                    <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ f.homeTeam.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': f.homeTeam.name}) }}">{{ f.homeTeam.name }}</button>
+                                                </span>
 
                                                 <span class="fixture-card__score">
                                                     {% if is_completed and f.battle %}
@@ -238,7 +240,9 @@
                                                     {% endif %}
                                                 </span>
 
-                                                <span class="fixture-card__team fixture-card__team--away{% if not is_home %} fixture-card__team--highlight{% endif %}">{{ f.awayTeam.name }}</span>
+                                                <span class="fixture-card__team fixture-card__team--away{% if not is_home %} fixture-card__team--highlight{% endif %}">
+                                                    <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ f.awayTeam.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': f.awayTeam.name}) }}">{{ f.awayTeam.name }}</button>
+                                                </span>
                                             </div>
 
                                             <div class="fixture-card__meta">
@@ -297,7 +301,7 @@
                                     {% set is_group_completed = f.status.value == 'completed' %}
                                     <div class="fixture-row{% if is_group_completed %} fixture-row--completed{% else %} fixture-row--upcoming{% endif %}">
                                         <div class="fixture-row__team fixture-row__team--home{% if f.homeTeam.id == team.id %} fixture-row__team--highlight{% endif %}" title="{{ f.homeTeam.name }}">
-                                            {{ f.homeTeam.name }}
+                                            <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ f.homeTeam.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': f.homeTeam.name}) }}">{{ f.homeTeam.name }}</button>
                                         </div>
 
                                         <div class="fixture-row__score">
@@ -309,7 +313,7 @@
                                         </div>
 
                                         <div class="fixture-row__team fixture-row__team--away{% if f.awayTeam.id == team.id %} fixture-row__team--highlight{% endif %}" title="{{ f.awayTeam.name }}">
-                                            {{ f.awayTeam.name }}
+                                            <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ f.awayTeam.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': f.awayTeam.name}) }}">{{ f.awayTeam.name }}</button>
                                         </div>
                                     </div>
                                 {% endfor %}
@@ -351,7 +355,7 @@
                                                 {% else %}
                                                     <span class="standings-row__emblem">🛡️</span>
                                                 {% endif %}
-                                                <span>{{ standing.team.name }}</span>
+                                                <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ standing.team.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': standing.team.name}) }}">{{ standing.team.name }}</button>
                                                 {% if standing.team.isNpc %}
                                                     <span class="league-npc-tag">{{ 'dashboard.npc'|trans }}</span>
                                                 {% endif %}

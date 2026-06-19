@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { showConfirm } from '../utils/confirm.js';
 
 export default class extends Controller {
     static targets = [
@@ -10,7 +11,10 @@ export default class extends Controller {
         'sellCatButton', 'sellEntitiesContainer',
         'selectedEntityLabel', 'sellIdInput',
         'listingModeSelect', 'buyoutFieldContainer', 'priceLabel',
-        'alert', 'alertMessage'
+        'alert', 'alertMessage', 'sellSearchInput', 'sellSortSelect', 'sellSortOption',
+        'browsePagination', 'browsePrevBtn', 'browseNextBtn', 'browsePageInfo',
+        'myListingsPagination', 'myListingsPrevBtn', 'myListingsNextBtn', 'myListingsPageInfo',
+        'historyPagination', 'historyPrevBtn', 'historyNextBtn', 'historyPageInfo'
     ];
 
     static values = {
@@ -32,6 +36,14 @@ export default class extends Controller {
         this.activeBrowseCategory = this.hasInitialBrowseCategoryValue ? this.initialBrowseCategoryValue : 'hero';
         this.activeSellCategory = 'hero';
         this.selectedEntityId = null;
+
+        // Initialize page trackers
+        this.browsePage = 1;
+        this.browseTotalPages = 1;
+        this.myListingsPage = 1;
+        this.myListingsTotalPages = 1;
+        this.historyPage = 1;
+        this.historyTotalPages = 1;
 
         if (['browse', 'sell', 'mylistings', 'history'].includes(this.activeTab)) {
             this._showTab(this.activeTab);
@@ -60,10 +72,13 @@ export default class extends Controller {
         });
 
         if (tabName === 'browse') {
+            this.browsePage = 1;
             this.loadListings({ type: this.activeBrowseCategory });
         } else if (tabName === 'mylistings') {
+            this.myListingsPage = 1;
             this.loadMyListings();
         } else if (tabName === 'history') {
+            this.historyPage = 1;
             this.loadHistory();
         }
     }
@@ -114,6 +129,84 @@ export default class extends Controller {
                 card.classList.remove('sell-card--selected');
             });
         });
+
+        // Reset filter search input
+        if (this.hasSellSearchInputTarget) {
+            this.sellSearchInputTarget.value = '';
+        }
+
+        // Reset sort select
+        if (this.hasSellSortSelectTarget) {
+            this.sellSortSelectTarget.value = 'name_asc';
+        }
+
+        // Show/hide sort options based on category
+        if (this.hasSellSortOptionTargets) {
+            this.sellSortOptionTargets.forEach(opt => {
+                const cats = opt.dataset.sellCatOnly ? opt.dataset.sellCatOnly.split(',') : [];
+                if (cats.length > 0) {
+                    const isVisible = cats.includes(catName);
+                    opt.classList.toggle('hidden', !isVisible);
+                    opt.disabled = !isVisible;
+                }
+            });
+        }
+
+        // Reset visibility of all cards in current container
+        this.sellEntitiesContainerTargets.forEach(container => {
+            container.querySelectorAll('.sell-card').forEach(card => {
+                card.classList.remove('hidden');
+            });
+        });
+    }
+
+    filterSellEntities(event) {
+        const query = event.target.value.toLowerCase().trim();
+        const activeContainer = this.sellEntitiesContainerTargets.find(
+            c => c.dataset.sellCatName === this.activeSellCategory
+        );
+        if (!activeContainer) return;
+
+        const cards = activeContainer.querySelectorAll('.sell-card');
+        cards.forEach(card => {
+            const name = card.dataset.entityName.toLowerCase();
+            const matchesQuery = name.includes(query);
+            card.classList.toggle('hidden', !matchesQuery);
+        });
+    }
+
+    sortSellEntities(event) {
+        const sortBy = this.hasSellSortSelectTarget ? this.sellSortSelectTarget.value : 'name_asc';
+        const activeContainer = this.sellEntitiesContainerTargets.find(
+            c => c.dataset.sellCatName === this.activeSellCategory
+        );
+        if (!activeContainer) return;
+
+        const cards = Array.from(activeContainer.querySelectorAll('.sell-card'));
+        
+        cards.sort((a, b) => {
+            if (sortBy === 'name_asc') {
+                return a.dataset.entityName.localeCompare(b.dataset.entityName);
+            } else if (sortBy === 'name_desc') {
+                return b.dataset.entityName.localeCompare(a.dataset.entityName);
+            } else if (sortBy === 'level_desc') {
+                const lvlA = parseInt(a.dataset.entityLevel || 0);
+                const lvlB = parseInt(b.dataset.entityLevel || 0);
+                return lvlB - lvlA;
+            } else if (sortBy === 'age_asc') {
+                const ageA = parseInt(a.dataset.entityAge || 0);
+                const ageB = parseInt(b.dataset.entityAge || 0);
+                return ageA - ageB;
+            } else if (sortBy === 'rarity_desc') {
+                const raritiesOrder = { 'mythic': 6, 'legendary': 5, 'epic': 4, 'rare': 3, 'uncommon': 2, 'common': 1 };
+                const rarA = raritiesOrder[a.dataset.entityRarity] || 0;
+                const rarB = raritiesOrder[b.dataset.entityRarity] || 0;
+                return rarB - rarA;
+            }
+            return 0;
+        });
+
+        cards.forEach(card => activeContainer.appendChild(card));
     }
 
     selectEntityToSell(event) {
@@ -175,6 +268,12 @@ export default class extends Controller {
         const loadingNode = loadingTemplate.content.cloneNode(true);
         this.browseContainerTarget.appendChild(loadingNode);
 
+        if (!params.page) {
+            params.page = this.browsePage;
+        } else {
+            this.browsePage = parseInt(params.page);
+        }
+
         let url = '/api/v1/marketplace';
         const queryParams = new URLSearchParams(params);
         if (queryParams.toString()) {
@@ -184,8 +283,9 @@ export default class extends Controller {
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error(this.translationsValue.error_fetch_listings);
-            const listings = await response.json();
-            this.renderBrowse(listings);
+            const data = await response.json();
+            this.renderBrowse(data.items);
+            this.renderBrowsePagination(data.page, data.total_pages);
         } catch (error) {
             this.browseContainerTarget.innerHTML = '';
             const errorTemplate = document.getElementById('template-error-grid');
@@ -194,11 +294,80 @@ export default class extends Controller {
             errText.textContent = this.translationsValue.error_fetch_listings
                 .replace('%error%', error.message);
             this.browseContainerTarget.appendChild(errorNode);
+            if (this.hasBrowsePaginationTarget) {
+                this.browsePaginationTarget.classList.add('hidden');
+            }
+        }
+    }
+
+    renderBrowsePagination(page, totalPages) {
+        this.browsePage = page;
+        this.browseTotalPages = totalPages;
+
+        if (!this.hasBrowsePaginationTarget) return;
+
+        if (totalPages <= 1) {
+            this.browsePaginationTarget.classList.add('hidden');
+            return;
+        }
+
+        this.browsePaginationTarget.classList.remove('hidden');
+
+        if (this.hasBrowsePrevBtnTarget) {
+            this.browsePrevBtnTarget.disabled = page <= 1;
+        }
+
+        if (this.hasBrowseNextBtnTarget) {
+            this.browseNextBtnTarget.disabled = page >= totalPages;
+        }
+
+        if (this.hasBrowsePageInfoTarget) {
+            const infoPattern = this.translationsValue.page_info || 'Strana %page% z %total%';
+            this.browsePageInfoTarget.textContent = infoPattern
+                .replace('%page%', page)
+                .replace('%total%', totalPages);
+        }
+    }
+
+    async browsePrevPage(e) {
+        e.preventDefault();
+        if (this.browsePage > 1) {
+            this.browsePage--;
+            const params = {};
+            if (this.hasBrowseFilterFormTarget) {
+                const formData = new FormData(this.browseFilterFormTarget);
+                for (const [key, val] of formData.entries()) {
+                    if (val !== '') {
+                        params[key] = val;
+                    }
+                }
+            }
+            params.page = this.browsePage;
+            await this.loadListings(params);
+        }
+    }
+
+    async browseNextPage(e) {
+        e.preventDefault();
+        if (this.browsePage < this.browseTotalPages) {
+            this.browsePage++;
+            const params = {};
+            if (this.hasBrowseFilterFormTarget) {
+                const formData = new FormData(this.browseFilterFormTarget);
+                for (const [key, val] of formData.entries()) {
+                    if (val !== '') {
+                        params[key] = val;
+                    }
+                }
+            }
+            params.page = this.browsePage;
+            await this.loadListings(params);
         }
     }
 
     applyFilters(event) {
         event.preventDefault();
+        this.browsePage = 1;
         const formData = new FormData(event.target);
         const params = {};
         for (const [key, val] of formData.entries()) {
@@ -213,6 +382,7 @@ export default class extends Controller {
         const form = event.currentTarget.closest('form');
         form.reset();
         this._setBrowseCategory(this.activeBrowseCategory);
+        this.browsePage = 1;
         this.loadListings({ type: this.activeBrowseCategory });
     }
 
@@ -248,6 +418,10 @@ export default class extends Controller {
                 card.querySelector('.js-dex').textContent = hero.dex;
                 card.querySelector('.js-kon').textContent = hero.kon;
                 card.querySelector('.js-spd').textContent = hero.spd;
+                card.querySelector('.js-int').textContent = hero.intel;
+                card.querySelector('.js-wil').textContent = hero.wil;
+                card.querySelector('.js-cha').textContent = hero.cha;
+                card.querySelector('.js-lck').textContent = hero.lck;
 
             } else if (listing.listing_type === 'item') {
                 const template = document.getElementById('template-card-item');
@@ -295,6 +469,10 @@ export default class extends Controller {
                 card.querySelector('.js-dex').textContent = trainer.dex;
                 card.querySelector('.js-kon').textContent = trainer.kon;
                 card.querySelector('.js-spd').textContent = trainer.spd;
+                card.querySelector('.js-int').textContent = trainer.intel;
+                card.querySelector('.js-wil').textContent = trainer.wil;
+                card.querySelector('.js-cha').textContent = trainer.cha;
+                card.querySelector('.js-lck').textContent = trainer.lck;
             }
 
             const isSeller = listing.seller_team.id === currentTeamId;
@@ -432,7 +610,12 @@ export default class extends Controller {
         const confirmMsg = (this.translationsValue.confirm_buyout || '')
             .replace('%amount%', price);
 
-        if (!confirm(confirmMsg)) {
+        if (!await showConfirm(
+            this.translationsValue.btn_buyout || 'Buy Now',
+            confirmMsg,
+            this.translationsValue.btn_buyout,
+            this.translationsValue.cancel || 'Cancel'
+        )) {
             return;
         }
 
@@ -471,7 +654,12 @@ export default class extends Controller {
         const confirmMsg = (this.translationsValue.confirm_bid || '')
             .replace('%amount%', bidAmount);
 
-        if (!confirm(confirmMsg)) {
+        if (!await showConfirm(
+            this.translationsValue.btn_bid || 'Place Bid',
+            confirmMsg,
+            this.translationsValue.btn_bid,
+            this.translationsValue.cancel || 'Cancel'
+        )) {
             return;
         }
 
@@ -510,10 +698,11 @@ export default class extends Controller {
         this.myListingsContainerTarget.appendChild(loadingTemplate.content.cloneNode(true));
 
         try {
-            const response = await fetch('/api/v1/marketplace/my-listings');
+            const response = await fetch(`/api/v1/marketplace/my-listings?page=${this.myListingsPage}`);
             if (!response.ok) throw new Error(this.translationsValue.error_fetch_listings);
-            const listings = await response.json();
-            this.renderMyListings(listings);
+            const data = await response.json();
+            this.renderMyListings(data.items);
+            this.renderMyListingsPagination(data.page, data.total_pages);
         } catch (error) {
             this.myListingsContainerTarget.innerHTML = '';
             const errorTemplate = document.getElementById('template-error-row');
@@ -521,6 +710,54 @@ export default class extends Controller {
             errorNode.querySelector('.js-error-text').textContent =
                 this.translationsValue.error_fetch_my_listings.replace('%error%', error.message);
             this.myListingsContainerTarget.appendChild(errorNode);
+            if (this.hasMyListingsPaginationTarget) {
+                this.myListingsPaginationTarget.classList.add('hidden');
+            }
+        }
+    }
+
+    renderMyListingsPagination(page, totalPages) {
+        this.myListingsPage = page;
+        this.myListingsTotalPages = totalPages;
+
+        if (!this.hasMyListingsPaginationTarget) return;
+
+        if (totalPages <= 1) {
+            this.myListingsPaginationTarget.classList.add('hidden');
+            return;
+        }
+
+        this.myListingsPaginationTarget.classList.remove('hidden');
+
+        if (this.hasMyListingsPrevBtnTarget) {
+            this.myListingsPrevBtnTarget.disabled = page <= 1;
+        }
+
+        if (this.hasMyListingsNextBtnTarget) {
+            this.myListingsNextBtnTarget.disabled = page >= totalPages;
+        }
+
+        if (this.hasMyListingsPageInfoTarget) {
+            const infoPattern = this.translationsValue.page_info || 'Strana %page% z %total%';
+            this.myListingsPageInfoTarget.textContent = infoPattern
+                .replace('%page%', page)
+                .replace('%total%', totalPages);
+        }
+    }
+
+    async myListingsPrevPage(e) {
+        e.preventDefault();
+        if (this.myListingsPage > 1) {
+            this.myListingsPage--;
+            await this.loadMyListings();
+        }
+    }
+
+    async myListingsNextPage(e) {
+        e.preventDefault();
+        if (this.myListingsPage < this.myListingsTotalPages) {
+            this.myListingsPage++;
+            await this.loadMyListings();
         }
     }
 
@@ -596,7 +833,13 @@ export default class extends Controller {
 
         const confirmMsg = this.translationsValue.confirm_cancel || '';
 
-        if (!confirm(confirmMsg)) {
+        if (!await showConfirm(
+            this.translationsValue.btn_cancel || 'Cancel Listing',
+            confirmMsg,
+            this.translationsValue.btn_cancel,
+            this.translationsValue.cancel || 'Cancel',
+            'danger'
+        )) {
             return;
         }
 
@@ -630,10 +873,11 @@ export default class extends Controller {
         this.historyContainerTarget.appendChild(loadingTemplate.content.cloneNode(true));
 
         try {
-            const response = await fetch('/api/v1/marketplace/history');
+            const response = await fetch(`/api/v1/marketplace/history?page=${this.historyPage}`);
             if (!response.ok) throw new Error(this.translationsValue.error_fetch_listings);
-            const history = await response.json();
-            this.renderHistory(history);
+            const data = await response.json();
+            this.renderHistory(data.items);
+            this.renderHistoryPagination(data.page, data.total_pages);
         } catch (error) {
             this.historyContainerTarget.innerHTML = '';
             const errorTemplate = document.getElementById('template-error-row');
@@ -641,6 +885,54 @@ export default class extends Controller {
             errorNode.querySelector('.js-error-text').textContent =
                 this.translationsValue.error_fetch_my_listings.replace('%error%', error.message);
             this.historyContainerTarget.appendChild(errorNode);
+            if (this.hasHistoryPaginationTarget) {
+                this.historyPaginationTarget.classList.add('hidden');
+            }
+        }
+    }
+
+    renderHistoryPagination(page, totalPages) {
+        this.historyPage = page;
+        this.historyTotalPages = totalPages;
+
+        if (!this.hasHistoryPaginationTarget) return;
+
+        if (totalPages <= 1) {
+            this.historyPaginationTarget.classList.add('hidden');
+            return;
+        }
+
+        this.historyPaginationTarget.classList.remove('hidden');
+
+        if (this.hasHistoryPrevBtnTarget) {
+            this.historyPrevBtnTarget.disabled = page <= 1;
+        }
+
+        if (this.hasHistoryNextBtnTarget) {
+            this.historyNextBtnTarget.disabled = page >= totalPages;
+        }
+
+        if (this.hasHistoryPageInfoTarget) {
+            const infoPattern = this.translationsValue.page_info || 'Strana %page% z %total%';
+            this.historyPageInfoTarget.textContent = infoPattern
+                .replace('%page%', page)
+                .replace('%total%', totalPages);
+        }
+    }
+
+    async historyPrevPage(e) {
+        e.preventDefault();
+        if (this.historyPage > 1) {
+            this.historyPage--;
+            await this.loadHistory();
+        }
+    }
+
+    async historyNextPage(e) {
+        e.preventDefault();
+        if (this.historyPage < this.historyTotalPages) {
+            this.historyPage++;
+            await this.loadHistory();
         }
     }
 

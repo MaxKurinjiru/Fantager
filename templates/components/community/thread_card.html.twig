@@ -49,9 +49,20 @@
             <span class="thread-card__emblem">👤</span>
         {% endif %}
         <div class="thread-card__author-info">
-            <span class="thread-card__author-name">{{ thread.authorUser.displayName }}</span>
+            <button type="button"
+                    class="thread-card__author-name profile-link"
+                    data-action="click->player-profile#open"
+                    data-player-profile-user-id-param="{{ thread.authorUser.id }}"
+                    aria-label="{{ 'community.view_profile'|trans({'%name%': thread.authorUser.displayName}) }}">
+                {{ thread.authorUser.displayName }}
+            </button>
             {% if thread.authorTeam %}
-                <span class="thread-card__team-name">{{ thread.authorTeam.name }}</span>
+                <span class="thread-card__team-name">
+                    {% if thread.authorTeam.colors %}
+                        <span class="team-color-dot" style="--team-color-primary: {{ thread.authorTeam.colors.primary }}; --team-color-secondary: {{ thread.authorTeam.colors.secondary }};"></span>
+                    {% endif %}
+                    {{ thread.authorTeam.name }}
+                </span>
             {% endif %}
         </div>
     </div>

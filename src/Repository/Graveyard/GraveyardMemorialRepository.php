@@ -63,6 +63,8 @@ class GraveyardMemorialRepository extends ServiceEntityRepository
         ?MemorialCause $cause = null,
         ?Race $race = null,
         ?string $search = null,
+        ?int $page = null,
+        ?int $limit = null,
     ): array {
         $qb = $this->createQueryBuilder('m')
             ->where('m.team = :team')
@@ -90,10 +92,50 @@ class GraveyardMemorialRepository extends ServiceEntityRepository
                 ->setParameter('search', '%'.mb_strtolower(trim($search)).'%');
         }
 
+        if (null !== $page && null !== $limit) {
+            $qb->setFirstResult(($page - 1) * $limit)
+               ->setMaxResults($limit);
+        }
+
         /** @var list<GraveyardMemorial> $records */
         $records = $qb->getQuery()->getResult();
 
         return $records;
+    }
+
+    public function countByTeamFiltered(
+        Team $team,
+        ?HeroRole $role = null,
+        ?MemorialCause $cause = null,
+        ?Race $race = null,
+        ?string $search = null,
+    ): int {
+        $qb = $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->where('m.team = :team')
+            ->setParameter('team', $team);
+
+        if (null !== $role) {
+            $qb->andWhere('m.roleAtDeparture = :role')
+                ->setParameter('role', $role);
+        }
+
+        if (null !== $cause) {
+            $qb->andWhere('m.cause = :cause')
+                ->setParameter('cause', $cause);
+        }
+
+        if (null !== $race) {
+            $qb->andWhere('m.race = :race')
+                ->setParameter('race', $race);
+        }
+
+        if (null !== $search && '' !== trim($search)) {
+            $qb->andWhere('LOWER(m.name) LIKE :search')
+                ->setParameter('search', '%'.mb_strtolower(trim($search)).'%');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     public function findOneForTeam(int $id, Team $team): ?GraveyardMemorial

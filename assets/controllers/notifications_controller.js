@@ -6,6 +6,7 @@ export default class extends Controller {
     static targets = [
         'alert', 'alertMessage', 'badge', 'tableBody',
         'readModal', 'readTitle', 'readType', 'readDate', 'readBody', 'markAllBtn',
+        'pagination', 'prevBtn', 'nextBtn', 'pageInfo'
     ];
 
     static values = {
@@ -16,7 +17,12 @@ export default class extends Controller {
 
     connect() {
         this.activeNotificationId = null;
-        this._onNotificationsOpen = () => this.refreshNotifications();
+        this.currentPage = 1;
+        this.totalPages = 1;
+        this._onNotificationsOpen = () => {
+            this.currentPage = 1;
+            this.refreshNotifications();
+        };
         window.addEventListener('modal:open-notifications', this._onNotificationsOpen);
     }
 
@@ -39,13 +45,14 @@ export default class extends Controller {
 
     async refreshNotifications() {
         try {
-            const response = await fetch('/api/v1/notifications?limit=50');
+            const response = await fetch(`/api/v1/notifications?limit=10&page=${this.currentPage}`);
             if (!response.ok) {
                 throw new Error();
             }
 
-            const notifications = await response.json();
-            this.renderNotifications(notifications);
+            const data = await response.json();
+            this.renderNotifications(data.items);
+            this.renderPagination(data.page, data.total_pages);
         } catch (err) {
             this.showFeedback('error', this.translationsValue.error_load || '');
         }
@@ -173,5 +180,50 @@ export default class extends Controller {
                 badge.classList.add('hidden');
             }
         });
+    }
+
+    renderPagination(page, totalPages) {
+        this.currentPage = page;
+        this.totalPages = totalPages;
+
+        if (!this.hasPaginationTarget) return;
+
+        if (totalPages <= 1) {
+            this.paginationTarget.classList.add('hidden');
+            return;
+        }
+
+        this.paginationTarget.classList.remove('hidden');
+
+        if (this.hasPrevBtnTarget) {
+            this.prevBtnTarget.disabled = page <= 1;
+        }
+
+        if (this.hasNextBtnTarget) {
+            this.nextBtnTarget.disabled = page >= totalPages;
+        }
+
+        if (this.hasPageInfoTarget) {
+            const infoPattern = this.translationsValue.page_info || 'Strana %page% z %total%';
+            this.pageInfoTarget.textContent = infoPattern
+                .replace('%page%', page)
+                .replace('%total%', totalPages);
+        }
+    }
+
+    async prevPage(e) {
+        e.preventDefault();
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            await this.refreshNotifications();
+        }
+    }
+
+    async nextPage(e) {
+        e.preventDefault();
+        if (this.currentPage < this.totalPages) {
+            this.currentPage++;
+            await this.refreshNotifications();
+        }
     }
 }

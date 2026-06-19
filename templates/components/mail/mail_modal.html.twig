@@ -73,6 +73,11 @@
                             </tbody>
                         </table>
                     </div>
+                    <nav class="news-pagination hidden" data-mail-target="pagination">
+                        <button type="button" data-action="click->mail#prevPage" data-mail-target="prevBtn" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</button>
+                        <span class="news-pagination__info" data-mail-target="pageInfo"></span>
+                        <button type="button" data-action="click->mail#nextPage" data-mail-target="nextBtn" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</button>
+                    </nav>
                 </div>
             </div>
         </div>

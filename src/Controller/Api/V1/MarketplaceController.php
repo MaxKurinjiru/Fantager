@@ -34,7 +34,10 @@ class MarketplaceController extends AbstractController
             return $this->jsonError('error.no_team', 400);
         }
 
-        $listings = $this->marketplaceService->searchListings($team->getKingdom(), [
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 20;
+
+        $filters = [
             'type' => $request->query->get('type'),
             'race' => $request->query->get('race'),
             'level_min' => $request->query->get('level_min'),
@@ -44,12 +47,23 @@ class MarketplaceController extends AbstractController
             'price_max' => $request->query->get('price_max'),
             'search' => $request->query->get('search'),
             'sort' => $request->query->get('sort', 'newest'),
-        ]);
+        ];
 
-        return new JsonResponse(array_map(
+        $listings = $this->marketplaceService->searchListings($team->getKingdom(), $filters, $page, $limit);
+        $totalItems = $this->marketplaceService->countSearchListings($team->getKingdom(), $filters);
+        $totalPages = max(1, (int) ceil($totalItems / $limit));
+
+        $data = array_map(
             $this->marketplaceService->serializeListing(...),
             $listings,
-        ));
+        );
+
+        return new JsonResponse([
+            'items' => $data,
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total_items' => $totalItems,
+        ]);
     }
 
     #[Route('/api/v1/marketplace/listings', name: 'api_marketplace_create', methods: ['POST'])]
@@ -156,7 +170,7 @@ class MarketplaceController extends AbstractController
     }
 
     #[Route('/api/v1/marketplace/my-listings', name: 'api_marketplace_my_listings', methods: ['GET'])]
-    public function myListings(): JsonResponse
+    public function myListings(Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -165,14 +179,28 @@ class MarketplaceController extends AbstractController
             return $this->jsonError('error.no_team', 400);
         }
 
-        return new JsonResponse(array_map(
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 10;
+
+        $listings = $this->marketplaceService->getListingsForSeller($team, $page, $limit);
+        $totalItems = $this->marketplaceService->countListingsForSeller($team);
+        $totalPages = max(1, (int) ceil($totalItems / $limit));
+
+        $data = array_map(
             $this->marketplaceService->serializeListing(...),
-            $this->marketplaceService->getListingsForSeller($team),
-        ));
+            $listings,
+        );
+
+        return new JsonResponse([
+            'items' => $data,
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total_items' => $totalItems,
+        ]);
     }
 
     #[Route('/api/v1/marketplace/history', name: 'api_marketplace_history', methods: ['GET'])]
-    public function history(): JsonResponse
+    public function history(Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -181,6 +209,18 @@ class MarketplaceController extends AbstractController
             return $this->jsonError('error.no_team', 400);
         }
 
-        return new JsonResponse($this->marketplaceService->getTransactionHistory($team));
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 20;
+
+        $transactions = $this->marketplaceService->getTransactionHistory($team, $page, $limit);
+        $totalItems = $this->marketplaceService->countTransactionHistory($team);
+        $totalPages = max(1, (int) ceil($totalItems / $limit));
+
+        return new JsonResponse([
+            'items' => $transactions,
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total_items' => $totalItems,
+        ]);
     }
 }

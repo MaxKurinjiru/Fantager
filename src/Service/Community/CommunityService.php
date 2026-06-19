@@ -171,15 +171,30 @@ class CommunityService
      *
      * @return array<int, Message>
      */
-    public function getInboxMessages(User $user): array
+    public function getInboxMessages(User $user, ?int $page = null, ?int $limit = null): array
     {
+        $offset = (null !== $page && null !== $limit) ? ($page - 1) * $limit : null;
+
         /** @var array<int, Message> $result */
         $result = $this->em->getRepository(Message::class)->findBy(
             ['receiverUser' => $user, 'deletedByReceiver' => false],
-            ['id' => 'DESC']
+            ['id' => 'DESC'],
+            $limit,
+            $offset
         );
 
         return $result;
+    }
+
+    /**
+     * Count inbox messages for a player.
+     */
+    public function countInboxMessages(User $user): int
+    {
+        return $this->em->getRepository(Message::class)->count([
+            'receiverUser' => $user,
+            'deletedByReceiver' => false,
+        ]);
     }
 
     /**
@@ -187,15 +202,30 @@ class CommunityService
      *
      * @return array<int, Message>
      */
-    public function getSentMessages(User $user): array
+    public function getSentMessages(User $user, ?int $page = null, ?int $limit = null): array
     {
+        $offset = (null !== $page && null !== $limit) ? ($page - 1) * $limit : null;
+
         /** @var array<int, Message> $result */
         $result = $this->em->getRepository(Message::class)->findBy(
             ['senderUser' => $user, 'deletedBySender' => false],
-            ['id' => 'DESC']
+            ['id' => 'DESC'],
+            $limit,
+            $offset
         );
 
         return $result;
+    }
+
+    /**
+     * Count sent messages for a player.
+     */
+    public function countSentMessages(User $user): int
+    {
+        return $this->em->getRepository(Message::class)->count([
+            'senderUser' => $user,
+            'deletedBySender' => false,
+        ]);
     }
 
     /**

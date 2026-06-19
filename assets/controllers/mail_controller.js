@@ -25,7 +25,8 @@ export default class extends Controller {
         'folderBtn', 'mailFolderTitle', 'mailSenderColTitle', 'mailTableBody',
         'composeModal', 'composeRecipient', 'composeSubject', 'composeBody', 'submitComposeBtn',
         'readMessageModal', 'readSubject', 'readSenderLabel', 'readSenderColor', 'readSenderName', 'readDate', 'readBody', 'deleteMsgBtn',
-        'alert', 'alertMessage', 'badge'
+        'alert', 'alertMessage', 'badge',
+        'pagination', 'prevBtn', 'nextBtn', 'pageInfo'
     ];
 
     static values = {
@@ -37,14 +38,40 @@ export default class extends Controller {
 
     connect() {
         this.currentFolder = 'inbox';
+        this.currentPage = 1;
+        this.totalPages = 1;
         this.activeMessageId = null;
         this.updateBadges();
-        this._onMailOpen = () => this.refreshMessages();
+        this._onMailOpen = () => {
+            this.currentPage = 1;
+            this.refreshMessages();
+        };
         window.addEventListener('modal:open-mail', this._onMailOpen);
+
+        this._onComposeOpen = async (event) => {
+            const prefillUserId = event.detail?.prefillUserId;
+            this.composeRecipientTarget.value = '';
+            this.composeSubjectTarget.value = '';
+            this.composeBodyTarget.value = '';
+            await this.loadRecipients();
+            if (prefillUserId) {
+                const select = this.composeRecipientTarget;
+                let option = select.querySelector(`option[value="${prefillUserId}"]`);
+                if (!option && event.detail.prefillName) {
+                    option = document.createElement('option');
+                    option.value = prefillUserId;
+                    option.textContent = event.detail.prefillName;
+                    select.appendChild(option);
+                }
+                select.value = prefillUserId;
+            }
+        };
+        window.addEventListener('modal:open-compose', this._onComposeOpen);
     }
 
     disconnect() {
         window.removeEventListener('modal:open-mail', this._onMailOpen);
+        window.removeEventListener('modal:open-compose', this._onComposeOpen);
     }
 
 
@@ -70,6 +97,7 @@ export default class extends Controller {
         e.preventDefault();
         const folder = e.currentTarget.dataset.folder;
         this.currentFolder = folder;
+        this.currentPage = 1;
 
         this.folderBtnTargets.forEach(btn => {
             const isCurrent = btn.dataset.folder === folder;
@@ -89,13 +117,59 @@ export default class extends Controller {
 
     async refreshMessages() {
         try {
-            const response = await fetch(`/api/v1/messages?folder=${this.currentFolder}`);
+            const response = await fetch(`/api/v1/messages?folder=${this.currentFolder}&page=${this.currentPage}`);
             if (!response.ok) throw new Error();
 
-            const messages = await response.json();
-            this.renderMessages(messages);
+            const data = await response.json();
+            this.renderMessages(data.items);
+            this.renderPagination(data.page, data.total_pages);
         } catch (err) {
             this.showFeedback('error', this.translationsValue.error_load_mail || '');
+        }
+    }
+
+    renderPagination(page, totalPages) {
+        this.currentPage = page;
+        this.totalPages = totalPages;
+
+        if (!this.hasPaginationTarget) return;
+
+        if (totalPages <= 1) {
+            this.paginationTarget.classList.add('hidden');
+            return;
+        }
+
+        this.paginationTarget.classList.remove('hidden');
+
+        if (this.hasPrevBtnTarget) {
+            this.prevBtnTarget.disabled = page <= 1;
+        }
+
+        if (this.hasNextBtnTarget) {
+            this.nextBtnTarget.disabled = page >= totalPages;
+        }
+
+        if (this.hasPageInfoTarget) {
+            const infoPattern = this.translationsValue.page_info || 'Strana %page% z %total%';
+            this.pageInfoTarget.textContent = infoPattern
+                .replace('%page%', page)
+                .replace('%total%', totalPages);
+        }
+    }
+
+    async prevPage(e) {
+        e.preventDefault();
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            await this.refreshMessages();
+        }
+    }
+
+    async nextPage(e) {
+        e.preventDefault();
+        if (this.currentPage < this.totalPages) {
+            this.currentPage++;
+            await this.refreshMessages();
         }
     }
 
@@ -145,11 +219,8 @@ export default class extends Controller {
         });
     }
 
-    async openComposeModal() {
-        this.composeRecipientTarget.value = '';
-        this.composeSubjectTarget.value = '';
-        this.composeBodyTarget.value = '';
-        await this.loadRecipients();
+    openComposeModal(event) {
+        event?.preventDefault();
         window.dispatchEvent(new CustomEvent('modal:open-compose'));
     }
 

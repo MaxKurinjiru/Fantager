@@ -47,7 +47,13 @@
             <p class="thread-detail-header__meta">
                 {% if thread.authorTeam %}
                     <span class="thread-detail-header__emblem">{{ thread.authorTeam.emblem ?: '🛡️' }}</span>
-                    {{ thread.authorUser.displayName }} · {{ thread.authorTeam.name }}
+                    {{ thread.authorUser.displayName }} · 
+                    <span class="thread-detail-header__team-name">
+                        {% if thread.authorTeam.colors %}
+                            <span class="team-color-dot" style="--team-color-primary: {{ thread.authorTeam.colors.primary }}; --team-color-secondary: {{ thread.authorTeam.colors.secondary }};"></span>
+                        {% endif %}
+                        {{ thread.authorTeam.name }}
+                    </span>
                 {% else %}
                     <span class="thread-detail-header__emblem">👤</span>
                     {{ thread.authorUser.displayName }}
@@ -82,11 +88,23 @@
     {% if replies is not empty %}
         <section class="forum-replies">
             <h2 class="forum-replies__title">
-                {{ 'community.replies_heading'|trans({'%count%': replies|length}) }}
+                {{ 'community.replies_heading'|trans({'%count%': total_replies}) }}
             </h2>
             {% for post in replies %}
                 {% include 'components/community/forum_post.html.twig' with { post: post } %}
             {% endfor %}
+
+            {% if total_pages > 1 %}
+                <nav class="news-pagination" aria-label="{{ 'news.pagination'|trans }}">
+                    {% if page > 1 %}
+                        <a href="{{ path('app_community_thread', app.request.query.all|merge({ id: thread.id, page: page - 1 })) }}" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</a>
+                    {% endif %}
+                    <span class="news-pagination__info">{{ 'news.page_info'|trans({ '%page%': page, '%total%': total_pages }) }}</span>
+                    {% if page < total_pages %}
+                        <a href="{{ path('app_community_thread', app.request.query.all|merge({ id: thread.id, page: page + 1 })) }}" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</a>
+                    {% endif %}
+                </nav>
+            {% endif %}
         </section>
     {% endif %}
 

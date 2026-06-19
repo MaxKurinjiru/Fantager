@@ -114,6 +114,137 @@ class TeamChronicleService
         );
     }
 
+    public function recordHeroDismissed(Team $team, Hero $hero, int $compensation): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::HeroDismissed,
+            'activity.hero_dismissed',
+            [
+                'hero' => $hero->getName(),
+                'compensation' => (string) $compensation,
+            ],
+            [
+                'hero_id' => $hero->getId(),
+                'compensation' => $compensation,
+            ],
+        );
+    }
+
+    public function recordTrainerDismissed(Team $team, Hero $trainer, int $compensation): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::TrainerDismissed,
+            'activity.trainer_dismissed',
+            [
+                'trainer' => $trainer->getName(),
+                'compensation' => (string) $compensation,
+            ],
+            [
+                'trainer_id' => $trainer->getId(),
+                'compensation' => $compensation,
+            ],
+        );
+    }
+
+    public function recordHeroPurchased(Team $buyer, Hero $hero, Team $seller, int $price): TeamChronicle
+    {
+        return $this->create(
+            $buyer,
+            ChronicleEventType::HeroPurchased,
+            'activity.hero_purchased',
+            [
+                'hero' => $hero->getName(),
+                'race' => $hero->getRace()->value,
+                'seller' => $seller->getName(),
+                'price' => (string) $price,
+            ],
+            [
+                'hero_id' => $hero->getId(),
+                'seller_team_id' => $seller->getId(),
+                'price' => $price,
+            ],
+        );
+    }
+
+    public function recordHeroSold(Team $seller, Hero $hero, Team $buyer, int $price): TeamChronicle
+    {
+        return $this->create(
+            $seller,
+            ChronicleEventType::HeroSold,
+            'activity.hero_sold',
+            [
+                'hero' => $hero->getName(),
+                'race' => $hero->getRace()->value,
+                'buyer' => $buyer->getName(),
+                'price' => (string) $price,
+            ],
+            [
+                'hero_id' => $hero->getId(),
+                'buyer_team_id' => $buyer->getId(),
+                'price' => $price,
+            ],
+        );
+    }
+
+    public function recordTrainerPurchased(Team $buyer, Hero $trainer, Team $seller, int $price): TeamChronicle
+    {
+        return $this->create(
+            $buyer,
+            ChronicleEventType::TrainerPurchased,
+            'activity.trainer_purchased',
+            [
+                'trainer' => $trainer->getName(),
+                'race' => $trainer->getRace()->value,
+                'seller' => $seller->getName(),
+                'price' => (string) $price,
+            ],
+            [
+                'trainer_id' => $trainer->getId(),
+                'seller_team_id' => $seller->getId(),
+                'price' => $price,
+            ],
+        );
+    }
+
+    public function recordTrainerSold(Team $seller, Hero $trainer, Team $buyer, int $price): TeamChronicle
+    {
+        return $this->create(
+            $seller,
+            ChronicleEventType::TrainerSold,
+            'activity.trainer_sold',
+            [
+                'trainer' => $trainer->getName(),
+                'race' => $trainer->getRace()->value,
+                'buyer' => $buyer->getName(),
+                'price' => (string) $price,
+            ],
+            [
+                'trainer_id' => $trainer->getId(),
+                'buyer_team_id' => $buyer->getId(),
+                'price' => $price,
+            ],
+        );
+    }
+
+    public function recordTeamRenamed(Team $team, string $oldName, string $newName): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::TeamRenamed,
+            'activity.team_renamed',
+            [
+                'old_name' => $oldName,
+                'new_name' => $newName,
+            ],
+            [
+                'old_name' => $oldName,
+                'new_name' => $newName,
+            ],
+        );
+    }
+
     /**
      * @param array<string, string> $subjectParams
      * @param array<string, mixed>  $data

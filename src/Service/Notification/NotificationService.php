@@ -21,9 +21,14 @@ class NotificationService
     /**
      * @return list<Notification>
      */
-    public function listForUser(User $user, bool $unreadOnly = false, int $limit = 50): array
+    public function listForUser(User $user, bool $unreadOnly = false, int $limit = 50, ?int $page = null): array
     {
-        return $this->notificationRepository->findForUser($user, $limit, $unreadOnly);
+        return $this->notificationRepository->findForUser($user, $limit, $unreadOnly, $page);
+    }
+
+    public function countForUser(User $user, bool $unreadOnly = false): int
+    {
+        return $this->notificationRepository->countForUser($user, $unreadOnly);
     }
 
     public function countUnread(User $user): int

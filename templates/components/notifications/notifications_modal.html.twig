@@ -52,6 +52,12 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <nav class="news-pagination hidden" data-notifications-target="pagination">
+                        <button type="button" data-action="click->notifications#prevPage" data-notifications-target="prevBtn" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</button>
+                        <span class="news-pagination__info" data-notifications-target="pageInfo"></span>
+                        <button type="button" data-action="click->notifications#nextPage" data-notifications-target="nextBtn" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</button>
+                    </nav>
                 </div>
             </div>
         </div>

@@ -34,19 +34,30 @@ class MessageController extends AbstractController
         $user = $this->getUser();
 
         $folder = $request->query->get('folder', 'inbox');
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 10;
 
         if ('sent' === $folder) {
-            $messages = $this->communityService->getSentMessages($user);
+            $messages = $this->communityService->getSentMessages($user, $page, $limit);
+            $totalItems = $this->communityService->countSentMessages($user);
         } else {
-            $messages = $this->communityService->getInboxMessages($user);
+            $messages = $this->communityService->getInboxMessages($user, $page, $limit);
+            $totalItems = $this->communityService->countInboxMessages($user);
         }
+
+        $totalPages = max(1, (int) ceil($totalItems / $limit));
 
         $data = array_map(
             fn ($message) => $this->communityService->serializeMessage($message, $this->authorHelper),
             $messages,
         );
 
-        return $this->json($data);
+        return $this->json([
+            'items' => $data,
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total_items' => $totalItems,
+        ]);
     }
 
     #[Route('/unread-count', name: 'api_messages_unread_count', methods: ['GET'])]

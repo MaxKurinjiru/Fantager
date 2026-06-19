@@ -133,6 +133,26 @@
         {% else %}
             <p class="summon-history-empty-note">{{ 'summoning.no_history'|trans }}</p>
         {% endif %}
+
+        {% if summon_history_total_pages > 1 %}
+            <nav class="news-pagination">
+                {% if summon_history_page > 1 %}
+                    <a href="{{ path('app_hq', app.request.query.all|merge({page: summon_history_page - 1})) }}" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</a>
+                {% else %}
+                    <button class="btn btn-outline btn--sm" disabled>{{ 'news.prev_page'|trans }}</button>
+                {% endif %}
+
+                <span class="news-pagination__info">
+                    {{ 'news.page_info'|trans({'%page%': summon_history_page, '%total%': summon_history_total_pages}) }}
+                </span>
+
+                {% if summon_history_page < summon_history_total_pages %}
+                    <a href="{{ path('app_hq', app.request.query.all|merge({page: summon_history_page + 1})) }}" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</a>
+                {% else %}
+                    <button class="btn btn-outline btn--sm" disabled>{{ 'news.next_page'|trans }}</button>
+                {% endif %}
+            </nav>
+        {% endif %}
     </div>
 </div>
 

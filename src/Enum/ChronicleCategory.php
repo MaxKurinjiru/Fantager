@@ -23,6 +23,7 @@ enum ChronicleCategory: string
                 ChronicleEventType::TeamEstablished,
                 ChronicleEventType::PlayerJoined,
                 ChronicleEventType::PlayerReleased,
+                ChronicleEventType::TeamRenamed,
             ],
             self::Competition => [
                 ChronicleEventType::BattleWin,
@@ -37,10 +38,16 @@ enum ChronicleCategory: string
                 ChronicleEventType::TrainingCompleted,
                 ChronicleEventType::SummonCompleted,
                 ChronicleEventType::DungeonCompleted,
+                ChronicleEventType::HeroDismissed,
+                ChronicleEventType::TrainerDismissed,
             ],
             self::Economy => [
                 ChronicleEventType::ItemPurchased,
                 ChronicleEventType::ItemSold,
+                ChronicleEventType::HeroPurchased,
+                ChronicleEventType::HeroSold,
+                ChronicleEventType::TrainerPurchased,
+                ChronicleEventType::TrainerSold,
             ],
         };
     }

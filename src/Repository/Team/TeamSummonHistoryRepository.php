@@ -23,7 +23,7 @@ class TeamSummonHistoryRepository extends ServiceEntityRepository
     /**
      * @return list<TeamSummonHistory>
      */
-    public function findByTeamFiltered(Team $team, ?string $race = null, ?string $sort = null): array
+    public function findByTeamFiltered(Team $team, ?string $race = null, ?string $sort = null, ?int $page = null, ?int $limit = null): array
     {
         $qb = $this->createQueryBuilder('s')
             ->where('s.team = :team')
@@ -50,7 +50,27 @@ class TeamSummonHistoryRepository extends ServiceEntityRepository
                 break;
         }
 
+        if (null !== $page && null !== $limit) {
+            $qb->setFirstResult(($page - 1) * $limit)
+               ->setMaxResults($limit);
+        }
+
         return $qb->getQuery()->getResult();
+    }
+
+    public function countByTeamFiltered(Team $team, ?string $race = null): int
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->where('s.team = :team')
+            ->setParameter('team', $team);
+
+        if (null !== $race && '' !== $race) {
+            $qb->andWhere('s.raceSelected = :race')
+               ->setParameter('race', $race);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     public function findOneByHero(Hero $hero): ?TeamSummonHistory

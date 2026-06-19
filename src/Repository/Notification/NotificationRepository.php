@@ -22,7 +22,7 @@ class NotificationRepository extends ServiceEntityRepository
     /**
      * @return list<Notification>
      */
-    public function findForUser(User $user, int $limit = 50, bool $unreadOnly = false): array
+    public function findForUser(User $user, int $limit = 50, bool $unreadOnly = false, ?int $page = null): array
     {
         $qb = $this->createQueryBuilder('n')
             ->andWhere('n.user = :user')
@@ -34,8 +34,26 @@ class NotificationRepository extends ServiceEntityRepository
             $qb->andWhere('n.isRead = false');
         }
 
+        if (null !== $page) {
+            $qb->setFirstResult(($page - 1) * $limit);
+        }
+
         /* @var list<Notification> */
         return $qb->getQuery()->getResult();
+    }
+
+    public function countForUser(User $user, bool $unreadOnly = false): int
+    {
+        $qb = $this->createQueryBuilder('n')
+            ->select('COUNT(n.id)')
+            ->andWhere('n.user = :user')
+            ->setParameter('user', $user);
+
+        if ($unreadOnly) {
+            $qb->andWhere('n.isRead = false');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     public function countUnreadForUser(User $user): int

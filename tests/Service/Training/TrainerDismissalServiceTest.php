@@ -12,6 +12,7 @@ use App\Enum\Race;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\Exception\UserFacingException;
 use App\Service\Training\TrainerDismissalService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +28,7 @@ class TrainerDismissalServiceTest extends TestCase
             $this->createMock(GraveyardService::class),
             $this->createMock(EconomyService::class),
             $this->createMock(FinancialCrisisService::class),
+            $this->createMock(TeamChronicleService::class),
             $this->createMock(EntityManagerInterface::class),
         );
 
@@ -50,6 +52,7 @@ class TrainerDismissalServiceTest extends TestCase
             $this->createMock(GraveyardService::class),
             $this->createMock(EconomyService::class),
             $this->createMock(FinancialCrisisService::class),
+            $this->createMock(TeamChronicleService::class),
             $this->createMock(EntityManagerInterface::class),
         );
 

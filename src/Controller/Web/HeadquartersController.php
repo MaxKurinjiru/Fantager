@@ -81,6 +81,16 @@ class HeadquartersController extends AbstractController
             $race = null;
         }
 
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 15;
+
+        $historyRace = 'summoning_chamber' === $request->query->get('facility') ? $race : null;
+        $totalItems = $this->historyRepository->countByTeamFiltered($team, $historyRace);
+        $totalPages = max(1, (int) ceil($totalItems / $limit));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+
         $heroes = $this->heroRepository->findCombatantsByTeam($team);
         $trainers = $this->heroRepository->findTrainersByTeam($team);
         $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
@@ -95,11 +105,15 @@ class HeadquartersController extends AbstractController
             'compatible_races' => $this->summoningService->getCompatibleRacesDetails($team),
             'summon_history' => $this->historyRepository->findByTeamFiltered(
                 $team,
-                'summoning_chamber' === $request->query->get('facility') ? $race : null,
+                $historyRace,
                 $request->query->get('sort', 'date-desc'),
+                $page,
+                $limit
             ),
-            'summon_history_race' => 'summoning_chamber' === $request->query->get('facility') ? $race : null,
+            'summon_history_race' => $historyRace,
             'summon_history_sort' => $request->query->get('sort', 'date-desc'),
+            'summon_history_page' => $page,
+            'summon_history_total_pages' => $totalPages,
             'summon_subtab' => 'summoning_chamber' === $request->query->get('facility')
                 ? $request->query->get('subtab', 'summon')
                 : 'summon',

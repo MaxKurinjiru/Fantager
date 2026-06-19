@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { showConfirm } from '../utils/confirm.js';
 
 export default class extends Controller {
     static targets = [
@@ -18,6 +19,7 @@ export default class extends Controller {
         errorUnequip: String,
         successUnequip: String,
         confirmDismantle: String,
+        titleDismantle: String,
         textDismantling: String,
         errorDismantle: String,
         successDismantle: String,
@@ -135,7 +137,13 @@ export default class extends Controller {
         const btn = e.currentTarget;
         const itemId = btn.dataset.itemId;
 
-        if (!confirm(this.confirmDismantleValue)) return;
+        if (!await showConfirm(
+            this.titleDismantleValue || 'Dismantle Item',
+            this.confirmDismantleValue,
+            this.titleDismantleValue,
+            null, // Default to Cancel
+            'danger'
+        )) return;
 
         btn.disabled = true;
         const originalText = btn.textContent;

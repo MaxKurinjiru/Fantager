@@ -59,6 +59,7 @@ class TeamChroniclePresenter
         ?ChronicleCategory $category = null,
         ?string $sort = 'date-desc',
         ?int $limit = null,
+        ?int $offset = null,
         ?string $locale = null,
     ): array {
         $entries = $this->teamChronicleRepository->findByTeamFiltered(
@@ -67,6 +68,7 @@ class TeamChroniclePresenter
             $category,
             $sort,
             $limit,
+            $offset,
         );
 
         return array_map(
@@ -101,7 +103,14 @@ class TeamChroniclePresenter
             );
         }
 
-        if (ChronicleEventType::SummonCompleted === $type && isset($params['race'])) {
+        $typesWithRace = [
+            ChronicleEventType::SummonCompleted,
+            ChronicleEventType::HeroPurchased,
+            ChronicleEventType::HeroSold,
+            ChronicleEventType::TrainerPurchased,
+            ChronicleEventType::TrainerSold,
+        ];
+        if (in_array($type, $typesWithRace, true) && isset($params['race'])) {
             $raceKey = 'heroes.race_'.$params['race'];
             $params['race'] = $this->translator->trans($raceKey, [], 'messages', $locale);
         }
@@ -183,6 +192,13 @@ class TeamChroniclePresenter
             ChronicleEventType::DungeonCompleted => '🗺️',
             ChronicleEventType::SummonCompleted => '🌀',
             ChronicleEventType::SeasonEnded => '🏆',
+            ChronicleEventType::HeroDismissed => '👋',
+            ChronicleEventType::TrainerDismissed => '👋',
+            ChronicleEventType::HeroPurchased => '🛒',
+            ChronicleEventType::HeroSold => '💰',
+            ChronicleEventType::TrainerPurchased => '🛒',
+            ChronicleEventType::TrainerSold => '💰',
+            ChronicleEventType::TeamRenamed => '🏷️',
         };
     }
 }

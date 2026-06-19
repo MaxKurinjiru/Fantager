@@ -46,7 +46,7 @@ Quick reference: which files implement each game screen.
 | [14-calendar.md](screens/14-calendar.md) | `/app/calendar` | `Web\CalendarController` | `Api\V1\CalendarController` | `templates/calendar/` | `calendar` |
 | [15-marketplace.md](screens/15-marketplace.md) | `/app/marketplace` | `Web\MarketplaceController` | `Api\V1\MarketplaceController` | `templates/marketplace/` | `marketplace` |
 | [16-graveyard.md](screens/16-graveyard.md) | `/app/graveyard` | `Web\GraveyardController` | `Api\V1\GraveyardController` | `templates/graveyard/` | — |
-| [17-community.md](screens/17-community.md) | `/app/community`, `/app/community/threads/{id}` | `Web\CommunityController` | `Api\V1\ForumController`, `Api\V1\MessageController` | `templates/community/` | `community_forum`, `community_thread`, `mail` |
+| [17-community.md](screens/17-community.md) | `/app/community`, `/app/community/threads/{id}` | `Web\CommunityController` | `Api\V1\ForumController`, `Api\V1\MessageController`, `Api\V1\CommunityController` | `templates/community/` | `community_forum`, `community_thread`, `mail`, `player-profile` |
 | [18-arena-management.md](screens/18-arena-management.md) | `/app/arena`, `/app/hq?facility=arena` | `Web\ArenaController`, `Web\HeadquartersController` | `Api\V1\ArenaController` | `templates/arena/`, `templates/components/hq/facility_panel/_arena.html.twig` | `hq` |
 | [19-player-profile-settings.md](screens/19-player-profile-settings.md) | `/app/settings`, account modal | `Web\SettingsController` | `POST /app/settings/*` (JSON from modal) | `templates/components/layout/_account_settings_modal.html.twig` | `account_settings`, `profile_settings`, `modal` |
 
@@ -76,7 +76,7 @@ Quick reference: which files implement each game screen.
 | Items | `ItemService` | `tests/Service/Item/` |
 | Spells | `SpellService` | `tests/Service/Spell/` |
 | Marketplace | `MarketplaceService` | `tests/Service/Marketplace/` |
-| Community | `CommunityService`, `ForumThreadHelper` | `tests/Service/Community/` |
+| Community | `CommunityService`, `ForumThreadHelper`, `PlayerProfileService` | `tests/Service/Community/` |
 | Graveyard | `GraveyardService`, `GraveyardPresenter` | `tests/Service/Graveyard/` |
 | Calendar / ticks | `CalendarService`, `KingdomTickRunnerService`, `ProcessKingdomTicksHandler` | `tests/Service/Calendar/` |
 | League | `LeagueService`, `LeagueFixtureScheduler`, `SeasonTransitionService` | `tests/Service/League/` |

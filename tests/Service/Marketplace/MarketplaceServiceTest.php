@@ -30,6 +30,7 @@ class MarketplaceServiceTest extends TestCase
     private \App\Service\Economy\RoyalTreasuryService $royalTreasuryServiceMock;
     private NotificationHelper $notificationHelperMock;
     private TeamRosterService $teamRosterServiceMock;
+    private \App\Service\TeamChronicle\TeamChronicleService $teamChronicleServiceMock;
     private MarketplaceService $marketplaceService;
 
     protected function setUp(): void
@@ -40,6 +41,7 @@ class MarketplaceServiceTest extends TestCase
         $this->royalTreasuryServiceMock = $this->createMock(\App\Service\Economy\RoyalTreasuryService::class);
         $this->notificationHelperMock = $this->createMock(NotificationHelper::class);
         $this->teamRosterServiceMock = $this->createMock(TeamRosterService::class);
+        $this->teamChronicleServiceMock = $this->createMock(\App\Service\TeamChronicle\TeamChronicleService::class);
 
         $this->marketplaceService = new MarketplaceService(
             $this->entityManagerMock,
@@ -48,6 +50,7 @@ class MarketplaceServiceTest extends TestCase
             $this->royalTreasuryServiceMock,
             $this->notificationHelperMock,
             $this->teamRosterServiceMock,
+            $this->teamChronicleServiceMock,
         );
     }
 

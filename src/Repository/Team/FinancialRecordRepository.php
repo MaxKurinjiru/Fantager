@@ -21,7 +21,7 @@ class FinancialRecordRepository extends ServiceEntityRepository
     /**
      * @return list<FinancialRecord>
      */
-    public function findByTeamFiltered(\App\Entity\Team\Team $team, ?string $type = null, ?string $actor = null, ?string $sort = null): array
+    public function findByTeamFiltered(\App\Entity\Team\Team $team, ?string $type = null, ?string $actor = null, ?string $sort = null, ?int $page = null, ?int $limit = null): array
     {
         $qb = $this->createQueryBuilder('f')
             ->where('f.team = :team')
@@ -53,7 +53,32 @@ class FinancialRecordRepository extends ServiceEntityRepository
                 break;
         }
 
+        if (null !== $page && null !== $limit) {
+            $qb->setFirstResult(($page - 1) * $limit)
+               ->setMaxResults($limit);
+        }
+
         return $qb->getQuery()->getResult();
+    }
+
+    public function countByTeamFiltered(\App\Entity\Team\Team $team, ?string $type = null, ?string $actor = null): int
+    {
+        $qb = $this->createQueryBuilder('f')
+            ->select('COUNT(f.id)')
+            ->where('f.team = :team')
+            ->setParameter('team', $team);
+
+        if (null !== $type && '' !== $type) {
+            $qb->andWhere('f.type = :type')
+               ->setParameter('type', $type);
+        }
+
+        if (null !== $actor && '' !== $actor) {
+            $qb->andWhere('f.actor = :actor')
+               ->setParameter('actor', $actor);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     /**

@@ -176,7 +176,7 @@ error:
   trainer_not_on_team: Trenér nepatří k vašemu týmu.
   trainer_config_locked: Konfigurace tréninku je momentálně uzamčena.
   trainer_assignments_locked: Přiřazení tréninku je momentálně uzamčeno.
-  trainer_only_combatant_assign: K trenérovi lze přiřadit pouze bojové hrdiny.
+  trainer_only_combatant_assign: K trenérovi lze přiřadit pouze hrdiny.
   trainer_hero_not_on_team: Trenér nebo hrdina nepatří k vašemu týmu.
   trainer_hero_already_assigned: Hrdina je již přiřazen trenérovi.
   trainer_hero_only_available: K trenérovi lze přiřadit pouze dostupné hrdiny.
@@ -252,11 +252,12 @@ error:
   formation_not_belong_team: Přiřazená formace nepatří k týmu.
   formation_no_match_to_promote: Neexistuje formace pro zápas k uložení.
   financial_crisis_blocked: 'Tato akce je během finančních restrikcí (%level%) blokována. Prodejte majetek, propusťte hrdiny nebo snižte úroveň zařízení.'
-  graveyard_combatant_only: Odstranit lze pouze bojové hrdiny procesem propuštění hrdiny.
+  graveyard_combatant_only: Odstranit lze pouze hrdiny procesem propuštění hrdiny.
   graveyard_trainer_only: Odstranit lze pouze trenéry procesem propuštění trenéra.
   training_success_configure: Zaměření trenéra bylo úspěšně uloženo.
   training_success_assign: Hrdina byl úspěšně přiřazen trenérovi.
   training_success_unassign: Hrdina byl odebrán od trenéra.
+  player_profile_not_found: Profil hráče nebyl nalezen.
 
 notification:
   marketplace_outbid_title: Přehozen / vráceno
@@ -354,7 +355,7 @@ graveyard:
   age: Věk
   final_level: Finální level
   role:
-    combatant: Bojovník
+    combatant: Hrdina
     trainer: Trenér
   cause:
     dismissed: Propuštění
@@ -395,6 +396,13 @@ activity:
     account_deleted: 'Hráč %player% uvolnil tým — účet byl smazán.'
   season_ended: 'Sezóna %season% skončila v %tier% (pozice %position%, %status%).'
   summon_completed: 'Vyvolán hrdina %hero% (%race%).'
+  hero_dismissed: 'Hrdina %hero% byl propuštěn z týmu (odstupné %compensation% zlata).'
+  trainer_dismissed: 'Trenér %trainer% byl propuštěn z týmu (odstupné %compensation% zlata).'
+  hero_purchased: 'Hrdina %hero% (%race%) byl zakoupen na tržišti od týmu %seller% za %price% zlata.'
+  hero_sold: 'Hrdina %hero% (%race%) byl prodán na tržišti týmu %buyer% za %price% zlata.'
+  trainer_purchased: 'Trenér %trainer% (%race%) byl zakoupen na tržišti od týmu %seller% za %price% zlata.'
+  trainer_sold: 'Trenér %trainer% (%race%) byl prodán na tržišti týmu %buyer% za %price% zlata.'
+  team_renamed: 'Tým byl přejmenován z %old_name% na %new_name%.'
   season_status:
     promoted: postup
     relegated: sestup
@@ -415,6 +423,13 @@ activity:
     dungeon_completed: Dokončen dungeon
     summon_completed: Vyvolání hrdiny
     season_ended: Konec sezóny
+    hero_dismissed: Propuštění hrdiny
+    trainer_dismissed: Propuštění trenéra
+    hero_purchased: Nákup hrdiny
+    hero_sold: Prodej hrdiny
+    trainer_purchased: Nákup trenéra
+    trainer_sold: Prodej trenéra
+    team_renamed: Přejmenování týmu
 
 financial_crisis:
   title_warning: Finanční varování
@@ -1202,6 +1217,11 @@ marketplace:
   sort_price_asc: "Cena: Vzestupně"
   sort_price_desc: "Cena: Sestupně"
   sort_expires_asc: Končící brzy
+  sort_name_asc: "Jméno (A-Z)"
+  sort_name_desc: "Jméno (Z-A)"
+  sort_level_desc: "Úroveň (Sestupně)"
+  sort_age_asc: "Věk (Nejmladší)"
+  sort_rarity_desc: "Rarita (Vzácné první)"
   label_price: Minimální příhoz
   label_buyout: Pevná cena
   label_seller: Prodejce
@@ -1401,6 +1421,18 @@ community:
   error_delete_msg: "Nepodařilo se smazat zprávu."
   from: "Od:"
   locked: "Uzamčeno"
+  view_profile: "Zobrazit profil hráče %name%"
+  send_message: "Napsat zprávu"
+  send_message_aria: "Napsat zprávu tomuto hráči"
+  profile_loading: "Načítám profil..."
+  profile_error: "Profil se nepodařilo načíst."
+  profile_team_stats: "Statistiky týmu"
+  profile_combatants: "Hrdinové"
+  profile_trainers: "Trenéři"
+  profile_league: "Liga"
+  profile_tier: "Divize"
+  profile_position: "Pozice"
+  profile_member_since: "Hráč od:"
 
 email:
   verify_email:

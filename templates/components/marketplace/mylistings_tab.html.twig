@@ -23,4 +23,10 @@
             </tbody>
         </table>
     </div>
+
+    <nav class="news-pagination hidden" data-marketplace-target="myListingsPagination">
+        <button type="button" data-action="click->marketplace#myListingsPrevPage" data-marketplace-target="myListingsPrevBtn" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</button>
+        <span class="news-pagination__info" data-marketplace-target="myListingsPageInfo"></span>
+        <button type="button" data-action="click->marketplace#myListingsNextPage" data-marketplace-target="myListingsNextBtn" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</button>
+    </nav>
 </div>

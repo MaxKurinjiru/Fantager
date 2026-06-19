@@ -30,6 +30,33 @@
                 </button>
             </div>
 
+            {# Sell tab search and sort controls #}
+            <div class="filter-bar filter-bar--spaced mt-4">
+                <div class="filter-bar__controls">
+                    <div class="form-field-group form-field-group--tight w-full">
+                        <label for="sell-search" class="sr-only">{{ 'marketplace.filter_search'|trans }}</label>
+                        <input type="text" id="sell-search"
+                               data-marketplace-target="sellSearchInput"
+                               data-action="input->marketplace#filterSellEntities"
+                               placeholder="{{ 'marketplace.filter_search'|trans }}"
+                               class="form-input">
+                    </div>
+                    <div class="form-field-group form-field-group--tight">
+                        <label for="sell-sort" class="sr-only">{{ 'marketplace.filter_sort'|trans }}</label>
+                        <select id="sell-sort"
+                                data-marketplace-target="sellSortSelect"
+                                data-action="change->marketplace#sortSellEntities"
+                                class="form-input">
+                            <option value="name_asc">{{ 'marketplace.sort_name_asc'|trans }}</option>
+                            <option value="name_desc">{{ 'marketplace.sort_name_desc'|trans }}</option>
+                            <option value="level_desc" data-marketplace-target="sellSortOption" data-sell-cat-only="hero">{{ 'marketplace.sort_level_desc'|trans }}</option>
+                            <option value="age_asc" data-marketplace-target="sellSortOption" data-sell-cat-only="hero,trainer">{{ 'marketplace.sort_age_asc'|trans }}</option>
+                            <option value="rarity_desc" data-marketplace-target="sellSortOption" data-sell-cat-only="item">{{ 'marketplace.sort_rarity_desc'|trans }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             {# Heroes list #}
             <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="hero" class="scroll-grid">
                 {% for hero in heroes %}
@@ -37,6 +64,9 @@
                     <div {% if can_sell %}data-action="click->marketplace#selectEntityToSell"{% endif %}
                          data-entity-id="{{ hero.id }}"
                          data-entity-name="{{ hero.name }}"
+                         data-entity-level="{{ hero.level }}"
+                         data-entity-age="{{ hero.age }}"
+                         data-entity-rarity=""
                          data-locked="{{ can_sell ? '0' : '1' }}"
                          title="{{ can_sell ? '' : 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}"
                          class="sell-card {{ can_sell ? '' : 'sell-card--locked' }}">
@@ -62,6 +92,9 @@
                     <div data-action="click->marketplace#selectEntityToSell"
                          data-entity-id="{{ item.id }}"
                          data-entity-name="{{ item.name }}"
+                         data-entity-level="0"
+                         data-entity-age="0"
+                         data-entity-rarity="{{ item.rarity.value }}"
                          class="sell-card">
                         <div class="entity-row__main">
                             <span class="emoji-icon">🗡️</span>
@@ -85,6 +118,9 @@
                     <div data-action="click->marketplace#selectEntityToSell"
                          data-entity-id="{{ trainer.id }}"
                          data-entity-name="{{ trainer.name }}"
+                         data-entity-level="0"
+                         data-entity-age="{{ trainer.age }}"
+                         data-entity-rarity=""
                          class="sell-card">
                         <div class="entity-row__main">
                             <span class="emoji-icon">🏋️</span>

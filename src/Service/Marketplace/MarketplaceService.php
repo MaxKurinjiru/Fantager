@@ -39,6 +39,7 @@ class MarketplaceService
         private readonly RoyalTreasuryService $royalTreasuryService,
         private readonly NotificationHelper $notificationHelper,
         private readonly TeamRosterService $teamRosterService,
+        private readonly \App\Service\TeamChronicle\TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -266,6 +267,8 @@ class MarketplaceService
             $hero->setTeam($buyer);
             $hero->setStatus(HeroStatus::Available);
             $hero->setMorale(50); // Reset morale to base
+            $this->teamChronicleService->recordHeroPurchased($buyer, $hero, $seller, $buyoutPrice);
+            $this->teamChronicleService->recordHeroSold($seller, $hero, $buyer, $buyoutPrice);
         } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
             $item = $listing->getItem();
             $item->setOwnerTeam($buyer);
@@ -274,6 +277,8 @@ class MarketplaceService
             $trainer = $listing->getHero();
             $trainer->setTeam($buyer);
             $trainer->setStatus(HeroStatus::Available);
+            $this->teamChronicleService->recordTrainerPurchased($buyer, $trainer, $seller, $buyoutPrice);
+            $this->teamChronicleService->recordTrainerSold($seller, $trainer, $buyer, $buyoutPrice);
         }
 
         $listing->setStatus(ListingStatus::Sold);
@@ -475,6 +480,8 @@ class MarketplaceService
                     $hero->setTeam($winner);
                     $hero->setStatus(HeroStatus::Available);
                     $hero->setMorale(50);
+                    $this->teamChronicleService->recordHeroPurchased($winner, $hero, $seller, $winningBidAmount);
+                    $this->teamChronicleService->recordHeroSold($seller, $hero, $winner, $winningBidAmount);
                 } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
                     $item = $listing->getItem();
                     $item->setOwnerTeam($winner);
@@ -483,6 +490,8 @@ class MarketplaceService
                     $trainer = $listing->getHero();
                     $trainer->setTeam($winner);
                     $trainer->setStatus(HeroStatus::Available);
+                    $this->teamChronicleService->recordTrainerPurchased($winner, $trainer, $seller, $winningBidAmount);
+                    $this->teamChronicleService->recordTrainerSold($seller, $trainer, $winner, $winningBidAmount);
                 }
 
                 $listing->setStatus(ListingStatus::Sold);
@@ -556,10 +565,8 @@ class MarketplaceService
      *     search?: string|null,
      *     sort?: string|null
      * } $filters
-     *
-     * @return list<MarketplaceListing>
      */
-    public function searchListings(Kingdom $kingdom, array $filters): array
+    private function createSearchListingsQueryBuilder(Kingdom $kingdom, array $filters): \Doctrine\ORM\QueryBuilder
     {
         $qb = $this->em->createQueryBuilder();
         $qb->select('l')
@@ -626,6 +633,18 @@ class MarketplaceService
                 ->setParameter('search', '%'.$search.'%');
         }
 
+        return $qb;
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return list<MarketplaceListing>
+     */
+    public function searchListings(Kingdom $kingdom, array $filters, ?int $page = null, ?int $limit = null): array
+    {
+        $qb = $this->createSearchListingsQueryBuilder($kingdom, $filters);
+
         $sort = $filters['sort'] ?? 'newest';
         switch ($sort) {
             case 'price_asc':
@@ -643,6 +662,11 @@ class MarketplaceService
                 break;
         }
 
+        if (null !== $page && null !== $limit) {
+            $qb->setFirstResult(($page - 1) * $limit)
+               ->setMaxResults($limit);
+        }
+
         /** @var list<MarketplaceListing> $listings */
         $listings = $qb->getQuery()->getResult();
 
@@ -650,31 +674,58 @@ class MarketplaceService
     }
 
     /**
+     * @param array<string, mixed> $filters
+     */
+    public function countSearchListings(Kingdom $kingdom, array $filters): int
+    {
+        $qb = $this->createSearchListingsQueryBuilder($kingdom, $filters);
+        $qb->select('COUNT(DISTINCT l.id)');
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
      * @return list<MarketplaceListing>
      */
-    public function getListingsForSeller(Team $team): array
+    public function getListingsForSeller(Team $team, ?int $page = null, ?int $limit = null): array
     {
+        $offset = (null !== $page && null !== $limit) ? ($page - 1) * $limit : null;
+
         /** @var list<MarketplaceListing> $listings */
         $listings = $this->em->getRepository(MarketplaceListing::class)->findBy(
             ['sellerTeam' => $team],
-            ['id' => 'DESC']
+            ['id' => 'DESC'],
+            $limit,
+            $offset
         );
 
         return $listings;
     }
 
+    public function countListingsForSeller(Team $team): int
+    {
+        return $this->em->getRepository(MarketplaceListing::class)->count([
+            'sellerTeam' => $team,
+        ]);
+    }
+
     /**
      * @return list<array<string, mixed>>
      */
-    public function getTransactionHistory(Team $team): array
+    public function getTransactionHistory(Team $team, ?int $page = null, ?int $limit = null): array
     {
-        /** @var list<MarketplaceTransaction> $transactions */
-        $transactions = $this->em->getRepository(MarketplaceTransaction::class)->createQueryBuilder('t')
+        $qb = $this->em->getRepository(MarketplaceTransaction::class)->createQueryBuilder('t')
             ->where('t.buyerTeam = :team OR t.sellerTeam = :team')
             ->setParameter('team', $team)
-            ->orderBy('t.id', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('t.id', 'DESC');
+
+        if (null !== $page && null !== $limit) {
+            $qb->setFirstResult(($page - 1) * $limit)
+               ->setMaxResults($limit);
+        }
+
+        /** @var list<MarketplaceTransaction> $transactions */
+        $transactions = $qb->getQuery()->getResult();
 
         $data = [];
         foreach ($transactions as $tx) {
@@ -696,6 +747,16 @@ class MarketplaceService
         }
 
         return $data;
+    }
+
+    public function countTransactionHistory(Team $team): int
+    {
+        $qb = $this->em->getRepository(MarketplaceTransaction::class)->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->where('t.buyerTeam = :team OR t.sellerTeam = :team')
+            ->setParameter('team', $team);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     /** @return array<string, mixed> */

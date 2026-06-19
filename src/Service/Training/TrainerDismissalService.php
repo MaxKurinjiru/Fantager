@@ -14,6 +14,7 @@ use App\Exception\UserFacingException;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TrainerDismissalService
@@ -25,6 +26,7 @@ class TrainerDismissalService
         private readonly GraveyardService $graveyardService,
         private readonly EconomyService $economyService,
         private readonly FinancialCrisisService $financialCrisisService,
+        private readonly TeamChronicleService $teamChronicleService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -73,6 +75,8 @@ class TrainerDismissalService
                 ]
             );
         }
+
+        $this->teamChronicleService->recordTrainerDismissed($team, $trainer, $compensation);
 
         $this->financialCrisisService->recordRecoveryAction($team);
         $this->graveyardService->removeHero($trainer);

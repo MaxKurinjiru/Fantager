@@ -88,4 +88,10 @@
             <div class="loading-spinner__icon" aria-hidden="true"></div>
         </div>
     </div>
+
+    <nav class="news-pagination hidden" data-marketplace-target="browsePagination">
+        <button type="button" data-action="click->marketplace#browsePrevPage" data-marketplace-target="browsePrevBtn" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</button>
+        <span class="news-pagination__info" data-marketplace-target="browsePageInfo"></span>
+        <button type="button" data-action="click->marketplace#browseNextPage" data-marketplace-target="browseNextBtn" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</button>
+    </nav>
 </div>

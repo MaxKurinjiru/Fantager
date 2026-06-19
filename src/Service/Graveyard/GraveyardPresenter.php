@@ -44,14 +44,26 @@ class GraveyardPresenter
         ?MemorialCause $cause = null,
         ?Race $race = null,
         ?string $search = null,
+        ?int $page = null,
+        ?int $limit = null,
     ): array {
-        $records = $this->memorialRepository->findByTeamFiltered($team, $role, $cause, $race, $search);
+        $qb = $this->memorialRepository->findByTeamFiltered($team, $role, $cause, $race, $search, $page, $limit);
 
-        return array_map(fn (GraveyardMemorial $record) => $this->graveyardService->serializeMemorial($record), $records);
+        return array_map(fn (GraveyardMemorial $record) => $this->graveyardService->serializeMemorial($record), $qb);
     }
 
     public function findForTeam(int $id, Team $team): ?GraveyardMemorial
     {
         return $this->memorialRepository->findOneForTeam($id, $team);
+    }
+
+    public function countFilteredForTeam(
+        Team $team,
+        ?HeroRole $role = null,
+        ?MemorialCause $cause = null,
+        ?Race $race = null,
+        ?string $search = null,
+    ): int {
+        return $this->memorialRepository->countByTeamFiltered($team, $role, $cause, $race, $search);
     }
 }

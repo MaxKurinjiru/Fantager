@@ -99,7 +99,20 @@ class FanClubService
     {
         $target = $this->calculateTargetFanBase($team);
         $current = $team->getFanBase();
-        $delta = (int) round(($target - $current) * self::DAILY_DRIFT_RATE);
+
+        $speed = 1.0;
+        try {
+            $kingdom = $team->getKingdom();
+            $speed = (float) $kingdom->getGameSpeed();
+        } catch (\Throwable) {
+            $speed = 1.0;
+        }
+        if ($speed <= 0.0) {
+            $speed = 1.0;
+        }
+
+        $scaledDriftRate = self::DAILY_DRIFT_RATE * $speed;
+        $delta = (int) round(($target - $current) * $scaledDriftRate);
 
         if (0 === $delta && $target !== $current) {
             $delta = $target > $current ? 1 : -1;
@@ -116,7 +129,20 @@ class FanClubService
             MatchResult::Draw => self::MATCH_DRAW_DELTA,
         };
 
-        return $this->setFanBaseWithTracking($team, $team->getFanBase() + $delta);
+        $speed = 1.0;
+        try {
+            $kingdom = $team->getKingdom();
+            $speed = (float) $kingdom->getGameSpeed();
+        } catch (\Throwable) {
+            $speed = 1.0;
+        }
+        if ($speed <= 0.0) {
+            $speed = 1.0;
+        }
+
+        $scaledDelta = (int) round($delta * $speed);
+
+        return $this->setFanBaseWithTracking($team, $team->getFanBase() + $scaledDelta);
     }
 
     public function applyFixtureResult(Team $homeTeam, Team $awayTeam, int $homeScore, int $awayScore): void

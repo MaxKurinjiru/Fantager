@@ -32,11 +32,19 @@ class NotificationController extends AbstractController
         $user = $this->getUser();
 
         $unreadOnly = filter_var($request->query->get('unread_only', false), FILTER_VALIDATE_BOOL);
-        $limit = min(100, max(1, (int) $request->query->get('limit', 50)));
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = min(100, max(1, (int) $request->query->get('limit', 10)));
 
-        $notifications = $this->notificationService->listForUser($user, $unreadOnly, $limit);
+        $notifications = $this->notificationService->listForUser($user, $unreadOnly, $limit, $page);
+        $totalItems = $this->notificationService->countForUser($user, $unreadOnly);
+        $totalPages = max(1, (int) ceil($totalItems / $limit));
 
-        return $this->json(array_map([$this, 'serializeNotification'], $notifications));
+        return $this->json([
+            'items' => array_map([$this, 'serializeNotification'], $notifications),
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total_items' => $totalItems,
+        ]);
     }
 
     #[Route('/unread-count', name: 'api_notifications_unread_count', methods: ['GET'])]

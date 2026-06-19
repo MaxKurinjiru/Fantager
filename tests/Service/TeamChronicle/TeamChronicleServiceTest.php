@@ -128,4 +128,123 @@ class TeamChronicleServiceTest extends TestCase
         $service = new TeamChronicleService($em, $clock);
         $service->recordPlayerJoined($team, $user);
     }
+
+    public function testRecordHeroDismissedPersistsExpectedEntry(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->once())
+            ->method('persist')
+            ->with($this->callback(function (TeamChronicle $log): bool {
+                $this->assertSame(ChronicleEventType::HeroDismissed, $log->getType());
+                $this->assertSame('activity.hero_dismissed', $log->getSubjectKey());
+                $this->assertSame(['hero' => 'Thorin', 'compensation' => '200'], $log->getSubjectParams());
+                $this->assertSame(['hero_id' => 123, 'compensation' => 200], $log->getData());
+
+                return true;
+            }));
+
+        $team = new Team();
+        $hero = new \App\Entity\Hero\Hero();
+        $hero->setName('Thorin');
+        $reflection = new \ReflectionClass($hero);
+        $idProp = $reflection->getProperty('id');
+        $idProp->setAccessible(true);
+        $idProp->setValue($hero, 123);
+
+        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service->recordHeroDismissed($team, $hero, 200);
+    }
+
+    public function testRecordTrainerDismissedPersistsExpectedEntry(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->once())
+            ->method('persist')
+            ->with($this->callback(function (TeamChronicle $log): bool {
+                $this->assertSame(ChronicleEventType::TrainerDismissed, $log->getType());
+                $this->assertSame('activity.trainer_dismissed', $log->getSubjectKey());
+                $this->assertSame(['trainer' => 'Gandalf', 'compensation' => '150'], $log->getSubjectParams());
+                $this->assertSame(['trainer_id' => 456, 'compensation' => 150], $log->getData());
+
+                return true;
+            }));
+
+        $team = new Team();
+        $trainer = new \App\Entity\Hero\Hero();
+        $trainer->setName('Gandalf');
+        $reflection = new \ReflectionClass($trainer);
+        $idProp = $reflection->getProperty('id');
+        $idProp->setAccessible(true);
+        $idProp->setValue($trainer, 456);
+
+        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service->recordTrainerDismissed($team, $trainer, 150);
+    }
+
+    public function testRecordHeroPurchasedAndSoldPersistExpectedEntries(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->exactly(2))
+            ->method('persist')
+            ->with($this->callback(function (TeamChronicle $log): bool {
+                if (ChronicleEventType::HeroPurchased === $log->getType()) {
+                    $this->assertSame('activity.hero_purchased', $log->getSubjectKey());
+                    $this->assertSame(['hero' => 'Thorin', 'race' => 'dwarf', 'seller' => 'Sellers', 'price' => '500'], $log->getSubjectParams());
+                    $this->assertSame(['hero_id' => 123, 'seller_team_id' => 2, 'price' => 500], $log->getData());
+                } else {
+                    $this->assertSame(ChronicleEventType::HeroSold, $log->getType());
+                    $this->assertSame('activity.hero_sold', $log->getSubjectKey());
+                    $this->assertSame(['hero' => 'Thorin', 'race' => 'dwarf', 'buyer' => 'Buyers', 'price' => '500'], $log->getSubjectParams());
+                    $this->assertSame(['hero_id' => 123, 'buyer_team_id' => 1, 'price' => 500], $log->getData());
+                }
+
+                return true;
+            }));
+
+        $buyer = new Team();
+        $buyerReflection = new \ReflectionClass($buyer);
+        $buyerId = $buyerReflection->getProperty('id');
+        $buyerId->setAccessible(true);
+        $buyerId->setValue($buyer, 1);
+        $buyer->setName('Buyers');
+
+        $seller = new Team();
+        $sellerReflection = new \ReflectionClass($seller);
+        $sellerId = $sellerReflection->getProperty('id');
+        $sellerId->setAccessible(true);
+        $sellerId->setValue($seller, 2);
+        $seller->setName('Sellers');
+
+        $hero = new \App\Entity\Hero\Hero();
+        $hero->setName('Thorin');
+        $hero->setRace(Race::Dwarf);
+        $heroReflection = new \ReflectionClass($hero);
+        $heroId = $heroReflection->getProperty('id');
+        $heroId->setAccessible(true);
+        $heroId->setValue($hero, 123);
+
+        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service->recordHeroPurchased($buyer, $hero, $seller, 500);
+        $service->recordHeroSold($seller, $hero, $buyer, 500);
+    }
+
+    public function testRecordTeamRenamedPersistsExpectedEntry(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->once())
+            ->method('persist')
+            ->with($this->callback(function (TeamChronicle $log): bool {
+                $this->assertSame(ChronicleEventType::TeamRenamed, $log->getType());
+                $this->assertSame('activity.team_renamed', $log->getSubjectKey());
+                $this->assertSame(['old_name' => 'Old Name', 'new_name' => 'New Name'], $log->getSubjectParams());
+                $this->assertSame(['old_name' => 'Old Name', 'new_name' => 'New Name'], $log->getData());
+
+                return true;
+            }));
+
+        $team = new Team();
+
+        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service->recordTeamRenamed($team, 'Old Name', 'New Name');
+    }
 }

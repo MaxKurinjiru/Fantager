@@ -25,6 +25,7 @@ class CommunityController extends AbstractController
         private readonly ForumThreadRepository $threadRepository,
         private readonly ForumThreadHelper $threadHelper,
         private readonly UserMessageTranslator $userMessages,
+        private readonly \App\Repository\Community\ForumPostRepository $postRepository,
     ) {
     }
 
@@ -57,15 +58,30 @@ class CommunityController extends AbstractController
         $pinnedThreads = array_values(array_filter($threads, static fn (ForumThread $t): bool => $t->isPinned()));
         $regularThreads = array_values(array_filter($threads, static fn (ForumThread $t): bool => !$t->isPinned()));
 
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 20;
+        $totalRegular = count($regularThreads);
+        $totalPages = max(1, (int) ceil($totalRegular / $limit));
+
+        if ($page > $totalPages && $totalRegular > 0) {
+            return $this->redirectToRoute('app_community', array_merge($request->query->all(), ['page' => $totalPages]));
+        }
+
+        $slicedRegularThreads = array_slice($regularThreads, ($page - 1) * $limit, $limit);
+        $slicedPinnedThreads = 1 === $page ? $pinnedThreads : [];
+
         return $this->render('community/index.html.twig', [
             'team' => $user->getTeam(),
             'kingdom' => $kingdom,
             'threads' => $threads,
-            'pinned_threads' => $pinnedThreads,
-            'regular_threads' => $regularThreads,
+            'pinned_threads' => $slicedPinnedThreads,
+            'regular_threads' => $slicedRegularThreads,
             'categories' => self::CATEGORIES,
             'active_category' => $activeCategory,
             'search' => $search,
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total' => $totalRegular,
         ]);
     }
 
@@ -88,8 +104,18 @@ class CommunityController extends AbstractController
             throw new NotFoundHttpException('Thread not found.');
         }
 
-        $posts = $this->threadHelper->getSortedPosts($thread);
-        $originalPost = array_shift($posts);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 20;
+
+        $originalPost = $this->postRepository->getOriginalPost($thread);
+        $totalReplies = $this->postRepository->countReplies($thread);
+        $totalPages = max(1, (int) ceil($totalReplies / $limit));
+
+        if ($page > $totalPages && $totalReplies > 0) {
+            return $this->redirectToRoute('app_community_thread', ['id' => $id, 'page' => $totalPages]);
+        }
+
+        $replies = $this->postRepository->findRepliesPage($thread, $page, $limit);
 
         $activeCategory = $request->query->getString('category', 'all');
         if ('all' !== $activeCategory && !in_array($activeCategory, self::CATEGORIES, true)) {
@@ -99,10 +125,13 @@ class CommunityController extends AbstractController
         return $this->render('community/thread.html.twig', [
             'team' => $user->getTeam(),
             'thread' => $thread,
-            'original_post' => $originalPost,
-            'replies' => $posts,
+            'original_post' => 1 === $page ? $originalPost : null,
+            'replies' => $replies,
             'active_category' => $activeCategory,
             'is_author' => $thread->getAuthorUser()->getId() === $user->getId(),
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total_replies' => $totalReplies,
         ]);
     }
 }

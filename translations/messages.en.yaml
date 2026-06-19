@@ -176,7 +176,7 @@ error:
   trainer_not_on_team: Trainer does not belong to your team.
   trainer_config_locked: Training configuration is currently locked.
   trainer_assignments_locked: Training assignments are currently locked.
-  trainer_only_combatant_assign: Only combatant heroes can be assigned to a trainer.
+  trainer_only_combatant_assign: Only heroes can be assigned to a trainer.
   trainer_hero_not_on_team: Trainer or Hero does not belong to your team.
   trainer_hero_already_assigned: Hero is already assigned to a trainer.
   trainer_hero_only_available: Only available heroes can be assigned to a trainer.
@@ -252,11 +252,12 @@ error:
   formation_not_belong_team: Assigned formation does not belong to the team.
   formation_no_match_to_promote: No match-specific formation to promote.
   financial_crisis_blocked: 'This action is blocked during financial restrictions (%level%). Sell assets, dismiss heroes, or downgrade facilities to recover.'
-  graveyard_combatant_only: Only combatant heroes can be removed through hero dismissal flow.
+  graveyard_combatant_only: Only heroes can be removed through hero dismissal flow.
   graveyard_trainer_only: Only trainer heroes can be removed through trainer dismissal flow.
   training_success_configure: Trainer configured successfully.
   training_success_assign: Hero assigned to trainer successfully.
   training_success_unassign: Hero unassigned from trainer successfully.
+  player_profile_not_found: Player profile not found.
 
 notification:
   marketplace_outbid_title: Outbid / Refunded
@@ -354,7 +355,7 @@ graveyard:
   age: Age
   final_level: Final level
   role:
-    combatant: Combatant
+    combatant: Hero
     trainer: Trainer
   cause:
     dismissed: Dismissed
@@ -395,6 +396,13 @@ activity:
     account_deleted: '%player% released the team — account was deleted.'
   season_ended: 'Season %season% ended in tier %tier% (position %position%, %status%).'
   summon_completed: 'Summoned hero %hero% (%race%).'
+  hero_dismissed: 'Hero %hero% was dismissed from the team (compensation %compensation% gold).'
+  trainer_dismissed: 'Trainer %trainer% was dismissed from the team (compensation %compensation% gold).'
+  hero_purchased: 'Hero %hero% (%race%) was purchased on the marketplace from %seller% for %price% gold.'
+  hero_sold: 'Hero %hero% (%race%) was sold on the marketplace to %buyer% for %price% gold.'
+  trainer_purchased: 'Trainer %trainer% (%race%) was purchased on the marketplace from %seller% for %price% gold.'
+  trainer_sold: 'Trainer %trainer% (%race%) was sold on the marketplace to %buyer% for %price% gold.'
+  team_renamed: 'Team was renamed from %old_name% to %new_name%.'
   season_status:
     promoted: promoted
     relegated: relegated
@@ -415,6 +423,13 @@ activity:
     dungeon_completed: Dungeon completed
     summon_completed: Hero summoned
     season_ended: Season ended
+    hero_dismissed: Hero dismissed
+    trainer_dismissed: Trainer dismissed
+    hero_purchased: Hero purchased
+    hero_sold: Hero sold
+    trainer_purchased: Trainer purchased
+    trainer_sold: Trainer sold
+    team_renamed: Team renamed
 
 financial_crisis:
   title_warning: Financial Warning
@@ -1203,6 +1218,11 @@ marketplace:
   sort_price_asc: "Price: Low-High"
   sort_price_desc: "Price: High-Low"
   sort_expires_asc: Ending Soon
+  sort_name_asc: "Name (A-Z)"
+  sort_name_desc: "Name (Z-A)"
+  sort_level_desc: "Level (High-Low)"
+  sort_age_asc: "Age (Youngest-Oldest)"
+  sort_rarity_desc: "Rarity (Epic/Legendary First)"
   label_price: Minimum Bid
   label_buyout: Buyout Price
   label_seller: Seller
@@ -1402,6 +1422,18 @@ community:
   error_delete_msg: "Failed to delete message."
   from: "From:"
   locked: "Locked"
+  view_profile: "View profile of %name%"
+  send_message: "Write Message"
+  send_message_aria: "Write a message to this player"
+  profile_loading: "Loading profile..."
+  profile_error: "Failed to load profile."
+  profile_team_stats: "Team Statistics"
+  profile_combatants: "Heroes"
+  profile_trainers: "Trainers"
+  profile_league: "League"
+  profile_tier: "Division"
+  profile_position: "Position"
+  profile_member_since: "Member since:"
 
 email:
   verify_email:

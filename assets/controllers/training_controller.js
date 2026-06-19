@@ -1,6 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
 import { formatNumber } from '../utils/locale.js';
+import { showConfirm } from '../utils/confirm.js';
 
 export default class extends Controller {
     static targets = [
@@ -24,7 +25,8 @@ export default class extends Controller {
         errorRemoveHero: String,
         confirmDismiss: String,
         errorDismiss: String,
-        successDismiss: String
+        successDismiss: String,
+        titleDismiss: String
     };
 
     connect() {
@@ -193,7 +195,13 @@ export default class extends Controller {
             return;
         }
 
-        if (!window.confirm(message)) {
+        if (!await showConfirm(
+            this.titleDismissValue || 'Dismiss Trainer',
+            message,
+            null,
+            null,
+            'danger'
+        )) {
             return;
         }
 

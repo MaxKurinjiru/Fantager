@@ -21,4 +21,11 @@ enum ChronicleEventType: string
     case DungeonCompleted = 'dungeon_completed';
     case SummonCompleted = 'summon_completed';
     case SeasonEnded = 'season_ended';
+    case HeroDismissed = 'hero_dismissed';
+    case TrainerDismissed = 'trainer_dismissed';
+    case HeroPurchased = 'hero_purchased';
+    case HeroSold = 'hero_sold';
+    case TrainerPurchased = 'trainer_purchased';
+    case TrainerSold = 'trainer_sold';
+    case TeamRenamed = 'team_renamed';
 }

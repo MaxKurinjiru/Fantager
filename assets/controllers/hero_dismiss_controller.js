@@ -2,12 +2,14 @@ import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
 import { csrfHeaders } from '../utils/csrf.js';
 import { formatNumber } from '../utils/locale.js';
+import { showConfirm } from '../utils/confirm.js';
 
 export default class extends Controller {
     static targets = ['dismissAlert', 'dismissAlertMessage'];
 
     static values = {
         heroId: Number,
+        titleDismiss: String,
         confirmDismiss: String,
         errorDismiss: String,
         successDismiss: String,
@@ -26,7 +28,13 @@ export default class extends Controller {
             return;
         }
 
-        if (!window.confirm(message)) {
+        if (!await showConfirm(
+            this.titleDismissValue || 'Dismiss Hero',
+            message,
+            null, // Default to Confirm
+            null, // Default to Cancel
+            'danger'
+        )) {
             return;
         }
 

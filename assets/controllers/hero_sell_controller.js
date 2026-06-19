@@ -1,12 +1,14 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
 import { csrfHeaders } from '../utils/csrf.js';
+import { showConfirm } from '../utils/confirm.js';
 
 export default class extends Controller {
     static targets = ['sellAlert', 'sellAlertMessage', 'modeSelect', 'buyoutContainer', 'priceLabel'];
 
     static values = {
         heroId: Number,
+        titleSell: String,
         confirmSell: String,
         errorSell: String,
         successSell: String,
@@ -46,7 +48,12 @@ export default class extends Controller {
             return;
         }
 
-        if (!window.confirm(message)) {
+        if (!await showConfirm(
+            this.titleSellValue || 'Sell Hero',
+            message,
+            null, // Default to Confirm
+            null // Default to Cancel
+        )) {
             return;
         }
 

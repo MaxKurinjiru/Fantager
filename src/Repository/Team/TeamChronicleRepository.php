@@ -44,6 +44,7 @@ class TeamChronicleRepository extends ServiceEntityRepository
         ?ChronicleCategory $category = null,
         ?string $sort = 'date-desc',
         ?int $limit = null,
+        ?int $offset = null,
     ): array {
         $qb = $this->createQueryBuilder('a')
             ->where('a.team = :team')
@@ -74,6 +75,34 @@ class TeamChronicleRepository extends ServiceEntityRepository
             $qb->setMaxResults($limit);
         }
 
+        if (null !== $offset) {
+            $qb->setFirstResult($offset);
+        }
+
         return $qb->getQuery()->getResult();
+    }
+
+    public function countByTeamFiltered(
+        Team $team,
+        ?ChronicleEventType $type = null,
+        ?ChronicleCategory $category = null,
+    ): int {
+        $qb = $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.team = :team')
+            ->setParameter('team', $team);
+
+        if (null !== $type) {
+            $qb->andWhere('a.type = :type')
+                ->setParameter('type', $type);
+        } elseif (null !== $category && ChronicleCategory::All !== $category) {
+            $types = $category->types();
+            if (null !== $types && [] !== $types) {
+                $qb->andWhere('a.type IN (:types)')
+                    ->setParameter('types', $types);
+            }
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 }

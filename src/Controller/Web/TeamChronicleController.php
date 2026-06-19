@@ -21,6 +21,7 @@ class TeamChronicleController extends AbstractController
     public function __construct(
         private readonly TeamChroniclePresenter $teamChroniclePresenter,
         private readonly UserMessageTranslator $userMessages,
+        private readonly \App\Repository\Team\TeamChronicleRepository $chronicleRepository,
     ) {
     }
 
@@ -50,12 +51,24 @@ class TeamChronicleController extends AbstractController
             $sort = 'date-desc';
         }
 
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 30;
+        $offset = ($page - 1) * $limit;
+
+        $total = $this->chronicleRepository->countByTeamFiltered($team, $type, $category);
+        $totalPages = max(1, (int) ceil($total / $limit));
+
+        if ($page > $totalPages && $total > 0) {
+            return $this->redirectToRoute('app_team_chronicle', array_merge($request->query->all(), ['page' => $totalPages]));
+        }
+
         $entries = $this->teamChroniclePresenter->presentFilteredForTeam(
             $team,
             $type,
             $category,
             $sort,
-            null,
+            $limit,
+            $offset,
             $user->getLocale(),
         );
 
@@ -67,6 +80,9 @@ class TeamChronicleController extends AbstractController
             'current_sort' => $sort,
             'types' => ChronicleEventType::cases(),
             'categories' => ChronicleCategory::cases(),
+            'page' => $page,
+            'total_pages' => $totalPages,
+            'total' => $total,
         ]);
     }
 }

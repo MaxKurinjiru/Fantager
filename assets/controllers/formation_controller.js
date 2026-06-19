@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { showConfirm } from '../utils/confirm.js';
 
 export default class extends Controller {
     static targets = [
@@ -24,6 +25,7 @@ export default class extends Controller {
         errorSave: String,
         successSave: String,
         confirmDelete: String,
+        titleDelete: String,
         textDeleting: String,
         errorDelete: String,
         successDelete: String,
@@ -532,7 +534,13 @@ export default class extends Controller {
         const formationId = btn.dataset.formationId;
 
         if (!formationId) return;
-        if (!confirm(this.confirmDeleteValue)) return;
+        if (!await showConfirm(
+            this.titleDeleteValue || 'Delete Formation',
+            this.confirmDeleteValue,
+            this.titleDeleteValue,
+            null, // Default to Cancel
+            'danger'
+        )) return;
 
         btn.disabled = true;
         const originalText = btn.textContent;

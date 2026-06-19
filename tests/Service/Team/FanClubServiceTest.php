@@ -132,4 +132,44 @@ class FanClubServiceTest extends TestCase
         $this->assertSame(1, $updated);
         $this->assertGreaterThan(100, $team->getFanBase());
     }
+
+    public function testEvolveFanBaseDriftsTowardTargetWithSpeed(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setGameSpeed('2.00');
+
+        $team = new Team();
+        $team->setKingdom($kingdom);
+        $team->setFanBase(100);
+        $team->setReputation(100);
+        $team->setMorale(80);
+        $team->setChemistry(30);
+
+        $target = $this->fanClubService->calculateTargetFanBase($team);
+        $this->assertGreaterThan(100, $target);
+
+        $newBase = $this->fanClubService->evolveFanBase($team);
+
+        $this->assertSame(115, $newBase);
+        $this->assertSame(15, $team->getLastFanBaseDelta());
+    }
+
+    public function testApplyMatchResultAdjustsFanBaseWithSpeed(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setGameSpeed('2.50');
+
+        $team = new Team();
+        $team->setKingdom($kingdom);
+        $team->setFanBase(300);
+
+        $this->fanClubService->applyMatchResult($team, MatchResult::Win);
+        $this->assertSame(330, $team->getFanBase());
+        $this->assertSame(30, $team->getLastFanBaseDelta());
+
+        $this->fanClubService->applyMatchResult($team, MatchResult::Loss);
+        $this->assertSame(305, $team->getFanBase());
+        $this->assertSame(-25, $team->getLastFanBaseDelta());
+    }
 }
+

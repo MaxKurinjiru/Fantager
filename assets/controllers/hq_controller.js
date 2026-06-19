@@ -2,6 +2,7 @@ import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
 import { csrfHeaders } from '../utils/csrf.js';
 import { formatNumber } from '../utils/locale.js';
+import { showConfirm } from '../utils/confirm.js';
 
 export default class extends Controller {
     static targets = ['totalLevel', 'alert', 'alertMessage', 'raceSelect', 'saveAdaptationBtn'];
@@ -13,6 +14,7 @@ export default class extends Controller {
         errorDowngrade: String,
         successUpgrade: String,
         successDowngrade: String,
+        titleDowngrade: String,
         confirmDowngrade: String,
         textSaving: String,
         errorAdaptation: String,
@@ -125,7 +127,14 @@ export default class extends Controller {
         const facilityType = btn.dataset.facility;
         const refund = btn.dataset.refund || '0';
 
-        if (!window.confirm(this.confirmDowngradeValue.replace('%refund%', formatNumber(refund)))) {
+        const confirmMsg = this.confirmDowngradeValue.replace('%refund%', formatNumber(refund));
+        if (!await showConfirm(
+            this.titleDowngradeValue || 'Downgrade Facility',
+            confirmMsg,
+            this.titleDowngradeValue,
+            null, // Default to Cancel
+            'danger'
+        )) {
             return;
         }
 

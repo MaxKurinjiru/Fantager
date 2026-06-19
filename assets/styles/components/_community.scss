@@ -143,9 +143,17 @@
 
   .forum-post__team-name,
   .thread-card__team-name {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
     font-size: 0.6875rem;
     color: var(--color-text-muted);
+  }
+
+  .thread-detail-header__team-name {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
   }
 
   .forum-empty-state {
@@ -650,5 +658,199 @@
   .hq-facility-bonus__value {
     color: var(--color-brand-450, var(--color-brand-400));
     font-weight: 700;
+  }
+
+  // ── Player profile modal ────────────────────────────────────────────────────
+
+  .player-profile-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-width: min(28rem, 90vw);
+  }
+
+  .player-profile-modal__loading,
+  .player-profile-modal__error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem 1rem;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  .player-profile-modal__error {
+    color: var(--color-error-text);
+  }
+
+  .player-profile-modal__spinner {
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid var(--color-border);
+    border-bottom-color: var(--color-brand-500);
+    border-radius: 9999px;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+
+  .player-profile-modal__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .player-profile-modal__header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .player-profile-modal__color-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(
+      90deg,
+      var(--profile-color-primary, var(--color-brand-500)) 0%,
+      var(--profile-color-secondary, var(--color-brand-400)) 100%
+    );
+    margin-bottom: 0.25rem;
+  }
+
+  .player-profile-modal__identity {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .player-profile-modal__emblem {
+    font-size: 2.5rem;
+    line-height: 1;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  .player-profile-modal__team-name {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    line-height: 1.2;
+  }
+
+  .player-profile-modal__player-name {
+    margin: 0.125rem 0 0;
+    font-size: 0.875rem;
+  }
+
+  .player-profile-modal__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .player-profile-modal__section-title {
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-secondary);
+  }
+
+  .player-profile-modal__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+
+    @media (max-width: 400px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .player-profile-modal__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 0.625rem 0.5rem;
+    text-align: center;
+  }
+
+  .player-profile-modal__stat-key {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+  }
+
+  .player-profile-modal__stat-value {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .player-profile-modal__league {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 0.875rem 1rem;
+  }
+
+  .player-profile-modal__league-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .player-profile-modal__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .player-profile-modal__member-since {
+    margin: 0;
+    font-size: 0.75rem;
+  }
+
+  // ── Author / team name clickable links (forum + league) ─────────────────────
+
+  .profile-link {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+
+    &:hover,
+    &:focus-visible {
+      color: var(--color-brand-400);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--focus-ring-color);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
   }
 }

@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block layout_content %}
-    <div data-controller="mobile-menu mail ledger notifications"
+    <div data-controller="mobile-menu mail ledger notifications player-profile"
          data-user-pref-close-modal-on-backdrop="{{ app.user.closeModalOnBackdrop ? 'true' : 'false' }}"
          data-mail-unread-count-value="{{ unread_mail_count() }}"
          data-notifications-unread-count-value="{{ unread_notification_count() }}"
@@ -49,7 +49,8 @@
              'select_placeholder': 'community.select_placeholder'|trans,
              'send_msg': 'community.send_msg'|trans,
              'delete_msg': 'community.delete_msg'|trans,
-             'badge_overflow': 'js_flash.common.badge_overflow'|trans
+             'badge_overflow': 'js_flash.common.badge_overflow'|trans,
+             'page_info': 'news.page_info'|trans
          }|json_encode|e('html_attr') }}"
          data-notifications-empty-msg-value="{{ 'notifications.empty'|trans }}"
          data-notifications-translations-value="{{ {
@@ -66,7 +67,8 @@
              'type_event_started': 'notifications.type_event_started'|trans,
              'type_hero_died': 'notifications.type_hero_died'|trans,
              'type_season_ended': 'notifications.type_season_ended'|trans,
-             'badge_overflow': 'js_flash.common.badge_overflow'|trans
+             'badge_overflow': 'js_flash.common.badge_overflow'|trans,
+             'page_info': 'news.page_info'|trans
          }|json_encode|e('html_attr') }}"
          class="game-layout">
         {# Sidebar + Main Layout #}
@@ -98,5 +100,7 @@
         {% include 'components/notifications/read_notification_modal.html.twig' %}
         {% include 'components/notifications/js_templates.html.twig' %}
         {% include 'components/layout/ledger_modal.html.twig' %}
+        {% include 'components/layout/confirm_modal.html.twig' %}
+        {% include 'components/community/player_profile_modal.html.twig' %}
     </div>
 {% endblock %}

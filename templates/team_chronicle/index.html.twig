@@ -67,6 +67,18 @@
                     </div>
                 </article>
             {% endfor %}
+
+            {% if total_pages > 1 %}
+                <nav class="news-pagination" aria-label="{{ 'news.pagination'|trans }}">
+                    {% if page > 1 %}
+                        <a href="{{ path('app_team_chronicle', app.request.query.all|merge({ page: page - 1 })) }}" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</a>
+                    {% endif %}
+                    <span class="news-pagination__info">{{ 'news.page_info'|trans({ '%page%': page, '%total%': total_pages }) }}</span>
+                    {% if page < total_pages %}
+                        <a href="{{ path('app_team_chronicle', app.request.query.all|merge({ page: page + 1 })) }}" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</a>
+                    {% endif %}
+                </nav>
+            {% endif %}
         {% endif %}
     </div>
 </div>
