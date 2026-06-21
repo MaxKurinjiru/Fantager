@@ -55,8 +55,9 @@ jobs:
       - name: Build Symfony cache
         run: |
           php bin/console cache:warmup --env=dev
+          php bin/console debug:container --env=dev
           sudo mkdir -p /tmp/fantager
-          sudo ln -s "$GITHUB_WORKSPACE/var/cache" /tmp/fantager/cache
+          sudo ln -sf "$GITHUB_WORKSPACE/var/cache" /tmp/fantager/cache
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --no-progress
