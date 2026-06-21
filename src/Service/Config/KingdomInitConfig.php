@@ -84,14 +84,16 @@ class KingdomInitConfig
 
             /** @var array<string, mixed> $decoded */
             $decoded = json_decode($raw, true, flags: JSON_THROW_ON_ERROR);
-            $this->cache[$basename] = $this->stripMetaKeys($decoded);
+            /** @var array<string, mixed> $stripped */
+            $stripped = $this->stripMetaKeys($decoded);
+            $this->cache[$basename] = $stripped;
         }
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<string|int, mixed> $data
      *
-     * @return array<string, mixed>
+     * @return array<string|int, mixed>
      */
     private function stripMetaKeys(array $data): array
     {
