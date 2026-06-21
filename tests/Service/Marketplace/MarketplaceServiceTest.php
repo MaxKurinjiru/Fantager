@@ -24,13 +24,20 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class MarketplaceServiceTest extends TestCase
 {
-    private EntityManagerInterface $entityManagerMock;
-    private EconomyService $economyServiceMock;
-    private FinancialCrisisService $financialCrisisServiceMock;
-    private \App\Service\Economy\RoyalTreasuryService $royalTreasuryServiceMock;
-    private NotificationHelper $notificationHelperMock;
-    private TeamRosterService $teamRosterServiceMock;
-    private \App\Service\TeamChronicle\TeamChronicleService $teamChronicleServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
+    private $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EconomyService */
+    private $economyServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&FinancialCrisisService */
+    private $financialCrisisServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\RoyalTreasuryService */
+    private $royalTreasuryServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&NotificationHelper */
+    private $notificationHelperMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamRosterService */
+    private $teamRosterServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\TeamChronicle\TeamChronicleService */
+    private $teamChronicleServiceMock;
     private MarketplaceService $marketplaceService;
 
     protected function setUp(): void

@@ -22,12 +22,18 @@ use Psr\Log\LoggerInterface;
 #[AllowMockObjectsWithoutExpectations]
 class FinancialCrisisServiceTest extends TestCase
 {
-    private HeadquartersRepository $hqRepositoryMock;
-    private EconomyService $economyServiceMock;
-    private NotificationHelper $notificationHelperMock;
-    private TeamChronicleService $teamChronicleServiceMock;
-    private EntityManagerInterface $entityManagerMock;
-    private LoggerInterface $loggerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&HeadquartersRepository */
+    private $hqRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EconomyService */
+    private $economyServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&NotificationHelper */
+    private $notificationHelperMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChronicleService */
+    private $teamChronicleServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
+    private $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\Psr\Log\LoggerInterface */
+    private $loggerMock;
     private FinancialCrisisService $service;
 
     protected function setUp(): void

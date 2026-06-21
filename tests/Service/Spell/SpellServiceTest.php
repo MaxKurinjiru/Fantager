@@ -20,10 +20,14 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class SpellServiceTest extends TestCase
 {
-    private SpellRepository $spellRepositoryMock;
-    private HeroSpellRepository $heroSpellRepositoryMock;
-    private SchoolMasteryRepository $masteryRepositoryMock;
-    private EntityManagerInterface $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&SpellRepository */
+    private $spellRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&HeroSpellRepository */
+    private $heroSpellRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&SchoolMasteryRepository */
+    private $masteryRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
+    private $entityManagerMock;
     private SpellService $spellService;
 
     protected function setUp(): void

@@ -20,8 +20,10 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class ItemServiceTest extends TestCase
 {
-    private ItemRepository $itemRepositoryMock;
-    private EntityManagerInterface $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&ItemRepository */
+    private $itemRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
+    private $entityManagerMock;
     private ItemService $itemService;
 
     protected function setUp(): void

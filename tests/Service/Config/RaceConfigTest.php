@@ -15,7 +15,9 @@ class RaceConfigTest extends KernelTestCase
     protected function setUp(): void
     {
         self::bootKernel();
-        $this->raceConfig = self::getContainer()->get(RaceConfig::class);
+        /** @var RaceConfig $config */
+        $config = self::getContainer()->get(RaceConfig::class);
+        $this->raceConfig = $config;
     }
 
     public function testHumanMortalityThreshold(): void

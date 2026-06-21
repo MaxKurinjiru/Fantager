@@ -23,14 +23,22 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class SummoningServiceTest extends TestCase
 {
-    private HeroGenerator $heroGeneratorMock;
-    private EconomyService $economyServiceMock;
-    private FinancialCrisisService $financialCrisisServiceMock;
-    private RoyalTreasuryService $royalTreasuryServiceMock;
-    private HeadquartersService $hqServiceMock;
-    private EntityManagerInterface $entityManagerMock;
-    private RaceConfig $raceConfigMock;
-    private TeamChronicleService $teamChronicleServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&HeroGenerator */
+    private $heroGeneratorMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EconomyService */
+    private $economyServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&FinancialCrisisService */
+    private $financialCrisisServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&RoyalTreasuryService */
+    private $royalTreasuryServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&HeadquartersService */
+    private $hqServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
+    private $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&RaceConfig */
+    private $raceConfigMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChronicleService */
+    private $teamChronicleServiceMock;
     private SummoningService $service;
 
     protected function setUp(): void

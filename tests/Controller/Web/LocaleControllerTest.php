@@ -27,6 +27,7 @@ class LocaleControllerTest extends KernelTestCase
         self::bootKernel();
         $container = self::getContainer();
         
+        /** @var LocaleController $controller */
         $controller = $container->get(LocaleController::class);
         
         $session = new Session(new MockFileSessionStorage());

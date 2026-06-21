@@ -15,7 +15,8 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class FanClubServiceTest extends TestCase
 {
-    private TeamRepository $teamRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamRepository */
+    private $teamRepositoryMock;
     private FanClubService $fanClubService;
 
     protected function setUp(): void

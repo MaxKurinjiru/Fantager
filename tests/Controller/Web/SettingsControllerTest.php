@@ -30,6 +30,7 @@ class SettingsControllerTest extends KernelTestCase
         self::bootKernel();
         $container = self::getContainer();
 
+        /** @var SettingsController $controller */
         $controller = $container->get(SettingsController::class);
         $response = $controller->index();
 
@@ -41,14 +42,16 @@ class SettingsControllerTest extends KernelTestCase
     {
         self::bootKernel();
         $container = self::getContainer();
+        /** @var SettingsController $controller */
         $controller = $container->get(SettingsController::class);
 
-        $request = new Request([], [], [], [], [], [], json_encode(['email' => 'new@example.com']));
+        $request = new Request([], [], [], [], [], [], (string) json_encode(['email' => 'new@example.com']));
         $request->headers->set('X-CSRF-Token', 'invalid');
 
         $session = new Session(new MockFileSessionStorage());
         $request->setSession($session);
 
+        /** @var \Symfony\Component\HttpFoundation\RequestStack $requestStack */
         $requestStack = $container->get('request_stack');
         $requestStack->push($request);
 
@@ -71,6 +74,7 @@ class SettingsControllerTest extends KernelTestCase
             ->willThrowException(new UserFacingException('error.invalid_email_confirmation_link'));
         $container->set(AccountSettingsService::class, $accountSettingsService);
 
+        /** @var SettingsController $controller */
         $controller = $container->get(SettingsController::class);
 
         $request = new Request(['token' => 'nonexistent']);
@@ -78,6 +82,7 @@ class SettingsControllerTest extends KernelTestCase
         $session = new Session(new MockFileSessionStorage());
         $request->setSession($session);
 
+        /** @var \Symfony\Component\HttpFoundation\RequestStack $requestStack */
         $requestStack = $container->get('request_stack');
         $requestStack->push($request);
 
@@ -94,14 +99,16 @@ class SettingsControllerTest extends KernelTestCase
     {
         self::bootKernel();
         $container = self::getContainer();
+        /** @var SettingsController $controller */
         $controller = $container->get(SettingsController::class);
 
-        $request = new Request([], [], [], [], [], [], json_encode(['closeModalOnBackdrop' => true]));
+        $request = new Request([], [], [], [], [], [], (string) json_encode(['closeModalOnBackdrop' => true]));
         $request->headers->set('X-CSRF-Token', 'invalid');
 
         $session = new Session(new MockFileSessionStorage());
         $request->setSession($session);
 
+        /** @var \Symfony\Component\HttpFoundation\RequestStack $requestStack */
         $requestStack = $container->get('request_stack');
         $requestStack->push($request);
 
@@ -117,21 +124,24 @@ class SettingsControllerTest extends KernelTestCase
     {
         self::bootKernel();
         $container = self::getContainer();
+        /** @var SettingsController $controller */
         $controller = $container->get(SettingsController::class);
 
         $session = new Session(new MockFileSessionStorage());
-        $request = new Request([], [], [], [], [], [], json_encode([]));
+        $request = new Request([], [], [], [], [], [], (string) json_encode([]));
         $request->setSession($session);
 
+        /** @var \Symfony\Component\HttpFoundation\RequestStack $requestStack */
         $requestStack = $container->get('request_stack');
         $requestStack->push($request);
 
-        $csrfToken = $container->get('security.csrf.token_manager')->getToken('api')->getValue();
+        /** @var \Symfony\Component\Security\Csrf\CsrfTokenManagerInterface $tokenManager */
+        $tokenManager = $container->get('security.csrf.token_manager');
+        $csrfToken = $tokenManager->getToken('api')->getValue();
         $request->headers->set('X-CSRF-Token', $csrfToken);
 
         try {
             $response = $controller->updatePreferences($request);
-            $this->assertInstanceOf(JsonResponse::class, $response);
             $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
         } finally {
             $requestStack->pop();
@@ -142,21 +152,24 @@ class SettingsControllerTest extends KernelTestCase
     {
         self::bootKernel();
         $container = self::getContainer();
+        /** @var SettingsController $controller */
         $controller = $container->get(SettingsController::class);
 
         $session = new Session(new MockFileSessionStorage());
-        $request = new Request([], [], [], [], [], [], json_encode(['closeModalOnBackdrop' => 'yes']));
+        $request = new Request([], [], [], [], [], [], (string) json_encode(['closeModalOnBackdrop' => 'yes']));
         $request->setSession($session);
 
+        /** @var \Symfony\Component\HttpFoundation\RequestStack $requestStack */
         $requestStack = $container->get('request_stack');
         $requestStack->push($request);
 
-        $csrfToken = $container->get('security.csrf.token_manager')->getToken('api')->getValue();
+        /** @var \Symfony\Component\Security\Csrf\CsrfTokenManagerInterface $tokenManager */
+        $tokenManager = $container->get('security.csrf.token_manager');
+        $csrfToken = $tokenManager->getToken('api')->getValue();
         $request->headers->set('X-CSRF-Token', $csrfToken);
 
         try {
             $response = $controller->updatePreferences($request);
-            $this->assertInstanceOf(JsonResponse::class, $response);
             $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
         } finally {
             $requestStack->pop();
@@ -174,6 +187,7 @@ class SettingsControllerTest extends KernelTestCase
             ->willThrowException(new UserFacingException('error.invalid_account_cancellation_link'));
         $container->set(AccountSettingsService::class, $accountSettingsService);
 
+        /** @var SettingsController $controller */
         $controller = $container->get(SettingsController::class);
 
         $request = new Request(['token' => 'invalid']);
@@ -182,6 +196,7 @@ class SettingsControllerTest extends KernelTestCase
         $session = new Session(new MockFileSessionStorage());
         $request->setSession($session);
 
+        /** @var \Symfony\Component\HttpFoundation\RequestStack $requestStack */
         $requestStack = $container->get('request_stack');
         $requestStack->push($request);
 

@@ -24,9 +24,12 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class RoyalTreasuryServiceTest extends TestCase
 {
-    private TeamRepository $teamRepositoryMock;
-    private LeagueStandingRepository $leagueStandingRepositoryMock;
-    private EconomyService $economyServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamRepository */
+    private $teamRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&LeagueStandingRepository */
+    private $leagueStandingRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EconomyService */
+    private $economyServiceMock;
     private RoyalTreasuryService $service;
 
     protected function setUp(): void

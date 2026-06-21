@@ -17,7 +17,8 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class CommunityServiceTest extends TestCase
 {
-    private EntityManagerInterface $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
+    private $entityManagerMock;
     private ContentFilterService $filterService;
     private CommunityService $communityService;
 

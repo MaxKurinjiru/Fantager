@@ -25,10 +25,14 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class ArenaRevenueServiceTest extends TestCase
 {
-    private HeadquartersRepository $hqRepositoryMock;
-    private LeagueFixtureRepository $fixtureRepositoryMock;
-    private EconomyService $economyServiceMock;
-    private FinancialCrisisService $financialCrisisServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&HeadquartersRepository */
+    private $hqRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&LeagueFixtureRepository */
+    private $fixtureRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EconomyService */
+    private $economyServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&FinancialCrisisService */
+    private $financialCrisisServiceMock;
     private ArenaRevenueService $arenaRevenueService;
 
     protected function setUp(): void

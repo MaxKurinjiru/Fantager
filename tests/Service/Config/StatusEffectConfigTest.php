@@ -16,7 +16,9 @@ class StatusEffectConfigTest extends KernelTestCase
     protected function setUp(): void
     {
         self::bootKernel();
-        $this->config = self::getContainer()->get(StatusEffectConfig::class);
+        /** @var StatusEffectConfig $config */
+        $config = self::getContainer()->get(StatusEffectConfig::class);
+        $this->config = $config;
     }
 
     protected function tearDown(): void
