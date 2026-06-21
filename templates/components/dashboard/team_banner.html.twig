@@ -1,10 +1,17 @@
 {# templates/components/dashboard/team_banner.html.twig #}
-<div class="db-banner-premium" data-controller="dashboard-banner" style="--team-color-primary: {{ team.colors.primary ?? '#10b981' }}; --team-color-secondary: {{ team.colors.secondary ?? '#0f1720' }};">
+<style>
+    .db-banner-premium {
+        --team-color-primary: {{ team.colors.primary ?? '#10b981' }};
+        --team-color-secondary: {{ team.colors.secondary ?? '#0f1720' }};
+    }
+</style>
+
+<div class="db-banner-premium" data-controller="dashboard-banner">
     <div class="db-banner-premium__grid-bg"></div>
     <div class="db-banner-premium__glow-primary"></div>
     <div class="db-banner-premium__glow-secondary"></div>
     <div class="db-banner-premium__stripes"></div>
-    
+
     {# Edit button — opens team profile modal via window CustomEvent #}
     <button type="button"
             class="db-banner-premium__edit-btn"
@@ -24,14 +31,14 @@
             <div class="db-banner-premium__shield">
                 <div class="db-banner-premium__shield-glow"></div>
                 <svg class="db-banner-premium__shield-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                    <polygon points="50,2 98,16 98,69 50,98 2,69 2,16" 
-                             fill="color-mix(in srgb, var(--team-color-primary) 8%, var(--color-surface-raised))" 
-                             stroke="color-mix(in srgb, var(--team-color-primary) 40%, var(--color-border))" 
+                    <polygon points="50,2 98,16 98,69 50,98 2,69 2,16"
+                             fill="color-mix(in srgb, var(--team-color-primary) 8%, var(--color-surface-raised))"
+                             stroke="color-mix(in srgb, var(--team-color-primary) 40%, var(--color-border))"
                              stroke-width="3.5"
                              stroke-linejoin="round"/>
-                    <polygon points="50,8 92,20 92,65 50,90 8,65 8,20" 
-                             fill="none" 
-                             stroke="color-mix(in srgb, var(--team-color-primary) 20%, transparent)" 
+                    <polygon points="50,8 92,20 92,65 50,90 8,65 8,20"
+                             fill="none"
+                             stroke="color-mix(in srgb, var(--team-color-primary) 20%, transparent)"
                              stroke-width="1.5"
                              stroke-linejoin="round"/>
                 </svg>
@@ -73,9 +80,11 @@
                             {{ team.morale }}<span class="db-banner-premium__stat-max">/100</span>
                         </span>
                     </div>
-                    <div class="db-banner-premium__progress">
-                        <div class="db-banner-premium__progress-fill" style="width: {{ team.morale }}%;"></div>
-                    </div>
+                    {% include 'components/ui/progress_bar.html.twig' with {
+                        percentage: team.morale,
+                        container_class: 'db-banner-premium__progress',
+                        progress_class: 'db-banner-premium__progress-fill'
+                    } %}
                 </div>
             </div>
 
@@ -96,9 +105,11 @@
                             {% endif %}
                         </span>
                     </div>
-                    <div class="db-banner-premium__progress">
-                        <div class="db-banner-premium__progress-fill" style="width: {{ min(100, team.fanBase / 15) }}%;"></div>
-                    </div>
+                    {% include 'components/ui/progress_bar.html.twig' with {
+                        percentage: min(100, team.fanBase / 15),
+                        container_class: 'db-banner-premium__progress',
+                        progress_class: 'db-banner-premium__progress-fill'
+                    } %}
                 </div>
             </div>
 
@@ -114,9 +125,11 @@
                             {{ team.chemistry }}<span class="db-banner-premium__stat-max">/100</span>
                         </span>
                     </div>
-                    <div class="db-banner-premium__progress">
-                        <div class="db-banner-premium__progress-fill" style="width: {{ team.chemistry }}%;"></div>
-                    </div>
+                    {% include 'components/ui/progress_bar.html.twig' with {
+                        percentage: team.chemistry,
+                        container_class: 'db-banner-premium__progress',
+                        progress_class: 'db-banner-premium__progress-fill'
+                    } %}
                 </div>
             </div>
 
@@ -132,9 +145,11 @@
                             {{ team.reputation }}
                         </span>
                     </div>
-                    <div class="db-banner-premium__progress">
-                        <div class="db-banner-premium__progress-fill" style="width: {{ min(100, team.reputation / 10) }}%;"></div>
-                    </div>
+                    {% include 'components/ui/progress_bar.html.twig' with {
+                        percentage: min(100, team.reputation / 10),
+                        container_class: 'db-banner-premium__progress',
+                        progress_class: 'db-banner-premium__progress-fill'
+                    } %}
                 </div>
             </div>
         </div>

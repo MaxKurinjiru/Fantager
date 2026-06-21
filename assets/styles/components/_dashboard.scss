@@ -5,11 +5,11 @@
 // =============================================================================
 
 @layer components {
-  // ── Dashboard Banner ───────────────────────────────────────────
+  // ── Dashboard Banner ───────────────────────────────────────────────────────
   .db-banner-premium {
     @apply relative rounded-2xl p-6 lg:p-8 shadow-2xl overflow-hidden flex flex-col gap-6 lg:gap-8 transition-all duration-300;
-    background: linear-gradient(135deg, 
-      color-mix(in srgb, var(--team-color-primary) 12%, var(--color-surface-base)) 0%, 
+    background: linear-gradient(135deg,
+      color-mix(in srgb, var(--team-color-primary) 12%, var(--color-surface-base)) 0%,
       color-mix(in srgb, var(--team-color-secondary) 18%, var(--color-surface-base)) 50%,
       var(--color-surface-base) 100%
     );
@@ -106,12 +106,12 @@
 
   .db-banner-premium__portal-svg {
     @apply absolute inset-0 w-full h-full pointer-events-none -z-5;
-    
+
     .circle-outer {
       transform-origin: center;
       animation: dbPortalRotateCW 25s infinite linear;
     }
-    
+
     .circle-inner {
       transform-origin: center;
       animation: dbPortalRotateCCW 15s infinite linear;
@@ -125,7 +125,7 @@
 
     &:hover {
       transform: scale(1.08) rotate(2deg);
-      
+
       .db-banner-premium__shield-glow {
         opacity: 0.6;
         transform: scale(1.15);
@@ -248,7 +248,7 @@
       --card-theme-color: var(--team-color-primary);
       --card-glow-color: var(--team-color-primary);
       border-left-color: var(--team-color-primary);
-      
+
       .db-banner-premium__stat-badge {
         background-color: color-mix(in srgb, var(--team-color-primary) 12%, transparent);
         border-color: color-mix(in srgb, var(--team-color-primary) 25%, transparent);
@@ -363,13 +363,16 @@
 
   .db-banner-premium__progress-fill {
     @apply h-full rounded-full transition-all duration-500 ease-out relative overflow-hidden;
+    width: var(--ui-progress-pct);
 
     &::after {
       content: '';
       @apply absolute inset-0 w-1/3 h-full pointer-events-none opacity-0;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      background: linear-gradient(90deg, transparent, color-mix(in srgb, white 40%, transparent), transparent);
     }
   }
+
+  // ── Arena Adaptation (HQ Barracks panel) ───────────────────────────────────
   .db-adapt {
     @apply border-t pt-4 w-full;
     border-color: var(--overlay-border-30);
@@ -393,7 +396,7 @@
     background-color: var(--color-surface-page);
     border: 1px solid var(--color-border);
     color: var(--color-text-primary);
-    
+
     &:focus {
       border-color: var(--color-brand-500);
     }
@@ -401,13 +404,13 @@
 
   .db-adapt__status {
     @apply rounded-lg px-3 py-1.5 text-[10px] flex items-center gap-1.5 border;
-    
+
     &--pending {
       background-color: var(--overlay-warning-bg-40);
       border-color: var(--overlay-warning-border-40);
       color: var(--color-warning-text);
     }
-    
+
     &--locked {
       background-color: var(--overlay-error-bg-30);
       border-color: var(--overlay-error-border-40);
@@ -444,7 +447,7 @@
     @apply w-16 h-16 rounded-xl flex items-center justify-center text-3xl shadow-inner select-none transition-colors duration-300;
     background-color: var(--color-surface-page);
     border: 1px solid var(--color-border);
-    
+
     &--highlight {
       border-color: var(--focus-ring-color);
       background-color: var(--overlay-brand-05);
@@ -454,7 +457,7 @@
 
   .next-match-team__name {
     @apply block text-sm truncate w-full px-2 font-semibold;
-    
+
     &--highlight {
       @apply text-brand-500 font-bold;
     }
@@ -465,13 +468,13 @@
 
   .next-match-team__owner {
     @apply text-[10px] font-semibold px-2.5 py-0.5 rounded-full select-none border;
-    
+
     &--npc {
       color: var(--color-error-text);
       background-color: var(--overlay-error-bg-20);
       border-color: var(--overlay-error-border-30);
     }
-    
+
     &--player {
       color: var(--color-brand-400);
       background-color: var(--overlay-brand-20);
@@ -682,8 +685,6 @@
     @apply no-underline transition-colors cursor-pointer;
     &:hover { background-color: var(--color-surface-overlay); }
   }
-
-
 
   .db-expenses-card {
     @apply rounded-xl p-6 border shadow-md backdrop-blur-md;
