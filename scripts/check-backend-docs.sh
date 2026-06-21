@@ -43,7 +43,7 @@ normalize_path() {
 yaml_has_key() {
   local yaml_file="$1"
   local key="$2"
-  php "$ROOT/scripts/flatten-yaml-keys.php" "$yaml_file" | tr -d '\r' | rg -qxF "$key"
+  php "$ROOT/scripts/flatten-yaml-keys.php" "$yaml_file" | tr -d '\r' | rg -xF "$key" >/dev/null
 }
 
 # --- Build normalized path index from route-map.md ---
