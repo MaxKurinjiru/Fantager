@@ -15,6 +15,7 @@ _deferred/
 # Dependencies and build artifacts
 node_modules/
 vendor/
+!vendor/symfony/ux-turbo/assets
 public/build/
 build/
 

@@ -4,6 +4,7 @@ FROM node:24-alpine AS node
 FROM node:24-alpine AS asset-builder
 WORKDIR /app
 COPY package*.json webpack.config.js postcss.config.cjs tailwind.config.cjs ./
+COPY vendor/symfony/ux-turbo/assets/ ./vendor/symfony/ux-turbo/assets/
 COPY assets/ ./assets/
 COPY templates/ ./templates/
 COPY translations/ ./translations/
