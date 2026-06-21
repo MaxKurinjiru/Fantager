@@ -97,7 +97,7 @@ class KingdomInitConfig
     {
         $out = [];
         foreach ($data as $key => $value) {
-            if (str_starts_with($key, '_')) {
+            if (is_string($key) && str_starts_with($key, '_')) {
                 continue;
             }
             $out[$key] = is_array($value) ? $this->stripMetaKeys($value) : $value;
