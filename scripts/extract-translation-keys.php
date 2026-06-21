@@ -34,9 +34,14 @@ function extractTranslationKeys(string $root): array
             }
         }
 
-        if (preg_match_all("/->trans(?:Message)?\s*\(\s*'([^']+)'/", $content, $matches)) {
-            foreach ($matches[1] as $key) {
-                $keys["messages\t$key"] = ['domain' => 'messages', 'key' => $key];
+        if (preg_match_all("/->trans(?:Message)?\s*\(\s*['\"]([^'\"]+)['\"](?:,\s*[^,]*\s*,\s*['\"]([^'\"]+)['\"])?/s", $content, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                $key = $match[1];
+                $domain = $match[2] ?? 'messages';
+                if (str_ends_with($key, '.')) {
+                    continue;
+                }
+                $keys["$domain\t$key"] = ['domain' => $domain, 'key' => $key];
             }
         }
 

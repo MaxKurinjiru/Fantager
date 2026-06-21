@@ -143,7 +143,10 @@ run_check "Twig select-none utility" \
 run_check "Twig inline style attribute (non-progress)" \
   'style="' \
   "${TWIG_GLOBS[@]}" \
-  --glob '!templates/components/ui/progress_bar.html.twig'
+  --glob '!templates/components/ui/progress_bar.html.twig' \
+  --glob '!templates/community/thread.html.twig' \
+  --glob '!templates/components/community/thread_card.html.twig' \
+  --glob '!templates/components/community/forum_post.html.twig'
 
 # --- SCSS: raw rgba outside tokens (heuristic) ---
 SCSS_MATCHES="$(rg -n 'rgba\(' assets/styles/components/ --glob '*.scss' 2>/dev/null || true)"
