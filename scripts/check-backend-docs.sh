@@ -43,7 +43,7 @@ normalize_path() {
 yaml_has_key() {
   local yaml_file="$1"
   local key="$2"
-  php "$ROOT/scripts/flatten-yaml-keys.php" "$yaml_file" | rg -qxF "$key"
+  php "$ROOT/scripts/flatten-yaml-keys.php" "$yaml_file" | tr -d '\r' | rg -qxF "$key"
 }
 
 # --- Build normalized path index from route-map.md ---
@@ -65,7 +65,7 @@ while IFS=$'\t' read -r _method path file; do
   if ! path_documented "$path"; then
     MISSING_ROUTES+=("$_method $path ($file)")
   fi
-done < <(php "$ROOT/scripts/extract-routes.php")
+done < <(php "$ROOT/scripts/extract-routes.php" | tr -d '\r')
 
 if [[ ${#MISSING_ROUTES[@]} -gt 0 ]]; then
   echo -e "${RED}FAIL: Routes in code but not found in docs/route-map.md${NC}"
@@ -142,7 +142,7 @@ while IFS=$'\t' read -r domain key; do
   if ! yaml_has_key "$cs_file" "$key"; then
     MISSING_I18N+=("$domain $key missing in $(basename "$cs_file")")
   fi
-done < <(php "$ROOT/scripts/extract-translation-keys.php")
+done < <(php "$ROOT/scripts/extract-translation-keys.php" | tr -d '\r')
 
 if [[ ${#MISSING_I18N[@]} -gt 0 ]]; then
   echo -e "${RED}FAIL: PHP translation keys missing from YAML catalogs${NC}"
@@ -155,7 +155,7 @@ fi
 CODE_PATHS_NORM=()
 while IFS=$'\t' read -r _m path _f; do
   CODE_PATHS_NORM+=("$(normalize_path "$path")")
-done < <(php "$ROOT/scripts/extract-routes.php")
+done < <(php "$ROOT/scripts/extract-routes.php" | tr -d '\r')
 
 STALE=()
 while IFS= read -r doc_path; do

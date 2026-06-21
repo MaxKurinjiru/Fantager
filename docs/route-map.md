@@ -274,7 +274,8 @@ The player-facing **Economy hub** combines marketplace browsing, selling, transa
 | GET | `/app/community` | Web\CommunityController | Kingdom discussion board (thread list) |
 | GET | `/app/community/threads/{id}` | Web\CommunityController | Thread detail with replies |
 | GET | `/api/v1/leaderboards` | Api\V1\CommunityController | Leaderboard rankings — **not needed** (see League UI) |
-| GET | `/api/v1/players/{id}/profile` | Api\V1\CommunityController | Public player profile — **planned** |
+| GET | `/api/v1/players/{id}/profile` | Api\V1\CommunityController | Public player profile |
+| GET | `/api/v1/teams/{id}/profile` | Api\V1\CommunityController | Public team profile |
 | GET | `/api/v1/messages` | Api\V1\MessageController | Inbox |
 | POST | `/api/v1/messages` | Api\V1\MessageController | Send message |
 | GET | `/api/v1/messages/unread-count` | Api\V1\MessageController | Unread message count |
