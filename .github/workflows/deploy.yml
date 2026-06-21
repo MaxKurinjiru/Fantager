@@ -13,91 +13,13 @@ permissions:
 jobs:
   # Run static analysis and linting before building image
   phpstan:
-    name: PHPStan Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-          coverage: none
-
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: |
-          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
-
-      - name: Build Symfony cache
-        run: |
-          php bin/console cache:warmup --env=dev
-          php bin/console debug:container --env=dev
-          sudo mkdir -p /tmp/fantager
-          sudo ln -sf "$GITHUB_WORKSPACE/var/cache" /tmp/fantager/cache
-
-      - name: Run PHPStan
-        run: vendor/bin/phpstan analyse --no-progress --error-format=github
+    uses: ./.github/workflows/phpstan.yml
 
   ui-compliance:
-    name: UI Compliance Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install ripgrep
-        run: sudo apt-get update && sudo apt-get install -y ripgrep
-
-      - name: Run UI compliance script
-        run: bash scripts/check-ui-compliance.sh
+    uses: ./.github/workflows/ui-compliance.yml
 
   backend-docs:
-    name: Backend Docs Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-          coverage: none
-
-      - name: Install ripgrep
-        run: sudo apt-get update && sudo apt-get install -y ripgrep
-
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: |
-          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        run: composer install --no-progress --prefer-dist --optimize-autoloader
-
-      - name: Run Backend Docs validation
-        run: bash scripts/check-backend-docs.sh
+    uses: ./.github/workflows/backend-docs.yml
 
   build:
     name: Build and Push Docker Image

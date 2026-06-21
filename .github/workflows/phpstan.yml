@@ -1,6 +1,7 @@
 name: PHPStan
 
 on:
+  workflow_call:
   pull_request:
     paths:
       - 'src/**/*.php'
@@ -60,4 +61,4 @@ jobs:
           sudo ln -sf "$GITHUB_WORKSPACE/var/cache" /tmp/fantager/cache
 
       - name: Run PHPStan
-        run: vendor/bin/phpstan analyse --no-progress
+        run: vendor/bin/phpstan analyse --no-progress --error-format=github
