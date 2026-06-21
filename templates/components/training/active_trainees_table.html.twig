@@ -1,0 +1,70 @@
+{# templates/components/training/active_trainees_table.html.twig #}
+<div class="game-panel">
+    <h2 class="game-panel__title">{{ 'training.active_trainees'|trans }}</h2>
+
+    <div class="data-table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'nav.heroes'|trans }}</th>
+                    <th>{{ 'training.trainer'|trans }}</th>
+                    <th>{{ 'training.type'|trans }}</th>
+                    <th class="data-table__col--center">{{ 'heroes.fatigue'|trans }} ({{ 'training.forecast'|trans }})</th>
+                    <th class="data-table__col--center">{{ 'heroes.combat_form'|trans }} ({{ 'training.forecast'|trans }})</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set totalActive = 0 %}
+                {% for trainer in trainers %}
+                    {% for hero in trainer.heroes %}
+                        {% set totalActive = totalActive + 1 %}
+                        <tr>
+                            <td class="data-table__cell--title">
+                                <span aria-hidden="true">💪</span> {{ hero.name }} (Lvl {{ hero.level }})
+                            </td>
+                            <td>{{ trainer.name }}</td>
+                            <td class="data-table__cell--accent">
+                                {% if trainer.trainingType %}
+                                    {{ ('training.type_' ~ trainer.trainingType.value)|trans }}
+                                    {% if trainer.targetAttribute %}
+                                        - {{ ('training.attr.' ~ trainer.targetAttribute)|trans }}
+                                    {% endif %}
+                                {% else %}
+                                    <span class="data-table__cell--muted">{{ 'training.idle'|trans }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="data-table__col--center">
+                                {{ hero.fatigue }}% &rarr;
+                                {% if trainer.trainingType %}
+                                    {% if trainer.trainingType.value == 'form' %}
+                                        <span class="data-table__forecast--positive">{{ max(0, hero.fatigue - 20) }}%</span>
+                                    {% else %}
+                                        <span class="data-table__forecast--negative">{{ min(100, hero.fatigue + 20) }}%</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span>{{ hero.fatigue }}%</span>
+                                {% endif %}
+                            </td>
+                            <td class="data-table__col--center">
+                                {{ hero.form }}% &rarr;
+                                {% if trainer.trainingType and trainer.trainingType.value == 'form' %}
+                                    <span class="data-table__forecast--positive data-table__forecast--bold">{{ min(100, hero.form + 20) }}%</span>
+                                {% else %}
+                                    <span>{{ hero.form }}%</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+
+                {% if totalActive == 0 %}
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            {{ 'training.no_active_trainees'|trans }}
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>

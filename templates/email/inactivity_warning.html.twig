@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ 'email.inactivity_warning.subject'|trans([], 'messages', locale) }}</title>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 40px 20px; }
+        .container { max-width: 480px; margin: 0 auto; background: #1e293b; border-radius: 8px; padding: 32px; }
+        h1 { color: #fbbf24; font-size: 22px; margin-top: 0; }
+        p { color: #94a3b8; line-height: 1.6; }
+        a.button { display: inline-block; margin: 16px 0; padding: 12px 28px; background: #f59e0b; color: #0f172a; font-weight: bold; border-radius: 6px; text-decoration: none; }
+        .note { font-size: 12px; color: #64748b; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>{{ 'email.inactivity_warning.title'|trans([], 'messages', locale) }}</h1>
+    <p>{{ 'email.inactivity_warning.greeting'|trans({'%displayName%': user.displayName}, 'messages', locale) }}</p>
+    <p>{{ 'email.inactivity_warning.body'|trans({
+        '%teamName%': team.name,
+        '%daysUntilRelease%': daysUntilRelease
+    }, 'messages', locale) }}</p>
+    <a href="{{ url('app_login') }}" class="button">{{ 'email.inactivity_warning.btn'|trans([], 'messages', locale) }}</a>
+    <p class="note">{{ 'email.inactivity_warning.note'|trans([], 'messages', locale) }}</p>
+</div>
+</body>
+</html>

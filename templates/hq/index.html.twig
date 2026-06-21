@@ -1,0 +1,89 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'hq.title'|trans }} & {{ 'hq.facilities'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="hq-page page-shell" data-controller="hq"
+     data-hq-active-facility-value="{{ active_facility|default('') }}"
+     data-hq-text-upgrading-value="{{ 'js_flash.hq.upgrading'|trans }}"
+     data-hq-text-downgrading-value="{{ 'js_flash.hq.downgrading'|trans }}"
+     data-hq-error-upgrade-value="{{ 'js_flash.hq.failed_upgrade'|trans }}"
+     data-hq-error-downgrade-value="{{ 'js_flash.hq.failed_downgrade'|trans }}"
+     data-hq-success-upgrade-value="{{ 'js_flash.hq.success_upgrade'|trans }}"
+     data-hq-success-downgrade-value="{{ 'js_flash.hq.success_downgrade'|trans }}"
+     data-hq-title-downgrade-value="{{ 'hq.downgrade_btn'|trans }}"
+     data-hq-confirm-downgrade-value="{{ 'hq.confirm_downgrade'|trans }}"
+     data-hq-text-saving-value="{{ 'js_flash.hq.saving'|trans }}"
+     data-hq-error-adaptation-value="{{ 'js_flash.hq.failed_optimize'|trans }}"
+     data-hq-success-adaptation-value="{{ 'js_flash.hq.success_optimize'|trans }}"
+     data-hq-level-label-value="{{ 'js_flash.hq.lvl_short'|trans }}"
+     data-hq-gold-format-value="{{ 'js_flash.hq.gold_format'|trans }}"
+     data-hq-bonuses-value="{{ {
+         bonus_training_efficiency_pct: 'hq.bonus_training_efficiency_pct'|trans,
+         bonus_fatigue_reduction_pct: 'hq.bonus_fatigue_reduction_pct'|trans,
+         bonus_recovery_speed_pct: 'hq.bonus_recovery_speed_pct'|trans,
+         bonus_xp_gain_pct: 'hq.bonus_xp_gain_pct'|trans,
+         bonus_gold_income_pct: 'hq.bonus_gold_income_pct'|trans,
+         bonus_roster_capacity: 'hq.bonus_roster_capacity'|trans,
+         bonus_summon_base_stat_bonus: 'hq.bonus_summon_base_stat_bonus'|trans,
+         bonus_summon_stat_random_bonus: 'hq.bonus_summon_stat_random_bonus'|trans,
+         bonus_summon_stat_total_cap: 'hq.bonus_summon_stat_total_cap'|trans,
+         bonus_ticket_revenue_pct: 'hq.bonus_ticket_revenue_pct'|trans,
+         bonus_arena_capacity: 'hq.bonus_arena_capacity'|trans
+     }|json_encode }}"
+>
+    {% set right_content %}
+        {% include 'components/hq/compound_stats.html.twig' with { hq: hq, team: team } %}
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'hq.title',
+        subtitle: 'hq.subtitle',
+        right_content: right_content
+    } %}
+
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'hq',
+        message_target: 'alertMessage',
+        close_action: 'hq#closeAlert'
+    } %}
+
+    {% include 'components/dashboard/financial_crisis_banner.html.twig' with { team: team } %}
+
+    {% if hq and hq.upgradingFacility %}
+        <div class="alert alert-info alert--spaced" role="status">
+            {{ 'hq.facility_change_in_progress'|trans({
+                '%facility%': ('hq.facilities_list.' ~ hq.upgradingFacility.type.value ~ '.name')|trans,
+                '%operation%': hq.facilityOperation and hq.facilityOperation.value == 'downgrade'
+                    ? ('hq.operation_downgrade'|trans)
+                    : ('hq.operation_upgrade'|trans),
+                '%completed_at%': hq.upgradeCompletedAt ? hq.upgradeCompletedAt|date('d.m.Y H:i') : '—'
+            }) }}
+        </div>
+    {% endif %}
+
+    {% if hq and hq.facilityDowngradeLockCycle %}
+        <div class="alert alert-warning alert--spaced" role="status">
+            {{ 'hq.downgrade_lock_active'|trans }}
+        </div>
+    {% endif %}
+
+    <div class="hq-facilities-section">
+        <h2 class="hq-facilities-section__title">{{ 'hq.facilities'|trans }}</h2>
+        <div class="cards-grid cards-grid--facilities">
+            {% for facility in hq.facilities %}
+                {% include 'components/hq/facility_card.html.twig' with { facility: facility, team: team, hq: hq } %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<template id="template-facility-bonus-row">
+    <li class="hq-facility-bonus">
+        <span class="hq-facility-bonus__name js-bonus-name"></span>
+        <span class="hq-facility-bonus__value js-bonus-value"></span>
+    </li>
+</template>
+
+{% include 'components/hq/facility_modals.html.twig' %}
+{% endblock %}

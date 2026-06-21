@@ -1,0 +1,126 @@
+{# templates/components/training/trainer_card.html.twig #}
+{% set maxSlots = trainingService.getTrainerSlotsLimit(trainer) %}
+{% set occupiedSlots = trainer.heroes|length %}
+
+<div class="trainer-card">
+    <div class="trainer-card__main">
+        <div class="trainer-card__header">
+            <div class="trainer-card__identity">
+                <span class="trainer-card__emoji" aria-hidden="true">👨‍🏫</span>
+                <div>
+                    <h3 class="trainer-card__name">{{ trainer.name }}</h3>
+                    <span class="trainer-card__meta">
+                        {{ trainer.race.value|capitalize }} &bull; {{ 'heroes.primary_attrs'|trans }} {{ 'training.average'|trans }}: T{{ (trainer.str + trainer.dex + trainer.kon + trainer.spd + trainer.intel + trainer.wil + trainer.cha + trainer.lck) // 8 }}
+                    </span>
+                </div>
+            </div>
+            <span class="trainer-slot-badge">
+                {{ 'training.trainer_slots'|trans({'%occupied%': occupiedSlots, '%limit%': maxSlots}) }}
+            </span>
+        </div>
+
+        <div class="trainer-card__section">
+            <h4 class="trainer-card__section-title">{{ 'training.training_focus'|trans }}</h4>
+            <div class="trainer-card__focus-grid">
+                <div>
+                    <label for="trainer-type-{{ trainer.id }}" class="form-label">{{ 'training.type'|trans }}</label>
+                    <select id="trainer-type-{{ trainer.id }}" class="form-input"
+                            data-action="change->training#onFocusTypeChange"
+                            data-trainer-id="{{ trainer.id }}"
+                            {% if isLocked %}disabled{% endif %}>
+                        <option value="" {% if trainer.trainingType is null %}selected{% endif %}>{{ 'training.idle'|trans }}</option>
+                        <option value="attribute" {% if trainer.trainingType is not null and trainer.trainingType.value == 'attribute' %}selected{% endif %}>{{ 'training.type_attribute'|trans }}</option>
+                        <option value="magic" {% if trainer.trainingType is not null and trainer.trainingType.value == 'magic' %}selected{% endif %}>{{ 'training.type_magic'|trans }}</option>
+                        <option value="form" {% if trainer.trainingType is not null and trainer.trainingType.value == 'form' %}selected{% endif %}>{{ 'training.type_form'|trans }}</option>
+                    </select>
+                </div>
+
+                <div class="{% if trainer.trainingType is null or trainer.trainingType.value != 'attribute' %}hidden{% endif %}"
+                     data-training-attr-select-container="{{ trainer.id }}">
+                    <label for="trainer-attr-{{ trainer.id }}" class="form-label">{{ 'training.attr_label'|trans }}</label>
+                    <select id="trainer-attr-{{ trainer.id }}" class="form-input"
+                            data-trainer-id="{{ trainer.id }}"
+                            {% if isLocked %}disabled{% endif %}>
+                        {% for attrKey in ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'] %}
+                            <option value="{{ attrKey }}" {% if trainer.targetAttribute == attrKey %}selected{% endif %}>
+                                {{ ('training.attr.' ~ attrKey)|trans }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="button"
+                    data-action="click->training#saveTrainerFocus"
+                    data-trainer-id="{{ trainer.id }}"
+                    class="btn btn-outline btn--sm"
+                    {% if isLocked %}disabled{% endif %}>
+                💾 {{ 'training.save_focus'|trans }}
+            </button>
+        </div>
+
+        <div class="trainer-card__section">
+            <h4 class="trainer-card__section-title">{{ 'training.trainees_in_slots'|trans }}</h4>
+            <div class="trainer-card__trainee-list">
+                {% for hero in trainer.heroes %}
+                    <div class="trainer-card__trainee">
+                        <div class="trainer-card__trainee-info">
+                            <span class="trainer-card__trainee-icon" aria-hidden="true">💪</span>
+                            <div>
+                                <span class="trainer-card__trainee-name">{{ hero.name }}</span>
+                                <span class="trainer-card__trainee-meta">
+                                    {{ 'heroes.level'|trans }} {{ hero.level }} &bull; {{ 'heroes.fatigue'|trans }}: {{ hero.fatigue }}% &bull; {{ 'heroes.combat_form'|trans }}: {{ hero.form }}%
+                                </span>
+                            </div>
+                        </div>
+                        <button type="button"
+                                data-action="click->training#unassignTrainee"
+                                data-trainer-id="{{ trainer.id }}"
+                                data-hero-id="{{ hero.id }}"
+                                class="btn btn-outline btn--sm"
+                                {% if isLocked %}disabled{% endif %}
+                                aria-label="{{ 'training.unassign_hero'|trans }}">
+                            {{ 'training.unassign_hero'|trans }}
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="trainer-card__trainee-empty">
+                        {{ 'training.no_trainer_heroes'|trans }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if trainer.status.value == 'available' %}
+            <div class="trainer-card__section trainer-card__dismiss">
+                <p class="trainer-card__dismiss-desc copy-muted">
+                    {{ 'training.dismiss_desc'|trans }}
+                </p>
+                <button type="button"
+                        data-action="click->training#dismissTrainer"
+                        data-trainer-id="{{ trainer.id }}"
+                        class="btn btn-outline-danger btn--sm">
+                    {{ 'training.dismiss_btn'|trans }}
+                </button>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if occupiedSlots < maxSlots and not isLocked %}
+        <div class="trainer-card__assign">
+            <label for="trainer-assign-{{ trainer.id }}" class="form-label">{{ 'training.assign_hero'|trans }}</label>
+            <select id="trainer-assign-{{ trainer.id }}" class="form-input"
+                    data-action="change->training#assignTrainee"
+                    data-trainer-id="{{ trainer.id }}">
+                <option value="">-- {{ 'training.select_trainee'|trans }} --</option>
+                {% for hero in heroes %}
+                    {% if hero.role.value == 'combatant' and hero.status.value == 'available' and hero.trainer is null %}
+                        <option value="{{ hero.id }}">
+                            {{ hero.name }} &bull; Lvl {{ hero.level }} ({{ 'heroes.fatigue'|trans }}: {{ hero.fatigue }}%)
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
+</div>

@@ -1,40 +1,34 @@
 # Summoning Chamber Screen
 
-Reference: [screens-overview.md](../screens-overview.md#9-summoning-chamber-screen)
+Reference: [screens-overview.md](../screens-overview.md#9-summoning-chamber-screen), [summoning-system.md](../systems/summoning-system.md)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 
+> **Implementation:** Summoning Chamber is a **panel inside HQ**. `GET /app/summon` redirects to `/app/hq?facility=summoning_chamber`; history subtab via `&subtab=history`.
+
 Displayed Information:
 - Summon Status:
-	- Next Available Summon (countdown timer)
 	- Summons Used this Cycle
-	- Max Summons per Cycle (based on HQ level)
+	- Max Summons per Cycle (based on Kingdom game speed)
 - Summon Parameters:
-	- Race selection (dropdown or race icons)
-	- Age range preview (Min Age - Max Junior Age for selected race)
-	- Expected stat range (based on race multipliers)
+	- Arena Adaptation (displaying the adapted race of the home arena)
+	- Potential summonable races list (based on affinity and relations with the adapted race)
+	- Starting level: **1**
+	- Age range preview (Min Age - Max Junior Age for summonable races)
+	- Expected stat range (based on race flat bonuses and Summoning Chamber level)
 	- Summon Cost (Gold)
-- Recent Summons (history):
+- Recent Summons (history subtab):
 	- Recently acquired heroes
 	- Their basic stats
 
 Possible Actions/Buttons:
-- Summon Hero
-- Select Race
-- Auto-Summon
+- Summon Hero (pulls a random compatible race based on the team's arena adaptation)
 - View Summoned Hero
-- Buy Another Slot
 
 Backend Requirements:
-- Summon availability check
-- Random hero generation
-- Summon endpoint (POST)
-- Cooldown tracking
+- Summon availability check — `GET /api/v1/summoning/status`
+- Random hero generation + summon endpoint — `POST /api/v1/summoning`
 
-Sections to fill:
-- Display data contract (fields returned by API)
-- Actions and API calls
-- Validation and server-side checks
-- UX notes and edge cases
-- Tests and mocks
-- Implementation notes
+Implementation:
+- **Panel route:** `/app/hq?facility=summoning_chamber`
+- **Stimulus:** `summoning_controller.js` (embedded in HQ panel)

@@ -1,0 +1,85 @@
+{# templates/components/hq/facility_panel/_training.html.twig #}
+{% set subtab = training_subtab|default('trainers') %}
+<div class="hq-facility-panel" data-controller="training"
+     data-training-success-configure-value="{{ 'training.success_configure'|trans }}"
+     data-training-success-assign-value="{{ 'training.success_assign'|trans }}"
+     data-training-success-unassign-value="{{ 'training.success_unassign'|trans }}"
+     data-training-error-fetch-value="{{ 'js_flash.training.error_fetch'|trans }}"
+     data-training-error-queue-value="{{ 'js_flash.training.error_queue'|trans }}"
+     data-training-error-cancel-value="{{ 'js_flash.training.error_cancel'|trans }}"
+     data-training-text-processing-value="{{ 'js_flash.training.text_processing'|trans }}"
+     data-training-is-locked-value="{{ is_locked ? 'true' : 'false' }}"
+     data-training-text-saving-value="{{ 'js_flash.training.text_saving'|trans }}"
+     data-training-text-removing-value="{{ 'js_flash.training.text_removing'|trans }}"
+     data-training-error-save-focus-value="{{ 'js_flash.training.error_save_focus'|trans }}"
+     data-training-error-assign-hero-value="{{ 'js_flash.training.error_assign_hero'|trans }}"
+     data-training-error-remove-hero-value="{{ 'js_flash.training.error_remove_hero'|trans }}"
+     data-training-confirm-dismiss-value="{{ 'training.dismiss_confirm'|trans }}"
+     data-training-error-dismiss-value="{{ 'js_flash.training.failed_dismiss'|trans }}"
+     data-training-success-dismiss-value="{{ 'js_flash.training.success_dismiss'|trans }}">
+
+    <div class="hq-facility-panel__header">
+        <div class="layout-toolbar">
+            <h2 class="hq-facility-panel__title">🏋️ {{ 'hq.facilities_list.training.name'|trans }}</h2>
+            <div class="hq-facility-schedule-row">
+                <div class="training-schedule-widget">
+                    <span class="training-schedule-widget__label">{{ 'training.next_lock'|trans }}</span>
+                    {% if is_locked %}
+                        <span class="schedule-value schedule-value--locked">🔒 {{ 'training.locked'|trans }}</span>
+                    {% else %}
+                        <span data-countdown-target="{{ next_lock|date('c') }}" class="schedule-value schedule-value--countdown">--h --m --s</span>
+                    {% endif %}
+                </div>
+                <div class="training-schedule-widget">
+                    <span class="training-schedule-widget__label">{{ 'training.next_evaluation'|trans }}</span>
+                    <span data-countdown-target="{{ next_tick|date('c') }}" class="schedule-value schedule-value--active">--h --m --s</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'training',
+        message_target: 'alertMessage',
+        close_action: 'training#closeAlert'
+    } %}
+
+    {% if is_locked %}
+        <div class="alert alert-error" role="alert">
+            <strong>{{ 'training.lock_warning'|trans }}</strong>
+        </div>
+    {% endif %}
+
+    <div class="tab-nav" data-controller="tab">
+        <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="hq-trainers-tab"
+                class="tab-btn {{ subtab == 'trainers' ? 'tab-btn--active' : '' }}">
+            💼 {{ 'training.tab_trainers'|trans }}
+        </button>
+        <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="hq-active-tab"
+                class="tab-btn {{ subtab == 'active' ? 'tab-btn--active' : '' }}">
+            🏋️ {{ 'training.tab_active'|trans }}
+        </button>
+    </div>
+
+    <div id="hq-trainers-tab" class="tab-content{% if subtab != 'trainers' %} hidden{% endif %}">
+        <div class="training-limit-bar">
+            <span>{{ 'training.trainer_limit'|trans({'%count%': trainers|length, '%limit%': trainer_limit}) }}</span>
+        </div>
+        <div class="training-trainer-grid">
+            {% for trainer in trainers %}
+                {% include 'components/training/trainer_card.html.twig' with {
+                    trainer: trainer,
+                    heroes: heroes,
+                    isLocked: is_locked,
+                    trainingService: training_service
+                } %}
+            {% else %}
+                <p class="copy-muted">{{ 'training.no_trainers_desc'|trans }}</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="hq-active-tab" class="{{ subtab != 'active' ? 'hidden' : '' }}">
+        {% include 'components/training/active_trainees_table.html.twig' with { trainers: trainers } %}
+    </div>
+</div>

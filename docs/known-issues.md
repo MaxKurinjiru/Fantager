@@ -1,20 +1,19 @@
-# Known Issues (short table)
+# Known Issues & Open Questions
 
-This file summarizes the short list of known documentation issues discovered during the repo scan.
+Single source of truth for documentation gaps, design questions, and known inconsistencies.
 
-| # | Area | Issue | Severity |
-|---:|---|---|---:|
-| 1 | Combat | No combat formulas documented (HP, damage, accuracy, crits) | High |
-| 2 | Morale | "Base morale value" undefined for hero transfers | High |
-| 3 | Roster | Starting hero roster size not specified | High |
-| 4 | Dungeon | Dungeon System placeholder exists, but encounter rules, rewards and tick processing are still undefined | High |
-| 5 | Quest | Quest System placeholder exists, but quest generation, limits and rewards are still undefined | High |
-| 6 | Crafting | Crafting System placeholder exists, but recipes, success rates and dismantle rules are still undefined | High |
-| 7 | Item System | Durability & enchanting mechanics referenced but undefined | High |
-| 8 | Balance | Genie stat budget appears higher than baseline (possible design issue) | Medium |
-| 9 | Clarity | Ent KON multiplier text/table inconsistent | Low |
-|10 | Terminology | "Death Expectation" ambiguous—consider renaming | Low |
-|11 | Training | Training speed semantics need clarification (time vs cost) | Low |
+**AI agents:** Do not invent mechanics for open items below (especially combat formulas #1 and enchanting #2). Read [roadmap.md](roadmap.md) and [screen-code-map.md](screen-code-map.md) before implementing related screens.
 
-Keep this file updated as fixes are applied.
-Dont mark resolved just remove from this list when fixed.
+**Legend:** `Blocks` = what implementation phase is waiting on this item.
+
+| ID | Area | Issue | Severity | Blocks | Status |
+|----|------|-------|----------|--------|--------|
+| 1 | Combat | No combat formulas documented (HP, damage, defense, accuracy, dodge, crits, status effects) | High | Phase 5 league match resolution, graveyard death triggers | Open |
+| 2 | Item System | Durability & enchanting mechanics referenced in economy docs but undefined in item system | High | Phase 6 enchanting | Open |
+| 3 | Friendly Matches | Rules documented in `calendar-system.md`; scheduling UI/API pending combat engine | Low | Phase 5 friendly match scheduling | Partially resolved |
+| 4 | Arena Matches | Home-match revenue implemented; friendly match scheduling pending combat | Low | Phase 5 | Partially resolved |
+| 5 | Graveyard UI | Memorial snapshots on dismiss implemented; combat death memorials pending combat engine | Low | Phase 6 combat deaths | Resolved (read UI/API implemented) |
+
+Deferred features (dungeons, world events, quests, crafting, public wiki/news) are documented under [`future/`](future/) — not tracked here.
+
+Remove rows from **Open** when fixed;

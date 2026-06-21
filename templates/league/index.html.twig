@@ -1,0 +1,384 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'league.title'|trans }} | Fantager{% endblock %}
+
+{% block body %}
+<div class="league-page page-shell">
+    {# Page Header #}
+    {% set right_content %}
+        {% if season is not null %}
+            {# Info Badge #}
+            <div class="league-info-badge">
+                <span class="league-info-badge__season">{{ 'auth.kingdom_season'|trans }} {{ season.seasonNumber }}</span>
+                {{ season.startDate|date('d. m. Y') }} — {{ season.endDate|date('d. m. Y') }}
+            </div>
+
+            {# Group Select Dropdown #}
+            <form method="GET" action="{{ path('app_league') }}" class="league-group-form" data-controller="form-auto-submit">
+                <label for="group-select" class="sr-only">{{ 'league.select_group'|trans }}</label>
+                <select id="group-select" name="groupId" data-action="change->form-auto-submit#submit" class="form-input league-group-select">
+                    {% for g in groups %}
+                        <option value="{{ g.id }}" {% if selectedGroup and selectedGroup.id == g.id %}selected{% endif %}>
+                            {{ g.tier.tierName }} — {{ g.groupName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+        {% endif %}
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'league.title',
+        subtitle: 'league.subtitle',
+        right_content: right_content
+    } %}
+
+    {% if season is null %}
+        {# No Active Season State #}
+        <div class="league-empty-state">
+            <div class="league-empty-state__emoji">🏆</div>
+            <h3 class="league-empty-state__title">{{ 'league.no_active_season'|trans }}</h3>
+            <p class="league-empty-state__desc">{{ 'league.no_active_season_desc'|trans }}</p>
+            <a href="{{ path('app_dashboard') }}" class="btn btn-primary">{{ 'nav.dashboard'|trans }}</a>
+        </div>
+    {% else %}
+        {# Main League View #}
+        <div>
+            {# Tab Switcher Buttons #}
+            <div class="tab-nav-bar">
+                <a href="{{ path('app_league', selectedGroup ? { tab: 'standings', groupId: selectedGroup.id } : { tab: 'standings' }) }}"
+                   class="tab-btn {{ tab == 'standings' ? 'tab-btn--active' : '' }}">
+                    🏆 {{ 'league.tab_standings'|trans }}
+                </a>
+                <a href="{{ path('app_league', selectedGroup ? { tab: 'fixtures', groupId: selectedGroup.id } : { tab: 'fixtures' }) }}"
+                   class="tab-btn {{ tab == 'fixtures' ? 'tab-btn--active' : '' }}">
+                    📅 {{ 'league.tab_fixtures'|trans }}
+                </a>
+                <a href="{{ path('app_league', selectedGroup ? { tab: 'leaderboard', groupId: selectedGroup.id } : { tab: 'leaderboard' }) }}"
+                   class="tab-btn {{ tab == 'leaderboard' ? 'tab-btn--active' : '' }}">
+                    🌎 {{ 'league.tab_leaderboard'|trans }}
+                </a>
+            </div>
+
+            {# ==================== TAB 1: STANDINGS ==================== #}
+            <div id="tab-standings" class="league-tab-panel {{ tab != 'standings' ? 'hidden' : '' }}">
+                {% if standings is empty %}
+                    <p class="league-empty-message">{{ 'league.no_standings'|trans }}</p>
+                {% else %}
+                    {# Legend / Promotion-Relegation Settings #}
+                    {% set groups_count = selectedGroup.tier.groups|length %}
+                    {% set tier_promo = selectedGroup.tier.promotionSlots %}
+                    {% set tier_releg = selectedGroup.tier.relegationSlots %}
+                    {% set total_teams = standings|length %}
+
+                    {% set k_promo = (tier_promo / groups_count)|round(0, 'floor') %}
+                    {% set rem_promo = tier_promo % groups_count %}
+
+                    {% set k_releg = (tier_releg / groups_count)|round(0, 'floor') %}
+                    {% set rem_releg = tier_releg % groups_count %}
+
+                    <div class="league-standings-legend">
+                        {% if k_promo > 0 %}
+                            <div class="league-legend-item">
+                                <span class="league-legend-dot league-legend-dot--promo-direct"></span>
+                                <span>{{ 'league.direct_promotion_zone'|trans }}: {{ 'league.top_x_direct'|trans({'%count%': k_promo}) }}</span>
+                            </div>
+                        {% endif %}
+                        {% if rem_promo > 0 %}
+                            <div class="league-legend-item">
+                                <span class="league-legend-dot league-legend-dot--promo-possible"></span>
+                                <span>{{ 'league.possible_promotion_zone'|trans }}: {{ 'league.top_x_possible'|trans({'%count%': rem_promo}) }}</span>
+                            </div>
+                        {% endif %}
+                        {% if k_releg > 0 %}
+                            <div class="league-legend-item">
+                                <span class="league-legend-dot league-legend-dot--releg-direct"></span>
+                                <span>{{ 'league.direct_relegation_zone'|trans }}: {{ 'league.bottom_x_direct'|trans({'%count%': k_releg}) }}</span>
+                            </div>
+                        {% endif %}
+                        {% if rem_releg > 0 %}
+                            <div class="league-legend-item">
+                                <span class="league-legend-dot league-legend-dot--releg-possible"></span>
+                                <span>{{ 'league.possible_relegation_zone'|trans }}: {{ 'league.bottom_x_possible'|trans({'%count%': rem_releg}) }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Table #}
+                    <div class="league-table-wrap">
+                        <table class="league-table">
+                            <thead>
+                                <tr>
+                                    <th class="league-table__col--rank" title="{{ 'league.col_rank_hint'|trans }}">{{ 'league.col_rank'|trans }}</th>
+                                    <th title="{{ 'league.col_team_hint'|trans }}">{{ 'league.col_team'|trans }}</th>
+                                    <th class="league-table__col--stat" title="{{ 'league.col_played_hint'|trans }}">{{ 'league.col_played'|trans }}</th>
+                                    <th class="league-table__col--stat" title="{{ 'league.col_wins_hint'|trans }}">{{ 'league.col_wins'|trans }}</th>
+                                    <th class="league-table__col--stat" title="{{ 'league.col_draws_hint'|trans }}">{{ 'league.col_draws'|trans }}</th>
+                                    <th class="league-table__col--stat" title="{{ 'league.col_losses_hint'|trans }}">{{ 'league.col_losses'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_diff_hint'|trans }}">{{ 'league.col_diff'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_points_hint'|trans }}">{{ 'league.col_points'|trans }}</th>
+                                    <th class="league-table__col--form" title="{{ 'league.col_form_hint'|trans }}">{{ 'league.col_form'|trans }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for standing in standings %}
+                                    {% set is_own_team = standing.team.id == team.id %}
+                                    {% set is_direct_promo = loop.index <= k_promo %}
+                                    {% set is_possible_promo = (rem_promo > 0) and (loop.index == k_promo + 1) %}
+                                    {% set is_direct_releg = loop.index > (total_teams - k_releg) %}
+                                    {% set is_possible_releg = (rem_releg > 0) and (loop.index == (total_teams - k_releg)) %}
+
+                                    <tr class="standings-row{% if is_own_team %} standings-row--own{% endif %}">
+                                        {# Rank / Position #}
+                                        <td class="standings-row__cell--dense standings-row__rank">
+                                            <div class="standings-row__rank-inner">
+                                                {% if is_direct_promo %}
+                                                    <span class="standings-row__indicator standings-row__indicator--promo-direct" title="{{ 'league.direct_promotion_zone'|trans }}">▲</span>
+                                                {% elseif is_possible_promo %}
+                                                    <span class="standings-row__indicator standings-row__indicator--promo-possible" title="{{ 'league.possible_promotion_zone'|trans }}">▲</span>
+                                                {% elseif is_direct_releg %}
+                                                    <span class="standings-row__indicator standings-row__indicator--releg-direct" title="{{ 'league.direct_relegation_zone'|trans }}">▼</span>
+                                                {% elseif is_possible_releg %}
+                                                    <span class="standings-row__indicator standings-row__indicator--releg-possible" title="{{ 'league.possible_relegation_zone'|trans }}">▼</span>
+                                                {% endif %}
+                                                {{ loop.index }}
+                                            </div>
+                                        </td>
+
+                                        {# Team Name #}
+                                        <td class="standings-row__cell--dense">
+                                            <div class="standings-row__team-inner">
+                                                {% if standing.team.emblem %}
+                                                    <span class="standings-row__emblem">{{ standing.team.emblem }}</span>
+                                                {% else %}
+                                                    <span class="standings-row__emblem">🛡️</span>
+                                                {% endif %}
+                                                <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ standing.team.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': standing.team.name}) }}">{{ standing.team.name }}</button>
+                                                {% if standing.team.isNpc %}
+                                                    <span class="league-npc-tag">{{ 'dashboard.npc'|trans }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+
+                                        {# Stats #}
+                                        <td class="standings-row__cell--dense standings-row__stat">{{ standing.played }}</td>
+                                        <td class="standings-row__cell--dense standings-row__stat">{{ standing.wins }}</td>
+                                        <td class="standings-row__cell--dense standings-row__stat">{{ standing.draws }}</td>
+                                        <td class="standings-row__cell--dense standings-row__stat">{{ standing.losses }}</td>
+
+                                        {# Goal Diff #}
+                                        <td class="standings-row__cell--dense league-goal-diff{% if standing.goalDifference > 0 %} league-goal-diff--positive{% elseif standing.goalDifference < 0 %} league-goal-diff--negative{% else %} league-goal-diff--neutral{% endif %}">
+                                            {{ standing.goalDifference > 0 ? '+' : '' }}{{ standing.goalDifference }}
+                                        </td>
+
+                                        {# Points #}
+                                        <td class="standings-row__cell--dense standings-row__points">{{ standing.points }}</td>
+
+                                        {# Form #}
+                                        <td class="standings-row__cell--dense">
+                                            <div class="league-form-badges">
+                                                {% set team_form = forms[standing.team.id] ?? [] %}
+                                                {% if team_form is empty %}
+                                                    <span class="league-form-empty">—</span>
+                                                {% else %}
+                                                    {% for result in team_form %}
+                                                        {% if result == 'W' %}
+                                                            <span class="league-form-badge league-form-badge--win" title="{{ 'league.form_win_hint'|trans }}">W</span>
+                                                        {% elseif result == 'D' %}
+                                                            <span class="league-form-badge league-form-badge--draw" title="{{ 'league.form_draw_hint'|trans }}">D</span>
+                                                        {% else %}
+                                                            <span class="league-form-badge league-form-badge--loss" title="{{ 'league.form_loss_hint'|trans }}">L</span>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# ==================== TAB 2: FIXTURES ==================== #}
+            <div id="tab-fixtures" class="league-tab-panel {{ tab != 'fixtures' ? 'hidden' : '' }}">
+                <div class="league-fixtures-grid">
+                    {# My Matches (Left) #}
+                    <div class="league-section">
+                        <h3 class="league-section__title">
+                            👤 {{ 'league.my_fixtures'|trans }}
+                        </h3>
+
+                        {% if myFixtures is empty %}
+                            <p class="league-empty-message">{{ 'dashboard.no_matches'|trans }}</p>
+                        {% else %}
+                            <div class="fixture-list">
+                                {% for f in myFixtures %}
+                                    {% set is_home = f.homeTeam.id == team.id %}
+                                    {% set is_completed = f.status.value == 'completed' %}
+
+                                    <div class="fixture-card{% if is_completed %} fixture-card--completed{% else %} fixture-card--upcoming{% endif %}">
+                                        <div class="fixture-card__main">
+                                            <div class="fixture-card__date">
+                                                <span class="fixture-card__date-day">
+                                                    {{ f.scheduledAt|date('d. m. Y') }}
+                                                </span>
+                                                {{ f.scheduledAt|date('H:i') }}
+                                            </div>
+
+                                            <div class="fixture-card__matchup">
+                                                <span class="fixture-card__team fixture-card__team--home{% if is_home %} fixture-card__team--highlight{% endif %}">
+                                                    <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ f.homeTeam.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': f.homeTeam.name}) }}">{{ f.homeTeam.name }}</button>
+                                                </span>
+
+                                                <span class="fixture-card__score">
+                                                    {% if is_completed and f.battle %}
+                                                        {{ f.battle.scoreA }} — {{ f.battle.scoreB }}
+                                                    {% else %}
+                                                        VS
+                                                    {% endif %}
+                                                </span>
+
+                                                <span class="fixture-card__team fixture-card__team--away{% if not is_home %} fixture-card__team--highlight{% endif %}">
+                                                    <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ f.awayTeam.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': f.awayTeam.name}) }}">{{ f.awayTeam.name }}</button>
+                                                </span>
+                                            </div>
+
+                                            <div class="fixture-card__meta">
+                                                {% if is_completed and f.battle %}
+                                                    <span class="fixture-card__status fixture-card__status--completed">
+                                                        {{ 'training.status.completed'|trans }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="fixture-card__status fixture-card__status--pending">
+                                                        {{ 'training.status.pending'|trans }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        {% if not is_completed %}
+                                            <div class="fixture-card__formation-row">
+                                                {% include 'components/league/fixture_formation_status.html.twig' with {
+                                                    formation: fixtureFormations[f.id]|default(null)
+                                                } %}
+                                                <a href="{{ path('app_formation', { fixture_id: f.id }) }}" class="btn btn-primary btn--sm fixture-card__formation-btn">
+                                                    🛡️ {{ 'dashboard.prepare_formation'|trans }}
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Group Fixtures by Round (Right) #}
+                    <div class="league-section">
+                        <h3 class="league-section__title">
+                            🏆 {{ 'league.group_fixtures'|trans }}
+                        </h3>
+
+                        {% if fixtures is empty %}
+                            <p class="league-empty-message">{{ 'dashboard.no_matches'|trans }}</p>
+                        {% else %}
+                            <div class="fixture-list fixture-list--rounds">
+                                {% set current_date = null %}
+                                {% set round_count = 0 %}
+                                {% for f in fixtures %}
+                                    {% set f_date = f.scheduledAt|date('Y-m-d H:i') %}
+                                    {% if f_date != current_date %}
+                                        {% set current_date = f_date %}
+                                        {% set round_count = round_count + 1 %}
+                                        <div class="fixture-round-header">
+                                            <h4 class="fixture-round-header__title">
+                                                {{ 'league.round'|trans }} {{ round_count }} — {{ f.scheduledAt|date('d. m. Y H:i') }}
+                                            </h4>
+                                        </div>
+                                    {% endif %}
+
+                                    {% set is_group_completed = f.status.value == 'completed' %}
+                                    <div class="fixture-row{% if is_group_completed %} fixture-row--completed{% else %} fixture-row--upcoming{% endif %}">
+                                        <div class="fixture-row__team fixture-row__team--home{% if f.homeTeam.id == team.id %} fixture-row__team--highlight{% endif %}" title="{{ f.homeTeam.name }}">
+                                            <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ f.homeTeam.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': f.homeTeam.name}) }}">{{ f.homeTeam.name }}</button>
+                                        </div>
+
+                                        <div class="fixture-row__score">
+                                            {% if f.status.value == 'completed' and f.battle %}
+                                                {{ f.battle.scoreA }}-{{ f.battle.scoreB }}
+                                            {% else %}
+                                                VS
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="fixture-row__team fixture-row__team--away{% if f.awayTeam.id == team.id %} fixture-row__team--highlight{% endif %}" title="{{ f.awayTeam.name }}">
+                                            <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ f.awayTeam.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': f.awayTeam.name}) }}">{{ f.awayTeam.name }}</button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {# ==================== TAB 3: GLOBAL LEADERBOARD ==================== #}
+            <div id="tab-leaderboard" class="league-tab-panel {{ tab != 'leaderboard' ? 'hidden' : '' }}">
+                {% if globalLeaderboard is empty %}
+                    <p class="league-empty-message">{{ 'league.no_standings'|trans }}</p>
+                {% else %}
+                    <div class="league-table-wrap">
+                        <table class="league-table">
+                            <thead>
+                                <tr>
+                                    <th class="league-table__col--rank" title="{{ 'league.col_rank_hint'|trans }}">{{ 'league.col_rank'|trans }}</th>
+                                    <th title="{{ 'league.col_team_hint'|trans }}">{{ 'league.col_team'|trans }}</th>
+                                    <th class="league-table__col--group" title="{{ 'league.col_group_hint'|trans }}">{{ 'league.col_group'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_played_hint'|trans }}">{{ 'league.col_played'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_wins_hint'|trans }}">{{ 'league.col_wins'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_draws_hint'|trans }}">{{ 'league.col_draws'|trans }}</th>
+                                    <th class="league-table__col--stat-wide" title="{{ 'league.col_losses_hint'|trans }}">{{ 'league.col_losses'|trans }}</th>
+                                    <th class="league-table__col--tier" title="{{ 'league.col_diff_hint'|trans }}">{{ 'league.col_diff'|trans }}</th>
+                                    <th class="league-table__col--points" title="{{ 'league.col_points_hint'|trans }}">{{ 'league.col_points'|trans }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for standing in globalLeaderboard %}
+                                    {% set is_own_team = standing.team.id == team.id %}
+                                    <tr class="standings-row{% if is_own_team %} standings-row--own{% endif %}">
+                                        <td class="standings-row__stat-muted">{{ loop.index }}</td>
+                                        <td class="standings-row__team-cell">
+                                            <div class="standings-row__team-inner">
+                                                {% if standing.team.emblem %}
+                                                    <span class="standings-row__emblem">{{ standing.team.emblem }}</span>
+                                                {% else %}
+                                                    <span class="standings-row__emblem">🛡️</span>
+                                                {% endif %}
+                                                <button type="button" class="profile-link" data-action="click->player-profile#open" data-player-profile-team-id-param="{{ standing.team.id }}" aria-label="{{ 'community.view_profile'|trans({'%name%': standing.team.name}) }}">{{ standing.team.name }}</button>
+                                                {% if standing.team.isNpc %}
+                                                    <span class="league-npc-tag">{{ 'dashboard.npc'|trans }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td class="standings-row__stat">{{ standing.group.groupName }}</td>
+                                        <td class="standings-row__stat-muted">{{ standing.played }}</td>
+                                        <td class="standings-row__stat-muted">{{ standing.wins }}</td>
+                                        <td class="standings-row__stat-muted">{{ standing.draws }}</td>
+                                        <td class="standings-row__stat-muted">{{ standing.losses }}</td>
+                                        <td class="league-goal-diff{% if standing.goalDifference > 0 %} league-goal-diff--positive{% elseif standing.goalDifference < 0 %} league-goal-diff--negative{% else %} league-goal-diff--neutral{% endif %}">
+                                            {{ standing.goalDifference > 0 ? '+' : '' }}{{ standing.goalDifference }}
+                                        </td>
+                                        <td class="standings-row__points">{{ standing.points }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

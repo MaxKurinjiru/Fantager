@@ -1,0 +1,119 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'calendar.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="page-shell" data-controller="calendar"
+     data-calendar-kingdom-id-value="{{ kingdom.id }}"
+     data-calendar-team-id-value="{{ team.id }}"
+     data-calendar-timezone-value="{{ kingdom.timezone }}"
+     data-calendar-translations-value="{{ {
+         'loading': 'calendar.loading'|trans,
+         'empty': 'calendar.empty'|trans,
+         'error': 'calendar.error'|trans,
+         'filter_team_only': 'calendar.filter_team_only'|trans,
+         'filter_show_system': 'calendar.filter_show_system'|trans,
+         'type_system_tick': 'calendar.type_system_tick'|trans,
+         'type_league_match': 'calendar.type_league_match'|trans,
+         'type_hero_training_history': 'calendar.type_hero_training_history'|trans,
+         'status_scheduled': 'calendar.status_scheduled'|trans,
+         'status_completed': 'calendar.status_completed'|trans,
+         'status_failed': 'calendar.status_failed'|trans,
+         'today': 'calendar.today'|trans,
+         'day_empty': 'calendar.day_empty'|trans,
+         'league_round_title': 'calendar.league_round_title'|trans,
+         'league_round_count': 'calendar.league_round_count'|trans
+     }|json_encode|e('html_attr') }}">
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'calendar.title',
+        subtitle: 'calendar.subtitle'
+    } %}
+
+    <div class="filter-bar game-panel">
+        <div class="filter-bar__controls">
+            <label class="form-check">
+                <input type="checkbox" data-calendar-target="teamOnlyToggle" data-action="change->calendar#reload" class="form-check__input">
+                <span>{{ 'calendar.filter_team_only'|trans }}</span>
+            </label>
+            <label class="form-check">
+                <input type="checkbox" data-calendar-target="systemToggle" data-action="change->calendar#reload" class="form-check__input">
+                <span>{{ 'calendar.filter_show_system'|trans }}</span>
+            </label>
+        </div>
+        <div class="cal-week-nav">
+            <button type="button" data-action="click->calendar#prevWeek" class="btn btn-outline btn--sm" aria-label="{{ 'calendar.prev_week'|trans }}">←</button>
+            <span data-calendar-target="rangeLabel" class="cal-week-nav__label"></span>
+            <button type="button" data-action="click->calendar#nextWeek" class="btn btn-outline btn--sm" aria-label="{{ 'calendar.next_week'|trans }}">→</button>
+        </div>
+    </div>
+
+    <div data-calendar-target="feedContainer" class="layout-stack layout-stack--sm">
+        <div class="loading-spinner">
+            <div class="loading-spinner__icon" aria-hidden="true"></div>
+        </div>
+    </div>
+
+    <template id="template-calendar-loading">
+        <div class="cal-feed-loading">
+            <div class="cal-feed-loading__spinner" aria-hidden="true"></div>
+        </div>
+    </template>
+
+    <template id="template-calendar-error">
+        <p class="cal-feed-error js-cal-error"></p>
+    </template>
+
+    <template id="template-calendar-day">
+        <section class="cal-day-group">
+            <header class="cal-day-group__header">
+                <span class="cal-day-group__weekday js-cal-day-weekday"></span>
+                <span class="cal-day-group__date js-cal-day-date"></span>
+                <span class="cal-day-group__today js-cal-day-today hidden">{{ 'calendar.today'|trans }}</span>
+            </header>
+            <div class="cal-day-group__events js-cal-day-events"></div>
+            <p class="cal-day-group__empty js-cal-day-empty hidden"></p>
+        </section>
+    </template>
+
+    <template id="template-calendar-event">
+        <article class="cal-event">
+            <time class="cal-event__time js-cal-time"></time>
+            <div class="cal-event__body">
+                <div class="cal-event__meta">
+                    <span class="cal-event__type js-cal-type"></span>
+                    <span class="cal-event__status js-cal-status"></span>
+                </div>
+                <h3 class="cal-event__title js-cal-title"></h3>
+                <p class="cal-event__description js-cal-description"></p>
+            </div>
+        </article>
+    </template>
+
+    <template id="template-calendar-league-batch">
+        <article class="cal-event cal-event--league-batch">
+            <time class="cal-event__time js-cal-time"></time>
+            <div class="cal-event__body">
+                <div class="cal-event__meta">
+                    <span class="cal-event__type js-cal-type"></span>
+                    <span class="cal-event__batch-count js-cal-batch-count"></span>
+                    <span class="cal-event__status js-cal-status"></span>
+                </div>
+                <details class="cal-event__batch">
+                    <summary class="cal-event__batch-summary">
+                        <span class="cal-event__batch-title js-cal-batch-title"></span>
+                    </summary>
+                    <ul class="cal-event__fixtures js-cal-fixtures"></ul>
+                </details>
+            </div>
+        </article>
+    </template>
+
+    <template id="template-calendar-fixture">
+        <li class="cal-event__fixture js-cal-fixture">
+            <span class="cal-event__fixture-match js-cal-fixture-match"></span>
+            <span class="cal-event__fixture-group js-cal-fixture-group"></span>
+        </li>
+    </template>
+</div>
+{% endblock %}

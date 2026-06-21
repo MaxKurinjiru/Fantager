@@ -1,0 +1,585 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  DASHBOARD — team banner, arena adaptation panel, next match card, BEM styles
+// =============================================================================
+
+@layer components {
+  // ── Dashboard Banner ───────────────────────────────────────────────────────
+  .db-banner {
+    @apply relative rounded-xl p-6 md:p-8 shadow-xl overflow-hidden flex flex-col md:flex-row items-center md:items-start gap-6;
+    background-image: linear-gradient(to bottom right, color-mix(in srgb, var(--color-brand-800) 20%, transparent), color-mix(in srgb, var(--color-surface-page) 40%, transparent), color-mix(in srgb, var(--color-surface-base) 80%, transparent));
+    border: 1px solid var(--overlay-brand-20);
+  }
+
+  .db-banner__emblem {
+    @apply w-24 h-24 rounded-2xl flex items-center justify-center text-5xl select-none shrink-0 shadow-inner;
+    background-color: var(--overlay-brand-10);
+    border: 1px solid var(--overlay-brand-30);
+    box-shadow: 0 0 20px var(--overlay-brand-10);
+  }
+
+  .db-banner__content {
+    @apply flex-1 w-full space-y-4;
+  }
+
+  .db-banner__title {
+    @apply text-2xl sm:text-3xl font-bold tracking-tight text-white;
+  }
+
+  .db-banner__meta {
+    @apply text-xs font-medium flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1;
+    color: var(--color-text-secondary);
+  }
+
+  .db-banner__badges {
+    @apply flex flex-wrap items-center justify-center md:justify-start gap-4 pt-1;
+  }
+
+  .db-banner__badge {
+    @apply flex items-center gap-2 border px-3 py-1.5 rounded-xl text-xs select-none shadow-sm;
+
+    &-label {
+      font-weight: 500;
+    }
+    
+    &--morale {
+      background-color: var(--overlay-brand-10);
+      color: var(--color-brand-400);
+      border-color: var(--overlay-brand-20);
+    }
+    
+    &--chemistry {
+      background-color: var(--overlay-indigo-10);
+      color: var(--color-indigo-400);
+      border-color: var(--overlay-indigo-10);
+    }
+    
+    &--reputation {
+      background-color: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+      color: var(--color-amber-400);
+      border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+    }
+
+    &--fan-base {
+      background-color: color-mix(in srgb, var(--color-purple-400) 10%, transparent);
+      color: var(--color-purple-400);
+      border-color: color-mix(in srgb, var(--color-purple-400) 20%, transparent);
+    }
+  }
+
+  .db-banner__badge-delta {
+    @apply font-bold ml-1 tabular-nums;
+
+    &--up {
+      color: var(--color-success-text);
+    }
+
+    &--down {
+      color: var(--color-error-text);
+    }
+  }
+
+  .db-banner__edit-btn {
+    @apply absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-lg;
+    background-color: color-mix(in srgb, var(--color-surface-base) 60%, transparent);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-surface-page) 80%, transparent);
+      border-color: var(--overlay-brand-30);
+      color: var(--color-white);
+    }
+  }
+
+  // ── Arena Adaptation (HQ Barracks panel) ───────────────────────────────────
+  .db-adapt {
+    @apply border-t pt-4 w-full;
+    border-color: var(--overlay-border-30);
+  }
+
+  .db-adapt__row {
+    @apply flex flex-col sm:flex-row sm:items-center justify-center md:justify-start gap-3 text-xs;
+  }
+
+  .db-adapt__label {
+    @apply flex items-center justify-center gap-1.5 font-semibold select-none shrink-0;
+    color: var(--color-text-secondary);
+  }
+
+  .db-adapt__controls {
+    @apply flex flex-wrap items-center justify-center md:justify-start gap-3;
+  }
+
+  .db-adapt__select {
+    @apply rounded-lg px-3 py-1.5 text-xs focus:outline-none font-medium disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer;
+    background-color: var(--color-surface-page);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    
+    &:focus {
+      border-color: var(--color-brand-500);
+    }
+  }
+
+  .db-adapt__status {
+    @apply rounded-lg px-3 py-1.5 text-[10px] flex items-center gap-1.5 border;
+    
+    &--pending {
+      background-color: var(--overlay-warning-bg-40);
+      border-color: var(--overlay-warning-border-40);
+      color: var(--color-warning-text);
+    }
+    
+    &--locked {
+      background-color: var(--overlay-error-bg-30);
+      border-color: var(--overlay-error-border-40);
+      color: var(--color-error-text);
+    }
+  }
+
+  // ── Next Match Widget ──────────────────────────────────────────────────────
+  .next-match-card {
+    @apply rounded-xl p-6 border relative overflow-hidden shadow-lg;
+    background-color: color-mix(in srgb, var(--color-surface-base) 60%, transparent);
+    border-color: var(--color-border);
+    backdrop-filter: blur(12px);
+  }
+
+  .next-match-card__title {
+    @apply text-base font-bold text-white mb-6 flex items-center gap-2;
+  }
+
+  .next-match-card__teams {
+    @apply grid grid-cols-1 sm:grid-cols-7 items-center gap-6 sm:gap-2;
+  }
+
+  .next-match-team {
+    @apply sm:col-span-3 flex flex-col items-center text-center space-y-2 min-w-0;
+  }
+
+  .next-match-team__pos {
+    @apply text-[10px] uppercase tracking-widest font-black select-none;
+    color: var(--color-text-secondary);
+  }
+
+  .next-match-team__emblem {
+    @apply w-16 h-16 rounded-xl flex items-center justify-center text-3xl shadow-inner select-none transition-colors duration-300;
+    background-color: var(--color-surface-page);
+    border: 1px solid var(--color-border);
+    
+    &--highlight {
+      border-color: var(--focus-ring-color);
+      background-color: var(--overlay-brand-05);
+      box-shadow: 0 0 15px color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+    }
+  }
+
+  .next-match-team__name {
+    @apply block text-sm truncate w-full px-2 font-semibold;
+    
+    &--highlight {
+      @apply text-brand-500 font-bold;
+    }
+    &--neutral {
+      color: var(--color-text-primary);
+    }
+  }
+
+  .next-match-team__owner {
+    @apply text-[10px] font-semibold px-2.5 py-0.5 rounded-full select-none border;
+    
+    &--npc {
+      color: var(--color-error-text);
+      background-color: var(--overlay-error-bg-20);
+      border-color: var(--overlay-error-border-30);
+    }
+    
+    &--player {
+      color: var(--color-brand-400);
+      background-color: var(--overlay-brand-20);
+      border-color: var(--overlay-brand-30);
+    }
+  }
+
+  .next-match-vs {
+    @apply sm:col-span-1 flex flex-col items-center justify-center py-4 sm:py-0;
+  }
+
+  .next-match-vs__pill {
+    @apply px-3.5 py-2 text-xs font-black rounded-xl select-none shadow-md border;
+    background-color: var(--color-surface-page);
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
+  }
+
+  .next-match-meta {
+    @apply border-t pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs;
+    border-color: var(--overlay-border-30);
+    color: var(--color-text-secondary);
+  }
+
+  .next-match-meta__item {
+    @apply flex items-center gap-2 border px-3 py-1.5 rounded-lg;
+    background-color: color-mix(in srgb, var(--color-surface-base) 50%, transparent);
+    border-color: var(--overlay-border-50);
+  }
+
+  .next-match-empty {
+    @apply rounded-xl p-6 text-center border shadow-inner;
+    background-color: color-mix(in srgb, var(--color-surface-base) 60%, transparent);
+    border-color: var(--overlay-border-50);
+  }
+
+  .next-match-empty__title {
+    @apply text-xs uppercase tracking-widest mb-3 font-semibold;
+    color: var(--color-text-secondary);
+  }
+
+  .next-match-empty__desc {
+    @apply text-sm italic font-medium flex items-center justify-center gap-2;
+    color: var(--color-text-secondary);
+  }
+
+  .db-quick-actions {
+    @apply rounded-xl p-6 border shadow-lg relative overflow-hidden;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 45%, transparent);
+    border-color: color-mix(in srgb, var(--color-border) 75%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  .db-quick-actions__title {
+    @apply text-base font-bold text-white mb-4 flex items-center gap-2;
+  }
+
+  .db-quick-actions__grid {
+    @apply grid grid-cols-2 sm:grid-cols-4 gap-4;
+  }
+
+  .db-quick-action {
+    @apply flex flex-col items-center justify-center p-4 rounded-xl border text-center shadow-md transition-all duration-300;
+    background-color: color-mix(in srgb, var(--color-surface-base) 85%, transparent);
+    border-color: var(--color-border);
+  }
+
+  .db-quick-action:hover {
+    border-color: color-mix(in srgb, var(--color-brand-500) 35%, var(--color-border));
+    background-color: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
+  }
+
+  .db-quick-action__emoji {
+    @apply text-3xl mb-2.5 transition-transform duration-300 ease-out select-none;
+  }
+
+  .db-quick-action:hover .db-quick-action__emoji {
+    transform: scale(1.1) translateY(-2px);
+  }
+
+  .db-quick-action__label {
+    @apply text-xs font-bold transition-colors duration-200;
+    color: var(--color-text-secondary);
+  }
+
+  .db-quick-action:hover .db-quick-action__label {
+    color: var(--color-success-text);
+  }
+
+  .db-stats-card {
+    @apply rounded-xl p-6 border shadow-md backdrop-blur-md;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+    border-color: var(--color-border);
+  }
+
+  .db-stats-card__title {
+    @apply text-base font-bold text-white mb-4;
+  }
+
+  .db-stats-card__list {
+    @apply space-y-3;
+  }
+
+  .db-stats-card__row {
+    @apply flex justify-between items-center py-2;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+  }
+
+  .db-stats-card__row:last-child {
+    border-bottom: none;
+  }
+
+  .db-stats-card__label {
+    @apply text-xs font-medium;
+    color: var(--color-text-secondary);
+  }
+
+  .db-stats-card__value {
+    @apply text-xs font-bold;
+    color: var(--color-text-primary);
+  }
+
+  .db-stats-card__value--success {
+    color: var(--color-success-text);
+  }
+
+  .db-stats-card__value--warning {
+    color: var(--color-warning-text);
+  }
+
+  .db-stats-card__value--danger {
+    color: var(--color-error-text);
+  }
+
+  .financial-crisis-banner {
+    @apply mb-0;
+
+    &__content {
+      @apply w-full space-y-3;
+    }
+
+    &__header {
+      @apply flex items-center gap-2;
+    }
+
+    &__icon {
+      @apply text-xl shrink-0;
+    }
+
+    &__title {
+      @apply text-base font-bold m-0;
+    }
+
+    &__message {
+      @apply text-sm m-0 leading-relaxed;
+    }
+
+    &__stats {
+      @apply grid grid-cols-2 sm:grid-cols-4 gap-3 m-0;
+    }
+
+    &__stat {
+      @apply space-y-0.5;
+
+      dt {
+        @apply text-[10px] font-bold uppercase tracking-wide m-0;
+        color: var(--color-text-muted);
+      }
+
+      dd {
+        @apply text-sm font-bold m-0;
+      }
+    }
+
+    &__restricted {
+      @apply text-xs m-0;
+      color: var(--color-text-secondary);
+    }
+
+    &__actions {
+      @apply flex flex-wrap gap-2 pt-1;
+    }
+  }
+
+  .hero-dismiss-panel {
+    @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4;
+  }
+}
+
+@layer components {
+  .next-match-card__glow {
+    @apply absolute rounded-full blur-3xl pointer-events-none;
+    &--br { @apply -right-24 -bottom-24 w-64 h-64; background-color: color-mix(in srgb, var(--color-brand-500) 2%, transparent); }
+    &--tl { @apply -left-24 -top-24 w-64 h-64; background-color: color-mix(in srgb, var(--color-brand-500) 1%, transparent); }
+  }
+
+  .next-match-card__body { @apply flex flex-col gap-6; }
+
+  .next-match-meta__icon { @apply select-none; color: var(--color-text-muted); }
+  .next-match-meta__text { @apply font-medium; color: var(--color-text-secondary); }
+
+  .next-match-actions {
+    @apply flex flex-wrap gap-2 mt-4 pt-4;
+    border-top: 1px solid color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+  }
+
+  .db-stats-card__row--link {
+    @apply no-underline transition-colors cursor-pointer;
+    &:hover { background-color: var(--color-surface-overlay); }
+  }
+
+  .db-banner__grid-bg { @apply absolute inset-0 -z-10; }
+  .db-banner__title-wrap { @apply text-center md:text-left; }
+  .db-banner__meta-highlight { color: var(--color-brand-400); font-weight: 600; }
+  .db-banner__meta-value { color: var(--color-text-secondary); font-weight: 600; }
+  .db-banner__meta-sep { @apply hidden md:inline select-none; color: var(--color-text-muted); }
+  .db-banner__badge-max { @apply text-[10px]; color: var(--color-text-muted); }
+  .db-banner__badge-value { @apply font-bold; color: var(--color-text-primary); }
+  .db-banner__edit-icon { @apply text-sm; }
+
+  .db-expenses-card {
+    @apply rounded-xl p-6 border shadow-md backdrop-blur-md;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+    border-color: var(--color-border);
+  }
+
+  .db-expenses-card__header {
+    @apply flex items-center justify-between gap-3 mb-4;
+  }
+
+  .db-expenses-card__title {
+    @apply text-base font-bold text-white m-0;
+  }
+
+  .db-expenses-card__link {
+    @apply text-[11px] font-bold uppercase tracking-wide no-underline;
+    color: var(--color-brand-400);
+
+    &:hover {
+      color: var(--color-brand-300);
+    }
+  }
+
+  .db-expenses-card__list {
+    @apply space-y-2 max-h-[220px] overflow-y-auto pr-1;
+  }
+
+  .db-expenses-item {
+    @apply p-2.5 rounded-xl;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+  }
+
+  .db-expenses-item__row {
+    @apply flex items-start justify-between gap-2;
+  }
+
+  .db-expenses-item__title {
+    @apply text-xs font-bold leading-snug min-w-0;
+    color: var(--color-text-secondary);
+  }
+
+  .db-expenses-item__amount {
+    @apply text-xs font-bold shrink-0;
+    color: var(--color-error-text);
+    font-variant-numeric: tabular-nums;
+
+    &--positive {
+      color: var(--color-success-text);
+    }
+  }
+
+  .db-expenses-item__time {
+    @apply text-[9px] mt-1;
+    color: var(--color-text-muted);
+  }
+
+  .db-expenses-empty {
+    @apply text-center py-6 select-none opacity-60 text-xs;
+    color: var(--color-text-secondary);
+  }
+
+  .db-league-card {
+    @apply rounded-xl p-6 border shadow-md backdrop-blur-md;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+    border-color: var(--color-border);
+  }
+
+  .db-league-card__header {
+    @apply flex items-center justify-between gap-3 mb-4;
+  }
+
+  .db-league-card__title {
+    @apply text-base font-bold text-white m-0;
+  }
+
+  .db-league-card__link {
+    @apply text-[11px] font-bold uppercase tracking-wide no-underline;
+    color: var(--color-brand-400);
+
+    &:hover {
+      color: var(--color-brand-300);
+    }
+  }
+
+  .db-league-card__grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-3;
+  }
+
+  .db-league-card__empty {
+    @apply rounded-xl p-6 text-center select-none opacity-60 text-xs flex flex-col items-center justify-center min-h-[140px];
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+  }
+
+  .team-profile-emblem {
+    &__row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    &__preview {
+      width: 4rem;
+      height: 4rem;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.875rem;
+      user-select: none;
+      flex-shrink: 0;
+      background-color: var(--color-surface-base);
+      box-shadow: inset 0 2px 4px color-mix(in srgb, black 20%, transparent);
+    }
+
+    &__grid {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 0.25rem;
+      padding: 0.5rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      background-color: var(--color-surface-base);
+    }
+
+    &__grow {
+      flex: 1;
+    }
+  }
+
+  .team-profile-colors {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .color-input-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .color-input-swatch {
+    width: 2.5rem;
+    height: 2.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: transparent;
+    padding: 0.125rem;
+    cursor: pointer;
+  }
+
+  .form-field {
+    margin-bottom: 1rem;
+  }
+
+  .modal-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+}

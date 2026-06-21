@@ -1,0 +1,77 @@
+{# templates/components/dashboard/financial_crisis_banner.html.twig #}
+{% set team = team|default(null) %}
+{% if team %}
+    {% set crisis = team_financial_crisis(team) %}
+    {% if crisis.level != 'none' %}
+        {% set alert_type = crisis.level == 'bankruptcy_pending' ? 'error' : (crisis.level == 'restricted' ? 'warning' : 'info') %}
+        <div class="financial-crisis-banner alert alert-{{ alert_type }}" role="alert">
+            <div class="financial-crisis-banner__content">
+                <div class="financial-crisis-banner__header">
+                    <span class="financial-crisis-banner__icon" aria-hidden="true">
+                        {% if crisis.level == 'bankruptcy_pending' %}🚨{% elseif crisis.level == 'restricted' %}⚠️{% else %}💸{% endif %}
+                    </span>
+                    <h2 class="financial-crisis-banner__title">
+                        {{ ('financial_crisis.title_' ~ crisis.level)|trans }}
+                    </h2>
+                </div>
+
+                <p class="financial-crisis-banner__message">
+                    {{ ('financial_crisis.message_' ~ crisis.level)|trans({
+                        '%debt%': crisis.unpaid_debt|number_format(0, '.', ' '),
+                        '%maintenance%': crisis.weekly_maintenance|number_format(0, '.', ' '),
+                        '%weeks%': crisis.crisis_weeks,
+                        '%weeks_until%': crisis.weeks_until_bankruptcy
+                    }) }}
+                </p>
+
+                <dl class="financial-crisis-banner__stats">
+                    <div class="financial-crisis-banner__stat">
+                        <dt>{{ 'financial_crisis.unpaid_debt'|trans }}</dt>
+                        <dd>🪙 {{ crisis.unpaid_debt|number_format(0, '.', ' ') }}</dd>
+                    </div>
+                    <div class="financial-crisis-banner__stat">
+                        <dt>{{ 'financial_crisis.weekly_maintenance'|trans }}</dt>
+                        <dd>🪙 {{ crisis.weekly_maintenance|number_format(0, '.', ' ') }}</dd>
+                    </div>
+                    <div class="financial-crisis-banner__stat">
+                        <dt>{{ 'financial_crisis.gold_on_hand'|trans }}</dt>
+                        <dd>🪙 {{ crisis.gold|number_format(0, '.', ' ') }}</dd>
+                    </div>
+                    {% if crisis.weeks_until_bankruptcy is not null and crisis.level != 'none' %}
+                        <div class="financial-crisis-banner__stat">
+                            <dt>{{ 'financial_crisis.weeks_until_bankruptcy'|trans }}</dt>
+                            <dd>{{ crisis.weeks_until_bankruptcy }}</dd>
+                        </div>
+                    {% endif %}
+                </dl>
+
+                {% if crisis.restricted_actions is not empty %}
+                    <p class="financial-crisis-banner__restricted">
+                        {{ 'financial_crisis.restricted_hint'|trans }}
+                    </p>
+                {% endif %}
+
+                {% if not crisis.hq_bonuses_active %}
+                    <p class="financial-crisis-banner__restricted">
+                        {{ 'financial_crisis.hq_bonuses_suspended'|trans }}
+                    </p>
+                {% endif %}
+
+                <div class="financial-crisis-banner__actions">
+                    <a href="{{ path('app_marketplace', { tab: 'sell' }) }}" class="btn btn-outline btn--sm">
+                        {{ 'financial_crisis.action_sell'|trans }}
+                    </a>
+                    <a href="{{ path('app_hq') }}" class="btn btn-outline btn--sm">
+                        {{ 'financial_crisis.action_downgrade'|trans }}
+                    </a>
+                    <a href="{{ path('app_heroes') }}" class="btn btn-outline btn--sm">
+                        {{ 'financial_crisis.action_dismiss'|trans }}
+                    </a>
+                    <a href="{{ path('app_finance') }}" class="btn btn-ghost btn--sm">
+                        {{ 'financial_crisis.action_ledger'|trans }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}

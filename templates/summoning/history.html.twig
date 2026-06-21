@@ -1,0 +1,94 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'summoning.history_title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="summon-history page-shell">
+    {# --- Header Section --- #}
+    {% set right_content %}
+        <a href="{{ path('app_summon') }}" class="btn btn-outline btn--icon-lead btn--elevated">
+            ⬅️ {{ 'summoning.back_to_summoning'|trans }}
+        </a>
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'summoning.history_title',
+        subtitle: 'summoning.history_subtitle',
+        right_content: right_content
+    } %}
+
+    {# --- Filters and Sorting Bar --- #}
+    <form method="GET" action="{{ path('app_summon_history') }}" class="summon-history__filters filter-form" data-controller="form-auto-submit">
+        <div class="filter-form__fields">
+            {# Race Filter #}
+            <div>
+                <label for="history-race-filter" class="sr-only">{{ 'summoning.filter_race'|trans }}</label>
+                <select id="history-race-filter" name="race" data-action="change->form-auto-submit#submit" class="form-input">
+                    <option value="">{{ 'summoning.all_races'|trans }}</option>
+                    {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
+                        <option value="{{ race }}" {% if current_race == race %}selected{% endif %}>
+                            {{ ('heroes.race_' ~ race)|trans }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        {# Sort Selector #}
+        <div class="filter-form__sort">
+            <label for="history-sort-by" class="filter-form__sort-label">{{ 'summoning.sort_by'|trans }}</label>
+            <select id="history-sort-by" name="sort" data-action="change->form-auto-submit#submit" class="form-input">
+                <option value="date-desc" {% if current_sort == 'date-desc' %}selected{% endif %}>{{ 'summoning.sort_date_desc'|trans }}</option>
+                <option value="date-asc" {% if current_sort == 'date-asc' %}selected{% endif %}>{{ 'summoning.sort_date_asc'|trans }}</option>
+                <option value="cost-desc" {% if current_sort == 'cost-desc' %}selected{% endif %}>{{ 'summoning.sort_cost_desc'|trans }}</option>
+                <option value="cost-asc" {% if current_sort == 'cost-asc' %}selected{% endif %}>{{ 'summoning.sort_cost_asc'|trans }}</option>
+            </select>
+        </div>
+    </form>
+
+    {# --- History Table --- #}
+    <div class="summon-history__table-container">
+        {% if history|length > 0 %}
+            <table class="summon-history-table">
+                <thead>
+                    <tr >
+                        <th class="summon-history-table__cell">{{ 'summoning.col_hero'|trans }}</th>
+                        <th class="summon-history-table__cell">{{ 'summoning.col_race'|trans }}</th>
+                        <th class="summon-history-table__cell summon-history-table__cell--right">{{ 'summoning.col_cost'|trans }}</th>
+                        <th class="summon-history-table__cell summon-history-table__cell--right">{{ 'summoning.col_date'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody >
+                    {% for item in history %}
+                        <tr class="summon-history-table__row">
+                            <td class="summon-history-table__cell summon-history-table__cell--name">
+                                {% if item.hero is not null %}
+                                    <a href="{{ path('app_heroes_detail', { id: item.hero.id }) }}" class="link">{{ item.hero.name }}</a>
+                                {% else %}
+                                    <span class="copy-muted copy-muted--italic">{{ 'summoning.fallen_or_dismissed'|trans }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="summon-history-table__cell">
+                                <span class="badge badge-secondary">
+                                    {{ ('heroes.race_' ~ item.raceSelected.value)|trans }}
+                                </span>
+                            </td>
+                            <td class="summon-history-table__cell summon-history-table__cell--right summon-history-table__cell--gold">
+                                🪙 {{ item.goldCost|number_format(0, '.', ' ') }}
+                            </td>
+                            <td class="summon-history-table__cell summon-history-table__cell--date">
+                                {{ item.summonedAt|date('Y-m-d H:i:s') }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="summon-history__empty">
+                <span class="summon-history__empty-icon">📭</span>
+                <p>{{ 'summoning.no_history'|trans }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

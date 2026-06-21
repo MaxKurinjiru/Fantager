@@ -1,0 +1,58 @@
+{#
+  Auth modal — login and register panels with JS-controlled tab switching.
+  Included in base.html.twig for all unauthenticated users.
+
+  Variables resolved with fallbacks so the modal works on any page:
+    - error / last_username  → passed by AuthController on /login error
+    - errors / form_data     → passed by RegisterController on /register error
+    - kingdoms               → passed by RegisterController; otherwise loaded via auth_kingdoms()
+#}
+{% if not app.user %}
+
+{# Resolve variables with safe fallbacks #}
+{% set modal_error         = error         is defined ? error         : null %}
+{% set modal_last_username = last_username is defined ? last_username : ''   %}
+{% set modal_errors        = errors        is defined ? errors        : {}   %}
+{% set modal_form_data     = form_data     is defined ? form_data     : {}   %}
+{% if kingdoms is defined %}
+    {% set modal_kingdoms = kingdoms %}
+{% else %}
+    {% set modal_kingdoms = auth_kingdoms() %}
+{% endif %}
+
+{# ── Overlay backdrop ──────────────────────────────────────────────────── #}
+<div data-auth-modal-target="overlay"
+    data-action="click->auth-modal#closeOverlay"
+    class="hidden modal-overlay"
+    aria-hidden="true">
+
+    {# ── Modal box ─────────────────────────────────────────────────────── #}
+        <div class="modal-box"
+            role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" tabindex="-1">
+
+        {# Close button #}
+        <button type="button"
+            data-action="click->auth-modal#close"
+            class="modal-close"
+            aria-label="{{ 'modal.close'|trans }}">
+            <span aria-hidden="true" class="modal-close__icon">✕</span>
+            <span class="sr-only">{{ 'modal.close'|trans }}</span>
+        </button>
+
+        {# Login Panel #}
+        {% include 'components/auth/login_panel.html.twig' with {
+            modal_error: modal_error,
+            modal_last_username: modal_last_username
+        } %}
+
+        {# Register Panel #}
+        {% include 'components/auth/register_panel.html.twig' with {
+            modal_errors: modal_errors,
+            modal_form_data: modal_form_data,
+            modal_kingdoms: modal_kingdoms
+        } %}
+
+    </div>{# /modal box #}
+</div>{# /overlay #}
+
+{% endif %}

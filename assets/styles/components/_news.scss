@@ -1,0 +1,109 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  NEWS — public archive
+// =============================================================================
+
+@layer components {
+  .news-page {
+    @apply max-w-3xl mx-auto space-y-6;
+  }
+
+  .news-page__header {
+    @apply flex flex-wrap items-center justify-between gap-4;
+  }
+
+  .news-page__title {
+    @apply text-3xl font-bold text-white m-0;
+  }
+
+  .news-page__back {
+    @apply text-sm font-semibold no-underline;
+    color: var(--color-brand-400);
+  }
+
+  .news-list {
+    @apply space-y-6;
+  }
+
+  .news-article {
+    @apply p-6 rounded-xl border;
+    border-color: var(--color-border);
+    background-color: var(--overlay-surface-base-45);
+  }
+
+  .news-article__header {
+    @apply space-y-2 mb-4;
+  }
+
+  .news-article__title {
+    @apply text-xl font-bold text-white m-0;
+  }
+
+  .news-article__meta {
+    @apply flex flex-wrap gap-3 text-xs;
+    color: var(--color-text-muted);
+  }
+
+  .news-article__kingdom {
+    @apply font-semibold;
+    color: var(--color-brand-400);
+  }
+
+  .news-article__content {
+    @apply text-sm leading-relaxed whitespace-pre-wrap;
+    color: var(--color-text-primary);
+  }
+
+  .news-empty {
+    @apply text-center py-12 rounded-xl border;
+    border-color: var(--color-border);
+    background-color: var(--overlay-surface-base-35);
+  }
+
+  .news-empty__text {
+    @apply m-0;
+    color: var(--color-text-secondary);
+  }
+
+  .news-pagination {
+    @apply flex flex-wrap items-center justify-center gap-4 pt-2;
+  }
+
+  .news-pagination__info {
+    @apply text-sm;
+    color: var(--color-text-secondary);
+  }
+
+  .homepage-news {
+    @apply max-w-3xl mx-auto mt-12 space-y-4 text-left;
+  }
+
+  .homepage-news__title {
+    @apply text-xl font-bold text-white m-0 text-center;
+  }
+
+  .homepage-news__list {
+    @apply space-y-4;
+  }
+
+  .homepage-news__item {
+    @apply p-5 rounded-xl border;
+    border-color: var(--color-border);
+    background-color: var(--overlay-surface-base-35);
+  }
+
+  .homepage-news__item-title {
+    @apply text-lg font-bold text-white m-0 mb-1;
+  }
+
+  .homepage-news__item-date {
+    @apply block text-xs mb-3;
+    color: var(--color-text-muted);
+  }
+
+  .homepage-news__item-content {
+    @apply text-sm m-0 leading-relaxed;
+    color: var(--color-text-secondary);
+  }
+}

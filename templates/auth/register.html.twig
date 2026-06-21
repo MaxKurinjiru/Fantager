@@ -1,0 +1,12 @@
+{% extends 'layouts/public.html.twig' %}
+
+{% block title %}{{ 'auth.register_title'|trans }} — Fantager{% endblock %}
+
+{#
+  The register form lives in auth/_modal.html.twig.
+  The base template auto-opens the modal via open_modal variable passed by RegisterController.
+  Variables `errors`, `form_data`, and `kingdoms` passed by the controller are available
+  in the modal partial through Twig's inheritance context.
+#}
+{% block guest_body %}{% endblock %}
+

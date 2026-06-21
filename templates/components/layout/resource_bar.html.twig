@@ -1,0 +1,10 @@
+{% set team = team|default(app.user.team ?? null) %}
+{% if team %}
+    <div class="resource-bar resource-bar--compact" role="group" aria-label="{{ 'dashboard.treasury'|trans }}">
+        <div class="resource-bar__item" data-resource="gold" title="{{ 'dashboard.gold'|trans }}">
+            <span class="resource-bar__item-icon" aria-hidden="true">🪙</span>
+            <span class="sr-only">{{ 'dashboard.gold'|trans }}:</span>
+            <span class="resource-bar__item-value">{{ team.gold|number_format(0, '.', ' ') }}</span>
+        </div>
+    </div>
+{% endif %}

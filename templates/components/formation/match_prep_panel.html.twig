@@ -1,0 +1,40 @@
+{# templates/components/formation/match_prep_panel.html.twig #}
+{% set opponent = fixture.homeTeam.id == team.id ? fixture.awayTeam : fixture.homeTeam %}
+{% set assignment = fixture_assignment.assignment %}
+
+<div class="feature-panel formation-match-prep-panel">
+    <div>
+        <h2 class="feature-panel__title">{{ 'formation.match_prep_title'|trans }}</h2>
+        <p class="feature-panel__desc">
+            {{ 'formation.match_prep_desc'|trans({'%opponent%': opponent.name, '%date%': fixture.scheduledAt|date('d.m.Y H:i')}) }}
+        </p>
+    </div>
+
+    <div class="formation-match-prep-panel__actions">
+        <div class="layout-stack layout-stack--sm formation-match-prep-panel__select">
+            <span class="section-label--xs">{{ 'formation.match_assignment'|trans }}</span>
+            <label for="fixture-formation-select" class="sr-only">{{ 'formation.match_assignment'|trans }}</label>
+            <select id="fixture-formation-select" data-formation-target="fixtureFormationSelect" data-action="change->formation#changeFixtureFormation"
+                    class="form-input form-input--emphasis">
+                <option value="default" {% if assignment.mode == 'default' %}selected{% endif %}>
+                    {{ 'formation.use_default_for_match'|trans }}
+                </option>
+                {% for f in formations %}
+                    <option value="{{ f.id }}" {% if assignment.mode == 'saved' and assignment.formation_id == f.id %}selected{% endif %}>
+                        {{ f.name }}{% if f.isDefault %} ({{ 'formation.default'|trans }}){% endif %}
+                    </option>
+                {% endfor %}
+                {% if assignment.mode == 'custom' %}
+                    <option value="custom" selected>{{ 'formation.custom_for_match'|trans }}</option>
+                {% endif %}
+            </select>
+        </div>
+
+        {% if assignment.mode == 'custom' %}
+            <button type="button" data-action="click->formation#promoteFixtureFormation"
+                    class="btn btn-outline btn--sm formation-match-prep-panel__promote">
+                {{ 'formation.promote_match_formation'|trans }}
+            </button>
+        {% endif %}
+    </div>
+</div>

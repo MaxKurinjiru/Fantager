@@ -1,0 +1,835 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^PHPDoc tag @var for variable \$slots has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 2
+			path: src/Controller/Api/V1/FormationController.php
+
+		-
+			message: '#^Property App\\Controller\\Api\\V1\\ItemController\:\:\$itemRepository is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Controller/Api/V1/ItemController.php
+
+		-
+			message: '#^Method App\\Entity\\Auth\\User\:\:getRoles\(\) should return list\<string\> but returns non\-empty\-array\<int\<0, max\>, string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Entity/Auth/User.php
+
+		-
+			message: '#^Method App\\Entity\\Auth\\User\:\:getUserIdentifier\(\) should return non\-empty\-string but returns string\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Entity/Auth/User.php
+
+		-
+			message: '#^Method App\\Entity\\Combat\\Battle\:\:getCombatLog\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Combat/Battle.php
+
+		-
+			message: '#^Method App\\Entity\\Combat\\Battle\:\:setCombatLog\(\) has parameter \$combatLog with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Combat/Battle.php
+
+		-
+			message: '#^Property App\\Entity\\Combat\\Battle\:\:\$combatLog type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Combat/Battle.php
+
+		-
+			message: '#^Method App\\Entity\\Formation\\FormationSlot\:\:getSpellPriorities\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Method App\\Entity\\Formation\\FormationSlot\:\:getStrategy\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Method App\\Entity\\Formation\\FormationSlot\:\:setSpellPriorities\(\) has parameter \$spellPriorities with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Method App\\Entity\\Formation\\FormationSlot\:\:setStrategy\(\) has parameter \$strategy with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Property App\\Entity\\Formation\\FormationSlot\:\:\$spellPriorities type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Property App\\Entity\\Formation\\FormationSlot\:\:\$strategy type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Formation/FormationSlot.php
+
+		-
+			message: '#^Method App\\Entity\\Item\\Item\:\:getBonuses\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Method App\\Entity\\Item\\Item\:\:getSpecialEffects\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Method App\\Entity\\Item\\Item\:\:setBonuses\(\) has parameter \$bonuses with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Method App\\Entity\\Item\\Item\:\:setSpecialEffects\(\) has parameter \$specialEffects with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Property App\\Entity\\Item\\Item\:\:\$bonuses type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Property App\\Entity\\Item\\Item\:\:\$specialEffects type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Item/Item.php
+
+		-
+			message: '#^Method App\\Entity\\Kingdom\\Kingdom\:\:getLeagueTiersConfig\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Kingdom/Kingdom.php
+
+		-
+			message: '#^Method App\\Entity\\Kingdom\\Kingdom\:\:setLeagueTiersConfig\(\) has parameter \$leagueTiersConfig with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Kingdom/Kingdom.php
+
+		-
+			message: '#^Property App\\Entity\\Kingdom\\Kingdom\:\:\$leagueTiersConfig type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Kingdom/Kingdom.php
+
+		-
+			message: '#^Method App\\Entity\\League\\LeagueTier\:\:getRewards\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/League/LeagueTier.php
+
+		-
+			message: '#^Method App\\Entity\\League\\LeagueTier\:\:setRewards\(\) has parameter \$rewards with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/League/LeagueTier.php
+
+		-
+			message: '#^Property App\\Entity\\League\\LeagueTier\:\:\$rewards type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/League/LeagueTier.php
+
+		-
+			message: '#^Method App\\Entity\\Spell\\Spell\:\:getEffects\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Spell/Spell.php
+
+		-
+			message: '#^Method App\\Entity\\Spell\\Spell\:\:setEffects\(\) has parameter \$effects with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Spell/Spell.php
+
+		-
+			message: '#^Property App\\Entity\\Spell\\Spell\:\:\$effects type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Spell/Spell.php
+
+		-
+			message: '#^Method App\\Entity\\Team\\Team\:\:getColors\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/Team.php
+
+		-
+			message: '#^Method App\\Entity\\Team\\Team\:\:setColors\(\) has parameter \$colors with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/Team.php
+
+		-
+			message: '#^Property App\\Entity\\Team\\Team\:\:\$colors type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/Team.php
+
+		-
+			message: '#^Method App\\Entity\\Team\\TeamChronicle\:\:getData\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/TeamChronicle.php
+
+		-
+			message: '#^Method App\\Entity\\Team\\TeamChronicle\:\:getSubjectParams\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/TeamChronicle.php
+
+		-
+			message: '#^Method App\\Entity\\Team\\TeamChronicle\:\:setData\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/TeamChronicle.php
+
+		-
+			message: '#^Method App\\Entity\\Team\\TeamChronicle\:\:setSubjectParams\(\) has parameter \$subjectParams with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/TeamChronicle.php
+
+		-
+			message: '#^Property App\\Entity\\Team\\TeamChronicle\:\:\$data type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/TeamChronicle.php
+
+		-
+			message: '#^Property App\\Entity\\Team\\TeamChronicle\:\:\$subjectParams type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Entity/Team/TeamChronicle.php
+
+		-
+			message: '#^Class App\\Repository\\Auth\\UserRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Auth/UserRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Auth\\VerificationTokenRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Auth/VerificationTokenRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Combat\\BattleRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Combat/BattleRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Community\\ForumPostRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Community/ForumPostRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Community\\ForumThreadRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Community/ForumThreadRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Community\\MessageRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Community/MessageRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Formation\\FormationSlotRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Formation/FormationSlotRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Headquarters\\FacilityRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Headquarters/FacilityRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Headquarters\\HeadquartersRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Headquarters/HeadquartersRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Hero\\SchoolMasteryRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Hero/SchoolMasteryRepository.php
+
+		-
+			message: '#^Class App\\Repository\\League\\LeagueGroupRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/League/LeagueGroupRepository.php
+
+		-
+			message: '#^Class App\\Repository\\League\\LeagueSeasonRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/League/LeagueSeasonRepository.php
+
+		-
+			message: '#^Class App\\Repository\\League\\LeagueTierRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/League/LeagueTierRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Marketplace\\MarketplaceBidRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Marketplace/MarketplaceBidRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Marketplace\\MarketplaceListingRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Marketplace/MarketplaceListingRepository.php
+
+		-
+			message: '#^Class App\\Repository\\Marketplace\\MarketplaceTransactionRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/Marketplace/MarketplaceTransactionRepository.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setUsedAt\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Auth/PasswordResetService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:isVerified\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setUsedAt\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Entity\\Auth\\VerificationToken\:\:setUser\(\) expects App\\Entity\\Auth\\User, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Service\\Auth\\RegistrationService\:\:sendVerificationEmail\(\) expects App\\Entity\\Auth\\User, object given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Service/Auth/RegistrationService.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Service/Config/KingdomInitConfig.php
+
+		-
+			message: '#^Method App\\Service\\Headquarters\\HeadquartersService\:\:getForTeam\(\) should return App\\Entity\\Headquarters\\Headquarters but returns object\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Headquarters/HeadquartersService.php
+
+		-
+			message: '#^Method App\\Service\\Headquarters\\HeadquartersService\:\:initializeForTeam\(\) should return App\\Entity\\Headquarters\\Headquarters but returns object\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Headquarters/HeadquartersService.php
+
+		-
+			message: '#^Offset ''arena''\|''barracks''\|''library''\|''medical''\|''summoning_chamber''\|''training''\|''treasury'' on array\{training\: 500, medical\: 400, library\: 600, treasury\: 450, barracks\: 350, summoning_chamber\: 800, arena\: 900\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Service/Headquarters/HeadquartersService.php
+
+		-
+			message: '#^Offset ''common''\|''epic''\|''legendary''\|''mythic''\|''rare''\|''uncommon'' on array\{common\: 2, uncommon\: 5, rare\: 10, epic\: 20, legendary\: 40, mythic\: 80\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: src/Service/Item/ItemService.php
+
+		-
+			message: '#^Offset ''common''\|''epic''\|''legendary''\|''mythic''\|''rare''\|''uncommon'' on array\{common\: 5, uncommon\: 5, rare\: 4, epic\: 3, legendary\: 2, mythic\: 1\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Service/Item/ItemService.php
+
+		-
+			message: '#^Method App\\Service\\Kingdom\\KingdomInitializationService\:\:createKingdom\(\) has parameter \$leagueConfig with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/Kingdom/KingdomInitializationService.php
+
+		-
+			message: '#^Method App\\Service\\Kingdom\\KingdomInitializationService\:\:createSeason\(\) has parameter \$seasonConfig with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Service/Kingdom/KingdomInitializationService.php
+
+		-
+			message: '#^Method App\\Service\\Spell\\SpellService\:\:getMasteryForSchool\(\) should return App\\Entity\\Hero\\SchoolMastery\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Service/Spell/SpellService.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Symfony\\\\Component\\\\HttpFoundation\\\\JsonResponse'' and Symfony\\Component\\HttpFoundation\\JsonResponse will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests/Controller/Web/SettingsControllerTest.php
+
+		-
+			message: '#^Parameter \#7 \$content of class Symfony\\Component\\HttpFoundation\\Request constructor expects resource\|string\|null, string\|false given\.$#'
+			identifier: argument.type
+			count: 4
+			path: tests/Controller/Web/SettingsControllerTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''DateTimeImmutable'' and DateTimeImmutable will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Entity/Team/FinancialRecordTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\Notification\\NotificationHelper\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/Auth/PlayerInactivityServiceTest.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Mailer\\MailerInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/Auth/PlayerInactivityServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\CalendarServiceTest\:\:\$heroRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/CalendarServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\CalendarServiceTest\:\:\$heroTrainingHistoryRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/CalendarServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\CalendarServiceTest\:\:\$leagueFixtureRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/CalendarServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\CalendarServiceTest\:\:\$scheduleCalculatorMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/CalendarServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\CalendarServiceTest\:\:\$seasonRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/CalendarServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\CalendarServiceTest\:\:\$tickLogRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/CalendarServiceTest.php
+
+		-
+			message: '#^Parameter \#2 \$haystack of method PHPUnit\\Framework\\Assert\:\:assertStringContainsString\(\) expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$arenaRevenueServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$entityManagerMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$fanClubServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$financialCrisisServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$fixtureFormationServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$heroRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$hqServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$kingdomRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$leagueMatchResolutionServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$loggerMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$marketplaceServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$playerInactivityServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$royalTreasuryServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$seasonTransitionServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$tickLogRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Calendar\\ProcessKingdomTicksHandlerTest\:\:\$trainingServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php
+
+		-
+			message: '#^Method App\\Tests\\Service\\Community\\ForumThreadHelperTest\:\:createThread\(\) has parameter \$postBodies with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: tests/Service/Community/ForumThreadHelperTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\Headquarters\\HeadquartersRepository\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: tests/Service/Economy/ArenaRevenueServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\League\\LeagueFixtureRepository\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/Economy/ArenaRevenueServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\Economy\\EconomyService\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Service/Economy/ArenaRevenueServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Economy\\EconomyServiceTest\:\:\$entityManagerMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Economy/EconomyServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\Headquarters\\HeadquartersRepository\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/Economy/FinancialCrisisServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\Economy\\EconomyService\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/Economy/FinancialCrisisServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\Notification\\NotificationHelper\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/Economy/FinancialCrisisServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\League\\LeagueStandingRepository\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Service/Economy/RoyalTreasuryServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\Team\\TeamRepository\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/Economy/RoyalTreasuryServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\Team\\TeamRepository\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Service/Economy/RoyalTreasuryServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\Economy\\EconomyService\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Service/Economy/RoyalTreasuryServiceTest.php
+
+		-
+			message: '#^Possibly invalid array key type int\|null\.$#'
+			identifier: offsetAccess.invalidOffset
+			count: 1
+			path: tests/Service/Economy/RoyalTreasuryServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Headquarters\\HeadquartersServiceTest\:\:\$economyServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Headquarters/HeadquartersServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Headquarters\\HeadquartersServiceTest\:\:\$entityManagerMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Headquarters/HeadquartersServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Headquarters\\HeadquartersServiceTest\:\:\$financialCrisisServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Headquarters/HeadquartersServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Headquarters\\HeadquartersServiceTest\:\:\$hqRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Headquarters/HeadquartersServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Headquarters\\HeadquartersServiceTest\:\:\$royalTreasuryServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Headquarters/HeadquartersServiceTest.php
+
+		-
+			message: '#^Offset ''A'' might not exist on array\{H\: int\<1, max\>, A\?\: int\<0, max\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: tests/Service/League/LeagueFixtureSchedulerTest.php
+
+		-
+			message: '#^Offset ''H'' might not exist on array\{H\: 0, A\: 0\}\|array\{H\?\: int\<1, max\>, A\: int\<1, max\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: tests/Service/League/LeagueFixtureSchedulerTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\League\\LeagueFixtureRepository\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/League/LeagueMatchResolutionServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\League\\LeagueStandingRepository\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Service/League/LeagueMatchResolutionServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\Combat\\MatchSimulatorInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/League/LeagueMatchResolutionServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\Combat\\MatchSimulatorInterface\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/League/LeagueMatchResolutionServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\League\\LeagueFixtureCompletionService\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/League/LeagueMatchResolutionServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\Team\\FanClubService\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/League/LeagueMatchResolutionServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\Team\\TeamRosterService\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Service/League/LeagueMatchResolutionServiceTest.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityManagerInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Service/League/LeagueMatchResolutionServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\League\\SeasonTransitionServiceTest\:\:\$economyServiceMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/League/SeasonTransitionServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\League\\SeasonTransitionServiceTest\:\:\$entityManagerMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/League/SeasonTransitionServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\League\\SeasonTransitionServiceTest\:\:\$fixtureSchedulerMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/League/SeasonTransitionServiceTest.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityManagerInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Service/Marketplace/MarketplaceServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\Notification\\NotificationRepository\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/Notification/NotificationServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\Notification\\NotificationRepository\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Service/Notification/NotificationServiceTest.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityManagerInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Service/Notification/NotificationServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\Hero\\HeroSpellRepository\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/Spell/SpellServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Service\\Headquarters\\HeadquartersService\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Service/Summoning/SummoningServiceTest.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityManagerInterface\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Service/Summoning/SummoningServiceTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\Team\\TeamRepository\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Service/Team/FanClubServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Training\\TrainingServiceTest\:\:\$entityManagerMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Training/TrainingServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Training\\TrainingServiceTest\:\:\$heroRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Training/TrainingServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Training\\TrainingServiceTest\:\:\$hqRepositoryMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Training/TrainingServiceTest.php
+
+		-
+			message: '#^Property App\\Tests\\Service\\Training\\TrainingServiceTest\:\:\$raceConfigMock has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: tests/Service/Training/TrainingServiceTest.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''Symfony\\\\Component\\\\Dotenv\\\\Dotenv'' and ''bootEnv'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: tests/bootstrap.php

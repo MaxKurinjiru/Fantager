@@ -8,27 +8,25 @@ Displayed Information:
 - Trainer List:
 	- Trainer name
 	- Original race
-	- Attribute values (STR, DEX, KON, SPD, INT, WIL, CHA, LCK)
-	- Age (+ Death Expectation warning)
+	- Attribute values (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) — frozen at conversion, range 1–20
+	- Age (+ Mortality Threshold warning when at or above threshold)
 	- Status (Active, Aging risk)
-	- Assigned to hero (if any)
 - Trainer Detail (when selected):
-	- Full stats
+	- Full stats (per-attribute training caps)
 	- Age progression timeline
-	- Training history
 	- Cost (if on Marketplace)
 
 Possible Actions/Buttons:
-- Assign to Hero
-- Unassign
 - Sell on Marketplace
 - Buy from Marketplace
-- Convert Hero to Trainer
+- Convert Hero to Trainer (no specialty selection — stats frozen as-is)
+
+Note: Trainers act as training leaders. Their training focus (Attribute, Magic, Form, or Idle) and hero assignments are configured on the Training Screen.
 
 Backend Requirements:
 - Trainers list endpoint
-- Trainer assignment/unassignment
 - Marketplace integration
+- Trainer conversion endpoint
 
 Sections to fill:
 - Display data contract (fields returned by API)
@@ -37,3 +35,4 @@ Sections to fill:
 - UX notes and edge cases
 - Tests and mocks
 - Implementation notes
+

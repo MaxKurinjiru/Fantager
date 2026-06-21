@@ -1,0 +1,14 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  CALENDAR — week navigation (day groups live in _community.scss)
+// =============================================================================
+
+.cal-week-nav {
+  @apply flex gap-2;
+
+  &__label {
+    @apply text-sm font-semibold min-w-[180px] text-center;
+    color: var(--color-text-secondary);
+  }
+}

@@ -1,0 +1,52 @@
+{# templates/components/summoning/portal_chamber.html.twig #}
+<div class="summoning-portal">
+    <div class="summoning-portal__glow"></div>
+
+    <div data-summoning-target="chamberState" class="summoning-portal__idle">
+        <span class="summoning-portal__idle-icon">🔮</span>
+        <h2 class="summoning-portal__title">{{ 'summoning.portal_title'|trans }}</h2>
+        <p class="summoning-portal__desc">{{ 'summoning.portal_desc'|trans }}</p>
+    </div>
+
+    <div data-summoning-target="portal" class="summoning-portal__channeling hidden">
+        <div class="summoning-portal__channeling-visual">
+            <div class="loading-spinner">
+                <div class="loading-spinner__icon" aria-hidden="true"></div>
+            </div>
+            <span class="summoning-portal__channeling-emoji">🌀</span>
+        </div>
+        <div class="summoning-portal__channeling-heading">
+            <h3 class="summoning-portal__channeling-title">{{ 'summoning.portal_channeling'|trans }}</h3>
+            <p class="summoning-portal__channeling-desc">{{ 'summoning.portal_channeling_desc'|trans }}</p>
+        </div>
+    </div>
+
+    <div data-summoning-target="reveal" class="summoning-portal__reveal hidden">
+        <div class="summoning-reveal-card">
+            <div class="summoning-reveal-card__badge">{{ 'summoning.new_recruit'|trans }}</div>
+
+            <div class="summoning-reveal-card__avatar">👤</div>
+            <h3 data-summoning-target="heroName" class="summoning-reveal-card__name">---</h3>
+            <p class="summoning-reveal-card__race">
+                <span>👤</span>
+                <span data-summoning-target="heroRace">{{ 'summoning.race_placeholder'|trans }}</span>
+            </p>
+            <p data-summoning-target="heroLevel" class="summoning-reveal-card__level">{{ 'heroes.level'|trans }} 1</p>
+
+            <div data-summoning-target="heroStats" class="summoning-reveal-card__stats"></div>
+        </div>
+
+        <div class="summoning-reveal-actions">
+            <button type="button"
+                    data-summoning-target="inspectBtn"
+                    data-action="click->summoning#inspectHero"
+                    class="btn btn-primary btn--sm"
+                    disabled>
+                {{ 'summoning.inspect_details'|trans }}
+            </button>
+            <button type="button" data-action="click->summoning#reloadPage" class="btn btn-outline btn--sm">
+                {{ 'summoning.summon_again'|trans }}
+            </button>
+        </div>
+    </div>
+</div>

@@ -15,13 +15,14 @@ This document defines the basic backend architecture of the project. It serves a
 - Establish availability and data recovery requirements
 
 ## Required Technologies
+- Docker 20.10+ and docker-compose 2.0+ (containerization)
 - PHP 8.5
 - Symfony 7.4
 - MariaDB 11.4
-- Node.js 18+ (for Webpack Encore and frontend tooling)
-- npm 9+ or yarn 3+ (frontend package manager)
+- Node.js 24+ (for Webpack Encore and frontend tooling)
+- npm 11+ (frontend package manager)
 - Composer 2.5+ (PHP dependency manager)
-- Docker 20.10+ and docker-compose 2.0+ (containerization)
+- **Sentry** (error tracking — `sentry/sentry-symfony` package)
 
 > Note: This specification lists only the technologies approved above. All development must target these versions.
 
@@ -32,7 +33,7 @@ This document defines the basic backend architecture of the project. It serves a
 - **Internal API Routes**: Resource-oriented endpoints returning JSON; serve as reference implementations and prepare for future REST API expansion
 - **Data Access Layer**: Repository and ORM (Doctrine) abstracting database operations
 - **Persistence Layer**: MariaDB 11.4 for relational data
-- **Migrations and Schema Management**: Doctrine migrations for DB versioning and rollback capability
+- **Schema Management**: Doctrine init migration bootstraps the database schema
 
 ## Architectural Pattern
 
@@ -90,24 +91,24 @@ assets/ (source)
 ## Data Architecture
 - Primary storage: MariaDB 11.4
 - Schema modeling: relational model designed according to domain entities
-- Migrations: Doctrine migrations for version control and rollback
-- Backup and recovery: backup plan and tested recovery procedures (details to be added)
+- Schema: Doctrine init migration for database bootstrap
+- Backup and recovery: see [Backups and Recovery](#backups-and-recovery) below; local dev uses `docker exec fantager-db mysqldump` (see `docker/README.md`)
 
 ## Code Quality & Standards
 
 ### PHP Code Quality
-- **Linting & Formatting**: PHP-CS-Fixer for PSR-12 compliance
+- **Linting & Formatting**: PHP-CS-Fixer for PSR-12 compliance; configured in `.php-cs-fixer.dist.php`
 - **Static Analysis**: PHPStan level 8+ for type checking and bug detection
-- **Command**: `composer cs-check` and `composer cs-fix`
+- **Commands**: `composer php-cs` (check) and `composer php-cs-fix` (apply fixes)
 
 ### Testing Strategy
 - **Unit Tests**: PHPUnit for Service and Repository layer testing
 - **Integration Tests**: PHPUnit with test database for API endpoint and workflow testing
-- **End-to-End Tests**: Playwright for critical user journeys and UI interactions
-- **Target Coverage**: Minimum 70% code coverage on Services and Controllers
+- **End-to-End Tests**: Playwright — planned for Phase 3; not yet installed (no `npm run test:e2e` script)
+- **Coverage Target**: Aspirational 70% on Services and Controllers; current focus is core economy, calendar, league, and newly added service tests (Marketplace, Community, Spell, Item, Crafting)
 - **Commands**:
   - `composer test` — Run PHPUnit
-  - `npm run test:e2e` — Run Playwright tests
+  - `npm run test:e2e` — Reserved for future Playwright suite
 
 ### Git Workflow
 - **Branching**: Feature branches from `main` or `develop`
@@ -139,9 +140,11 @@ assets/ (source)
 - **Log Levels**: ERROR, WARNING, INFO, DEBUG; configure per environment
 
 ### Error Tracking
-- Development: Symfony DebugBar and error pages
-- Production: Integration with error tracking service (e.g., Sentry) — to be configured
-- Error logging: All exceptions logged to file and error tracking service
+- **Tool**: Sentry (`sentry/sentry-symfony`)
+- Development: exceptions captured and visible in Sentry with full stack traces; can be disabled locally via `SENTRY_DSN=` empty
+- Production: all unhandled exceptions and errors reported to Sentry with environment, release, and user context
+- Symfony integration: `Sentry\SentryBundle` registers automatically via Flex; configure DSN in `.env.local` / environment variable `SENTRY_DSN`
+- **Do not log sensitive data** (passwords, tokens) — scrub PII in `before_send` hook using [SentryBeforeSendCallback](../src/Service/Sentry/SentryBeforeSendCallback.php)
 
 ### Metrics & APM
 - Response times, error rates, and custom business metrics
@@ -197,35 +200,35 @@ docker exec -it fantager-web php bin/console doctrine:migrations:migrate
 ```
 
 ### Backend (container-first checks)
-- [ ] Run `docker exec -it fantager-web php -v` to confirm PHP 8.5 is available in the container
-- [ ] Run `docker exec -it fantager-web composer --version` to confirm Composer 2.5+ in-container
-- [ ] `.env.local` configured with `DATABASE_URL` (pointing to the `db` service when running in containers)
-- [ ] `docker exec -it fantager-web composer install` completed; `vendor/` present in the project volume
-- [ ] `docker exec -it fantager-web php bin/console doctrine:migrations:migrate` runs successfully against the `db` container
+- [x] Run `docker exec -it fantager-web php -v` to confirm PHP 8.5 is available in the container
+- [x] Run `docker exec -it fantager-web composer --version` to confirm Composer 2.5+ in-container
+- [x] `.env.local` configured with `DATABASE_URL` (pointing to the `db` service when running in containers)
+- [x] `docker exec -it fantager-web composer install` completed; `vendor/` present in the project volume
+- [x] `docker exec -it fantager-web php bin/console doctrine:migrations:migrate` runs successfully against the `db` container
 
 ### Frontend (container-first checks)
-- [ ] Node and npm/yarn available in the `fantager-web` container: `docker exec -it fantager-web node --version` and `docker exec -it fantager-web npm --version`
-- [ ] `docker exec -it fantager-web npm install` completed; `node_modules/` present (mounted in project volume)
-- [ ] Webpack Encore configured in `webpack.config.js`
-- [ ] `docker exec -it fantager-web npm run build` produces files in `public/build/`
-- [ ] `docker exec -it fantager-web npm run watch` works for development iterations
+- [x] Node and npm/yarn available in the `fantager-web` container: `docker exec -it fantager-web node --version` and `docker exec -it fantager-web npm --version`
+- [x] `docker exec -it fantager-web npm install` completed; `node_modules/` present (mounted in project volume)
+- [x] Webpack Encore configured in `webpack.config.js`
+- [x] `docker exec -it fantager-web npm run build` produces files in `public/build/`
+- [x] `docker exec -it fantager-web npm run watch` works for development iterations
 
 ### Development Tools (run inside container when possible)
-- [ ] PHP-CS-Fixer available via Composer: `docker exec -it fantager-web composer cs-check`
-- [ ] PHPStan available via Composer: `docker exec -it fantager-web composer phpstan`
-- [ ] PHPUnit available via Composer: `docker exec -it fantager-web composer test`
-- [ ] Playwright available for E2E: run from the container or CI node with `npm run test:e2e`
+- [x] PHP-CS-Fixer available and configured (`.php-cs-fixer.dist.php`): `docker exec -it fantager-web composer php-cs`
+- [x] PHPStan available via Composer: `docker exec -it fantager-web composer phpstan`
+- [x] PHPUnit available and passing: `docker exec -it fantager-web composer test`
+- [ ] Playwright not yet installed — E2E tests pending
 
 ### Local Environment (Docker)
-- [ ] Docker Desktop / Docker Engine installed on host
-- [ ] `docker compose up -d` starts the `fantager-web` and `fantager-db` containers
-- [ ] Application reachable on the configured port (see `docker-compose.yml` and `apache` config)
-- [ ] Database accessible from the `fantager-web` container as `db`/`fantager-db` service
+- [x] Docker Desktop / Docker Engine installed on host
+- [x] `docker compose up -d` starts the `fantager-web` and `fantager-db` containers
+- [x] Application reachable on the configured port (see `docker-compose.yml` and `apache` config)
+- [x] Database accessible from the `fantager-web` container as `db`/`fantager-db` service
 
 ### CI/CD & Deployment
-- [ ] CI configuration (GitHub Actions, GitLab CI) defined and uses container images or `docker compose` for reproducible builds
+- [x] GitHub Actions workflow (`.github/workflows/ci.yml`) — PHP-CS-Fixer, PHPStan, PHPUnit on push/PR
 - [ ] Deployment process documented; images/tags and secret management described
-- [ ] Database backup strategy and migration run policy documented for deployments
+- [x] Database backup strategy documented in [Backups and Recovery](#backups-and-recovery)
 
 ### Notes & Tips
 - Prefer `docker exec -it` for iterative development tasks to avoid creating ephemeral containers unless isolation is needed (`docker compose run --rm`)
@@ -244,7 +247,7 @@ docker exec -it fantager-web php bin/console doctrine:migrations:migrate
 ## Operations and Deployment
 - Environments: `dev`, `staging`, `prod`
 - Deployment automation: CI/CD pipeline (specific tools to be added later)
-- Database migrations: Doctrine migrations run before deployment; rollback capability maintained
+- Database schema: init migration applied on fresh environment setup
 
 ### Containerization
 Use Docker for local development, CI and consistent deployment environment:
@@ -271,6 +274,15 @@ Use Docker for local development, CI and consistent deployment environment:
 - **Storage**: Local backup storage + remote (S3 or similar) for disaster recovery
 - **Verification**: Monthly backup restoration tests to staging environment
 
+### Local backup (development)
+
+```bash
+docker exec fantager-db mysqldump -u root -p"$MARIADB_ROOT_PASSWORD" fantager > backup.sql
+docker exec -i fantager-db mysql -u root -p"$MARIADB_ROOT_PASSWORD" fantager < backup.sql
+```
+
+Production backups should follow the retention and verification policy in the sections above.
+
 ### Recovery Procedures
 - **RPO (Recovery Point Objective)**: 1 hour (lose up to 1 hour of data)
 - **RTO (Recovery Time Objective)**: 4 hours (return to service within 4 hours)
@@ -291,20 +303,21 @@ Use Docker for local development, CI and consistent deployment environment:
 
 ## Next Steps & Status
 
-### Phase 1: Foundation (Current)
+### Phase 1: Foundation ✅ Complete
 - [x] Define core architecture and technology stack
 - [x] Establish dual-layer design (Web + API)
 - [x] Document security and deployment strategy
 - [x] Create technology stack checklist
-- [ ] Finalize CI/CD pipeline tools
-- [ ] Set up local development environment documentation
+- [x] Set up local development environment (Docker + README)
+- [ ] Finalize CI/CD pipeline tools (GitHub Actions — not yet configured)
 
-### Phase 2: Implementation (In Progress)
-- [ ] Create Dockerfile and docker-compose.yml
-- [ ] Set up Symfony project structure and routing
-- [ ] Implement database migrations and schema
-- [ ] Create Service layer foundation
-- [ ] Set up testing framework (PHPUnit + Playwright)
+### Phase 2: Implementation ✅ Backend largely done
+- [x] Create Dockerfile and docker-compose.yml
+- [x] Set up Symfony project structure and routing
+- [x] Implement database schema (init migration covers full current schema)
+- [x] Create Service layer foundation (Auth, Kingdom, Team, Hero, Summoning, Training, HQ, Economy, Item, Spell, Formation)
+- [x] Set up PHPUnit testing framework (1 test passing; coverage expansion pending)
+- [ ] Set up Playwright for E2E tests (not yet installed)
 
 ### Phase 3: Production Readiness (Future)
 - [ ] Deploy to staging environment
@@ -315,4 +328,4 @@ Use Docker for local development, CI and consistent deployment environment:
 
 ---
 
-**Document Status**: Last updated May 23, 2026. Reflects current approved architecture and technology choices.
+**Document Status**: Last updated June 4, 2026. Reflects current approved architecture and technology choices.

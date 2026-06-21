@@ -1,0 +1,73 @@
+{# templates/components/item/equip_manager.html.twig #}
+<div class="game-panel">
+    <div>
+        <h2 class="hero-panel__title">{{ 'inventory.equip_manager'|trans }}</h2>
+        <label for="equip-hero-select" class="form-label">{{ 'inventory.select_hero_opt'|trans }}</label>
+        <select id="equip-hero-select" data-equipment-target="heroSelect" data-action="change->equipment#loadHeroEquipment"
+                class="form-input form-input--medium">
+            <option value="">{{ 'inventory.select_hero_opt'|trans }}</option>
+            {% for h in heroes %}
+                <option value="{{ h.id }}" {% if selected_hero_id == h.id %}selected{% endif %}>
+                    {{ h.name }} ({{ 'heroes.level'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }})
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {# Paperdoll Grid #}
+    {% if selected_hero %}
+        <div class="layout-stack layout-stack--md">
+            <span class="section-label--xs section-label--xs--center">{{ 'inventory.paperdoll'|trans }}</span>
+            
+            <div class="paperdoll-grid">
+                {% set slots = [
+                    {key: 'head', emoji: '🪖'},
+                    {key: 'amulet', emoji: '📿'},
+                    {key: 'body', emoji: '🛡️'},
+                    {key: 'hands', emoji: '🧤'},
+                    {key: 'main_hand', emoji: '⚔️'},
+                    {key: 'off_hand', emoji: '🛡️'},
+                    {key: 'ring', emoji: '💍'},
+                    {key: 'feet', emoji: '🥾'}
+                ] %}
+
+                {% for slot in slots %}
+                    {% set item = equipped[slot.key] ?? null %}
+                    {% if item %}
+                        <div class="paperdoll-slot paperdoll-slot--equipped">
+                            {# Unequip Button #}
+                            <button type="button" data-action="click->equipment#unequip" data-item-id="{{ item.id }}"
+                                    class="btn btn-danger btn--sm paperdoll-slot__unequip"
+                                    aria-label="{{ 'inventory.unequip'|trans }}">
+                                ✕
+                            </button>
+
+                            <span class="paperdoll-slot__label">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
+                            <span class="paperdoll-slot__icon">
+                                {% if slot.key == 'main_hand' %}🗡️
+                                {% elseif slot.key == 'head' %}🪖
+                                {% elseif slot.key == 'body' %}🛡️
+                                {% elseif slot.key == 'ring' %}💍
+                                {% else %}🎒{% endif %}
+                            </span>
+                            <span class="paperdoll-slot__item-name" title="{{ item.name }}">{{ item.name }}</span>
+                            <span class="paperdoll-slot__equipped-label">{{ 'inventory.equipped'|trans }}</span>
+                        </div>
+                    {% else %}
+                        <div class="paperdoll-slot paperdoll-slot--empty">
+                            <span class="paperdoll-slot__label">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
+                            <span class="paperdoll-slot__icon">{{ slot.emoji }}</span>
+                            <span class="paperdoll-slot__empty-hint">{{ 'inventory.empty_slot'|trans }}</span>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-placeholder">
+            <span class="empty-placeholder__icon">🧑</span>
+            <h4 class="spell-empty-state__title">{{ 'inventory.select_hero_manage'|trans }}</h4>
+            <p class="spell-empty-state__desc">{{ 'inventory.select_hero_manage_desc'|trans }}</p>
+        </div>
+    {% endif %}
+</div>

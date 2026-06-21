@@ -1,0 +1,26 @@
+{# templates/components/dashboard/stats_card.html.twig #}
+{% set crisis = team_financial_crisis(team) %}
+{% set stats = [
+    { label: 'dashboard.total_heroes', value: dashboard.heroes.total, route: 'app_heroes', params: {} },
+    { label: 'dashboard.available_heroes', value: dashboard.heroes.available, modifier: 'success', route: 'app_heroes', params: {} },
+    { label: 'dashboard.in_training', value: dashboard.heroes.in_training, modifier: 'warning', route: 'app_hq', params: { facility: 'training' } },
+    { label: 'dashboard.hq_level', value: dashboard.headquarters.total_level, route: 'app_hq', params: {} },
+    { label: 'dashboard.summons_cycle', value: dashboard.summoning.summons_this_cycle, route: 'app_hq', params: { facility: 'summoning_chamber' } }
+] %}
+{% if crisis.unpaid_debt > 0 %}
+    {% set stats = stats|merge([
+        { label: 'financial_crisis.unpaid_debt', value: '🪙 ' ~ crisis.unpaid_debt|number_format(0, '.', ' '), modifier: 'danger', route: 'app_finance', params: {} }
+    ]) %}
+{% endif %}
+
+<div class="db-stats-card">
+    <h3 class="db-stats-card__title">{{ 'dashboard.stats'|trans }}</h3>
+    <div class="db-stats-card__list">
+        {% for stat in stats %}
+            <a href="{{ path(stat.route, stat.params) }}" class="db-stats-card__row db-stats-card__row--link">
+                <span class="db-stats-card__label">{{ stat.label|trans }}</span>
+                <span class="db-stats-card__value{% if stat.modifier is defined %} db-stats-card__value--{{ stat.modifier }}{% endif %}">{{ stat.value }}</span>
+            </a>
+        {% endfor %}
+    </div>
+</div>

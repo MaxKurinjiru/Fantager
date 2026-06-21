@@ -1,0 +1,34 @@
+{# templates/components/community/read_message_modal.html.twig #}
+<div id="read-message-modal" class="modal-overlay hidden" data-controller="modal" data-community-target="readMessageModal" data-modal-event-name-value="modal:open-read-message">
+    <div class="modal-box modal-box--spacious" data-modal-target="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title-read">
+        <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+            <span aria-hidden="true" class="modal-close__icon">✕</span>
+            <span class="sr-only">{{ 'modal.close'|trans }}</span>
+        </button>
+
+        <div class="modal-header">
+            <h2 id="modal-title-read" data-community-target="readSubject" class="modal-header__title"></h2>
+            <div class="message-meta">
+                <span data-community-target="readSenderLabel">{{ 'community.from'|trans }}</span>
+                <span class="team-color-dot hidden" data-community-target="readSenderColor"></span>
+                <strong data-community-target="readSenderName" class="message-meta__sender"></strong>
+                <span class="message-meta__separator" aria-hidden="true">&bull;</span>
+                <time data-community-target="readDate"></time>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <div class="message-content-box" data-community-target="readBody"></div>
+        </div>
+
+        <div class="modal-footer modal-footer--split">
+            <button type="button"
+                    data-action="click->community#deleteCurrentMessage"
+                    data-community-target="deleteMsgBtn"
+                    class="btn btn-danger btn--sm">
+                🗑️ {{ 'community.delete_msg'|trans }}
+            </button>
+            <button type="button" data-action="click->modal#close" class="btn btn-outline btn--sm">{{ 'community.close'|trans }}</button>
+        </div>
+    </div>
+</div>

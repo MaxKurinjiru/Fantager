@@ -1,0 +1,15 @@
+# =============================================================================
+# Fantager Route Map
+# Routes are auto-discovered from PHP #[Route] attributes on controllers.
+# Legacy explicit entries below kept for routes that pre-date attribute usage.
+# =============================================================================
+
+# --- Auto-discovered from #[Route] attributes ---
+controllers_web:
+  resource: ../src/Controller/Web/
+  type: attribute
+
+controllers_api:
+  resource: ../src/Controller/Api/V1/
+  type: attribute
+

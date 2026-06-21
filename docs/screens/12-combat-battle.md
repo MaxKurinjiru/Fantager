@@ -8,7 +8,7 @@ Displayed Information:
 - Match HUD:
 	- Opponent team name & logo
 	- Match type
-	- Scoreboard / win conditions
+	- Kill score (0–6 per team; forfeit: 3–0 or 0–0 draw)
 - Combat Area:
 	- Front/Back lines, hero avatars
 	- HP bars, mana/energy, status effects, morale indicators
@@ -34,13 +34,13 @@ Possible Actions/Buttons:
 
 Backend Requirements:
 - Combat simulation engine (PHP worker)
-- Combat state streaming (WebSocket or polling)
+- Combat state streaming (Server-Sent Events or polling)
 - Combat action endpoint (turn submission)
 - Battle result endpoint and post-battle updates
 - Replay/simulation generation endpoint
 
 Sections to fill:
-- Combat stream format (WebSocket/polling)
+- Combat stream format (SSE/polling)
 - Replay/log format
 - Controls and speed options
 - Implementation notes

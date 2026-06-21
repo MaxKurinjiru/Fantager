@@ -1,0 +1,221 @@
+{# templates/components/marketplace/js_templates.html.twig #}
+{# ─────────────────────────────────────────────────────────────────────────────
+   HTML TEMPLATES (CLONED IN STIMULUS CONTROLLER FOR DYNAMIC UI RENDERING)
+   ───────────────────────────────────────────────────────────────────────────── #}
+
+{# Hero Card Template #}
+<template id="template-card-hero">
+    <div class="marketplace-card marketplace-card--hero">
+        <div class="layout-stack layout-stack--sm">
+            <div class="layout-cluster layout-cluster--between">
+                <span class="marketplace-card__type-badge marketplace-card__type-badge--hero">👥 {{ 'marketplace.type_hero'|trans }}</span>
+                <span class="marketplace-card__level js-level"></span>
+            </div>
+            <h3 class="marketplace-card__title js-name"></h3>
+            <div class="marketplace-card__details">
+                <div>{{ 'heroes.race'|trans }}: <span class="marketplace-card__detail-value js-race"></span></div>
+                <div>{{ 'heroes.age'|trans }}: <span class="marketplace-card__detail-value js-age"></span></div>
+                <div>{{ 'marketplace.card_form'|trans }} <span class="marketplace-card__detail-value js-form"></span></div>
+                <div>{{ 'heroes.fatigue'|trans }}: <span class="marketplace-card__detail-value js-fatigue"></span></div>
+            </div>
+            <div class="marketplace-card__stats">
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_str'|trans }}<span class="marketplace-card__stat-value js-str"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_dex'|trans }}<span class="marketplace-card__stat-value js-dex"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_kon'|trans }}<span class="marketplace-card__stat-value js-kon"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_spd'|trans }}<span class="marketplace-card__stat-value js-spd"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_int'|trans }}<span class="marketplace-card__stat-value js-int"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_wil'|trans }}<span class="marketplace-card__stat-value js-wil"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_cha'|trans }}<span class="marketplace-card__stat-value js-cha"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_lck'|trans }}<span class="marketplace-card__stat-value js-lck"></span></div>
+            </div>
+        </div>
+        <div class="marketplace-card__footer js-footer-info">
+            <div class="marketplace-card__footer-row">
+                <span>{{ 'marketplace.col_seller'|trans }}: <span class="marketplace-card__seller-name js-seller-name"></span></span>
+                <span class="marketplace-card__time-remaining js-time-remaining"></span>
+            </div>
+            <div class="marketplace-card__footer-row js-buyout-section hidden">
+                <span class="marketplace-card__footer-label">{{ 'marketplace.label_buyout'|trans }}:</span>
+                <span class="marketplace-card__price">🪙&nbsp;<span class="js-buyout-price"></span></span>
+            </div>
+            <div class="marketplace-card__footer-row js-bid-section hidden">
+                <span class="marketplace-card__footer-label">{{ 'marketplace.label_highest_bid'|trans }}:</span>
+                <span class="marketplace-card__price js-highest-bid"></span>
+            </div>
+        </div>
+        <div class="js-actions-section"></div>
+    </div>
+</template>
+
+{# Item Card Template #}
+<template id="template-card-item">
+    <div class="marketplace-card">
+        <div class="layout-stack layout-stack--sm">
+            <div class="layout-cluster layout-cluster--between">
+                <span class="marketplace-card__type-badge marketplace-card__type-badge--item">🗡️ {{ 'marketplace.type_item'|trans }}</span>
+                <span class="js-rarity"></span>
+            </div>
+            <h3 class="marketplace-card__title js-name"></h3>
+            <div class="marketplace-card__meta">
+                {{ 'marketplace.card_slot'|trans }} <span class="marketplace-card__detail-value js-slot"></span> &bull;
+                {{ 'marketplace.card_durability'|trans }} <span class="marketplace-card__detail-value js-durability"></span>
+            </div>
+            <div class="marketplace-card__bonuses js-bonuses"></div>
+        </div>
+        <div class="marketplace-card__footer js-footer-info">
+            <div class="marketplace-card__footer-row">
+                <span>{{ 'marketplace.col_seller'|trans }}: <span class="marketplace-card__seller-name js-seller-name"></span></span>
+                <span class="marketplace-card__time-remaining js-time-remaining"></span>
+            </div>
+            <div class="marketplace-card__footer-row js-buyout-section hidden">
+                <span class="marketplace-card__footer-label">{{ 'marketplace.label_buyout'|trans }}:</span>
+                <span class="marketplace-card__price">🪙&nbsp;<span class="js-buyout-price"></span></span>
+            </div>
+            <div class="marketplace-card__footer-row js-bid-section hidden">
+                <span class="marketplace-card__footer-label">{{ 'marketplace.label_highest_bid'|trans }}:</span>
+                <span class="marketplace-card__price js-highest-bid"></span>
+            </div>
+        </div>
+        <div class="js-actions-section"></div>
+    </div>
+</template>
+
+{# Trainer Card Template #}
+<template id="template-card-trainer">
+    <div class="marketplace-card marketplace-card--trainer">
+        <div class="layout-stack layout-stack--sm">
+            <div class="layout-cluster layout-cluster--between">
+                <span class="marketplace-card__type-badge marketplace-card__type-badge--trainer">🏋️ {{ 'marketplace.type_trainer'|trans }}</span>
+                <span class="marketplace-card__level js-age"></span>
+            </div>
+            <h3 class="marketplace-card__title js-name"></h3>
+            <div class="marketplace-card__details">
+                <div>{{ 'heroes.race'|trans }}: <span class="marketplace-card__detail-value js-race"></span></div>
+            </div>
+            <div class="marketplace-card__stats">
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_str'|trans }}<span class="marketplace-card__stat-value js-str"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_dex'|trans }}<span class="marketplace-card__stat-value js-dex"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_kon'|trans }}<span class="marketplace-card__stat-value js-kon"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_spd'|trans }}<span class="marketplace-card__stat-value js-spd"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_int'|trans }}<span class="marketplace-card__stat-value js-int"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_wil'|trans }}<span class="marketplace-card__stat-value js-wil"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_cha'|trans }}<span class="marketplace-card__stat-value js-cha"></span></div>
+                <div class="marketplace-card__stat-item">{{ 'heroes.abbr_lck'|trans }}<span class="marketplace-card__stat-value js-lck"></span></div>
+            </div>
+        </div>
+        <div class="marketplace-card__footer js-footer-info">
+            <div class="marketplace-card__footer-row">
+                <span>{{ 'marketplace.col_seller'|trans }}: <span class="marketplace-card__seller-name js-seller-name"></span></span>
+                <span class="marketplace-card__time-remaining js-time-remaining"></span>
+            </div>
+            <div class="marketplace-card__footer-row js-buyout-section hidden">
+                <span class="marketplace-card__footer-label">{{ 'marketplace.label_buyout'|trans }}:</span>
+                <span class="marketplace-card__price">🪙&nbsp;<span class="js-buyout-price"></span></span>
+            </div>
+            <div class="marketplace-card__footer-row js-bid-section hidden">
+                <span class="marketplace-card__footer-label">{{ 'marketplace.label_highest_bid'|trans }}:</span>
+                <span class="marketplace-card__price js-highest-bid"></span>
+            </div>
+        </div>
+        <div class="js-actions-section"></div>
+    </div>
+</template>
+
+{# My Listings Row Template #}
+<template id="template-listing-row">
+    <tr class="marketplace-table-row">
+        <td class="marketplace-table__cell--name js-name"></td>
+        <td class="marketplace-table__cell js-type-mode"></td>
+        <td class="marketplace-table__cell marketplace-table__cell--emphasis js-price"></td>
+        <td class="marketplace-table__cell marketplace-table__cell--bid js-highest-bid"></td>
+        <td class="marketplace-table__cell marketplace-table__cell--expires js-expires"></td>
+        <td class="marketplace-table__cell">
+            <span class="js-status"></span>
+        </td>
+        <td class="marketplace-table__cell marketplace-table__cell--actions js-action"></td>
+    </tr>
+</template>
+
+{# History Row Template #}
+<template id="template-history-row">
+    <tr class="marketplace-table-row">
+        <td class="marketplace-table__cell--mono js-id"></td>
+        <td class="marketplace-table__cell--name">
+            <span class="js-name"></span>
+            <span class="marketplace-table__cell--category js-category"></span>
+        </td>
+        <td class="marketplace-table__cell js-seller"></td>
+        <td class="marketplace-table__cell js-buyer"></td>
+        <td class="marketplace-table__cell--amount js-amount"></td>
+        <td class="marketplace-table__cell marketplace-table__cell--fee js-fee"></td>
+        <td class="marketplace-table__cell--date js-date"></td>
+    </tr>
+</template>
+
+{# Loading Grid Template #}
+<template id="template-loading-grid">
+    <div class="grid-span-full loading-spinner">
+        <div class="loading-spinner__icon" aria-hidden="true"></div>
+    </div>
+</template>
+
+{# Empty Grid Template #}
+<template id="template-empty-grid">
+    <div class="grid-span-full empty-state js-empty-text"></div>
+</template>
+
+{# Error Grid Template #}
+<template id="template-error-grid">
+    <div class="grid-span-full marketplace-error-state js-error-text"></div>
+</template>
+
+{# Loading Row Template #}
+<template id="template-loading-row">
+    <tr>
+        <td colspan="7" class="data-table__col--center">
+            <div class="loading-spinner loading-spinner--table">
+                <div class="loading-spinner__icon loading-spinner__icon--sm" aria-hidden="true"></div>
+            </div>
+        </td>
+    </tr>
+</template>
+
+{# Empty Row Template #}
+<template id="template-empty-row">
+    <tr>
+        <td colspan="7" class="empty-state js-empty-text"></td>
+    </tr>
+</template>
+
+{# Error Row Template #}
+<template id="template-error-row">
+    <tr>
+        <td colspan="7" class="marketplace-error-state js-error-text"></td>
+    </tr>
+</template>
+
+{# Bid Form Template #}
+<template id="template-bid-form">
+    <div class="marketplace-bid-form">
+        <input type="number" class="form-input marketplace-bid-input js-bid-input" aria-label="{{ 'marketplace.bid_amount'|trans }}">
+        <button type="button" class="btn btn-outline js-bid-btn"></button>
+    </div>
+</template>
+
+{# Cancel Button Template #}
+<template id="template-cancel-btn">
+    <button type="button" class="btn btn-danger btn--sm js-cancel-btn"></button>
+</template>
+
+{# Active Auction Span Template #}
+<template id="template-active-auction-span">
+    <span class="marketplace-auction-active js-active-span"></span>
+</template>
+
+<template id="template-item-bonus">
+    <span class="marketplace-bonus-tag js-bonus-text"></span>
+</template>
+
+<template id="template-item-no-bonuses">
+    <span class="marketplace-bonus-empty js-no-bonuses-text"></span>
+</template>

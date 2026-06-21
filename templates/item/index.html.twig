@@ -1,0 +1,75 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'inventory.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+{% set selected_hero_id = app.request.query.get('hero_id') %}
+{% set selected_hero = null %}
+{% for h in heroes %}
+    {% if h.id == selected_hero_id %}
+        {% set selected_hero = h %}
+    {% endif %}
+{% endfor %}
+
+{% set equipped = {} %}
+{% if selected_hero %}
+    {% for item in items %}
+        {% if item.equippedHero and item.equippedHero.id == selected_hero.id %}
+            {% set equipped = equipped|merge({(item.equippedSlot.value): item}) %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<div class="page-shell" data-controller="equipment"
+     data-equipment-text-equipping-value="{{ 'js_flash.inventory.equipping'|trans }}"
+     data-equipment-error-equip-value="{{ 'js_flash.inventory.failed_equip'|trans }}"
+     data-equipment-success-equip-value="{{ 'js_flash.inventory.success_equip'|trans }}"
+     data-equipment-text-unequipping-value="{{ 'js_flash.inventory.unequipping'|trans }}"
+     data-equipment-error-unequip-value="{{ 'js_flash.inventory.failed_unequip'|trans }}"
+     data-equipment-success-unequip-value="{{ 'js_flash.inventory.success_unequip'|trans }}"
+     data-equipment-confirm-dismantle-value="{{ 'js_flash.inventory.confirm_dismantle'|trans }}"
+     data-equipment-title-dismantle-value="{{ 'inventory.dismantle'|trans }}"
+     data-equipment-text-dismantling-value="{{ 'js_flash.inventory.dismantling'|trans }}"
+     data-equipment-error-dismantle-value="{{ 'js_flash.inventory.failed_dismantle'|trans }}"
+     data-equipment-success-dismantle-value="{{ 'js_flash.inventory.success_dismantle'|trans }}"
+     data-equipment-text-repairing-value="{{ 'js_flash.inventory.repairing'|trans }}"
+     data-equipment-error-repair-value="{{ 'js_flash.inventory.failed_repair'|trans }}"
+     data-equipment-success-repair-value="{{ 'js_flash.inventory.success_repair'|trans }}"
+>
+    
+    {# --- Header Section --- #}
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'inventory.title',
+        subtitle: 'inventory.subtitle'
+    } %}
+
+    {# --- Alert Box --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'equipment',
+        message_target: 'alertMessage',
+        close_action: 'equipment#hideAlert'
+    } %}
+
+    {# --- Main Inventory Layout --- #}
+    <div class="screen-3col screen-3col--gap-lg">
+        
+        {# LEFT COLUMN: Hero Equipment Paperdoll (1 Column) #}
+        <div class="screen-3col__aside">
+            {% include 'components/item/equip_manager.html.twig' with {
+                selected_hero_id: selected_hero_id,
+                selected_hero: selected_hero,
+                heroes: heroes,
+                equipped: equipped
+            } %}
+        </div>
+
+        {# RIGHT COLUMN: Rucksack Items (2 Columns) #}
+        {% include 'components/item/rucksack_items.html.twig' with {
+            items: items,
+            selected_hero: selected_hero
+        } %}
+
+    </div>
+
+</div>
+{% endblock %}

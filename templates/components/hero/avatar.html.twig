@@ -1,0 +1,13 @@
+{% set race_val = race.value is defined ? race.value : race %}
+{% set style = style|default('emoji') %}
+{% set icon = race_icon(race) %}
+
+{% if style == 'box' %}
+    {% set size_class = size_class|default('hero-avatar-box hero-avatar-box--lg') %}
+    <div class="{{ size_class }} hero-avatar-box" title="{{ ('heroes.race_' ~ race_val)|trans }}">
+        {{ icon }}
+    </div>
+{% else %}
+    {% set text_size = text_size|default('hero-avatar-emoji--md') %}
+    <span class="{{ text_size }} hero-avatar-emoji" title="{{ ('heroes.race_' ~ race_val)|trans }}">{{ icon }}</span>
+{% endif %}

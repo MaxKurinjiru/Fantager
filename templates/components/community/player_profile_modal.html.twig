@@ -1,0 +1,111 @@
+{# templates/components/community/player_profile_modal.html.twig #}
+<div data-controller="modal" data-modal-event-name-value="modal:open-player-profile">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+
+        <div id="player-profile-modal"
+             class="modal-box modal-box--spacious player-profile-modal"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="player-profile-modal-title">
+
+            <button type="button"
+                    data-action="click->modal#close"
+                    class="modal-close"
+                    aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="modal-close__icon">✕</span>
+                <span class="sr-only">{{ 'modal.close'|trans }}</span>
+            </button>
+
+            {# ── Loading state ── #}
+            <div class="js-profile-loading player-profile-modal__loading">
+                <span class="player-profile-modal__spinner" aria-hidden="true"></span>
+                <span>{{ 'community.profile_loading'|trans }}</span>
+            </div>
+
+            {# ── Error state ── #}
+            <div class="js-profile-error player-profile-modal__error hidden" role="alert">
+                <span aria-hidden="true">⚠️</span>
+                {{ 'community.profile_error'|trans }}
+            </div>
+
+            {# ── Content (hidden until JS populates it) ── #}
+            <div class="js-profile-content player-profile-modal__content hidden">
+
+                {# Header — team identity #}
+                <div class="player-profile-modal__header">
+                    <div class="js-profile-color-bar player-profile-modal__color-bar hidden" aria-hidden="true"></div>
+                    <div class="player-profile-modal__identity">
+                        <span class="js-profile-emblem player-profile-modal__emblem" aria-hidden="true">🛡️</span>
+                        <div>
+                            <h2 id="player-profile-modal-title" class="js-profile-team-name player-profile-modal__team-name"></h2>
+                            <p class="js-profile-player-name player-profile-modal__player-name copy-muted"></p>
+                        </div>
+                    </div>
+                </div>
+
+                {# Team stats grid #}
+                <section class="player-profile-modal__section" aria-label="{{ 'community.profile_team_stats'|trans }}">
+                    <h3 class="player-profile-modal__section-title">{{ 'community.profile_team_stats'|trans }}</h3>
+                    <div class="player-profile-modal__stats">
+                        <div class="player-profile-modal__stat">
+                            <span class="player-profile-modal__stat-key">{{ 'dashboard.fan_base'|trans }}</span>
+                            <span class="js-profile-fan-base player-profile-modal__stat-value">—</span>
+                        </div>
+                        <div class="player-profile-modal__stat">
+                            <span class="player-profile-modal__stat-key">{{ 'dashboard.reputation'|trans }}</span>
+                            <span class="js-profile-reputation player-profile-modal__stat-value">—</span>
+                        </div>
+                        <div class="player-profile-modal__stat">
+                            <span class="player-profile-modal__stat-key">{{ 'community.profile_combatants'|trans }}</span>
+                            <span class="js-profile-combatants player-profile-modal__stat-value">—</span>
+                        </div>
+                        <div class="player-profile-modal__stat">
+                            <span class="player-profile-modal__stat-key">{{ 'community.profile_trainers'|trans }}</span>
+                            <span class="js-profile-trainers player-profile-modal__stat-value">—</span>
+                        </div>
+                    </div>
+                </section>
+
+                {# League section — hidden if not in any season #}
+                <section class="js-profile-league player-profile-modal__section hidden" aria-label="{{ 'community.profile_league'|trans }}">
+                    <h3 class="player-profile-modal__section-title">{{ 'community.profile_league'|trans }}</h3>
+                    <div class="player-profile-modal__league">
+                        <div class="player-profile-modal__league-row">
+                            <span class="copy-muted">{{ 'community.profile_tier'|trans }}</span>
+                            <strong class="js-profile-tier">—</strong>
+                        </div>
+                        <div class="player-profile-modal__league-row">
+                            <span class="copy-muted">{{ 'community.profile_position'|trans }}</span>
+                            <strong class="js-profile-position">—</strong>
+                        </div>
+                        <div class="player-profile-modal__league-row">
+                            <span class="copy-muted">{{ 'league.col_points'|trans }}</span>
+                            <strong class="js-profile-points">—</strong>
+                        </div>
+                        <div class="player-profile-modal__league-row">
+                            <span class="copy-muted">{{ 'league.col_form'|trans }}</span>
+                            <div class="js-profile-form league-form-badges"></div>
+                        </div>
+                    </div>
+                </section>
+
+                {# Footer — member since + message CTA #}
+                <div class="player-profile-modal__footer">
+                    <p class="player-profile-modal__member-since copy-muted">
+                        {{ 'community.profile_member_since'|trans }}
+                        <time class="js-profile-member-since"></time>
+                    </p>
+                    <button type="button"
+                            class="js-profile-message-btn btn btn-primary hidden"
+                            data-action="click->player-profile#openCompose"
+                            aria-label="{{ 'community.send_message_aria'|trans }}">
+                        ✉️ {{ 'community.send_message'|trans }}
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

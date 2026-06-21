@@ -1,0 +1,59 @@
+{% set route = route|default(app.request.attributes.get('_route') ?? '') %}
+<aside data-mobile-menu-target="menu" class="game-sidebar mobile-menu">
+    <div class="game-sidebar__nav">
+        {# Mobile Header & Close Button #}
+        <div class="game-sidebar__mobile-header">
+            <span class="game-sidebar__brand">Fantager</span>
+            <button type="button" data-action="click->mobile-menu#close" class="game-sidebar__close-btn" aria-label="{{ 'modal.close'|trans }}">
+                <svg class="game-sidebar__close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="game-sidebar__section-label">{{ 'sidebar.section_overview'|trans }}</div>
+        {% set overview_links = [
+            { route: 'app_dashboard', emoji: '📊', label: 'nav.dashboard', active_check: 'exact' },
+            { route: 'app_calendar', emoji: '📅', label: 'nav.calendar', active_check: 'exact' }
+        ] %}
+        {% for link in overview_links %}
+            {% set is_active = route == link.route %}
+            {% include 'components/layout/sidebar_link.html.twig' with { route: link.route, emoji: link.emoji, label: link.label, is_active: is_active } %}
+        {% endfor %}
+
+        <div class="game-sidebar__section-label">{{ 'sidebar.section_team'|trans }}</div>
+        {% set team_links = [
+            { route: 'app_heroes', emoji: '👥', label: 'nav.team', active_check: 'starts_with' },
+            { route: 'app_team_chronicle', emoji: '📜', label: 'nav.chronicle', active_check: 'exact' },
+            { route: 'app_graveyard', emoji: '🪦', label: 'nav.graveyard', active_check: 'exact' },
+            { route: 'app_hq', emoji: '🏰', label: 'nav.hq', active_check: 'exact' },
+            { route: 'app_formation', emoji: '🛡️', label: 'nav.formation', active_check: 'exact' }
+        ] %}
+        {% for link in team_links %}
+            {% set is_active = (link.active_check == 'exact' and route == link.route) or (link.active_check == 'starts_with' and route starts with link.route) %}
+            {% include 'components/layout/sidebar_link.html.twig' with { route: link.route, emoji: link.emoji, label: link.label, is_active: is_active } %}
+        {% endfor %}
+
+        <div class="game-sidebar__section-label">{{ 'sidebar.section_competition'|trans }}</div>
+        {% set competition_links = [
+            { route: 'app_league', emoji: '🏆', label: 'nav.league', active_check: 'starts_with' }
+        ] %}
+        {% for link in competition_links %}
+            {% set is_active = route starts with link.route %}
+            {% include 'components/layout/sidebar_link.html.twig' with { route: link.route, emoji: link.emoji, label: link.label, is_active: is_active } %}
+        {% endfor %}
+
+        <div class="game-sidebar__section-label">{{ 'sidebar.section_social'|trans }}</div>
+        {% set social_links = [
+            { route: 'app_marketplace', emoji: '⚖️', label: 'nav.marketplace', active_check: 'exact' },
+            { route: 'app_finance', emoji: '📒', label: 'nav.finance', active_check: 'exact' },
+            { route: 'app_community', emoji: '💬', label: 'nav.community', active_check: 'starts_with' }
+        ] %}
+        {% for link in social_links %}
+            {% set is_active = (link.active_check == 'exact' and route == link.route) or (link.active_check == 'starts_with' and route starts with link.route) %}
+            {% include 'components/layout/sidebar_link.html.twig' with { route: link.route, emoji: link.emoji, label: link.label, is_active: is_active } %}
+        {% endfor %}
+
+        <div class="game-sidebar__divider"></div>
+    </div>
+</aside>

@@ -1,0 +1,11 @@
+{% set val = status.value is defined ? status.value : status %}
+{% set rounded_full = rounded_full|default(false) %}
+{% set extra_classes = extra_classes|default('') %}
+{% set status_modifier = val %}
+{% if val not in ['available', 'in_match', 'selling', 'recovering', 'dead'] %}
+    {% set status_modifier = 'unknown' %}
+{% endif %}
+
+<span class="hero-status hero-status--{{ status_modifier }}{% if rounded_full %} hero-status--pill{% endif %} {{ extra_classes }}">
+    {{ ('heroes.status_' ~ val)|trans }}
+</span>

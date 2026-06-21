@@ -2,29 +2,23 @@
 
 Reference: [screens-overview.md](../screens-overview.md#18-arena-management-screen-optionalextended-feature)
 
-Purpose: Per-screen API, events, UI data requirements, and implementation notes.
+> **Implementation:** Arena is a **panel inside HQ**, not a standalone page. `GET /app/arena` redirects to `/app/hq?facility=arena`.
 
-Displayed Information:
-- Arena Status:
-	- Level, seating capacity, ticket price
-	- Revenue per cycle, home advantage modifiers
-	- Next scheduled home match
-- Match History and Revenue Analytics:
-	- Past matches, attendance, revenue breakdown
+## Revenue Model
 
-Possible Actions/Buttons:
-- Upgrade Arena
-- Set Ticket Price
-- Schedule Friendly/Promotional Match
-- View Match Replay and Revenue Reports
+- **Fixed ticket price**: `ArenaRevenueService::TICKET_PRICE` (5 gold) — not player-configurable.
+- **Capacity**: Base seating × Arena facility `arena_capacity` bonus (home team HQ).
+- **Attendance**: Fills proportionally from **both** teams' fan appeal (reputation, morale, chemistry) via `FanClubService`.
+- **Payout**: Home team only, triggered on **League Match** tick when the fixture is processed.
+- **Bonuses**: Home team's Arena (`ticket_revenue_pct`) and Treasury (`gold_income_pct`) multipliers apply.
 
-Backend Requirements:
-- Arena data endpoint
-- Revenue calculation and payout jobs
-- Match scheduling and ticketing endpoints
-- Analytics and reporting endpoints
+## Implementation Notes
 
-Sections to fill:
-- Arena data and revenue calculations
-- Upgrade and pricing flows
-- Implementation notes
+- **Web panel**: `/app/hq?facility=arena` — `Web\HeadquartersController` + HQ templates
+- **Legacy redirect**: `/app/arena` → HQ arena panel
+- **API**: `GET /api/v1/arena` — read-only status and projections
+- **Services**: `ArenaService`, `ArenaRevenueService`, `FanClubService`
+- **CLI**: `app:economy:distribute-arena-revenue --time="YYYY-MM-DD HH:MM:SS"` for manual fixture payout
+- **HQ upgrades**: Arena level/capacity via `/app/hq`
+
+Friendly match scheduling remains planned (requires combat engine).

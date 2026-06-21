@@ -1,0 +1,47 @@
+{% extends 'layouts/public.html.twig' %}
+
+{% block title %}{{ 'homepage.title'|trans }} — {{ 'homepage.description'|trans }}{% endblock %}
+
+{% block guest_body %}
+<div class="homepage-hero">
+    <h1 class="homepage-hero__title">{{ 'homepage.title'|trans }}</h1>
+    <p class="homepage-hero__tagline">{{ 'homepage.tagline'|trans }}</p>
+    <div class="homepage-hero__actions">
+        {% if app.user %}
+            <a href="{{ path('app_dashboard') }}"
+               class="btn btn-primary btn--lg">
+                {{ 'nav.enter_game'|trans }}
+            </a>
+        {% else %}
+            <a href="{{ path('app_register') }}"
+               data-action="click->auth-modal#openRegister"
+               class="btn btn-primary btn--lg">
+                {{ 'homepage.cta_play'|trans }}
+            </a>
+            <a href="{{ path('app_login') }}"
+               data-action="click->auth-modal#openLogin"
+               class="btn btn-outline btn--lg">
+                {{ 'homepage.cta_login'|trans }}
+            </a>
+        {% endif %}
+    </div>
+    <p class="homepage-hero__footer-link">
+        <a href="{{ path('app_news') }}" class="link">{{ 'homepage.news_archive_link'|trans }}</a>
+    </p>
+
+    {% if latest_news is not empty %}
+        <section class="homepage-news">
+            <h2 class="homepage-news__title">{{ 'homepage.latest_news'|trans }}</h2>
+            <div class="homepage-news__list">
+                {% for article in latest_news %}
+                    <article class="homepage-news__item">
+                        <h3 class="homepage-news__item-title">{{ article.title }}</h3>
+                        <time class="homepage-news__item-date" datetime="{{ article.publishedAt|date('c') }}">{{ article.publishedAt|date('Y-m-d') }}</time>
+                        <p class="homepage-news__item-content">{{ article.content|nl2br }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}

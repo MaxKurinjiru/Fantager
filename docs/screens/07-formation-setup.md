@@ -6,8 +6,7 @@ Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 
 Displayed Information:
 - **Formation Selector:**
-	- Formation 1 (editable name)
-	- Formation 2 (editable name)
+	- Up to 4 saved formations (editable names)
 	- Default formation indicator
 - **Formation Layout (visual grid):**
 	- **Front Line (3 positions)**
@@ -50,7 +49,7 @@ Possible Actions/Buttons:
 
 Backend Requirements:
 - Formation GET/POST/PUT endpoints
-- Formation validation (6 heroes required, unique heroes)
+- Formation validation (6 heroes required, unique heroes; team must have ≥ 6 combat-ready heroes to enter matches)
 - Synergy calculation API
 - Formation simulation/testing
 

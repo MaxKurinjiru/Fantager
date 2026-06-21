@@ -1,0 +1,35 @@
+services:
+  web:
+    container_name: fantager-web
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - fantager-network
+
+  db:
+    container_name: fantager-db
+    restart: unless-stopped
+    image: mariadb:11.4
+    environment:
+      MYSQL_ROOT_PASSWORD: fantager
+      MYSQL_DATABASE: fantager
+      MYSQL_USER: fantager
+      MYSQL_PASSWORD: fantager
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - fantager-network
+
+
+volumes:
+  db_data:
+
+networks:
+  fantager-network:
+    driver: bridge

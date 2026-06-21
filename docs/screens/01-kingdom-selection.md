@@ -1,8 +1,8 @@
-# Kingdom Selection Screen
+# Kingdom Selection (Registration Step)
 
 Reference: [screens-overview.md](../screens-overview.md#1-kingdom-selection-screen)
 
-**When:** During account creation (one-time only)
+**When:** Part of the registration form — not a separate screen. The player selects a Kingdom before submitting the registration form. The choice is permanent and cannot be changed after registration.
 
 ### Displayed Information:
 - List of available Kingdoms (servers)
@@ -11,7 +11,7 @@ Reference: [screens-overview.md](../screens-overview.md#1-kingdom-selection-scre
   - Main language
   - Time zone
   - Game speed
-  - Current player count / Max capacity
+  - **Current player count / Total capacity** (capacity derived from `league_tiers_config`; e.g. "23 / 60")
   - Season length
   - Kingdom icon/flag
 

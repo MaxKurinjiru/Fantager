@@ -1,0 +1,59 @@
+// =============================================================================
+//  app.scss — main stylesheet entry point
+//
+//  File structure:
+//    abstracts/_tokens.scss      Design tokens: colors, fonts, radii  ← EDIT HERE
+//    base/_base.scss             Element defaults: html, body, headings, focus
+//    components/_modal.scss      Modal overlay, dialog box, close button
+//    components/_forms.scss      .form-input, .form-label, .form-error
+//    components/_buttons.scss    .btn, .btn-primary, .btn-outline, .btn-ghost
+//    components/_links.scss      Bare <a> and .link styles
+//    components/_flash.scss      .alert, .alert-success / error / warning / info
+//
+//  Note: @use must precede @tailwind directives (Sass module system rule).
+// =============================================================================
+
+// ── Sass modules (@use must precede all other statements) ─────────────────────
+// Design tokens: colors, fonts, border-radius (the "config" file)
+@use "abstracts/tokens";
+// Base element defaults: html, body, headings, focus ring
+@use "base/base";
+// UI components
+@use "components/modal";
+@use "components/forms";
+@use "components/buttons";
+@use "components/links";
+@use "components/flash";
+@use "components/dashboard";
+@use "components/chronicle";
+@use "components/graveyard";
+@use "components/news";
+@use "components/navbar";
+@use "components/summoning";
+@use "components/finance";
+@use "components/marketplace";
+@use "components/community";
+@use "components/mail";
+@use "components/notifications";
+@use "components/roster_badge";
+@use "components/page_header";
+@use "components/shared";
+@use "components/hero";
+@use "components/formation";
+@use "components/hq";
+@use "components/training";
+@use "components/arena";
+@use "components/spell";
+@use "components/item";
+@use "components/calendar";
+@use "components/resource_bar";
+@use "components/league";
+@use "components/sidebar";
+@use "components/settings";
+@use "components/layout";
+
+
+// ── Tailwind CSS (v4 directive style, must come after @use) ───────────────────
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

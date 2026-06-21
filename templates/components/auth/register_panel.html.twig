@@ -1,0 +1,139 @@
+{# templates/components/auth/register_panel.html.twig #}
+{% set modal_errors = modal_errors|default({}) %}
+{% set modal_form_data = modal_form_data|default({}) %}
+{% set modal_kingdoms = modal_kingdoms|default([]) %}
+
+<div data-auth-modal-target="registerPanel" class="auth-panel auth-panel--register hidden">
+    <h2 id="auth-modal-title-register" class="auth-panel__title">{{ 'auth.register_title'|trans }}</h2>
+
+    <form method="POST" action="{{ path('app_register') }}" class="auth-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('register') }}">
+
+        {# Email #}
+        <div class="auth-form__field">
+            <label for="modal_reg_email" class="form-label">{{ 'auth.email'|trans }}</label>
+            <input type="email" id="modal_reg_email" name="email" required maxlength="180"
+                   value="{{ modal_form_data.email ?? '' }}"
+                   autocomplete="email"
+                   class="form-input {{ modal_errors.email is defined ? 'form-input--error' : '' }}"
+                   {% if modal_errors.email is defined %}aria-describedby="modal-reg-email-error"{% endif %}>
+            {% if modal_errors.email is defined %}
+                <p id="modal-reg-email-error" class="form-error" role="alert">{{ modal_errors.email|trans([], 'validators') }}</p>
+            {% endif %}
+        </div>
+
+        {# Password #}
+        <div class="auth-form__field">
+            <label for="modal_reg_password" class="form-label">
+                {{ 'auth.password'|trans }}
+                <span class="copy-muted">{{ 'auth.password_hint'|trans }}</span>
+            </label>
+            <div class="form-input-affix-wrap">
+                <input type="password" id="modal_reg_password" name="password" required minlength="8" maxlength="4096"
+                       autocomplete="new-password"
+                       class="form-input form-input--with-toggle {{ modal_errors.password is defined ? 'form-input--error' : '' }}"
+                       {% if modal_errors.password is defined %}aria-describedby="modal-reg-password-error"{% endif %}>
+                <button type="button"
+                        data-action="click->auth-modal#togglePassword"
+                        data-input-id="modal_reg_password"
+                        class="password-toggle-btn"
+                        aria-label="{{ 'auth.toggle_password_visibility'|trans }}">
+                    <svg class="eye-open password-toggle-btn__icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <svg class="eye-closed password-toggle-btn__icon hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                    </svg>
+                </button>
+            </div>
+            {% if modal_errors.password is defined %}
+                <p id="modal-reg-password-error" class="form-error" role="alert">{{ modal_errors.password|trans([], 'validators') }}</p>
+            {% endif %}
+        </div>
+
+        {# Nickname #}
+        <div class="auth-form__field">
+            <label for="modal_display_name" class="form-label">{{ 'auth.display_name'|trans }}</label>
+            <input type="text" id="modal_display_name" name="display_name" required maxlength="50"
+                   value="{{ modal_form_data.display_name ?? '' }}"
+                   class="form-input {{ modal_errors.display_name is defined ? 'form-input--error' : '' }}"
+                   {% if modal_errors.display_name is defined %}aria-describedby="modal-reg-name-error"{% endif %}>
+            {% if modal_errors.display_name is defined %}
+                <p id="modal-reg-name-error" class="form-error" role="alert">{{ modal_errors.display_name|trans([], 'validators') }}</p>
+            {% endif %}
+        </div>
+
+        {# Kingdom selection #}
+        <div class="auth-form__field">
+            <label for="modal_reg_kingdom" class="form-label">
+                {{ 'auth.choose_kingdom'|trans }}
+                <span class="copy-muted">{{ 'auth.kingdom_permanent_warn'|trans }}</span>
+            </label>
+            {% if modal_errors.kingdom is defined %}
+                <p class="form-error" role="alert">{{ modal_errors.kingdom|trans([], 'validators') }}</p>
+            {% endif %}
+
+            {% if modal_kingdoms is empty %}
+                <div class="alert alert-warning" role="alert">{{ 'auth.kingdom_no_available'|trans }}</div>
+                <input type="hidden" name="kingdom_id" id="modal_reg_kingdom" value="0">
+            {% else %}
+                {# Compact mobile select dropdown #}
+                <div class="kingdom-select-mobile">
+                    <select name="kingdom_id" id="modal_reg_kingdom" class="form-input" data-action="change->auth-modal#syncKingdomSelect">
+                        <option value="" disabled {{ (modal_form_data.kingdom_id ?? 0) == 0 ? 'selected' : '' }}>
+                            {{ 'auth.choose_kingdom'|trans }}
+                        </option>
+                        {% for entry in modal_kingdoms %}
+                            {% set k    = entry.kingdom %}
+                            {% set full = entry.capacity > 0 and entry.playerCount >= entry.capacity %}
+                            <option value="{{ k.id }}"
+                                    {{ full ? 'disabled' : '' }}
+                                    {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'selected' : '' }}>
+                                {{ k.name }} ({{ k.language }} &bull; {{ k.gameSpeed }}x &bull; {{ entry.playerCount }}{% if entry.capacity > 0 %}/{{ entry.capacity }}{% endif %})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {# Detailed desktop radio cards #}
+                <div class="kingdom-list kingdom-list--desktop">
+                    {% for entry in modal_kingdoms %}
+                        {% set k    = entry.kingdom %}
+                        {% set full = entry.capacity > 0 and entry.playerCount >= entry.capacity %}
+                        <label for="modal_reg_kingdom_radio_{{ k.id }}"
+                               class="kingdom-card {{ full ? 'kingdom-card--disabled' : '' }} {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'kingdom-card--selected' : '' }}">
+                            <input type="radio" name="kingdom_id" id="modal_reg_kingdom_radio_{{ k.id }}" value="{{ k.id }}"
+                                   {{ full ? 'disabled' : '' }}
+                                   {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'checked' : '' }}
+                                   data-action="change->auth-modal#syncKingdomRadio"
+                                   class="kingdom-card__radio">
+                            <div>
+                                <div class="kingdom-card__title">{{ k.name }}</div>
+                                <div class="kingdom-card__meta">
+                                    {{ 'auth.kingdom_language'|trans }} {{ k.language }} &bull;
+                                    {{ 'auth.kingdom_speed'|trans }} {{ k.gameSpeed }}x &bull;
+                                    {{ 'auth.kingdom_season'|trans }} {{ k.seasonLength }} {{ 'auth.kingdom_days'|trans }} &bull;
+                                    {{ 'auth.kingdom_players'|trans }} {{ entry.playerCount }}{% if entry.capacity > 0 %}/{{ entry.capacity }}{% endif %}
+                                    {% if full %}&bull; <span class="copy-status-error">{{ 'auth.kingdom_full'|trans }}</span>{% endif %}
+                                </div>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn--block">
+            {{ 'auth.submit_register'|trans }}
+        </button>
+    </form>
+
+    <p class="auth-panel__footer">
+        <button type="button"
+            data-action="click->auth-modal#switchToLogin"
+            class="btn btn-ghost">
+            {{ 'auth.switch_to_login'|trans }}
+        </button>
+    </p>
+</div>

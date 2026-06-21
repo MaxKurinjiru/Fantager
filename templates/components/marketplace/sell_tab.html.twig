@@ -1,0 +1,206 @@
+{# templates/components/marketplace/sell_tab.html.twig #}
+{% set heroes = heroes|default([]) %}
+{% set items = items|default([]) %}
+{% set trainers = trainers|default([]) %}
+{% set taxRate = taxRate|default(0) %}
+{% set team = team|default(null) %}
+
+<div data-marketplace-target="tabContent" data-tab-name="sell" class="layout-stack{% if tab|default('browse') != 'sell' %} hidden{% endif %}">
+    <div class="screen-3col">
+        {# Category Selector & Roster list #}
+        <div class="screen-3col__main game-panel">
+            <div>
+                <h2 class="feature-panel__title">{{ 'marketplace.select_entity'|trans }}</h2>
+                <p class="panel-lead">{{ 'marketplace.sell_desc'|trans }}</p>
+            </div>
+
+            {# Roster tabs #}
+            <div class="segmented-control">
+                <button type="button" data-action="click->marketplace#switchSellCategory" data-sell-cat="hero" data-marketplace-target="sellCatButton"
+                        class="segmented-btn segmented-btn--active">
+                    👥 {{ 'marketplace.type_hero'|trans }}
+                </button>
+                <button type="button" data-action="click->marketplace#switchSellCategory" data-sell-cat="item" data-marketplace-target="sellCatButton"
+                        class="segmented-btn">
+                    🎒 {{ 'marketplace.type_item'|trans }}
+                </button>
+                <button type="button" data-action="click->marketplace#switchSellCategory" data-sell-cat="trainer" data-marketplace-target="sellCatButton"
+                        class="segmented-btn">
+                    🏋️ {{ 'marketplace.type_trainer'|trans }}
+                </button>
+            </div>
+
+            {# Sell tab search and sort controls #}
+            <div class="filter-bar filter-bar--spaced">
+                <div class="filter-bar__controls">
+                    <div class="form-field-group form-field-group--tight w-full">
+                        <label for="sell-search" class="sr-only">{{ 'marketplace.filter_search'|trans }}</label>
+                        <input type="text" id="sell-search"
+                               data-marketplace-target="sellSearchInput"
+                               data-action="input->marketplace#filterSellEntities"
+                               placeholder="{{ 'marketplace.filter_search'|trans }}"
+                               class="form-input">
+                    </div>
+                    <div class="form-field-group form-field-group--tight">
+                        <label for="sell-sort" class="sr-only">{{ 'marketplace.filter_sort'|trans }}</label>
+                        <select id="sell-sort"
+                                data-marketplace-target="sellSortSelect"
+                                data-action="change->marketplace#sortSellEntities"
+                                class="form-input">
+                            <option value="name_asc">{{ 'marketplace.sort_name_asc'|trans }}</option>
+                            <option value="name_desc">{{ 'marketplace.sort_name_desc'|trans }}</option>
+                            <option value="level_desc" data-marketplace-target="sellSortOption" data-sell-cat-only="hero">{{ 'marketplace.sort_level_desc'|trans }}</option>
+                            <option value="age_asc" data-marketplace-target="sellSortOption" data-sell-cat-only="hero,trainer">{{ 'marketplace.sort_age_asc'|trans }}</option>
+                            <option value="rarity_desc" data-marketplace-target="sellSortOption" data-sell-cat-only="item">{{ 'marketplace.sort_rarity_desc'|trans }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {# Heroes list #}
+            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="hero" class="scroll-grid">
+                {% for hero in heroes %}
+                    {% set can_sell = hero_can_leave_roster(team, hero) and hero.trainer is null %}
+                    <div {% if can_sell %}data-action="click->marketplace#selectEntityToSell"{% endif %}
+                         data-entity-id="{{ hero.id }}"
+                         data-entity-name="{{ hero.name }}"
+                         data-entity-level="{{ hero.level }}"
+                         data-entity-age="{{ hero.age }}"
+                         data-entity-rarity=""
+                         data-locked="{{ can_sell ? '0' : '1' }}"
+                         title="{{ can_sell ? '' : 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}"
+                         class="sell-card {{ can_sell ? '' : 'sell-card--locked' }}">
+                        <div class="entity-row__main">
+                            <span class="emoji-icon">👥</span>
+                            <div>
+                                <h4 class="sell-card__name">{{ hero.name }}</h4>
+                                <span class="sell-card__meta">{{ 'js_flash.hq.lvl_short'|trans }} {{ hero.level }} &bull; {{ hero.race.value|trans }}</span>
+                            </div>
+                        </div>
+                        <span class="category-badge">
+                            {{ ('heroes.age_phase.' ~ hero_age_phase(hero)|lower)|trans }}
+                        </span>
+                    </div>
+                {% else %}
+                    <div class="scroll-grid__span-full empty-state">{{ 'marketplace.no_heroes'|trans }}</div>
+                {% endfor %}
+            </div>
+
+            {# Items list #}
+            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="item" class="scroll-grid hidden">
+                {% for item in items %}
+                    <div data-action="click->marketplace#selectEntityToSell"
+                         data-entity-id="{{ item.id }}"
+                         data-entity-name="{{ item.name }}"
+                         data-entity-level="0"
+                         data-entity-age="0"
+                         data-entity-rarity="{{ item.rarity.value }}"
+                         class="sell-card">
+                        <div class="entity-row__main">
+                            <span class="emoji-icon">🗡️</span>
+                            <div>
+                                <h4 class="sell-card__name">{{ item.name }}</h4>
+                                <span class="sell-card__meta">{{ item.slotType.value|trans }} &bull; {{ 'inventory.durability'|trans }}: {{ item.durability }}%</span>
+                            </div>
+                        </div>
+                        <span class="rarity-tag rarity-tag--{{ item.rarity.value }}">
+                            {{ ('inventory.rarity_' ~ item.rarity.value)|trans }}
+                        </span>
+                    </div>
+                {% else %}
+                    <div class="scroll-grid__span-full empty-state">{{ 'marketplace.no_items'|trans }}</div>
+                {% endfor %}
+            </div>
+
+            {# Trainers list #}
+            <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="trainer" class="scroll-grid hidden">
+                {% for trainer in trainers %}
+                    <div data-action="click->marketplace#selectEntityToSell"
+                         data-entity-id="{{ trainer.id }}"
+                         data-entity-name="{{ trainer.name }}"
+                         data-entity-level="0"
+                         data-entity-age="{{ trainer.age }}"
+                         data-entity-rarity=""
+                         class="sell-card">
+                        <div class="entity-row__main">
+                            <span class="emoji-icon">🏋️</span>
+                            <div>
+                                <h4 class="sell-card__name">{{ trainer.name }}</h4>
+                                <span class="sell-card__meta">{{ trainer.race.value|trans }} &bull; {{ 'heroes.age'|trans }}: {{ trainer.age }} {{ 'marketplace.years_suffix'|trans }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="scroll-grid__span-full empty-state">{{ 'marketplace.no_trainers'|trans }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Listing Form Options #}
+        <div class="game-panel panel-column">
+            <form data-action="submit->marketplace#submitListing" class="layout-stack layout-stack--form">
+                <div>
+                    <h2 class="feature-panel__title">{{ 'marketplace.btn_sell'|trans }}</h2>
+                    <p class="panel-lead">{{ 'marketplace.sell_opts_title'|trans }}</p>
+                </div>
+
+                <div class="marketplace-notice">
+                    <span class="marketplace-notice__label">{{ 'marketplace.selected_label'|trans }}</span>
+                    <span data-marketplace-target="selectedEntityLabel" class="marketplace-notice__value">{{ 'marketplace.select_entity_placeholder'|trans }}</span>
+                </div>
+
+                <input type="hidden" name="sell_id" data-marketplace-target="sellIdInput" value="">
+
+                <div class="form-field-group">
+                    <label for="listing-mode" class="form-label">{{ 'marketplace.listing_mode_label'|trans }}</label>
+                    <select id="listing-mode" name="mode" data-action="change->marketplace#onListingModeChange" data-marketplace-target="listingModeSelect"
+                            class="form-input">
+                        <option value="buy_now">{{ 'marketplace.mode_buy_now'|trans }}</option>
+                        <option value="auction">{{ 'marketplace.mode_auction'|trans }}</option>
+                    </select>
+                </div>
+
+                <div class="form-field-group">
+                    <label for="listing-price" data-marketplace-target="priceLabel" class="form-label">
+                        {{ 'marketplace.price_gold'|trans }}
+                    </label>
+                    <div class="form-input-affix">
+                        <span class="form-input-affix__icon">🪙</span>
+                        <input type="number" id="listing-price" name="price" required min="1" placeholder="{{ 'marketplace.price_placeholder'|trans }}"
+                               class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-field-group hidden" data-marketplace-target="buyoutFieldContainer">
+                    <label for="listing-buyout" class="form-label">
+                        {{ 'marketplace.buyout_gold'|trans }}
+                    </label>
+                    <div class="form-input-affix">
+                        <span class="form-input-affix__icon">🪙</span>
+                        <input type="number" id="listing-buyout" name="buyout" min="1" placeholder="{{ 'marketplace.buyout_placeholder'|trans }}"
+                               class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-field-group">
+                    <label for="listing-duration" class="form-label">
+                        {{ 'marketplace.duration_days'|trans }}
+                    </label>
+                    <select id="listing-duration" name="duration" class="form-input">
+                        <option value="3">{{ 'marketplace.duration_days_option'|trans({'%count%': 3}) }}</option>
+                        <option value="5" selected>{{ 'marketplace.duration_days_option'|trans({'%count%': 5}) }}</option>
+                        <option value="7">{{ 'marketplace.duration_days_option'|trans({'%count%': 7}) }}</option>
+                    </select>
+                </div>
+
+                <div class="marketplace-notice marketplace-notice--hint">
+                    ⚠️ {{ 'marketplace.tax_hint'|trans({'%tax%': taxRate}) }}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn--block">
+                    {{ 'marketplace.btn_list'|trans }}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

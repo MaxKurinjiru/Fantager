@@ -1,0 +1,24 @@
+{% set bonus = bonus|default(0) %}
+{% set max_val = max_val|default(20) %}
+{% set stat_pct = (val / max_val) * 100 %}
+
+<div class="hero-attr-bar">
+    <div class="hero-attr-bar__header">
+        <span class="hero-attr-bar__label" title="{{ label }}">{{ label }}</span>
+        <div class="hero-attr-bar__values">
+            <span class="hero-attr-bar__value">{{ val }}</span>
+            {% if bonus != 0 %}
+                <span class="{{ bonus > 0 ? 'hero-attr-bar__bonus hero-attr-bar__bonus--positive' : 'hero-attr-bar__bonus hero-attr-bar__bonus--negative' }}"
+                      title="{{ 'heroes.race_adjustment'|trans({'%bonus%': bonus > 0 ? '+' ~ bonus : bonus}) }}">
+                    {{ bonus > 0 ? '+' ~ bonus : bonus }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% include 'components/ui/progress_bar.html.twig' with {
+        percentage: stat_pct,
+        container_class: 'ui-progress ui-progress--compact hero-attr-bar__track-border',
+        progress_class: 'ui-progress__fill ui-progress__fill--accent'
+    } %}
+</div>

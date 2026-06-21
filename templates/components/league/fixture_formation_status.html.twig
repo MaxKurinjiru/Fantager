@@ -1,0 +1,16 @@
+{# templates/components/league/fixture_formation_status.html.twig #}
+{% if formation is defined and formation is not empty %}
+    {% if formation.mode == 'default' %}
+        <span class="fixture-card__formation fixture-card__formation--default">
+            🛡️ {{ 'league.formation_status_default'|trans }}
+        </span>
+    {% elseif formation.mode == 'saved' %}
+        <span class="fixture-card__formation fixture-card__formation--saved">
+            🛡️ {{ 'league.formation_status_saved'|trans({'%name%': formation.formation_name}) }}
+        </span>
+    {% elseif formation.mode == 'custom' %}
+        <span class="fixture-card__formation fixture-card__formation--custom">
+            🛡️ {{ 'league.formation_status_custom'|trans }}
+        </span>
+    {% endif %}
+{% endif %}

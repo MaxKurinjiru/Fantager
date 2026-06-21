@@ -1,0 +1,58 @@
+{# templates/components/layout/ledger_modal.html.twig #}
+<div data-controller="modal" data-modal-event-name-value="modal:open-ledger" id="ledger-modal">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+        <div class="modal-box modal-box--spacious" role="dialog" aria-modal="true" aria-labelledby="ledger-modal-title">
+            <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="modal-close__icon">✕</span>
+                <span class="sr-only">{{ 'modal.close'|trans }}</span>
+            </button>
+
+            <div class="modal-header">
+                <h2 id="ledger-modal-title" class="modal-header__title">🪙 {{ 'finance.recent_title'|trans }}</h2>
+            </div>
+
+            <div class="modal-body">
+                <p data-ledger-target="emptyMessage" class="ledger-modal-empty hidden">{{ 'finance.no_records'|trans }}</p>
+                <div class="data-table-wrap">
+                    <table class="finance-ledger-table">
+                        <thead>
+                            <tr>
+                                <th class="finance-ledger-table__th">{{ 'finance.col_type'|trans }}</th>
+                                <th class="finance-ledger-table__th">{{ 'finance.col_changes'|trans }}</th>
+                                <th class="finance-ledger-table__th finance-ledger-table__th--end">{{ 'finance.col_date'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody data-ledger-target="tableBody"></tbody>
+                    </table>
+                </div>
+                <a href="{{ path('app_finance') }}" class="btn btn-outline btn--sm ledger-modal-footer-link">
+                    {{ 'finance.view_full_ledger'|trans }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="template-ledger-row">
+    <tr class="finance-ledger-table__row">
+        <td class="ledger-modal-cell js-type"></td>
+        <td class="ledger-modal-cell">
+            <span class="finance-changes__item js-gold"></span>
+        </td>
+        <td class="ledger-modal-cell--date js-date"></td>
+    </tr>
+</template>
+
+<template id="template-ledger-loading">
+    <tr>
+        <td colspan="3" class="ledger-modal-loading">{{ 'js_flash.common.text_loading'|trans }}</td>
+    </tr>
+</template>
+
+<template id="template-ledger-error">
+    <tr>
+        <td colspan="3" class="ledger-modal-error js-error-text"></td>
+    </tr>
+</template>

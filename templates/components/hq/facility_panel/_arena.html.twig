@@ -1,0 +1,95 @@
+{# templates/components/hq/facility_panel/_arena.html.twig #}
+{% set status = arena_status %}
+<div class="hq-facility-panel">
+    <div class="hq-facility-panel__header">
+        <h2 class="hq-facility-panel__title">🏟️ {{ 'hq.facilities_list.arena.name'|trans }}</h2>
+    </div>
+
+    <div class="screen-3col screen-3col--gap-lg">
+        <div class="screen-3col__main arena-section">
+            <div class="game-panel">
+                <h3 class="arena-panel__title">{{ 'arena.status_title'|trans }}</h3>
+                <div class="stat-grid">
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.level'|trans }}</span>
+                        <span class="arena-stat-card__value">{{ status.arena_level }}</span>
+                    </div>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.capacity'|trans }}</span>
+                        <span class="arena-stat-card__value">{{ status.seating_capacity }}</span>
+                    </div>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.ticket_price'|trans }}</span>
+                        <span class="arena-stat-card__value">🪙 {{ status.ticket_price }}</span>
+                    </div>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.fan_base'|trans }}</span>
+                        <span class="arena-stat-card__value">{{ status.fan_base }}</span>
+                    </div>
+                    <div class="arena-stat-card">
+                        <span class="arena-stat-card__label">{{ 'arena.show_up_rate'|trans }}</span>
+                        <span class="arena-stat-card__value">{{ (status.show_up_rate * 100)|number_format(0) }}%</span>
+                    </div>
+                </div>
+                <p class="arena-hint">{{ 'arena.fan_club_hint'|trans({
+                    '%fanBase%': status.fan_base,
+                    '%targetFanBase%': status.target_fan_base,
+                    '%reputation%': status.reputation,
+                    '%morale%': status.morale,
+                    '%chemistry%': status.chemistry
+                }) }}</p>
+            </div>
+
+            {% if status.next_home_match %}
+            <div class="game-panel">
+                <h3 class="arena-panel__title">{{ 'arena.next_home_match'|trans }}</h3>
+                <p class="arena-match-lead">{{ 'arena.next_match_home'|trans({'%opponent%': status.next_home_match.opponent}) }}</p>
+                <p class="arena-match-date">{{ status.next_home_match.scheduled_at|date('d.m.Y H:i') }}</p>
+                {% if status.projected_attendance is not null %}
+                <p class="arena-projected-revenue">{{ 'arena.projected_revenue'|trans }}: 🪙 {{ status.projected_revenue }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="game-panel">
+                <h3 class="arena-panel__title">{{ 'arena.revenue_history'|trans }}</h3>
+                {% if status.recent_revenue|length > 0 %}
+                    <div class="data-table-wrap">
+                        <table class="arena-revenue-table">
+                            <thead>
+                                <tr>
+                                    <th class="arena-revenue-table__th">{{ 'finance.col_date'|trans }}</th>
+                                    <th class="arena-revenue-table__th">{{ 'arena.col_opponent'|trans }}</th>
+                                    <th class="arena-revenue-table__th">{{ 'finance.col_amount'|trans }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in status.recent_revenue %}
+                                <tr>
+                                    <td class="arena-revenue-table__cell-date">{{ row.created_at|date('d.m.Y H:i') }}</td>
+                                    <td>{{ row.opponent_name ?? '—' }}</td>
+                                    <td class="arena-revenue-table__cell-amount">+🪙 {{ row.amount }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{{ path('app_finance') }}" class="link link--block">{{ 'arena.view_full_ledger'|trans }}</a>
+                {% else %}
+                    <p class="arena-match-date">{{ 'arena.no_revenue_yet'|trans }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="game-panel">
+            <h3 class="hero-panel__title hero-panel__title--tight">{{ 'arena.how_it_works'|trans }}</h3>
+            <ul class="arena-rules-list">
+                <li>{{ 'arena.rule_fixed_price'|trans({'%price%': status.ticket_price}) }}</li>
+                <li>{{ 'arena.rule_capacity'|trans }}</li>
+                <li>{{ 'arena.rule_attendance'|trans }}</li>
+                <li>{{ 'arena.rule_home_only'|trans }}</li>
+            </ul>
+            <p class="arena-upgrade-hint">{{ 'arena.upgrade_hint'|trans }}</p>
+        </div>
+    </div>
+</div>

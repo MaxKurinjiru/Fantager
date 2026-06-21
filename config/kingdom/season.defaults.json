@@ -1,0 +1,7 @@
+{
+  "_comment": "First LeagueSeason bootstrap; dates derived from kingdom.season_length. start_offset_days can also be overridden via CLI: app:kingdom:initialize --start-offset-days=-21",
+  "season_number": 1,
+  "start_offset_days": 0,
+  "status_when_started": "active",
+  "status_when_future": "scheduled"
+}

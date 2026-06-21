@@ -1,0 +1,48 @@
+{# templates/components/hq/facility_panel/_barracks.html.twig #}
+<div class="hq-facility-panel">
+    <div class="hq-facility-panel__header">
+        <h2 class="hq-facility-panel__title">⛺ {{ 'hq.facilities_list.barracks.name'|trans }}</h2>
+        <p class="panel-lead">{{ 'hq.facilities_list.barracks.desc'|trans }}</p>
+    </div>
+
+    <div class="game-panel db-adapt" data-controller="hq"
+         data-hq-text-saving-value="{{ 'js_flash.hq.saving'|trans }}"
+         data-hq-error-adaptation-value="{{ 'js_flash.hq.failed_optimize'|trans }}"
+         data-hq-success-adaptation-value="{{ 'js_flash.hq.success_optimize'|trans }}">
+        {% include 'components/ui/alert_box.html.twig' with {
+            target: 'hq',
+            message_target: 'alertMessage',
+            close_action: 'hq#closeAlert'
+        } %}
+
+        <h3 class="game-panel__title">{{ 'hq.race_opt_title'|trans }}</h3>
+
+        <div class="db-adapt__row">
+            <label for="hq-race-opt-select" class="sr-only">{{ 'hq.race_opt_title'|trans }}</label>
+            <select id="hq-race-opt-select" data-hq-target="raceSelect" class="form-input db-adapt__select"
+                    {% if is_optimization_locked %}disabled{% endif %}>
+                <option value="">{{ 'hq.no_opt'|trans }}</option>
+                {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
+                    <option value="{{ race }}" {% if race_optimization == race %}selected{% endif %}>
+                        {{ ('heroes.race_' ~ race)|trans }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            {% if pending_race_optimization %}
+                <div class="db-adapt__status db-adapt__status--pending">
+                    ⏳ {{ 'hq.race_opt_pending'|trans({'%race%': ('heroes.race_' ~ pending_race_optimization)|trans}) }}
+                </div>
+            {% elseif is_optimization_locked %}
+                <div class="db-adapt__status db-adapt__status--locked">
+                    🔒 {{ 'hq.race_opt_locked'|trans }}
+                </div>
+            {% else %}
+                <button type="button" data-hq-target="saveAdaptationBtn" data-action="click->hq#saveArenaAdaptation"
+                        class="btn btn-primary btn--sm">
+                    {{ 'hq.save_opt'|trans }}
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>

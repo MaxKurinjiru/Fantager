@@ -1,0 +1,36 @@
+{% set wrapper_class = wrapper_class|default('hero-attr-grid hero-attr-grid--bordered hero-attr-grid--spaced') %}
+{% set attr_keys = [
+    { key: 'str', field: 'str', icon: '💪' },
+    { key: 'dex', field: 'dex', icon: '🎯' },
+    { key: 'kon', field: 'kon', icon: '🛡️' },
+    { key: 'spd', field: 'spd', icon: '⚡' },
+    { key: 'int', field: 'intel', icon: '🧠' },
+    { key: 'wil', field: 'wil', icon: '🔮' },
+    { key: 'cha', field: 'cha', icon: '✨' },
+    { key: 'lck', field: 'lck', icon: '🍀' },
+] %}
+{% set stat_values = [
+    hero.str,
+    hero.dex,
+    hero.kon,
+    hero.spd,
+    hero.intel,
+    hero.wil,
+    hero.cha,
+    hero.lck,
+] %}
+{% set sorted_stats = stat_values|sort %}
+{% set peak_val = sorted_stats|last %}
+{% set highlight_peaks = peak_val > sorted_stats|first %}
+<div class="{{ wrapper_class }}">
+    {% for attr in attr_keys %}
+        {% set val = attribute(hero, attr.field) %}
+        {% set is_peak = highlight_peaks and val == peak_val %}
+        {% set full_label = ('training.attr.' ~ attr.key)|trans %}
+        <div class="hero-attr-cell{% if is_peak %} hero-attr-cell--peak{% endif %}" title="{{ full_label }}: {{ val }}">
+            <span class="hero-attr-cell__icon" aria-hidden="true">{{ attr.icon }}</span>
+            <span class="hero-attr-cell__label">{{ ('heroes.abbr_' ~ attr.key)|trans }}</span>
+            <span class="hero-attr-cell__value">{{ val }}</span>
+        </div>
+    {% endfor %}
+</div>

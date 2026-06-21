@@ -1,0 +1,25 @@
+{# templates/components/ui/roster_badge.html.twig
+ #
+ # Displays hero roster capacity as a styled widget.
+ #
+ # Parameters:
+ #   team  (required) — the Team entity; uses team_hero_count() and team_roster_limit() Twig functions
+ #   label (optional) — translation key for the label; defaults to 'hq.roster_limit'
+ #}
+{% set badge_label = label|default('hq.roster_limit') %}
+{% set hero_count  = team_hero_count(team) %}
+{% set hero_limit  = team_roster_limit(team) %}
+{% set fill_pct    = hero_limit > 0 ? (hero_count / hero_limit * 100) : 0 %}
+
+{% if fill_pct >= 100 %}
+    {% set badge_modifier = 'roster-badge--full' %}
+{% elseif fill_pct >= 80 %}
+    {% set badge_modifier = 'roster-badge--warning' %}
+{% else %}
+    {% set badge_modifier = '' %}
+{% endif %}
+
+<div class="roster-badge {{ badge_modifier }}">
+    <span class="roster-badge__label">{{ badge_label|trans }}</span>
+    <span class="roster-badge__value">{{ hero_count }} / {{ hero_limit }}</span>
+</div>
