@@ -1,75 +1,142 @@
 {# templates/components/dashboard/team_banner.html.twig #}
-<div class="db-banner" data-controller="dashboard-banner">
-    <div class="db-banner__grid-bg"></div>
+<div class="db-banner-premium" data-controller="dashboard-banner" style="--team-color-primary: {{ team.colors.primary ?? '#10b981' }}; --team-color-secondary: {{ team.colors.secondary ?? '#0f1720' }};">
+    <div class="db-banner-premium__grid-bg"></div>
+    <div class="db-banner-premium__glow-primary"></div>
+    <div class="db-banner-premium__glow-secondary"></div>
+    <div class="db-banner-premium__stripes"></div>
     
-    {# Edit button — opens team profile modal via window CustomEvent (§4.1: type attribute required) #}
+    {# Edit button — opens team profile modal via window CustomEvent #}
     <button type="button"
-            class="db-banner__edit-btn"
+            class="db-banner-premium__edit-btn"
             aria-label="{{ 'dashboard.edit_profile'|trans }}"
             data-action="click->dashboard-banner#openProfileModal">
-        <span aria-hidden="true" class="db-banner__edit-icon">⚙️</span>
+        <span aria-hidden="true" class="db-banner-premium__edit-icon">⚙️</span>
         <span class="sr-only">{{ 'dashboard.edit_profile'|trans }}</span>
     </button>
 
-    {# Znak / Logo týmu #}
-    <div class="db-banner__emblem">
-        {{ team.emblem ?: '🛡️' }}
+    {# Brand Identity Section (Left Pane) #}
+    <div class="db-banner-premium__identity">
+        <div class="db-banner-premium__shield-wrapper">
+            <svg class="db-banner-premium__portal-svg" viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="circle-outer" cx="50" cy="50" r="46" stroke="var(--team-color-primary)" stroke-width="1.5" fill="none" stroke-dasharray="8 6"/>
+                <circle class="circle-inner" cx="50" cy="50" r="40" stroke="var(--team-color-secondary)" stroke-width="1" fill="none" stroke-dasharray="4 4"/>
+            </svg>
+            <div class="db-banner-premium__shield">
+                <div class="db-banner-premium__shield-glow"></div>
+                <svg class="db-banner-premium__shield-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon points="50,2 98,16 98,69 50,98 2,69 2,16" 
+                             fill="color-mix(in srgb, var(--team-color-primary) 8%, var(--color-surface-raised))" 
+                             stroke="color-mix(in srgb, var(--team-color-primary) 40%, var(--color-border))" 
+                             stroke-width="3.5"
+                             stroke-linejoin="round"/>
+                    <polygon points="50,8 92,20 92,65 50,90 8,65 8,20" 
+                             fill="none" 
+                             stroke="color-mix(in srgb, var(--team-color-primary) 20%, transparent)" 
+                             stroke-width="1.5"
+                             stroke-linejoin="round"/>
+                </svg>
+                <div class="db-banner-premium__emblem">
+                    {{ team.emblem ?: '🛡️' }}
+                </div>
+            </div>
+        </div>
+
+        <div class="db-banner-premium__info">
+            <h1 class="db-banner-premium__title">{{ team.name }}</h1>
+            <div class="db-banner-premium__meta">
+                <div class="db-banner-premium__badge db-banner-premium__badge--manager">
+                    <span class="badge-icon" aria-hidden="true">👑</span>
+                    <span class="db-banner-premium__meta-label">{{ 'dashboard.manager'|trans }}:</span>
+                    <span class="db-banner-premium__meta-value">{{ user.displayName }}</span>
+                </div>
+                <div class="db-banner-premium__badge db-banner-premium__badge--kingdom">
+                    <span class="badge-icon" aria-hidden="true">🏰</span>
+                    <span class="db-banner-premium__meta-label">{{ 'dashboard.kingdom'|trans }}:</span>
+                    <span class="db-banner-premium__meta-value">{{ team.kingdom.name }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    {# Základní informace vpravo #}
-    <div class="db-banner__content">
-        
-        {# 1. Řádek: Název týmu #}
-        <div class="db-banner__title-wrap">
-            <h1 class="db-banner__title">{{ team.name }}</h1>
-        </div>
-
-        {# 2. Řádek: Království a manažer #}
-        <div class="db-banner__meta">
-            <p>{{ 'dashboard.manager'|trans }}: <span class="db-banner__meta-highlight">{{ user.displayName }}</span></p>
-            <span class="db-banner__meta-sep">•</span>
-            <p>{{ 'dashboard.kingdom'|trans }}: <span class="db-banner__meta-value">{{ team.kingdom.name }}</span></p>
-        </div>
-
-        {# 3. Řádek: Morálka, chemie a reputace vedle sebe #}
-        <div class="db-banner__badges">
+    {# Stats Showcase Section (Right Pane) #}
+    <div class="db-banner-premium__stats">
+        <div class="db-banner-premium__stats-grid">
             {# Morálka #}
-            <div class="db-banner__badge db-banner__badge--morale">
-                <span>😊</span>
-                <span class="db-banner__badge-label">
-                    {{ 'dashboard.morale'|trans }}: <span class="db-banner__badge-value">{{ team.morale }}</span><span class="db-banner__badge-max">/100</span>
-                </span>
-            </div>
-
-            {# Chemie #}
-            <div class="db-banner__badge db-banner__badge--chemistry">
-                <span>⚡</span>
-                <span class="db-banner__badge-label">
-                    {{ 'dashboard.chemistry'|trans }}: <span class="db-banner__badge-value">{{ team.chemistry }}</span><span class="db-banner__badge-max">/100</span>
-                </span>
-            </div>
-
-            {# Reputace #}
-            <div class="db-banner__badge db-banner__badge--reputation">
-                <span>⭐</span>
-                <span class="db-banner__badge-label">
-                    {{ 'dashboard.reputation'|trans }}: <span class="db-banner__badge-value">{{ team.reputation }}</span>
-                </span>
+            <div class="db-banner-premium__stat-card db-banner-premium__stat-card--morale">
+                <div class="db-banner-premium__stat-badge">
+                    <span class="db-banner-premium__stat-icon" aria-hidden="true">😊</span>
+                </div>
+                <div class="db-banner-premium__stat-body">
+                    <div class="db-banner-premium__stat-header">
+                        <span class="db-banner-premium__stat-title">{{ 'dashboard.morale'|trans }}</span>
+                        <span class="db-banner-premium__stat-val">
+                            {{ team.morale }}<span class="db-banner-premium__stat-max">/100</span>
+                        </span>
+                    </div>
+                    <div class="db-banner-premium__progress">
+                        <div class="db-banner-premium__progress-fill" style="width: {{ team.morale }}%;"></div>
+                    </div>
+                </div>
             </div>
 
             {# Fanklub #}
-            <div class="db-banner__badge db-banner__badge--fan-base">
-                <span>📣</span>
-                <span class="db-banner__badge-label">
-                    {{ 'dashboard.fan_base'|trans }}: <span class="db-banner__badge-value">{{ team.fanBase }}</span>
-                    {% if team.lastFanBaseDelta != 0 %}
-                        <span class="db-banner__badge-delta db-banner__badge-delta--{% if team.lastFanBaseDelta > 0 %}up{% else %}down{% endif %}">
-                            {{ team.lastFanBaseDelta > 0 ? '+' : '' }}{{ team.lastFanBaseDelta }}
+            <div class="db-banner-premium__stat-card db-banner-premium__stat-card--fan-base">
+                <div class="db-banner-premium__stat-badge">
+                    <span class="db-banner-premium__stat-icon" aria-hidden="true">📣</span>
+                </div>
+                <div class="db-banner-premium__stat-body">
+                    <div class="db-banner-premium__stat-header">
+                        <span class="db-banner-premium__stat-title">{{ 'dashboard.fan_base'|trans }}</span>
+                        <span class="db-banner-premium__stat-val">
+                            {{ team.fanBase }}
+                            {% if team.lastFanBaseDelta != 0 %}
+                                <span class="db-banner-premium__stat-delta db-banner-premium__stat-delta--{% if team.lastFanBaseDelta > 0 %}up{% else %}down{% endif %}">
+                                    {{ team.lastFanBaseDelta > 0 ? '+' : '' }}{{ team.lastFanBaseDelta }}
+                                </span>
+                            {% endif %}
                         </span>
-                    {% endif %}
-                </span>
+                    </div>
+                    <div class="db-banner-premium__progress">
+                        <div class="db-banner-premium__progress-fill" style="width: {{ min(100, team.fanBase / 15) }}%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            {# Chemie #}
+            <div class="db-banner-premium__stat-card db-banner-premium__stat-card--chemistry">
+                <div class="db-banner-premium__stat-badge">
+                    <span class="db-banner-premium__stat-icon" aria-hidden="true">⚡</span>
+                </div>
+                <div class="db-banner-premium__stat-body">
+                    <div class="db-banner-premium__stat-header">
+                        <span class="db-banner-premium__stat-title">{{ 'dashboard.chemistry'|trans }}</span>
+                        <span class="db-banner-premium__stat-val">
+                            {{ team.chemistry }}<span class="db-banner-premium__stat-max">/100</span>
+                        </span>
+                    </div>
+                    <div class="db-banner-premium__progress">
+                        <div class="db-banner-premium__progress-fill" style="width: {{ team.chemistry }}%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            {# Reputace #}
+            <div class="db-banner-premium__stat-card db-banner-premium__stat-card--reputation">
+                <div class="db-banner-premium__stat-badge">
+                    <span class="db-banner-premium__stat-icon" aria-hidden="true">⭐</span>
+                </div>
+                <div class="db-banner-premium__stat-body">
+                    <div class="db-banner-premium__stat-header">
+                        <span class="db-banner-premium__stat-title">{{ 'dashboard.reputation'|trans }}</span>
+                        <span class="db-banner-premium__stat-val">
+                            {{ team.reputation }}
+                        </span>
+                    </div>
+                    <div class="db-banner-premium__progress">
+                        <div class="db-banner-premium__progress-fill" style="width: {{ min(100, team.reputation / 10) }}%;"></div>
+                    </div>
+                </div>
             </div>
         </div>
-
     </div>
 </div>

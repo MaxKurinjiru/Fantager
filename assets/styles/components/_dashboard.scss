@@ -5,97 +5,371 @@
 // =============================================================================
 
 @layer components {
-  // ── Dashboard Banner ───────────────────────────────────────────────────────
-  .db-banner {
-    @apply relative rounded-xl p-6 md:p-8 shadow-xl overflow-hidden flex flex-col md:flex-row items-center md:items-start gap-6;
-    background-image: linear-gradient(to bottom right, color-mix(in srgb, var(--color-brand-800) 20%, transparent), color-mix(in srgb, var(--color-surface-page) 40%, transparent), color-mix(in srgb, var(--color-surface-base) 80%, transparent));
-    border: 1px solid var(--overlay-brand-20);
+  // ── Dashboard Banner ───────────────────────────────────────────
+  .db-banner-premium {
+    @apply relative rounded-2xl p-6 lg:p-8 shadow-2xl overflow-hidden flex flex-col gap-6 lg:gap-8 transition-all duration-300;
+    background: linear-gradient(135deg, 
+      color-mix(in srgb, var(--team-color-primary) 12%, var(--color-surface-base)) 0%, 
+      color-mix(in srgb, var(--team-color-secondary) 18%, var(--color-surface-base)) 50%,
+      var(--color-surface-base) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--team-color-primary) 25%, var(--color-border));
+    border-top: 4px solid var(--team-color-primary);
+    backdrop-filter: blur(12px);
+
+    // RPG subtle frame overlay
+    &::after {
+      content: '';
+      @apply absolute inset-1 pointer-events-none rounded-[14px];
+      border: 1px solid color-mix(in srgb, var(--team-color-primary) 8%, transparent);
+    }
   }
 
-  .db-banner__emblem {
-    @apply w-24 h-24 rounded-2xl flex items-center justify-center text-5xl select-none shrink-0 shadow-inner;
-    background-color: var(--overlay-brand-10);
-    border: 1px solid var(--overlay-brand-30);
-    box-shadow: 0 0 20px var(--overlay-brand-10);
+  @keyframes dbPortalRotateCW {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
-  .db-banner__content {
-    @apply flex-1 w-full space-y-4;
+  @keyframes dbPortalRotateCCW {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
   }
 
-  .db-banner__title {
-    @apply text-2xl sm:text-3xl font-bold tracking-tight text-white;
+  @keyframes dbShine {
+    0% { transform: translateX(-100%) skewX(-15deg); }
+    50% { transform: translateX(100%) skewX(-15deg); }
+    100% { transform: translateX(100%) skewX(-15deg); }
   }
 
-  .db-banner__meta {
-    @apply text-xs font-medium flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1;
+  @keyframes dbPulseGlow {
+    0%, 100% { opacity: 0.25; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(1.05); }
+  }
+
+  .db-banner-premium__glow-primary {
+    @apply absolute -right-24 -top-24 w-96 h-96 rounded-full blur-3xl pointer-events-none opacity-30 -z-10;
+    background: radial-gradient(circle, var(--team-color-primary) 0%, transparent 70%);
+  }
+
+  .db-banner-premium__glow-secondary {
+    @apply absolute -left-24 -bottom-24 w-96 h-96 rounded-full blur-3xl pointer-events-none opacity-20 -z-10;
+    background: radial-gradient(circle, var(--team-color-secondary) 0%, transparent 70%);
+  }
+
+  .db-banner-premium__grid-bg {
+    @apply absolute inset-0 -z-20 opacity-10 pointer-events-none;
+    background-image: radial-gradient(color-mix(in srgb, var(--team-color-primary) 40%, transparent) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  .db-banner-premium__stripes {
+    @apply absolute inset-0 -z-15 pointer-events-none opacity-5;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 20px,
+      var(--team-color-primary) 20px,
+      var(--team-color-primary) 40px,
+      transparent 40px,
+      transparent 60px,
+      var(--team-color-secondary) 60px,
+      var(--team-color-secondary) 80px
+    );
+  }
+
+  .db-banner-premium__edit-btn {
+    @apply absolute top-4 right-4 flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300;
+    background-color: color-mix(in srgb, var(--color-surface-base) 50%, transparent);
+    border: 1px solid color-mix(in srgb, var(--team-color-primary) 20%, var(--color-border));
     color: var(--color-text-secondary);
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--team-color-primary) 15%, var(--color-surface-page));
+      border-color: var(--team-color-primary);
+      color: var(--team-color-primary);
+      transform: translateY(-1px) rotate(15deg);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--team-color-primary) 20%, transparent);
+    }
   }
 
-  .db-banner__badges {
-    @apply flex flex-wrap items-center justify-center md:justify-start gap-4 pt-1;
+  .db-banner-premium__edit-icon {
+    @apply text-sm;
   }
 
-  .db-banner__badge {
-    @apply flex items-center gap-2 border px-3 py-1.5 rounded-xl text-xs select-none shadow-sm;
+  // Shield & Runic Portal Wrapper
+  .db-banner-premium__shield-wrapper {
+    @apply relative w-28 h-28 lg:w-32 lg:h-32 flex items-center justify-center shrink-0 select-none;
+  }
 
-    &-label {
-      font-weight: 500;
+  .db-banner-premium__portal-svg {
+    @apply absolute inset-0 w-full h-full pointer-events-none -z-5;
+    
+    .circle-outer {
+      transform-origin: center;
+      animation: dbPortalRotateCW 25s infinite linear;
     }
     
+    .circle-inner {
+      transform-origin: center;
+      animation: dbPortalRotateCCW 15s infinite linear;
+    }
+  }
+
+  .db-banner-premium__shield {
+    @apply relative w-20 h-20 lg:w-24 lg:h-24 flex items-center justify-center shrink-0 select-none;
+    filter: drop-shadow(0 8px 16px color-mix(in srgb, var(--team-color-primary) 25%, transparent));
+    transition: transform var(--transition-base);
+
+    &:hover {
+      transform: scale(1.08) rotate(2deg);
+      
+      .db-banner-premium__shield-glow {
+        opacity: 0.6;
+        transform: scale(1.15);
+      }
+    }
+  }
+
+  .db-banner-premium__shield-glow {
+    @apply absolute inset-0 rounded-full blur-xl opacity-30 transition-all duration-300 -z-10;
+    background: radial-gradient(circle, var(--team-color-primary) 0%, transparent 70%);
+    animation: dbPulseGlow 4s infinite ease-in-out;
+  }
+
+  .db-banner-premium__shield-svg {
+    @apply absolute inset-0 w-full h-full pointer-events-none;
+  }
+
+  .db-banner-premium__emblem {
+    @apply flex items-center justify-center text-4xl lg:text-5xl relative z-10;
+    transform: translateY(-2px);
+  }
+
+  .db-banner-premium__identity {
+    @apply flex flex-col sm:flex-row items-center sm:items-start lg:items-center gap-5 sm:gap-6 z-10;
+  }
+
+  .db-banner-premium__info {
+    @apply flex flex-col gap-3 text-center sm:text-left;
+  }
+
+  // Header & Title
+  .db-banner-premium__title {
+    @apply text-3xl sm:text-4xl font-extrabold tracking-wider text-white uppercase m-0;
+    font-family: 'Cinzel', 'Outfit', var(--font-sans, sans-serif);
+    background: linear-gradient(to right, #ffffff 40%, color-mix(in srgb, var(--team-color-primary) 80%, #ffffff) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--team-color-primary) 15%, transparent));
+  }
+
+  .db-banner-premium__meta {
+    @apply flex flex-wrap items-center justify-center sm:justify-start gap-2.5;
+  }
+
+  .db-banner-premium__badge {
+    @apply text-xs font-semibold px-2.5 py-1 rounded-lg border transition-all duration-200 select-none flex items-center gap-1.5;
+    background-color: color-mix(in srgb, var(--color-surface-base) 65%, transparent);
+    border-color: color-mix(in srgb, var(--color-border) 60%, transparent);
+    color: var(--color-text-secondary);
+
+    &:hover {
+      transform: translateY(-1px);
+      background-color: color-mix(in srgb, var(--color-surface-raised) 85%, transparent);
+    }
+
+    &--manager {
+      border-color: color-mix(in srgb, var(--team-color-primary) 35%, var(--color-border));
+      color: var(--team-color-primary);
+      text-shadow: 0 0 8px color-mix(in srgb, var(--team-color-primary) 20%, transparent);
+
+      .badge-icon {
+        color: var(--team-color-primary);
+      }
+    }
+
+    &--kingdom {
+      border-color: color-mix(in srgb, var(--color-brand-400) 25%, var(--color-border));
+      color: var(--color-text-primary);
+    }
+  }
+
+  .db-banner-premium__stats {
+    @apply flex flex-col justify-center z-10 w-full;
+  }
+
+  .db-banner-premium__stats-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full;
+  }
+
+  // Stat Card (Glassmorphic)
+  .db-banner-premium__stat-card {
+    @apply flex items-center gap-4 border p-4 rounded-xl text-xs select-none shadow-lg transition-all duration-300 relative overflow-hidden;
+    background-color: color-mix(in srgb, var(--color-surface-raised) 60%, transparent);
+    border-color: color-mix(in srgb, var(--color-border) 60%, transparent);
+    backdrop-filter: blur(8px);
+    border-left-width: 4px;
+    border-left-style: solid;
+    border-left-color: transparent;
+
+    &::before {
+      content: '';
+      @apply absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300 -z-10;
+      background: radial-gradient(circle at 10% 20%, var(--card-glow-color) 0%, transparent 65%);
+    }
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-surface-overlay) 80%, transparent);
+      border-color: color-mix(in srgb, var(--card-theme-color) 35%, var(--color-border));
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--color-surface-base) 80%, transparent),
+                  0 0 12px color-mix(in srgb, var(--card-theme-color) 15%, transparent);
+
+      &::before {
+        opacity: 0.15;
+      }
+
+      .db-banner-premium__stat-badge {
+        transform: scale(1.08);
+        border-color: color-mix(in srgb, var(--card-theme-color) 40%, var(--color-border));
+        box-shadow: 0 0 10px color-mix(in srgb, var(--card-theme-color) 30%, transparent);
+      }
+
+      .db-banner-premium__progress-fill::after {
+        animation: dbShine 2.5s infinite linear;
+      }
+    }
+
     &--morale {
-      background-color: var(--overlay-brand-10);
-      color: var(--color-brand-400);
-      border-color: var(--overlay-brand-20);
-    }
-    
-    &--chemistry {
-      background-color: var(--overlay-indigo-10);
-      color: var(--color-indigo-400);
-      border-color: var(--overlay-indigo-10);
-    }
-    
-    &--reputation {
-      background-color: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
-      color: var(--color-amber-400);
-      border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+      --card-theme-color: var(--team-color-primary);
+      --card-glow-color: var(--team-color-primary);
+      border-left-color: var(--team-color-primary);
+      
+      .db-banner-premium__stat-badge {
+        background-color: color-mix(in srgb, var(--team-color-primary) 12%, transparent);
+        border-color: color-mix(in srgb, var(--team-color-primary) 25%, transparent);
+      }
+
+      .db-banner-premium__progress-fill {
+        background: linear-gradient(to right, color-mix(in srgb, var(--team-color-primary) 50%, var(--color-surface-page)), var(--team-color-primary));
+        box-shadow: 0 0 8px color-mix(in srgb, var(--team-color-primary) 50%, transparent);
+      }
     }
 
     &--fan-base {
-      background-color: color-mix(in srgb, var(--color-purple-400) 10%, transparent);
-      color: var(--color-purple-400);
-      border-color: color-mix(in srgb, var(--color-purple-400) 20%, transparent);
+      --card-theme-color: var(--color-purple-400);
+      --card-glow-color: var(--color-purple-400);
+      border-left-color: var(--color-purple-400);
+
+      .db-banner-premium__stat-badge {
+        background-color: color-mix(in srgb, var(--color-purple-400) 12%, transparent);
+        border-color: color-mix(in srgb, var(--color-purple-400) 25%, transparent);
+      }
+
+      .db-banner-premium__progress-fill {
+        background: linear-gradient(to right, color-mix(in srgb, var(--color-purple-400) 50%, var(--color-surface-page)), var(--color-purple-400));
+        box-shadow: 0 0 8px color-mix(in srgb, var(--color-purple-400) 50%, transparent);
+      }
+    }
+
+    &--chemistry {
+      --card-theme-color: var(--color-indigo-400);
+      --card-glow-color: var(--color-indigo-400);
+      border-left-color: var(--color-indigo-400);
+
+      .db-banner-premium__stat-badge {
+        background-color: color-mix(in srgb, var(--color-indigo-400) 12%, transparent);
+        border-color: color-mix(in srgb, var(--color-indigo-400) 25%, transparent);
+      }
+
+      .db-banner-premium__progress-fill {
+        background: linear-gradient(to right, color-mix(in srgb, var(--color-indigo-400) 50%, var(--color-surface-page)), var(--color-indigo-400));
+        box-shadow: 0 0 8px color-mix(in srgb, var(--color-indigo-400) 50%, transparent);
+      }
+    }
+
+    &--reputation {
+      --card-theme-color: var(--color-amber-400);
+      --card-glow-color: var(--color-amber-400);
+      border-left-color: var(--color-amber-400);
+
+      .db-banner-premium__stat-badge {
+        background-color: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+        border-color: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+      }
+
+      .db-banner-premium__progress-fill {
+        background: linear-gradient(to right, color-mix(in srgb, var(--color-amber-400) 50%, var(--color-surface-page)), var(--color-amber-400));
+        box-shadow: 0 0 8px color-mix(in srgb, var(--color-amber-400) 50%, transparent);
+      }
     }
   }
 
-  .db-banner__badge-delta {
-    @apply font-bold ml-1 tabular-nums;
+  .db-banner-premium__stat-badge {
+    @apply flex items-center justify-center w-11 h-11 rounded-lg border shrink-0 shadow-inner transition-all duration-300;
+    background-color: color-mix(in srgb, var(--color-surface-base) 50%, transparent);
+    border-color: var(--color-border);
+  }
+
+  .db-banner-premium__stat-icon {
+    @apply text-2xl shrink-0 filter drop-shadow-md select-none;
+  }
+
+  .db-banner-premium__stat-body {
+    @apply flex-1 flex flex-col gap-1.5 min-w-0;
+  }
+
+  .db-banner-premium__stat-header {
+    @apply flex justify-between items-baseline gap-2;
+  }
+
+  .db-banner-premium__stat-title {
+    @apply font-bold text-[11px] uppercase tracking-wider truncate;
+    color: var(--color-text-secondary);
+  }
+
+  .db-banner-premium__stat-val {
+    @apply font-black text-white text-sm tabular-nums shrink-0 inline-flex items-center;
+  }
+
+  .db-banner-premium__stat-max {
+    @apply text-[10px] font-normal;
+    color: var(--color-text-muted);
+  }
+
+  .db-banner-premium__stat-delta {
+    @apply font-bold text-[10px] ml-1.5 tabular-nums px-1.5 py-0.5 rounded-md;
 
     &--up {
+      background-color: var(--overlay-success-bg-30);
       color: var(--color-success-text);
     }
 
     &--down {
+      background-color: var(--overlay-error-bg-30);
       color: var(--color-error-text);
     }
   }
 
-  .db-banner__edit-btn {
-    @apply absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-lg;
-    background-color: color-mix(in srgb, var(--color-surface-base) 60%, transparent);
-    border: 1px solid var(--color-border);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
-
-    &:hover {
-      background-color: color-mix(in srgb, var(--color-surface-page) 80%, transparent);
-      border-color: var(--overlay-brand-30);
-      color: var(--color-white);
-    }
+  // Progress bar elements
+  .db-banner-premium__progress {
+    @apply w-full h-2 rounded-full overflow-hidden;
+    background-color: color-mix(in srgb, var(--color-surface-base) 85%, transparent);
   }
 
-  // ── Arena Adaptation (HQ Barracks panel) ───────────────────────────────────
+  .db-banner-premium__progress-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out relative overflow-hidden;
+
+    &::after {
+      content: '';
+      @apply absolute inset-0 w-1/3 h-full pointer-events-none opacity-0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    }
+  }
   .db-adapt {
     @apply border-t pt-4 w-full;
     border-color: var(--overlay-border-30);
@@ -409,14 +683,7 @@
     &:hover { background-color: var(--color-surface-overlay); }
   }
 
-  .db-banner__grid-bg { @apply absolute inset-0 -z-10; }
-  .db-banner__title-wrap { @apply text-center md:text-left; }
-  .db-banner__meta-highlight { color: var(--color-brand-400); font-weight: 600; }
-  .db-banner__meta-value { color: var(--color-text-secondary); font-weight: 600; }
-  .db-banner__meta-sep { @apply hidden md:inline select-none; color: var(--color-text-muted); }
-  .db-banner__badge-max { @apply text-[10px]; color: var(--color-text-muted); }
-  .db-banner__badge-value { @apply font-bold; color: var(--color-text-primary); }
-  .db-banner__edit-icon { @apply text-sm; }
+
 
   .db-expenses-card {
     @apply rounded-xl p-6 border shadow-md backdrop-blur-md;
