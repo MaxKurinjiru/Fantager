@@ -1,10 +1,15 @@
+FROM composer:2 AS composer-builder
+WORKDIR /app
+COPY composer.json composer.lock symfony.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --no-interaction --ignore-platform-reqs
+
 FROM node:24-alpine AS node
 
 # Build stage for frontend assets
 FROM node:24-alpine AS asset-builder
 WORKDIR /app
 COPY package*.json webpack.config.js postcss.config.cjs tailwind.config.cjs ./
-COPY vendor/symfony/ux-turbo/assets/ ./vendor/symfony/ux-turbo/assets/
+COPY --from=composer-builder /app/vendor/symfony/ux-turbo/assets/ ./vendor/symfony/ux-turbo/assets/
 COPY assets/ ./assets/
 COPY templates/ ./templates/
 COPY translations/ ./translations/
