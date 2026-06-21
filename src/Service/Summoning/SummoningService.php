@@ -16,6 +16,7 @@ use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroGenerator;
+use App\Service\Team\TeamChemistryService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -33,6 +34,7 @@ class SummoningService
         private readonly EntityManagerInterface $em,
         private readonly RaceConfig $raceConfig,
         private readonly TeamChronicleService $teamChronicleService,
+        private readonly TeamChemistryService $teamChemistryService,
     ) {
     }
 
@@ -243,6 +245,8 @@ class SummoningService
         $this->em->persist($history);
         $this->teamChronicleService->recordSummonCompleted($team, $hero, $race, $cost);
         $this->em->flush();
+
+        $this->teamChemistryService->recalculate($team);
 
         return $hero;
     }

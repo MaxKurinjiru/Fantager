@@ -17,6 +17,7 @@ use App\Exception\UserFacingException;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Notification\NotificationHelper;
 use App\Service\Team\TeamRosterService;
+use App\Service\Team\TeamChemistryService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -38,6 +39,8 @@ class MarketplaceServiceTest extends TestCase
     private $teamRosterServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\TeamChronicle\TeamChronicleService */
     private $teamChronicleServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChemistryService */
+    private $teamChemistryServiceMock;
     private MarketplaceService $marketplaceService;
 
     protected function setUp(): void
@@ -49,6 +52,7 @@ class MarketplaceServiceTest extends TestCase
         $this->notificationHelperMock = $this->createMock(NotificationHelper::class);
         $this->teamRosterServiceMock = $this->createMock(TeamRosterService::class);
         $this->teamChronicleServiceMock = $this->createMock(\App\Service\TeamChronicle\TeamChronicleService::class);
+        $this->teamChemistryServiceMock = $this->createMock(TeamChemistryService::class);
 
         $this->marketplaceService = new MarketplaceService(
             $this->entityManagerMock,
@@ -58,6 +62,7 @@ class MarketplaceServiceTest extends TestCase
             $this->notificationHelperMock,
             $this->teamRosterServiceMock,
             $this->teamChronicleServiceMock,
+            $this->teamChemistryServiceMock,
         );
     }
 

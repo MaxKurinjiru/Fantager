@@ -27,6 +27,7 @@ use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
 use App\Service\Notification\NotificationHelper;
+use App\Service\Team\TeamChemistryService;
 use App\Service\Team\TeamRosterService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -40,6 +41,7 @@ class MarketplaceService
         private readonly NotificationHelper $notificationHelper,
         private readonly TeamRosterService $teamRosterService,
         private readonly \App\Service\TeamChronicle\TeamChronicleService $teamChronicleService,
+        private readonly TeamChemistryService $teamChemistryService,
     ) {
     }
 
@@ -285,6 +287,11 @@ class MarketplaceService
         $this->financialCrisisService->recordRecoveryAction($seller);
         $this->em->flush();
 
+        if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
+            $this->teamChemistryService->recalculate($buyer);
+            $this->teamChemistryService->recalculate($seller);
+        }
+
         // Send Notification to Seller
         if (null !== $seller->getUser()) {
             $this->notificationHelper->sendTranslatedNotification(
@@ -383,6 +390,7 @@ class MarketplaceService
     {
         /** @var list<MarketplaceListing> $listings */
         $listings = $this->findExpiredActiveListings($kingdom, $now);
+        $teamsToRecalculate = [];
 
         foreach ($listings as $listing) {
             $bids = $listing->getBids();
@@ -482,6 +490,8 @@ class MarketplaceService
                     $hero->setMorale(50);
                     $this->teamChronicleService->recordHeroPurchased($winner, $hero, $seller, $winningBidAmount);
                     $this->teamChronicleService->recordHeroSold($seller, $hero, $winner, $winningBidAmount);
+                    $teamsToRecalculate[] = $winner;
+                    $teamsToRecalculate[] = $seller;
                 } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
                     $item = $listing->getItem();
                     $item->setOwnerTeam($winner);
@@ -523,6 +533,17 @@ class MarketplaceService
         }
 
         $this->em->flush();
+
+        $uniqueTeams = [];
+        foreach ($teamsToRecalculate as $team) {
+            if (!in_array($team, $uniqueTeams, true)) {
+                $uniqueTeams[] = $team;
+            }
+        }
+
+        foreach ($uniqueTeams as $team) {
+            $this->teamChemistryService->recalculate($team);
+        }
     }
 
     /**
