@@ -25,6 +25,7 @@ use App\Service\Config\KingdomInitConfig;
 use App\Service\Config\RaceConfig;
 use App\Service\Hero\HeroGenerator;
 use App\Service\League\LeagueFixtureScheduler;
+use App\Service\Team\TeamChemistryService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -38,6 +39,7 @@ class KingdomInitializationService
         private readonly RaceConfig $raceConfig,
         private readonly LeagueFixtureScheduler $fixtureScheduler,
         private readonly TeamChronicleService $teamChronicleService,
+        private readonly TeamChemistryService $teamChemistryService,
     ) {
     }
 
@@ -83,6 +85,7 @@ class KingdomInitializationService
 
         $teamIndex = 0;
         $heroTotal = 0;
+        $createdTeams = [];
 
         /** @var list<LeagueGroup> $groups */
         $groups = [];
@@ -108,6 +111,7 @@ class KingdomInitializationService
                 for ($slot = 0; $slot < $teamsPerGroup; ++$slot) {
                     $teamRace = $this->pickTeamRace($npcConfig);
                     $team = $this->createNpcTeam($kingdom, $teamConfig, $npcConfig, $teamIndex);
+                    $createdTeams[] = $team;
                     $this->teamChronicleService->recordTeamEstablished($team, $kingdom, $season->getSeasonNumber());
                     ++$teamIndex;
 
@@ -132,6 +136,10 @@ class KingdomInitializationService
         }
 
         $this->em->flush();
+
+        foreach ($createdTeams as $team) {
+            $this->teamChemistryService->recalculate($team);
+        }
 
         return [
             'kingdom' => $kingdom,

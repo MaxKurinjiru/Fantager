@@ -14,6 +14,7 @@ use App\Exception\UserFacingException;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
+use App\Service\Team\TeamChemistryService;
 use App\Service\Team\TeamRosterService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,6 +31,7 @@ class HeroDismissalService
         private readonly EconomyService $economyService,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly TeamChronicleService $teamChronicleService,
+        private readonly TeamChemistryService $teamChemistryService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -94,6 +96,8 @@ class HeroDismissalService
         $this->financialCrisisService->recordRecoveryAction($team);
         $this->graveyardService->removeHero($hero);
         $this->em->flush();
+
+        $this->teamChemistryService->recalculate($team);
 
         return $compensation;
     }

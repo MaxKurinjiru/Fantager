@@ -15,6 +15,7 @@ use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroGenerator;
 use App\Service\Summoning\SummoningService;
 use App\Service\TeamChronicle\TeamChronicleService;
+use App\Service\Team\TeamChemistryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -39,6 +40,8 @@ class SummoningServiceTest extends TestCase
     private $raceConfigMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChronicleService */
     private $teamChronicleServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChemistryService */
+    private $teamChemistryServiceMock;
     private SummoningService $service;
 
     protected function setUp(): void
@@ -51,6 +54,7 @@ class SummoningServiceTest extends TestCase
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
         $this->raceConfigMock = $this->createMock(RaceConfig::class);
         $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
+        $this->teamChemistryServiceMock = $this->createMock(TeamChemistryService::class);
 
         $this->service = new SummoningService(
             $this->heroGeneratorMock,
@@ -60,7 +64,8 @@ class SummoningServiceTest extends TestCase
             $this->hqServiceMock,
             $this->entityManagerMock,
             $this->raceConfigMock,
-            $this->teamChronicleServiceMock
+            $this->teamChronicleServiceMock,
+            $this->teamChemistryServiceMock
         );
     }
 
