@@ -8,6 +8,9 @@ use App\Entity\League\LeagueSeason;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<LeagueSeason>
+ */
 class LeagueSeasonRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

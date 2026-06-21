@@ -21,10 +21,15 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 #[AllowMockObjectsWithoutExpectations]
 class HeadquartersServiceTest extends TestCase
 {
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Headquarters\HeadquartersRepository */
     private $hqRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\EconomyService */
     private $economyServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\FinancialCrisisService */
     private $financialCrisisServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\RoyalTreasuryService */
     private $royalTreasuryServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\Doctrine\ORM\EntityManagerInterface */
     private $entityManagerMock;
     private HeadquartersService $service;
 

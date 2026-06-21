@@ -30,9 +30,11 @@ class FormationSlot
     #[ORM\Column(length: 10, enumType: FormationPosition::class)]
     private FormationPosition $position;
 
+    /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $strategy = [];
 
+    /** @var array<mixed> */
     #[ORM\Column(type: 'json')]
     private array $spellPriorities = [];
 
@@ -77,11 +79,13 @@ class FormationSlot
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getStrategy(): array
     {
         return $this->strategy;
     }
 
+    /** @param array<string, mixed> $strategy */
     public function setStrategy(array $strategy): static
     {
         $this->strategy = $strategy;
@@ -89,11 +93,13 @@ class FormationSlot
         return $this;
     }
 
+    /** @return array<mixed> */
     public function getSpellPriorities(): array
     {
         return $this->spellPriorities;
     }
 
+    /** @param array<mixed> $spellPriorities */
     public function setSpellPriorities(array $spellPriorities): static
     {
         $this->spellPriorities = $spellPriorities;

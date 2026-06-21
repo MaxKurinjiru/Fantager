@@ -78,7 +78,7 @@ class FormationController extends AbstractController
         $id = isset($body['id']) ? (int) $body['id'] : null;
         $isDefault = (bool) ($body['is_default'] ?? false);
 
-        /** @var list<array{position: string, hero_id: int|null, strategy: array, spell_priorities: array}> $slots */
+        /** @var list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slots */
         $slots = is_array($body['slots'] ?? null) ? $body['slots'] : [];
 
         try {

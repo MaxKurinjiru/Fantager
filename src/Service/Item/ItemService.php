@@ -141,7 +141,7 @@ class ItemService
         }
 
         $rarity = $item->getRarity();
-        $amount = self::DISMANTLE_ESSENCE[$rarity->value] ?? 1;
+        $amount = self::DISMANTLE_ESSENCE[$rarity->value];
         $this->addEssenceByRarity($team, $rarity, $amount);
 
         $this->em->remove($item);
@@ -170,7 +170,7 @@ class ItemService
             return 0;
         }
 
-        $ratePerPoint = self::REPAIR_COST_PER_POINT[$item->getRarity()->value] ?? 2;
+        $ratePerPoint = self::REPAIR_COST_PER_POINT[$item->getRarity()->value];
         $cost = $missing * $ratePerPoint;
 
         if ($team->getGold() < $cost) {
@@ -188,7 +188,7 @@ class ItemService
     public function calculateRepairCost(Item $item): int
     {
         $missing = 100 - $item->getDurability();
-        $ratePerPoint = self::REPAIR_COST_PER_POINT[$item->getRarity()->value] ?? 2;
+        $ratePerPoint = self::REPAIR_COST_PER_POINT[$item->getRarity()->value];
 
         return $missing * $ratePerPoint;
     }

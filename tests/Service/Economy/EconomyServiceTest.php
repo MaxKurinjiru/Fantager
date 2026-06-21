@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 #[AllowMockObjectsWithoutExpectations]
 class EconomyServiceTest extends TestCase
 {
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\Doctrine\ORM\EntityManagerInterface */
     private $entityManagerMock;
     private EconomyService $economyService;
 

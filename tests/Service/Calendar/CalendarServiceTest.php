@@ -22,11 +22,17 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 #[AllowMockObjectsWithoutExpectations]
 class CalendarServiceTest extends TestCase
 {
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Calendar\TickScheduleCalculator */
     private $scheduleCalculatorMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Kingdom\KingdomTickLogRepository */
     private $tickLogRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Hero\HeroTrainingHistoryRepository */
     private $heroTrainingHistoryRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\League\LeagueFixtureRepository */
     private $leagueFixtureRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\League\LeagueSeasonRepository */
     private $seasonRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Hero\HeroRepository */
     private $heroRepositoryMock;
     private UserMessageTranslator $userMessages;
     private CalendarService $service;

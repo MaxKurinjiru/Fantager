@@ -20,12 +20,18 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AllowMockObjectsWithoutExpectations]
 class PlayerInactivityServiceTest extends TestCase
 {
-    private NotificationHelper $notificationHelperMock;
-    private MailerInterface $mailerMock;
-    private TranslatorInterface $translatorMock;
-    private EntityManagerInterface $entityManagerMock;
-    private LoggerInterface $loggerMock;
-    private TeamChronicleService $teamChronicleServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&NotificationHelper */
+    private $notificationHelperMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&MailerInterface */
+    private $mailerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TranslatorInterface */
+    private $translatorMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
+    private $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&LoggerInterface */
+    private $loggerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChronicleService */
+    private $teamChronicleServiceMock;
     private PlayerInactivityService $service;
 
     protected function setUp(): void

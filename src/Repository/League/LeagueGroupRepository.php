@@ -8,6 +8,9 @@ use App\Entity\League\LeagueGroup;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<LeagueGroup>
+ */
 class LeagueGroupRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

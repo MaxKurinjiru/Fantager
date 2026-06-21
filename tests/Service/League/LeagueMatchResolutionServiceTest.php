@@ -29,13 +29,20 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class LeagueMatchResolutionServiceTest extends TestCase
 {
-    private LeagueFixtureRepository $fixtureRepository;
-    private LeagueStandingRepository $standingRepository;
-    private TeamRosterService $teamRosterService;
-    private MatchSimulatorInterface $matchSimulator;
-    private LeagueFixtureCompletionService $fixtureCompletionService;
-    private FanClubService $fanClubService;
-    private EntityManagerInterface $em;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&LeagueFixtureRepository */
+    private $fixtureRepository;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&LeagueStandingRepository */
+    private $standingRepository;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamRosterService */
+    private $teamRosterService;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&MatchSimulatorInterface */
+    private $matchSimulator;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&LeagueFixtureCompletionService */
+    private $fixtureCompletionService;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&FanClubService */
+    private $fanClubService;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
+    private $em;
     private LeagueMatchResolutionService $service;
 
     protected function setUp(): void

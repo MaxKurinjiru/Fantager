@@ -140,7 +140,10 @@ class KingdomInitializationService
         ];
     }
 
-    /** @param array<string, mixed> $settings @param array<string, mixed> $leagueConfig */
+    /**
+     * @param array<string, mixed> $settings
+     * @param array<string, mixed> $leagueConfig
+     */
     private function createKingdom(string $name, array $settings, array $leagueConfig): Kingdom
     {
         $kingdom = new Kingdom();
@@ -159,7 +162,10 @@ class KingdomInitializationService
         return $kingdom;
     }
 
-    /** @param array<string, mixed> $kingdomSettings @param array<string, mixed> $seasonConfig */
+    /**
+     * @param array<string, mixed> $kingdomSettings
+     * @param array<string, mixed> $seasonConfig
+     */
     private function createSeason(
         Kingdom $kingdom,
         array $kingdomSettings,

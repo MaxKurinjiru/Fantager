@@ -30,6 +30,7 @@ class Spell
     #[ORM\Column(length: 15, enumType: SpellType::class)]
     private SpellType $type;
 
+    /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $effects = [];
 
@@ -101,11 +102,13 @@ class Spell
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getEffects(): array
     {
         return $this->effects;
     }
 
+    /** @param array<string, mixed> $effects */
     public function setEffects(array $effects): static
     {
         $this->effects = $effects;

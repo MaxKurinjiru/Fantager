@@ -8,7 +8,6 @@ use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Enum\ItemSlotType;
 use App\Repository\Hero\HeroRepository;
-use App\Repository\Item\ItemRepository;
 use App\Service\Item\ItemService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,7 +21,6 @@ class ItemController extends AbstractController
     public function __construct(
         private readonly ItemService $itemService,
         private readonly HeroRepository $heroRepository,
-        private readonly ItemRepository $itemRepository,
     ) {
     }
 

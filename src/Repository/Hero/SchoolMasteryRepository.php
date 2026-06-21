@@ -8,6 +8,9 @@ use App\Entity\Hero\SchoolMastery;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<SchoolMastery>
+ */
 class SchoolMasteryRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

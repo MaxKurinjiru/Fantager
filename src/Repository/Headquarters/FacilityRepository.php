@@ -8,6 +8,9 @@ use App\Entity\Headquarters\Facility;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Facility>
+ */
 class FacilityRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

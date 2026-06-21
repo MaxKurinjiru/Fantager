@@ -53,6 +53,7 @@ class Battle
     #[ORM\Column(options: ['default' => 0])]
     private int $scoreB = 0;
 
+    /** @var array<mixed> */
     #[ORM\Column(type: 'json')]
     private array $combatLog = [];
 
@@ -175,11 +176,13 @@ class Battle
         return $this;
     }
 
+    /** @return array<mixed> */
     public function getCombatLog(): array
     {
         return $this->combatLog;
     }
 
+    /** @param array<mixed> $combatLog */
     public function setCombatLog(array $combatLog): static
     {
         $this->combatLog = $combatLog;

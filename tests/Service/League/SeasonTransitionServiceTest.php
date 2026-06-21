@@ -23,8 +23,11 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 #[AllowMockObjectsWithoutExpectations]
 class SeasonTransitionServiceTest extends TestCase
 {
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\Doctrine\ORM\EntityManagerInterface */
     private $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\League\LeagueFixtureScheduler */
     private $fixtureSchedulerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\EconomyService */
     private $economyServiceMock;
     private SeasonTransitionService $transitionService;
 

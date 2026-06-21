@@ -121,7 +121,7 @@ class RoyalTreasuryServiceTest extends TestCase
             ->expects($this->exactly(2))
             ->method('addGold')
             ->willReturnCallback(function (Team $team, int $amount) use (&$amounts): void {
-                $amounts[$team->getId()] = $amount;
+                $amounts[(int) $team->getId()] = $amount;
             });
 
         $result = $this->service->processWeeklyDistribution($kingdom);

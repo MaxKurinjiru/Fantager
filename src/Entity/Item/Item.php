@@ -48,9 +48,11 @@ class Item
     #[ORM\Column(options: ['default' => 100])]
     private int $durability = 100;
 
+    /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $bonuses = [];
 
+    /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $specialEffects = [];
 
@@ -158,11 +160,13 @@ class Item
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getBonuses(): array
     {
         return $this->bonuses;
     }
 
+    /** @param array<string, mixed> $bonuses */
     public function setBonuses(array $bonuses): static
     {
         $this->bonuses = $bonuses;
@@ -170,11 +174,13 @@ class Item
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getSpecialEffects(): array
     {
         return $this->specialEffects;
     }
 
+    /** @param array<string, mixed> $specialEffects */
     public function setSpecialEffects(array $specialEffects): static
     {
         $this->specialEffects = $specialEffects;

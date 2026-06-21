@@ -219,7 +219,7 @@ class HeadquartersService
 
     public function calculateUpgradeCost(FacilityType $type, int $currentLevel, int $totalLevel): int
     {
-        $base = self::UPGRADE_BASE_COSTS[$type->value] ?? 500;
+        $base = self::UPGRADE_BASE_COSTS[$type->value];
         $levelCost = $base * (1.5 ** ($currentLevel - 1));
 
         return (int) round($levelCost * $this->getTotalLevelCostMultiplier($totalLevel));

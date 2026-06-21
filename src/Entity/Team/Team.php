@@ -32,6 +32,7 @@ class Team
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $emblem = null;
 
+    /** @var array<string, string>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $colors = null;
 
@@ -142,11 +143,13 @@ class Team
         return $this;
     }
 
+    /** @return array<string, string>|null */
     public function getColors(): ?array
     {
         return $this->colors;
     }
 
+    /** @param array<string, string>|null $colors */
     public function setColors(?array $colors): static
     {
         $this->colors = $colors;

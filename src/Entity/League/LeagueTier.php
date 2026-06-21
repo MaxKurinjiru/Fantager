@@ -31,6 +31,7 @@ class LeagueTier
     #[ORM\Column]
     private int $relegationSlots;
 
+    /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $rewards = [];
 
@@ -96,11 +97,13 @@ class LeagueTier
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getRewards(): array
     {
         return $this->rewards;
     }
 
+    /** @param array<string, mixed> $rewards */
     public function setRewards(array $rewards): static
     {
         $this->rewards = $rewards;

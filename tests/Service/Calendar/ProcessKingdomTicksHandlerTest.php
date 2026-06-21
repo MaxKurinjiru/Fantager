@@ -22,21 +22,37 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 #[AllowMockObjectsWithoutExpectations]
 class ProcessKingdomTicksHandlerTest extends TestCase
 {
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Kingdom\KingdomRepository */
     private $kingdomRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Kingdom\KingdomTickLogRepository */
     private $tickLogRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Hero\HeroRepository */
     private $heroRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Training\TrainingService */
     private $trainingServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\ArenaRevenueService */
     private $arenaRevenueServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Team\FanClubService */
     private $fanClubServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Headquarters\HeadquartersService */
     private $hqServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\FinancialCrisisService */
     private $financialCrisisServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\RoyalTreasuryService */
     private $royalTreasuryServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\Doctrine\ORM\EntityManagerInterface */
     private $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\Psr\Log\LoggerInterface */
     private $loggerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\League\SeasonTransitionService */
     private $seasonTransitionServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Auth\PlayerInactivityService */
     private $playerInactivityServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Formation\FixtureFormationService */
     private $fixtureFormationServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Marketplace\MarketplaceService */
     private $marketplaceServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\League\LeagueMatchResolutionService */
     private $leagueMatchResolutionServiceMock;
     private ProcessKingdomTicksHandler $handler;
 
@@ -134,7 +150,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
 
         // Assert log1 is set to failed
         $this->assertSame('failed', $log1->getStatus());
-        $this->assertStringContainsString('Database connection lost', $log1->getErrorMessage());
+        $this->assertStringContainsString('Database connection lost', (string) $log1->getErrorMessage());
 
         // Assert log2 remains processing (halted execution, not touched!)
         $this->assertSame('processing', $log2->getStatus());

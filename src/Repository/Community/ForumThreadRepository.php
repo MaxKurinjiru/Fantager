@@ -9,6 +9,9 @@ use App\Entity\Kingdom\Kingdom;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<ForumThread>
+ */
 class ForumThreadRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

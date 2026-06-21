@@ -34,6 +34,7 @@ class Kingdom
     #[ORM\Column(options: ['default' => 28])]
     private int $seasonLength = 28;
 
+    /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $leagueTiersConfig = [];
 
@@ -123,11 +124,13 @@ class Kingdom
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getLeagueTiersConfig(): array
     {
         return $this->leagueTiersConfig;
     }
 
+    /** @param array<string, mixed> $leagueTiersConfig */
     public function setLeagueTiersConfig(array $leagueTiersConfig): static
     {
         $this->leagueTiersConfig = $leagueTiersConfig;

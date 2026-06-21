@@ -116,7 +116,9 @@ class LeagueFixtureSchedulerTest extends TestCase
             $this->assertGreaterThanOrEqual(0, $playWeek);
             $this->assertLessThan(9, $playWeek);
 
+            assert(isset($weeklyHomeAway[$playWeek][$homeId]['H']));
             $weeklyHomeAway[$playWeek][$homeId]['H']++;
+            assert(isset($weeklyHomeAway[$playWeek][$awayId]['A']));
             $weeklyHomeAway[$playWeek][$awayId]['A']++;
         }
 

@@ -75,7 +75,10 @@ final class ForumThreadHelperTest extends TestCase
         self::assertNull($serialized['team']);
     }
 
-    /** @param list<string> $postDates @param list<string> $postBodies */
+    /**
+     * @param list<string> $postDates
+     * @param list<string>|null $postBodies
+     */
     private function createThread(bool $pinned, string $threadDate, array $postDates, ?array $postBodies = null): ForumThread
     {
         $user = new User();

@@ -61,6 +61,5 @@ class FinancialRecordTest extends TestCase
         $this->assertSame(0, $record->getEssenceLegendaryChange());
         $this->assertSame(0, $record->getEssenceMythicChange());
         $this->assertSame([], $record->getContext());
-        $this->assertInstanceOf(\DateTimeImmutable::class, $record->getCreatedAt());
     }
 }

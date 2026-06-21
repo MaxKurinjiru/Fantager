@@ -29,9 +29,11 @@ class TeamChronicle
     #[ORM\Column(length: 255)]
     private string $subjectKey;
 
+    /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $subjectParams = [];
 
+    /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $data = [];
 
@@ -87,11 +89,13 @@ class TeamChronicle
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getSubjectParams(): array
     {
         return $this->subjectParams;
     }
 
+    /** @param array<string, mixed> $subjectParams */
     public function setSubjectParams(array $subjectParams): static
     {
         $this->subjectParams = $subjectParams;
@@ -99,11 +103,13 @@ class TeamChronicle
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getData(): array
     {
         return $this->data;
     }
 
+    /** @param array<string, mixed> $data */
     public function setData(array $data): static
     {
         $this->data = $data;
