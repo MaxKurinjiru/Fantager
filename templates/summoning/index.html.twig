@@ -1,0 +1,104 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'summoning.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="summoning-page page-shell" data-controller="summoning"
+     data-summoning-gold-cost-value="{{ status.gold_cost }}"
+     data-summoning-error-failed-value="{{ 'js_flash.summoning.failed'|trans }}"
+     data-summoning-limit-reached-value="{{ 'js_flash.summoning.limit_reached'|trans }}"
+     data-summoning-level-label-value="{{ 'js_flash.summoning.level_label'|trans }}"
+     data-summoning-races-value="{{ {
+         human: 'heroes.race_human'|trans,
+         elf: 'heroes.race_elf'|trans,
+         dwarf: 'heroes.race_dwarf'|trans,
+         orc: 'heroes.race_orc'|trans,
+         undead: 'heroes.race_undead'|trans,
+         giant: 'heroes.race_giant'|trans,
+         ent: 'heroes.race_ent'|trans,
+         genie: 'heroes.race_genie'|trans
+     }|json_encode }}"
+     data-summoning-stat-labels-value="{{ {
+         str: 'training.attr.str'|trans,
+         dex: 'training.attr.dex'|trans,
+         kon: 'training.attr.kon'|trans,
+         spd: 'training.attr.spd'|trans,
+         int: 'training.attr.int'|trans,
+         wil: 'training.attr.wil'|trans,
+         cha: 'training.attr.cha'|trans,
+         lck: 'training.attr.lck'|trans
+     }|json_encode|e('html_attr') }}"
+>
+    
+    {# --- Header Section --- #}
+    {% set right_content %}
+        {# History Link #}
+        <a href="{{ path('app_summon_history') }}" class="btn btn-outline btn--icon-lead btn--elevated">
+            📜 {{ 'summoning.history_btn'|trans }}
+        </a>
+
+        {# Cooldown and Cycle Status Widget #}
+        {% include 'components/summoning/cycle_status.html.twig' with {
+            status: status
+        } %}
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'summoning.title',
+        subtitle: 'summoning.subtitle',
+        right_content: right_content
+    } %}
+
+    {# --- Error Alert --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'summoning',
+        container_target: 'errorAlert',
+        message_target: 'errorMessage',
+        close_action: 'summoning#hideError',
+        type: 'error'
+    } %}
+
+    <div class="screen-grid">
+        {# LEFT COLUMN: Summon Selection Panel (2 Columns) #}
+        <div class="screen-grid__main">
+            <div class="feature-panel">
+                <div>
+                    <h2 class="feature-panel__title">{{ 'summoning.summon_junior'|trans }}</h2>
+                    <p class="feature-panel__desc">{{ 'summoning.summon_junior_desc'|trans }}</p>
+                </div>
+
+                {# Arena adaptation widget & potential summonable races #}
+                {% include 'components/summoning/compat_races.html.twig' with { arena_theme: arena_theme, compatible_races: compatible_races } %}
+
+                {# Summon CTA Button #}
+                <div class="feature-panel__footer">
+                    <button type="button" data-summoning-target="summonBtn" data-action="click->summoning#summon" data-available="{{ status.available ? 'true' : 'false' }}"
+                            {% if not status.available %}disabled{% endif %}
+                            class="btn btn-primary summoning-summon-btn">
+                        {% if status.available %}
+                            🌀 {{ 'summoning.summon_junior'|trans }}
+                        {% else %}
+                            {{ status.reason ?: 'summoning.unavailable'|trans }}
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {# RIGHT COLUMN: Magic Portal & Reveal Area (1 Column) #}
+        <div class="screen-grid__aside">
+            {% include 'components/summoning/portal_chamber.html.twig' %}
+        </div>
+    </div>
+
+</div>
+
+<template id="template-summoning-stat">
+    <div class="summoning-stat">
+        <span class="summoning-stat__key js-stat-key"></span>
+        <span class="summoning-stat__label js-stat-label"></span>
+        <span class="summoning-stat__value js-stat-value"></span>
+    </div>
+</template>
+
+{% endblock %}

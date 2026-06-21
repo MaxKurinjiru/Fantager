@@ -1,0 +1,115 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'spells.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+{% set selected_hero_id = app.request.query.get('hero_id') %}
+{% set selected_hero = null %}
+{% for h in heroes %}
+    {% if h.id == selected_hero_id %}
+        {% set selected_hero = h %}
+    {% endif %}
+{% endfor %}
+
+{% set equipped = {} %}
+{% set known_spell_ids = [] %}
+{% set masteries = {} %}
+
+{% if selected_hero %}
+    {% for hs in selected_hero.heroSpells %}
+        {% set known_spell_ids = known_spell_ids|merge([hs.spell.id]) %}
+        {% if hs.isEquipped %}
+            {% set equipped = equipped|merge({(hs.slotNumber): hs}) %}
+        {% endif %}
+    {% endfor %}
+
+    {% for sm in selected_hero.schoolMasteries %}
+        {% set masteries = masteries|merge({(sm.school.value): sm.masteryTier}) %}
+    {% endfor %}
+{% endif %}
+
+<div class="spellbook-page page-shell" data-controller="spellbook"
+     data-spellbook-text-learning-value="{{ 'js_flash.spells.learning'|trans }}"
+     data-spellbook-error-learn-value="{{ 'js_flash.spells.failed_learn'|trans }}"
+     data-spellbook-success-learn-value="{{ 'js_flash.spells.success_learn'|trans }}"
+     data-spellbook-error-equip-value="{{ 'js_flash.spells.failed_equip'|trans }}"
+     data-spellbook-success-equip-value="{{ 'js_flash.spells.success_equip'|trans }}"
+     data-spellbook-error-unequip-value="{{ 'js_flash.spells.failed_unequip'|trans }}"
+     data-spellbook-text-equipping-value="{{ 'js_flash.inventory.equipping'|trans }}"
+     data-spellbook-text-unequipping-value="{{ 'js_flash.inventory.unequipping'|trans }}"
+     data-spellbook-success-unequip-value="{{ 'js_flash.spells.success_unequip'|trans }}"
+>
+    
+    {# --- Header Section --- #}
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'spells.title',
+        subtitle: 'spells.subtitle'
+    } %}
+
+    {# --- Alert Box --- #}
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'spellbook',
+        message_target: 'alertMessage',
+        close_action: 'spellbook#hideAlert'
+    } %}
+
+    {# --- Main Layout Grid --- #}
+    <div class="screen-grid">
+        
+        {# LEFT COLUMN: Hero Spell Slots & Mastery (1 Column) #}
+        <div class="screen-grid__aside">
+            {% include 'components/spell/trainee_manager.html.twig' with {
+                selected_hero_id: selected_hero_id,
+                selected_hero: selected_hero,
+                heroes: heroes,
+                equipped: equipped,
+                masteries: masteries
+            } %}
+        </div>
+
+        {# RIGHT COLUMN: Spellbook Tabs (2 Columns) #}
+        <div class="screen-grid__main">
+            {# Sub-tab controls — controlled by tab_controller.js §9.2 #}
+            <div class="tab-nav" data-controller="tab">
+                <button type="button"
+                        data-tab-target="btn"
+                        data-action="click->tab#switch"
+                        data-tab="learned-spells-tab"
+                        class="tab-btn tab-btn--active">
+                    {{ 'spells.tab_learned'|trans }}
+                </button>
+                <button type="button"
+                        data-tab-target="btn"
+                        data-action="click->tab#switch"
+                        data-tab="academy-store-tab"
+                        class="tab-btn">
+                    {{ 'spells.tab_store'|trans }}
+                </button>
+            </div>
+
+            {# ========================================== #}
+            {# SUB-TAB: LEARNED SPELLS                    #}
+            {# ========================================== #}
+            {% include 'components/spell/learned_spells.html.twig' with {
+                selected_hero: selected_hero,
+                equipped: equipped
+            } %}
+
+            {# ========================================== #}
+            {# SUB-TAB: ACADEMY STORE                     #}
+            {# ========================================== #}
+            {% include 'components/spell/academy_store.html.twig' with {
+                spells: spells,
+                known_spell_ids: known_spell_ids,
+                selected_hero: selected_hero,
+                masteries: masteries,
+                team: team
+            } %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

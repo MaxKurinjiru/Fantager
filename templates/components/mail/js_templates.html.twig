@@ -1,0 +1,24 @@
+{# templates/components/mail/js_templates.html.twig #}
+<template id="template-mail-message-row">
+    <tr class="mail-row">
+        <td class="data-table__col--center data-table__cell--status">
+            <span class="js-unread-indicator" aria-hidden="true"></span>
+        </td>
+        <td class="data-table__cell--title">
+            <span class="js-subject"></span>
+        </td>
+        <td>
+            <div class="data-table__author-row">
+                <span class="team-color-dot js-team-color"></span>
+                <span class="js-team-name"></span>
+            </div>
+        </td>
+        <td class="data-table__col--end data-table__cell--muted js-sent-at"></td>
+    </tr>
+</template>
+
+<template id="template-mail-empty-row">
+    <tr>
+        <td colspan="4" class="empty-state js-empty-text"></td>
+    </tr>
+</template>

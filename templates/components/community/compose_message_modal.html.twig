@@ -1,0 +1,42 @@
+{# templates/components/community/compose_message_modal.html.twig #}
+{% set other_teams = other_teams|default([]) %}
+
+<div id="compose-message-modal" class="modal-overlay hidden" data-controller="modal" data-community-target="composeModal" data-modal-event-name-value="modal:open-compose">
+    <div class="modal-box modal-box--spacious" data-modal-target="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title-compose">
+        <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+            <span aria-hidden="true" class="modal-close__icon">✕</span>
+            <span class="sr-only">{{ 'modal.close'|trans }}</span>
+        </button>
+
+        <div class="modal-header">
+            <h2 id="modal-title-compose" class="modal-header__title">{{ 'community.compose_title'|trans }}</h2>
+        </div>
+
+        <div class="modal-body">
+            <div>
+                <label for="message-recipient" class="form-label">{{ 'community.recipient_label'|trans }}</label>
+                <select id="message-recipient" class="form-input" data-community-target="composeRecipient">
+                    <option value="">-- {{ 'community.select_recipient'|trans }} --</option>
+                    {% for other in other_teams %}
+                        <option value="{{ other.id }}">{{ other.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="message-subject" class="form-label">{{ 'community.subject'|trans }}</label>
+                <input id="message-subject" type="text" class="form-input" data-community-target="composeSubject" required>
+            </div>
+
+            <div>
+                <label for="message-body" class="form-label">{{ 'community.body'|trans }}</label>
+                <textarea id="message-body" class="form-input" rows="8" data-community-target="composeBody" required></textarea>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" data-action="click->modal#close" class="btn btn-outline">{{ 'community.cancel'|trans }}</button>
+            <button type="button" data-action="click->community#submitCompose" data-community-target="submitComposeBtn" class="btn btn-primary">{{ 'community.send_msg'|trans }}</button>
+        </div>
+    </div>
+</div>

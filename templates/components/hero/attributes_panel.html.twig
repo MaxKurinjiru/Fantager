@@ -1,0 +1,22 @@
+{# templates/components/hero/attributes_panel.html.twig #}
+<div class="hero-panel">
+    <div>
+        <h2 class="hero-panel__title hero-panel__title--spaced">{{ 'heroes.primary_attrs'|trans }}</h2>
+        <p class="hero-panel__desc">{{ 'heroes.primary_attrs_desc'|trans }}</p>
+    </div>
+
+    <div class="layout-stack layout-stack--md">
+        {% set attr_keys = ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'] %}
+
+        {% for attr_key in attr_keys %}
+            {% set val = attribute(hero, attr_key == 'int' ? 'intel' : attr_key) %}
+            {% set bonus = statBonuses[attr_key] ?? 0 %}
+            {% include 'components/hero/attribute_bar.html.twig' with {
+                label: ('training.attr.' ~ attr_key)|trans,
+                val: val,
+                bonus: bonus,
+                max_val: 20
+            } %}
+        {% endfor %}
+    </div>
+</div>

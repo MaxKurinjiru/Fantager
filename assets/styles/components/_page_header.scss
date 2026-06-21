@@ -1,0 +1,57 @@
+// =============================================================================
+//  _page_header.scss — Page-level section header
+//
+//  Used on every game screen above the main content.
+//  Twig: {% include 'components/ui/page_header.html.twig' with { title: '…', subtitle: '…', right_content: … } %}
+//
+//  Structure:
+//    .page-header              — flex row container with bottom border
+//    .page-header__body        — left column: title + optional subtitle
+//    .page-header__title       — <h1> screen title
+//    .page-header__subtitle    — <p> short description below the title
+//    .page-header__actions     — right-side slot (buttons, widgets, selects…)
+// =============================================================================
+
+@layer components {
+    .page-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        border-bottom: 1px solid var(--color-border);
+        padding-bottom: 1rem;
+
+        @media (min-width: 768px) {
+            flex-direction: row;
+            align-items: center;
+        }
+    }
+
+    .page-header__body {
+        // intentionally unstyled — just groups title + subtitle
+    }
+
+    .page-header__title {
+        font-size: 1.875rem;    // text-3xl
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        line-height: 1.2;
+        color: var(--color-text-primary);
+        margin: 0 0 0.25rem 0;
+    }
+
+    .page-header__subtitle {
+        font-size: 0.875rem;    // text-sm
+        color: var(--color-text-secondary);
+        margin: 0;
+    }
+
+    .page-header__actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}

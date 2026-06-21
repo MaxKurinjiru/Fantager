@@ -1,0 +1,12 @@
+{% set percentage = percentage|default(0) %}
+{# Convert percentage to float manually since floatval filter may not exist depending on Twig environment #}
+{% set pct = (percentage + 0) %}
+{% if pct > 100 %}{% set pct = 100 %}{% endif %}
+{% if pct < 0 %}{% set pct = 0 %}{% endif %}
+
+{% set container_class = container_class|default('ui-progress') %}
+{% set progress_class = progress_class|default('ui-progress__fill ui-progress__fill--accent') %}
+
+<div class="{{ container_class }}">
+    <div class="{{ progress_class }}" style="--ui-progress-pct: {{ pct }}%"></div>
+</div>

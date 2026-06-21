@@ -1,0 +1,62 @@
+{# templates/components/formation/strategy_settings.html.twig #}
+{% set match_edit_source = match_edit_source|default(null) %}
+<div class="feature-panel formation-strategy-panel">
+    <div>
+        <h2 class="feature-panel__title">{{ 'formation.match_strategy'|trans }}</h2>
+        <p class="feature-panel__desc">{{ 'formation.match_strategy_desc'|trans }}</p>
+    </div>
+
+    <div class="formation-strategy-panel__body">
+        <div class="formation-strategy-panel__meta">
+            <div class="formation-strategy-panel__name">
+                <label for="formation-name" class="form-label">{{ 'formation.formation_name'|trans }}</label>
+                <input type="text" id="formation-name" data-formation-target="nameInput"
+                       value="{{ match_edit_source ? match_edit_source.name : (selected_formation ? selected_formation.name : 'formation.tactics_slot'|trans) }}"
+                       placeholder="{{ 'formation.name_placeholder'|trans }}"
+                       class="form-input form-input--emphasis">
+            </div>
+
+            <div class="form-check formation-strategy-panel__default">
+                <input type="checkbox" id="set-default" data-formation-target="defaultCheckbox"
+                       class="form-check__input"
+                       {% if selected_formation and selected_formation.isDefault %}checked{% endif %}
+                       {% if match_edit_source %}disabled{% endif %}>
+                <label for="set-default">{{ 'formation.set_default'|trans }}</label>
+            </div>
+        </div>
+
+        <div class="formation-strategy-panel__tactics">
+            <span class="section-label--xs">{{ 'formation.prematch_approach'|trans }}</span>
+            <div class="formation-strategy-panel__tactics-grid">
+                {% set approaches = [
+                    {key: 'aggressive', label: 'formation.tactics_aggressive'|trans, desc: 'formation.tactics_aggressive_desc'|trans},
+                    {key: 'balanced', label: 'formation.tactics_balanced'|trans, desc: 'formation.tactics_balanced_desc'|trans},
+                    {key: 'defensive', label: 'formation.tactics_defensive'|trans, desc: 'formation.tactics_defensive_desc'|trans}
+                ] %}
+
+                {% for app in approaches %}
+                    {% set approach_selected = (match_edit_source and match_edit_source.approach == app.key)
+                        or (selected_formation and selected_formation.approach.value == app.key)
+                        or (not match_edit_source and not selected_formation and app.key == 'balanced') %}
+                    <label class="tactic-option{% if approach_selected %} tactic-option--selected{% endif %}">
+                        <input type="radio" data-formation-target="approachRadio" name="approach" value="{{ app.key }}"
+                               class="tactic-option__radio form-control-accent"
+                               {% if approach_selected %}checked{% endif %}>
+                        <div class="tactic-option__body">
+                            <span class="tactic-option__title">{{ app.label }}</span>
+                            <p class="tactic-option__desc">{{ app.desc }}</p>
+                        </div>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="formation-strategy__footer">
+        <button type="button"
+                data-action="click->formation#save"
+                class="btn btn-primary formation-strategy__save-btn">
+            {{ match_edit_source ? 'formation.save_match_lineup'|trans : 'formation.save_lineup'|trans }}
+        </button>
+    </div>
+</div>

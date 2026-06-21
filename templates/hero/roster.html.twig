@@ -1,0 +1,99 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'heroes.title'|trans }} — {{ team.name }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="hero-roster-page page-shell" data-controller="roster-filter">
+    {# --- Header Section --- #}
+    {% set right_content %}
+        <div class="page-header-actions">
+            {% include 'components/ui/roster_badge.html.twig' with { team: team } %}
+            <a href="{{ path('app_hq', { facility: 'summoning_chamber' }) }}" class="btn btn-primary btn-primary--prominent">
+                <span>🌀</span> {{ 'heroes.summon_btn'|trans }}
+            </a>
+        </div>
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'heroes.title'|trans,
+        subtitle: 'heroes.subtitle'|trans,
+        right_content: right_content
+    } %}
+
+    {# --- Filters Bar --- #}
+    <div class="filter-form">
+        <div class="filter-form__fields">
+            {# Text Search #}
+            <div class="filter-form__search-wrap">
+                <label for="hero-search" class="sr-only">{{ 'heroes.search_placeholder'|trans }}</label>
+                <span class="filter-form__search-icon" aria-hidden="true">🔍</span>
+                <input type="text" id="hero-search"
+                       data-roster-filter-target="search" data-action="input->roster-filter#filter"
+                       placeholder="{{ 'heroes.search_placeholder'|trans }}"
+                       class="form-input filter-form__search-input">
+            </div>
+
+            {# Race Filter #}
+            <div>
+                <label for="hero-race-filter" class="sr-only">{{ 'heroes.all_races'|trans }}</label>
+                <select id="hero-race-filter"
+                        data-roster-filter-target="raceFilter" data-action="change->roster-filter#filter"
+                        class="form-input">
+                    <option value="">{{ 'heroes.all_races'|trans }}</option>
+                    {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
+                        <option value="{{ race }}">{{ ('heroes.race_' ~ race)|trans }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {# Status Filter #}
+            <div>
+                <label for="hero-status-filter" class="sr-only">{{ 'heroes.all_statuses'|trans }}</label>
+                <select id="hero-status-filter"
+                        data-roster-filter-target="statusFilter" data-action="change->roster-filter#filter"
+                        class="form-input">
+                    <option value="">{{ 'heroes.all_statuses'|trans }}</option>
+                    <option value="available">{{ 'heroes.status_available'|trans }}</option>
+                    <option value="in_match">{{ 'heroes.status_in_match'|trans }}</option>
+                    <option value="selling">{{ 'heroes.status_selling'|trans }}</option>
+                    <option value="recovering">{{ 'heroes.status_recovering'|trans }}</option>
+                    <option value="dead">{{ 'heroes.status_dead'|trans }}</option>
+                </select>
+            </div>
+        </div>
+
+        {# Sort Selector #}
+        <div class="filter-form__sort">
+            <label for="hero-sort-by" class="filter-form__sort-label">{{ 'heroes.sort_by'|trans }}</label>
+            <select id="hero-sort-by"
+                    data-roster-filter-target="sortBy" data-action="change->roster-filter#sort"
+                    class="form-input">
+                <option value="name-asc">{{ 'heroes.sort_name'|trans }}</option>
+                <option value="level-desc">{{ 'heroes.sort_level'|trans }}</option>
+                <option value="age-asc">{{ 'heroes.sort_age'|trans }}</option>
+                <option value="morale-desc">{{ 'heroes.sort_morale'|trans }}</option>
+                <option value="form-desc">{{ 'heroes.sort_form'|trans }}</option>
+                <option value="str-desc">{{ 'heroes.sort_str'|trans }}</option>
+                <option value="dex-desc">{{ 'heroes.sort_dex'|trans }}</option>
+                <option value="kon-desc">{{ 'heroes.sort_kon'|trans }}</option>
+                <option value="spd-desc">{{ 'heroes.sort_spd'|trans }}</option>
+                <option value="int-desc">{{ 'heroes.sort_int'|trans }}</option>
+            </select>
+        </div>
+    </div>
+
+    {# --- Heroes Grid --- #}
+    <div data-roster-filter-target="grid" class="cards-grid">
+        {% for hero in heroes %}
+            {% include 'components/hero/card.html.twig' with { hero: hero } %}
+        {% else %}
+            <div class="roster-empty">
+                <span class="roster-empty__emoji">📭</span>
+                <h3 class="roster-empty__title">{{ 'heroes.no_heroes'|trans }}</h3>
+                <p class="roster-empty__desc">{{ 'heroes.no_heroes_desc'|trans }}</p>
+                <a href="{{ path('app_hq', { facility: 'summoning_chamber' }) }}" class="btn btn-primary btn--sm">{{ 'heroes.go_summoning'|trans }}</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  SETTINGS — account settings modal, locale picker
+// =============================================================================
+
+@layer components {
+  .settings-modal {
+    @apply relative flex flex-col;
+    max-height: 90vh;
+  }
+
+  .settings-modal__title {
+    @apply text-xl font-bold px-6 pt-6 mb-4 pb-3 flex items-center gap-2;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .settings-modal__body {
+    @apply space-y-6 overflow-y-auto flex-1 px-6 pb-6;
+  }
+
+  .settings-modal__content {
+    @apply space-y-6;
+  }
+
+  .settings-modal__section {
+    @apply space-y-2;
+  }
+
+  .settings-modal__section-title {
+    @apply text-xs font-semibold uppercase tracking-wider;
+    color: var(--color-text-muted);
+  }
+
+  .settings-modal__section-title--danger {
+    color: var(--color-error-text);
+  }
+
+  .settings-modal__divider {
+    border: none;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .settings-modal__email-row {
+    @apply flex gap-2;
+
+    .form-input {
+      flex: 1;
+    }
+  }
+
+  .cancel-confirm-panel {
+    @apply rounded-xl p-4 space-y-3;
+    border: 1px solid var(--color-error-border);
+    background-color: var(--overlay-error-bg-30);
+
+    &__actions {
+      @apply flex gap-2;
+
+      .btn {
+        flex: 1;
+      }
+    }
+  }
+
+  .locale-picker {
+    @apply grid grid-cols-2 gap-2;
+  }
+
+  .locale-picker__option {
+    @apply flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border transition-all text-sm;
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
+
+    &:hover {
+      border-color: var(--color-border-strong);
+      color: var(--color-text-primary);
+    }
+
+    &--active {
+      border-color: var(--color-brand-500);
+      background-color: var(--overlay-brand-10);
+      color: var(--color-brand-400);
+      font-weight: 700;
+    }
+  }
+}

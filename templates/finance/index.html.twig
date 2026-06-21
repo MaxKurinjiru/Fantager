@@ -1,0 +1,32 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'finance.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="finance-ledger page-shell">
+    {% set right_content %}
+        <div class="treasury-badge">
+            <span class="treasury-badge__label">{{ 'dashboard.treasury'|trans }}:</span>
+            <span class="treasury-badge__value">🪙 {{ team.gold|number_format(0, '.', ' ') }}</span>
+        </div>
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'finance.title',
+        subtitle: 'finance.subtitle',
+        right_content: right_content
+    } %}
+
+    {% include 'components/dashboard/financial_crisis_banner.html.twig' with { team: team } %}
+
+    {% include 'components/finance/summary_stats.html.twig' with { summary: summary } %}
+
+    <section class="finance-ledger__section" aria-label="{{ 'finance.ledger_title'|trans }}">
+        <h2 class="finance-ledger__section-title">{{ 'finance.ledger_title'|trans }}</h2>
+        {% include 'components/finance/ledger_content.html.twig' with {
+            ledger_action: path('app_finance'),
+            ledger_tab_param: false
+        } %}
+    </section>
+</div>
+{% endblock %}

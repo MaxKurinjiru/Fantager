@@ -1,0 +1,51 @@
+# Race Relationships Matrix
+# Values 0-100 representing affinity between races
+# 100 = perfect synergy, 50 = neutral, 0 = deep hostility
+# Symmetric pairs only (alphabetical canonical order: raceA < raceB)
+# Affects: team chemistry, marketplace trading bonuses, formation synergy
+#
+# Source: docs/game-summary.md §2.4 — Relationship Matrix
+# 8 races → 28 unique pairs (C(8,2))
+
+relationships:
+  # dwarf pairs
+  dwarf-elf: 50
+  dwarf-ent: 30
+  dwarf-genie: 60
+  dwarf-giant: 30
+  dwarf-human: 70
+  dwarf-orc: 20
+  dwarf-undead: 20
+
+  # elf pairs
+  elf-ent: 100
+  elf-genie: 80
+  elf-giant: 20
+  elf-human: 90
+  elf-orc: 0
+  elf-undead: 10
+
+  # ent pairs
+  ent-genie: 60
+  ent-giant: 40
+  ent-human: 70
+  ent-orc: 0
+  ent-undead: 20
+
+  # genie pairs
+  genie-giant: 60
+  genie-human: 80
+  genie-orc: 60
+  genie-undead: 70
+
+  # giant pairs
+  giant-human: 30
+  giant-orc: 70
+  giant-undead: 80
+
+  # human pairs
+  human-orc: 20
+  human-undead: 10
+
+  # orc pairs
+  orc-undead: 90

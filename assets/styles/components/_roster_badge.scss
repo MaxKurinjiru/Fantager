@@ -1,0 +1,57 @@
+// =============================================================================
+//  _roster_badge.scss — Roster capacity widget
+//
+//  Displays a team's hero count vs. roster limit (e.g. "7 / 10").
+//  Use: {% include 'components/ui/roster_badge.html.twig' with { team: team } %}
+//
+//  Modifiers:
+//    .roster-badge--warning  — ≥ 80 % full (approaching limit)
+//    .roster-badge--full     — 100 % full (limit reached)
+// =============================================================================
+
+@layer components {
+    .roster-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 0.5rem 1rem;
+        backdrop-filter: blur(12px);
+
+        &__label {
+            font-size: 0.625rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--color-text-secondary);
+            white-space: nowrap;
+        }
+
+        &__value {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--color-text-primary);
+            white-space: nowrap;
+        }
+
+        // Approaching limit (>= 80 %)
+        &--warning {
+            border-color: var(--color-warning-border);
+        }
+
+        &--warning &__value {
+            color: var(--color-warning-text);
+        }
+
+        // Roster completely full
+        &--full {
+            border-color: var(--color-error-border);
+        }
+
+        &--full &__value {
+            color: var(--color-error-text);
+        }
+    }
+}

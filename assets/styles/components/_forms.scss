@@ -1,0 +1,150 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  FORMS — reusable form field components
+//
+//  Usage in Twig/HTML:
+//    <label class="form-label">Email</label>
+//    <input type="email" class="form-input">
+//    <p class="form-error">Field is required.</p>
+//    <input class="form-input form-input--error"> (error state)
+// =============================================================================
+
+@layer components {
+  .form-label {
+    @apply block text-sm mb-1;
+    color: var(--color-text-secondary);
+  }
+
+  .form-input {
+    @apply w-full rounded px-3 py-2 text-sm;
+    max-width: 100%;
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-fast);
+
+    &::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-brand-400);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring-color);
+      outline-offset: 1px;
+    }
+
+    // Error state — add class .form-input--error when validation fails
+    &--error {
+      border-color: var(--color-error-border);
+    }
+
+    &--emphasis {
+      font-weight: 600;
+    }
+
+    &--medium {
+      font-weight: 500;
+    }
+
+    &--formation-select {
+      width: 100%;
+
+      @media (min-width: 640px) {
+        min-width: 12.5rem;
+      }
+    }
+
+    &--uppercase {
+      text-transform: uppercase;
+    }
+  }
+
+  .form-error {
+    @apply text-xs mt-1;
+    color: var(--color-error-text);
+  }
+
+  .form-hint {
+    @apply text-xs mt-1;
+    color: var(--color-text-muted);
+  }
+
+  // Checkbox / radio label row
+  .form-check {
+    @apply flex items-center gap-2;
+    cursor: pointer;
+
+    label {
+      @apply text-sm;
+      color: var(--color-text-secondary);
+    }
+
+    &__input {
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border-strong);
+      accent-color: var(--color-brand-500);
+    }
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    @media (min-width: 640px) {
+      gap: 1rem;
+    }
+
+    &__field {
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  .auth-panel--register {
+    padding: 2rem;
+  }
+
+  .form-input-affix-wrap {
+    position: relative;
+  }
+
+  .form-input--rename {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .form-input--with-toggle {
+    padding-right: 2.5rem;
+  }
+
+  // Password visibility toggle button
+  .password-toggle-btn {
+    @apply absolute inset-y-0 right-0 flex items-center pr-3;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: color var(--transition-fast);
+
+    &__icon {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    &:hover {
+      color: var(--color-brand-400);
+    }
+
+    svg,
+    &__icon {
+      @apply w-5 h-5;
+    }
+  }
+}

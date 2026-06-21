@@ -1,0 +1,225 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Service\Item;
+
+use App\Entity\Hero\Hero;
+use App\Entity\Item\Item;
+use App\Entity\Team\Team;
+use App\Enum\ItemRarity;
+use App\Enum\ItemSlotType;
+use App\Enum\ItemStatus;
+use App\Exception\UserFacingException;
+use App\Repository\Item\ItemRepository;
+use Doctrine\ORM\EntityManagerInterface;
+
+class ItemService
+{
+    /**
+     * Essence granted per rarity tier on dismantle.
+     * Keys match ItemRarity values; values are amounts of same-tier essence.
+     */
+    private const DISMANTLE_ESSENCE = [
+        'common' => 5,
+        'uncommon' => 5,
+        'rare' => 4,
+        'epic' => 3,
+        'legendary' => 2,
+        'mythic' => 1,
+    ];
+
+    /** Gold cost per missing durability point by rarity. */
+    private const REPAIR_COST_PER_POINT = [
+        'common' => 2,
+        'uncommon' => 5,
+        'rare' => 10,
+        'epic' => 20,
+        'legendary' => 40,
+        'mythic' => 80,
+    ];
+
+    public function __construct(
+        private readonly ItemRepository $itemRepository,
+        private readonly EntityManagerInterface $em,
+    ) {
+    }
+
+    /** @return array<int, Item> */
+    public function listByTeam(Team $team, ?Hero $hero = null): array
+    {
+        $criteria = ['ownerTeam' => $team];
+        if (null !== $hero) {
+            $criteria['equippedHero'] = $hero;
+        }
+
+        return $this->itemRepository->findBy($criteria, ['id' => 'ASC']);
+    }
+
+    public function findForTeam(int $id, Team $team): ?Item
+    {
+        return $this->itemRepository->findOneBy(['id' => $id, 'ownerTeam' => $team]);
+    }
+
+    /**
+     * Equip an item to a hero's slot. Any item previously in that slot is unequipped.
+     *
+     * @throws \DomainException
+     */
+    public function equip(Item $item, Hero $hero, ItemSlotType $slot): void
+    {
+        if (ItemStatus::Available !== $item->getStatus()) {
+            throw new UserFacingException('error.item_cannot_equip');
+        }
+
+        if ($item->getOwnerTeam()->getId() !== $hero->getTeam()->getId()) {
+            throw new UserFacingException('error.item_wrong_team');
+        }
+
+        if ($item->getSlotType() !== $slot) {
+            throw new UserFacingException('error.item_slot_mismatch', ['%item_slot%' => $item->getSlotType()->value, '%slot%' => $slot->value]);
+        }
+
+        // Unequip whatever is currently in that slot for this hero
+        $existing = $this->itemRepository->findOneBy([
+            'equippedHero' => $hero,
+            'equippedSlot' => $slot,
+        ]);
+        if (null !== $existing) {
+            $existing->setEquippedHero(null);
+            $existing->setEquippedSlot(null);
+        }
+
+        // Unequip from previous hero if item was equipped elsewhere
+        if (null !== $item->getEquippedHero()) {
+            $item->setEquippedHero(null);
+            $item->setEquippedSlot(null);
+        }
+
+        $item->setEquippedHero($hero);
+        $item->setEquippedSlot($slot);
+
+        $this->em->flush();
+    }
+
+    /**
+     * Unequip an item from its current hero.
+     *
+     * @throws \DomainException
+     */
+    public function unequip(Item $item): void
+    {
+        if (null === $item->getEquippedHero()) {
+            throw new UserFacingException('error.item_not_equipped');
+        }
+
+        $item->setEquippedHero(null);
+        $item->setEquippedSlot(null);
+
+        $this->em->flush();
+    }
+
+    /**
+     * Dismantle an item: delete it and return essence to the team.
+     *
+     * @return array{rarity: string, essence_amount: int}
+     *
+     * @throws \DomainException when item is currently equipped
+     */
+    public function dismantle(Item $item, Team $team): array
+    {
+        if (ItemStatus::Available !== $item->getStatus()) {
+            throw new UserFacingException('error.item_cannot_dismantle');
+        }
+
+        if ($item->getOwnerTeam()->getId() !== $team->getId()) {
+            throw new UserFacingException('error.item_not_on_team');
+        }
+
+        if (null !== $item->getEquippedHero()) {
+            throw new UserFacingException('error.item_cannot_dismantle_equipped');
+        }
+
+        $rarity = $item->getRarity();
+        $amount = self::DISMANTLE_ESSENCE[$rarity->value];
+        $this->addEssenceByRarity($team, $rarity, $amount);
+
+        $this->em->remove($item);
+        $this->em->flush();
+
+        return ['rarity' => $rarity->value, 'essence_amount' => $amount];
+    }
+
+    /**
+     * Repair durability to 100. Gold cost scales with rarity and missing durability.
+     *
+     * @throws \DomainException on insufficient gold
+     */
+    public function repair(Item $item, Team $team): int
+    {
+        if (ItemStatus::Available !== $item->getStatus()) {
+            throw new UserFacingException('error.item_cannot_repair');
+        }
+
+        if ($item->getOwnerTeam()->getId() !== $team->getId()) {
+            throw new UserFacingException('error.item_not_on_team');
+        }
+
+        $missing = 100 - $item->getDurability();
+        if (0 === $missing) {
+            return 0;
+        }
+
+        $ratePerPoint = self::REPAIR_COST_PER_POINT[$item->getRarity()->value];
+        $cost = $missing * $ratePerPoint;
+
+        if ($team->getGold() < $cost) {
+            throw new UserFacingException('error.item_repair_insufficient_gold', ['%cost%' => $cost, '%available%' => $team->getGold()]);
+        }
+
+        $team->setGold($team->getGold() - $cost);
+        $item->setDurability(100);
+
+        $this->em->flush();
+
+        return $cost;
+    }
+
+    public function calculateRepairCost(Item $item): int
+    {
+        $missing = 100 - $item->getDurability();
+        $ratePerPoint = self::REPAIR_COST_PER_POINT[$item->getRarity()->value];
+
+        return $missing * $ratePerPoint;
+    }
+
+    /** @return array<string, mixed> */
+    public function serialize(Item $item): array
+    {
+        return [
+            'id' => $item->getId(),
+            'name' => $item->getName(),
+            'slot_type' => $item->getSlotType()->value,
+            'category' => $item->getCategory()->value,
+            'rarity' => $item->getRarity()->value,
+            'durability' => $item->getDurability(),
+            'repair_cost' => $this->calculateRepairCost($item),
+            'bonuses' => $item->getBonuses(),
+            'special_effects' => $item->getSpecialEffects(),
+            'equipped_hero_id' => $item->getEquippedHero()?->getId(),
+            'equipped_slot' => $item->getEquippedSlot()?->value,
+        ];
+    }
+
+    private function addEssenceByRarity(Team $team, ItemRarity $rarity, int $amount): void
+    {
+        match ($rarity) {
+            ItemRarity::Common => $team->setEssenceCommon($team->getEssenceCommon() + $amount),
+            ItemRarity::Uncommon => $team->setEssenceUncommon($team->getEssenceUncommon() + $amount),
+            ItemRarity::Rare => $team->setEssenceRare($team->getEssenceRare() + $amount),
+            ItemRarity::Epic => $team->setEssenceEpic($team->getEssenceEpic() + $amount),
+            ItemRarity::Legendary => $team->setEssenceLegendary($team->getEssenceLegendary() + $amount),
+            ItemRarity::Mythic => $team->setEssenceMythic($team->getEssenceMythic() + $amount),
+        };
+    }
+}

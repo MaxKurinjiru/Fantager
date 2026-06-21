@@ -1,0 +1,41 @@
+# VCS & Docker Config
+.git
+.gitignore
+.dockerignore
+docker/Dockerfile
+docker/README.md
+docker-compose.yml
+docker-compose.override.yml
+
+# Documentation
+README.md
+docs/
+_deferred/
+
+# Dependencies and build artifacts
+node_modules/
+vendor/
+!vendor/symfony/ux-turbo/assets
+public/build/
+build/
+
+# Environment / secrets
+.env.local
+.env.*.local
+
+# Symfony runtime / caches / logs
+var/
+var/cache/
+var/log/
+var/sessions/
+
+
+# Logs and debug
+npm-debug.log
+yarn-error.log
+
+# Editor / OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,80 @@
+---
+description: Fantager Twig UI rules — semantic classes only, no Tailwind utilities
+globs: templates/**/*.twig
+alwaysApply: false
+---
+
+# Twig UI (Fantager)
+
+Authoritative doc: `docs/ui-guidelines.md`. Quick ref: `docs/ui-agent-cheatsheet.md`.
+
+## Never add to Twig `class` (use SCSS semantic classes)
+
+Layout/spacing utilities: `flex`, `grid grid-cols-*`, `gap-*`, `space-y-*`, `space-x-*`, `justify-*`, `items-*`, `m*-*`, `p*-*`, `col-span-*`, `lg:*`, `md:*`, `sm:*`
+
+Typography utilities: `text-xs|sm|lg|xl|2xl|…`, `font-semibold|bold|medium`, `text-center`
+
+Color utilities: `text-red-*`, `bg-emerald-*`, `text-warning`, any Tailwind palette class
+
+Sizing/FX: `w-*`, `h-*`, `min-h-[…]`, `max-h-[…]`, `shadow-lg`, `overflow-x-auto`, `whitespace-nowrap`, `cursor-pointer`
+
+Inline `style="…"` (except truly dynamic values handled server-side).
+
+## Allowed exceptions in Twig
+
+- `hidden` — Stimulus toggles
+- `sr-only` — screen reader text
+- `group` — hover group states (rare)
+
+## Before inventing a new class
+
+1. Search `assets/styles/components/` for an existing class
+2. If missing: add to the correct `_*.scss` using `var(--…)` tokens
+3. Then use the semantic class in Twig
+
+## Layout — prefer these (see `_layout.scss`, `_shared.scss`)
+
+| Need | Class |
+|------|-------|
+| Vertical stack | `.layout-stack` (+ `--sm`, `--md`, `--lg`, `--form`) |
+| Horizontal row | `.layout-cluster` (+ modifiers) |
+| Page width | `.page-shell` |
+| 3-column screen | `.screen-3col`, `__main`, `__aside` |
+| 2-column screen | `.screen-grid`, `__main`, `__aside` |
+| 2-col dashboard | `.dashboard-grid-2` |
+| Form field stack | `.form-field-group` (+ `--tight`) |
+| Scrollable table | `.data-table-wrap`, `.game-panel--scroll` |
+| Panel | `.game-panel`, `.hero-panel`, `.feature-panel` |
+
+## Atoms (two-class pattern where applicable)
+
+```twig
+<button class="btn btn-primary btn--sm">…</button>
+<input class="form-input" id="…">
+<label class="form-label" for="…">…</label>
+<a class="link">…</a>
+```
+
+## Copy & status colors
+
+Use `.copy-muted`, `.copy-secondary`, `.copy-status-error`, `.status-chip`, `.alert-box--spaced` — not Tailwind color utilities.
+
+## i18n & a11y (required)
+
+- All visible text: `{{ 'key'|trans }}`
+- Every input: `<label for="id">` or `aria-label`
+- Icon-only buttons: `aria-label="{{ '…'|trans }}"`
+- Modals: `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
+- Dynamic alerts: `role="alert"`
+
+## Dynamic UI
+
+Clone from `<template id="template-…">` in Twig — do not build HTML strings with class names in JS.
+
+## Optional verification (user-requested only)
+
+Do not run automatically. When the user asks:
+
+```bash
+bash scripts/check-ui-compliance.sh
+```

@@ -1,0 +1,29 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ team.name }} — {{ 'nav.dashboard'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="page-shell">
+    {# --- Header / Premium Guild Banner --- #}
+    {% include 'components/dashboard/team_banner.html.twig' %}
+
+    {% include 'components/dashboard/financial_crisis_banner.html.twig' with { team: team } %}
+
+    {% include 'components/finance/summary_stats.html.twig' with { summary: finance_summary } %}
+
+    <div class="dashboard-grid-2">
+        {% include 'components/dashboard/recent_expenses.html.twig' with { recent_transactions: finance_summary.recent_transactions } %}
+        {% include 'components/dashboard/recent_chronicle.html.twig' with { recent_chronicle: recent_chronicle } %}
+    </div>
+
+    {% include 'components/dashboard/league_week_matches.html.twig' %}
+
+    <div class="dashboard-grid-2">
+        {% include 'components/dashboard/quick_actions.html.twig' %}
+        {% include 'components/dashboard/stats_card.html.twig' %}
+    </div>
+</div>
+
+{# Team Profile Settings Modal #}
+{% include 'dashboard/_team_profile_modal.html.twig' %}
+{% endblock %}

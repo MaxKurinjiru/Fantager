@@ -1,0 +1,159 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  GRAVEYARD — memorial wall
+// =============================================================================
+
+@layer components {
+  .graveyard-page {
+    @apply space-y-6;
+  }
+
+  .graveyard-summary {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+  }
+
+  .graveyard-summary__card {
+    @apply p-4 rounded-xl border flex flex-col gap-1;
+    border-color: var(--color-border);
+    background-color: var(--overlay-surface-base-40);
+  }
+
+  .graveyard-summary__label {
+    @apply text-[11px] font-bold uppercase tracking-wide;
+    color: var(--color-text-muted);
+  }
+
+  .graveyard-summary__value {
+    @apply text-2xl font-bold text-white;
+  }
+
+  .graveyard-filters {
+    @apply p-4 rounded-xl border space-y-4;
+    border-color: var(--color-border);
+    background-color: var(--overlay-surface-base-40);
+  }
+
+  .graveyard-filters__grid {
+    @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4;
+  }
+
+  .graveyard-filters__field {
+    @apply space-y-1;
+  }
+
+  .graveyard-filters__actions {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .graveyard-detail {
+    @apply p-5 rounded-xl border space-y-4;
+    border-color: var(--color-brand-500);
+    background-color: var(--overlay-surface-raised-45);
+  }
+
+  .graveyard-detail__header {
+    @apply flex flex-wrap items-center justify-between gap-3;
+  }
+
+  .graveyard-detail__title {
+    @apply text-xl font-bold text-white m-0;
+  }
+
+  .graveyard-detail__close {
+    @apply text-xs font-bold uppercase tracking-wide no-underline;
+    color: var(--color-brand-400);
+  }
+
+  .graveyard-detail__meta {
+    @apply flex flex-wrap gap-3 text-xs;
+    color: var(--color-text-secondary);
+  }
+
+  .graveyard-detail__stats {
+    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 m-0;
+
+    div {
+      @apply p-3 rounded-lg border;
+      border-color: var(--color-border);
+      background-color: var(--color-surface-base);
+    }
+
+    dt {
+      @apply text-[10px] uppercase tracking-wide m-0;
+      color: var(--color-text-muted);
+    }
+
+    dd {
+      @apply text-sm font-bold text-white m-0 mt-1;
+    }
+  }
+
+  .graveyard-list {
+    @apply space-y-3;
+  }
+
+  .graveyard-entry {
+    @apply flex gap-4 p-4 rounded-xl border transition-colors;
+    background-color: var(--overlay-surface-raised-25);
+    border-color: var(--color-border);
+
+    &:hover {
+      background-color: var(--overlay-surface-overlay-35);
+    }
+  }
+
+  .graveyard-entry__icon {
+    @apply text-2xl shrink-0 select-none;
+  }
+
+  .graveyard-entry__body {
+    @apply min-w-0 flex-1 space-y-2;
+  }
+
+  .graveyard-entry__meta {
+    @apply flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px];
+  }
+
+  .graveyard-entry__name {
+    @apply text-sm font-bold text-white;
+  }
+
+  .graveyard-entry__badge {
+    @apply font-bold uppercase tracking-wide;
+    color: var(--color-brand-400);
+  }
+
+  .graveyard-entry__time {
+    color: var(--color-text-muted);
+  }
+
+  .graveyard-entry__details {
+    @apply text-sm m-0 leading-relaxed;
+    color: var(--color-text-secondary);
+  }
+
+  .graveyard-entry__link {
+    @apply text-[11px] font-bold uppercase tracking-wide no-underline;
+    color: var(--color-brand-400);
+  }
+
+  .graveyard-empty {
+    @apply text-center py-16 px-6 rounded-xl border;
+    border-color: var(--color-border);
+    background-color: var(--overlay-surface-base-35);
+  }
+
+  .graveyard-empty__emoji {
+    @apply text-5xl mb-4;
+  }
+
+  .graveyard-empty__title {
+    @apply text-lg font-bold text-white mb-2;
+  }
+
+  .graveyard-empty__desc {
+    @apply text-sm m-0;
+    color: var(--color-text-secondary);
+  }
+}

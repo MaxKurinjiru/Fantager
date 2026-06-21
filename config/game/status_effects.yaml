@@ -1,0 +1,137 @@
+# Status Effects — Combat System
+# Defined as reference config; implemented as PHP enums + value objects
+# Used by combat engine during battle resolution
+
+effects:
+  # --- Offensive debuffs ---
+  burn:
+    name: Burn
+    type: debuff
+    school: Fire
+    duration_turns: 3
+    tick_damage_percent: 5
+    stackable: false
+
+  freeze:
+    name: Freeze
+    type: debuff
+    school: Water
+    duration_turns: 1
+    skip_turn: true
+    stackable: false
+
+  shock:
+    name: Shock
+    type: debuff
+    school: Air
+    duration_turns: 2
+    speed_reduction_percent: 30
+    stackable: false
+
+  petrify:
+    name: Petrify
+    type: debuff
+    school: Earth
+    duration_turns: 2
+    defense_reduction_percent: 20
+    stackable: false
+
+  blind:
+    name: Blind
+    type: debuff
+    school: Light
+    duration_turns: 2
+    accuracy_reduction_percent: 40
+    stackable: false
+
+  curse:
+    name: Curse
+    type: debuff
+    school: Dark
+    duration_turns: 3
+    healing_reduction_percent: 50
+    stackable: false
+
+  stun:
+    name: Stun
+    type: debuff
+    school: null
+    duration_turns: 1
+    skip_turn: true
+    stackable: false
+
+  poison:
+    name: Poison
+    type: debuff
+    school: null
+    duration_turns: 4
+    tick_damage_percent: 3
+    stackable: true
+    max_stacks: 3
+
+  # --- Defensive buffs ---
+  shield:
+    name: Shield
+    type: buff
+    school: Earth
+    duration_turns: 3
+    damage_reduction_percent: 25
+    stackable: false
+
+  regeneration:
+    name: Regeneration
+    type: buff
+    school: Water
+    duration_turns: 3
+    tick_heal_percent: 5
+    stackable: false
+
+  haste:
+    name: Haste
+    type: buff
+    school: Air
+    duration_turns: 2
+    speed_bonus_percent: 30
+    stackable: false
+
+  bless:
+    name: Bless
+    type: buff
+    school: Light
+    duration_turns: 3
+    all_stats_bonus_percent: 10
+    stackable: false
+
+  fury:
+    name: Fury
+    type: buff
+    school: Fire
+    duration_turns: 2
+    damage_bonus_percent: 30
+    defense_reduction_percent: 15
+    stackable: false
+
+  shadow_cloak:
+    name: Shadow Cloak
+    type: buff
+    school: Dark
+    duration_turns: 2
+    dodge_bonus_percent: 40
+    stackable: false
+
+  # --- Utility ---
+  taunt:
+    name: Taunt
+    type: utility
+    school: null
+    duration_turns: 2
+    forces_target: true
+    stackable: false
+
+  silence:
+    name: Silence
+    type: debuff
+    school: null
+    duration_turns: 2
+    prevents_spells: true
+    stackable: false

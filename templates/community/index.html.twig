@@ -1,0 +1,147 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'nav.community'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="community-page page-shell" data-controller="community-forum"
+     data-community-forum-translations-value="{{ {
+         'warning_fill_fields': 'community.warning_fill_fields'|trans,
+         'text_sending': 'community.text_sending'|trans,
+         'error_create_thread': 'community.error_create_thread'|trans,
+         'success_create_thread': 'community.success_create_thread'|trans,
+         'create_thread': 'community.create_thread'|trans
+     }|json_encode|e('html_attr') }}"
+>
+    {% set right_content %}
+        <button type="button" data-action="click->community-forum#openNewThreadModal" class="btn btn-primary btn-primary--prominent">
+            <span>➕</span> {{ 'community.new_thread'|trans }}
+        </button>
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'community.title',
+        subtitle: 'community.subtitle',
+        right_content: right_content
+    } %}
+
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'community-forum',
+        message_target: 'alertMessage',
+        close_action: 'community-forum#hideAlert'
+    } %}
+
+    <nav class="tab-nav-bar" aria-label="{{ 'community.categories'|trans }}">
+        <a href="{{ path('app_community', search ? { q: search } : {}) }}"
+           class="tab-btn {{ active_category == 'all' ? 'tab-btn--active' : '' }}">
+            {{ 'community.all_threads'|trans }}
+        </a>
+        {% for cat in categories %}
+            {% set cat_params = { category: cat } %}
+            {% if search %}
+                {% set cat_params = cat_params|merge({ q: search }) %}
+            {% endif %}
+            <a href="{{ path('app_community', cat_params) }}"
+               class="tab-btn {{ active_category == cat ? 'tab-btn--active' : '' }}">
+                {{ ('community.category_' ~ cat)|trans }}
+            </a>
+        {% endfor %}
+    </nav>
+
+    <form method="get" action="{{ path('app_community') }}" class="filter-form">
+        <div class="filter-form__fields">
+            {% if active_category != 'all' %}
+                <input type="hidden" name="category" value="{{ active_category }}">
+            {% endif %}
+            <div class="filter-form__search-wrap">
+                <label for="forum-search" class="sr-only">{{ 'community.search_placeholder'|trans }}</label>
+                <span class="filter-form__search-icon" aria-hidden="true">🔍</span>
+                <input type="search"
+                       id="forum-search"
+                       name="q"
+                       value="{{ search }}"
+                       placeholder="{{ 'community.search_placeholder'|trans }}"
+                       class="form-input filter-form__search-input">
+            </div>
+            <button type="submit" class="btn btn-outline btn--sm">{{ 'community.search_btn'|trans }}</button>
+            {% if search %}
+                <a href="{{ path('app_community', active_category != 'all' ? { category: active_category } : {}) }}"
+                   class="btn btn-ghost btn--sm">
+                    {{ 'community.clear_search'|trans }}
+                </a>
+            {% endif %}
+        </div>
+    </form>
+
+    {% if threads is empty %}
+        <div class="forum-empty-state game-panel">
+            <div class="forum-empty-state__emoji">💬</div>
+            <h2 class="forum-empty-state__title">
+                {% if search %}
+                    {{ 'community.no_search_results'|trans }}
+                {% else %}
+                    {{ 'community.no_threads'|trans }}
+                {% endif %}
+            </h2>
+            <p class="forum-empty-state__desc">
+                {% if search %}
+                    {{ 'community.no_search_results_desc'|trans }}
+                {% else %}
+                    {{ 'community.no_threads_desc'|trans }}
+                {% endif %}
+            </p>
+            {% if not search %}
+                <button type="button" data-action="click->community-forum#openNewThreadModal" class="btn btn-primary">
+                    {{ 'community.create_first_thread'|trans }}
+                </button>
+            {% endif %}
+        </div>
+    {% else %}
+        {% if pinned_threads is not empty %}
+            <section class="thread-list-section">
+                <h2 class="thread-list-section__title">{{ 'community.pinned_threads'|trans }}</h2>
+                <div class="thread-list">
+                    {% for thread in pinned_threads %}
+                        {% include 'components/community/thread_card.html.twig' with {
+                            thread: thread,
+                            active_category: active_category
+                        } %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if regular_threads is not empty %}
+            <section class="thread-list-section">
+                {% if pinned_threads is not empty and page == 1 %}
+                    <h2 class="thread-list-section__title">{{ 'community.recent_threads'|trans }}</h2>
+                {% endif %}
+                <div class="thread-list">
+                    {% for thread in regular_threads %}
+                        {% include 'components/community/thread_card.html.twig' with {
+                            thread: thread,
+                            active_category: active_category
+                        } %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if total_pages > 1 %}
+            <nav class="news-pagination" aria-label="{{ 'news.pagination'|trans }}">
+                {% if page > 1 %}
+                    <a href="{{ path('app_community', app.request.query.all|merge({ page: page - 1 })) }}" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</a>
+                {% endif %}
+                <span class="news-pagination__info">{{ 'news.page_info'|trans({ '%page%': page, '%total%': total_pages }) }}</span>
+                {% if page < total_pages %}
+                    <a href="{{ path('app_community', app.request.query.all|merge({ page: page + 1 })) }}" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% endif %}
+
+    {% include 'components/community/new_thread_modal.html.twig' with {
+        categories: categories,
+        controller_name: 'community-forum'
+    } %}
+</div>
+{% endblock %}

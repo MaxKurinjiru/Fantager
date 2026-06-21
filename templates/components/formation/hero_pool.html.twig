@@ -1,0 +1,26 @@
+{# templates/components/formation/hero_pool.html.twig #}
+<div class="feature-panel formation-hero-roster" data-formation-target="rosterDropZone"
+     data-action="dragover->formation#rosterDragOver dragenter->formation#rosterDragEnter dragleave->formation#rosterDragLeave drop->formation#rosterDrop">
+    <div>
+        <h2 class="feature-panel__title">{{ 'formation.hero_roster'|trans }}</h2>
+        <p class="feature-panel__desc">{{ 'formation.hero_roster_desc'|trans }}</p>
+    </div>
+
+    {% if heroes is empty %}
+        <div class="formation-pool-empty">{{ 'formation.no_heroes_roster'|trans }}</div>
+    {% else %}
+        <div class="formation-pool">
+            {% for h in heroes %}
+                <div data-formation-target="poolHero" data-hero-id="{{ h.id }}" data-name="{{ h.name }}" data-level="{{ h.level }}" data-race="{{ h.race.value }}" data-race-icon="{{ race_icon(h.race) }}"
+                     draggable="true"
+                     data-action="dragstart->formation#poolDragStart dragend->formation#dragEnd"
+                     class="formation-pool-item">
+                    <span data-assigned-badge class="hidden formation-pool-item__badge">{{ 'formation.assigned'|trans }}</span>
+                    {% include 'components/hero/avatar.html.twig' with { race: h.race, text_size: 'text-lg' } %}
+                    <h4 class="formation-pool-item__name">{{ h.name }}</h4>
+                    <p class="formation-pool-item__meta">{{ 'js_flash.hq.lvl_short'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

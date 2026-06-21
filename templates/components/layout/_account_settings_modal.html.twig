@@ -1,0 +1,135 @@
+<div data-controller="modal" data-modal-event-name-value="modal:open-account-settings">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+
+         <div class="modal-box settings-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="account-settings-title">
+
+              <button type="button"
+                      data-action="click->modal#close"
+                      class="modal-close"
+                      aria-label="{{ 'modal.close'|trans }}">
+                  <span aria-hidden="true" class="modal-close__icon">✕</span>
+                  <span class="sr-only">{{ 'modal.close'|trans }}</span>
+              </button>
+
+              <h2 id="account-settings-title" class="settings-modal__title">
+                  <span aria-hidden="true">⚙️</span> {{ 'settings.title'|trans }}
+              </h2>
+
+              <div class="settings-modal__body">
+                  <div class="settings-modal__section">
+                      <h3 class="settings-modal__section-title">{{ 'settings.language'|trans }}</h3>
+                      <div class="locale-picker">
+                          <a href="{{ path('app_change_locale', { locale: 'cs' }) }}"
+                             class="locale-picker__option {{ app.request.locale == 'cs' ? 'locale-picker__option--active' : '' }}">
+                              {{ 'settings.locale_cs'|trans }}
+                          </a>
+                          <a href="{{ path('app_change_locale', { locale: 'en' }) }}"
+                             class="locale-picker__option {{ app.request.locale == 'en' ? 'locale-picker__option--active' : '' }}">
+                              {{ 'settings.locale_en'|trans }}
+                          </a>
+                      </div>
+                  </div>
+
+                  <hr class="settings-modal__divider" />
+
+                  <div data-controller="account-settings" class="settings-modal__content"
+                       data-account-settings-text-processing-value="{{ 'js_flash.settings.processing'|trans }}"
+                       data-account-settings-error-email-value="{{ 'js_flash.settings.failed_email'|trans }}"
+                       data-account-settings-error-cancel-value="{{ 'js_flash.settings.failed_cancel'|trans }}"
+                       data-account-settings-error-preferences-value="{{ 'js_flash.settings.failed_preferences'|trans }}">
+                  <div class="settings-modal__section">
+                      <h3 class="settings-modal__section-title">{{ 'settings.interface'|trans }}</h3>
+                      <label class="form-check">
+                          <input type="checkbox"
+                                 data-account-settings-target="closeModalOnBackdropToggle"
+                                 data-action="change->account-settings#saveCloseModalOnBackdrop"
+                                 {% if app.user.closeModalOnBackdrop %}checked{% endif %}
+                                 class="form-check__input">
+                          <span>{{ 'settings.modal_backdrop_close'|trans }}</span>
+                      </label>
+                      <div data-account-settings-target="closeModalOnBackdropError"
+                           class="hidden alert alert-error"
+                           role="alert"></div>
+                  </div>
+
+                  <hr class="settings-modal__divider" />
+
+                  <div class="settings-modal__section">
+                      <form data-action="submit->account-settings#changeEmail" class="settings-modal__section">
+                          <h3 class="settings-modal__section-title">{{ 'settings.email.title'|trans }}</h3>
+
+                          <div class="form-field">
+                              <label for="account_new_email" class="form-label">{{ 'settings.email.label'|trans }}</label>
+                              <div class="settings-modal__email-row">
+                                  <input type="email" id="account_new_email"
+                                         data-account-settings-target="emailInput"
+                                         required
+                                         placeholder="{{ app.user.email }}"
+                                         autocomplete="email"
+                                         aria-describedby="account_new_email_error"
+                                         class="form-input">
+                                  <button type="submit"
+                                          data-account-settings-target="emailSubmitBtn"
+                                          class="btn btn-primary btn--sm">
+                                      {{ 'settings.email.submit'|trans }}
+                                  </button>
+                              </div>
+                          </div>
+
+                          <div id="account_new_email_error"
+                               data-account-settings-target="emailError"
+                               class="hidden alert alert-error"
+                               role="alert"></div>
+                          <div data-account-settings-target="emailSuccess"
+                               class="hidden alert alert-success"
+                               role="alert"></div>
+                      </form>
+
+                      <hr class="settings-modal__divider" />
+
+                      <div class="settings-modal__section">
+                          <h3 class="settings-modal__section-title settings-modal__section-title--danger">{{ 'settings.delete.title'|trans }}</h3>
+                          <p class="copy-muted">{{ 'settings.delete.warning'|trans }}</p>
+
+                          <button type="button"
+                                  data-action="click->account-settings#showCancelConfirm"
+                                  class="btn btn-danger btn--sm btn--block">
+                              {{ 'settings.delete.btn'|trans }}
+                          </button>
+
+                          <div data-account-settings-target="cancelConfirmPanel"
+                               class="hidden cancel-confirm-panel">
+                              <p class="copy-status-error">{{ 'settings.delete.confirm_msg'|trans }}</p>
+                              <div class="cancel-confirm-panel__actions">
+                                  <button type="button"
+                                          data-action="click->account-settings#submitCancelAccount"
+                                          data-account-settings-target="cancelSubmitBtn"
+                                          class="btn btn-danger btn--sm">
+                                      {{ 'settings.delete.confirm_yes'|trans }}
+                                  </button>
+                                  <button type="button"
+                                          data-action="click->account-settings#hideCancelConfirm"
+                                          class="btn btn-outline btn--sm">
+                                      {{ 'settings.delete.confirm_no'|trans }}
+                                  </button>
+                              </div>
+                          </div>
+
+                          <div data-account-settings-target="cancelError"
+                               class="hidden alert alert-error"
+                               role="alert"></div>
+                          <div data-account-settings-target="cancelSuccess"
+                               class="hidden alert alert-success"
+                               role="alert"></div>
+                      </div>
+                  </div>
+                  </div>
+              </div>
+         </div>
+    </div>
+</div>

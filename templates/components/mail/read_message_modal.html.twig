@@ -1,0 +1,48 @@
+{# templates/components/mail/read_message_modal.html.twig #}
+<div id="read-message-modal" data-controller="modal" data-mail-target="readMessageModal" data-modal-event-name-value="modal:open-read-message">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay modal-overlay--stacked"
+         data-action="click->modal#closeBackdrop">
+
+        <div class="modal-box modal-box--spacious"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="mail-read-message-title">
+
+            <button type="button"
+                    data-action="click->modal#close"
+                    class="modal-close"
+                    aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="modal-close__icon">✕</span>
+                <span class="sr-only">{{ 'modal.close'|trans }}</span>
+            </button>
+
+            <div class="modal-header">
+                <h2 id="mail-read-message-title" data-mail-target="readSubject" class="modal-header__title"></h2>
+                <div class="message-meta">
+                    <span data-mail-target="readSenderLabel">{{ 'community.from'|trans }}</span>
+                    <span class="team-color-dot hidden" data-mail-target="readSenderColor"></span>
+                    <strong data-mail-target="readSenderName" class="message-meta__sender"></strong>
+                    <span class="message-meta__separator" aria-hidden="true">&bull;</span>
+                    <time data-mail-target="readDate"></time>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="message-content-box" data-mail-target="readBody">
+                    {# Message body injected by mail controller #}
+                </div>
+            </div>
+
+            <div class="modal-footer modal-footer--split">
+                <button type="button"
+                        data-action="click->mail#deleteCurrentMessage"
+                        data-mail-target="deleteMsgBtn"
+                        class="btn btn-danger btn--sm">
+                    🗑️ {{ 'community.delete_msg'|trans }}
+                </button>
+                <button type="button" data-action="click->modal#close" class="btn btn-outline btn--sm">{{ 'community.close'|trans }}</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,52 @@
+{# templates/components/hero/status_panel.html.twig #}
+<div class="hero-panel">
+    <div>
+        <h2 class="hero-panel__title">{{ 'heroes.status_condition'|trans }}</h2>
+        <p class="hero-panel__desc">{{ 'heroes.status_condition_desc'|trans }}</p>
+    </div>
+
+    <div class="layout-stack layout-stack--form">
+        {# Form #}
+        <div class="layout-stack layout-stack--sm">
+            <div class="hero-bar-row">
+                <span class="hero-bar-row__label">{{ 'heroes.combat_form'|trans }}</span>
+                <span class="hero-bar-row__value">{{ hero.form }}%</span>
+            </div>
+            {% include 'components/ui/progress_bar.html.twig' with {
+                percentage: hero.form,
+                progress_class: 'hero-progress-fill ' ~ (hero.form > 75 ? 'hero-progress-fill--success' : (hero.form > 40 ? 'hero-progress-fill--warning' : 'hero-progress-fill--danger'))
+            } %}
+        </div>
+
+        {# Fatigue #}
+        <div class="layout-stack layout-stack--sm">
+            <div class="hero-bar-row">
+                <span class="hero-bar-row__label">{{ 'heroes.fatigue'|trans }}</span>
+                <span class="hero-bar-row__value">{{ hero.fatigue }}%</span>
+            </div>
+            {% include 'components/ui/progress_bar.html.twig' with {
+                percentage: hero.fatigue,
+                progress_class: 'hero-progress-fill ' ~ (hero.fatigue < 30 ? 'hero-progress-fill--success' : (hero.fatigue < 70 ? 'hero-progress-fill--warning' : 'hero-progress-fill--danger'))
+            } %}
+        </div>
+
+        {# Morale #}
+        <div class="layout-stack layout-stack--sm">
+            <div class="hero-bar-row">
+                <span class="hero-bar-row__label">{{ 'heroes.morale_label'|trans }}</span>
+                <span class="hero-bar-row__value hero-bar-row__value--cluster">
+                    {{ hero.morale }}%
+                    {% if hero.morale >= 80 %}🥰
+                    {% elseif hero.morale >= 60 %}🙂
+                    {% elseif hero.morale >= 40 %}😐
+                    {% elseif hero.morale >= 20 %}🙁
+                    {% else %}😭{% endif %}
+                </span>
+            </div>
+            {% include 'components/ui/progress_bar.html.twig' with {
+                percentage: hero.morale,
+                progress_class: 'hero-progress-fill hero-progress-fill--accent'
+            } %}
+        </div>
+    </div>
+</div>

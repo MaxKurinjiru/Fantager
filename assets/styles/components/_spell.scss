@@ -1,0 +1,136 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  SPELLS — spellbook cards, slots, mastery badges
+// =============================================================================
+
+@layer components {
+  .spell-card {
+    @apply rounded-xl p-4 flex flex-col gap-3 transition-colors;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 55%, transparent);
+    border: 1px solid var(--color-border);
+
+    &:hover {
+      border-color: var(--color-border-strong);
+    }
+
+    &--md {
+      min-height: 8.75rem;
+    }
+
+    &--lg {
+      min-height: 10rem;
+    }
+  }
+
+  .spell-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .mastery-badge {
+    @apply inline-flex items-center text-[10px] font-bold uppercase px-2 py-0.5 rounded border;
+
+    &--met {
+      background-color: var(--color-success-bg);
+      border-color: var(--color-success-border);
+      color: var(--color-success-text);
+    }
+
+    &--unmet {
+      background-color: color-mix(in srgb, var(--color-surface-base) 80%, transparent);
+      border-color: var(--color-border);
+      color: var(--color-text-muted);
+    }
+  }
+
+  .spell-slot {
+    @apply flex items-center justify-between p-3 rounded-xl;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+
+    &--empty {
+      border-style: dashed;
+      color: var(--color-text-muted);
+      justify-content: center;
+      font-size: 0.75rem;
+      font-style: italic;
+    }
+
+    &--locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+      background-color: color-mix(in srgb, var(--color-surface-raised) 30%, transparent);
+    }
+  }
+}
+
+.spell-card__school { @apply text-[9px] font-bold uppercase tracking-wider; color: var(--color-text-muted); }
+.spell-card__desc { @apply text-[10px] leading-relaxed; color: var(--color-text-secondary); }
+.spell-card__fee-label { @apply block text-[8px] font-bold uppercase tracking-wider; color: var(--color-text-muted); }
+.spell-card__fee-value { @apply text-xs font-bold; color: var(--color-amber-400); }
+.spell-card__fee-essence { color: var(--color-purple-400); font-weight: 700; }
+.spell-card__title { @apply font-bold text-sm leading-tight m-0; color: var(--color-text-primary); }
+.spell-card__tier { @apply text-[9px] font-bold uppercase tracking-wider; color: var(--color-purple-400); }
+.spell-card__status-note { @apply text-[9px] font-bold; color: var(--color-error-text); }
+.spell-card__action-btn { @apply uppercase tracking-wider; font-size: 0.5625rem; font-weight: 700; }
+.spell-grid { @apply grid grid-cols-1 sm:grid-cols-2 gap-4; }
+.spell-card__footer { @apply border-t mt-4 pt-3 flex items-center justify-between gap-4; border-color: var(--color-border); }
+.spell-card__known-badge {
+  @apply text-[10px] font-bold px-2.5 py-1.5 rounded;
+  color: var(--color-text-muted);
+  background-color: var(--color-surface-base);
+  border: 1px solid var(--color-border);
+}
+.spell-card__status { @apply text-[9px] font-bold; color: var(--color-text-muted); }
+.spell-card__status--known { color: var(--color-success-text); }
+.spell-empty-state { @apply text-center py-12 select-none border border-dashed rounded-xl opacity-60; border-color: var(--color-border); }
+.spell-empty-state__icon {
+  display: block;
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+.spell-empty-state__title { @apply text-xs font-bold; color: var(--color-text-secondary); }
+.spell-empty-state__desc { @apply text-[10px] mt-1; color: var(--color-text-muted); }
+.spell-slot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.spell-mastery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.spell-mastery-cell__label {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.panel-divider--stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.hero-spell-locked__icon {
+  display: block;
+  font-size: 1.875rem;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+.spell-capacity-label { @apply text-[10px] font-extrabold uppercase tracking-wide; color: var(--color-brand-400); }
+.spell-mastery-cell {
+  @apply p-2 rounded-lg flex items-center justify-between text-xs;
+  background-color: var(--color-surface-base);
+  border: 1px solid var(--color-border);
+}
+.spell-mastery-tier {
+  @apply font-extrabold px-1.5 py-0.5 rounded text-[10px];
+  background-color: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+.spell-slot__name { @apply text-xs font-bold; color: var(--color-text-primary); }
+.spell-slot__meta { @apply text-[9px] uppercase font-semibold; color: var(--color-text-muted); }
+.spell-slot__empty-label { @apply text-xs font-bold; color: var(--color-text-muted); }

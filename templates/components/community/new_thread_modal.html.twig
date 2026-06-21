@@ -1,0 +1,51 @@
+{# templates/components/community/new_thread_modal.html.twig #}
+{% set categories = categories|default([]) %}
+{% set controller_name = controller_name|default('community-forum') %}
+
+<div id="new-thread-modal"
+     class="modal-overlay hidden"
+     data-controller="modal"
+     data-{{ controller_name }}-target="newThreadModal"
+     data-modal-event-name-value="modal:open-new-thread">
+    <div class="modal-box modal-box--spacious" data-modal-target="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title-new-thread">
+        <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+            <span aria-hidden="true" class="modal-close__icon">✕</span>
+            <span class="sr-only">{{ 'modal.close'|trans }}</span>
+        </button>
+
+        <div class="modal-header">
+            <h2 id="modal-title-new-thread" class="modal-header__title">{{ 'community.new_thread_title'|trans }}</h2>
+        </div>
+
+        <div class="modal-body">
+            <div>
+                <label for="thread-category" class="form-label">{{ 'community.categories'|trans }}</label>
+                <select id="thread-category" class="form-input" data-{{ controller_name }}-target="newThreadCategory">
+                    {% for cat in categories %}
+                        <option value="{{ cat }}">{{ ('community.category_' ~ cat)|trans }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="thread-title" class="form-label">{{ 'community.thread_title_label'|trans }}</label>
+                <input id="thread-title" type="text" class="form-input" data-{{ controller_name }}-target="newThreadTitle" required>
+            </div>
+
+            <div>
+                <label for="thread-body" class="form-label">{{ 'community.thread_body_label'|trans }}</label>
+                <textarea id="thread-body" class="form-input" rows="8" data-{{ controller_name }}-target="newThreadBody" required></textarea>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" data-action="click->modal#close" class="btn btn-outline">{{ 'community.cancel'|trans }}</button>
+            <button type="button"
+                    data-action="click->{{ controller_name }}#submitNewThread"
+                    data-{{ controller_name }}-target="submitNewThreadBtn"
+                    class="btn btn-primary">
+                {{ 'community.create_thread'|trans }}
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+services:
+  web:
+    image: ${DOCKER_IMAGE_NAME:-ghcr.io/fantager/fantager-web:latest}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    env_file:
+      - .env
+      - .env.local
+    volumes:
+      - share_data:/var/www/html/var/share
+      - sessions_data:/var/www/html/var/sessions
+    depends_on:
+      - db
+    networks:
+      - fantager-network
+
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-fantager}
+      MYSQL_DATABASE: ${DB_DATABASE:-fantager}
+      MYSQL_USER: ${DB_USER:-fantager}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-fantager}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - fantager-network
+
+volumes:
+  db_data:
+  share_data:
+  sessions_data:
+
+networks:
+  fantager-network:
+    driver: bridge

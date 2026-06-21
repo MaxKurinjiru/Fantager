@@ -1,0 +1,10 @@
+{# templates/components/layout/sidebar_link.html.twig #}
+{% set route = route|default('') %}
+{% set emoji = emoji|default('') %}
+{% set label = label|default('') %}
+{% set is_active = is_active|default(false) %}
+
+<a href="{{ path(route) }}"
+   class="sidebar-link{{ is_active ? ' sidebar-link--active' : '' }}">
+    <span class="sidebar-link__emoji">{{ emoji }}</span> {{ label|trans }}
+</a>

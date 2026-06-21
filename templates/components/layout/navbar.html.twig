@@ -1,0 +1,158 @@
+{% set is_guest = is_guest|default(not (app.user and app.user.team)) %}
+
+{% if not is_guest %}
+    <div class="navbar-container">
+        <nav class="navbar-main">
+            <div class="navbar-main__inner">
+                <div class="navbar-main__left">
+                {# Hamburger Menu Button #}
+                <button type="button"
+                        data-action="click->mobile-menu#toggle" 
+                        class="navbar-hamburger" 
+                        aria-label="{{ 'nav.toggle_menu'|trans }}">
+                    <svg class="navbar-hamburger__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+
+                <a href="{{ path('app_dashboard') }}" class="navbar-logo">Fantager</a>
+                <span class="navbar-badge">
+                    {{ app.user.team.kingdom.name }}
+                </span>
+                </div>
+
+                <div class="navbar-main__right">
+                <button type="button"
+                        data-action="click->ledger#openLedgerModal"
+                        class="navbar-gold"
+                        title="{{ 'finance.recent_title'|trans }}"
+                        aria-label="{{ 'finance.recent_title'|trans }}">
+                    <span class="navbar-gold__icon" aria-hidden="true">🪙</span>
+                    <span class="navbar-gold__amount">{{ app.user.team.gold|number_format(0, '.', ' ') }}</span>
+                </button>
+
+                {# Player Dropdown Menu #}
+                <div class="navbar-dropdown" data-controller="dropdown">
+                    <button type="button"
+                            data-action="click->dropdown#toggle" 
+                            class="navbar-dropdown__trigger">
+                        <span class="navbar-dropdown__emblem">{{ app.user.team.emblem ?: '🛡️' }}</span>
+                        <span class="navbar-dropdown__username">{{ app.user.displayName }}</span>
+                        <svg class="navbar-dropdown__chevron navbar-dropdown__chevron--md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                        <span data-mail-target="badge"
+                              class="dropdown-trigger__badge hidden">0</span>
+                    </button>
+
+                    {# Dropdown panel #}
+                    <div data-dropdown-target="menu" 
+                         class="dropdown-menu hidden">
+                        <div class="dropdown-menu__header">
+                            <p class="dropdown-menu__subtitle">{{ 'dashboard.manager'|trans }}</p>
+                            <p class="dropdown-menu__title">{{ app.user.displayName }}</p>
+                            <p class="dropdown-menu__meta">{{ app.user.team.name }}</p>
+                        </div>
+                        
+
+                        <button type="button"
+                                data-action="click->notifications#openNotificationsModal"
+                                aria-label="{{ 'nav.notifications'|trans }}"
+                                class="dropdown-item">
+                            <svg class="dropdown-item__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            {{ 'nav.notifications'|trans }}
+                            <span data-notifications-target="badge"
+                                  class="dropdown-item__badge hidden">0</span>
+                        </button>
+
+                        <button type="button"
+                                data-action="click->mail#openMailModal" aria-label="{{ 'nav.mail'|trans }}"
+                                class="dropdown-item">
+                            <svg class="dropdown-item__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            {{ 'nav.mail'|trans }}
+                            <span data-mail-target="badge"
+                                  class="dropdown-item__badge hidden">0</span>
+                        </button>
+
+                        {# Settings opens account settings modal via Stimulus event #}
+                        <button type="button"
+                                data-action="click->mail#openAccountSettingsModal" aria-label="{{ 'nav.settings'|trans }}"
+                                class="dropdown-item">
+                            <svg class="dropdown-item__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            {{ 'nav.settings'|trans }}
+                        </button>
+
+                        <div class="dropdown-menu__separator"></div>
+
+                        <a href="{{ path('app_logout') }}" 
+                           class="dropdown-item dropdown-item--danger">
+                            <span>🚪</span> {{ 'nav.logout'|trans }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </nav>
+    </div>
+{% else %}
+    {# Guest navigation bar #}
+    {% set locales = {
+        'cs': { 'label': 'nav.locale_cs'|trans, 'flag': 'cs' },
+        'en': { 'label': 'nav.locale_en'|trans, 'flag': 'en' }
+    } %}
+    {% set current_locale = app.request.locale %}
+    {% set current_info = locales[current_locale]|default({ 'label': current_locale|upper, 'flag': '🌐' }) %}
+
+    <nav class="navbar-guest">
+        <div class="navbar-guest__inner">
+            <a href="{{ path('app_home') }}" class="navbar-logo">Fantager</a>
+            <div class="navbar-guest__right">
+            <a href="{{ path('app_news') }}" class="link navbar-guest__link">{{ 'nav.news'|trans }}</a>
+            {# Guest Language Switcher Dropdown #}
+            <div class="navbar-dropdown" data-controller="dropdown">
+                <button type="button"
+                        data-action="click->dropdown#toggle" 
+                        class="navbar-dropdown__trigger navbar-dropdown__trigger--compact">
+                    <span class="layout-cluster layout-cluster--sm">
+                        <span>{{ current_locale }}</span>
+                    </span>
+                    <svg class="navbar-dropdown__chevron navbar-dropdown__chevron--sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                {# Dropdown panel #}
+                <div data-dropdown-target="menu" 
+                     class="dropdown-menu dropdown-menu--compact hidden">
+                    {% for code, info in locales %}
+                        <a href="{{ path('app_change_locale', { locale: code }) }}" 
+                           class="dropdown-item {{ current_locale == code ? 'dropdown-item--active' }}">
+                            <span class="navbar-locale-label">{{ info.flag }}</span> {{ info.label }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if app.user %}
+                <a href="{{ path('app_dashboard') }}" class="btn btn-primary">
+                    {{ 'nav.enter_game'|trans }}
+                </a>
+                <a href="{{ path('app_logout') }}" class="link navbar-guest__link">{{ 'nav.logout'|trans }}</a>
+            {% else %}
+                <a href="{{ path('app_login') }}"
+                    data-action="click->auth-modal#openLogin"
+                    class="btn btn-primary">
+                    {{ 'nav.login'|trans }}
+                </a>
+            {% endif %}
+            </div>
+        </div>
+    </nav>
+{% endif %}

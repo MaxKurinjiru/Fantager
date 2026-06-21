@@ -1,0 +1,61 @@
+{# templates/components/spell/learned_spells.html.twig #}
+<div id="learned-spells-tab" class="subtab-content">
+    {% if selected_hero and selected_hero.heroSpells|length > 0 %}
+        <div class="spell-grid">
+            {% for hs in selected_hero.heroSpells %}
+                <div class="spell-card spell-card--md">
+                    <div class="layout-stack layout-stack--sm">
+                        <div class="spell-card__header">
+                            <div class="layout-cluster layout-cluster--sm">
+                                <span class="emoji-icon">✨</span>
+                                <div>
+                                    <h3 class="spell-card__title">{{ hs.spell.name }}</h3>
+                                    <span class="spell-card__tier">
+                                        {{ 'spells.tier_label'|trans({'%tier%': hs.spell.tier}) }} &bull; {{ ('school.' ~ hs.spell.school.value)|trans }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="spell-card__desc">{{ 'spells.mana_cooldown'|trans({'%mana%': hs.spell.manaCost, '%cooldown%': hs.spell.cooldown})|raw }}</p>
+                    </div>
+
+                    <div class="panel-divider panel-divider-row">
+                        <div class="spell-card__status">
+                            {% if hs.isEquipped %}
+                                {{ 'inventory.equipped'|trans }} (Slot {{ hs.slotNumber }})
+                            {% else %}
+                                <span class="spell-card__status--known">{{ 'spells.known'|trans }}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if not hs.isEquipped and selected_hero.magicCapacity > 0 %}
+                            {% set first_empty = 0 %}
+                            {% set break = false %}
+                            {% for i in 1..selected_hero.magicCapacity %}
+                                {% if not break and not attribute(equipped, i) is defined %}
+                                    {% set first_empty = i %}
+                                    {% set break = true %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if first_empty > 0 %}
+                                <button type="button" data-action="click->spellbook#equip" data-hero-spell-id="{{ hs.id }}" data-slot="{{ first_empty }}"
+                                        class="btn btn-primary btn--sm spell-card__action-btn">
+                                    {{ 'spells.equip_slot_num'|trans({'%slot%': first_empty}) }}
+                                </button>
+                            {% else %}
+                                <span class="spell-card__status-note">{{ 'spells.slots_full'|trans }}</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="spell-empty-state">
+            <span class="spell-empty-state__icon">📭</span>
+            <h4 class="spell-empty-state__title">{{ 'spells.no_spells'|trans }}</h4>
+            <p class="spell-empty-state__desc">{{ 'spells.no_spells_desc'|trans }}</p>
+        </div>
+    {% endif %}
+</div>

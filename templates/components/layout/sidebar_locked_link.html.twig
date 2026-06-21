@@ -1,0 +1,8 @@
+{# templates/components/layout/sidebar_locked_link.html.twig #}
+{% set emoji = emoji|default('') %}
+{% set label = label|default('') %}
+
+<div class="sidebar-link--locked">
+    <span class="sidebar-link__emoji">{{ emoji }}</span> {{ label|trans }}
+    <span class="sidebar-link__lock-badge">{{ 'sidebar.lock'|trans }}</span>
+</div>

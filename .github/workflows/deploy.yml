@@ -1,0 +1,102 @@
+name: Production Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  # Run static analysis and linting before building image
+  phpstan:
+    uses: ./.github/workflows/phpstan.yml
+
+  ui-compliance:
+    uses: ./.github/workflows/ui-compliance.yml
+
+  backend-docs:
+    uses: ./.github/workflows/backend-docs.yml
+
+  build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [phpstan, ui-compliance, backend-docs]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+            type=sha,value={{sha}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Create .env.local file from Secret
+        run: |
+          echo "${{ secrets.ENV_LOCAL_FILE_CONTENT }}" > .env.local
+
+      - name: Copy deployment files to server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          source: "docker-compose.prod.yml,.env,.env.local"
+          target: "~/fantager"
+
+      - name: SSH to Server and Deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            mkdir -p ~/fantager
+            cd ~/fantager
+            # Log in to GHCR so we can pull the built image
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # Lowercase the repository name to avoid issues with uppercase letters in docker image names
+            REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+            # Pull the new image and start the containers
+            DOCKER_IMAGE_NAME=ghcr.io/${REPO_LOWER}:latest docker compose -f docker-compose.prod.yml pull
+            DOCKER_IMAGE_NAME=ghcr.io/${REPO_LOWER}:latest docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            # Prune old images to free up disk space
+            docker image prune -f

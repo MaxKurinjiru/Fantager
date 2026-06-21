@@ -1,0 +1,402 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  SUMMONING HISTORY — Styles for the summoning history view
+// =============================================================================
+
+@layer components {
+    .summon-history {
+        display: block;
+    }
+
+    .summon-history__filters {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        background-color: var(--overlay-surface-base-40);
+    }
+
+    .summon-history__table-container {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        background-color: var(--overlay-surface-raised-20);
+        overflow: hidden;
+    }
+
+    .summon-history-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th {
+            padding: 1rem;
+            color: var(--color-text-secondary);
+            border-bottom: 1px solid var(--color-border);
+            background-color: var(--overlay-surface-base-60);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--overlay-border-40);
+        }
+    }
+
+    .summon-history-table__row {
+        transition: background-color var(--transition-fast);
+
+        &:hover {
+            background-color: var(--overlay-surface-overlay-30);
+        }
+    }
+
+
+    .summoning-portal {
+        background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        backdrop-filter: blur(12px);
+        box-shadow: var(--shadow-panel);
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .summoning-portal__glow {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, var(--overlay-brand-10), transparent 70%);
+        pointer-events: none;
+    }
+
+    .summoning-portal__idle,
+    .summoning-portal__channeling,
+    .summoning-portal__reveal {
+        position: relative;
+        z-index: 1;
+    }
+
+    .summoning-portal__idle {
+        text-align: center;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .summoning-portal__idle-icon {
+        font-size: 3.75rem;
+        display: block;
+        user-select: none;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .summoning-portal__title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin: 0;
+    }
+
+    .summoning-portal__channeling {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: center;
+        width: 100%;
+    }
+
+    .summoning-portal__channeling-heading {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        text-align: center;
+    }
+
+    .summoning-portal__channeling-title {
+        font-size: 1.125rem;
+        font-weight: 800;
+        color: var(--color-text-primary);
+        margin: 0;
+    }
+
+    .summoning-portal__channeling-emoji {
+        position: absolute;
+        font-size: 2.25rem;
+        user-select: none;
+    }
+
+    .summoning-portal__reveal {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .summoning-reveal-card__name {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--color-text-primary);
+        margin: 0 0 0.125rem;
+    }
+
+    .summoning-reveal-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+
+        .btn {
+            flex: 1 1 0;
+        }
+    }
+
+    .summoning-portal__channeling-visual {
+        position: relative;
+        width: 8rem;
+        height: 8rem;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .summoning-reveal-card {
+        background-color: var(--color-surface-base);
+        border: 1px solid color-mix(in srgb, var(--color-brand-500) 35%, var(--color-border));
+        border-radius: var(--radius-xl);
+        padding: 1.25rem;
+        box-shadow: 0 20px 25px -5px color-mix(in srgb, black 45%, transparent);
+        position: relative;
+        text-align: center;
+    }
+
+    .summoning-reveal-card__badge {
+        position: absolute;
+        right: -0.5rem;
+        top: -0.5rem;
+        background-color: var(--color-brand-500);
+        color: var(--color-surface-page);
+        font-size: 0.5625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 0.125rem 0.625rem;
+        border-radius: var(--radius-sm);
+    }
+
+    .summoning-reveal-card__avatar {
+        width: 5rem;
+        height: 5rem;
+        margin: 0 auto 1rem;
+        border-radius: 9999px;
+        background-color: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.25rem;
+        user-select: none;
+    }
+
+    .summoning-reveal-card__race {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-success-text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .summoning-reveal-card__level {
+        font-size: 0.625rem;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        margin-bottom: 1rem;
+    }
+
+    .summoning-reveal-card__stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.5rem;
+        border-top: 1px solid var(--color-border);
+        padding-top: 1rem;
+    }
+
+    .summoning-cycle {
+        background-color: color-mix(in srgb, var(--color-surface-overlay) 60%, transparent);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: 0.75rem 1rem;
+        backdrop-filter: blur(12px);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+
+    .summoning-cycle__label {
+        display: block;
+        font-size: 0.625rem;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .summoning-cycle__value {
+        color: var(--color-text-primary);
+        font-weight: 800;
+    }
+
+    .summoning-cycle__value--gold {
+        color: var(--color-warning-text);
+    }
+
+    .summoning-cycle__divider {
+        width: 1px;
+        height: 2rem;
+        background-color: var(--color-border);
+    }
+
+    .summoning-theme-banner {
+        background-color: color-mix(in srgb, var(--color-success-bg) 55%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-success-border) 65%, transparent);
+        border-radius: var(--radius-xl);
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .summoning-theme-banner {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+    }
+
+    .summoning-theme-banner__label {
+        display: block;
+        font-size: 0.625rem;
+        color: var(--color-success-text);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .summoning-theme-banner__race {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--color-text-primary);
+        font-weight: 800;
+        font-size: 1rem;
+    }
+
+    .summoning-theme-banner__desc {
+        font-size: 0.75rem;
+        color: var(--color-text-secondary);
+        line-height: 1.5;
+        max-width: 28rem;
+    }
+
+    .summoning-race-card {
+        background-color: color-mix(in srgb, var(--color-surface-base) 55%, transparent);
+        border: 1px solid var(--color-border);
+        padding: 1rem;
+        border-radius: var(--radius-xl);
+        display: flex;
+        align-items: flex-start;
+        gap: 0.875rem;
+    }
+
+    .summoning-stat {
+        background-color: var(--color-surface-base);
+        border: 1px solid var(--color-border);
+        padding: 0.625rem;
+        border-radius: var(--radius-lg);
+        text-align: center;
+    }
+
+    .summoning-stat__key {
+        display: block;
+        font-size: 0.625rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        letter-spacing: 0.05em;
+        margin-bottom: 0.125rem;
+    }
+
+    .summoning-stat__label {
+        display: none;
+    }
+
+    .summoning-stat__value {
+        font-size: 0.875rem;
+        font-weight: 800;
+        color: var(--color-text-primary);
+    }
+}
+
+@layer components {
+  .summoning-race-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .summoning-theme-banner__icon {
+    font-size: 1.875rem;
+    line-height: 1;
+  }
+
+  .summon-history-empty-note {
+    margin-top: 1rem;
+    color: var(--color-text-muted);
+  }
+
+  .summon-history-table--spaced {
+    margin-top: 1rem;
+  }
+
+  .summoning-page { display: block; }
+
+  .summoning-summon-btn {
+    @apply px-8 py-3.5 font-bold uppercase tracking-wider text-sm;
+    &:disabled {
+      background-color: var(--color-surface-overlay);
+      color: var(--color-text-muted);
+      border-color: var(--color-border);
+      cursor: not-allowed;
+    }
+  }
+
+  .summon-history-table__cell { padding: 1rem; }
+  .summon-history-table__cell--right { text-align: right; }
+  .summon-history-table__cell--gold { color: var(--color-warning-text); font-weight: 700; }
+  .summon-history-table__cell--name { font-weight: 600; }
+  .summon-history-table__cell--date {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+  .summon-history__empty { padding: 3rem; text-align: center; color: var(--color-text-muted); }
+  .summon-history__empty-icon { @apply text-4xl mb-3 block select-none; }
+}
+
+.summoning-race-card__bonus { @apply text-[10px] mt-1.5 leading-relaxed; color: var(--color-text-secondary); }
+.summoning-portal__desc { @apply text-xs max-w-[250px] mx-auto; color: var(--color-text-muted); }
+.summoning-portal__channeling-desc { @apply text-xs; color: var(--color-text-secondary); }

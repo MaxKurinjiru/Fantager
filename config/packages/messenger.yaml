@@ -1,0 +1,25 @@
+framework:
+    messenger:
+        # Doctrine transports — stores messages in the messenger_messages table in MariaDB.
+        # No Redis or RabbitMQ needed. The table is created automatically on first use.
+        transports:
+            async_high:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: high
+                    auto_setup: true
+            async_medium:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: medium
+                    auto_setup: true
+            async_low:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: low
+                    auto_setup: true
+
+        routing:
+            'App\Message\ProcessKingdomTicksMessage': async_medium
+            'Symfony\Component\Mailer\Messenger\SendEmailMessage': async_low
+

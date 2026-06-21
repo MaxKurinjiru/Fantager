@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block layout_content %}
+    <div data-controller="mobile-menu mail ledger notifications player-profile"
+         data-user-pref-close-modal-on-backdrop="{{ app.user.closeModalOnBackdrop ? 'true' : 'false' }}"
+         data-mail-unread-count-value="{{ unread_mail_count() }}"
+         data-notifications-unread-count-value="{{ unread_notification_count() }}"
+         data-ledger-translations-value="{{ {
+             'type_league_reward': 'finance.type_league_reward'|trans,
+             'type_arena_revenue': 'finance.type_arena_revenue'|trans,
+             'type_summon_fee': 'finance.type_summon_fee'|trans,
+             'type_marketplace_sale': 'finance.type_marketplace_sale'|trans,
+             'type_marketplace_purchase': 'finance.type_marketplace_purchase'|trans,
+             'type_marketplace_fee': 'finance.type_marketplace_fee'|trans,
+             'type_dungeon_reward': 'finance.type_dungeon_reward'|trans,
+             'type_dismantle_gain': 'finance.type_dismantle_gain'|trans,
+             'type_item_repair': 'finance.type_item_repair'|trans,
+             'type_spell_learning_cost': 'finance.type_spell_learning_cost'|trans,
+             'type_spell_slot_cost': 'finance.type_spell_slot_cost'|trans,
+             'type_hq_upgrade_cost': 'finance.type_hq_upgrade_cost'|trans,
+             'type_hq_maintenance_fee': 'finance.type_hq_maintenance_fee'|trans,
+             'type_morale_restoration': 'finance.type_morale_restoration'|trans,
+             'type_debt_repayment': 'finance.type_debt_repayment'|trans,
+             'type_hero_dismissal_compensation': 'finance.type_hero_dismissal_compensation'|trans,
+             'type_trainer_dismissal_compensation': 'finance.type_trainer_dismissal_compensation'|trans,
+             'type_hq_downgrade_refund': 'finance.type_hq_downgrade_refund'|trans,
+             'type_kingdom_reward': 'finance.type_kingdom_reward'|trans,
+             'error_fetch': 'finance.error_fetch'|trans,
+             'text_loading': 'js_flash.common.text_loading'|trans
+         }|json_encode|e('html_attr') }}"
+         data-mail-empty-inbox-msg-value="{{ 'community.empty_inbox'|trans }}"
+         data-mail-empty-sent-msg-value="{{ 'community.empty_sent'|trans }}"
+         data-mail-translations-value="{{ {
+             'error_load_mail': 'community.error_load_mail'|trans,
+             'error_load_recipients': 'community.error_load_recipients'|trans,
+             'warning_compose_fields': 'community.warning_compose_fields'|trans,
+             'text_sending': 'community.text_sending'|trans,
+             'error_send_msg': 'community.error_send_msg'|trans,
+             'success_send_msg': 'community.success_send_msg'|trans,
+             'error_read_msg': 'community.error_read_msg'|trans,
+             'text_deleting': 'community.text_deleting'|trans,
+             'success_delete_msg': 'community.success_delete_msg'|trans,
+             'error_delete_msg': 'community.error_delete_msg'|trans,
+             'inbox_title': 'community.inbox_title'|trans,
+             'sent_title': 'community.sent_title'|trans,
+             'col_sender': 'community.col_sender'|trans,
+             'col_recipient': 'community.col_recipient'|trans,
+             'select_recipient': 'community.select_recipient'|trans,
+             'select_placeholder': 'community.select_placeholder'|trans,
+             'send_msg': 'community.send_msg'|trans,
+             'delete_msg': 'community.delete_msg'|trans,
+             'badge_overflow': 'js_flash.common.badge_overflow'|trans,
+             'page_info': 'news.page_info'|trans
+         }|json_encode|e('html_attr') }}"
+         data-notifications-empty-msg-value="{{ 'notifications.empty'|trans }}"
+         data-notifications-translations-value="{{ {
+             'error_load': 'notifications.error_load'|trans,
+             'error_read': 'notifications.error_read'|trans,
+             'error_mark_all': 'notifications.error_mark_all'|trans,
+             'success_mark_all': 'notifications.success_mark_all'|trans,
+             'type_system': 'notifications.type_system'|trans,
+             'type_marketplace_bid': 'notifications.type_marketplace_bid'|trans,
+             'type_marketplace_sold': 'notifications.type_marketplace_sold'|trans,
+             'type_battle_result': 'notifications.type_battle_result'|trans,
+             'type_training_complete': 'notifications.type_training_complete'|trans,
+             'type_league_update': 'notifications.type_league_update'|trans,
+             'type_event_started': 'notifications.type_event_started'|trans,
+             'type_hero_died': 'notifications.type_hero_died'|trans,
+             'type_season_ended': 'notifications.type_season_ended'|trans,
+             'badge_overflow': 'js_flash.common.badge_overflow'|trans,
+             'page_info': 'news.page_info'|trans
+         }|json_encode|e('html_attr') }}"
+         class="game-layout">
+        {# Sidebar + Main Layout #}
+        <div class="game-layout__row">
+            {# Backdrop #}
+            <div data-mobile-menu-target="backdrop" data-action="click->mobile-menu#close" class="mobile-menu-backdrop hidden"></div>
+
+            {% include 'components/layout/sidebar.html.twig' %}
+
+            <div class="game-content-column">
+                {% include 'components/layout/navbar.html.twig' with { is_guest: false } %}
+
+                <main class="game-main">
+                    {% include 'components/ui/flash_messages.html.twig' with { is_guest: false } %}
+
+                    {% block body %}{% endblock %}
+                </main>
+            </div>
+        </div>
+        {# Account Settings Modal #}
+        {% include 'components/layout/_account_settings_modal.html.twig' %}
+
+        {# Player Mail Modals #}
+        {% include 'components/mail/mail_modal.html.twig' %}
+        {% include 'components/mail/compose_message_modal.html.twig' %}
+        {% include 'components/mail/read_message_modal.html.twig' %}
+        {% include 'components/mail/js_templates.html.twig' %}
+        {% include 'components/notifications/notifications_modal.html.twig' %}
+        {% include 'components/notifications/read_notification_modal.html.twig' %}
+        {% include 'components/notifications/js_templates.html.twig' %}
+        {% include 'components/layout/ledger_modal.html.twig' %}
+        {% include 'components/layout/confirm_modal.html.twig' %}
+        {% include 'components/community/player_profile_modal.html.twig' %}
+    </div>
+{% endblock %}

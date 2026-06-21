@@ -1,0 +1,138 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'formation.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+{% set is_match_prep = fixture is not null and fixture_assignment is not null %}
+{% set selected_formation_id = app.request.query.get('formation_id') %}
+{% set selected_formation = null %}
+{% set match_edit_source = is_match_prep ? (fixture_assignment.assigned_formation ?? fixture_assignment.effective_formation) : null %}
+
+{% if is_match_prep %}
+    {# Match prep loads assigned or effective formation data #}
+{% elseif selected_formation_id %}
+    {% for f in formations %}
+        {% if f.id == selected_formation_id %}
+            {% set selected_formation = f %}
+        {% endif %}
+    {% endfor %}
+{% else %}
+    {% for f in formations %}
+        {% if f.isDefault %}
+            {% set selected_formation = f %}
+        {% endif %}
+    {% endfor %}
+    {% if not selected_formation and formations|length > 0 %}
+        {% set selected_formation = formations[0] %}
+    {% endif %}
+{% endif %}
+
+{% set current_slots = {} %}
+{% if is_match_prep and match_edit_source %}
+    {% for slot in match_edit_source.slots %}
+        {% if slot.hero_id %}
+            {% for h in heroes %}
+                {% if h.id == slot.hero_id %}
+                    {% set current_slots = current_slots|merge({(slot.position): h}) %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+{% elseif selected_formation %}
+    {% for slot in selected_formation.slots %}
+        {% if slot.hero %}
+            {% set current_slots = current_slots|merge({(slot.position.value): slot.hero}) %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<div class="formation-page page-shell" data-controller="formation"
+     {% if is_match_prep %}data-formation-fixture-id-value="{{ fixture.id }}"{% endif %}
+     data-formation-is-match-prep-value="{{ is_match_prep ? 'true' : 'false' }}"
+     data-formation-error-empty-value="{{ 'js_flash.formation.name_empty'|trans }}"
+     data-formation-error-assign-value="{{ 'js_flash.formation.assign_hero'|trans }}"
+     data-formation-text-saving-value="{{ 'js_flash.formation.saving'|trans }}"
+     data-formation-error-save-value="{{ 'js_flash.formation.failed_save'|trans }}"
+     data-formation-success-save-value="{{ 'js_flash.formation.success_save'|trans }}"
+     data-formation-confirm-delete-value="{{ 'js_flash.formation.confirm_delete'|trans }}"
+     data-formation-title-delete-value="{{ 'formation.delete_btn'|trans }}"
+     data-formation-text-deleting-value="{{ 'js_flash.formation.deleting'|trans }}"
+     data-formation-error-delete-value="{{ 'js_flash.formation.failed_delete'|trans }}"
+     data-formation-success-delete-value="{{ 'js_flash.formation.success_delete'|trans }}"
+     data-formation-success-promote-value="{{ 'js_flash.formation.success_promote'|trans }}"
+     data-formation-error-promote-value="{{ 'js_flash.formation.failed_promote'|trans }}"
+     data-formation-prompt-promote-name-value="{{ 'js_flash.formation.prompt_promote_name'|trans }}"
+     data-formation-level-label-value="{{ 'js_flash.formation.lvl_short'|trans }}"
+     data-formation-races-value="{{ {
+         human: 'heroes.race_human'|trans,
+         elf: 'heroes.race_elf'|trans,
+         dwarf: 'heroes.race_dwarf'|trans,
+         orc: 'heroes.race_orc'|trans,
+         undead: 'heroes.race_undead'|trans,
+         giant: 'heroes.race_giant'|trans,
+         ent: 'heroes.race_ent'|trans,
+         genie: 'heroes.race_genie'|trans
+     }|json_encode }}"
+>
+    
+    {% set right_content %}
+        {% if not is_match_prep %}
+            <label for="formation-select" class="sr-only">{{ 'formation.title'|trans }}</label>
+            <select id="formation-select" data-formation-target="formationSelect" data-action="change->formation#changeFormation"
+                    class="form-input form-input--emphasis form-input--formation-select">
+                <option value="">{{ 'formation.create_new'|trans }}</option>
+                {% for f in formations %}
+                    <option value="{{ f.id }}" {% if selected_formation and selected_formation.id == f.id %}selected{% endif %}>
+                        {{ f.name }} {% if f.isDefault %}({{ 'formation.default'|trans }}){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+
+            {% if selected_formation %}
+                <button type="button" data-action="click->formation#delete" data-formation-id="{{ selected_formation.id }}"
+                        class="btn btn-danger btn--sm">
+                    {{ 'formation.delete_btn'|trans }}
+                </button>
+            {% endif %}
+        {% endif %}
+    {% endset %}
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: is_match_prep ? 'formation.match_prep_title' : 'formation.title',
+        subtitle: is_match_prep ? 'formation.match_prep_subtitle' : 'formation.subtitle',
+        right_content: right_content
+    } %}
+
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'formation',
+        message_target: 'alertMessage',
+        close_action: 'formation#closeAlert'
+    } %}
+
+    {% if is_match_prep %}
+        {% include 'components/formation/match_prep_panel.html.twig' with {
+            fixture: fixture,
+            fixture_assignment: fixture_assignment,
+            formations: formations,
+            team: team
+        } %}
+    {% endif %}
+
+    {% include 'components/formation/strategy_settings.html.twig' with {
+        selected_formation: is_match_prep ? null : selected_formation,
+        match_edit_source: match_edit_source
+    } %}
+
+    <div class="feature-panel formation-lineup-panel">
+        <div>
+            <h2 class="feature-panel__title">{{ 'formation.starting_lineup'|trans }}</h2>
+            <p class="feature-panel__desc">{{ 'formation.starting_lineup_desc'|trans }}</p>
+        </div>
+
+        {% include 'components/formation/pitch_grid.html.twig' with { current_slots: current_slots, heroes: heroes } %}
+    </div>
+
+    {% include 'components/formation/hero_pool.html.twig' with { heroes: heroes } %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+<div data-controller="modal" data-modal-event-name-value="modal:open-team-profile">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+
+         <div class="modal-box modal-form"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="team-profile-title">
+
+              <button type="button"
+                      data-action="click->modal#close"
+                      class="modal-close"
+                      aria-label="{{ 'modal.close'|trans }}">
+                  <span aria-hidden="true" class="modal-close__icon">✕</span>
+                  <span class="sr-only">{{ 'modal.close'|trans }}</span>
+              </button>
+
+              <h2 id="team-profile-title" class="modal-form__title">
+                  <span aria-hidden="true">🛡️</span> {{ 'team_profile.title'|trans }}
+              </h2>
+
+              <div class="modal-form__body" data-controller="profile-settings"
+                   data-profile-settings-team-id-value="{{ team.id }}"
+                   data-profile-settings-text-saving-value="{{ 'js_flash.team_profile.saving'|trans }}"
+                   data-profile-settings-error-save-value="{{ 'js_flash.team_profile.failed'|trans }}"
+                   data-profile-settings-success-save-value="{{ 'js_flash.team_profile.success'|trans }}">
+                  {% include 'components/ui/alert_box.html.twig' with {
+                      target: 'profile-settings',
+                      message_target: 'alertMessage',
+                      close_action: 'profile-settings#closeAlert',
+                      classes: 'alert-box--compact'
+                  } %}
+
+                  <form data-action="submit->profile-settings#save" class="layout-stack layout-stack--form">
+                      <div class="form-field">
+                          <label for="settings_name" class="form-label">{{ 'team_profile.name'|trans }}</label>
+                          <input type="text" id="settings_name" name="name" required maxlength="100"
+                                 value="{{ team.name }}"
+                                 class="form-input">
+                      </div>
+
+                      <div class="form-field">
+                          <label class="form-label">{{ 'team_profile.emblem'|trans }}</label>
+                          <div class="team-profile-emblem__row">
+                              <div data-profile-settings-target="emblemPreview" class="team-profile-emblem__preview">
+                                  {{ team.emblem ?: '🛡️' }}
+                              </div>
+                              <div class="team-profile-emblem__grow">
+                                  <input type="hidden" id="settings_emblem" name="emblem" value="{{ team.emblem ?: '🛡️' }}">
+                                  <div class="team-profile-emblem__grid">
+                                      {% for icon in ['🛡️', '⚔️', '🦁', '🐉', '🦅', '🐺', '🦉', '🦊', '🦄', '💀', '🔥', '❄️', '⚡', '🌟', '🔱', '💎'] %}
+                                          <button type="button"
+                                                  data-action="click->profile-settings#selectEmblem"
+                                                  data-emblem="{{ icon }}"
+                                                  aria-label="{{ icon }}"
+                                                  class="emblem-btn {{ (team.emblem ?: '🛡️') == icon ? 'emblem-btn--selected' : '' }}">
+                                              {{ icon }}
+                                          </button>
+                                      {% endfor %}
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="form-field">
+                          <label class="form-label">{{ 'team_profile.colors'|trans }}</label>
+                          <div class="team-profile-colors">
+                              <div>
+                                  <label for="settings_color_primary" class="form-label">{{ 'team_profile.color_primary'|trans }}</label>
+                                  <div class="color-input-row">
+                                      <input type="color" id="settings_color_primary"
+                                             data-profile-settings-target="colorPrimaryPicker"
+                                             value="{{ team.colors.primary ?? '#10b981' }}"
+                                             class="color-input-swatch">
+                                      <label for="settings_color_primary_text" class="sr-only">{{ 'team_profile.color_primary'|trans }}</label>
+                                      <input type="text"
+                                             id="settings_color_primary_text"
+                                             data-profile-settings-target="colorPrimaryText"
+                                             value="{{ team.colors.primary ?? '#10b981' }}"
+                                             class="form-input form-input--uppercase">
+                                  </div>
+                              </div>
+
+                              <div>
+                                  <label for="settings_color_secondary" class="form-label">{{ 'team_profile.color_secondary'|trans }}</label>
+                                  <div class="color-input-row">
+                                      <input type="color" id="settings_color_secondary"
+                                             data-profile-settings-target="colorSecondaryPicker"
+                                             value="{{ team.colors.secondary ?? '#0f1720' }}"
+                                             class="color-input-swatch">
+                                      <label for="settings_color_secondary_text" class="sr-only">{{ 'team_profile.color_secondary'|trans }}</label>
+                                      <input type="text"
+                                             id="settings_color_secondary_text"
+                                             data-profile-settings-target="colorSecondaryText"
+                                             value="{{ team.colors.secondary ?? '#0f1720' }}"
+                                             class="form-input form-input--uppercase">
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="modal-form-footer">
+                          <button type="submit" data-profile-settings-target="submitBtn" class="btn btn-primary">
+                              {{ 'team_profile.submit'|trans }}
+                          </button>
+                      </div>
+                  </form>
+              </div>
+         </div>
+    </div>
+</div>

@@ -1,0 +1,64 @@
+---
+description: Fantager PHP/Symfony backend rules — thin controllers, shared services, i18n keys
+globs: src/**/*.php, tests/**/*.php
+alwaysApply: false
+---
+
+# PHP Backend (Fantager)
+
+Quick ref: `docs/backend-agent-cheatsheet.md`. API spec: `docs/api-design.md`. Entities: `docs/entity-reference.md`.
+
+## Before implementing
+
+- Check `docs/known-issues.md` and `docs/README.md` § Current Implementation Status
+- Read matching `docs/systems/*.md` and `docs/screens/*.md`
+- Find an existing feature in the same domain and follow its patterns
+
+## Layering
+
+- **Controllers** (`Controller/Web`, `Controller/Api/V1`): routing, auth, input parsing, response only
+- **Services** (`Service/{Domain}/`): all business logic — shared by Web and API
+- **Repositories**: queries only
+- Never duplicate logic between Web and API controllers
+
+## API (`Controller/Api/V1`)
+
+- `use ApiControllerTrait;`
+- Errors: `jsonError('translation.key', $status)` — never hardcoded English
+- Caught exceptions: `jsonException($e, 422)`
+- Register new routes in `docs/route-map.md`
+
+## Web (`Controller/Web`)
+
+- `UserMessageTranslator` for flashes; Twig for rendering
+- Authenticated routes: `#[IsGranted('ROLE_PLAYER')]`, paths under `/app/`
+
+## Services & exceptions
+
+- `declare(strict_types=1);` on every file
+- Business rule violations: `throw new UserFacingException('error.key', $params)`
+- Translation keys in `translations/messages.en.yaml` and `translations/messages.cs.yaml`
+
+## Tests
+
+- `tests/Service/{Domain}/` for unit tests; mirror `src/Service/` structure
+- Add tests for new logic; do not run PHPUnit unless the user asks (see `AGENTS.md`)
+
+## Schema & docs
+
+- New entity/enum → update `docs/entity-reference.md`
+- New route → update `docs/route-map.md`
+- Feature status change → update `docs/README.md` implementation table
+
+## Optional verification (user-requested only)
+
+```bash
+docker exec -u apache fantager-web composer test
+docker exec -u apache fantager-web composer phpstan
+docker exec -u apache fantager-web composer php-cs
+bash scripts/check-backend-docs.sh
+```
+
+## No automatic commands
+
+Do not run `composer test`, PHPStan, php-cs, `check-backend-docs.sh`, migrations, or Docker verify commands unless the user explicitly requests them.

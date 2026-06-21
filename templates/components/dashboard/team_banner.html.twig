@@ -1,0 +1,75 @@
+{# templates/components/dashboard/team_banner.html.twig #}
+<div class="db-banner" data-controller="dashboard-banner">
+    <div class="db-banner__grid-bg"></div>
+    
+    {# Edit button — opens team profile modal via window CustomEvent (§4.1: type attribute required) #}
+    <button type="button"
+            class="db-banner__edit-btn"
+            aria-label="{{ 'dashboard.edit_profile'|trans }}"
+            data-action="click->dashboard-banner#openProfileModal">
+        <span aria-hidden="true" class="db-banner__edit-icon">⚙️</span>
+        <span class="sr-only">{{ 'dashboard.edit_profile'|trans }}</span>
+    </button>
+
+    {# Znak / Logo týmu #}
+    <div class="db-banner__emblem">
+        {{ team.emblem ?: '🛡️' }}
+    </div>
+
+    {# Základní informace vpravo #}
+    <div class="db-banner__content">
+        
+        {# 1. Řádek: Název týmu #}
+        <div class="db-banner__title-wrap">
+            <h1 class="db-banner__title">{{ team.name }}</h1>
+        </div>
+
+        {# 2. Řádek: Království a manažer #}
+        <div class="db-banner__meta">
+            <p>{{ 'dashboard.manager'|trans }}: <span class="db-banner__meta-highlight">{{ user.displayName }}</span></p>
+            <span class="db-banner__meta-sep">•</span>
+            <p>{{ 'dashboard.kingdom'|trans }}: <span class="db-banner__meta-value">{{ team.kingdom.name }}</span></p>
+        </div>
+
+        {# 3. Řádek: Morálka, chemie a reputace vedle sebe #}
+        <div class="db-banner__badges">
+            {# Morálka #}
+            <div class="db-banner__badge db-banner__badge--morale">
+                <span>😊</span>
+                <span class="db-banner__badge-label">
+                    {{ 'dashboard.morale'|trans }}: <span class="db-banner__badge-value">{{ team.morale }}</span><span class="db-banner__badge-max">/100</span>
+                </span>
+            </div>
+
+            {# Chemie #}
+            <div class="db-banner__badge db-banner__badge--chemistry">
+                <span>⚡</span>
+                <span class="db-banner__badge-label">
+                    {{ 'dashboard.chemistry'|trans }}: <span class="db-banner__badge-value">{{ team.chemistry }}</span><span class="db-banner__badge-max">/100</span>
+                </span>
+            </div>
+
+            {# Reputace #}
+            <div class="db-banner__badge db-banner__badge--reputation">
+                <span>⭐</span>
+                <span class="db-banner__badge-label">
+                    {{ 'dashboard.reputation'|trans }}: <span class="db-banner__badge-value">{{ team.reputation }}</span>
+                </span>
+            </div>
+
+            {# Fanklub #}
+            <div class="db-banner__badge db-banner__badge--fan-base">
+                <span>📣</span>
+                <span class="db-banner__badge-label">
+                    {{ 'dashboard.fan_base'|trans }}: <span class="db-banner__badge-value">{{ team.fanBase }}</span>
+                    {% if team.lastFanBaseDelta != 0 %}
+                        <span class="db-banner__badge-delta db-banner__badge-delta--{% if team.lastFanBaseDelta > 0 %}up{% else %}down{% endif %}">
+                            {{ team.lastFanBaseDelta > 0 ? '+' : '' }}{{ team.lastFanBaseDelta }}
+                        </span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+    </div>
+</div>

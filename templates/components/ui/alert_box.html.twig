@@ -1,0 +1,22 @@
+{# templates/components/ui/alert_box.html.twig #}
+{% set target = target|default(null) %}
+{% set container_target = container_target|default('alert') %}
+{% set message_target = message_target|default('alertMessage') %}
+{% set close_action = close_action|default(null) %}
+{% set classes = classes|default('alert-box--spaced') %}
+{% set type = type|default('error') %}
+
+<div {% if target %}data-{{ target }}-target="{{ container_target }}"{% endif %}
+     class="hidden alert alert-{{ type }} {{ classes }}"
+     role="alert">
+    <span {% if target %}data-{{ target }}-target="{{ message_target }}"{% endif %}></span>
+    {% if close_action %}
+        <button type="button"
+                data-action="click->{{ close_action }}"
+                class="btn btn-ghost btn--sm btn--no-shrink"
+                aria-label="{{ 'modal.close'|trans }}">
+            <span aria-hidden="true">✕</span>
+            <span class="sr-only">{{ 'modal.close'|trans }}</span>
+        </button>
+    {% endif %}
+</div>

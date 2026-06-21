@@ -1,0 +1,53 @@
+{# templates/components/hero/recent_activity.html.twig #}
+<div class="hero-panel">
+    <div>
+        <h2 class="hero-panel__title hero-panel__title--tight">{{ 'heroes.recent_activity'|trans }}</h2>
+        <p class="hero-panel__desc">{{ 'heroes.recent_activity_desc'|trans }}</p>
+    </div>
+
+    <div class="hero-activity-list">
+        {% if summonRecord %}
+            <div class="hero-activity-item">
+                <div>
+                    <div class="hero-activity-item__title">🌀 {{ 'heroes.summoned'|trans }}</div>
+                    <div class="hero-activity-item__time">{{ summonRecord.summonedAt|date('Y-m-d H:i') }}</div>
+                </div>
+                <div class="hero-activity-item__aside">
+                    <span class="status-chip status-chip--indigo">
+                        {{ ('heroes.race_' ~ summonRecord.raceSelected.value)|trans }}
+                    </span>
+                </div>
+            </div>
+        {% endif %}
+        {% for log in trainingHistory %}
+            <div class="hero-activity-item">
+                <div>
+                    <div class="hero-activity-item__title">
+                        {% if log.trainingType.value == 'attribute' %}
+                            💪 {{ 'training.type_attribute'|trans }}: {{ ('training.attr.' ~ log.targetAttribute)|trans }}
+                        {% elseif log.trainingType.value == 'magic' %}
+                            🔮 {{ 'training.type_magic'|trans }}
+                        {% else %}
+                            🛌 {{ 'training.type_form'|trans }}
+                        {% endif %}
+                    </div>
+                    <div class="hero-activity-item__time">{{ log.completedAt|date('Y-m-d H:i') }}</div>
+                </div>
+                <div class="hero-activity-item__aside">
+                    <span class="status-chip status-chip--success">
+                        {% if log.statGain is not null and log.statGain > 0 %}
+                            +{{ (log.statGain / 10)|number_format(1) }}
+                        {% else %}
+                            {{ 'training.status.completed'|trans }}
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        {% else %}
+            <div class="hero-activity-empty">
+                <span class="hero-activity-empty__icon">💤</span>
+                <span class="hero-panel__desc">{{ 'heroes.no_activity'|trans }}</span>
+            </div>
+        {% endfor %}
+    </div>
+</div>

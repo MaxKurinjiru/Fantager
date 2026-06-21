@@ -1,0 +1,31 @@
+<div class="summoning-theme-banner">
+    <div class="layout-stack layout-stack--sm">
+        <span class="summoning-theme-banner__label">{{ 'summoning.home_theme'|trans }}</span>
+        <div class="summoning-theme-banner__race">
+            {% if arena_theme %}
+                <span class="summoning-theme-banner__icon">{{ race_icon(arena_theme) }}</span>
+                <span>{{ ('heroes.race_' ~ arena_theme.value)|trans }}</span>
+            {% else %}
+                <span>{{ 'dashboard.none'|trans }}</span>
+            {% endif %}
+        </div>
+    </div>
+    <p class="summoning-theme-banner__desc">
+        {{ 'summoning.arena_theme_desc'|trans }}
+    </p>
+</div>
+
+<div class="layout-stack layout-stack--sm">
+    <h3 class="section-label">{{ 'summoning.potential_races'|trans }}</h3>
+    <div class="summoning-race-grid">
+        {% for race_info in compatible_races %}
+            <div class="summoning-race-card">
+                {% include 'components/hero/avatar.html.twig' with { race: race_info.race, text_size: 'hero-avatar-emoji--xl' } %}
+                <div class="layout-stack layout-stack--sm">
+                    <h3 class="feature-panel__title">{{ ('heroes.race_' ~ race_info.race.value)|trans }}</h3>
+                    <p class="summoning-race-card__bonus">{{ ('races.combat_bonus.' ~ race_info.race.value)|trans }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

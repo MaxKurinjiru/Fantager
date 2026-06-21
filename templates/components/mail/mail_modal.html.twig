@@ -1,0 +1,85 @@
+{# templates/components/mail/mail_modal.html.twig #}
+<div data-controller="modal" data-modal-event-name-value="modal:open-mail" id="mail-modal">
+    <div data-modal-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->modal#closeBackdrop">
+
+        <div class="modal-box mail-modal modal-box--spacious"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="mail-modal-title">
+
+            <button type="button"
+                    data-action="click->modal#close"
+                    class="modal-close"
+                    aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="modal-close__icon">✕</span>
+                <span class="sr-only">{{ 'modal.close'|trans }}</span>
+            </button>
+
+            <div class="modal-header modal-header--toolbar">
+                <h2 id="mail-modal-title" class="modal-header__title">
+                    ✉️ {{ 'nav.mail'|trans }}
+                </h2>
+                <button type="button"
+                        data-action="click->mail#openComposeModal"
+                        class="btn btn-primary btn--sm">
+                    ✍️ {{ 'community.compose'|trans }}
+                </button>
+            </div>
+
+            <div class="modal-body mail-modal__body">
+                {% include 'components/ui/alert_box.html.twig' with {
+                    target: 'mail',
+                    message_target: 'alertMessage',
+                    close_action: 'mail#hideAlert',
+                    classes: 'alert-box--compact'
+                } %}
+
+                <div class="mail-folder-tabs" role="tablist" aria-label="{{ 'community.mail'|trans }}">
+                    <button type="button"
+                            data-action="click->mail#switchFolder"
+                            data-folder="inbox"
+                            class="mail-folder-tab mail-folder-tab--active"
+                            data-mail-target="folderBtn"
+                            role="tab"
+                            aria-selected="true">
+                        📥 {{ 'community.inbox'|trans }}
+                    </button>
+                    <button type="button"
+                            data-action="click->mail#switchFolder"
+                            data-folder="sent"
+                            class="mail-folder-tab"
+                            data-mail-target="folderBtn"
+                            role="tab"
+                            aria-selected="false">
+                        📤 {{ 'community.sent'|trans }}
+                    </button>
+                </div>
+
+                <div class="mail-folder-panel">
+                    <h3 data-mail-target="mailFolderTitle" class="mail-folder-panel__title">{{ 'community.inbox_title'|trans }}</h3>
+                    <div class="data-table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="data-table__col--center data-table__col--status">{{ 'community.col_status'|trans }}</th>
+                                    <th>{{ 'community.subject'|trans }}</th>
+                                    <th data-mail-target="mailSenderColTitle">{{ 'community.col_sender'|trans }}</th>
+                                    <th class="data-table__col--end">{{ 'community.col_sent'|trans }}</th>
+                                </tr>
+                            </thead>
+                            <tbody data-mail-target="mailTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <nav class="news-pagination hidden" data-mail-target="pagination">
+                        <button type="button" data-action="click->mail#prevPage" data-mail-target="prevBtn" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</button>
+                        <span class="news-pagination__info" data-mail-target="pageInfo"></span>
+                        <button type="button" data-action="click->mail#nextPage" data-mail-target="nextBtn" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,85 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'chronicle.title'|trans }} — {{ team.name }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="chronicle-page page-shell">
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'chronicle.title',
+        subtitle: 'chronicle.subtitle'
+    } %}
+
+    <form method="GET" action="{{ path('app_team_chronicle') }}" class="chronicle-filters" data-controller="form-auto-submit">
+        <div class="chronicle-filters__grid">
+            <div class="chronicle-filters__field">
+                <label for="chronicle-category" class="form-label">{{ 'chronicle.filter_category'|trans }}</label>
+                <select id="chronicle-category" name="category" class="form-input" data-action="change->form-auto-submit#submit">
+                    {% for category in categories %}
+                        <option value="{{ category.value }}" {% if current_category == category.value %}selected{% endif %}>
+                            {{ ('chronicle.category.' ~ category.value)|trans }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="chronicle-filters__field">
+                <label for="chronicle-type" class="form-label">{{ 'chronicle.filter_type'|trans }}</label>
+                <select id="chronicle-type" name="type" class="form-input" data-action="change->form-auto-submit#submit">
+                    <option value="">{{ 'chronicle.filter_type_all'|trans }}</option>
+                    {% for type in types %}
+                        <option value="{{ type.value }}" {% if current_type == type.value %}selected{% endif %}>
+                            {{ ('activity.type.' ~ type.value)|trans }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="chronicle-filters__field">
+                <label for="chronicle-sort" class="form-label">{{ 'chronicle.filter_sort'|trans }}</label>
+                <select id="chronicle-sort" name="sort" class="form-input" data-action="change->form-auto-submit#submit">
+                    <option value="date-desc" {% if current_sort == 'date-desc' %}selected{% endif %}>{{ 'chronicle.sort_date_desc'|trans }}</option>
+                    <option value="date-asc" {% if current_sort == 'date-asc' %}selected{% endif %}>{{ 'chronicle.sort_date_asc'|trans }}</option>
+                </select>
+            </div>
+        </div>
+    </form>
+
+    <div class="chronicle-list">
+        {% if entries is empty %}
+            <div class="chronicle-empty">
+                <div class="chronicle-empty__emoji">📜</div>
+                <h3 class="chronicle-empty__title">{{ 'chronicle.empty'|trans }}</h3>
+                <p class="chronicle-empty__desc">{{ 'chronicle.empty_filtered'|trans }}</p>
+            </div>
+        {% else %}
+            {% for entry in entries %}
+                <article class="chronicle-entry">
+                    <div class="chronicle-entry__icon" aria-hidden="true">{{ entry.icon }}</div>
+                    <div class="chronicle-entry__body">
+                        <div class="chronicle-entry__meta">
+                            <span class="chronicle-entry__type">{{ entry.type_label }}</span>
+                            <time class="chronicle-entry__time" datetime="{{ entry.created_at|date('c') }}"
+                                  {% if entry.processed_at %}title="{{ 'js_flash.common.processed_at_title'|trans({'%date%': entry.processed_at|date('Y-m-d H:i:s')}) }}"{% endif %}>
+                                {{ entry.created_at|date('Y-m-d H:i') }}
+                            </time>
+                        </div>
+                        <p class="chronicle-entry__message">{{ entry.message }}</p>
+                    </div>
+                </article>
+            {% endfor %}
+
+            {% if total_pages > 1 %}
+                <nav class="news-pagination" aria-label="{{ 'news.pagination'|trans }}">
+                    {% if page > 1 %}
+                        <a href="{{ path('app_team_chronicle', app.request.query.all|merge({ page: page - 1 })) }}" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</a>
+                    {% endif %}
+                    <span class="news-pagination__info">{{ 'news.page_info'|trans({ '%page%': page, '%total%': total_pages }) }}</span>
+                    {% if page < total_pages %}
+                        <a href="{{ path('app_team_chronicle', app.request.query.all|merge({ page: page + 1 })) }}" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</a>
+                    {% endif %}
+                </nav>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
