@@ -700,9 +700,11 @@ hq:
   weekly_maintenance: Weekly Maintenance
   weekly_maintenance_hint: Charged every Sunday at the weekly reset
   active_optimization: Arena Adaptation
+  adapted_for: Adapted for
   roster_limit: Roster Limit
   facilities: Compound Facilities
   passive_effects: Passive Effects
+  after_upgrade: After upgrade
   upgrade_cost: Upgrade Cost
   upgrade_btn: Upgrade
   downgrade_btn: Downgrade
@@ -747,8 +749,8 @@ hq:
       name: Summoning Chamber
       desc: Improves the base attribute quality of summons.
     arena:
-      name: Home Arena
-      desc: Increases home match stadium capacity and revenues.
+      name: Grandstands
+      desc: Increase home match stadium capacity and revenues.
   bonus_training_efficiency_pct: Training Efficiency
   bonus_fatigue_reduction_pct: Fatigue Reduction
   bonus_recovery_speed_pct: Recovery Speed
@@ -759,7 +761,7 @@ hq:
   bonus_summon_stat_random_bonus: Random Stat Summon Bonus
   bonus_summon_stat_total_cap: Summon Stat Cap
   bonus_ticket_revenue_pct: Ticket Revenue
-  bonus_arena_capacity: Arena Capacity
+  bonus_arena_capacity: Grandstands Capacity
 
 training:
   title: Training Grounds

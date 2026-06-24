@@ -46,10 +46,39 @@
         <div class="facility-card__bonuses-panel">
             <span class="facility-card__bonuses-label">{{ 'hq.passive_effects'|trans }}</span>
             <ul data-facility-bonuses class="facility-card__bonuses">
+                {% set next_bonuses = facility.passiveBonusesAtLevel(facility.level + 1) %}
                 {% for name, value in facility.passiveBonuses %}
+                    {% set next_value = next_bonuses[name] ?? null %}
+
+                    {# Compute actual/display values #}
+                    {% if name == 'roster_capacity' %}
+                        {% set display_value = (10 + value)|round %}
+                        {% set display_next = next_value is not null ? (10 + next_value)|round : null %}
+                        {% set prefix = '' %}
+                        {% set suffix = '' %}
+                    {% elseif name == 'arena_capacity' %}
+                        {% set display_value = (500 * (1.0 + value / 100.0))|round %}
+                        {% set display_next = next_value is not null ? (500 * (1.0 + next_value / 100.0))|round : null %}
+                        {% set prefix = '' %}
+                        {% set suffix = '' %}
+                    {% else %}
+                        {% set display_value = value %}
+                        {% set display_next = next_value %}
+                        {% set prefix = '+' %}
+                        {% set suffix = name ends with '_pct' ? '%' : '' %}
+                    {% endif %}
+
                     <li class="facility-bonus-row">
                         <span class="facility-bonus-row__name">{{ ('hq.bonus_' ~ name)|trans }}:</span>
-                        <span class="facility-bonus-row__value">+{{ value }}{{ name ends with '_pct' ? '%' : '' }}</span>
+                        <span class="facility-bonus-row__value">
+                            {{ prefix }}{{ display_value }}{{ suffix }}
+                            {% if display_next is not null and display_next != display_value %}
+                                <span class="facility-bonus-row__arrow" aria-hidden="true">➔</span>
+                                <span class="facility-bonus-row__next-value" title="{{ 'hq.after_upgrade'|trans }}">
+                                    {{ prefix }}{{ display_next }}{{ suffix }}
+                                </span>
+                            {% endif %}
+                        </span>
                     </li>
                 {% endfor %}
             </ul>
@@ -70,7 +99,7 @@
             {% endif %}
         </div>
         <div class="facility-card__actions">
-            {% if key in ['arena', 'summoning_chamber', 'training', 'barracks'] %}
+            {% if key in ['arena', 'summoning_chamber', 'training'] %}
                 <button type="button"
                         class="btn btn-primary btn--sm"
                         data-action="click->hq#openFacility"

@@ -699,9 +699,11 @@ hq:
   weekly_maintenance: Týdenní údržba
   weekly_maintenance_hint: Strhává se každou neděli při týdenním resetu
   active_optimization: Uzpůsobení arény
+  adapted_for: Uzpůsobeno pro
   roster_limit: Limit soupisky
   facilities: Zařízení sídla
   passive_effects: Pasivní účinky
+  after_upgrade: Po vylepšení
   upgrade_cost: Cena vylepšení
   upgrade_btn: Vylepšit
   downgrade_btn: Snížit úroveň
@@ -746,8 +748,8 @@ hq:
       name: Vyvolávací síň
       desc: Zlepšuje základní kvalitu atributů vyvolaných hrdinů.
     arena:
-      name: Domácí aréna
-      desc: Zvyšuje kapacitu stadionu pro domácí zápasy a tržby.
+      name: Tribuny
+      desc: Zvyšují kapacitu stadionu pro domácí zápasy a tržby.
   bonus_training_efficiency_pct: Efektivita tréninku
   bonus_fatigue_reduction_pct: Snížení únavy
   bonus_recovery_speed_pct: Rychlost zotavení
@@ -758,7 +760,7 @@ hq:
   bonus_summon_stat_random_bonus: Náhodný bonus atributů vyvolání
   bonus_summon_stat_total_cap: Limit atributů vyvolání
   bonus_ticket_revenue_pct: Příjmy ze vstupného
-  bonus_arena_capacity: Kapacita arény
+  bonus_arena_capacity: Kapacita tribun
 
 training:
   title: Trénink

@@ -1,0 +1,49 @@
+{# templates/components/hq/arena_adaptation.html.twig #}
+<div class="facility-card hq-adaptation-card">
+    <div class="facility-card__content">
+        <div class="facility-card__header">
+            <div class="facility-card__identity">
+                <span class="facility-card__emoji" aria-hidden="true">🏟️</span>
+                <div>
+                    <h3 class="facility-card__name">{{ 'hq.race_opt_title'|trans }}</h3>
+                    <p class="facility-card__desc">{{ 'hq.race_opt_desc'|trans }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="facility-card__bonuses-panel">
+            <span class="facility-card__bonuses-label">{{ 'hq.adapted_for'|trans }}</span>
+            <div class="hq-adaptation-select-wrapper">
+                <label for="hq-race-opt-select" class="sr-only">{{ 'hq.race_opt_title'|trans }}</label>
+                <select id="hq-race-opt-select" data-hq-target="raceSelect" class="form-input db-adapt__select w-full"
+                        {% if is_optimization_locked %}disabled{% endif %}>
+                    <option value="">{{ 'hq.no_opt'|trans }}</option>
+                    {% for race in ['human', 'elf', 'dwarf', 'orc', 'undead', 'giant', 'ent', 'genie'] %}
+                        <option value="{{ race }}" {% if race_optimization == race %}selected{% endif %}>
+                            {{ race_icon(race) }} {{ ('heroes.race_' ~ race)|trans }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="facility-card__footer">
+        <div class="hq-adaptation-status-container w-full">
+            {% if pending_race_optimization %}
+                <div class="db-adapt__status db-adapt__status--pending w-full justify-center">
+                    ⏳ {{ 'hq.race_opt_pending'|trans({'%race%': ('heroes.race_' ~ pending_race_optimization)|trans}) }}
+                </div>
+            {% elseif is_optimization_locked %}
+                <div class="db-adapt__status db-adapt__status--locked w-full justify-center">
+                    🔒 {{ 'hq.race_opt_locked'|trans }}
+                </div>
+            {% else %}
+                <button type="button" data-hq-target="saveAdaptationBtn" data-action="click->hq#saveArenaAdaptation"
+                        class="btn btn-primary btn--sm w-full justify-center">
+                    {{ 'hq.save_opt'|trans }}
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
