@@ -15,6 +15,7 @@ use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueStandingRepository;
 use App\Service\Combat\MatchSimulatorInterface;
 use App\Service\Team\FanClubService;
+use App\Service\Team\TeamMoraleReputationService;
 use App\Service\Team\TeamRosterService;
 use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,6 +30,7 @@ class LeagueMatchResolutionService
         private readonly LeagueStandingService $standingService,
         private readonly LeagueFixtureCompletionService $fixtureCompletionService,
         private readonly FanClubService $fanClubService,
+        private readonly TeamMoraleReputationService $teamMoraleReputationService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -93,6 +95,14 @@ class LeagueMatchResolutionService
             $awayTeam,
             $outcome->getHomeScore(),
             $outcome->getAwayScore(),
+        );
+
+        $this->teamMoraleReputationService->applyMatchResult(
+            $homeTeam,
+            $awayTeam,
+            $outcome,
+            $fixture->getHomeFormation(),
+            $fixture->getAwayFormation(),
         );
 
         $this->fixtureCompletionService->complete($fixture, $battle);

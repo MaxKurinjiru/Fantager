@@ -34,6 +34,8 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $arenaRevenueServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Team\FanClubService */
     private $fanClubServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Team\TeamMoraleReputationService */
+    private $teamMoraleReputationServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Headquarters\HeadquartersService */
     private $hqServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\FinancialCrisisService */
@@ -64,6 +66,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
         $this->trainingServiceMock = $this->createMock(TrainingService::class);
         $this->arenaRevenueServiceMock = $this->createMock(ArenaRevenueService::class);
         $this->fanClubServiceMock = $this->createMock(\App\Service\Team\FanClubService::class);
+        $this->teamMoraleReputationServiceMock = $this->createMock(\App\Service\Team\TeamMoraleReputationService::class);
         $this->hqServiceMock = $this->createMock(\App\Service\Headquarters\HeadquartersService::class);
         $this->financialCrisisServiceMock = $this->createMock(\App\Service\Economy\FinancialCrisisService::class);
         $this->royalTreasuryServiceMock = $this->createMock(\App\Service\Economy\RoyalTreasuryService::class);
@@ -82,6 +85,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->trainingServiceMock,
             $this->arenaRevenueServiceMock,
             $this->fanClubServiceMock,
+            $this->teamMoraleReputationServiceMock,
             $this->hqServiceMock,
             $this->financialCrisisServiceMock,
             $this->royalTreasuryServiceMock,
