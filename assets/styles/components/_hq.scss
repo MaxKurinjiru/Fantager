@@ -239,4 +239,23 @@
     color: var(--color-error-text);
   }
 
+  .hq-adaptation-select-wrapper {
+    width: 100%;
+
+    .db-adapt__select {
+      width: 100%;
+    }
+  }
+
+  .hq-adaptation-status-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    .db-adapt__status, .hq-adaptation-btn {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+  }
 }
