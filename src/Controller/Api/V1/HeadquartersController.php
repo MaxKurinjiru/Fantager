@@ -122,6 +122,24 @@ class HeadquartersController extends AbstractController
         return $this->json($this->hqService->serializeFacility($facility, $type, $this->hqService->getForTeam($team)));
     }
 
+    #[Route('/cancel-upgrade', name: 'api_hq_cancel_upgrade', methods: ['POST'])]
+    public function cancelUpgrade(): JsonResponse
+    {
+        $team = $this->getPlayerTeam();
+        if (null === $team) {
+            return $this->jsonError('error.no_team', 422);
+        }
+
+        try {
+            $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+            $this->hqService->cancelUpgrade($team, $now);
+        } catch (\DomainException $e) {
+            return $this->jsonException($e, 422);
+        }
+
+        return $this->json(['success' => true]);
+    }
+
     /** Schedule an arena adaptation change (route kept as `/optimize` for API stability). */
     #[Route('/optimize', name: 'api_hq_optimize', methods: ['POST'])]
     public function optimize(Request $request): JsonResponse

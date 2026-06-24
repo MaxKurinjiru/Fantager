@@ -22,6 +22,7 @@ use App\Service\League\LeagueStandingService;
 use App\Service\Team\FanClubService;
 use App\Service\Team\TeamMoraleReputationService;
 use App\Service\Team\TeamRosterService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -44,6 +45,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
     private $fanClubService;
     /** @var \PHPUnit\Framework\MockObject\MockObject&TeamMoraleReputationService */
     private $teamMoraleReputationService;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChronicleService */
+    private $teamChronicleService;
     /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
     private $em;
     private LeagueMatchResolutionService $service;
@@ -57,6 +60,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->fixtureCompletionService = $this->createMock(LeagueFixtureCompletionService::class);
         $this->fanClubService = $this->createMock(FanClubService::class);
         $this->teamMoraleReputationService = $this->createMock(TeamMoraleReputationService::class);
+        $this->teamChronicleService = $this->createMock(TeamChronicleService::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
 
         $this->service = new LeagueMatchResolutionService(
@@ -68,6 +72,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->fixtureCompletionService,
             $this->fanClubService,
             $this->teamMoraleReputationService,
+            $this->teamChronicleService,
             $this->em,
         );
     }
@@ -182,6 +187,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->fixtureCompletionService,
             $this->fanClubService,
             $this->teamMoraleReputationService,
+            $this->teamChronicleService,
             $this->em,
         );
         $partial->expects($this->once())

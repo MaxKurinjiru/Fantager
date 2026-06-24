@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\TeamChronicle;
 
 use App\Entity\Auth\User;
+use App\Entity\Combat\Battle;
 use App\Entity\Hero\Hero;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
@@ -242,6 +243,122 @@ class TeamChronicleService
                 'old_name' => $oldName,
                 'new_name' => $newName,
             ],
+        );
+    }
+
+    public function recordBattleOutcome(Team $team, Team $opponent, int $ourScore, int $theirScore, Battle $battle): TeamChronicle
+    {
+        if ($ourScore > $theirScore) {
+            $type = ChronicleEventType::BattleWin;
+            $key = 'activity.battle_win';
+        } elseif ($ourScore < $theirScore) {
+            $type = ChronicleEventType::BattleLoss;
+            $key = 'activity.battle_loss';
+        } else {
+            $type = ChronicleEventType::BattleDraw;
+            $key = 'activity.battle_draw';
+        }
+
+        return $this->create(
+            $team,
+            $type,
+            $key,
+            [
+                'opponent' => $opponent->getName(),
+                'score' => $ourScore.':'.$theirScore,
+            ],
+            [
+                'opponent_team_id' => $opponent->getId(),
+                'our_score' => $ourScore,
+                'their_score' => $theirScore,
+                'battle_id' => $battle->getId(),
+            ]
+        );
+    }
+
+    public function recordTrainingCompleted(
+        Team $team,
+        Hero $hero,
+        Hero $trainer,
+        string $trainingTypeValue,
+        ?string $attribute,
+        int $gainRaw,
+    ): TeamChronicle {
+        $subjectKey = 'activity.training_completed.'.$trainingTypeValue;
+
+        $gainFormatted = '';
+        if ('attribute' === $trainingTypeValue) {
+            $gainFormatted = '+'.number_format($gainRaw / 10, 1);
+        } else {
+            $gainFormatted = '+'.$gainRaw;
+        }
+
+        return $this->create(
+            $team,
+            ChronicleEventType::TrainingCompleted,
+            $subjectKey,
+            [
+                'hero' => $hero->getName(),
+                'trainer' => $trainer->getName(),
+                'attribute' => $attribute ?? '',
+                'gain' => $gainFormatted,
+            ],
+            [
+                'hero_id' => $hero->getId(),
+                'trainer_id' => $trainer->getId(),
+                'type' => $trainingTypeValue,
+                'attribute' => $attribute,
+                'gain_raw' => $gainRaw,
+            ]
+        );
+    }
+
+    public function recordFacilityUpgraded(Team $team, string $facilityType, int $newLevel): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::FacilityUpgraded,
+            'activity.facility_upgraded',
+            [
+                'facility' => $facilityType,
+                'level' => (string) $newLevel,
+            ],
+            [
+                'facility' => $facilityType,
+                'level' => $newLevel,
+            ]
+        );
+    }
+
+    public function recordFacilityDowngraded(Team $team, string $facilityType, int $newLevel): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::FacilityDowngraded,
+            'activity.facility_downgraded',
+            [
+                'facility' => $facilityType,
+                'level' => (string) $newLevel,
+            ],
+            [
+                'facility' => $facilityType,
+                'level' => $newLevel,
+            ]
+        );
+    }
+
+    public function recordRaceOptimizationChanged(Team $team, ?string $race): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::RaceOptimizationChanged,
+            'activity.race_optimization_changed',
+            [
+                'race' => $race ?? '',
+            ],
+            [
+                'race' => $race,
+            ]
         );
     }
 

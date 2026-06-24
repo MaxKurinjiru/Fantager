@@ -28,4 +28,7 @@ enum ChronicleEventType: string
     case TrainerPurchased = 'trainer_purchased';
     case TrainerSold = 'trainer_sold';
     case TeamRenamed = 'team_renamed';
+    case FacilityUpgraded = 'facility_upgraded';
+    case FacilityDowngraded = 'facility_downgraded';
+    case RaceOptimizationChanged = 'race_optimization_changed';
 }

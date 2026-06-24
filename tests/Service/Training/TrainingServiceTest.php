@@ -20,6 +20,7 @@ use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
 use App\Exception\UserFacingException;
 use App\Service\Training\TrainingService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -33,6 +34,8 @@ class TrainingServiceTest extends TestCase
     private $hqRepositoryMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&RaceConfig */
     private $raceConfigMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChronicleService */
+    private $teamChronicleServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
     private $entityManagerMock;
     private TrainingService $trainingService;
@@ -42,12 +45,14 @@ class TrainingServiceTest extends TestCase
         $this->heroRepositoryMock = $this->createMock(HeroRepository::class);
         $this->hqRepositoryMock = $this->createMock(HeadquartersRepository::class);
         $this->raceConfigMock = $this->createMock(RaceConfig::class);
+        $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
 
         $this->trainingService = new TrainingService(
             $this->heroRepositoryMock,
             $this->hqRepositoryMock,
             $this->raceConfigMock,
+            $this->teamChronicleServiceMock,
             $this->entityManagerMock
         );
     }

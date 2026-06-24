@@ -17,6 +17,7 @@ use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class HeadquartersService
@@ -48,6 +49,7 @@ class HeadquartersService
         private readonly EconomyService $economyService,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly RoyalTreasuryService $royalTreasuryService,
+        private readonly TeamChronicleService $teamChronicleService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -157,6 +159,64 @@ class HeadquartersService
         $this->em->flush();
 
         return $facility;
+    }
+
+    /**
+     * Cancel an active upgrade if it was started less than 1 hour ago.
+     * Refunds the full gold cost to the team.
+     *
+     * @throws \DomainException
+     */
+    public function cancelUpgrade(Team $team, \DateTimeImmutable $now): void
+    {
+        $hq = $this->getForTeam($team);
+        $facility = $hq->getUpgradingFacility();
+
+        if (null === $facility) {
+            throw new UserFacingException('error.hq_no_active_upgrade');
+        }
+
+        if (\App\Enum\FacilityOperation::Upgrade !== $hq->getFacilityOperation()) {
+            throw new UserFacingException('error.hq_cannot_cancel_downgrade');
+        }
+
+        $completedAt = $hq->getUpgradeCompletedAt();
+        if (null === $completedAt) {
+            throw new UserFacingException('error.hq_no_active_upgrade');
+        }
+
+        $targetLevel = $facility->getLevel() + 1;
+        $speed = (float) $team->getKingdom()->getGameSpeed();
+        if ($speed <= 0.0) {
+            $speed = 1.0;
+        }
+
+        $seconds = (int) round(($targetLevel * 24 * 3600) / $speed);
+        $startedAt = $completedAt->modify(sprintf('-%d seconds', $seconds));
+
+        $elapsed = $now->getTimestamp() - $startedAt->getTimestamp();
+        if ($elapsed > 3600) {
+            throw new UserFacingException('error.hq_cancel_time_expired');
+        }
+
+        // Calculate refund cost (100% refund of upgrade cost)
+        $cost = $this->calculateUpgradeCost($facility->getType(), $facility->getLevel(), $hq->getComputedTotalLevel());
+
+        // Refund gold and record transaction
+        $this->economyService->addGold(
+            $team,
+            $cost,
+            FinancialRecordType::HqUpgradeRefund,
+            FinancialRecordActor::Active,
+            ['facility_type' => $facility->getType()->value, 'cancelled_level' => $targetLevel]
+        );
+
+        // Reset upgrade state
+        $hq->setUpgradingFacility(null);
+        $hq->setUpgradeCompletedAt(null);
+        $hq->setFacilityOperation(null);
+
+        $this->em->flush();
     }
 
     /**
@@ -415,10 +475,15 @@ class HeadquartersService
         foreach ($hqs as $hq) {
             /** @var Headquarters $hq */
             if ($hq->hasPendingRaceOptimizationChange()) {
-                $hq->setRaceOptimization($hq->getPendingRaceOptimization());
+                $team = $hq->getTeam();
+                $targetRace = $hq->getPendingRaceOptimization();
+
+                $hq->setRaceOptimization($targetRace);
                 $hq->setPendingRaceOptimization(null);
                 $hq->setHasPendingRaceOptimizationChange(false);
                 $hq->setRaceOptimizationLockCycle(true);
+
+                $this->teamChronicleService->recordRaceOptimizationChanged($team, $targetRace);
             } elseif ($hq->isRaceOptimizationLockCycle()) {
                 $hq->setRaceOptimizationLockCycle(false);
             }
@@ -465,8 +530,13 @@ class HeadquartersService
                 }
 
                 $hq->setFacilityDowngradeLockCycle(true);
+
+                $this->teamChronicleService->recordFacilityDowngraded($team, $type->value, $newLevel);
             } else {
-                $changing->setLevel($changing->getLevel() + 1);
+                $newLevel = $changing->getLevel() + 1;
+                $changing->setLevel($newLevel);
+
+                $this->teamChronicleService->recordFacilityUpgraded($team, $type->value, $newLevel);
             }
 
             $hq->setUpgradingFacility(null);

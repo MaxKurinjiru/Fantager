@@ -25,7 +25,7 @@ nav:
   economy: Ekonomika
   settings: Nastavení
   toggle_menu: Zobrazit/skrýt menu
-  finance: Ekonomický přehled
+  finance: Finanční deník
   community: Komunita
   mail: Hráčská pošta
   notifications: Notifikace
@@ -225,6 +225,9 @@ error:
   hq_facility_min_level: Zařízení je již na minimální úrovni.
   hq_race_optimization_locked: Uzpůsobení arény je momentálně uzamčeno.
   hq_invalid_race: 'Neplatná rasa: %race%.'
+  hq_no_active_upgrade: Neprobíhá žádné aktivní vylepšování zařízení.
+  hq_cannot_cancel_downgrade: Nelze zrušit snížení úrovně zařízení.
+  hq_cancel_time_expired: Lhůta pro zrušení tohoto vylepšení vypršela.
   item_cannot_equip: Vystavené nebo nedostupné předměty nelze vybavit.
   item_wrong_team: Předmět nepatří ke stejnému týmu jako hrdina.
   item_slot_mismatch: 'Typ slotu předmětu "%item_slot%" nelze vybavit do slotu "%slot%".'
@@ -403,6 +406,16 @@ activity:
   trainer_purchased: 'Trenér %trainer% (%race%) byl zakoupen na tržišti od týmu %seller% za %price% zlata.'
   trainer_sold: 'Trenér %trainer% (%race%) byl prodán na tržišti týmu %buyer% za %price% zlata.'
   team_renamed: 'Tým byl přejmenován z %old_name% na %new_name%.'
+  battle_win: 'Výhra %score% proti týmu %opponent%.'
+  battle_loss: 'Prohra %score% proti týmu %opponent%.'
+  battle_draw: 'Remíza %score% proti týmu %opponent%.'
+  training_completed:
+    attribute: 'Hrdina %hero% dokončil trénink pod vedením trenéra %trainer% (vlastnost %attribute%, %gain% k základu).'
+    magic: 'Hrdina %hero% dokončil trénink pod vedením trenéra %trainer% (kapacita magie, %gain% slotů).'
+    form: 'Hrdina %hero% dokončil trénink pod vedením trenéra %trainer% (kondice a zotavení, %gain% k formě).'
+  facility_upgraded: 'Budova %facility% byla vylepšena na úroveň %level%.'
+  facility_downgraded: 'Budova %facility% byla snížena na úroveň %level%.'
+  race_optimization_changed: 'Uzpůsobení domácí arény bylo změněno na: %race%.'
   season_status:
     promoted: postup
     relegated: sestup
@@ -430,6 +443,9 @@ activity:
     trainer_purchased: Nákup trenéra
     trainer_sold: Prodej trenéra
     team_renamed: Přejmenování týmu
+    facility_upgraded: Vylepšení budovy
+    facility_downgraded: Snížení budovy
+    race_optimization_changed: Uzpůsobení arény
 
 financial_crisis:
   title_warning: Finanční varování
@@ -478,6 +494,7 @@ sidebar:
   section_team: Tým a základna
   section_competition: Soutěž
   section_social: Obchod a komunita
+  section_archive: Klubový archiv
   future_content: Budoucí obsah
   lock: Zamčeno
 
@@ -641,7 +658,7 @@ summoning:
   fallen_or_dismissed: Padlý nebo propuštěný
 
 finance:
-  title: Ekonomický přehled týmu
+  title: Finanční deník týmu
   subtitle: Přehled příjmů, výdajů a finančních transakcí vašeho týmu.
   summary_title: Souhrn
   ledger_title: Finanční deník
@@ -687,6 +704,7 @@ finance:
   type_hero_dismissal_compensation: Odstupné za propuštění hrdiny
   type_trainer_dismissal_compensation: Odstupné za propuštění trenéra
   type_hq_downgrade_refund: Vratka za snížení úrovně zařízení
+  type_hq_upgrade_refund: Vratka za zrušení vylepšení budovy
   type_kingdom_reward: Odměna z království
   actor_system: Systém
   actor_active: Aktivní akce
@@ -709,6 +727,10 @@ hq:
   downgrade_btn: Snížit úroveň
   downgrade_refund: Vratka po dokončení
   confirm_downgrade: "Opravdu chcete snížit úroveň tohoto zařízení? Po dokončení obdržíte přibližně %refund% zlata."
+  confirm_upgrade: "Opravdu chcete vylepšit toto zařízení? Bude strženo 🪙 %cost% a vylepšení potrvá %duration% hodin."
+  cancel_upgrade_btn: Zrušit vylepšení
+  confirm_cancel_upgrade: "Opravdu chcete zrušit toto vylepšení? Celá částka 🪙 %cost% vám bude vrácena."
+  success_cancel_upgrade: Vylepšení bylo úspěšně zrušeno a zlato vráceno.
   facility_change_in_progress: "Probíhá %operation% zařízení %facility%. Dokončení: %completed_at%."
   facility_changing_here: "Probíhá %operation% tohoto zařízení."
   facility_change_locked: Jiná změna zařízení právě probíhá nebo je aktivní zámek.
@@ -1190,7 +1212,7 @@ arena:
   col_opponent: Soupeř
   col_attendance: Návštěvnost
   no_revenue_yet: Zatím žádné příjmy z domácích zápasů. Výplata proběhne po odehrání ligového zápasu.
-  view_full_ledger: Zobrazit finanční knihu
+  view_full_ledger: Zobrazit finanční deník
   how_it_works: Jak funguje příjem z arény
   rule_fixed_price: "Pevná cena vstupenky: 🪙 %price% za místo."
   rule_capacity: Kapacita hlediště roste s vylepšením arény v základně.

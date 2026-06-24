@@ -1,5 +1,12 @@
 {# templates/components/hq/arena_adaptation.html.twig #}
-<div class="facility-card hq-adaptation-card">
+<div class="facility-card hq-adaptation-card{% if is_optimization_locked %} facility-card--locked{% endif %}">
+    {% if is_optimization_locked %}
+        {% set opt_lock_msg = pending_race_optimization
+            ? 'hq.race_opt_pending'|trans({'%race%': ('heroes.race_' ~ pending_race_optimization)|trans})
+            : 'hq.race_opt_locked'|trans
+        %}
+        <div class="facility-card__lock-indicator" title="{{ opt_lock_msg }}">?</div>
+    {% endif %}
     <div class="facility-card__content">
         <div class="facility-card__header">
             <div class="facility-card__identity">

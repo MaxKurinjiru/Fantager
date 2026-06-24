@@ -48,6 +48,9 @@ enum ChronicleCategory: string
                 ChronicleEventType::HeroSold,
                 ChronicleEventType::TrainerPurchased,
                 ChronicleEventType::TrainerSold,
+                ChronicleEventType::FacilityUpgraded,
+                ChronicleEventType::FacilityDowngraded,
+                ChronicleEventType::RaceOptimizationChanged,
             ],
         };
     }

@@ -14,8 +14,13 @@ export default class extends Controller {
         errorDowngrade: String,
         successUpgrade: String,
         successDowngrade: String,
+        titleUpgrade: String,
+        confirmUpgrade: String,
         titleDowngrade: String,
         confirmDowngrade: String,
+        titleCancelUpgrade: String,
+        confirmCancelUpgrade: String,
+        successCancelUpgrade: String,
         textSaving: String,
         errorAdaptation: String,
         successAdaptation: String,
@@ -40,6 +45,22 @@ export default class extends Controller {
         e.preventDefault();
         const btn = e.currentTarget;
         const facilityType = btn.dataset.facility;
+        const cost = btn.dataset.cost || '0';
+        const duration = btn.dataset.duration || '0';
+
+        const confirmMsg = this.confirmUpgradeValue
+            .replace('%cost%', formatNumber(parseInt(cost, 10)))
+            .replace('%duration%', duration);
+
+        if (!await showConfirm(
+            this.titleUpgradeValue || 'Upgrade Facility',
+            confirmMsg,
+            this.titleUpgradeValue,
+            null, // Default to Cancel
+            'primary'
+        )) {
+            return;
+        }
 
         // Disable all upgrade buttons to prevent double-clicks
         this.setButtonsDisabled(true);
@@ -164,6 +185,52 @@ export default class extends Controller {
         }
     }
 
+    async cancelUpgrade(e) {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        const cost = btn.dataset.cost || '0';
+
+        const confirmMsg = this.confirmCancelUpgradeValue
+            .replace('%cost%', formatNumber(parseInt(cost, 10)));
+
+        if (!await showConfirm(
+            this.titleCancelUpgradeValue || 'Cancel Upgrade',
+            confirmMsg,
+            this.titleCancelUpgradeValue,
+            null, // Default to Cancel
+            'danger'
+        )) {
+            return;
+        }
+
+        this.setButtonsDisabled(true);
+        const originalText = btn.textContent;
+        btn.textContent = this.textSavingValue || 'Processing...';
+
+        try {
+            const response = await fetch('/api/v1/hq/cancel-upgrade', {
+                method: 'POST',
+                headers: csrfHeaders({ 'Content-Type': 'application/json' })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || result.error) {
+                throw new Error(result.error || this.successCancelUpgradeValue);
+            }
+
+            this.showAlert('success', this.successCancelUpgradeValue);
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } catch (error) {
+            this.showAlert('error', error.message);
+            this.setButtonsDisabled(false);
+            btn.textContent = originalText;
+        }
+    }
+
     /** Save a pending arena adaptation change (POST /api/v1/hq/optimize). */
     async saveArenaAdaptation(e) {
         e.preventDefault();
@@ -200,7 +267,7 @@ export default class extends Controller {
     }
 
     setButtonsDisabled(disabled) {
-        this.element.querySelectorAll('[data-action="click->hq#upgrade"], [data-action="click->hq#downgrade"]').forEach(b => {
+        this.element.querySelectorAll('[data-action="click->hq#upgrade"], [data-action="click->hq#downgrade"], [data-action="click->hq#cancelUpgrade"]').forEach(b => {
             b.disabled = disabled;
         });
     }

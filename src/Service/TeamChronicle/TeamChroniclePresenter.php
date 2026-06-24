@@ -115,6 +115,37 @@ class TeamChroniclePresenter
             $params['race'] = $this->translator->trans($raceKey, [], 'messages', $locale);
         }
 
+        if (ChronicleEventType::TrainingCompleted === $type) {
+            if (isset($params['attribute']) && '' !== $params['attribute']) {
+                $params['attribute'] = $this->translator->trans(
+                    'training.attr.'.$params['attribute'],
+                    [],
+                    'messages',
+                    $locale,
+                );
+            } else {
+                $params['attribute'] = '';
+            }
+        }
+
+        if (in_array($type, [ChronicleEventType::FacilityUpgraded, ChronicleEventType::FacilityDowngraded], true) && isset($params['facility'])) {
+            $params['facility'] = $this->translator->trans(
+                'hq.facilities_list.'.$params['facility'].'.name',
+                [],
+                'messages',
+                $locale,
+            );
+        }
+
+        if (ChronicleEventType::RaceOptimizationChanged === $type && isset($params['race'])) {
+            if ('' !== $params['race']) {
+                $raceKey = 'heroes.race_'.$params['race'];
+                $params['race'] = $this->translator->trans($raceKey, [], 'messages', $locale);
+            } else {
+                $params['race'] = $this->translator->trans('hq.no_opt', [], 'messages', $locale);
+            }
+        }
+
         $transParams = $this->normalizeTransParams($params);
 
         return [
@@ -199,6 +230,9 @@ class TeamChroniclePresenter
             ChronicleEventType::TrainerPurchased => '🛒',
             ChronicleEventType::TrainerSold => '💰',
             ChronicleEventType::TeamRenamed => '🏷️',
+            ChronicleEventType::FacilityUpgraded => '🏗️',
+            ChronicleEventType::FacilityDowngraded => '📉',
+            ChronicleEventType::RaceOptimizationChanged => '🏟️',
         };
     }
 }

@@ -10,17 +10,36 @@
   }
 
   .arena-stat-card {
-    @apply rounded-xl p-4 text-center;
+    @apply rounded-xl p-4 text-center transition-all duration-150 flex flex-col items-center justify-between gap-2;
     background-color: color-mix(in srgb, var(--color-surface-overlay) 50%, transparent);
     border: 1px solid var(--color-border);
+    min-height: 8.75rem;
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--color-brand-500) 40%, var(--color-border));
+      background-color: color-mix(in srgb, var(--color-surface-overlay) 65%, transparent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px color-mix(in srgb, black 20%, transparent);
+    }
+
+    &__icon-wrapper {
+      @apply w-9 h-9 rounded-full flex items-center justify-center;
+      background-color: color-mix(in srgb, var(--color-surface-base) 60%, transparent);
+      border: 1px solid var(--color-border);
+    }
+
+    &__icon {
+      @apply text-base select-none;
+    }
 
     &__label {
-      @apply text-[10px] uppercase font-bold tracking-wider mb-1;
+      @apply text-[9px] uppercase font-bold tracking-wider block leading-tight;
       color: var(--color-text-muted);
+      max-width: 100%;
     }
 
     &__value {
-      @apply text-2xl font-extrabold;
+      @apply text-xl font-extrabold block;
       color: var(--color-text-primary);
     }
 
@@ -34,6 +53,69 @@
       &--negative {
         color: var(--color-error-text);
       }
+    }
+  }
+
+  .arena-match-card {
+    @apply rounded-xl p-4 flex flex-col gap-3 transition-all;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 35%, transparent);
+    border: 1px solid var(--color-border);
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--color-brand-500) 25%, var(--color-border));
+    }
+
+    &__header {
+      @apply flex justify-between items-center text-xs;
+      color: var(--color-text-muted);
+    }
+
+    &__badge {
+      @apply px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider;
+      background-color: color-mix(in srgb, var(--color-brand-500) 10%, transparent);
+      color: var(--color-brand-400);
+      border: 1px solid color-mix(in srgb, var(--color-brand-500) 20%, transparent);
+    }
+
+    &__date {
+      @apply font-medium;
+      color: var(--color-text-secondary);
+    }
+
+    &__vs-wrapper {
+      @apply flex items-center justify-between gap-4 py-2 text-center;
+    }
+
+    &__team-name {
+      @apply text-base font-bold flex-1 text-right;
+      color: var(--color-text-primary);
+    }
+
+    &__vs {
+      @apply px-2 py-1 rounded text-[10px] font-extrabold;
+      background-color: var(--color-surface-base);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+    }
+
+    &__opponent {
+      @apply text-base font-bold flex-1 text-left;
+      color: var(--color-brand-400);
+    }
+
+    &__footer {
+      @apply flex justify-between items-center pt-3 border-t;
+      border-color: var(--color-border);
+    }
+
+    &__projected-label {
+      @apply text-xs font-semibold;
+      color: var(--color-text-secondary);
+    }
+
+    &__projected-value {
+      @apply text-base font-bold;
+      color: var(--color-amber-400);
     }
   }
 }
@@ -59,11 +141,44 @@
   color: var(--color-text-muted);
   border-bottom: 1px solid var(--color-border);
 }
-.arena-revenue-table tbody tr { border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent); }
+.arena-revenue-table tbody tr {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+  transition: background-color var(--transition-fast);
+  &:hover {
+    background-color: var(--overlay-white-03);
+  }
+}
 .arena-revenue-table__th { @apply py-2 pr-4; }
 .arena-revenue-table__cell-date { @apply py-2 pr-4; color: var(--color-text-secondary); }
 .arena-revenue-table__cell-muted { @apply py-2 pr-4; color: var(--color-text-secondary); }
 .arena-revenue-table__cell-amount { @apply py-2 font-semibold; color: var(--color-success-text); }
-.arena-rules-list { @apply text-sm space-y-2 list-disc list-inside; color: var(--color-text-secondary); }
+
+.arena-rules-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  li {
+    position: relative;
+    padding-left: 1.5rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+
+    &::before {
+      content: "•";
+      position: absolute;
+      left: 0.5rem;
+      top: 0;
+      color: var(--color-brand-400);
+      font-weight: bold;
+      font-size: 1.125rem;
+    }
+  }
+}
+
 .arena-upgrade-hint { @apply text-[11px] mt-4; color: color-mix(in srgb, var(--color-text-muted) 85%, transparent); }
 .arena-empty-copy { @apply text-sm; color: var(--color-text-muted); }
