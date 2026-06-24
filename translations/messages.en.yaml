@@ -25,7 +25,7 @@ nav:
   economy: Economy
   settings: Settings
   toggle_menu: Toggle menu
-  finance: Team overview
+  finance: Financial Ledger
   community: Community
   mail: Player Mail
   notifications: Notifications
@@ -403,6 +403,16 @@ activity:
   trainer_purchased: 'Trainer %trainer% (%race%) was purchased on the marketplace from %seller% for %price% gold.'
   trainer_sold: 'Trainer %trainer% (%race%) was sold on the marketplace to %buyer% for %price% gold.'
   team_renamed: 'Team was renamed from %old_name% to %new_name%.'
+  battle_win: 'Won %score% against %opponent%.'
+  battle_loss: 'Lost %score% against %opponent%.'
+  battle_draw: 'Drew %score% against %opponent%.'
+  training_completed:
+    attribute: 'Hero %hero% completed training under trainer %trainer% (attribute %attribute%, %gain% to base).'
+    magic: 'Hero %hero% completed training under trainer %trainer% (magic capacity, %gain% slots).'
+    form: 'Hero %hero% completed training under trainer %trainer% (recovery, %gain% to form).'
+  facility_upgraded: 'Facility %facility% was upgraded to level %level%.'
+  facility_downgraded: 'Facility %facility% was downgraded to level %level%.'
+  race_optimization_changed: 'Home arena adaptation was changed to: %race%.'
   season_status:
     promoted: promoted
     relegated: relegated
@@ -430,6 +440,9 @@ activity:
     trainer_purchased: Trainer purchased
     trainer_sold: Trainer sold
     team_renamed: Team renamed
+    facility_upgraded: Facility upgraded
+    facility_downgraded: Facility downgraded
+    race_optimization_changed: Arena adaptation changed
 
 financial_crisis:
   title_warning: Financial Warning
@@ -477,6 +490,7 @@ sidebar:
   section_team: Team & Base
   section_competition: Competition
   section_social: Trade & Community
+  section_archive: Club Archive
   future_content: Future Content
   lock: Lock
 
@@ -642,7 +656,7 @@ summoning:
   fallen_or_dismissed: Fallen or Dismissed
 
 finance:
-  title: Team economic overview
+  title: Team Financial Ledger
   subtitle: Overview of your team's income, expenses, and financial transactions.
   summary_title: Summary
   ledger_title: Financial ledger
@@ -688,6 +702,7 @@ finance:
   type_hero_dismissal_compensation: Hero Dismissal Compensation
   type_trainer_dismissal_compensation: Trainer Dismissal Compensation
   type_hq_downgrade_refund: Facility Downgrade Refund
+  type_hq_upgrade_refund: Facility Upgrade Cancellation Refund
   type_kingdom_reward: Kingdom Reward
   actor_system: System
   actor_active: Active Action
@@ -710,6 +725,10 @@ hq:
   downgrade_btn: Downgrade
   downgrade_refund: Refund on completion
   confirm_downgrade: "Are you sure you want to downgrade this facility? You will receive approximately %refund% gold on completion."
+  confirm_upgrade: "Are you sure you want to upgrade this facility? It will cost 🪙 %cost% and the upgrade will take %duration% hours."
+  cancel_upgrade_btn: Cancel Upgrade
+  confirm_cancel_upgrade: "Are you sure you want to cancel this upgrade? The full amount of 🪙 %cost% will be refunded to you."
+  success_cancel_upgrade: Upgrade cancelled successfully and gold refunded.
   facility_change_in_progress: "%operation% of %facility% in progress. Completion: %completed_at%."
   facility_changing_here: "%operation% of this facility is in progress."
   facility_change_locked: Another facility change is in progress or the downgrade lock is active.

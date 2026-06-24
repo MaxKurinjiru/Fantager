@@ -12,6 +12,7 @@ use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Headquarters\HeadquartersService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\AbstractQuery;
@@ -29,6 +30,8 @@ class HeadquartersServiceTest extends TestCase
     private $financialCrisisServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\RoyalTreasuryService */
     private $royalTreasuryServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\TeamChronicle\TeamChronicleService */
+    private $teamChronicleServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\Doctrine\ORM\EntityManagerInterface */
     private $entityManagerMock;
     private HeadquartersService $service;
@@ -39,6 +42,7 @@ class HeadquartersServiceTest extends TestCase
         $this->economyServiceMock = $this->createMock(EconomyService::class);
         $this->financialCrisisServiceMock = $this->createMock(FinancialCrisisService::class);
         $this->royalTreasuryServiceMock = $this->createMock(\App\Service\Economy\RoyalTreasuryService::class);
+        $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
 
         $this->service = new HeadquartersService(
@@ -46,6 +50,7 @@ class HeadquartersServiceTest extends TestCase
             $this->economyServiceMock,
             $this->financialCrisisServiceMock,
             $this->royalTreasuryServiceMock,
+            $this->teamChronicleServiceMock,
             $this->entityManagerMock
         );
     }

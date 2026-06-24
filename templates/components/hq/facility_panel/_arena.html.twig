@@ -11,22 +11,37 @@
                 <h3 class="arena-panel__title">{{ 'arena.status_title'|trans }}</h3>
                 <div class="stat-grid">
                     <div class="arena-stat-card">
+                        <div class="arena-stat-card__icon-wrapper">
+                            <span class="arena-stat-card__icon" aria-hidden="true">🏟️</span>
+                        </div>
                         <span class="arena-stat-card__label">{{ 'arena.level'|trans }}</span>
                         <span class="arena-stat-card__value">{{ status.arena_level }}</span>
                     </div>
                     <div class="arena-stat-card">
+                        <div class="arena-stat-card__icon-wrapper">
+                            <span class="arena-stat-card__icon" aria-hidden="true">🪑</span>
+                        </div>
                         <span class="arena-stat-card__label">{{ 'arena.capacity'|trans }}</span>
                         <span class="arena-stat-card__value">{{ status.seating_capacity }}</span>
                     </div>
                     <div class="arena-stat-card">
+                        <div class="arena-stat-card__icon-wrapper">
+                            <span class="arena-stat-card__icon" aria-hidden="true">🪙</span>
+                        </div>
                         <span class="arena-stat-card__label">{{ 'arena.ticket_price'|trans }}</span>
-                        <span class="arena-stat-card__value">🪙 {{ status.ticket_price }}</span>
+                        <span class="arena-stat-card__value">{{ status.ticket_price }}</span>
                     </div>
                     <div class="arena-stat-card">
+                        <div class="arena-stat-card__icon-wrapper">
+                            <span class="arena-stat-card__icon" aria-hidden="true">📣</span>
+                        </div>
                         <span class="arena-stat-card__label">{{ 'arena.fan_base'|trans }}</span>
                         <span class="arena-stat-card__value">{{ status.fan_base }}</span>
                     </div>
                     <div class="arena-stat-card">
+                        <div class="arena-stat-card__icon-wrapper">
+                            <span class="arena-stat-card__icon" aria-hidden="true">📊</span>
+                        </div>
                         <span class="arena-stat-card__label">{{ 'arena.show_up_rate'|trans }}</span>
                         <span class="arena-stat-card__value">{{ (status.show_up_rate * 100)|number_format(0) }}%</span>
                     </div>
@@ -41,13 +56,27 @@
             </div>
 
             {% if status.next_home_match %}
-            <div class="game-panel">
+            <div class="game-panel arena-match-panel">
                 <h3 class="arena-panel__title">{{ 'arena.next_home_match'|trans }}</h3>
-                <p class="arena-match-lead">{{ 'arena.next_match_home'|trans({'%opponent%': status.next_home_match.opponent}) }}</p>
-                <p class="arena-match-date">{{ status.next_home_match.scheduled_at|date('d.m.Y H:i') }}</p>
-                {% if status.projected_attendance is not null %}
-                <p class="arena-projected-revenue">{{ 'arena.projected_revenue'|trans }}: 🪙 {{ status.projected_revenue }}</p>
-                {% endif %}
+                <div class="arena-match-card">
+                    <div class="arena-match-card__header">
+                        <span class="arena-match-card__badge">🏠 {{ 'arena.home_fans'|trans }}</span>
+                        <span class="arena-match-card__date">📅 {{ status.next_home_match.scheduled_at|date('d.m.Y H:i') }}</span>
+                    </div>
+                    <div class="arena-match-card__body">
+                        <div class="arena-match-card__vs-wrapper">
+                            <span class="arena-match-card__team-name">{{ team.name }}</span>
+                            <span class="arena-match-card__vs">VS</span>
+                            <span class="arena-match-card__opponent">{{ status.next_home_match.opponent }}</span>
+                        </div>
+                    </div>
+                    {% if status.projected_revenue is not null %}
+                        <div class="arena-match-card__footer">
+                            <span class="arena-match-card__projected-label">{{ 'arena.projected_revenue'|trans }}:</span>
+                            <span class="arena-match-card__projected-value">🪙 {{ status.projected_revenue|number_format(0, '.', ' ') }}</span>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
             {% endif %}
 
@@ -81,15 +110,17 @@
             </div>
         </div>
 
-        <div class="game-panel">
-            <h3 class="hero-panel__title hero-panel__title--tight">{{ 'arena.how_it_works'|trans }}</h3>
-            <ul class="arena-rules-list">
-                <li>{{ 'arena.rule_fixed_price'|trans({'%price%': status.ticket_price}) }}</li>
-                <li>{{ 'arena.rule_capacity'|trans }}</li>
-                <li>{{ 'arena.rule_attendance'|trans }}</li>
-                <li>{{ 'arena.rule_home_only'|trans }}</li>
-            </ul>
-            <p class="arena-upgrade-hint">{{ 'arena.upgrade_hint'|trans }}</p>
+        <div class="screen-3col__aside">
+            <div class="game-panel">
+                <h3 class="hero-panel__title hero-panel__title--tight">{{ 'arena.how_it_works'|trans }}</h3>
+                <ul class="arena-rules-list">
+                    <li>{{ 'arena.rule_fixed_price'|trans({'%price%': status.ticket_price}) }}</li>
+                    <li>{{ 'arena.rule_capacity'|trans }}</li>
+                    <li>{{ 'arena.rule_attendance'|trans }}</li>
+                    <li>{{ 'arena.rule_home_only'|trans }}</li>
+                </ul>
+                <p class="arena-upgrade-hint">{{ 'arena.upgrade_hint'|trans }}</p>
+            </div>
         </div>
     </div>
 </div>

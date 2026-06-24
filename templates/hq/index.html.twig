@@ -13,6 +13,11 @@
      data-hq-success-downgrade-value="{{ 'js_flash.hq.success_downgrade'|trans }}"
      data-hq-title-downgrade-value="{{ 'hq.downgrade_btn'|trans }}"
      data-hq-confirm-downgrade-value="{{ 'hq.confirm_downgrade'|trans }}"
+     data-hq-title-upgrade-value="{{ 'hq.upgrade_btn'|trans }}"
+     data-hq-confirm-upgrade-value="{{ 'hq.confirm_upgrade'|trans }}"
+     data-hq-title-cancel-upgrade-value="{{ 'hq.cancel_upgrade_btn'|trans }}"
+     data-hq-confirm-cancel-upgrade-value="{{ 'hq.confirm_cancel_upgrade'|trans }}"
+     data-hq-success-cancel-upgrade-value="{{ 'hq.success_cancel_upgrade'|trans }}"
      data-hq-text-saving-value="{{ 'js_flash.hq.saving'|trans }}"
      data-hq-error-adaptation-value="{{ 'js_flash.hq.failed_optimize'|trans }}"
      data-hq-success-adaptation-value="{{ 'js_flash.hq.success_optimize'|trans }}"
@@ -51,14 +56,48 @@
     {% include 'components/dashboard/financial_crisis_banner.html.twig' with { team: team } %}
 
     {% if hq and hq.upgradingFacility %}
+        {% set offset = hq.upgradeCompletedAt ? hq.upgradeCompletedAt|date('Z') : 0 %}
+        {% set actual_completed_local = hq.upgradeCompletedAt ? hq.upgradeCompletedAt|date_modify('+' ~ offset ~ ' seconds') : null %}
+        {% set is_midnight = actual_completed_local ? actual_completed_local|date('H:i') == '00:00' : false %}
+        {% set actual_completed_date = actual_completed_local ? (is_midnight ? actual_completed_local : actual_completed_local|date_modify('+1 day')) : null %}
+        
+        {% set can_cancel_banner = false %}
+        {% if hq.facilityOperation and hq.facilityOperation.value == 'upgrade' and hq.upgradeCompletedAt %}
+            {% set target_level = hq.upgradingFacility.level + 1 %}
+            {% set speed = team.kingdom.gameSpeed %}
+            {% set duration_seconds = speed > 0 ? ((target_level * 24 * 3600) / speed)|round : (target_level * 24 * 3600) %}
+            {% set completed_timestamp = hq.upgradeCompletedAt|date('U') + hq.upgradeCompletedAt|date('Z') %}
+            {% set started_timestamp = completed_timestamp - duration_seconds %}
+            {% set current_timestamp = 'now'|date('U') %}
+            {% if current_timestamp - started_timestamp >= 0 and current_timestamp - started_timestamp < 3600 %}
+                {% set can_cancel_banner = true %}
+            {% endif %}
+        {% endif %}
+
         <div class="alert alert-info alert--spaced" role="status">
-            {{ 'hq.facility_change_in_progress'|trans({
-                '%facility%': ('hq.facilities_list.' ~ hq.upgradingFacility.type.value ~ '.name')|trans,
-                '%operation%': hq.facilityOperation and hq.facilityOperation.value == 'downgrade'
-                    ? ('hq.operation_downgrade'|trans)
-                    : ('hq.operation_upgrade'|trans),
-                '%completed_at%': hq.upgradeCompletedAt ? hq.upgradeCompletedAt|date('d.m.Y H:i') : '—'
-            }) }}
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 1rem;">
+                <div>
+                    {{ 'hq.facility_change_in_progress'|trans({
+                        '%facility%': ('hq.facilities_list.' ~ hq.upgradingFacility.type.value ~ '.name')|trans,
+                        '%operation%': hq.facilityOperation and hq.facilityOperation.value == 'downgrade'
+                            ? ('hq.operation_downgrade'|trans)
+                            : ('hq.operation_upgrade'|trans),
+                        '%completed_at%': actual_completed_date ? actual_completed_date|date('d.m.Y 00:00') : '—'
+                    }) }}
+                </div>
+                {% if can_cancel_banner %}
+                    {% set upgrade_cost = hq_upgrade_cost(hq.upgradingFacility.type, hq.upgradingFacility.level, hq.computedTotalLevel) %}
+                    <button type="button"
+                            data-action="click->hq#cancelUpgrade"
+                            data-facility="{{ hq.upgradingFacility.type.value }}"
+                            data-cost="{{ upgrade_cost }}"
+                            class="btn btn-outline btn--sm btn--danger"
+                            style="flex-shrink: 0;"
+                            aria-label="{{ 'hq.cancel_upgrade_btn'|trans }}">
+                        {{ 'hq.cancel_upgrade_btn'|trans }}
+                    </button>
+                {% endif %}
+            </div>
         </div>
     {% endif %}
 

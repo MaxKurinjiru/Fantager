@@ -17,6 +17,7 @@ use App\Service\Combat\MatchSimulatorInterface;
 use App\Service\Team\FanClubService;
 use App\Service\Team\TeamMoraleReputationService;
 use App\Service\Team\TeamRosterService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -31,6 +32,7 @@ class LeagueMatchResolutionService
         private readonly LeagueFixtureCompletionService $fixtureCompletionService,
         private readonly FanClubService $fanClubService,
         private readonly TeamMoraleReputationService $teamMoraleReputationService,
+        private readonly TeamChronicleService $teamChronicleService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -79,6 +81,21 @@ class LeagueMatchResolutionService
 
         $battle = $this->createBattle($fixture, $outcome, $processedAt);
         $this->em->persist($battle);
+
+        $this->teamChronicleService->recordBattleOutcome(
+            $homeTeam,
+            $awayTeam,
+            $outcome->getHomeScore(),
+            $outcome->getAwayScore(),
+            $battle
+        );
+        $this->teamChronicleService->recordBattleOutcome(
+            $awayTeam,
+            $homeTeam,
+            $outcome->getAwayScore(),
+            $outcome->getHomeScore(),
+            $battle
+        );
 
         $homeStanding = $this->requireStanding($fixture->getGroup(), $homeTeam);
         $awayStanding = $this->requireStanding($fixture->getGroup(), $awayTeam);

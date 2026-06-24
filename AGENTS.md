@@ -64,3 +64,7 @@ docker exec -u apache fantager-web composer phpstan
 ## English
 
 Documentation and code comments are in English (see copilot-instructions).
+
+## Strict constraints
+
+1. **No LaTeX syntax**: Never use LaTeX formatting, syntax, or mathematical notations (such as `$$...$$` or `$...$`) under any circumstances. All mathematical expressions and formulas must be written in plain, readable text (e.g., `a + b = c`).

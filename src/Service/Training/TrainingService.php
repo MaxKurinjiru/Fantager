@@ -14,6 +14,7 @@ use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TrainingService
@@ -25,6 +26,7 @@ class TrainingService
         private readonly HeroRepository $heroRepository,
         private readonly HeadquartersRepository $hqRepository,
         private readonly RaceConfig $raceConfig,
+        private readonly TeamChronicleService $teamChronicleService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -336,6 +338,15 @@ class TrainingService
                 $history->setCompletedAt($now);
 
                 $this->em->persist($history);
+
+                $this->teamChronicleService->recordTrainingCompleted(
+                    $hero->getTeam(),
+                    $hero,
+                    $trainer,
+                    $type->value,
+                    $attribute,
+                    $gainRaw
+                );
             }
         }
 

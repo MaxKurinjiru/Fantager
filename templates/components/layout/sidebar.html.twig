@@ -13,8 +13,7 @@
 
         <div class="game-sidebar__section-label">{{ 'sidebar.section_overview'|trans }}</div>
         {% set overview_links = [
-            { route: 'app_dashboard', emoji: '📊', label: 'nav.dashboard', active_check: 'exact' },
-            { route: 'app_calendar', emoji: '📅', label: 'nav.calendar', active_check: 'exact' }
+            { route: 'app_dashboard', emoji: '📊', label: 'nav.dashboard', active_check: 'exact' }
         ] %}
         {% for link in overview_links %}
             {% set is_active = route == link.route %}
@@ -24,8 +23,6 @@
         <div class="game-sidebar__section-label">{{ 'sidebar.section_team'|trans }}</div>
         {% set team_links = [
             { route: 'app_heroes', emoji: '👥', label: 'nav.team', active_check: 'starts_with' },
-            { route: 'app_team_chronicle', emoji: '📜', label: 'nav.chronicle', active_check: 'exact' },
-            { route: 'app_graveyard', emoji: '🪦', label: 'nav.graveyard', active_check: 'exact' },
             { route: 'app_hq', emoji: '🏰', label: 'nav.hq', active_check: 'exact' },
             { route: 'app_formation', emoji: '🛡️', label: 'nav.formation', active_check: 'exact' }
         ] %}
@@ -46,10 +43,21 @@
         <div class="game-sidebar__section-label">{{ 'sidebar.section_social'|trans }}</div>
         {% set social_links = [
             { route: 'app_marketplace', emoji: '⚖️', label: 'nav.marketplace', active_check: 'exact' },
-            { route: 'app_finance', emoji: '📒', label: 'nav.finance', active_check: 'exact' },
             { route: 'app_community', emoji: '💬', label: 'nav.community', active_check: 'starts_with' }
         ] %}
         {% for link in social_links %}
+            {% set is_active = (link.active_check == 'exact' and route == link.route) or (link.active_check == 'starts_with' and route starts with link.route) %}
+            {% include 'components/layout/sidebar_link.html.twig' with { route: link.route, emoji: link.emoji, label: link.label, is_active: is_active } %}
+        {% endfor %}
+
+        <div class="game-sidebar__section-label">{{ 'sidebar.section_archive'|trans }}</div>
+        {% set archive_links = [
+            { route: 'app_team_chronicle', emoji: '📜', label: 'nav.chronicle', active_check: 'exact' },
+            { route: 'app_finance', emoji: '📒', label: 'nav.finance', active_check: 'exact' },
+            { route: 'app_graveyard', emoji: '🪦', label: 'nav.graveyard', active_check: 'exact' },
+            { route: 'app_calendar', emoji: '📅', label: 'nav.calendar', active_check: 'exact' }
+        ] %}
+        {% for link in archive_links %}
             {% set is_active = (link.active_check == 'exact' and route == link.route) or (link.active_check == 'starts_with' and route starts with link.route) %}
             {% include 'components/layout/sidebar_link.html.twig' with { route: link.route, emoji: link.emoji, label: link.label, is_active: is_active } %}
         {% endfor %}

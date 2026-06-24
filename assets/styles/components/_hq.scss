@@ -15,6 +15,7 @@
     background-color: color-mix(in srgb, var(--color-surface-overlay) 40%, transparent);
     border: 1px solid var(--color-border);
     backdrop-filter: blur(12px);
+    position: relative;
 
     &:hover {
       border-color: color-mix(in srgb, var(--color-brand-500) 25%, var(--color-border));
@@ -25,6 +26,39 @@
       list-style: none;
       padding: 0;
       margin: 0;
+    }
+
+    &--locked {
+      border-color: var(--color-warning-border);
+      background-color: color-mix(in srgb, var(--color-warning-bg) 15%, color-mix(in srgb, var(--color-surface-overlay) 40%, transparent));
+
+      &:hover {
+        border-color: var(--color-warning-text);
+      }
+    }
+
+    &__lock-indicator {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: var(--color-warning-bg);
+      border: 1px solid var(--color-warning-border);
+      color: var(--color-warning-text);
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: help;
+      transition: all var(--transition-fast);
+
+      &:hover {
+        background-color: var(--color-warning-border);
+        color: var(--color-white);
+      }
     }
   }
 
@@ -194,6 +228,20 @@
 
   .facility-card--changing {
     border-color: var(--color-info-border);
+    background-color: color-mix(in srgb, var(--color-info-bg) 15%, color-mix(in srgb, var(--color-surface-overlay) 40%, transparent));
+
+    &:hover {
+      border-color: var(--color-info-text);
+    }
+
+    &.facility-card--locked {
+      border-color: var(--color-info-border);
+      background-color: color-mix(in srgb, var(--color-warning-bg) 15%, color-mix(in srgb, var(--color-surface-overlay) 40%, transparent));
+
+      &:hover {
+        border-color: var(--color-info-text);
+      }
+    }
   }
 
   .facility-card__changing-note {
@@ -205,6 +253,11 @@
   .btn--warning {
     border-color: var(--color-warning-border);
     color: var(--color-warning-text);
+  }
+
+  .btn--danger {
+    border-color: var(--color-error-border);
+    color: var(--color-error-text);
   }
 
   .hq-facility-panel__header {
