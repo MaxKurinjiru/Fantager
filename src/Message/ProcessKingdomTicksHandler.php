@@ -23,6 +23,7 @@ use App\Service\Formation\FixtureFormationService;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Team\FanClubService;
+use App\Service\Team\TeamMoraleReputationService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,6 +52,7 @@ class ProcessKingdomTicksHandler
         private readonly TrainingService $trainingService,
         private readonly ArenaRevenueService $arenaRevenueService,
         private readonly FanClubService $fanClubService,
+        private readonly TeamMoraleReputationService $teamMoraleReputationService,
         private readonly HeadquartersService $hqService,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly RoyalTreasuryService $royalTreasuryService,
@@ -283,6 +285,7 @@ class ProcessKingdomTicksHandler
 
         $this->cleanupStaleTemporaryFormations($kingdom);
         $this->fanClubService->processDailyEvolutionTick($kingdom);
+        $this->teamMoraleReputationService->processDailyEvolutionTick($kingdom);
         $this->marketplaceService->processExpiredListingsForKingdom($kingdom, $scheduledAt);
 
         // Process pending facility upgrades

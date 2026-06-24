@@ -20,6 +20,7 @@ use App\Service\League\LeagueFixtureCompletionService;
 use App\Service\League\LeagueMatchResolutionService;
 use App\Service\League\LeagueStandingService;
 use App\Service\Team\FanClubService;
+use App\Service\Team\TeamMoraleReputationService;
 use App\Service\Team\TeamRosterService;
 use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
@@ -41,6 +42,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
     private $fixtureCompletionService;
     /** @var \PHPUnit\Framework\MockObject\MockObject&FanClubService */
     private $fanClubService;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamMoraleReputationService */
+    private $teamMoraleReputationService;
     /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
     private $em;
     private LeagueMatchResolutionService $service;
@@ -53,6 +56,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->matchSimulator = $this->createMock(MatchSimulatorInterface::class);
         $this->fixtureCompletionService = $this->createMock(LeagueFixtureCompletionService::class);
         $this->fanClubService = $this->createMock(FanClubService::class);
+        $this->teamMoraleReputationService = $this->createMock(TeamMoraleReputationService::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
 
         $this->service = new LeagueMatchResolutionService(
@@ -63,6 +67,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             new LeagueStandingService(),
             $this->fixtureCompletionService,
             $this->fanClubService,
+            $this->teamMoraleReputationService,
             $this->em,
         );
     }
@@ -176,6 +181,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             new LeagueStandingService(),
             $this->fixtureCompletionService,
             $this->fanClubService,
+            $this->teamMoraleReputationService,
             $this->em,
         );
         $partial->expects($this->once())
