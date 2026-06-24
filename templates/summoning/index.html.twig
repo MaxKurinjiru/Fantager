@@ -78,7 +78,7 @@
                         {% if status.available %}
                             🌀 {{ 'summoning.summon_junior'|trans }}
                         {% else %}
-                            {{ status.reason ?: 'summoning.unavailable'|trans }}
+                            {{ status.reason ? status.reason|trans(status.reason_parameters|default([])) : 'summoning.unavailable'|trans }}
                         {% endif %}
                     </button>
                 </div>

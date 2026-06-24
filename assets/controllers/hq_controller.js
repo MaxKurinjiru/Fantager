@@ -5,7 +5,7 @@ import { formatNumber } from '../utils/locale.js';
 import { showConfirm } from '../utils/confirm.js';
 
 export default class extends Controller {
-    static targets = ['totalLevel', 'alert', 'alertMessage', 'raceSelect', 'saveAdaptationBtn'];
+    static targets = ['alert', 'alertMessage', 'raceSelect', 'saveAdaptationBtn'];
 
     static values = {
         textUpgrading: String,
@@ -100,11 +100,7 @@ export default class extends Controller {
                 }
             }
 
-            // Update Total level in header
-            if (this.hasTotalLevelTarget) {
-                const currentTotal = parseInt(this.totalLevelTarget.textContent, 10);
-                this.totalLevelTarget.textContent = (currentTotal + 1).toString();
-            }
+
 
             const successMsg = this.successUpgradeValue.replace('%level%', result.level);
             this.showAlert('success', successMsg);

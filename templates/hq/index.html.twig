@@ -67,12 +67,24 @@
             {{ 'hq.downgrade_lock_active'|trans }}
         </div>
     {% endif %}
-
     <div class="hq-facilities-section">
         <h2 class="hq-facilities-section__title">{{ 'hq.facilities'|trans }}</h2>
         <div class="cards-grid cards-grid--facilities">
+            {# Arena Adaptation Card #}
+            {% include 'components/hq/arena_adaptation.html.twig' %}
+
+            {# Manageable facilities first #}
             {% for facility in hq.facilities %}
-                {% include 'components/hq/facility_card.html.twig' with { facility: facility, team: team, hq: hq } %}
+                {% if facility.type.value in ['arena', 'summoning_chamber', 'training'] %}
+                    {% include 'components/hq/facility_card.html.twig' with { facility: facility, team: team, hq: hq } %}
+                {% endif %}
+            {% endfor %}
+
+            {# Non-manageable facilities second #}
+            {% for facility in hq.facilities %}
+                {% if facility.type.value not in ['arena', 'summoning_chamber', 'training'] %}
+                    {% include 'components/hq/facility_card.html.twig' with { facility: facility, team: team, hq: hq } %}
+                {% endif %}
             {% endfor %}
         </div>
     </div>

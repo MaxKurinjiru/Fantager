@@ -90,7 +90,13 @@ class Facility
     /** @return array<string, float|int> */
     public function getPassiveBonuses(): array
     {
-        $bonuses = $this->type->getPassiveBonuses($this->level);
+        return $this->getPassiveBonusesAtLevel($this->level);
+    }
+
+    /** @return array<string, float|int> */
+    public function getPassiveBonusesAtLevel(int $level): array
+    {
+        $bonuses = $this->type->getPassiveBonuses($level);
 
         foreach ($this->metadata as $key => $value) {
             if (is_numeric($value)) {

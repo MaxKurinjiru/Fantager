@@ -42,18 +42,3 @@
         </div>
     </div>
 </div>
-
-{# Barracks #}
-<div data-controller="modal" data-modal-event-name-value="modal:open-hq-barracks" id="hq-barracks-modal">
-    <div data-modal-target="dialog"
-         class="hidden modal-overlay"
-         data-action="click->modal#closeBackdrop">
-        <div class="modal-box modal-box--wide modal-box--facility" role="dialog" aria-modal="true" aria-labelledby="hq-barracks-modal-title">
-            <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
-                <span aria-hidden="true" class="modal-close__icon">✕</span>
-            </button>
-            <div id="hq-barracks-modal-title" class="sr-only">{{ 'hq.facilities_list.barracks.name'|trans }}</div>
-            {% include 'components/hq/facility_panel/_barracks.html.twig' %}
-        </div>
-    </div>
-</div>
