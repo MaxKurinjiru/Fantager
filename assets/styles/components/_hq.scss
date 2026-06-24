@@ -10,6 +10,14 @@
     gap: 1rem;
   }
 
+  .hq-upgrade-banner-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+  }
+
   .facility-card {
     @apply flex flex-col justify-between rounded-2xl p-5 shadow-md transition-all;
     background-color: color-mix(in srgb, var(--color-surface-overlay) 40%, transparent);

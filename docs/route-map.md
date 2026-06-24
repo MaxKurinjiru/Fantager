@@ -124,6 +124,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/api/v1/hq` | Api\V1\HeadquartersController | Facility levels + bonuses |
 | POST | `/api/v1/hq/upgrade` | Api\V1\HeadquartersController | Upgrade facility |
 | POST | `/api/v1/hq/downgrade` | Api\V1\HeadquartersController | Downgrade facility (financial crisis recovery) |
+| POST | `/api/v1/hq/cancel-upgrade` | Api\V1\HeadquartersController | Cancel ongoing facility upgrade |
 | POST | `/api/v1/hq/optimize` | Api\V1\HeadquartersController | Change arena adaptation |
 
 > Legacy shortcuts `/app/arena` and `/app/summon` redirect into HQ (`?facility=arena` / `?facility=summoning_chamber`).

@@ -225,6 +225,9 @@ error:
   hq_facility_min_level: Zařízení je již na minimální úrovni.
   hq_race_optimization_locked: Uzpůsobení arény je momentálně uzamčeno.
   hq_invalid_race: 'Neplatná rasa: %race%.'
+  hq_no_active_upgrade: Neprobíhá žádné aktivní vylepšování zařízení.
+  hq_cannot_cancel_downgrade: Nelze zrušit snížení úrovně zařízení.
+  hq_cancel_time_expired: Lhůta pro zrušení tohoto vylepšení vypršela.
   item_cannot_equip: Vystavené nebo nedostupné předměty nelze vybavit.
   item_wrong_team: Předmět nepatří ke stejnému týmu jako hrdina.
   item_slot_mismatch: 'Typ slotu předmětu "%item_slot%" nelze vybavit do slotu "%slot%".'

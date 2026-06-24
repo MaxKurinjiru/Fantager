@@ -225,6 +225,9 @@ error:
   hq_facility_min_level: Facility is already at minimum level.
   hq_race_optimization_locked: Arena adaptation is currently locked.
   hq_invalid_race: 'Invalid race: %race%.'
+  hq_no_active_upgrade: No active facility upgrade in progress.
+  hq_cannot_cancel_downgrade: Cannot cancel a facility downgrade.
+  hq_cancel_time_expired: The grace period for cancelling this upgrade has expired.
   item_cannot_equip: Listed or unavailable items cannot be equipped.
   item_wrong_team: Item does not belong to the same team as the hero.
   item_slot_mismatch: 'Item slot type "%item_slot%" cannot be equipped in slot "%slot%".'
