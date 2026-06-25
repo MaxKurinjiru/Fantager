@@ -1102,7 +1102,11 @@ league:
   no_active_season_desc: V tomto království momentálně neprobíhá žádná aktivní ligová sezóna. Zkontrolujte prosím stav později.
   tab_standings: Tabulka skupiny
   tab_fixtures: Zápasy a výsledky
+  tab_my_fixtures: Moje zápasy
+  tab_group_fixtures: Zápasy skupiny
   tab_leaderboard: Globální žebříček
+  prev_round: Předchozí kolo
+  next_round: Další kolo
   tab_calendar: Kalendář
   no_standings: Pro tuto skupinu nejsou k dispozici žádná data tabulky.
   promotion_zone: Postupová zóna

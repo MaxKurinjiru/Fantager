@@ -38,7 +38,7 @@ class LeagueController extends AbstractController
         }
 
         $tab = $request->query->get('tab', 'standings');
-        if (!in_array($tab, ['standings', 'fixtures', 'leaderboard'], true)) {
+        if (!in_array($tab, ['standings', 'my-fixtures', 'leaderboard'], true)) {
             $tab = 'standings';
         }
 
