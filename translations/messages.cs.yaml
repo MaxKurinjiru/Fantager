@@ -870,6 +870,12 @@ training:
   dismiss_desc: Propustíte trenéra z týmu. Svěřenci budou automaticky odebráni a obdržíte odstupné (30 % odhadované hodnoty).
   dismiss_btn: Propustit trenéra
   dismiss_confirm: Opravdu chcete propustit tohoto trenéra? Svěřenci budou odebráni z tréninku. Akce je nevratná.
+  promote_btn: "Povýšit na trenéra"
+  promote_title: "Povýšit hrdinu na trenéra"
+  promote_desc: "Tato akce trvale přemění vybraného bojovníka na trenéra. Hrdina bude odebrán ze všech bojových formací a již nikdy se nebude moci účastnit zápasů. Tato akce je NEVRATNÁ!"
+  promote_confirm: "Opravdu chcete trvale přeměnit tohoto hrdinu na trenéra? Hrdina bude odebrán ze všech bojových formací a už nikdy nebude moci bojovat v zápasech."
+  success_promote: "Hrdina byl úspěšně povýšen na trenéra."
+  error_promote: "Povýšení hrdiny na trenéra selhalo."
 
 inventory:
   title: Vybavení

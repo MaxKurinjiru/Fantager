@@ -34,23 +34,32 @@ class PlayerInactivityService
     ) {
     }
 
-    public function processDailyInactivityTick(Kingdom $kingdom, \DateTimeImmutable $scheduledAt): void
+    public function processDailyInactivityTick(Kingdom $kingdom, \DateTimeImmutable $scheduledAt, ?Team $team = null): void
     {
         $releaseThreshold = $scheduledAt->modify(sprintf('-%d days', self::RELEASE_DAYS));
         $warningThreshold = $scheduledAt->modify(sprintf('-%d days', self::WARNING_DAYS));
 
-        /** @var list<User> $users */
-        $users = $this->em->getRepository(User::class)
+        $qb = $this->em->getRepository(User::class)
             ->createQueryBuilder('u')
             ->innerJoin('u.team', 't')
             ->where('u.kingdom = :kingdom')
             ->andWhere('u.isVerified = true')
             ->andWhere('t.isNpc = false')
-            ->setParameter('kingdom', $kingdom)
-            ->getQuery()
-            ->getResult();
+            ->setParameter('kingdom', $kingdom);
+
+        if (null !== $team) {
+            $qb->andWhere('t = :team')
+               ->setParameter('team', $team);
+        }
+
+        /** @var list<User> $users */
+        $users = $qb->getQuery()->getResult();
 
         foreach ($users as $user) {
+            if ($user->isTestAccount()) {
+                continue;
+            }
+
             $team = $user->getTeam();
             if (!$team instanceof Team || $team->isNpc()) {
                 continue;

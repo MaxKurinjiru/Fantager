@@ -11,6 +11,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -32,9 +33,10 @@ class CreateTestUserCommand extends Command
     {
         $this
             ->addArgument('kingdom', InputArgument::REQUIRED, 'ID or Name of the Kingdom')
-            ->addArgument('email', InputArgument::REQUIRED, 'User email address')
-            ->addArgument('nickname', InputArgument::REQUIRED, 'User display name / nickname')
-            ->addArgument('password', InputArgument::REQUIRED, 'User password');
+            ->addOption('default', null, InputOption::VALUE_NONE, 'Create the 3 default test users (player1–3@example.com / password)')
+            ->addArgument('email', InputArgument::OPTIONAL, 'User email address')
+            ->addArgument('nickname', InputArgument::OPTIONAL, 'User display name / nickname')
+            ->addArgument('password', InputArgument::OPTIONAL, 'User password');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -42,9 +44,7 @@ class CreateTestUserCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $kingdomVal = $input->getArgument('kingdom');
-        $email = strtolower(trim((string) $input->getArgument('email')));
-        $nickname = trim((string) $input->getArgument('nickname'));
-        $password = (string) $input->getArgument('password');
+        $isDefault = (bool) $input->getOption('default');
 
         // Look up kingdom by ID or by Name
         $kingdom = null;
@@ -60,6 +60,38 @@ class CreateTestUserCommand extends Command
 
             return Command::FAILURE;
         }
+
+        if ($isDefault) {
+            try {
+                $users = $this->testUserService->createDefaultTestUsers($kingdom);
+            } catch (\DomainException $e) {
+                $io->error($e->getMessage());
+
+                return Command::FAILURE;
+            }
+
+            $io->success(sprintf(
+                'Successfully created and activated %d default test users: %s',
+                count($users),
+                implode(', ', array_map(static fn ($user) => $user->getEmail(), $users)),
+            ));
+
+            return Command::SUCCESS;
+        }
+
+        $emailOpt = $input->getArgument('email');
+        $nicknameOpt = $input->getArgument('nickname');
+        $passwordOpt = $input->getArgument('password');
+
+        if (null === $emailOpt || null === $nicknameOpt || null === $passwordOpt) {
+            $io->error('To create a custom test user, you must provide email, nickname, and password arguments. Alternatively, use the --default option.');
+
+            return Command::FAILURE;
+        }
+
+        $email = strtolower(trim((string) $emailOpt));
+        $nickname = trim((string) $nicknameOpt);
+        $password = (string) $passwordOpt;
 
         try {
             $user = $this->testUserService->createTestUser($kingdom, $email, $nickname, $password);

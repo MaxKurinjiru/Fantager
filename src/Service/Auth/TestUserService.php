@@ -47,9 +47,8 @@ class TestUserService
                 $definition['nickname'],
                 $definition['password'],
             );
+            $this->entityManager->flush();
         }
-
-        $this->entityManager->flush();
 
         return $users;
     }
@@ -84,7 +83,7 @@ class TestUserService
         $user->setKingdom($kingdom);
         $user->setLocale($kingdom->getLanguage());
         $user->setIsVerified(true);
-        $user->setRoles([]);
+        $user->setRoles(['ROLE_TEST']);
 
         $this->entityManager->persist($user);
         $this->userSettingsService->getOrCreate($user);

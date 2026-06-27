@@ -263,9 +263,13 @@ class TeamMoraleReputationService
         }
     }
 
-    public function processDailyEvolutionTick(Kingdom $kingdom): int
+    public function processDailyEvolutionTick(Kingdom $kingdom, ?Team $team = null): int
     {
-        $teams = $this->teamRepository->findBy(['kingdom' => $kingdom]);
+        if (null !== $team) {
+            $teams = [$team];
+        } else {
+            $teams = $this->teamRepository->findBy(['kingdom' => $kingdom]);
+        }
         $updated = 0;
 
         foreach ($teams as $team) {

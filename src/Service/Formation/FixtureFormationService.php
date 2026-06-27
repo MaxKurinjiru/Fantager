@@ -89,8 +89,10 @@ class FixtureFormationService
     /**
      * Remove temporary match-specific formations after a fixture is completed.
      * Clears fixture assignment FKs and deletes orphaned temporary formations.
+     *
+     * @return int Number of deleted temporary formations
      */
-    public function cleanupTemporaryFormationsAfterCompletion(LeagueFixture $fixture): void
+    public function cleanupTemporaryFormationsAfterCompletion(LeagueFixture $fixture): int
     {
         /** @var array<int, Formation> $toDelete */
         $toDelete = [];
@@ -100,6 +102,62 @@ class FixtureFormationService
         foreach ($toDelete as $formation) {
             $this->formationService->deleteTemporary($formation);
         }
+
+        if ([] !== $toDelete) {
+            $this->em->flush();
+        }
+
+        return count($toDelete);
+    }
+
+    /**
+     * Remove stale temporary formations for a specific team.
+     *
+     * @return int Number of deleted temporary formations
+     */
+    public function cleanupStaleTemporaryFormationsForTeam(Team $team): int
+    {
+        // Find completed fixtures for the team with temporary assignments
+        $fixtures = $this->fixtureRepository->createQueryBuilder('f')
+            ->where('f.homeTeam = :team OR f.awayTeam = :team')
+            ->andWhere('f.status = :completedStatus')
+            ->setParameter('team', $team)
+            ->setParameter('completedStatus', LeagueFixtureStatus::Completed)
+            ->getQuery()
+            ->getResult();
+
+        /** @var array<int, Formation> $deleted */
+        $deleted = [];
+        foreach ($fixtures as $fixture) {
+            $this->collectTemporaryFormationsForFixture($fixture, $deleted);
+            $this->clearTemporaryAssignments($fixture);
+        }
+
+        // Also find temporary formations for this team with completed source fixtures
+        $formations = $this->formationRepository->createQueryBuilder('f')
+            ->where('f.team = :team')
+            ->andWhere('f.isTemporary = true')
+            ->andWhere('f.sourceFixture IS NOT NULL')
+            ->setParameter('team', $team)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($formations as $formation) {
+            $sourceFixture = $formation->getSourceFixture();
+            if (null !== $sourceFixture && $sourceFixture->isCompleted()) {
+                $deleted[$formation->getId() ?? 0] = $formation;
+            }
+        }
+
+        foreach ($deleted as $formation) {
+            $this->formationService->deleteTemporary($formation);
+        }
+
+        if ([] !== $deleted) {
+            $this->em->flush();
+        }
+
+        return count($deleted);
     }
 
     /**

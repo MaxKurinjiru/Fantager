@@ -150,4 +150,9 @@ class LeagueFixture
 
         return $this;
     }
+
+    public function isCompleted(): bool
+    {
+        return LeagueFixtureStatus::Completed === $this->status;
+    }
 }

@@ -111,64 +111,58 @@
     </div>
 
     <div class="facility-card__footer">
-        <div class="facility-card__costs">
-            <div>
-                <span class="facility-card__cost-label">{{ 'hq.upgrade_cost'|trans }}</span>
-                <span data-facility-cost class="facility-card__cost">🪙 {{ upgrade_cost|number_format(0, '.', ' ') }}</span>
-            </div>
-            {% if facility.level > 1 %}
-                <div>
-                    <span class="facility-card__cost-label">{{ 'hq.downgrade_refund'|trans }}</span>
-                    <span data-facility-refund class="facility-card__cost facility-card__cost--refund">🪙 {{ downgrade_refund|number_format(0, '.', ' ') }}</span>
-                </div>
-            {% endif %}
+        <div class="facility-card__costs-row">
+            <span class="facility-card__cost-label">{{ 'hq.upgrade_cost'|trans }}</span>
+            <span data-facility-cost class="facility-card__cost">🪙 {{ upgrade_cost|number_format(0, '.', ' ') }}</span>
         </div>
         <div class="facility-card__actions">
             {% if key in ['arena', 'summoning_chamber', 'training'] %}
                 <button type="button"
-                        class="btn btn-primary btn--sm"
+                        class="btn btn-primary btn--sm btn--block"
                         data-action="click->hq#openFacility"
                         data-hq-facility-param="{{ key }}">
                     {{ 'hq.manage_facility'|trans }}
                 </button>
             {% endif %}
-            {% if is_changing %}
-                {% if can_cancel %}
+            <div class="facility-card__actions-subgrid">
+                {% if is_changing %}
+                    {% if can_cancel %}
+                        <button type="button"
+                                data-action="click->hq#cancelUpgrade"
+                                data-facility="{{ key }}"
+                                data-cost="{{ upgrade_cost }}"
+                                class="btn btn-outline btn--sm btn--danger btn--block"
+                                aria-label="{{ 'hq.cancel_upgrade_btn'|trans }}">
+                            {{ 'hq.cancel_upgrade_btn'|trans }}
+                        </button>
+                    {% endif %}
+                {% else %}
+                    {% if facility.level > 1 %}
+                        <button type="button"
+                                data-action="click->hq#downgrade"
+                                data-facility="{{ key }}"
+                                data-refund="{{ downgrade_refund }}"
+                                {% if not can_change %}disabled title="{{ 'hq.facility_change_locked'|trans }}"{% endif %}
+                                class="btn btn-outline btn--sm btn--warning btn--block"
+                                aria-label="{{ 'hq.downgrade_btn'|trans }}">
+                            {{ 'hq.downgrade_btn'|trans }}
+                        </button>
+                    {% endif %}
                     <button type="button"
-                            data-action="click->hq#cancelUpgrade"
+                            data-action="click->hq#upgrade"
                             data-facility="{{ key }}"
                             data-cost="{{ upgrade_cost }}"
-                            class="btn btn-outline btn--sm btn--danger"
-                            aria-label="{{ 'hq.cancel_upgrade_btn'|trans }}">
-                        {{ 'hq.cancel_upgrade_btn'|trans }}
+                            data-cost-original="{{ upgrade_cost }}"
+                            data-duration="{{ duration_hours }}"
+                            {% if not can_change %}disabled title="{{ 'hq.facility_change_locked'|trans }}"
+                            {% elseif upgrade_blocked %}disabled title="{{ 'financial_crisis.upgrade_blocked'|trans }}"
+                            {% elseif team.gold < upgrade_cost %}disabled title="{{ 'hq.insufficient_gold'|trans }}"{% endif %}
+                            class="btn btn-outline btn--sm btn--block"
+                            aria-label="{{ 'hq.upgrade_btn'|trans }}">
+                        {{ 'hq.upgrade_btn'|trans }}
                     </button>
                 {% endif %}
-            {% else %}
-                {% if facility.level > 1 %}
-                    <button type="button"
-                            data-action="click->hq#downgrade"
-                            data-facility="{{ key }}"
-                            data-refund="{{ downgrade_refund }}"
-                            {% if not can_change %}disabled title="{{ 'hq.facility_change_locked'|trans }}"{% endif %}
-                            class="btn btn-outline btn--sm btn--warning"
-                            aria-label="{{ 'hq.downgrade_btn'|trans }}">
-                        {{ 'hq.downgrade_btn'|trans }}
-                    </button>
-                {% endif %}
-                <button type="button"
-                        data-action="click->hq#upgrade"
-                        data-facility="{{ key }}"
-                        data-cost="{{ upgrade_cost }}"
-                        data-cost-original="{{ upgrade_cost }}"
-                        data-duration="{{ duration_hours }}"
-                        {% if not can_change %}disabled title="{{ 'hq.facility_change_locked'|trans }}"
-                        {% elseif upgrade_blocked %}disabled title="{{ 'financial_crisis.upgrade_blocked'|trans }}"
-                        {% elseif team.gold < upgrade_cost %}disabled title="{{ 'hq.insufficient_gold'|trans }}"{% endif %}
-                        class="btn btn-outline btn--sm"
-                        aria-label="{{ 'hq.upgrade_btn'|trans }}">
-                    {{ 'hq.upgrade_btn'|trans }}
-                </button>
-            {% endif %}
+            </div>
         </div>
     </div>
 </div>

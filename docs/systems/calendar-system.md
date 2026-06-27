@@ -99,44 +99,74 @@ For weeks 2 to 10 (which contain exactly 2 rounds per week):
 
 ### 1. Database Persistence (`KingdomTickLog`)
 
-To guarantee that scheduled ticks are run exactly once (idempotency) and that no ticks are missed during system downtime, the status of each tick execution is logged in the database:
+To guarantee that scheduled ticks are run exactly once (idempotency), no ticks are missed during system downtime, and failures are isolated, the status of each tick execution is logged in the database:
 
 - **Entity**: `App\Entity\Kingdom\KingdomTickLog`
 - **Table**: `kingdom_tick_log`
 - **Fields**:
   - `id` (INT, Primary Key)
   - `kingdom_id` (INT, Foreign Key to `kingdom`, NOT NULL)
+  - `team_id` (INT, Foreign Key to `team`, Nullable) - Indicates a team-scoped tick.
+  - `fixture_id` (INT, Foreign Key to `league_fixture`, Nullable) - Indicates a match-scoped tick.
   - `tickType` (VARCHAR(30) / Enum: `daily_reset`, `inactive_registration_cleanup`, `inactive_player_cleanup`, `fatigue_recovery`, `weekly_training`, `league_match`, `season_transition`, `race_optimization`, `weekly_reset`)
   - `scheduledAt` (DATETIME, UTC, NOT NULL) - The scheduled real-world timestamp when the tick should have executed.
-  - `status` (VARCHAR(15) / Enum: `processing`, `completed`, `failed`)
+  - `status` (VARCHAR(15) / Enum: `pending`, `processing`, `completed`, `failed`)
   - `errorMessage` (TEXT, Nullable)
   - `executedAt` (DATETIME, UTC) - The real-world timestamp when processing actually ran.
-- **Constraints**: Unique constraint on `[kingdom_id, tick_type, scheduled_at]`.
+- **Constraints**: Unique constraint on `[kingdom_id, tick_type, scheduled_at, team_id, fixture_id]`.
 
 ### 2. Tick Runner Command (`app:ticks:run`)
 
 A background cron job triggers `bin/console app:ticks:run` periodically (e.g. every minute).
 For each active Kingdom:
-1. It queries `KingdomTickLog` to find the last completed scheduled timestamp ($t_{last}$) for each tick type. If no log entry exists, it defaults to the `season_start_date`.
+1. It queries completed `KingdomTickLog` rows to find the last completed scheduled timestamp ($t_{last}$) for each tick type and scope combination. If no log entry exists, it defaults to the `season_start_date`.
 2. It generates all scheduled occurrences of that tick type between $t_{last}$ (exclusive) and `now` (inclusive) using the Weekly Server Tick Schedule.
-3. For each pending tick:
-   - It persists a log entry with `status = processing`.
-   - It dispatches a `ProcessKingdomTicksMessage(kingdomId)` to Symfony Messenger.
+3. For each pending occurrence, it schedules `'pending'` tick logs based on the tick type's scope:
+   - **Team-scoped** (`WeeklyTraining`, `WeeklyReset`, `RaceOptimization`, `FatigueRecovery`, `InactivePlayerCleanup`, `DailyReset`): Schedules a separate log entry for each active team.
+   - **Match-scoped** (`LeagueMatch`): Queries all scheduled fixtures in the kingdom at that time, and schedules a separate log entry for each fixture.
+   - **Kingdom-scoped** (`SeasonTransition`, `InactiveRegistrationCleanup`, and the Royal Treasury distribution part of `WeeklyReset`): Schedules a single log entry.
+4. If new ticks are scheduled or existing pending ticks are found, it dispatches a single `ProcessKingdomTicksMessage(kingdomId)` to Symfony Messenger.
 
-### 3. Chronological & Priority Execution Flow
+### 3. Chronological, Parallel & Guided Orchestration Flow
 
-Within the message handler (`ProcessKingdomTicksHandler`):
-- All pending tick logs for the specified Kingdom are processed sequentially.
-- Ticks are sorted first by `scheduledAt ASC` (chronological order) and second by **logical priority** to avoid dependency conflicts when multiple ticks share the same timestamp:
-  1. **Priority 2: Weekly Training** (Thursday 10:00) — applies hero stat gains from active trainers.
-  2. **Priority 3: League Match** (Tuesday/Friday 18:00) — arena revenue and formation cleanup.
-  3. **Priority 4: Season Transition** (Friday 19:00, Week 11 only).
-  4. **Priority 5: Fatigue & Form Recovery** (Daily 04:00).
-  5. **Priority 6: Reset / Maintenance / Cleanup** — `DailyReset` (00:00, includes HQ facility upgrade completion), `InactiveRegistrationCleanup` (03:30), `InactivePlayerCleanup` (03:45), `RaceOptimization` / Arena Adaptation (Sun 09:30), `WeeklyReset` (Sun 23:59).
+Within the message handler (`ExecuteSingleTickHandler`) and the orchestrator (`KingdomTickOrchestrator`), ticks are executed in a parallel, step-by-step guided model:
 
-Team-scoped asynchronous work is handled **inside** these ticks — for example HQ facility upgrades complete during `DailyReset`, and trainer-based training resolves during `WeeklyTraining`.
+1. **Orchestration Kickstart**:
+   - The cron command `app:ticks:run` schedules pending ticks and calls `KingdomTickOrchestrator->orchestrate($kingdom)`.
+   - The orchestrator acquires a database-level `PESSIMISTIC_WRITE` lock on the `Kingdom` entity. This lock acts as a synchronization barrier, ensuring only one worker or process can transition the pipeline to the next step at any time.
 
-If any tick fails, the handler halts execution for that Kingdom, logs the error, and alerts administrators. This prevents subsequent ticks from executing out of order, preserving data integrity.
+2. **Step Discovery & Parallel Dispatching**:
+   - Under the lock, the orchestrator checks if the pipeline is blocked by any `failed` ticks or if any ticks are currently `processing`. If so, it halts.
+   - It finds the oldest `scheduledAt` timestamp that has `pending` ticks.
+   - At that timestamp, it finds the highest priority (lowest priority number) tick type group. Priorities are defined as:
+     1. **Priority 2**: `WeeklyTraining`
+     2. **Priority 3**: `LeagueMatch`
+     3. **Priority 4**: `SeasonTransition`
+     4. **Priority 5**: `FatigueRecovery`
+     5. **Priority 6**: Resets/Cleanups (`DailyReset`, `WeeklyReset`, `RaceOptimization`, `InactiveRegistrationCleanup`, `InactivePlayerCleanup`)
+   - It fetches all pending ticks belonging to this specific `[scheduledAt, priority]` group (e.g., all team training ticks or all fixtures in a match round) and dispatches them as separate `ExecuteSingleTickMessage` messages. These run concurrently across all available Messenger workers.
+
+3. **Atomic Acquisition & Execution**:
+   - When a worker consumes `ExecuteSingleTickMessage($tickLogId)`, it runs an atomic database update to change the tick status from `'pending'` to `'processing'`. If 0 rows are affected, another worker claimed it first, and it exits safely.
+   - It executes the specific scoped tick within a transaction:
+     - **Team-scoped**: Runs NPC simulation, training, resets, or fatigue recovery only for that team.
+     - **Match-scoped**: Simulates tactics for both teams, pays arena ticket revenue, resolves the match, and cleans up temporary formations only for that fixture.
+     - **Kingdom-scoped**: Resolves shared systems (e.g. treasury distribution or season transition).
+   - If execution succeeds, the tick is marked `'completed'` and the transaction commits.
+   - If execution fails, the transaction is rolled back, the tick is marked `'failed'` (with the error message and trace saved in a separate transaction), and the handler exits. The orchestrator is **not** called, halting the pipeline.
+
+4. **Barrier Synchronization (Fork-Join)**:
+   - Upon successful completion of a tick, the handler calls `KingdomTickOrchestrator->orchestrate($kingdom)`.
+   - The orchestrator acquires the `PESSIMISTIC_WRITE` lock on the `Kingdom` row.
+   - It checks if there are any other `pending` or `processing` ticks in the current group.
+     - If yes, it does nothing and exits (waiting for the remaining parallel workers to finish).
+     - If no (this was the last tick in the group), it advances the pipeline by finding the next priority group (or next timestamp) and dispatching its ticks in parallel.
+
+This architecture guarantees:
+- **Fault Isolation**: If a tick fails, the pipeline halts safely, preventing subsequent dependent ticks from executing on a corrupt state.
+- **Horizontal Scalability**: Independent ticks at the same priority step (e.g. training for 50 teams or resolving 10 fixtures) are processed concurrently across multiple workers.
+- **No Concurrency Conflicts**: The pessimistic database lock on the `Kingdom` ensures that the transition between priority groups is perfectly serialized, preventing parallel workers from racing or duplicating dispatches.
+- **Self-Healing**: If a worker crashes or a message is lost, the next cron run of `app:ticks:run` automatically invokes the orchestrator to resume the pipeline from the last completed step.
 
 ### 4. Messenger Integration & Queues
 

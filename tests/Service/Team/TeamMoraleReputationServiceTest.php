@@ -60,7 +60,6 @@ class TeamMoraleReputationServiceTest extends TestCase
     {
         $ref = new \ReflectionClass($entity);
         $prop = $ref->getProperty('id');
-        $prop->setAccessible(true);
         $prop->setValue($entity, $id);
     }
 
@@ -117,7 +116,7 @@ class TeamMoraleReputationServiceTest extends TestCase
 
         // Mock repositories
         $this->heroRepository->method('findCombatantsByTeam')->willReturnCallback(
-            fn(Team $t) => $t->getId() === 1 ? $allHomeCombatants : $allAwayCombatants
+            fn(Team $t) => $t === $homeTeam ? $allHomeCombatants : $allAwayCombatants
         );
 
         // Build formations
@@ -189,7 +188,7 @@ class TeamMoraleReputationServiceTest extends TestCase
             $hero->setTeam($homeTeam);
             $hero->setRole(HeroRole::Combatant);
             $hero->setMorale(50);
-            $hero->setCha(20);
+            $hero->setCha(200);
             $homeActive[] = $hero;
         }
 
@@ -201,12 +200,12 @@ class TeamMoraleReputationServiceTest extends TestCase
             $hero->setTeam($awayTeam);
             $hero->setRole(HeroRole::Combatant);
             $hero->setMorale(50);
-            $hero->setCha(5);
+            $hero->setCha(50);
             $awayActive[] = $hero;
         }
 
         $this->heroRepository->method('findCombatantsByTeam')->willReturnCallback(
-            fn(Team $t) => $t->getId() === 1 ? $homeActive : $awayActive
+            fn(Team $t) => $t === $homeTeam ? $homeActive : $awayActive
         );
 
         $homeFormation = new Formation();
@@ -291,7 +290,7 @@ class TeamMoraleReputationServiceTest extends TestCase
         }
 
         $this->heroRepository->method('findCombatantsByTeam')->willReturnCallback(
-            fn(Team $t) => $t->getId() === 1 ? $homeActive : $awayActive
+            fn(Team $t) => $t === $homeTeam ? $homeActive : $awayActive
         );
 
         $outcome = MatchOutcome::forfeit(3, 0); // Forfeit win for home
@@ -334,7 +333,7 @@ class TeamMoraleReputationServiceTest extends TestCase
         $hero1->setRole(HeroRole::Combatant);
         $hero1->setMorale(80); // Needs decay
         $this->heroRepository->method('findCombatantsByTeam')->willReturnCallback(
-            fn(Team $t) => $t->getId() === 1 ? [$hero1] : []
+            fn(Team $t) => $t === $team1 ? [$hero1] : []
         );
 
         // HQ and Facilities setup

@@ -8,13 +8,15 @@ use App\Entity\Auth\User;
 use App\Entity\Auth\VerificationToken;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Kingdom\KingdomTickLog;
+use App\Entity\League\LeagueFixture;
 use App\Entity\Notification\Notification;
+use App\Entity\Team\Team;
 use App\Enum\ChronicleReleaseReason;
 use App\Enum\TickType;
 use App\Repository\Hero\HeroRepository;
-use App\Repository\Kingdom\KingdomRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Service\Auth\PlayerInactivityService;
+use App\Service\Calendar\KingdomTickOrchestrator;
 use App\Service\Calendar\TickClock;
 use App\Service\Economy\ArenaRevenueService;
 use App\Service\Economy\FinancialCrisisService;
@@ -23,6 +25,7 @@ use App\Service\Formation\FixtureFormationService;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Team\FanClubService;
+use App\Service\Team\NpcSimulationService;
 use App\Service\Team\TeamMoraleReputationService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Training\TrainingService;
@@ -31,22 +34,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-class ProcessKingdomTicksHandler
+class ExecuteSingleTickHandler
 {
-    private const PRIORITIES = [
-        TickType::WeeklyTraining->value => 2,
-        TickType::LeagueMatch->value => 3,
-        TickType::SeasonTransition->value => 4,
-        TickType::FatigueRecovery->value => 5,
-        TickType::DailyReset->value => 6,
-        TickType::WeeklyReset->value => 6,
-        TickType::RaceOptimization->value => 6,
-        TickType::InactiveRegistrationCleanup->value => 6,
-        TickType::InactivePlayerCleanup->value => 6,
-    ];
-
     public function __construct(
-        private readonly KingdomRepository $kingdomRepository,
         private readonly KingdomTickLogRepository $tickLogRepository,
         private readonly HeroRepository $heroRepository,
         private readonly TrainingService $trainingService,
@@ -65,112 +55,128 @@ class ProcessKingdomTicksHandler
         private readonly \App\Service\League\SeasonTransitionService $seasonTransitionService,
         private readonly TeamChronicleService $teamChronicleService,
         private readonly TickClock $tickClock,
+        private readonly NpcSimulationService $npcSimulationService,
+        private readonly KingdomTickOrchestrator $orchestrator,
     ) {
     }
 
-    public function __invoke(ProcessKingdomTicksMessage $message): void
+    public function __invoke(ExecuteSingleTickMessage $message): void
     {
-        $kingdomId = $message->getKingdomId();
-        /** @var Kingdom|null $kingdom */
-        $kingdom = $this->kingdomRepository->find($kingdomId);
-        if (null === $kingdom) {
-            $this->logger->error(sprintf('ProcessKingdomTicksHandler: Kingdom with ID %d not found.', $kingdomId));
+        $tickLogId = $message->getTickLogId();
+        /** @var KingdomTickLog|null $log */
+        $log = $this->tickLogRepository->find($tickLogId);
+        if (null === $log) {
+            $this->logger->error(sprintf('ExecuteSingleTickHandler: KingdomTickLog with ID %d not found.', $tickLogId));
 
             return;
         }
 
-        // Find all processing log entries for this kingdom
-        /** @var list<KingdomTickLog> $logs */
-        $logs = $this->tickLogRepository->findBy(
-            ['kingdom' => $kingdom, 'status' => 'processing']
-        );
+        $kingdom = $log->getKingdom();
 
-        if (empty($logs)) {
+        // 1. Try to atomically acquire the tick by updating its status to 'processing'
+        $qb = $this->em->createQueryBuilder()
+            ->update(KingdomTickLog::class, 'l')
+            ->set('l.status', ':processing')
+            ->where('l.id = :id')
+            ->andWhere('l.status IN (:allowed_statuses)')
+            ->setParameter('processing', 'processing')
+            ->setParameter('id', $log->getId())
+            ->setParameter('allowed_statuses', ['pending', 'dispatched']);
+
+        $rowsUpdated = $qb->getQuery()->execute();
+        if (0 === $rowsUpdated) {
+            $this->logger->info(sprintf(
+                'ExecuteSingleTickHandler: Tick (ID: %d) was already claimed by another worker or is not pending/dispatched. Exiting.',
+                $log->getId()
+            ));
+
             return;
         }
 
-        // Sort them chronologically, then by logical priority
-        usort($logs, function (KingdomTickLog $a, KingdomTickLog $b): int {
-            $timeCompare = $a->getScheduledAt() <=> $b->getScheduledAt();
-            if (0 !== $timeCompare) {
-                return $timeCompare;
-            }
+        // Now we can execute it.
+        $this->tickClock->setCustomTime($log->getScheduledAt());
+        $this->em->beginTransaction();
+        try {
+            $this->executeTick($kingdom, $log);
 
-            $pA = self::PRIORITIES[$a->getTickType()->value];
-            $pB = self::PRIORITIES[$b->getTickType()->value];
+            $log->setStatus('completed');
+            $log->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+            $log->setErrorMessage(null);
 
-            return $pA <=> $pB;
-        });
+            $this->em->flush();
+            $this->em->commit();
 
-        foreach ($logs as $log) {
-            /* @var KingdomTickLog $log */
-            $this->tickClock->setCustomTime($log->getScheduledAt());
+            $this->logger->info(sprintf('Tick %s completed successfully for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
+        } catch (\Throwable $e) {
+            $this->em->rollback();
+
+            // Start a new independent transaction to record the failure
             $this->em->beginTransaction();
             try {
-                $this->executeTick($kingdom, $log);
-
-                $log->setStatus('completed');
-                $log->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
-                $log->setErrorMessage(null);
-
-                $this->em->flush();
-                $this->em->commit();
-
-                $this->logger->info(sprintf('Tick %s completed successfully for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
-            } catch (\Throwable $e) {
-                $this->em->rollback();
-
-                // Start a new independent transaction to record the failure
-                $this->em->beginTransaction();
-                try {
-                    // Refresh entity in case of session clear using a separate variable
-                    /** @var KingdomTickLog|null $refreshedLog */
-                    $refreshedLog = $this->tickLogRepository->find($log->getId());
-                    if (null !== $refreshedLog) {
-                        $refreshedLog->setStatus('failed');
-                        $refreshedLog->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
-                        $refreshedLog->setErrorMessage($e->getMessage()."\n".$e->getTraceAsString());
-                        $this->em->flush();
-                    }
-                    $this->em->commit();
-                } catch (\Throwable) {
-                    $this->em->rollback();
+                /** @var KingdomTickLog|null $refreshedLog */
+                $refreshedLog = $this->tickLogRepository->find($log->getId());
+                if (null !== $refreshedLog) {
+                    $refreshedLog->setStatus('failed');
+                    $refreshedLog->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                    $refreshedLog->setErrorMessage($e->getMessage()."\n".$e->getTraceAsString());
+                    $this->em->flush();
                 }
-
-                $this->logger->error(sprintf('Tick %s failed for Kingdom %s: %s', $log->getTickType()->value, $kingdom->getName(), $e->getMessage()), ['exception' => $e]);
-
-                // Halt execution for this Kingdom entirely to maintain chronological order
-                break;
-            } finally {
-                $this->tickClock->setCustomTime(null);
+                $this->em->commit();
+            } catch (\Throwable) {
+                $this->em->rollback();
             }
+
+            $this->logger->error(sprintf('Tick %s failed for Kingdom %s: %s', $log->getTickType()->value, $kingdom->getName(), $e->getMessage()), ['exception' => $e]);
+
+            // Halt the pipeline by exiting without triggering the orchestrator
+            return;
+        } finally {
+            $this->tickClock->setCustomTime(null);
         }
+
+        // 2. Trigger the orchestrator to check if the group is done and proceed to the next step
+        $this->orchestrator->orchestrate($kingdom);
     }
 
     private function executeTick(Kingdom $kingdom, KingdomTickLog $log): void
     {
         $type = $log->getTickType();
         $scheduledAt = $log->getScheduledAt();
+        $team = $log->getTeam();
+        $fixture = $log->getFixture();
 
         switch ($type) {
             case TickType::WeeklyTraining:
-                $this->trainingService->processTrainingTick($scheduledAt, $kingdom);
+                if (null !== $team) {
+                    $this->npcSimulationService->simulateTraining($kingdom, $scheduledAt, $team);
+                    $this->trainingService->processTrainingTick($scheduledAt, $kingdom, $team);
+                }
                 break;
 
             case TickType::WeeklyReset:
-                $this->resetWeeklySummons($kingdom);
-                $this->hqService->processMaintenanceTick($kingdom);
-                $this->royalTreasuryService->processWeeklyDistribution($kingdom);
-                $this->hqService->processFacilityDowngradeLockTick($kingdom);
-                $this->financialCrisisService->processWeeklyCrisisTick($kingdom);
+                if (null !== $team) {
+                    // Team-scoped weekly reset
+                    $this->npcSimulationService->simulateManagementAndEconomy($kingdom, $scheduledAt, $team);
+                    $this->resetWeeklySummons($kingdom, $team);
+                    $this->hqService->processMaintenanceTick($kingdom, $team);
+                    $this->hqService->processFacilityDowngradeLockTick($kingdom, $team);
+                    $this->financialCrisisService->processWeeklyCrisisTick($kingdom, $team);
+                } else {
+                    // Kingdom-scoped weekly reset: Shared Royal Treasury distribution
+                    $this->royalTreasuryService->processWeeklyDistribution($kingdom);
+                }
                 break;
 
             case TickType::RaceOptimization:
-                $this->hqService->processRaceOptimizationTick($kingdom);
+                if (null !== $team) {
+                    $this->hqService->processRaceOptimizationTick($kingdom, $team);
+                }
                 break;
 
             case TickType::FatigueRecovery:
-                $this->processFatigueRecovery($kingdom);
+                if (null !== $team) {
+                    $this->processFatigueRecoveryForTeam($team);
+                }
                 break;
 
             case TickType::InactiveRegistrationCleanup:
@@ -178,18 +184,32 @@ class ProcessKingdomTicksHandler
                 break;
 
             case TickType::InactivePlayerCleanup:
-                $this->playerInactivityService->processDailyInactivityTick($kingdom, $scheduledAt);
+                if (null !== $team) {
+                    $this->playerInactivityService->processDailyInactivityTick($kingdom, $scheduledAt, $team);
+                }
                 break;
 
             case TickType::DailyReset:
-                $this->processDailyReset($kingdom, $scheduledAt);
+                if (null !== $team) {
+                    $this->processDailyResetForTeam($team, $scheduledAt);
+                }
                 break;
 
             case TickType::LeagueMatch:
-                $this->arenaRevenueService->processLeagueMatchTick($kingdom, $scheduledAt);
-                $this->leagueMatchResolutionService->processLeagueMatchTick($kingdom, $scheduledAt);
-                $this->cleanupStaleTemporaryFormations($kingdom);
-                $this->logger->debug(sprintf('Processed league match tick for Kingdom %s', $kingdom->getName()));
+                if (null !== $fixture) {
+                    // NPC tactics simulation for both teams
+                    $this->npcSimulationService->simulateTactics($kingdom, $scheduledAt, $fixture->getHomeTeam());
+                    $this->npcSimulationService->simulateTactics($kingdom, $scheduledAt, $fixture->getAwayTeam());
+
+                    // Arena revenue and match resolution
+                    $this->arenaRevenueService->payFixtureRevenue($fixture);
+                    $this->leagueMatchResolutionService->resolveFixture($fixture, $scheduledAt);
+
+                    // Clean up temporary formations for the fixture
+                    $this->cleanupTemporaryFormationsForFixture($fixture);
+
+                    $this->logger->debug(sprintf('Processed league match tick for fixture ID %d', $fixture->getId()));
+                }
                 break;
 
             case TickType::SeasonTransition:
@@ -198,20 +218,20 @@ class ProcessKingdomTicksHandler
         }
     }
 
-    private function processFatigueRecovery(Kingdom $kingdom): void
+    private function processFatigueRecoveryForTeam(Team $team): void
     {
+        $kingdom = $team->getKingdom();
         $speed = (float) $kingdom->getGameSpeed();
 
         // Base recovery amounts
         $fatigueReduction = (int) round(10 * $speed);
         $formIncrease = (int) round(5 * $speed);
 
-        // Fetch heroes belonging to this Kingdom that need recovery
+        // Fetch heroes belonging to this Team that need recovery
         $qb = $this->heroRepository->createQueryBuilder('h')
-            ->join('h.team', 't')
-            ->where('t.kingdom = :kingdom')
+            ->where('h.team = :team')
             ->andWhere('h.fatigue > 0 OR h.form < 100')
-            ->setParameter('kingdom', $kingdom);
+            ->setParameter('team', $team);
 
         /** @var list<\App\Entity\Hero\Hero> $heroes */
         $heroes = $qb->getQuery()->getResult();
@@ -279,17 +299,18 @@ class ProcessKingdomTicksHandler
         }
     }
 
-    private function processDailyReset(Kingdom $kingdom, \DateTimeImmutable $scheduledAt): void
+    private function processDailyResetForTeam(Team $team, \DateTimeImmutable $scheduledAt): void
     {
-        $this->logger->debug(sprintf('Executing DailyReset for Kingdom %s', $kingdom->getName()));
+        $kingdom = $team->getKingdom();
+        $this->logger->debug(sprintf('Executing DailyReset for Team %s (Kingdom: %s)', $team->getName(), $kingdom->getName()));
 
-        $this->cleanupStaleTemporaryFormations($kingdom);
-        $this->fanClubService->processDailyEvolutionTick($kingdom);
-        $this->teamMoraleReputationService->processDailyEvolutionTick($kingdom);
-        $this->marketplaceService->processExpiredListingsForKingdom($kingdom, $scheduledAt);
+        $this->cleanupStaleTemporaryFormationsForTeam($team);
+        $this->fanClubService->processDailyEvolutionTick($kingdom, $team);
+        $this->teamMoraleReputationService->processDailyEvolutionTick($kingdom, $team);
+        $this->marketplaceService->processExpiredListingsForKingdom($kingdom, $scheduledAt, $team);
 
         // Process pending facility upgrades
-        $this->hqService->processFacilityUpgradesTick($kingdom, $scheduledAt);
+        $this->hqService->processFacilityUpgradesTick($kingdom, $scheduledAt, $team);
 
         // Update hero and trainer aging
         $speed = (float) $kingdom->getGameSpeed();
@@ -299,15 +320,14 @@ class ProcessKingdomTicksHandler
         $ageIncrement = (int) round(1 * $speed);
 
         if ($ageIncrement > 0) {
-            // Fetch all heroes for this kingdom that are not Undead
+            // Fetch all heroes for this team that are not Undead
             /** @var list<\App\Entity\Hero\Hero> $heroes */
             $heroes = $this->em->getRepository(\App\Entity\Hero\Hero::class)
                 ->createQueryBuilder('h')
-                ->join('h.team', 't')
-                ->where('t.kingdom = :kingdom')
+                ->where('h.team = :team')
                 ->andWhere('h.role = :combatant')
                 ->andWhere('h.race != :undead')
-                ->setParameter('kingdom', $kingdom)
+                ->setParameter('team', $team)
                 ->setParameter('combatant', \App\Enum\HeroRole::Combatant)
                 ->setParameter('undead', \App\Enum\Race::Undead)
                 ->getQuery()
@@ -319,7 +339,6 @@ class ProcessKingdomTicksHandler
         }
 
         // Check if we need to pre-create the next season (Option A: Monday of Week 11)
-        // If scheduledAt is Monday (1)
         if (1 === (int) $scheduledAt->format('N')) {
             /** @var \App\Entity\League\LeagueSeason|null $activeSeason */
             $activeSeason = $this->em->getRepository(\App\Entity\League\LeagueSeason::class)->findOneBy([
@@ -344,23 +363,31 @@ class ProcessKingdomTicksHandler
         }
     }
 
-    private function resetWeeklySummons(Kingdom $kingdom): void
+    private function resetWeeklySummons(Kingdom $kingdom, ?Team $team = null): void
     {
-        $teams = $this->em->getRepository(\App\Entity\Team\Team::class)->findBy(['kingdom' => $kingdom]);
-        foreach ($teams as $team) {
+        if (null !== $team) {
             $team->setSummonsThisCycle(0);
+        } else {
+            $teams = $this->em->getRepository(Team::class)->findBy(['kingdom' => $kingdom]);
+            foreach ($teams as $team) {
+                $team->setSummonsThisCycle(0);
+            }
         }
     }
 
-    private function cleanupStaleTemporaryFormations(Kingdom $kingdom): void
+    private function cleanupStaleTemporaryFormationsForTeam(Team $team): void
     {
-        $removed = $this->fixtureFormationService->cleanupStaleTemporaryFormationsForKingdom($kingdom);
-        if ($removed > 0) {
-            $this->logger->info(sprintf(
-                'Removed %d stale temporary formation(s) for Kingdom %s',
-                $removed,
-                $kingdom->getName(),
-            ));
+        $count = $this->fixtureFormationService->cleanupStaleTemporaryFormationsForTeam($team);
+        if ($count > 0) {
+            $this->logger->info(sprintf('Removed %d stale temporary formation(s) for Team %s', $count, $team->getName()));
+        }
+    }
+
+    private function cleanupTemporaryFormationsForFixture(LeagueFixture $fixture): void
+    {
+        $count = $this->fixtureFormationService->cleanupTemporaryFormationsAfterCompletion($fixture);
+        if ($count > 0) {
+            $this->logger->info(sprintf('Removed %d stale temporary formation(s) for completed Fixture ID %d', $count, $fixture->getId()));
         }
     }
 }

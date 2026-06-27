@@ -181,9 +181,14 @@ class FinancialCrisisService
         return $payment;
     }
 
-    public function processWeeklyCrisisTick(Kingdom $kingdom): void
+    public function processWeeklyCrisisTick(Kingdom $kingdom, ?Team $team = null): void
     {
-        $hqs = $this->hqRepository->findByKingdom($kingdom);
+        if (null !== $team) {
+            $hq = $this->hqRepository->findOneBy(['team' => $team]);
+            $hqs = null !== $hq ? [$hq] : [];
+        } else {
+            $hqs = $this->hqRepository->findByKingdom($kingdom);
+        }
 
         foreach ($hqs as $hq) {
             /** @var Headquarters $hq */

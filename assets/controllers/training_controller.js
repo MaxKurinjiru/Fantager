@@ -6,7 +6,8 @@ import { showConfirm } from '../utils/confirm.js';
 export default class extends Controller {
     static targets = [
         'alert',
-        'alertMessage'
+        'alertMessage',
+        'promoteSelect'
     ];
 
     static values = {
@@ -26,7 +27,11 @@ export default class extends Controller {
         confirmDismiss: String,
         errorDismiss: String,
         successDismiss: String,
-        titleDismiss: String
+        titleDismiss: String,
+        confirmPromote: String,
+        errorPromote: String,
+        successPromote: String,
+        titlePromote: String
     };
 
     connect() {
@@ -277,6 +282,62 @@ export default class extends Controller {
             interval = setInterval(updateTicker, 1000);
             this.timers.push(interval);
         });
+    }
+
+    async promoteTrainer(e) {
+        e.preventDefault();
+        if (this.isLockedValue) return;
+
+        const select = this.promoteSelectTarget;
+        const heroId = select.value;
+
+        if (!heroId) return;
+
+        const message = this.hasConfirmPromoteValue
+            ? this.confirmPromoteValue
+            : 'Are you sure you want to permanently convert this hero to a trainer?';
+
+        if (!await showConfirm(
+            this.titlePromoteValue || 'Promote Hero to Trainer',
+            message,
+            null,
+            null,
+            'warning'
+        )) {
+            return;
+        }
+
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = this.textSavingValue || 'Saving...';
+
+        try {
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+            const response = await fetch('/api/v1/training/trainers/promote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify({ hero_id: parseInt(heroId, 10) })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || result.error) {
+                throw new Error(result.error || this.errorPromoteValue);
+            }
+
+            this.showAlert('success', this.successPromoteValue || 'Hero promoted successfully');
+            setTimeout(() => window.location.reload(), 1200);
+        } catch (error) {
+            this.showAlert('error', error.message);
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
     }
 
     showAlert(type, message) {

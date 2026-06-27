@@ -11,8 +11,10 @@ use App\Entity\Team\Team;
 use App\Enum\LeagueFixtureStatus;
 use App\Service\League\LeagueFixtureScheduler;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[AllowMockObjectsWithoutExpectations]
 class LeagueFixtureSchedulerTest extends TestCase
 {
     public function testScheduleFixturesForGroup(): void

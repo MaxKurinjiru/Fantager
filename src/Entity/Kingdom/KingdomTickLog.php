@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Entity\Kingdom;
 
+use App\Entity\League\LeagueFixture;
+use App\Entity\Team\Team;
 use App\Enum\TickType;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: KingdomTickLogRepository::class)]
 #[ORM\Table(name: 'kingdom_tick_log')]
-#[ORM\UniqueConstraint(name: 'uniq_kingdom_tick_type_scheduled', columns: ['kingdom_id', 'tick_type', 'scheduled_at'])]
+#[ORM\UniqueConstraint(name: 'uniq_kingdom_tick_type_scheduled_team_fixture', columns: ['kingdom_id', 'tick_type', 'scheduled_at', 'team_id', 'fixture_id'])]
 class KingdomTickLog
 {
     #[ORM\Id]
@@ -22,6 +24,14 @@ class KingdomTickLog
     #[ORM\JoinColumn(nullable: false)]
     private Kingdom $kingdom;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?Team $team = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?LeagueFixture $fixture = null;
+
     #[ORM\Column(name: 'tick_type', length: 30, enumType: TickType::class)]
     private TickType $tickType;
 
@@ -29,7 +39,7 @@ class KingdomTickLog
     private \DateTimeImmutable $scheduledAt;
 
     #[ORM\Column(length: 15)]
-    private string $status = 'processing';
+    private string $status = 'pending';
 
     #[ORM\Column(name: 'error_message', type: 'text', nullable: true)]
     private ?string $errorMessage = null;
@@ -115,6 +125,30 @@ class KingdomTickLog
     public function setExecutedAt(\DateTimeImmutable $executedAt): static
     {
         $this->executedAt = $executedAt;
+
+        return $this;
+    }
+
+    public function getTeam(): ?Team
+    {
+        return $this->team;
+    }
+
+    public function setTeam(?Team $team): static
+    {
+        $this->team = $team;
+
+        return $this;
+    }
+
+    public function getFixture(): ?LeagueFixture
+    {
+        return $this->fixture;
+    }
+
+    public function setFixture(?LeagueFixture $fixture): static
+    {
+        $this->fixture = $fixture;
 
         return $this;
     }
