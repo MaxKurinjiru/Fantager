@@ -165,6 +165,7 @@ error:
   hero_not_on_team: Hrdina nepatří k vašemu týmu.
   hero_only_available_dismiss: Propustit lze pouze dostupné hrdiny.
   hero_assigned_trainer_dismiss: Hrdina je přiřazen trenérovi. Před propuštěním ho odeberte z tréninku.
+  hero_already_trainer: Hrdina již je trenérem.
   hero_only_available_roster: Z soupisky mohou odejít pouze dostupní hrdinové.
   hero_roster_minimum: 'Tým musí mít alespoň %min% bojeschopných hrdinů pro zápasy.'
   hero_name_empty: Jméno hrdiny nemůže být prázdné.
@@ -184,6 +185,7 @@ error:
   trainer_hero_not_assigned: Hrdina není přiřazen tomuto trenérovi.
   trainer_only_active_dismiss: Propustit lze pouze aktivní trenéry.
   trainer_only_active_list: Na trh lze vystavit pouze aktivní trenéry.
+  training_trainer_limit_reached: Byl dosažen limit počtu trenérů pro váš tým.
   invalid_attribute: 'Neplatný atribut. Povolené hodnoty: %values%.'
   unknown_attribute: 'Neznámý atribut "%attribute%".'
   marketplace_price_positive: Cena nebo vyvolávací cena musí být kladná.

@@ -94,6 +94,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 |--------|------|-----------|---------|
 | GET | `/app/training` | Web\TrainingController | Training & Trainer Management page |
 | GET | `/api/v1/training/trainers` | Api\V1\TrainingController | List team's trainers, their configured training focus, slots limit, assigned heroes, and lock status |
+| POST | `/api/v1/training/trainers/promote` | Api\V1\TrainingController | Promote hero to trainer |
 | POST | `/api/v1/training/trainers/{id}/configure` | Api\V1\TrainingController | Configure trainer focus (type, target attribute) |
 | POST | `/api/v1/training/trainers/{id}/assign` | Api\V1\TrainingController | Assign hero to trainer |
 | POST | `/api/v1/training/trainers/{id}/unassign` | Api\V1\TrainingController | Remove assignment of hero from trainer |
@@ -356,7 +357,7 @@ In-game UI: navbar dropdown → **Notifications** modal (`notifications_controll
 
 | | Web | API | Total |
 |--|-----|-----|-------|
-| Routes (implemented) | 26 | 65 | **91** |
+| Routes (implemented) | 26 | 66 | **92** |
 | Routes (planned) | 7 | 32+ | — |
 | Controllers (Web, implemented) | 24 | — | — |
 | Controllers (API, implemented) | — | 18 | — |

@@ -165,6 +165,7 @@ error:
   hero_not_on_team: Hero does not belong to your team.
   hero_only_available_dismiss: Only available heroes can be dismissed.
   hero_assigned_trainer_dismiss: Hero is assigned to a trainer. Unassign before dismissing.
+  hero_already_trainer: Hero is already a trainer.
   hero_only_available_roster: Only available heroes can leave the roster.
   hero_roster_minimum: 'Team must keep at least %min% combat-ready heroes to play matches.'
   hero_name_empty: Hero name cannot be empty.
@@ -184,6 +185,7 @@ error:
   trainer_hero_not_assigned: Hero is not assigned to this trainer.
   trainer_only_active_dismiss: Only active trainers can be dismissed.
   trainer_only_active_list: Only active trainers can be listed.
+  training_trainer_limit_reached: Trainer limit reached for your team.
   invalid_attribute: 'Invalid attribute. Valid values: %values%.'
   unknown_attribute: 'Unknown attribute "%attribute%".'
   marketplace_price_positive: Price or starting bid must be positive.

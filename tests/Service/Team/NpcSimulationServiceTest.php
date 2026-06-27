@@ -28,20 +28,31 @@ use App\Service\Marketplace\MarketplaceService;
 use App\Service\Summoning\SummoningService;
 use App\Service\Team\NpcSimulationService;
 use App\Service\Training\TrainingService;
+use App\Service\Hero\HeroDismissalService;
+use App\Entity\Item\Item;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 
 #[AllowMockObjectsWithoutExpectations]
 class NpcSimulationServiceTest extends TestCase
 {
+    /** @var EntityManagerInterface&MockObject */
     private $em;
+    /** @var SummoningService&MockObject */
     private $summoningService;
+    /** @var MarketplaceService&MockObject */
     private $marketplaceService;
+    /** @var HeadquartersService&MockObject */
     private $hqService;
+    /** @var TrainingService&MockObject */
     private $trainingService;
+    /** @var ItemService&MockObject */
     private $itemService;
+    /** @var HeroDismissalService&MockObject */
+    private $dismissalService;
     private NpcSimulationService $service;
 
     protected function setUp(): void
@@ -52,6 +63,7 @@ class NpcSimulationServiceTest extends TestCase
         $this->hqService = $this->createMock(HeadquartersService::class);
         $this->trainingService = $this->createMock(TrainingService::class);
         $this->itemService = $this->createMock(ItemService::class);
+        $this->dismissalService = $this->createMock(HeroDismissalService::class);
 
         $this->service = new NpcSimulationService(
             $this->em,
@@ -59,7 +71,8 @@ class NpcSimulationServiceTest extends TestCase
             $this->marketplaceService,
             $this->hqService,
             $this->trainingService,
-            $this->itemService
+            $this->itemService,
+            $this->dismissalService
         );
     }
 
