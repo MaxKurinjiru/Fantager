@@ -298,9 +298,14 @@ class HeadquartersService
         return $this->calculateWeeklyMaintenanceBreakdown($hq)['total'];
     }
 
-    public function processMaintenanceTick(Kingdom $kingdom): void
+    public function processMaintenanceTick(Kingdom $kingdom, ?Team $team = null): void
     {
-        $hqs = $this->hqRepository->findByKingdom($kingdom);
+        if (null !== $team) {
+            $hq = $this->hqRepository->findOneBy(['team' => $team]);
+            $hqs = null !== $hq ? [$hq] : [];
+        } else {
+            $hqs = $this->hqRepository->findByKingdom($kingdom);
+        }
 
         foreach ($hqs as $hq) {
             /** @var Headquarters $hq */
@@ -468,9 +473,14 @@ class HeadquartersService
     }
 
     /** Apply pending arena adaptation changes for all HQ in the kingdom (Sunday tick). */
-    public function processRaceOptimizationTick(Kingdom $kingdom): void
+    public function processRaceOptimizationTick(Kingdom $kingdom, ?Team $team = null): void
     {
-        $hqs = $this->hqRepository->findByKingdom($kingdom);
+        if (null !== $team) {
+            $hq = $this->hqRepository->findOneBy(['team' => $team]);
+            $hqs = null !== $hq ? [$hq] : [];
+        } else {
+            $hqs = $this->hqRepository->findByKingdom($kingdom);
+        }
 
         foreach ($hqs as $hq) {
             /** @var Headquarters $hq */
@@ -492,9 +502,14 @@ class HeadquartersService
         $this->em->flush();
     }
 
-    public function processFacilityUpgradesTick(Kingdom $kingdom, \DateTimeImmutable $now): void
+    public function processFacilityUpgradesTick(Kingdom $kingdom, \DateTimeImmutable $now, ?Team $team = null): void
     {
-        $hqs = $this->hqRepository->findByKingdom($kingdom);
+        if (null !== $team) {
+            $hq = $this->hqRepository->findOneBy(['team' => $team]);
+            $hqs = null !== $hq ? [$hq] : [];
+        } else {
+            $hqs = $this->hqRepository->findByKingdom($kingdom);
+        }
 
         foreach ($hqs as $hq) {
             /** @var Headquarters $hq */
@@ -548,9 +563,14 @@ class HeadquartersService
         $this->em->flush();
     }
 
-    public function processFacilityDowngradeLockTick(Kingdom $kingdom): void
+    public function processFacilityDowngradeLockTick(Kingdom $kingdom, ?Team $team = null): void
     {
-        $hqs = $this->hqRepository->findByKingdom($kingdom);
+        if (null !== $team) {
+            $hq = $this->hqRepository->findOneBy(['team' => $team]);
+            $hqs = null !== $hq ? [$hq] : [];
+        } else {
+            $hqs = $this->hqRepository->findByKingdom($kingdom);
+        }
 
         foreach ($hqs as $hq) {
             /** @var Headquarters $hq */

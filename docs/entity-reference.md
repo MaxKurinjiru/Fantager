@@ -75,7 +75,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | Entity      | Key Fields                                                                                                                                        | Relationships        |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | **Kingdom** | id, name, language, timezone, game_speed, marketplace_tax_rate, season_length, league_tiers_config (JSON), level_cap, xp_modifier, crafting_boost, **royal_treasury_gold** | 1:N Users, 1:N Teams |
-| **KingdomTickLog** | id, kingdom_id, tickType (enum), scheduledAt, status (enum), errorMessage, executedAt                                                             | → Kingdom (N:1)      |
+| **KingdomTickLog** | id, kingdom_id, team_id (nullable), fixture_id (nullable), tickType (enum), scheduledAt, status, errorMessage, executedAt | → Kingdom (N:1), → Team (N:1, nullable), → LeagueFixture (N:1, nullable) |
 
 
 ### 3. Team Domain

@@ -257,4 +257,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->settings?->isCloseModalOnBackdrop() ?? false;
     }
+
+    public function isTestAccount(): bool
+    {
+        return in_array('ROLE_TEST', $this->getRoles(), true);
+    }
 }

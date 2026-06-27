@@ -50,7 +50,9 @@ class TeamChemistryServiceTest extends TestCase
         $heroRepo->method('findCombatantsByTeam')->willReturn([$heroA, $heroB]);
 
         $raceConfig = $this->createMock(RaceConfig::class);
-        $raceConfig->expects($this->any())->method('getRelationship')->with(Race::Human, Race::Elf)->willReturn(90);
+        $raceConfig->method('getRelationship')->willReturnCallback(
+            fn(Race $r1, Race $r2) => ($r1 === Race::Human && $r2 === Race::Elf) || ($r1 === Race::Elf && $r2 === Race::Human) ? 90 : 50
+        );
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->once())->method('flush');
@@ -78,7 +80,9 @@ class TeamChemistryServiceTest extends TestCase
         $heroRepo->method('findCombatantsByTeam')->willReturn([$heroA, $heroB]);
 
         $raceConfig = $this->createMock(RaceConfig::class);
-        $raceConfig->expects($this->any())->method('getRelationship')->with(Race::Elf, Race::Orc)->willReturn(0);
+        $raceConfig->method('getRelationship')->willReturnCallback(
+            fn(Race $r1, Race $r2) => ($r1 === Race::Elf && $r2 === Race::Orc) || ($r1 === Race::Orc && $r2 === Race::Elf) ? 0 : 50
+        );
 
         $em = $this->createMock(EntityManagerInterface::class);
 

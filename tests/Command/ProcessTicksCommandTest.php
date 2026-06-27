@@ -7,20 +7,20 @@ namespace App\Tests\Command;
 use App\Command\ProcessTicksCommand;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Kingdom\KingdomTickLog;
+use App\Entity\Team\Team;
+use App\Entity\League\LeagueFixture;
 use App\Enum\TickType;
-use App\Message\ProcessKingdomTicksHandler;
-use App\Message\ProcessKingdomTicksMessage;
+use App\Message\ExecuteSingleTickHandler;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\League\LeagueSeasonRepository;
+use App\Service\Calendar\KingdomTickOrchestrator;
 use App\Service\Calendar\KingdomTickRunnerService;
 use App\Service\Calendar\TickScheduleCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AllowMockObjectsWithoutExpectations]
 class ProcessTicksCommandTest extends TestCase
@@ -35,6 +35,19 @@ class ProcessTicksCommandTest extends TestCase
         $idProperty = $reflection->getProperty('id');
         $idProperty->setValue($kingdom, 1);
 
+        $team = new Team();
+        $team->setKingdom($kingdom);
+        $reflectionTeam = new \ReflectionClass(Team::class);
+        $idTeamProperty = $reflectionTeam->getProperty('id');
+        $idTeamProperty->setValue($team, 1);
+
+        $fixture = new LeagueFixture();
+        $fixture->setHomeTeam($team);
+        $fixture->setAwayTeam($team);
+        $reflectionFixture = new \ReflectionClass(LeagueFixture::class);
+        $idFixtureProperty = $reflectionFixture->getProperty('id');
+        $idFixtureProperty->setValue($fixture, 1);
+
         $now = new \DateTimeImmutable('2026-06-09T18:30:00Z');
         $leagueMatchTime = new \DateTimeImmutable('2026-06-09T18:00:00Z');
         $fatigueRecoveryTime = new \DateTimeImmutable('2026-06-09T04:00:00Z');
@@ -45,14 +58,11 @@ class ProcessTicksCommandTest extends TestCase
         $tickLogRepository = $this->createMock(KingdomTickLogRepository::class);
         $tickLogRepository->method('findOneBy')->willReturnCallback(
             static function (array $criteria): ?KingdomTickLog {
-                if (isset($criteria['status']) && is_array($criteria['status'])) {
-                    return null;
-                }
-
                 return null;
             }
         );
         $tickLogRepository->method('getLatestCompletedTickTime')->willReturn(null);
+        $tickLogRepository->method('count')->willReturn(0);
 
         $seasonRepository = $this->createMock(LeagueSeasonRepository::class);
         $seasonRepository->method('findOneBy')->willReturn(null);
@@ -63,33 +73,49 @@ class ProcessTicksCommandTest extends TestCase
             ['type' => TickType::LeagueMatch, 'time' => $leagueMatchTime],
         ]);
 
+        $teamRepository = $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        $teamRepository->method('findBy')->willReturn([$team]);
+
+        $leagueFixtureRepository = $this->createMock(\App\Repository\League\LeagueFixtureRepository::class);
+        $leagueFixtureRepository->method('findScheduledFixturesAtTime')->willReturn([$fixture]);
+
         $persistedLogs = [];
         $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('getRepository')->willReturnCallback(
+            static function (string $className) use ($teamRepository, $leagueFixtureRepository) {
+                if ($className === Team::class) {
+                    return $teamRepository;
+                }
+                if ($className === LeagueFixture::class) {
+                    return $leagueFixtureRepository;
+                }
+                return null;
+            }
+        );
         $entityManager->method('persist')->willReturnCallback(
             static function (KingdomTickLog $log) use (&$persistedLogs): void {
                 $persistedLogs[] = $log;
             }
         );
 
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->isInstanceOf(ProcessKingdomTicksMessage::class))
-            ->willReturn(new Envelope(new ProcessKingdomTicksMessage(1)));
+        $tickOrchestrator = $this->createMock(KingdomTickOrchestrator::class);
+        $tickOrchestrator->expects($this->once())
+            ->method('orchestrate')
+            ->with($kingdom);
 
-        $ticksHandler = $this->createMock(ProcessKingdomTicksHandler::class);
+        $singleTickHandler = $this->createMock(ExecuteSingleTickHandler::class);
         $tickRunner = new KingdomTickRunnerService(
             $tickLogRepository,
             $seasonRepository,
             $scheduleCalculator,
-            $ticksHandler,
+            $singleTickHandler,
             $entityManager,
         );
 
         $command = new ProcessTicksCommand(
             $kingdomRepository,
             $tickRunner,
-            $messageBus,
+            $tickOrchestrator,
         );
 
         $tester = new CommandTester($command);

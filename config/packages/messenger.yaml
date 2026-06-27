@@ -20,6 +20,6 @@ framework:
                     auto_setup: true
 
         routing:
-            'App\Message\ProcessKingdomTicksMessage': async_medium
+            'App\Message\ExecuteSingleTickMessage': async_medium
             'Symfony\Component\Mailer\Messenger\SendEmailMessage': async_low
 

@@ -148,7 +148,6 @@ class TeamChronicleServiceTest extends TestCase
         $hero->setName('Thorin');
         $reflection = new \ReflectionClass($hero);
         $idProp = $reflection->getProperty('id');
-        $idProp->setAccessible(true);
         $idProp->setValue($hero, 123);
 
         $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
@@ -174,7 +173,6 @@ class TeamChronicleServiceTest extends TestCase
         $trainer->setName('Gandalf');
         $reflection = new \ReflectionClass($trainer);
         $idProp = $reflection->getProperty('id');
-        $idProp->setAccessible(true);
         $idProp->setValue($trainer, 456);
 
         $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
@@ -204,14 +202,12 @@ class TeamChronicleServiceTest extends TestCase
         $buyer = new Team();
         $buyerReflection = new \ReflectionClass($buyer);
         $buyerId = $buyerReflection->getProperty('id');
-        $buyerId->setAccessible(true);
         $buyerId->setValue($buyer, 1);
         $buyer->setName('Buyers');
 
         $seller = new Team();
         $sellerReflection = new \ReflectionClass($seller);
         $sellerId = $sellerReflection->getProperty('id');
-        $sellerId->setAccessible(true);
         $sellerId->setValue($seller, 2);
         $seller->setName('Sellers');
 
@@ -220,7 +216,6 @@ class TeamChronicleServiceTest extends TestCase
         $hero->setRace(Race::Dwarf);
         $heroReflection = new \ReflectionClass($hero);
         $heroId = $heroReflection->getProperty('id');
-        $heroId->setAccessible(true);
         $heroId->setValue($hero, 123);
 
         $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());

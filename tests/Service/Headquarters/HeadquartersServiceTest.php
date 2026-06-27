@@ -114,7 +114,10 @@ class HeadquartersServiceTest extends TestCase
     public function testProcessRaceOptimizationTick(): void
     {
         $kingdom = new Kingdom();
+        $team = new \App\Entity\Team\Team();
+        $team->setKingdom($kingdom);
         $hq = new Headquarters();
+        $hq->setTeam($team);
         $hq->setRaceOptimization('human');
         $hq->setPendingRaceOptimization('elf');
         $hq->setHasPendingRaceOptimizationChange(true);

@@ -386,10 +386,10 @@ class MarketplaceService
         $this->processExpiredListingsForKingdom(null, $now);
     }
 
-    public function processExpiredListingsForKingdom(?Kingdom $kingdom, \DateTimeImmutable $now): void
+    public function processExpiredListingsForKingdom(?Kingdom $kingdom, \DateTimeImmutable $now, ?Team $team = null): void
     {
         /** @var list<MarketplaceListing> $listings */
-        $listings = $this->findExpiredActiveListings($kingdom, $now);
+        $listings = $this->findExpiredActiveListings($kingdom, $now, $team);
         $teamsToRecalculate = [];
 
         foreach ($listings as $listing) {
@@ -863,7 +863,7 @@ class MarketplaceService
     /**
      * @return list<MarketplaceListing>
      */
-    private function findExpiredActiveListings(?Kingdom $kingdom, \DateTimeImmutable $now): array
+    private function findExpiredActiveListings(?Kingdom $kingdom, \DateTimeImmutable $now, ?Team $team = null): array
     {
         $qb = $this->em->getRepository(MarketplaceListing::class)->createQueryBuilder('l')
             ->where('l.status = :status')
@@ -871,7 +871,10 @@ class MarketplaceService
             ->setParameter('status', ListingStatus::Active)
             ->setParameter('now', $now);
 
-        if (null !== $kingdom) {
+        if (null !== $team) {
+            $qb->andWhere('l.sellerTeam = :team')
+                ->setParameter('team', $team);
+        } elseif (null !== $kingdom) {
             $qb->andWhere('l.kingdom = :kingdom')
                 ->setParameter('kingdom', $kingdom);
         }

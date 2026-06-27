@@ -199,3 +199,20 @@
 .trainer-card__dismiss-desc {
   font-size: 0.875rem;
 }
+
+@layer components {
+  .training-promote-section {
+    @apply rounded-2xl p-5 space-y-4;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 35%, transparent);
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-panel-sm);
+  }
+  .training-promote-section__desc {
+    @apply text-xs leading-relaxed max-w-xl;
+  }
+  .training-promote-section__form {
+    @apply flex flex-col gap-3 sm:flex-row sm:items-center max-w-lg;
+  }
+}
+

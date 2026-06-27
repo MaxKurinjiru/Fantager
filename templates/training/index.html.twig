@@ -21,6 +21,10 @@
      data-training-confirm-dismiss-value="{{ 'training.dismiss_confirm'|trans }}"
      data-training-error-dismiss-value="{{ 'js_flash.training.failed_dismiss'|trans }}"
      data-training-success-dismiss-value="{{ 'js_flash.training.success_dismiss'|trans }}"
+     data-training-confirm-promote-value="{{ 'training.promote_confirm'|trans }}"
+     data-training-error-promote-value="{{ 'training.error_promote'|trans }}"
+     data-training-success-promote-value="{{ 'training.success_promote'|trans }}"
+     data-training-title-promote-value="{{ 'training.promote_title'|trans }}"
 >
     
     {# --- Header Section --- #}
@@ -99,6 +103,28 @@
                 {{ 'training.trainer_limit'|trans({'%count%': trainers|length, '%limit%': trainerLimit}) }}
             </span>
         </div>
+
+        {% if trainers|length < trainerLimit and not isLocked %}
+            <div class="training-promote-section">
+                <h3 class="game-panel__title">👨‍🏫 {{ 'training.promote_title'|trans }}</h3>
+                <p class="training-promote-section__desc copy-muted">{{ 'training.promote_desc'|trans }}</p>
+                <div class="training-promote-section__form">
+                    <select id="promote-hero-select-index" class="form-input" data-training-target="promoteSelect">
+                        <option value="">-- {{ 'training.select_trainee'|trans }} --</option>
+                        {% for hero in heroes %}
+                            {% if hero.role.value == 'combatant' and hero.status.value == 'available' %}
+                                <option value="{{ hero.id }}">
+                                    {{ hero.name }} &bull; Lvl {{ hero.level }}
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-primary btn--sm" data-action="click->training#promoteTrainer">
+                        {{ 'training.promote_btn'|trans }}
+                    </button>
+                </div>
+            </div>
+        {% endif %}
 
         <div class="training-trainer-grid">
             {% for trainer in trainers %}

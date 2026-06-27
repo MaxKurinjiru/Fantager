@@ -95,6 +95,44 @@ class TrainingService
         return 3 + (int) floor(($trainingLevel - 1) / 2);
     }
 
+    public function promoteToTrainer(Hero $hero, Team $team, \DateTimeImmutable $now): void
+    {
+        if ($this->isTrainingLockedForTeam($team, $now)) {
+            throw new UserFacingException('error.trainer_config_locked');
+        }
+
+        if ($hero->getTeam()->getId() !== $team->getId()) {
+            throw new UserFacingException('error.trainer_hero_not_on_team');
+        }
+
+        if (!$hero->isCombatant()) {
+            throw new UserFacingException('error.hero_already_trainer');
+        }
+
+        if (HeroStatus::Available !== $hero->getStatus()) {
+            throw new UserFacingException('error.hero_only_available_roster');
+        }
+
+        $trainersCount = $this->heroRepository->countTrainersByTeam($team);
+        $trainerLimit = $this->getTrainerLimit($team);
+        if ($trainersCount >= $trainerLimit) {
+            throw new UserFacingException('error.training_trainer_limit_reached');
+        }
+
+        $hero->setRole(HeroRole::Trainer);
+        $hero->setTrainingType(null);
+        $hero->setTargetAttribute(null);
+
+        // Remove hero from active formations
+        /** @var list<\App\Entity\Formation\FormationSlot> $slots */
+        $slots = $this->em->getRepository(\App\Entity\Formation\FormationSlot::class)->findBy(['hero' => $hero]);
+        foreach ($slots as $slot) {
+            $slot->setHero(null);
+        }
+
+        $this->em->flush();
+    }
+
     public function configureTrainer(Hero $trainer, ?TrainingType $type, ?string $attribute, Team $team, \DateTimeImmutable $now): void
     {
         if (!$trainer->isTrainer()) {
@@ -224,14 +262,17 @@ class TrainingService
     /**
      * Process all active trainers and their assigned heroes for weekly training.
      */
-    public function processTrainingTick(\DateTimeImmutable $now, ?\App\Entity\Kingdom\Kingdom $kingdom = null): void
+    public function processTrainingTick(\DateTimeImmutable $now, ?\App\Entity\Kingdom\Kingdom $kingdom = null, ?Team $team = null): void
     {
         $qb = $this->heroRepository->createQueryBuilder('h')
             ->join('h.team', 'team')
             ->where('h.role = :trainerRole')
             ->andWhere('h.trainingType IS NOT NULL')
             ->setParameter('trainerRole', HeroRole::Trainer);
-        if (null !== $kingdom) {
+        if (null !== $team) {
+            $qb->andWhere('h.team = :team')
+               ->setParameter('team', $team);
+        } elseif (null !== $kingdom) {
             $qb->andWhere('team.kingdom = :kingdom')
                ->setParameter('kingdom', $kingdom);
         }

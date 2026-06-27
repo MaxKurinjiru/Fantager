@@ -25,7 +25,7 @@ php bin/console app:kingdom:initialize "Main Kingdom" \
 
 | Flag | Effect |
 |------|--------|
-| `--test` | Season starts on **last Monday** (not next Monday). Also creates 3 test users (`player1@example.com` … `player3@example.com`, password `password`). |
+| `--test` | Season starts on **last Monday** (not next Monday). To create the 3 default test users, run `php bin/console app:user:create-test "Kingdom Name" --default` afterwards. |
 | `--start-offset-days` | Shifts season start relative to that Monday anchor. **Negative** = further in the past. Overrides `season.defaults.json` → `start_offset_days`. |
 | `--catch-up-ticks` | Synchronously runs all server ticks from season start through now (training, aging, league matches, economy). Without it, run `php bin/console app:ticks:run --kingdom-id=<id>` later (async via Messenger). |
 

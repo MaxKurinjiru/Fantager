@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Message\ProcessKingdomTicksMessage;
 use App\Repository\Kingdom\KingdomRepository;
+use App\Service\Calendar\KingdomTickOrchestrator;
 use App\Service\Calendar\KingdomTickRunnerService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -13,7 +13,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsCommand(
     name: 'app:ticks:run',
@@ -24,7 +23,7 @@ class ProcessTicksCommand extends Command
     public function __construct(
         private readonly KingdomRepository $kingdomRepository,
         private readonly KingdomTickRunnerService $tickRunnerService,
-        private readonly MessageBusInterface $messageBus,
+        private readonly KingdomTickOrchestrator $tickOrchestrator,
     ) {
         parent::__construct();
     }
@@ -87,11 +86,16 @@ class ProcessTicksCommand extends Command
                 continue;
             }
 
+            $hasPendingBefore = $this->tickRunnerService->hasPendingTicks($kingdom);
             $ticksDispatched = $this->tickRunnerService->schedulePendingTicks($kingdom, $now);
 
-            if ($ticksDispatched > 0) {
-                $io->success(sprintf('Dispatched %d new ticks for Kingdom %s.', $ticksDispatched, $kingdom->getName()));
-                $this->messageBus->dispatch(new ProcessKingdomTicksMessage($kingdomId));
+            if ($ticksDispatched > 0 || $hasPendingBefore) {
+                if ($ticksDispatched > 0) {
+                    $io->success(sprintf('Scheduled %d new ticks for Kingdom %s.', $ticksDispatched, $kingdom->getName()));
+                } else {
+                    $io->text(sprintf('Found existing pending ticks for Kingdom %s. Resuming processing.', $kingdom->getName()));
+                }
+                $this->tickOrchestrator->orchestrate($kingdom);
             } else {
                 $io->text(sprintf('Kingdom %s is up-to-date.', $kingdom->getName()));
             }

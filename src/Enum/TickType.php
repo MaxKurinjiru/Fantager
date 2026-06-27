@@ -16,4 +16,19 @@ enum TickType: string
     case RaceOptimization = 'race_optimization';
     case InactiveRegistrationCleanup = 'inactive_registration_cleanup';
     case InactivePlayerCleanup = 'inactive_player_cleanup';
+
+    public function getPriority(): int
+    {
+        return match ($this) {
+            self::WeeklyTraining => 2,
+            self::LeagueMatch => 3,
+            self::SeasonTransition => 4,
+            self::FatigueRecovery => 5,
+            self::DailyReset,
+            self::WeeklyReset,
+            self::RaceOptimization,
+            self::InactiveRegistrationCleanup,
+            self::InactivePlayerCleanup => 6,
+        };
+    }
 }

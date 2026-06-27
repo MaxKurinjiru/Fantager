@@ -213,6 +213,35 @@ class TrainingController extends AbstractController
         ]);
     }
 
+    #[Route('/training/trainers/promote', name: 'api_training_trainer_promote', methods: ['POST'])]
+    public function promote(Request $request): JsonResponse
+    {
+        $team = $this->getPlayerTeam();
+        if (null === $team) {
+            return $this->jsonError('error.no_team', 422);
+        }
+
+        /** @var array<string, mixed> $body */
+        $body = json_decode($request->getContent(), true) ?? [];
+        $heroId = (int) ($body['hero_id'] ?? 0);
+
+        $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team]);
+        if (null === $hero) {
+            return $this->jsonError('error.hero_not_found', 404);
+        }
+
+        try {
+            $this->trainingService->promoteToTrainer($hero, $team, new \DateTimeImmutable());
+        } catch (\DomainException|\InvalidArgumentException $e) {
+            return $this->jsonException($e, 422);
+        }
+
+        return $this->json([
+            'message' => $this->transMessage('training.success_promote'),
+            'hero_id' => $hero->getId(),
+        ]);
+    }
+
     private function getPlayerTeam(): ?\App\Entity\Team\Team
     {
         /** @var User|null $user */

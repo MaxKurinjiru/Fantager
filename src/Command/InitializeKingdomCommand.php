@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Service\Auth\TestUserService;
 use App\Service\Calendar\KingdomTickRunnerService;
 use App\Service\Kingdom\KingdomInitializationService;
 use App\Service\Kingdom\KingdomService;
@@ -41,7 +40,6 @@ class InitializeKingdomCommand extends Command
     public function __construct(
         private readonly KingdomInitializationService $initializationService,
         private readonly KingdomService $kingdomService,
-        private readonly TestUserService $testUserService,
         private readonly KingdomTickRunnerService $tickRunnerService,
     ) {
         parent::__construct();
@@ -156,22 +154,6 @@ class InitializeKingdomCommand extends Command
 
                 $io->success(sprintf('Processed %d server ticks.', $scheduled));
             }
-        }
-
-        if ($testMode) {
-            try {
-                $users = $this->testUserService->createDefaultTestUsers($kingdom);
-            } catch (\DomainException $e) {
-                $io->error($e->getMessage());
-
-                return Command::FAILURE;
-            }
-
-            $io->success(sprintf(
-                'Created %d test users: %s',
-                count($users),
-                implode(', ', array_map(static fn ($user) => $user->getEmail(), $users)),
-            ));
         }
 
         $io->note('Defaults loaded from config/kingdom/*.defaults.json — edit those files to tune bootstrap values.');
