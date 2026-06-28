@@ -174,7 +174,7 @@ class TeamPayrollServiceTest extends TestCase
                 $team,
                 FinancialRecordType::TrainerSalary,
                 FinancialRecordActor::System,
-                $this->callback(static fn (array $context): bool => true === ($context['fully_unpaid'] ?? false)),
+                $this->callback(static fn (array $context): bool => isset($context['fully_unpaid']) && true === $context['fully_unpaid']),
             );
 
         $this->service->processPayrollTick($kingdom, $team);

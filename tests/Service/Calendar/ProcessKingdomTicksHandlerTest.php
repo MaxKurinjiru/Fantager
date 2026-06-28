@@ -41,6 +41,8 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $financialCrisisServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\RoyalTreasuryService */
     private $royalTreasuryServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\TeamPayrollService */
+    private $teamPayrollServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\Doctrine\ORM\EntityManagerInterface */
     private $entityManagerMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\Psr\Log\LoggerInterface */
@@ -70,6 +72,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
         $this->hqServiceMock = $this->createMock(\App\Service\Headquarters\HeadquartersService::class);
         $this->financialCrisisServiceMock = $this->createMock(\App\Service\Economy\FinancialCrisisService::class);
         $this->royalTreasuryServiceMock = $this->createMock(\App\Service\Economy\RoyalTreasuryService::class);
+        $this->teamPayrollServiceMock = $this->createMock(\App\Service\Economy\TeamPayrollService::class);
         $this->playerInactivityServiceMock = $this->createMock(\App\Service\Auth\PlayerInactivityService::class);
         $this->fixtureFormationServiceMock = $this->createMock(\App\Service\Formation\FixtureFormationService::class);
         $this->marketplaceServiceMock = $this->createMock(\App\Service\Marketplace\MarketplaceService::class);
@@ -89,6 +92,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->hqServiceMock,
             $this->financialCrisisServiceMock,
             $this->royalTreasuryServiceMock,
+            $this->teamPayrollServiceMock,
             $this->playerInactivityServiceMock,
             $this->fixtureFormationServiceMock,
             $this->marketplaceServiceMock,

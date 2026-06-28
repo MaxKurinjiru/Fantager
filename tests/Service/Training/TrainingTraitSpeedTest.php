@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Service\Training;
 
 use App\Entity\Hero\Hero;
-use App\Entity\Headquarters\Facility;
-use App\Entity\Headquarters\Headquarters;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
-use App\Enum\FacilityType;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use App\Enum\HeroTrait;
@@ -20,7 +17,6 @@ use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Training\TrainingService;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -28,36 +24,6 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class TrainingTraitSpeedTest extends TestCase
 {
-    /** @var \PHPUnit\Framework\MockObject\MockObject&HeroRepository */
-    private $heroRepositoryMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&HeadquartersRepository */
-    private $hqRepositoryMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&RaceConfig */
-    private $raceConfigMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChronicleService */
-    private $teamChronicleServiceMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
-    private $entityManagerMock;
-
-    private TrainingService $trainingService;
-
-    protected function setUp(): void
-    {
-        $this->heroRepositoryMock = $this->createMock(HeroRepository::class);
-        $this->hqRepositoryMock = $this->createMock(HeadquartersRepository::class);
-        $this->raceConfigMock = $this->createMock(RaceConfig::class);
-        $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
-        $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
-
-        $this->trainingService = new TrainingService(
-            $this->heroRepositoryMock,
-            $this->hqRepositoryMock,
-            $this->raceConfigMock,
-            $this->teamChronicleServiceMock,
-            $this->entityManagerMock
-        );
-    }
-
     /**
      * Vytvoří trainer→hero dvojici se specifikovaným traitem a spustí training tick.
      * Vrátí raw gain nahraný na hrdinu (str stat).

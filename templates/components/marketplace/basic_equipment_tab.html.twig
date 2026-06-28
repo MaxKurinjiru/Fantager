@@ -4,7 +4,7 @@
         <h2 class="feature-panel__title">{{ 'marketplace.basic_equipment_title'|trans }}</h2>
         <p class="panel-lead">{{ 'marketplace.basic_equipment_subtitle'|trans }}</p>
 
-        <div class="game-panel game-panel--scroll" style="margin-top: 1.5rem;">
+        <div class="game-panel game-panel--scroll">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -19,7 +19,7 @@
                 <tbody>
                     {% for key, template in basic_items %}
                         <tr>
-                            <td style="font-weight: bold;">
+                            <td class="data-table__cell--name">
                                 {{ template.name_key|trans }}
                             </td>
                             <td>
@@ -31,25 +31,25 @@
                                 {{ ('inventory.slot_' ~ template.slot.value)|trans }}
                             </td>
                             <td>
-                                <div class="item-bonuses-list" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <div class="item-bonuses-list">
                                     {% for stat, val in template.bonuses %}
                                         {% if stat != 'type' %}
-                                            <span class="rarity-tag rarity-tag--uncommon" style="font-size: 0.8rem; padding: 0.1rem 0.4rem; white-space: nowrap;">
+                                            <span class="rarity-tag rarity-tag--uncommon rarity-tag--sm">
                                                 +{{ val }} {{ ('inventory.stat_' ~ stat)|trans }}
                                             </span>
                                         {% elseif val == 'ranged' %}
-                                            <span class="rarity-tag rarity-tag--common" style="font-size: 0.8rem; padding: 0.1rem 0.4rem; white-space: nowrap;">
+                                            <span class="rarity-tag rarity-tag--common rarity-tag--sm">
                                                 🏹 {{ 'inventory.stat_ranged'|trans }}
                                             </span>
                                         {% endif %}
                                     {% endfor %}
                                 </div>
                             </td>
-                            <td style="font-weight: bold; color: #d4af37;">
+                            <td class="data-table__cell--gold">
                                 🪙 {{ template.cost }}
                             </td>
                             <td class="data-table__col--end">
-                                <form action="{{ path('app_marketplace_buy_basic') }}" method="POST" style="margin: 0;" onsubmit="return confirm('{{ 'marketplace.confirm_buy_basic'|trans({'%item%': template.name_key|trans, '%cost%': template.cost})|e('js') }}');">
+                                <form class="form-reset" action="{{ path('app_marketplace_buy_basic') }}" method="POST" onsubmit="return confirm('{{ 'marketplace.confirm_buy_basic'|trans({'%item%': template.name_key|trans, '%cost%': template.cost})|e('js') }}');">
                                     <input type="hidden" name="item_key" value="{{ key }}">
                                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('buy_basic') }}">
                                     <button type="submit" class="btn btn-primary btn--sm" {% if team.gold < template.cost %}disabled title="{{ 'marketplace.insufficient_gold'|trans }}"{% endif %}>

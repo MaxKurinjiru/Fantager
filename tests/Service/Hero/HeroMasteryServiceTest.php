@@ -23,9 +23,13 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class HeroMasteryServiceTest extends TestCase
 {
+    /** @var \PHPUnit\Framework\MockObject\MockObject&ItemRepository */
     private $itemRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&WeaponMasteryRepository */
     private $weaponMasteryRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&SchoolMasteryRepository */
     private $schoolMasteryRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
     private $entityManagerMock;
     private HeroMasteryService $masteryService;
 

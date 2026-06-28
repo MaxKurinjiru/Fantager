@@ -415,21 +415,18 @@ class ExecuteSingleTickHandler
             ->getQuery()
             ->getResult();
 
-        // @phpstan-ignore-next-line
-        if (is_array($heroes)) {
-            foreach ($heroes as $hero) {
-                // 1. Award +50 attunement progress to equipped gear sub-types
-                $equippedSubTypes = $this->heroMasteryService->getEquippedSubTypes($hero);
-                foreach ($equippedSubTypes as $subType) {
-                    $wm = $this->heroMasteryService->getOrCreateWeaponMastery($hero, $subType);
-                    $wm->setAttunementProgress(min(100, $wm->getAttunementProgress() + 50));
-                }
+        foreach ($heroes as $hero) {
+            // 1. Award +50 attunement progress to equipped gear sub-types
+            $equippedSubTypes = $this->heroMasteryService->getEquippedSubTypes($hero);
+            foreach ($equippedSubTypes as $subType) {
+                $wm = $this->heroMasteryService->getOrCreateWeaponMastery($hero, $subType);
+                $wm->setAttunementProgress(min(100, $wm->getAttunementProgress() + 50));
+            }
 
-                // 2. Award +25 XP to equipped magic school masteries
-                $equippedSchools = $this->heroMasteryService->getEquippedSpellSchools($hero);
-                foreach ($equippedSchools as $school) {
-                    $this->heroMasteryService->addSchoolMasteryXp($hero, $school, 25);
-                }
+            // 2. Award +25 XP to equipped magic school masteries
+            $equippedSchools = $this->heroMasteryService->getEquippedSpellSchools($hero);
+            foreach ($equippedSchools as $school) {
+                $this->heroMasteryService->addSchoolMasteryXp($hero, $school, 25);
             }
         }
     }

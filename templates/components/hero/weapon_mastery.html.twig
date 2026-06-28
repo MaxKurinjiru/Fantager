@@ -6,8 +6,8 @@
     </div>
 
     {# 1. Active Attunement Status #}
-    <div class="weapon-mastery-active-section" style="margin-top: 1rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
-        <h3 class="weapon-mastery-active-title" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--color-text-muted); letter-spacing: 0.05em;">
+    <div class="weapon-mastery-active-section">
+        <h3 class="weapon-mastery-active-title">
             {{ 'heroes.active_style'|trans }}
         </h3>
         
@@ -30,35 +30,37 @@
                     
                     {% set attunement = wm_entity ? wm_entity.attunementProgress : 0 %}
                     
-                    <div class="weapon-attunement-card" style="background-color: var(--color-surface-base); border: 1px solid var(--color-border); padding: 0.75rem; rounded: var(--radius-md); display: flex; flex-direction: column; gap: 0.375rem; border-radius: 0.75rem;">
-                        <div class="layout-cluster layout-cluster--sm justify-between" style="display: flex; align-items: center; justify-content: space-between;">
-                            <span class="weapon-attunement-label font-bold text-xs" style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary);">
+                    <div class="weapon-attunement-card">
+                        <div class="layout-cluster layout-cluster--sm layout-cluster--between">
+                            <span class="weapon-attunement-label">
                                 {{ ('weapon_style.' ~ sub_type)|trans }}
                             </span>
-                            <span class="text-[10px] font-bold" style="font-size: 0.625rem; font-weight: 800;">
+                            <span class="weapon-attunement-status">
                                 {% if attunement == 100 %}
-                                    <span style="color: #10b981;">✅ {{ 'heroes.fully_attuned'|trans }}</span>
+                                    <span class="copy-status-success">✅ {{ 'heroes.fully_attuned'|trans }}</span>
                                 {% else %}
-                                    <span style="color: #f97316;">⏳ {{ 'heroes.attuning'|trans({'%progress%': attunement}) }}</span>
+                                    <span class="copy-status-warning">⏳ {{ 'heroes.attuning'|trans({'%progress%': attunement}) }}</span>
                                 {% endif %}
                             </span>
                         </div>
-                        <div class="ui-progress ui-progress--compact" style="width: 100%;">
-                            <div class="ui-progress__fill ui-progress__fill--accent" style="--ui-progress-pct: {{ attunement }}%; width: {{ attunement }}%; {% if attunement == 100 %}background-color: #10b981;{% else %}background-color: #f97316;{% endif %}"></div>
-                        </div>
+                        {% include 'components/ui/progress_bar.html.twig' with {
+                            percentage: attunement,
+                            container_class: 'ui-progress ui-progress--compact',
+                            progress_class: attunement == 100 ? 'ui-progress__fill ui-progress__fill--success' : 'ui-progress__fill ui-progress__fill--warning'
+                        } %}
                     </div>
                 {% endfor %}
             </div>
         {% else %}
-            <p style="font-size: 0.75rem; color: var(--color-text-muted); font-style: italic; margin: 0;">{{ 'heroes.no_style'|trans }}</p>
+            <p class="copy-muted copy-muted--italic">{{ 'heroes.no_style'|trans }}</p>
         {% endif %}
     </div>
 
     {# 2. Grid of All Weapon & Armor Masteries #}
-    <h3 class="weapon-mastery-active-title" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--color-text-muted); letter-spacing: 0.05em; margin-bottom: 0.75rem;">
+    <h3 class="weapon-mastery-active-title weapon-mastery-active-title--spaced">
         {{ 'heroes.all_masteries'|trans }}
     </h3>
-    <div class="hero-school-mastery__grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem;">
+    <div class="hero-school-mastery__grid">
         {% set styles = [
             'one_handed_sword', 'two_handed_sword', 'one_handed_axe', 'two_handed_axe',
             'one_handed_mace', 'two_handed_mace', 'dagger', 'bow', 'crossbow',
@@ -106,20 +108,22 @@
                 {% set progress_pct = 100 %}
             {% endif %}
 
-            <div class="weapon-mastery-cell" style="background-color: var(--color-surface-base); border: 1px solid var(--color-border); padding: 0.75rem; border-radius: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem;">
-                <div class="layout-cluster layout-cluster--sm justify-between" style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
-                    <span class="hero-school-mastery__label font-bold text-xs" style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;" title="{{ ('weapon_style.' ~ style)|trans }}">
+            <div class="hero-mastery-card">
+                <div class="layout-cluster layout-cluster--sm layout-cluster--between">
+                    <span class="hero-school-mastery__label hero-school-mastery__label--truncate" title="{{ ('weapon_style.' ~ style)|trans }}">
                         {{ ('weapon_style.' ~ style)|trans }}
                     </span>
-                    <span class="hero-school-mastery__tier font-extrabold text-[10px]" style="font-size: 0.625rem; font-weight: 800; background-color: var(--color-surface-raised); border: 1px solid var(--color-border); padding: 0.125rem 0.375rem; border-radius: 0.25rem; color: var(--color-text-secondary);">T{{ wm_tier }}</span>
+                    <span class="hero-school-mastery__tier">T{{ wm_tier }}</span>
                 </div>
-                <div class="layout-cluster layout-cluster--xs justify-between text-[9px] text-muted font-medium mt-1" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.5625rem; color: var(--color-text-muted);">
+                <div class="hero-mastery-card__meta">
                     <span>XP: {{ wm_xp }} / {{ next_req }}</span>
                     {% if wm_tier == 5 %}<span>MAX</span>{% else %}<span>{{ progress_pct }}%</span>{% endif %}
                 </div>
-                <div class="ui-progress ui-progress--compact" style="width: 100%;">
-                    <div class="ui-progress__fill ui-progress__fill--accent" style="--ui-progress-pct: {{ progress_pct }}%; width: {{ progress_pct }}%;"></div>
-                </div>
+                {% include 'components/ui/progress_bar.html.twig' with {
+                    percentage: progress_pct,
+                    container_class: 'ui-progress ui-progress--compact',
+                    progress_class: 'ui-progress__fill ui-progress__fill--accent'
+                } %}
             </div>
         {% endfor %}
     </div>

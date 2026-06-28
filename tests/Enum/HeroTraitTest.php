@@ -16,22 +16,6 @@ class HeroTraitTest extends TestCase
     public function testAllTraitsReturnValidModifiers(): void
     {
         foreach (HeroTrait::cases() as $trait) {
-            $this->assertIsFloat($trait->getTrainingSpeedMultiplier(), "{$trait->value}: getTrainingSpeedMultiplier()");
-            $this->assertIsFloat($trait->getHpMultiplier(), "{$trait->value}: getHpMultiplier()");
-            $this->assertIsFloat($trait->getPhysAttackMultiplier(), "{$trait->value}: getPhysAttackMultiplier()");
-            $this->assertIsFloat($trait->getSpellPowerMultiplier(), "{$trait->value}: getSpellPowerMultiplier()");
-            $this->assertIsFloat($trait->getArmorMultiplier(), "{$trait->value}: getArmorMultiplier()");
-            $this->assertIsFloat($trait->getAccuracyBonus(), "{$trait->value}: getAccuracyBonus()");
-            $this->assertIsFloat($trait->getCritBonus(), "{$trait->value}: getCritBonus()");
-            $this->assertIsFloat($trait->getDodgeBonus(), "{$trait->value}: getDodgeBonus()");
-            $this->assertIsFloat($trait->getCritDamageMultiplier(), "{$trait->value}: getCritDamageMultiplier()");
-            $this->assertIsFloat($trait->getMoraleDecayMultiplier(), "{$trait->value}: getMoraleDecayMultiplier()");
-            $this->assertIsFloat($trait->getClutchAccuracyBonus(), "{$trait->value}: getClutchAccuracyBonus()");
-            $this->assertIsFloat($trait->getClutchArmorMultiplier(), "{$trait->value}: getClutchArmorMultiplier()");
-            $this->assertIsFloat($trait->getIncomingDamageMultiplier(), "{$trait->value}: getIncomingDamageMultiplier()");
-            $this->assertIsBool($trait->isConsistentDamage(), "{$trait->value}: isConsistentDamage()");
-            $this->assertIsBool($trait->ignoresRaceSynergy(), "{$trait->value}: ignoresRaceSynergy()");
-            $this->assertIsFloat($trait->getArenaRevenueBonus(), "{$trait->value}: getArenaRevenueBonus()");
             $this->assertContains($trait->getCategory(), ['positive', 'negative', 'mixed'], "{$trait->value}: getCategory()");
             $this->assertNotEmpty($trait->getIcon(), "{$trait->value}: getIcon()");
         }

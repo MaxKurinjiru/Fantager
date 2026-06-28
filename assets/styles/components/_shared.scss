@@ -165,6 +165,15 @@
     font-weight: 600;
   }
 
+  .data-table__cell--name {
+    font-weight: 700;
+  }
+
+  .data-table__cell--gold {
+    font-weight: 700;
+    color: var(--color-amber-400);
+  }
+
   .data-table__cell--status {
     font-size: 1.125rem;
     line-height: 1;
@@ -547,8 +556,8 @@
 
   .hero-school-mastery__grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
   }
 
   .hero-activity-list {
@@ -819,6 +828,11 @@
         color: var(--color-success-text);
       }
     }
+
+    &__note {
+      @apply block text-xs mt-1;
+      color: var(--color-text-muted);
+    }
   }
 
   .form-input-affix {
@@ -877,6 +891,14 @@
 
       &--accent {
         background-color: var(--color-brand-400);
+      }
+
+      &--success {
+        background-color: var(--color-success-border);
+      }
+
+      &--warning {
+        background-color: var(--color-warning-border);
       }
 
       &--xp {

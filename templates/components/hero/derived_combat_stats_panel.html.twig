@@ -22,12 +22,12 @@
         <div class="stat-tile" title="{{ 'heroes.combat_armor'|trans }}">
             <span class="stat-tile__label">🛡️ {{ 'heroes.combat_armor'|trans }}</span>
             <span class="stat-tile__value">{{ combat_stats.armorValue }}</span>
-            <span class="text-xs text-muted block mt-1">(-{{ (combat_stats.physicalDamageReduction * 100)|number_format(1) }}%)</span>
+            <span class="stat-tile__note">(-{{ (combat_stats.physicalDamageReduction * 100)|number_format(1) }}%)</span>
         </div>
         <div class="stat-tile" title="{{ 'heroes.combat_resistance'|trans }}">
             <span class="stat-tile__label">🌀 {{ 'heroes.combat_resistance'|trans }}</span>
             <span class="stat-tile__value">{{ combat_stats.magicResistance }}</span>
-            <span class="text-xs text-muted block mt-1">(-{{ (combat_stats.magicDamageReduction * 100)|number_format(1) }}%)</span>
+            <span class="stat-tile__note">(-{{ (combat_stats.magicDamageReduction * 100)|number_format(1) }}%)</span>
         </div>
         <div class="stat-tile" title="{{ 'heroes.combat_initiative'|trans }}">
             <span class="stat-tile__label">⚡ {{ 'heroes.combat_initiative'|trans }}</span>

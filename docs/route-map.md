@@ -203,8 +203,9 @@ The player-facing **Economy hub** combines marketplace browsing, selling, transa
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/economy` | Web\EconomyController | Economy hub (tabs: `browse`, `sell`, `mylistings`, `history`, `ledger`) |
+| GET | `/app/economy` | Web\EconomyController | Economy hub (tabs: `browse`, `sell`, `mylistings`, `history`, `ledger`, `basic_equipment`) |
 | GET | `/app/marketplace` | Web\MarketplaceController | Redirect → `/app/economy?tab=browse` (legacy alias) |
+| POST | `/app/marketplace/buy-basic` | Web\MarketplaceController | Purchase fixed-price basic equipment (`item_key`, CSRF `buy_basic`); redirects to `basic_equipment` tab |
 | GET | `/app/finance` | Web\FinanceController | Redirect → `/app/economy?tab=ledger` (legacy alias) |
 | GET | `/api/v1/finance/status` | Api\V1\FinanceController | Financial crisis status |
 | GET | `/api/v1/finance/recent` | Api\V1\FinanceController | Recent financial ledger entries |
