@@ -228,6 +228,16 @@ class ItemService
         };
     }
 
+    /**
+     * @var array<string, array{
+     *     name_key: string,
+     *     slot: ItemSlotType,
+     *     category: ItemCategory,
+     *     cost: int,
+     *     bonuses: array<string, int|string>,
+     *     sub_type?: string
+     * }>
+     */
     public const BASIC_EQUIPMENT = [
         'short_sword' => [
             'name_key' => 'item.short_sword',

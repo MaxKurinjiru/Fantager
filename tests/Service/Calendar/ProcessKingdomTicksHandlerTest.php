@@ -19,6 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 
 #[AllowMockObjectsWithoutExpectations]
 class ProcessKingdomTicksHandlerTest extends TestCase
@@ -57,8 +58,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $marketplaceServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\League\LeagueMatchResolutionService */
     private $leagueMatchResolutionServiceMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Calendar\KingdomTickOrchestrator */
-    private $orchestratorMock;
+    private KingdomTickOrchestrator&MockObject $orchestratorMock;
     private ExecuteSingleTickHandler $handler;
 
     protected function setUp(): void

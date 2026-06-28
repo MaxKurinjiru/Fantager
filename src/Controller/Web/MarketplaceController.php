@@ -93,10 +93,11 @@ class MarketplaceController extends AbstractController
         }
 
         try {
+            $goldBefore = $team->getGold();
             $item = $this->itemService->purchaseBasicItem($team, $itemKey);
             $this->addFlash('success', $this->userMessages->trans('marketplace.flash_basic_item_purchased', [
                 '%item%' => $item->getName(),
-                '%cost%' => ItemService::BASIC_EQUIPMENT[$itemKey]['cost'] ?? 0,
+                '%cost%' => $goldBefore - $team->getGold(),
             ]));
         } catch (\Throwable $e) {
             $this->addFlash('error', $this->userMessages->fromException($e));

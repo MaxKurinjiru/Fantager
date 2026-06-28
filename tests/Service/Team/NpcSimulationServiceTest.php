@@ -323,10 +323,12 @@ class NpcSimulationServiceTest extends TestCase
         $heroRepo = $this->createMock(HeroRepository::class);
         $heroRepo->method('findBy')->willReturn($heroes);
 
-        $equippedItems = []; // key: heroId_slotType => Item
+        /** @var array<string, Item> $equippedItems */
+        $equippedItems = [];
         $itemRepo = $this->createMock(EntityRepository::class);
         $itemRepo->method('findBy')->willReturn([]); // empty inventory
         $itemRepo->method('findOneBy')->willReturnCallback(function (array $criteria) use (&$equippedItems) {
+            /** @var array<string, mixed> $criteria */
             $hero = $criteria['equippedHero'] ?? null;
             $slot = $criteria['equippedSlot'] ?? null;
             if ($hero && $slot) {

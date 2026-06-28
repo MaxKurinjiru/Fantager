@@ -18,19 +18,16 @@ use App\Repository\Item\ItemRepository;
 use App\Service\Hero\HeroMasteryService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 #[AllowMockObjectsWithoutExpectations]
 class HeroMasteryServiceTest extends TestCase
 {
-    /** @var \PHPUnit\Framework\MockObject\MockObject&ItemRepository */
-    private $itemRepositoryMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&WeaponMasteryRepository */
-    private $weaponMasteryRepositoryMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&SchoolMasteryRepository */
-    private $schoolMasteryRepositoryMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
-    private $entityManagerMock;
+    private ItemRepository&MockObject $itemRepositoryMock;
+    private WeaponMasteryRepository&MockObject $weaponMasteryRepositoryMock;
+    private SchoolMasteryRepository&MockObject $schoolMasteryRepositoryMock;
+    private EntityManagerInterface&MockObject $entityManagerMock;
     private HeroMasteryService $masteryService;
 
     protected function setUp(): void

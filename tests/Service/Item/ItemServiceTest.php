@@ -18,19 +18,16 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 #[AllowMockObjectsWithoutExpectations]
 class ItemServiceTest extends TestCase
 {
-    /** @var \PHPUnit\Framework\MockObject\MockObject&ItemRepository */
-    private $itemRepositoryMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
-    private $entityManagerMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&TranslatorInterface */
-    private $symfonyTranslatorMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&RequestStack */
-    private $requestStackMock;
+    private ItemRepository&MockObject $itemRepositoryMock;
+    private EntityManagerInterface&MockObject $entityManagerMock;
+    private TranslatorInterface&MockObject $symfonyTranslatorMock;
+    private RequestStack&MockObject $requestStackMock;
     private ItemService $itemService;
 
     protected function setUp(): void
