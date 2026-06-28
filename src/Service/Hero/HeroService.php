@@ -15,6 +15,9 @@ class HeroService
     public function __construct(
         private readonly HeroRepository $heroRepository,
         private readonly EntityManagerInterface $em,
+        private readonly \App\Service\Combat\CombatStatCalculator $combatStatCalculator,
+        private readonly HeroMasteryService $heroMasteryService,
+        private readonly HeroRatingCalculator $heroRatingCalculator,
     ) {
     }
 
@@ -47,6 +50,9 @@ class HeroService
     /** @return array<string, mixed> */
     public function serialize(Hero $hero): array
     {
+        $combatStats = $this->combatStatCalculator->calculate($hero);
+        $rating = $this->heroRatingCalculator->calculate($hero);
+
         return [
             'id' => $hero->getId(),
             'name' => $hero->getName(),
@@ -55,10 +61,23 @@ class HeroService
             'xp' => $hero->getXp(),
             'age' => $hero->getAge(),
             'status' => $hero->getStatus()->value,
+            'trait' => $hero->getTrait()?->value,
             'form' => $hero->getForm(),
             'fatigue' => $hero->getFatigue(),
             'morale' => $hero->getMorale(),
             'magic_capacity' => $hero->getMagicCapacity(),
+            'weapon_masteries' => array_map(fn ($wm) => [
+                'style' => $wm->getStyle()->value,
+                'tier' => $wm->getMasteryTier(),
+                'xp' => $wm->getXp(),
+                'attunement_progress' => $wm->getAttunementProgress(),
+            ], $hero->getWeaponMasteries()->toArray()),
+            'school_masteries' => array_map(fn ($sm) => [
+                'school' => $sm->getSchool()->value,
+                'tier' => $sm->getMasteryTier(),
+                'xp' => $sm->getXp(),
+            ], $hero->getSchoolMasteries()->toArray()),
+            'equipped_weapon_sub_types' => array_map(fn ($sub) => $sub->value, $this->heroMasteryService->getEquippedSubTypes($hero)),
             'attributes' => [
                 'str' => $hero->getStr(),
                 'dex' => $hero->getDex(),
@@ -68,6 +87,32 @@ class HeroService
                 'wil' => $hero->getWil(),
                 'cha' => $hero->getCha(),
                 'lck' => $hero->getLck(),
+            ],
+            'ratings' => [
+                'base_ovr' => $rating->getBaseOvr(),
+                'complex_rating' => $rating->getComplexRating(),
+            ],
+            'combat_stats' => [
+                'max_hp' => $combatStats->getMaxHp(),
+                'current_hp' => $combatStats->getCurrentHp(),
+                'physical_attack' => $combatStats->getPhysicalAttack(),
+                'spell_power' => $combatStats->getSpellPower(),
+                'armor_value' => $combatStats->getArmorValue(),
+                'physical_damage_reduction' => $combatStats->getPhysicalDamageReduction(),
+                'magic_resistance' => $combatStats->getMagicResistance(),
+                'magic_damage_reduction' => $combatStats->getMagicDamageReduction(),
+                'base_initiative' => $combatStats->getBaseInitiative(),
+                'accuracy_percent' => $combatStats->getAccuracyPercent(),
+                'dodge_percent' => $combatStats->getDodgePercent(),
+                'crit_percent' => $combatStats->getCritPercent(),
+                // Trait-derived modifiers (metadata pro combat engine a UI)
+                'crit_damage_multiplier' => $combatStats->getCritDamageMultiplier(),
+                'morale_decay_multiplier' => $combatStats->getMoraleDecayMultiplier(),
+                'arena_revenue_bonus' => $combatStats->getArenaRevenueBonus(),
+                'clutch_hp_threshold' => $combatStats->getClutchHpThreshold(),
+                'glass_jaw_hp_threshold' => $combatStats->getGlassJawHpThreshold(),
+                'is_consistent_damage' => $combatStats->isConsistentDamage(),
+                'ignores_race_synergy' => $combatStats->ignoresRaceSynergy(),
             ],
         ];
     }

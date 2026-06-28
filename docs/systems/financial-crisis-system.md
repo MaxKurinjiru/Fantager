@@ -8,7 +8,7 @@ Purpose: Handle long-term team insolvency — debt tracking, escalating restrict
 
 ## Overview
 
-When a team's weekly expenses exceed its income, unpaid HQ maintenance accumulates as **`unpaid_debt`** on the `Team` entity. Gold never goes negative; instead debt grows until the team recovers or faces bankruptcy.
+When a team's weekly expenses exceed its income, unpaid HQ maintenance and payroll accumulate as **`unpaid_debt`** on the `Team` entity. Gold never goes negative; instead debt grows until the team recovers or faces bankruptcy.
 
 The system uses four crisis levels:
 
@@ -17,7 +17,7 @@ The system uses four crisis levels:
 | `none` | Debt = 0 | Normal play |
 | `warning` | Debt > 0 | Dashboard warning, full gameplay |
 | `restricted` | Debt > 0 for ≥ 2 consecutive crisis weeks | HQ passive bonuses disabled; upgrades, summoning, marketplace purchases blocked |
-| `bankruptcy_pending` | Debt ≥ 4× weekly maintenance, gold = 0, ≥ 6 crisis weeks, no recent recovery | Team released to NPC pool on next weekly tick |
+| `bankruptcy_pending` | Debt ≥ 4× weekly fixed costs (maintenance + payroll), gold = 0, ≥ 6 crisis weeks, no recent recovery | Team released to NPC pool on next weekly tick |
 
 ---
 
@@ -25,7 +25,7 @@ The system uses four crisis levels:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `unpaid_debt` | int | Cumulative unpaid maintenance (and future debt sources) |
+| `unpaid_debt` | int | Cumulative unpaid maintenance and payroll |
 | `crisis_weeks` | int | Consecutive weeks in financial instability |
 | `last_recovery_action_at` | datetime? | Last dismiss / downgrade / marketplace sale / debt payoff |
 
@@ -37,9 +37,10 @@ The system uses four crisis levels:
 
 1. Reset summon cycle counters
 2. `HeadquartersService::processMaintenanceTick()` — deduct available gold; remainder → `unpaid_debt`; portion may route to Royal Treasury
-3. `RoyalTreasuryService::processWeeklyDistribution()` — redistribute up to 50% of kingdom pool to teams (`kingdom_reward`)
-4. `HeadquartersService::processFacilityDowngradeLockTick()` — clear downgrade lock cycle
-5. `FinancialCrisisService::processWeeklyCrisisTick()` — auto-pay debt from gold, evaluate crisis weeks, execute bankruptcy if needed
+3. `TeamPayrollService::processPayrollTick()` — deduct hero/trainer salaries; remainder → `unpaid_debt`
+4. `RoyalTreasuryService::processWeeklyDistribution()` — redistribute up to 50% of kingdom pool to teams (`kingdom_reward`)
+5. `HeadquartersService::processFacilityDowngradeLockTick()` — clear downgrade lock cycle
+6. `FinancialCrisisService::processWeeklyCrisisTick()` — auto-pay debt from gold, evaluate crisis weeks, execute bankruptcy if needed
 
 ---
 
@@ -49,8 +50,8 @@ The system uses four crisis levels:
 |--------|-------------------|-------|
 | Sell on marketplace | `MarketplaceService` | Always allowed; records recovery on sale |
 | Sell on marketplace | `MarketplaceService` | Always allowed; records recovery on sale; min 6 combat-ready heroes for hero listings |
-| Dismiss hero | `POST /api/v1/heroes/{id}/dismiss` | 40% of estimated value; min 6 combat-ready heroes kept; memorial record on Graveyard |
-| Dismiss trainer | `POST /api/v1/training/trainers/{id}/dismiss` | 30% of estimated value; trainees auto-unassigned; memorial record on Graveyard |
+| Dismiss hero | `POST /api/v1/heroes/{id}/dismiss` | 40% of `complex_rating`-based gold value ([hero-rating-system.md](hero-rating-system.md)); min 6 combat-ready heroes kept; memorial record on Graveyard |
+| Dismiss trainer | `POST /api/v1/training/trainers/{id}/dismiss` | 30% of `complex_rating`-based gold value; trainees auto-unassigned; memorial record on Graveyard |
 | Downgrade facility | `POST /api/v1/hq/downgrade` | Timed like upgrade; 25% refund of last level's upgrade cost on completion |
 | Earn income | Arena, league | Gold auto-applies to debt each weekly tick |
 
@@ -124,6 +125,8 @@ Twig helpers: `team_financial_crisis(team)`, `hq_downgrade_refund(type, level, t
 |------|------|
 | `debt_repayment` | Gold applied to outstanding debt |
 | `hero_dismissal_compensation` | Hero dismissed |
+| `hero_salary` | Weekly hero payroll tick |
+| `trainer_salary` | Weekly trainer payroll tick |
 | `hq_downgrade_refund` | Facility downgrade completed |
 
 ---
@@ -143,6 +146,7 @@ Twig helpers: `team_financial_crisis(team)`, `hq_downgrade_refund(type, level, t
 ## Implementation Notes
 
 - **Service:** `App\Service\Economy\FinancialCrisisService`
+- **Payroll:** `App\Service\Economy\TeamPayrollService`
 - **Hero dismissal:** `App\Service\Hero\HeroDismissalService`
 - **Roster minimum:** `App\Service\Team\TeamRosterService` (6 combat-ready heroes)
 - **Maintenance calc:** `App\Service\Headquarters\HqMaintenanceCalculator`

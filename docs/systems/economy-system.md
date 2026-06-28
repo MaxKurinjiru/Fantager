@@ -38,7 +38,7 @@ Every currency modification (gold and essence tiers) is recorded in the `Financi
 
 ### Implemented `FinancialRecordType` values
 
-`league_reward`, `arena_revenue`, `summon_fee`, `marketplace_sale`, `marketplace_purchase`, `marketplace_fee`, `dungeon_reward` *(reserved)*, `dismantle_gain`, `item_repair`, `spell_learning_cost`, `spell_slot_cost`, `hq_upgrade_cost`, `hq_maintenance_fee`, `morale_restoration`, `debt_repayment`, `hero_dismissal_compensation`, `trainer_dismissal_compensation`, `hq_downgrade_refund`, `kingdom_reward`
+`league_reward`, `arena_revenue`, `summon_fee`, `marketplace_sale`, `marketplace_purchase`, `marketplace_fee`, `dungeon_reward` *(reserved)*, `dismantle_gain`, `item_repair`, `spell_learning_cost`, `spell_slot_cost`, `hq_upgrade_cost`, `hq_maintenance_fee`, `morale_restoration`, `debt_repayment`, `hero_dismissal_compensation`, `trainer_dismissal_compensation`, `hq_downgrade_refund`, `kingdom_reward`, **`hero_salary`**, **`trainer_salary`**
 
 ---
 
@@ -90,13 +90,39 @@ Attendance formula (home match): home fans × show-up rate + away fans × 35% tr
 
 ## Financial Crisis
 
-When weekly HQ maintenance cannot be fully paid, the unpaid portion is recorded as **`unpaid_debt`** on the team. Gold never goes negative.
+When weekly HQ maintenance or payroll cannot be fully paid, the unpaid portion is recorded as **`unpaid_debt`** on the team. Gold never goes negative.
 
 See [financial-crisis-system.md](financial-crisis-system.md) for escalation (warning → restricted → bankruptcy), recovery actions, and API endpoints.
 
+---
+
+## Weekly Payroll
+
+Hero and trainer salaries are charged on the **`weekly_reset` tick** (Sunday 23:59), after HQ maintenance.
+
+**Services:** `App\Service\Hero\HeroSalaryService` (per-hero calculation), `App\Service\Economy\TeamPayrollService` (team tick)
+
+### Formula
+
+```
+weekly_salary = complex_rating × gold_per_complex_point × role_factor
+```
+
+Role factors (`hero_salary_factor`, `trainer_salary_factor`) live in `config/game/hero-rating.yaml`.
+
+### Eligible roster
+
+All team heroes whose status is **not** `dead` or `retired` (includes heroes listed on the marketplace).
+
+### Unpaid salaries
+
+If the team lacks sufficient gold after HQ maintenance, only the available balance is deducted. The remainder is added to `team.unpaid_debt`. Ledger types: **`hero_salary`**, **`trainer_salary`**.
+
+---
+
 ### Key invariants
 
-- Partial maintenance payment is allowed; remainder becomes debt
+- Partial maintenance and payroll payments are allowed; remainder becomes debt
 - Debt is repaid automatically from gold during the weekly crisis tick
 - Restricted teams cannot upgrade HQ, summon, or buy on marketplace
 - Bankruptcy releases the team back to the NPC pool after prolonged insolvency

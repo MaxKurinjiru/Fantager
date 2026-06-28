@@ -24,7 +24,10 @@ class GraveyardServiceTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->once())->method('persist')->with($this->isInstanceOf(GraveyardMemorial::class));
 
-        $service = new GraveyardService($em);
+        $ratingCalculator = $this->createMock(\App\Service\Hero\HeroRatingCalculator::class);
+        $ratingCalculator->method('calculate')->willReturn(new \App\ValueObject\Hero\HeroRating(50, 1200));
+
+        $service = new GraveyardService($em, $ratingCalculator);
 
         $team = new Team();
         $hero = new Hero();
@@ -51,5 +54,7 @@ class GraveyardServiceTest extends TestCase
         $this->assertSame(5, $record->getFinalLevel());
         $this->assertSame(MemorialCause::Dismissed, $record->getCause());
         $this->assertSame(5, $record->getFinalStats()['str']);
+        $this->assertSame(50, $record->getFinalStats()['base_ovr']);
+        $this->assertSame(1200, $record->getFinalStats()['complex_rating']);
     }
 }

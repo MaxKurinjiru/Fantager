@@ -28,6 +28,9 @@ class SchoolMastery
     #[ORM\Column(options: ['default' => 1])]
     private int $masteryTier = 1;
 
+    #[ORM\Column(options: ['default' => 0])]
+    private int $xp = 0;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -65,6 +68,18 @@ class SchoolMastery
     public function setMasteryTier(int $masteryTier): static
     {
         $this->masteryTier = $masteryTier;
+
+        return $this;
+    }
+
+    public function getXp(): int
+    {
+        return $this->xp;
+    }
+
+    public function setXp(int $xp): static
+    {
+        $this->xp = $xp;
 
         return $this;
     }

@@ -79,8 +79,8 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 |--------|------|-----------|---------|
 | GET | `/app/heroes` | Web\HeroController | Hero Roster page |
 | GET | `/app/heroes/{id}` | Web\HeroController | Hero Detail page |
-| GET | `/api/v1/heroes` | Api\V1\HeroController | List heroes (filterable) |
-| GET | `/api/v1/heroes/{id}` | Api\V1\HeroController | Hero full detail |
+| GET | `/api/v1/heroes` | Api\V1\HeroController | List heroes (filterable). Each hero includes `trait` (nullable string), `ratings.base_ovr` (0–100), and `ratings.complex_rating` (0–9999). |
+| GET | `/api/v1/heroes/{id}` | Api\V1\HeroController | Hero full detail (`trait`, `ratings`, attributes, masteries, …) |
 | PUT | `/api/v1/heroes/{id}` | Api\V1\HeroController | Update hero (rename) |
 | POST | `/api/v1/heroes/{id}/dismiss` | Api\V1\HeroController | Dismiss hero for partial compensation (financial crisis recovery) |
 | POST | `/api/v1/heroes/{id}/train` | Api\V1\HeroController | Trigger training — **planned** |
@@ -139,7 +139,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/app/summon` | Web\SummoningController | Redirect → `/app/hq?facility=summoning_chamber` |
 | GET | `/app/summon/history` | Web\SummoningController | Redirect → `/app/hq?facility=summoning_chamber&subtab=history` |
 | GET | `/api/v1/summoning/status` | Api\V1\SummoningController | Cooldown/availability |
-| POST | `/api/v1/summoning` | Api\V1\SummoningController | Summon new hero |
+| POST | `/api/v1/summoning` | Api\V1\SummoningController | Summon new hero (response: full hero payload including nullable `trait`) |
 
 ---
 
@@ -208,7 +208,7 @@ The player-facing **Economy hub** combines marketplace browsing, selling, transa
 | GET | `/app/finance` | Web\FinanceController | Redirect → `/app/economy?tab=ledger` (legacy alias) |
 | GET | `/api/v1/finance/status` | Api\V1\FinanceController | Financial crisis status |
 | GET | `/api/v1/finance/recent` | Api\V1\FinanceController | Recent financial ledger entries |
-| GET | `/api/v1/marketplace` | Api\V1\MarketplaceController | Search listings |
+| GET | `/api/v1/marketplace` | Api\V1\MarketplaceController | Search listings. Query: `type`, `race`, `level_min`/`level_max`, `rating_min`/`rating_max`, `base_ovr_min`/`base_ovr_max`, `age_phase`, `price_min`/`price_max`, `seller_reputation_min`, `rarity`, `search`, `sort`. Hero entities include `trait` (nullable), `ratings`; `seller_team` includes `reputation`. |
 | POST | `/api/v1/marketplace/listings` | Api\V1\MarketplaceController | Create listing |
 | DELETE | `/api/v1/marketplace/listings/{id}` | Api\V1\MarketplaceController | Cancel listing |
 | POST | `/api/v1/marketplace/purchase` | Api\V1\MarketplaceController | Buy listing |

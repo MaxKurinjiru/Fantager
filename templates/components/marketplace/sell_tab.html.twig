@@ -67,6 +67,7 @@
                          data-entity-level="{{ hero.level }}"
                          data-entity-age="{{ hero.age }}"
                          data-entity-rarity=""
+                         data-suggested-price="{{ hero_market_price(hero) }}"
                          data-locked="{{ can_sell ? '0' : '1' }}"
                          title="{{ can_sell ? '' : 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}"
                          class="sell-card {{ can_sell ? '' : 'sell-card--locked' }}">
@@ -75,6 +76,7 @@
                             <div>
                                 <h4 class="sell-card__name">{{ hero.name }}</h4>
                                 <span class="sell-card__meta">{{ 'js_flash.hq.lvl_short'|trans }} {{ hero.level }} &bull; {{ hero.race.value|trans }}</span>
+                                {% include 'components/hero/trait_badge.html.twig' with { trait: hero.trait, compact: true } %}
                             </div>
                         </div>
                         <span class="category-badge">
@@ -121,6 +123,7 @@
                          data-entity-level="0"
                          data-entity-age="{{ trainer.age }}"
                          data-entity-rarity=""
+                         data-suggested-price="{{ hero_market_price(trainer) }}"
                          class="sell-card">
                         <div class="entity-row__main">
                             <span class="emoji-icon">🏋️</span>
@@ -164,9 +167,17 @@
                     <label for="listing-price" data-marketplace-target="priceLabel" class="form-label">
                         {{ 'marketplace.price_gold'|trans }}
                     </label>
+                    <div class="marketplace-suggested-price hidden" data-marketplace-target="suggestedPriceRow">
+                        <span class="marketplace-suggested-price__label">{{ 'marketplace.suggested_price'|trans }}:</span>
+                        <span class="marketplace-suggested-price__value" data-marketplace-target="suggestedPriceValue"></span>
+                        <button type="button" class="btn btn-outline btn--sm" data-action="click->marketplace#applySuggestedPrice">
+                            {{ 'marketplace.btn_use_suggested_price'|trans }}
+                        </button>
+                    </div>
                     <div class="form-input-affix">
                         <span class="form-input-affix__icon">🪙</span>
                         <input type="number" id="listing-price" name="price" required min="1" placeholder="{{ 'marketplace.price_placeholder'|trans }}"
+                               data-marketplace-target="listingPriceInput"
                                class="form-input">
                     </div>
                 </div>

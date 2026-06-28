@@ -11,12 +11,14 @@ use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\MemorialCause;
 use App\Exception\UserFacingException;
+use App\Service\Hero\HeroRatingCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 
 class GraveyardService
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly HeroRatingCalculator $heroRatingCalculator,
     ) {
     }
 
@@ -117,6 +119,10 @@ class GraveyardService
             $stats['fatigue'] = $hero->getFatigue();
             $stats['morale'] = $hero->getMorale();
         }
+
+        $rating = $this->heroRatingCalculator->calculate($hero);
+        $stats['base_ovr'] = $rating->getBaseOvr();
+        $stats['complex_rating'] = $rating->getComplexRating();
 
         return $stats;
     }

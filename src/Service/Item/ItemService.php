@@ -7,11 +7,14 @@ namespace App\Service\Item;
 use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
 use App\Entity\Team\Team;
+use App\Enum\ItemCategory;
 use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemStatus;
+use App\Enum\ItemSubType;
 use App\Exception\UserFacingException;
 use App\Repository\Item\ItemRepository;
+use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 
 class ItemService
@@ -42,6 +45,7 @@ class ItemService
     public function __construct(
         private readonly ItemRepository $itemRepository,
         private readonly EntityManagerInterface $em,
+        private readonly UserMessageTranslator $translator,
     ) {
     }
 
@@ -208,6 +212,7 @@ class ItemService
             'special_effects' => $item->getSpecialEffects(),
             'equipped_hero_id' => $item->getEquippedHero()?->getId(),
             'equipped_slot' => $item->getEquippedSlot()?->value,
+            'sub_type' => $item->getSubType()?->value,
         ];
     }
 
@@ -221,5 +226,257 @@ class ItemService
             ItemRarity::Legendary => $team->setEssenceLegendary($team->getEssenceLegendary() + $amount),
             ItemRarity::Mythic => $team->setEssenceMythic($team->getEssenceMythic() + $amount),
         };
+    }
+
+    public const BASIC_EQUIPMENT = [
+        'short_sword' => [
+            'name_key' => 'item.short_sword',
+            'slot' => ItemSlotType::MainHand,
+            'category' => ItemCategory::Weapon,
+            'sub_type' => 'one_handed_sword',
+            'cost' => 50,
+            'bonuses' => ['damage' => 10],
+        ],
+        'short_bow' => [
+            'name_key' => 'item.short_bow',
+            'slot' => ItemSlotType::MainHand,
+            'category' => ItemCategory::Weapon,
+            'sub_type' => 'bow',
+            'cost' => 60,
+            'bonuses' => ['damage' => 8, 'type' => 'ranged'],
+        ],
+        'wooden_shield' => [
+            'name_key' => 'item.wooden_shield',
+            'slot' => ItemSlotType::OffHand,
+            'category' => ItemCategory::Shield,
+            'sub_type' => 'shield',
+            'cost' => 40,
+            'bonuses' => ['armor' => 10],
+        ],
+        'apprentice_wand' => [
+            'name_key' => 'item.apprentice_wand',
+            'slot' => ItemSlotType::OffHand,
+            'category' => ItemCategory::SpellAccelerator,
+            'sub_type' => 'spell_accelerator',
+            'cost' => 60,
+            'bonuses' => ['spell_power' => 10],
+        ],
+        'leather_helmet' => [
+            'name_key' => 'item.leather_helmet',
+            'slot' => ItemSlotType::Head,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'light_armor',
+            'cost' => 30,
+            'bonuses' => ['armor' => 5],
+        ],
+        'leather_jerkin' => [
+            'name_key' => 'item.leather_jerkin',
+            'slot' => ItemSlotType::Body,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'light_armor',
+            'cost' => 50,
+            'bonuses' => ['armor' => 12],
+        ],
+        'leather_gloves' => [
+            'name_key' => 'item.leather_gloves',
+            'slot' => ItemSlotType::Hands,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'light_armor',
+            'cost' => 25,
+            'bonuses' => ['armor' => 4],
+        ],
+        'leather_boots' => [
+            'name_key' => 'item.leather_boots',
+            'slot' => ItemSlotType::Feet,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'light_armor',
+            'cost' => 30,
+            'bonuses' => ['armor' => 5],
+        ],
+        'chain_coif' => [
+            'name_key' => 'item.chain_coif',
+            'slot' => ItemSlotType::Head,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'medium_armor',
+            'cost' => 45,
+            'bonuses' => ['armor' => 8],
+        ],
+        'chain_hauberk' => [
+            'name_key' => 'item.chain_hauberk',
+            'slot' => ItemSlotType::Body,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'medium_armor',
+            'cost' => 75,
+            'bonuses' => ['armor' => 18],
+        ],
+        'chain_gloves' => [
+            'name_key' => 'item.chain_gloves',
+            'slot' => ItemSlotType::Hands,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'medium_armor',
+            'cost' => 35,
+            'bonuses' => ['armor' => 6],
+        ],
+        'chain_boots' => [
+            'name_key' => 'item.chain_boots',
+            'slot' => ItemSlotType::Feet,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'medium_armor',
+            'cost' => 45,
+            'bonuses' => ['armor' => 8],
+        ],
+        'iron_helmet' => [
+            'name_key' => 'item.iron_helmet',
+            'slot' => ItemSlotType::Head,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'heavy_armor',
+            'cost' => 60,
+            'bonuses' => ['armor' => 12],
+        ],
+        'plate_armor' => [
+            'name_key' => 'item.plate_armor',
+            'slot' => ItemSlotType::Body,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'heavy_armor',
+            'cost' => 100,
+            'bonuses' => ['armor' => 28],
+        ],
+        'iron_gauntlets' => [
+            'name_key' => 'item.iron_gauntlets',
+            'slot' => ItemSlotType::Hands,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'heavy_armor',
+            'cost' => 50,
+            'bonuses' => ['armor' => 9],
+        ],
+        'iron_greaves' => [
+            'name_key' => 'item.iron_greaves',
+            'slot' => ItemSlotType::Feet,
+            'category' => ItemCategory::Armor,
+            'sub_type' => 'heavy_armor',
+            'cost' => 60,
+            'bonuses' => ['armor' => 12],
+        ],
+        'greatsword' => [
+            'name_key' => 'item.greatsword',
+            'slot' => ItemSlotType::MainHand,
+            'category' => ItemCategory::Weapon,
+            'sub_type' => 'two_handed_sword',
+            'cost' => 75,
+            'bonuses' => ['damage' => 16],
+        ],
+        'hand_axe' => [
+            'name_key' => 'item.hand_axe',
+            'slot' => ItemSlotType::MainHand,
+            'category' => ItemCategory::Weapon,
+            'sub_type' => 'one_handed_axe',
+            'cost' => 45,
+            'bonuses' => ['damage' => 9],
+        ],
+        'battle_axe' => [
+            'name_key' => 'item.battle_axe',
+            'slot' => ItemSlotType::MainHand,
+            'category' => ItemCategory::Weapon,
+            'sub_type' => 'two_handed_axe',
+            'cost' => 70,
+            'bonuses' => ['damage' => 15],
+        ],
+        'flanged_mace' => [
+            'name_key' => 'item.flanged_mace',
+            'slot' => ItemSlotType::MainHand,
+            'category' => ItemCategory::Weapon,
+            'sub_type' => 'one_handed_mace',
+            'cost' => 50,
+            'bonuses' => ['damage' => 11],
+        ],
+        'warhammer' => [
+            'name_key' => 'item.warhammer',
+            'slot' => ItemSlotType::MainHand,
+            'category' => ItemCategory::Weapon,
+            'sub_type' => 'two_handed_mace',
+            'cost' => 75,
+            'bonuses' => ['damage' => 17],
+        ],
+        'iron_dagger' => [
+            'name_key' => 'item.iron_dagger',
+            'slot' => ItemSlotType::MainHand,
+            'category' => ItemCategory::Weapon,
+            'sub_type' => 'dagger',
+            'cost' => 35,
+            'bonuses' => ['damage' => 6],
+        ],
+        'light_crossbow' => [
+            'name_key' => 'item.light_crossbow',
+            'slot' => ItemSlotType::MainHand,
+            'category' => ItemCategory::Weapon,
+            'sub_type' => 'crossbow',
+            'cost' => 65,
+            'bonuses' => ['damage' => 10, 'type' => 'ranged'],
+        ],
+        'wooden_wand' => [
+            'name_key' => 'item.wooden_wand',
+            'slot' => ItemSlotType::OffHand,
+            'category' => ItemCategory::SpellAccelerator,
+            'sub_type' => 'wand',
+            'cost' => 55,
+            'bonuses' => ['spell_power' => 8],
+        ],
+        'wooden_staff' => [
+            'name_key' => 'item.wooden_staff',
+            'slot' => ItemSlotType::MainHand,
+            'category' => ItemCategory::SpellAccelerator,
+            'sub_type' => 'staff',
+            'cost' => 70,
+            'bonuses' => ['spell_power' => 12],
+        ],
+        'copper_ring' => [
+            'name_key' => 'item.copper_ring',
+            'slot' => ItemSlotType::Ring,
+            'category' => ItemCategory::Accessory,
+            'cost' => 40,
+            'bonuses' => ['str' => 1],
+        ],
+        'silver_amulet' => [
+            'name_key' => 'item.silver_amulet',
+            'slot' => ItemSlotType::Amulet,
+            'category' => ItemCategory::Accessory,
+            'cost' => 50,
+            'bonuses' => ['resistance' => 5],
+        ],
+    ];
+
+    public function purchaseBasicItem(Team $team, string $itemKey): Item
+    {
+        if (!isset(self::BASIC_EQUIPMENT[$itemKey])) {
+            throw new UserFacingException('error.basic_item_invalid');
+        }
+
+        $template = self::BASIC_EQUIPMENT[$itemKey];
+        $cost = $template['cost'];
+
+        if ($team->getGold() < $cost) {
+            throw new UserFacingException('error.item_purchase_insufficient_gold', ['%cost%' => $cost, '%available%' => $team->getGold()]);
+        }
+
+        // Deduct gold
+        $team->setGold($team->getGold() - $cost);
+
+        // Create Item
+        $item = new Item();
+        $item->setOwnerTeam($team);
+        $item->setName($this->translator->trans($template['name_key']));
+        $item->setSlotType($template['slot']);
+        $item->setCategory($template['category']);
+        $item->setRarity(ItemRarity::Common);
+        $item->setDurability(100);
+        $item->setBonuses($template['bonuses']);
+        $item->setSpecialEffects([]);
+        $item->setStatus(ItemStatus::Available);
+        $item->setSubType(isset($template['sub_type']) ? ItemSubType::tryFrom($template['sub_type']) : null);
+
+        $this->em->persist($item);
+        $this->em->flush();
+
+        return $item;
     }
 }

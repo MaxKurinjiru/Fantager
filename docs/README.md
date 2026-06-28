@@ -81,8 +81,8 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Authentication** | Fully Implemented | Implemented | N/A (Session-based) | Register, verification, login, password reset. Account settings modal (language, UI prefs, email change, delete account). |
 | **Kingdom & Locale**| Fully Implemented | Implemented | Implemented | Data loading from JSON, capacity calculations. Locale switcher (`/change-locale/{locale}`) implemented. |
 | **Team / Dashboard**| Fully Implemented | Implemented | Implemented | Dashboard, settings, economy hub (`/app/economy`), financial records, **team chronicle** (recent events + `/app/chronicle`). |
-| **Hero Roster** | Fully Implemented | Implemented | Implemented | Hero CRUD, rename, summoning chamber, `HeroGenerator`. |
-| **Summoning** | Fully Implemented | Implemented | Implemented | Summoning random compatible race based on arena adaptation, cooldowns, `TeamSummonHistory` logging. |
+| **Hero Roster** | Fully Implemented | Implemented | Implemented | Hero CRUD, rename, summoning chamber, `HeroGenerator`, **base OVR + complex rating** (`HeroRatingCalculator`), **personality trait badges** (roster + detail). |
+| **Summoning** | Fully Implemented | Implemented | Implemented | Summoning random compatible race based on arena adaptation, cooldowns, `TeamSummonHistory` logging, **trait reveal on summon card**. |
 | **Training** | Fully Implemented | Implemented | Implemented | Training calculations + automated tick processing. |
 | **Calendar & Ticks**| Fully Implemented | Implemented | Implemented | Calendar page at `/app/calendar`; kingdom feed API; scheduled tick generation. |
 | **Formations** | Fully Implemented | Implemented | Implemented | Formation CRUD, slot assignment, strategy JSON. |
@@ -93,7 +93,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Combat** | Partially Implemented | Not Implemented | Not Implemented | Data models and entity schemas defined; `StubRandomMatchSimulator` drives league results until the full combat engine ships (Phase 5). |
 | **World Events** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/world-events-system.md](future/world-events-system.md). |
 | **Dungeons** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/dungeon-system.md](future/dungeon-system.md). Backend removed from codebase. |
-| **Marketplace** | Fully Implemented | Implemented | Implemented | Economy hub at `/app/economy`; listings, bids, transactions, Royal Treasury fee collection, background cron processing. |
+| **Marketplace** | Fully Implemented | Implemented | Implemented | Listings with hero ratings and **trait** on hero cards; browse filter/sort by value and OVR (cached DB columns). |
 | **Community** | Fully Implemented | Implemented | Implemented | Messaging, forum threads/posts, and content filtering fully functional. |
 | **Graveyard** | Fully Implemented | Implemented | Implemented | `GraveyardService` + dismissal flows; memorial wall at `/app/graveyard`; `GET /api/v1/graveyard/*`. Combat death memorials pending combat engine. |
 | **Quests** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/quest-system.md](future/quest-system.md). |

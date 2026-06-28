@@ -1,5 +1,6 @@
 {% set phase = hero_age_phase(hero) %}
 {% set p_icon = hero_age_phase_icon(hero) %}
+{% set rating = hero_rating(hero) %}
 
 <div data-roster-filter-target="card"
      data-name="{{ hero.name|lower }}"
@@ -14,6 +15,7 @@
      data-kon="{{ hero.kon }}"
      data-spd="{{ hero.spd }}"
      data-int="{{ hero.intel }}"
+     data-base-ovr="{{ rating.baseOvr }}"
      class="hero-card">
     
     <div>
@@ -26,6 +28,8 @@
                         <a href="{{ path('app_heroes_detail', {id: hero.id}) }}">{{ hero.name }}</a>
                     </h3>
                     <p class="hero-card__meta">{{ 'heroes.level'|trans }} {{ hero.level }} &bull; {{ ('heroes.race_' ~ hero.race.value)|trans }}</p>
+                    {% include 'components/hero/trait_badge.html.twig' with { trait: hero.trait, compact: true } %}
+                    {% include 'components/hero/rating_badge.html.twig' with { rating: rating } %}
                 </div>
             </div>
         </div>
@@ -47,7 +51,10 @@
         </div>
 
         {# Attributes Grid #}
-        {% include 'components/hero/compact_attributes.html.twig' with { hero: hero } %}
+        {% include 'components/hero/compact_attributes.html.twig' with { hero: hero, wrapper_class: 'hero-attr-grid hero-attr-grid--bordered mb-3' } %}
+
+        {# Combat Stats Grid #}
+        {% include 'components/hero/compact_combat_stats.html.twig' with { hero: hero } %}
     </div>
 
     {# Actions #}

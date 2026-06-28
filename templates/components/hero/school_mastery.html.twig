@@ -5,29 +5,71 @@
         <p class="hero-panel__desc">{{ 'heroes.school_mastery_desc'|trans }}</p>
     </div>
 
-    <div class="hero-school-mastery__grid">
+    <div class="hero-school-mastery__grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem;">
         {% set schools = ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
         {% for school in schools %}
             {% set mastery_tier = 1 %}
+            {% set school_xp = 0 %}
             {% for sm in hero.schoolMasteries %}
                 {% if sm.school.value == school %}
                     {% set mastery_tier = sm.masteryTier %}
-                    {% endif %}
+                    {% set school_xp = sm.xp %}
+                {% endif %}
             {% endfor %}
             
-            <div class="hero-school-mastery__cell">
-                <div class="layout-cluster layout-cluster--sm">
-                    <span class="hero-school-mastery__icon">
-                        {% if school == 'fire' %}🔥
-                        {% elseif school == 'water' %}💧
-                        {% elseif school == 'air' %}💨
-                        {% elseif school == 'earth' %}🪨
-                        {% elseif school == 'light' %}☀️
-                        {% else %}🌙{% endif %}
-                    </span>
-                    <span class="hero-school-mastery__label">{{ ('school.' ~ school)|trans }}</span>
+            {% set next_req = 100 %}
+            {% set relative_xp = school_xp %}
+            {% set relative_req = 100 %}
+
+            {% if mastery_tier == 1 %}
+                {% set next_req = 100 %}
+                {% set relative_xp = school_xp %}
+                {% set relative_req = 100 %}
+            {% elseif mastery_tier == 2 %}
+                {% set next_req = 300 %}
+                {% set relative_xp = school_xp - 100 %}
+                {% set relative_req = 200 %}
+            {% elseif mastery_tier == 3 %}
+                {% set next_req = 600 %}
+                {% set relative_xp = school_xp - 300 %}
+                {% set relative_req = 300 %}
+            {% elseif mastery_tier == 4 %}
+                {% set next_req = 1000 %}
+                {% set relative_xp = school_xp - 600 %}
+                {% set relative_req = 400 %}
+            {% else %}
+                {% set next_req = 1000 %}
+                {% set relative_xp = 1 %}
+                {% set relative_req = 1 %}
+            {% endif %}
+
+            {% set progress_pct = (relative_xp / relative_req * 100)|round(0, 'floor') %}
+            {% if mastery_tier == 5 %}
+                {% set progress_pct = 100 %}
+            {% endif %}
+
+            <div class="school-mastery-cell" style="background-color: var(--color-surface-base); border: 1px solid var(--color-border); padding: 0.75rem; border-radius: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                <div class="layout-cluster layout-cluster--sm justify-between" style="display: flex; align-items: center; justify-content: space-between;">
+                    <div class="layout-cluster layout-cluster--sm" style="display: flex; align-items: center; gap: 0.375rem;">
+                        <span class="hero-school-mastery__icon" style="font-size: 1.125rem; line-height: 1;">
+                            {% if school == 'fire' %}🔥
+                            {% elseif school == 'water' %}💧
+                            {% elseif school == 'air' %}💨
+                            {% elseif school == 'earth' %}🪨
+                            {% elseif school == 'light' %}☀️
+                            {% else %}🌙{% endif %}
+                        </span>
+                        <span class="hero-school-mastery__label font-bold text-xs" style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary);">{{ ('school.' ~ school)|trans }}</span>
+                    </div>
+                    <span class="hero-school-mastery__tier font-extrabold text-[10px]" style="font-size: 0.625rem; font-weight: 800; background-color: var(--color-surface-raised); border: 1px solid var(--color-border); padding: 0.125rem 0.375rem; border-radius: 0.25rem; color: var(--color-text-secondary);">T{{ mastery_tier }}</span>
                 </div>
-                <span class="hero-school-mastery__tier">T{{ mastery_tier }}</span>
+                <div class="layout-cluster layout-cluster--xs justify-between text-[9px] text-muted font-medium mt-1" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.5625rem; color: var(--color-text-muted);">
+                    <span>XP: {{ school_xp }} / {{ next_req }}</span>
+                    {% if mastery_tier == 5 %}<span>MAX</span>{% else %}<span>{{ progress_pct }}%</span>{% endif %}
+                </div>
+                <div class="ui-progress ui-progress--compact" style="width: 100%;">
+                    <div class="ui-progress__fill ui-progress__fill--accent" style="--ui-progress-pct: {{ progress_pct }}%; width: {{ progress_pct }}%;"></div>
+                </div>
             </div>
         {% endfor %}
     </div>

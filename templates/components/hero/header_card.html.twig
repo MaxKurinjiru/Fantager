@@ -54,6 +54,16 @@
                     <span class="emoji-icon emoji-icon--sm">🔥</span>
                     {{ 'heroes.level'|trans }}: <strong class="hero-header__meta-strong">{{ hero.level }}</strong>
                 </span>
+                <span class="hero-header__divider"></span>
+                <span class="hero-header__meta-item">
+                    {% include 'components/hero/rating_badge.html.twig' with { hero: hero, show_complex: true, layout: 'inline' } %}
+                </span>
+                {% if hero.trait %}
+                    <span class="hero-header__divider"></span>
+                    <span class="hero-header__meta-item">
+                        {% include 'components/hero/trait_badge.html.twig' with { trait: hero.trait } %}
+                    </span>
+                {% endif %}
             </div>
 
             <div class="hero-header__xp-track">

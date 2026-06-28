@@ -1,0 +1,66 @@
+{# templates/components/marketplace/basic_equipment_tab.html.twig #}
+<div data-marketplace-target="tabContent" data-tab-name="basic_equipment" class="layout-stack{% if tab|default('browse') != 'basic_equipment' %} hidden{% endif %}">
+    <div class="game-panel">
+        <h2 class="feature-panel__title">{{ 'marketplace.basic_equipment_title'|trans }}</h2>
+        <p class="panel-lead">{{ 'marketplace.basic_equipment_subtitle'|trans }}</p>
+
+        <div class="game-panel game-panel--scroll" style="margin-top: 1.5rem;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'marketplace.col_item_name'|trans }}</th>
+                        <th>{{ 'marketplace.col_category'|trans }}</th>
+                        <th>{{ 'marketplace.col_slot'|trans }}</th>
+                        <th>{{ 'marketplace.col_bonuses'|trans }}</th>
+                        <th>{{ 'marketplace.col_price'|trans }}</th>
+                        <th class="data-table__col--end">{{ 'marketplace.col_actions'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, template in basic_items %}
+                        <tr>
+                            <td style="font-weight: bold;">
+                                {{ template.name_key|trans }}
+                            </td>
+                            <td>
+                                <span class="category-badge">
+                                    {{ ('inventory.cat_' ~ template.category.value)|trans }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ ('inventory.slot_' ~ template.slot.value)|trans }}
+                            </td>
+                            <td>
+                                <div class="item-bonuses-list" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                    {% for stat, val in template.bonuses %}
+                                        {% if stat != 'type' %}
+                                            <span class="rarity-tag rarity-tag--uncommon" style="font-size: 0.8rem; padding: 0.1rem 0.4rem; white-space: nowrap;">
+                                                +{{ val }} {{ ('inventory.stat_' ~ stat)|trans }}
+                                            </span>
+                                        {% elseif val == 'ranged' %}
+                                            <span class="rarity-tag rarity-tag--common" style="font-size: 0.8rem; padding: 0.1rem 0.4rem; white-space: nowrap;">
+                                                🏹 {{ 'inventory.stat_ranged'|trans }}
+                                            </span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td style="font-weight: bold; color: #d4af37;">
+                                🪙 {{ template.cost }}
+                            </td>
+                            <td class="data-table__col--end">
+                                <form action="{{ path('app_marketplace_buy_basic') }}" method="POST" style="margin: 0;" onsubmit="return confirm('{{ 'marketplace.confirm_buy_basic'|trans({'%item%': template.name_key|trans, '%cost%': template.cost})|e('js') }}');">
+                                    <input type="hidden" name="item_key" value="{{ key }}">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('buy_basic') }}">
+                                    <button type="submit" class="btn btn-primary btn--sm" {% if team.gold < template.cost %}disabled title="{{ 'marketplace.insufficient_gold'|trans }}"{% endif %}>
+                                        {{ 'marketplace.btn_buy'|trans }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

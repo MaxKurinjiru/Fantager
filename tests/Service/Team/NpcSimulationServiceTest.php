@@ -29,6 +29,7 @@ use App\Service\Summoning\SummoningService;
 use App\Service\Team\NpcSimulationService;
 use App\Service\Training\TrainingService;
 use App\Service\Hero\HeroDismissalService;
+use App\Service\Hero\HeroRatingCalculator;
 use App\Entity\Item\Item;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -53,6 +54,8 @@ class NpcSimulationServiceTest extends TestCase
     private $itemService;
     /** @var HeroDismissalService&MockObject */
     private $dismissalService;
+    /** @var HeroRatingCalculator&MockObject */
+    private $heroRatingCalculator;
     private NpcSimulationService $service;
 
     protected function setUp(): void
@@ -64,6 +67,7 @@ class NpcSimulationServiceTest extends TestCase
         $this->trainingService = $this->createMock(TrainingService::class);
         $this->itemService = $this->createMock(ItemService::class);
         $this->dismissalService = $this->createMock(HeroDismissalService::class);
+        $this->heroRatingCalculator = $this->createMock(HeroRatingCalculator::class);
 
         $this->service = new NpcSimulationService(
             $this->em,
@@ -72,7 +76,8 @@ class NpcSimulationServiceTest extends TestCase
             $this->hqService,
             $this->trainingService,
             $this->itemService,
-            $this->dismissalService
+            $this->dismissalService,
+            $this->heroRatingCalculator,
         );
     }
 
@@ -250,4 +255,353 @@ class NpcSimulationServiceTest extends TestCase
         }
         $this->assertEquals(8, $assignedTrainees);
     }
+
+    public function testAutoEquipItemsWithMasteryAndPurchase(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0);
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        // Create a default formation
+        $formation = new Formation();
+        $formation->setTeam($team);
+        $formation->setIsDefault(true);
+        $this->setEntityId($formation, 100);
+
+        foreach (FormationPosition::cases() as $pos) {
+            $slot = new FormationSlot();
+            $slot->setFormation($formation);
+            $slot->setPosition($pos);
+            $formation->addSlot($slot);
+        }
+
+        // Create 6 heroes
+        $heroes = [];
+        for ($i = 1; $i <= 6; $i++) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            
+            // Default stats: Strength/Melee
+            $hero->setStr(10);
+            $hero->setKon(10);
+            $hero->setDex(10);
+            $hero->setSpd(10);
+            $hero->setIntel(10);
+            
+            $heroes[] = $hero;
+        }
+
+        // Give Hero 1 a weapon mastery in TwoHandedSword and armor mastery in MediumArmor
+        $hero1 = $heroes[0];
+        $wmWeapon = new \App\Entity\Hero\WeaponMastery();
+        $wmWeapon->setHero($hero1);
+        $wmWeapon->setStyle(\App\Enum\ItemSubType::TwoHandedSword);
+        $wmWeapon->setMasteryTier(3);
+        $wmWeapon->setXp(300);
+        $hero1->getWeaponMasteries()->add($wmWeapon);
+
+        $wmArmor = new \App\Entity\Hero\WeaponMastery();
+        $wmArmor->setHero($hero1);
+        $wmArmor->setStyle(\App\Enum\ItemSubType::MediumArmor);
+        $wmArmor->setMasteryTier(2);
+        $wmArmor->setXp(100);
+        $hero1->getWeaponMasteries()->add($wmArmor);
+
+        // Repositories mocking
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findOneBy')->willReturn($formation);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findBy')->willReturn($heroes);
+
+        $equippedItems = []; // key: heroId_slotType => Item
+        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo->method('findBy')->willReturn([]); // empty inventory
+        $itemRepo->method('findOneBy')->willReturnCallback(function (array $criteria) use (&$equippedItems) {
+            $hero = $criteria['equippedHero'] ?? null;
+            $slot = $criteria['equippedSlot'] ?? null;
+            if ($hero && $slot) {
+                return $equippedItems[$hero->getId() . '_' . $slot->value] ?? null;
+            }
+            return null;
+        });
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $formationRepo, $heroRepo, $itemRepo) {
+            if (Team::class === $class) return $teamRepo;
+            if (Formation::class === $class) return $formationRepo;
+            if (Hero::class === $class) return $heroRepo;
+            if (Item::class === $class) return $itemRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        // Mock ItemService purchaseBasicItem
+        $purchasedKeys = [];
+        $this->itemService->method('purchaseBasicItem')
+            ->willReturnCallback(function (Team $t, string $key) use (&$purchasedKeys) {
+                $purchasedKeys[] = $key;
+                $item = new Item();
+                $item->setOwnerTeam($t);
+                $item->setName($key);
+                $template = ItemService::BASIC_EQUIPMENT[$key];
+                $item->setSlotType($template['slot']);
+                $item->setCategory($template['category']);
+                if (isset($template['sub_type'])) {
+                    $item->setSubType(\App\Enum\ItemSubType::tryFrom($template['sub_type']));
+                }
+                $item->setRarity(ItemRarity::Common);
+                return $item;
+            });
+
+        // Mock ItemService equip
+        $this->itemService->method('equip')->willReturnCallback(function (Item $item, Hero $h, ItemSlotType $slot) use (&$equippedItems) {
+            $item->setEquippedHero($h);
+            $item->setEquippedSlot($slot);
+            $equippedItems[$h->getId() . '_' . $slot->value] = $item;
+        });
+
+        // Run
+        $this->service->simulateTactics($kingdom, new \DateTimeImmutable());
+
+        // Assertions for Hero 1:
+        // MainHand weapon should be TwoHandedSword (greatsword)
+        $this->assertContains('greatsword', $purchasedKeys);
+        // Medium armor items should be purchased (chain_coif, chain_hauberk, chain_gloves, chain_boots)
+        $this->assertContains('chain_coif', $purchasedKeys);
+        $this->assertContains('chain_hauberk', $purchasedKeys);
+        $this->assertContains('chain_gloves', $purchasedKeys);
+        $this->assertContains('chain_boots', $purchasedKeys);
+
+        // OffHand should be empty because TwoHandedSword is two-handed
+        $hero1OffHand = $equippedItems[$hero1->getId() . '_' . ItemSlotType::OffHand->value] ?? null;
+        $this->assertNull($hero1OffHand);
+    }
+
+    public function testProactiveDismissNegativeTrait(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // ROLE_MERCENARY_ACADEMY
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        // Create 8 heroes. One has a purely negative trait (Fragile), one has a mixed trait (Berserker), rest have null.
+        $heroes = [];
+        for ($i = 1; $i <= 8; $i++) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            $hero->setLevel(1);
+            $heroes[] = $hero;
+        }
+
+        // Set traits
+        $heroes[0]->setTrait(\App\Enum\HeroTrait::Fragile); // Purely negative
+        $heroes[1]->setTrait(\App\Enum\HeroTrait::Berserker); // Mixed
+        $heroes[2]->setTrait(null);
+
+        // Setup mock repos
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        // Mock createQueryBuilder to return our list of heroes
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($heroes);
+
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+        // Also mock standard findBy / findOneBy just in case
+        $heroRepo->method('findBy')->willReturn($heroes);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        // Empty formations
+        $formationRepo->method('findBy')->willReturn([]);
+
+        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo->method('findBy')->willReturn([]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $formationRepo, $heroRepo, $itemRepo) {
+            if (Team::class === $class) return $teamRepo;
+            if (Formation::class === $class) return $formationRepo;
+            if (Hero::class === $class) return $heroRepo;
+            if (Item::class === $class) return $itemRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        // Mock HQ service
+        $hq = new Headquarters();
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('getRosterLimit')->willReturn(15);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->hqService->method('calculateUpgradeCost')->willReturn(500);
+
+        // Expect dismiss to be called on the Fragile hero (heroes[0])
+        $this->dismissalService->expects($this->once())
+            ->method('dismiss')
+            ->with($team, $this->callback(fn (Hero $h) => $h->getTrait() === \App\Enum\HeroTrait::Fragile));
+
+        // Run
+        $this->service->simulateManagementAndEconomy($kingdom, new \DateTimeImmutable());
+    }
+
+    public function testCalculateHeroMarketPriceWithTraits(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // ROLE_MERCENARY_ACADEMY
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        // We need 10 heroes to trigger the selling candidate flow in simulateManagementAndEconomy
+        $heroes = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            $hero->setLevel(2); // level 2 baseline = 500 gold
+            $heroes[] = $hero;
+        }
+
+        // Test rating-based market price from HeroRatingCalculator
+        $heroes[0]->setTrait(\App\Enum\HeroTrait::Clutch);
+
+        $this->heroRatingCalculator->method('estimateMarketPrice')
+            ->willReturnCallback(fn (Hero $hero) => 650);
+
+        // Setup mock repos
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($heroes);
+
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+        $heroRepo->method('findBy')->willReturn($heroes);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findBy')->willReturn([]);
+
+        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo->method('findBy')->willReturn([]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $formationRepo, $heroRepo, $itemRepo) {
+            if (Team::class === $class) return $teamRepo;
+            if (Formation::class === $class) return $formationRepo;
+            if (Hero::class === $class) return $heroRepo;
+            if (Item::class === $class) return $itemRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        // Mock HQ service
+        $hq = new Headquarters();
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('getRosterLimit')->willReturn(15);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+
+        // We expect createListing to use the rating calculator market price
+        $this->marketplaceService->expects($this->once())
+            ->method('createListing')
+            ->with(
+                $team,
+                'hero',
+                $heroes[0]->getId(),
+                650,
+                650,
+                'buy_now',
+                7,
+                $this->anything()
+            );
+
+        // Run
+        $this->service->simulateManagementAndEconomy($kingdom, new \DateTimeImmutable());
+    }
+
+    public function testSimulateTrainingExcludesNegativeTraitsFromPromotion(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 2); // Royal Collector
+        $team->setKingdom($kingdom);
+
+        // Create 3 heroes. Candidate 1 is oldest but has a negative trait (Slacker).
+        // Candidate 2 is younger but has null trait.
+        // Candidate 3 is youngest and has null trait.
+        $heroes = [];
+        
+        $hero1 = new Hero();
+        $this->setEntityId($hero1, 1);
+        $hero1->setTeam($team);
+        $hero1->setAgeRaw(50);
+        $hero1->setLevel(3);
+        $hero1->setTrait(\App\Enum\HeroTrait::Slacker); // purely negative
+        $heroes[] = $hero1;
+
+        $hero2 = new Hero();
+        $this->setEntityId($hero2, 2);
+        $hero2->setTeam($team);
+        $hero2->setAgeRaw(40);
+        $hero2->setLevel(2);
+        $hero2->setTrait(null);
+        $heroes[] = $hero2;
+
+        $hero3 = new Hero();
+        $this->setEntityId($hero3, 3);
+        $hero3->setTeam($team);
+        $hero3->setAgeRaw(30);
+        $hero3->setLevel(1);
+        $hero3->setTrait(null);
+        $heroes[] = $hero3;
+
+        // Mock repos
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findBy')->willReturn($heroes);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $heroRepo) {
+            if (Team::class === $class) return $teamRepo;
+            if (Hero::class === $class) return $heroRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        // Limit trainers to 1
+        $this->trainingService->method('getTrainerLimit')->willReturn(1);
+        $this->trainingService->method('getTrainerSlotsLimit')->willReturn(2);
+
+        // Run
+        $this->service->simulateTraining($kingdom, new \DateTimeImmutable());
+
+        // Hero 2 should be promoted instead of Hero 1, because Hero 1 has a purely negative trait.
+        $this->assertEquals(HeroRole::Trainer, $hero2->getRole());
+        $this->assertEquals(HeroRole::Combatant, $hero1->getRole());
+    }
 }
+

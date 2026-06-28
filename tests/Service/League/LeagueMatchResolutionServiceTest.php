@@ -73,6 +73,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->fanClubService,
             $this->teamMoraleReputationService,
             $this->teamChronicleService,
+            $this->createMock(\App\Service\Hero\HeroMasteryService::class),
             $this->em,
         );
     }
@@ -188,6 +189,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->fanClubService,
             $this->teamMoraleReputationService,
             $this->teamChronicleService,
+            $this->createMock(\App\Service\Hero\HeroMasteryService::class),
             $this->em,
         );
         $partial->expects($this->once())

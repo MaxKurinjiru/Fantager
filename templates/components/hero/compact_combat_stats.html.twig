@@ -1,0 +1,19 @@
+{# templates/components/hero/compact_combat_stats.html.twig #}
+{% set combat_stats = hero_combat_stats(hero) %}
+{% set stats_configs = [
+    { key: 'hp', val: combat_stats.maxHp, icon: '❤️', label: 'HP' },
+    { key: 'attack', val: combat_stats.physicalAttack, icon: '⚔️', label: 'ATK' },
+    { key: 'spell_power', val: combat_stats.spellPower, icon: '🔮', label: 'SP' },
+    { key: 'armor', val: combat_stats.armorValue, icon: '🛡️', label: 'DEF', title_addon: ' (' ~ (combat_stats.physicalDamageReduction * 100)|number_format(0) ~ '%)' },
+    { key: 'resistance', val: combat_stats.magicResistance, icon: '🌀', label: 'RES', title_addon: ' (' ~ (combat_stats.magicDamageReduction * 100)|number_format(0) ~ '%)' },
+    { key: 'initiative', val: combat_stats.baseInitiative, icon: '⚡', label: 'INIT' },
+] %}
+<div class="hero-combat-grid">
+    {% for stat in stats_configs %}
+        <div class="hero-combat-cell" title="{{ ('heroes.combat_' ~ stat.key)|trans }}{{ stat.title_addon|default('') }}">
+            <span class="hero-combat-cell__icon" aria-hidden="true">{{ stat.icon }}</span>
+            <span class="hero-combat-cell__label">{{ stat.label }}</span>
+            <span class="hero-combat-cell__value">{{ stat.val }}</span>
+        </div>
+    {% endfor %}
+</div>

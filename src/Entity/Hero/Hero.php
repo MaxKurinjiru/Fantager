@@ -7,6 +7,7 @@ namespace App\Entity\Hero;
 use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
+use App\Enum\HeroTrait;
 use App\Enum\Race;
 use App\Enum\TrainingType;
 use App\Repository\Hero\HeroRepository;
@@ -81,8 +82,17 @@ class Hero
     #[ORM\Column]
     private int $lck;
 
+    #[ORM\Column(options: ['default' => 0])]
+    private int $baseOvr = 0;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $complexRating = 0;
+
     #[ORM\Column(length: 15, enumType: HeroStatus::class)]
     private HeroStatus $status = HeroStatus::Available;
+
+    #[ORM\Column(length: 30, nullable: true, enumType: HeroTrait::class)]
+    private ?HeroTrait $trait = null;
 
     #[ORM\Column(length: 15, nullable: true, enumType: TrainingType::class)]
     private ?TrainingType $trainingType = null;
@@ -106,10 +116,15 @@ class Hero
     #[ORM\OneToMany(targetEntity: HeroSpell::class, mappedBy: 'hero', cascade: ['persist'])]
     private Collection $heroSpells;
 
+    /** @var Collection<int, WeaponMastery> */
+    #[ORM\OneToMany(targetEntity: WeaponMastery::class, mappedBy: 'hero', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $weaponMasteries;
+
     public function __construct()
     {
         $this->trainees = new ArrayCollection();
         $this->schoolMasteries = new ArrayCollection();
+        $this->weaponMasteries = new ArrayCollection();
         $this->heroSpells = new ArrayCollection();
     }
 
@@ -464,6 +479,30 @@ class Hero
         return $this;
     }
 
+    public function getBaseOvr(): int
+    {
+        return $this->baseOvr;
+    }
+
+    public function setBaseOvr(int $baseOvr): static
+    {
+        $this->baseOvr = $baseOvr;
+
+        return $this;
+    }
+
+    public function getComplexRating(): int
+    {
+        return $this->complexRating;
+    }
+
+    public function setComplexRating(int $complexRating): static
+    {
+        $this->complexRating = $complexRating;
+
+        return $this;
+    }
+
     public function getStatus(): HeroStatus
     {
         return $this->status;
@@ -474,6 +513,27 @@ class Hero
         $this->status = $status;
 
         return $this;
+    }
+
+    public function getTrait(): ?HeroTrait
+    {
+        return $this->trait;
+    }
+
+    public function setTrait(?HeroTrait $trait): static
+    {
+        $this->trait = $trait;
+
+        return $this;
+    }
+
+    /**
+     * Zkratka pro kontrolu konkrétního traitu.
+     * Bezpečná i pro hrdiny bez traitu (trait = null).
+     */
+    public function hasTrait(HeroTrait $trait): bool
+    {
+        return $this->trait === $trait;
     }
 
     public function getTrainingType(): ?TrainingType
@@ -559,6 +619,12 @@ class Hero
     public function getSchoolMasteries(): Collection
     {
         return $this->schoolMasteries;
+    }
+
+    /** @return Collection<int, WeaponMastery> */
+    public function getWeaponMasteries(): Collection
+    {
+        return $this->weaponMasteries;
     }
 
     /** @return Collection<int, HeroSpell> */

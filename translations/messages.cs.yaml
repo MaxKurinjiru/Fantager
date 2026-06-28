@@ -239,6 +239,8 @@ error:
   item_cannot_dismantle_equipped: Vybavený předmět nelze rozložit. Nejprve ho sundejte.
   item_cannot_repair: Vystavené nebo nedostupné předměty nelze opravit.
   item_repair_insufficient_gold: 'Nedostatek zlata. Oprava stojí %cost%, k dispozici: %available%.'
+  basic_item_invalid: Neplatný základní předmět.
+  item_purchase_insufficient_gold: 'Nedostatek zlata. Nákup předmětu stojí %cost% 🪙, máte pouze %available% 🪙.'
   spell_already_known: Hrdina toto kouzlo již zná.
   spell_not_equipped: Kouzlo není vybaveno.
   spell_slot_range: 'Slot musí být mezi 1 a %capacity% (magická kapacita hrdiny).'
@@ -380,6 +382,8 @@ graveyard:
     form: Forma
     fatigue: Únava
     morale: Morálka
+    base_ovr: Základní OVR
+    complex_rating: Tržní hodnota
 
 news:
   title: Novinky
@@ -453,11 +457,13 @@ financial_crisis:
   title_warning: Finanční varování
   title_restricted: Finanční restrikce
   title_bankruptcy_pending: Hrozící bankrot
-  message_warning: "Tým má neuhrazený dluh %debt% zlata (týdenní údržba %maintenance% zlata). Snižte náklady, nebo prodejte aktiva."
+  message_warning: "Tým má neuhrazený dluh %debt% zlata (týdenní fixní náklady %expenses% zlata). Snižte náklady, nebo prodejte aktiva."
   message_restricted: "Tým je %weeks% týdnů v krizi. Pasivní bonusy základny jsou pozastaveny a některé akce jsou blokovány, dokud nesplátíte dluh."
   message_bankruptcy_pending: "Bez zásahu bude tým brzy prohlášen bankrotem. Dluh %debt% zlata, pokladnice je vyčerpána."
   unpaid_debt: Neuhrazený dluh
   weekly_maintenance: Týdenní údržba
+  weekly_payroll: Týdenní mzdy
+  weekly_expenses: Týdenní fixní náklady
   gold_on_hand: Zlato k dispozici
   weeks_until_bankruptcy: Týdnů do bankrotu
   restricted_hint: "Blokováno: vylepšení základny, vyvolávání, nákupy na tržišti."
@@ -531,6 +537,7 @@ heroes:
   sort_by: "Seřadit podle:"
   sort_name: "Jména (A-Z)"
   sort_level: "Úrovně (Sestupně)"
+  sort_base_ovr: "OVR (Sestupně)"
   sort_age: "Věku (Vzestupně)"
   sort_morale: "Morálky (Sestupně)"
   sort_form: "Formy (Sestupně)"
@@ -599,6 +606,13 @@ heroes:
   equipped: Vybaveno
   school_mastery: Zvládnutí škol
   school_mastery_desc: Požadavky na úroveň pro učení kouzel.
+  gear_mastery: Mistrovství ve výstroji a zbraních
+  gear_mastery_desc: Slaďte se s typem výstroje a odemkněte bojové bonusy. Změna předmětu neresetuje sžití ihned, ale nepoužívaná výstroj denně upadá.
+  active_style: Aktivní sžití
+  no_style: Žádné (Bez zbraně)
+  fully_attuned: Plně sžitý (100 %)
+  attuning: Sžívá se (%progress%%)
+  all_masteries: Všechna mistrovství ve zbrani a zbroji
   combat_stats: Bojové statistiky
   combat_stats_desc: Historické výkonnostní metriky.
   matches: Zápasy
@@ -611,6 +625,18 @@ heroes:
   recent_activity_desc: Poslední akce provedené tímto hrdinou.
   no_activity: Nebyly zaznamenány žádné tréninkové aktivity.
   details_title: Detaily hrdiny
+  rating:
+    base_ovr: OVR
+    complex: Hodnota
+    panel_title: Hodnota hrdiny
+    panel_desc: Vnitřní hodnocení bez vybavení, kouzel a týmových bonusů.
+    tooltip_base: Srovnání napříč rasami (0–100). Human-neutrální bojový profil.
+    tooltip_complex: Unikátní vnitřní hodnota (0–9999) včetně rasy, traitu, mastery a věku.
+    gold_value: Odh. zlatá hodnota
+    gold_value_hint: Ekonomická hodnota odvozená z komplexního ratingu.
+    weekly_salary: Týdenní mzda
+    weekly_salary_hint: Strhává se každou neděli při týdenním resetu.
+    dismiss_estimate: "Odhadovaná hodnota: %value% 🪙 (odstupné: %compensation% 🪙)"
   dismiss_title: Propustit hrdinu
   dismiss_desc: Propustíte hrdinu z týmu a obdržíte částečné odstupné (40 % odhadované hodnoty).
   dismiss_desc_crisis: Rychlá cesta k cashflow — propustění vrátí část hodnoty hrdiny do pokladny.
@@ -621,6 +647,63 @@ heroes:
   sell_btn: Vystavit na trh
   sell_confirm: Opravdu chcete vystavit tohoto hrdinu na tržišti?
   roster_min_hint: "Tým musí mít alespoň %min% bojeschopných hrdinů pro zápasy (aktuálně %current%). Tohoto hrdinu nelze prodat ani propustit."
+  derived_stats: "Bojové staty"
+  derived_stats_desc: "Vypočítáno z primárních atributů a vybavené zbroje."
+  combat_hp: "Životy (HP)"
+  combat_attack: "Fyzický útok"
+  combat_spell_power: "Síla kouzel"
+  combat_armor: "Zbroj"
+  combat_resistance: "Magický odpor"
+  combat_initiative: "Iniciativa"
+  combat_accuracy: "Přesnost"
+  combat_dodge: "Úhyb"
+  combat_crit: "Kritický zásah"
+  trait_label: Osobnost
+  trait_panel_title: Osobnostní rys
+  trait_panel_desc: Trvalý vrozený rys přiřazený při vyvolání. Nelze změnit ani natrénovat pryč.
+  traits:
+    quick_learner:
+      name: Rychlý student
+      desc: "+20 % rychlost tréninku atributů."
+    clutch:
+      name: V rozhodující chvíli
+      desc: "Pod 30 % HP: +15 % přesnost a +10 % zbroj."
+    audience_favorite:
+      name: Oblíbenec publika
+      desc: "+5 % příjem ze vstupného na aréně, když je nasazen v zápase."
+    battle_hardened:
+      name: Zocelený bojem
+      desc: Morálka klesá při smrti spojence jen poloviční rychlostí.
+    volatile:
+      name: Vrtkavý
+      desc: Morálka klesá při smrti spojence dvakrát rychleji.
+    slacker:
+      name: Flákač
+      desc: "-15 % rychlost tréninku atributů."
+    fragile:
+      name: Křehký
+      desc: "-10 % maximálních životů."
+    glass_jaw:
+      name: Skleněná brada
+      desc: "Pod 50 % HP: přijímá o 10 % více fyzického poškození."
+    berserker:
+      name: Berserk
+      desc: "+15 % šance na krit a 2,0× kritické poškození, ale -8 % přesnost."
+    glass_cannon:
+      name: Skleněné dělo
+      desc: "+15 % síla kouzel, ale -10 % zbroj."
+    reckless:
+      name: Bezohledný
+      desc: "+15 % šance na krit, ale -10 % úhyb."
+    loner:
+      name: Samotář
+      desc: Ignoruje pozitivní i negativní bonusy rasové synergie.
+    overconfident:
+      name: Přehnaně sebevědomý
+      desc: "+10 % fyzický útok, ale -8 % přesnost."
+    perfectionist:
+      name: Perfekcionista
+      desc: Konzistentní poškození bez náhodné variance, ale -10 % rychlost tréninku.
 
 summoning:
   title: Vyvolávací síň
@@ -708,6 +791,8 @@ finance:
   type_hq_downgrade_refund: Vratka za snížení úrovně zařízení
   type_hq_upgrade_refund: Vratka za zrušení vylepšení budovy
   type_kingdom_reward: Odměna z království
+  type_hero_salary: Mzdy hrdinů
+  type_trainer_salary: Mzdy trenérů
   actor_system: Systém
   actor_active: Aktivní akce
   actor_passive: Pasivní vliv
@@ -718,6 +803,8 @@ hq:
   compound_level: Úroveň základny
   weekly_maintenance: Týdenní údržba
   weekly_maintenance_hint: Strhává se každou neděli při týdenním resetu
+  weekly_payroll: Týdenní mzdy
+  weekly_payroll_hint: Mzdy hrdinů a trenérů strhávané každou neděli při týdenním resetu
   active_optimization: Uzpůsobení arény
   adapted_for: Uzpůsobeno pro
   roster_limit: Limit soupisky
@@ -915,6 +1002,17 @@ inventory:
   equipped_by: "Vybaveno hrdinou %hero%"
   available: Volné
   unequip: Sundat
+  cat_weapon: "Zbraň"
+  cat_shield: "Štít"
+  cat_spell_accelerator: "Akcelerátor"
+  cat_armor: "Zbroj"
+  cat_accessory: "Doplněk"
+  stat_damage: "Poškození"
+  stat_armor: "Zbroj"
+  stat_spell_power: "Síla kouzel"
+  stat_resistance: "Odolnost"
+  stat_str: "STR"
+  stat_ranged: "Na dálku"
 
 spells:
   title: Kniha kouzel a akademie
@@ -1236,6 +1334,17 @@ marketplace:
   title: Tržiště
   subtitle: Nakupujte a prodávejte hrdiny, předměty a trenéry s ostatními hráči.
   tab_browse: Procházet nabídky
+  tab_basic_equipment: Základní vybavení
+  basic_equipment_title: Obchod se základním vybavením
+  basic_equipment_subtitle: Kupte si základní výstroj pro své hrdiny přímo z královského skladu.
+  col_item_name: Název předmětu
+  col_category: Kategorie
+  col_slot: Slot
+  col_bonuses: Bonusy
+  btn_buy: Koupit
+  insufficient_gold: Nedostatek zlata
+  confirm_buy_basic: "Opravdu chcete koupit %item% za %cost% 🪙?"
+  flash_basic_item_purchased: "Předmět %item% byl úspěšně zakoupen za %cost% 🪙."
   tab_sell: Prodat
   tab_my_listings: Moje nabídky
   tab_history: Historie transakcí
@@ -1249,9 +1358,30 @@ marketplace:
   filter_all_rarities: Všechny rarity
   filter_search: Hledat podle názvu...
   filter_sort: Seřadit podle
+  filter_rating_min: Min. hodnota
+  filter_rating_max: Max. hodnota
+  filter_rating_placeholder: Libovolná
+  filter_level_min: Min. úroveň
+  filter_level_max: Max. úroveň
+  filter_level_placeholder: Libovolná
+  filter_ovr_min: Min. OVR
+  filter_ovr_max: Max. OVR
+  filter_ovr_placeholder: Libovolná
+  filter_age_phase: Věková fáze
+  filter_all_age_phases: Všechny fáze
+  filter_price_min: Min. cena
+  filter_price_max: Max. cena
+  filter_price_placeholder: Libovolná
+  filter_seller_reputation_min: Min. reputace prodejce
+  filter_seller_reputation_placeholder: Libovolná
+  label_seller_reputation: "Rep. %value%"
+  suggested_price: Doporučená cena
+  btn_use_suggested_price: Použít doporučenou
   sort_newest: Nejnovější
   sort_price_asc: "Cena: Vzestupně"
   sort_price_desc: "Cena: Sestupně"
+  sort_rating_desc: "Hodnota: Sestupně"
+  sort_ovr_desc: "OVR: Sestupně"
   sort_expires_asc: Končící brzy
   sort_name_asc: "Jméno (A-Z)"
   sort_name_desc: "Jméno (Z-A)"
@@ -1524,6 +1654,53 @@ email:
     greeting: "Ahoj %displayName%,"
     body: "Váš tým „%teamName%“ byl uvolněn kvůli dlouhodobé neaktivitě. Nový tým si budete moci přiřadit za %cooldownDays% dní."
     note: "Váš účet zůstává aktivní. Po uplynutí lhůty se můžete přihlásit a získat jiný tým."
+
+item:
+  short_sword: "Krátký meč"
+  short_bow: "Krátký luk"
+  wooden_shield: "Dřevěný štít"
+  apprentice_wand: "Učeňská hůlka"
+  leather_helmet: "Kožená přilba"
+  leather_jerkin: "Kožená vesta"
+  leather_gloves: "Kožené rukavice"
+  leather_boots: "Kožené boty"
+  copper_ring: "Měděný prsten"
+  silver_amulet: "Stříbrný amulet"
+  chain_coif: "Kroužková kukla"
+  chain_hauberk: "Kroužková košile"
+  chain_gloves: "Kroužkové rukavice"
+  chain_boots: "Kroužkové boty"
+  iron_helmet: "Železná přilba"
+  plate_armor: "Plátová zbroj"
+  iron_gauntlets: "Železné rukavice"
+  iron_greaves: "Železné boty"
+  greatsword: "Obouruční meč"
+  hand_axe: "Jednoruční sekera"
+  battle_axe: "Obouruční sekera"
+  flanged_mace: "Jednoruční palcát"
+  warhammer: "Obouruční kladivo"
+  iron_dagger: "Železná dýka"
+  light_crossbow: "Lehká kuše"
+  wooden_wand: "Dřevěná hůlka"
+  wooden_staff: "Dřevěná hůl"
+
+weapon_style:
+  one_handed_sword: Jednoruční meč
+  two_handed_sword: Obouruční meč
+  one_handed_axe: Jednoruční sekera
+  two_handed_axe: Obouruční sekera
+  one_handed_mace: Jednoruční palcát
+  two_handed_mace: Obouruční kladivo
+  dagger: Dýka
+  bow: Luk
+  crossbow: Kuše
+  wand: Hůlka
+  staff: Hůl
+  shield: Štít
+  spell_accelerator: Magický urychlovač
+  light_armor: Lehká zbroj
+  medium_armor: Střední zbroj
+  heavy_armor: Těžká zbroj
 
 
 

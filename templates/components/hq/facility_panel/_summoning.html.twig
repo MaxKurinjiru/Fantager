@@ -25,7 +25,8 @@
          wil: 'training.attr.wil'|trans,
          cha: 'training.attr.cha'|trans,
          lck: 'training.attr.lck'|trans
-     }|json_encode|e('html_attr') }}">
+     }|json_encode|e('html_attr') }}"
+     data-summoning-traits-value="{{ hero_trait_js_labels()|json_encode|e('html_attr') }}">
 
     <div class="hq-facility-panel__header">
         <div class="layout-toolbar">

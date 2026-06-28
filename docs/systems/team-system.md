@@ -81,7 +81,7 @@ See [team-chronicle-system.md](team-chronicle-system.md) for write hooks, catego
 
 Players can dismiss available heroes via `POST /api/v1/heroes/{id}/dismiss`:
 
-- Compensation = **40%** of estimated hero value (level + stats)
+- Compensation = **40%** of estimated hero value (`complex_rating` × `gold_per_complex_point` from [hero-rating-system.md](hero-rating-system.md))
 - Team must retain at least **6 combat-ready** heroes (status `available`)
 - Hero must be unassigned from trainer before dismissal
 - Hero is permanently removed (unlike marketplace sale)

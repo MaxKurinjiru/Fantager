@@ -4,6 +4,8 @@
 {% if hero and team and hero.status.value == 'available' and hero.trainer is null %}
     {% set can_leave = hero_can_leave_roster(team, hero) %}
     {% set crisis = team_financial_crisis(team) %}
+    {% set gold_value = hero_gold_value(hero) %}
+    {% set compensation = (gold_value * 0.4)|round %}
     <div class="hero-panel hero-dismiss-panel">
         <div>
             <h2 class="hero-panel__title">{{ 'heroes.dismiss_title'|trans }}</h2>
@@ -13,6 +15,9 @@
                 {% else %}
                     {{ 'heroes.dismiss_desc'|trans }}
                 {% endif %}
+            </p>
+            <p class="hero-panel__hint">
+                {{ 'heroes.rating.dismiss_estimate'|trans({'%value%': gold_value, '%compensation%': compensation}) }}
             </p>
             {% if not can_leave %}
                 <p class="hero-panel__hint hero-panel__hint--warning">

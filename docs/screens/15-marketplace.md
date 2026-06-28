@@ -20,6 +20,7 @@ Displayed Information:
 - Marketplace Tabs: Heroes, Items, Trainers
 - Listings:
 	- Thumbnail, name, level/age, key stats, rarity
+	- **Personality trait** (hero listings only, when present)
 	- Price (Buy Now), seller name, time remaining, bids (for auctions)
 - Filtering & Sorting:
 	- Race, level, age phase, price range, rarity, seller rating
@@ -43,3 +44,6 @@ Backend Requirements:
 Implementation:
 - **Controller:** `Web\EconomyController` (`app_economy`), `Api\V1\MarketplaceController`
 - **Stimulus:** `marketplace_controller.js`, `ledger_controller.js`
+- **Hero trait on browse cards:** `template-card-hero` + `marketplace_controller.js#renderHeroTrait`; labels via `data-marketplace-traits-value`
+- **Hero trait on sell picker:** `trait_badge.html.twig` in `sell_tab.html.twig`
+- **API:** Hero entity in `MarketplaceService::serializeListing()` includes nullable `trait`

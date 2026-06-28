@@ -1,0 +1,11 @@
+{# templates/components/hero/trait_panel.html.twig #}
+{% if hero.trait %}
+    <div class="hero-panel">
+        <div>
+            <h2 class="hero-panel__title">{{ 'heroes.trait_panel_title'|trans }}</h2>
+            <p class="hero-panel__desc">{{ 'heroes.trait_panel_desc'|trans }}</p>
+        </div>
+        {% include 'components/hero/trait_badge.html.twig' with { trait: hero.trait } %}
+        <p class="hero-trait-panel__desc">{{ ('heroes.traits.' ~ hero.trait.value ~ '.desc')|trans }}</p>
+    </div>
+{% endif %}

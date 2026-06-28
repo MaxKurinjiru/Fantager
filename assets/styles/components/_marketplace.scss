@@ -376,6 +376,26 @@
     }
   }
 
+  .marketplace-suggested-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-text-muted, #9ca3af);
+  }
+
+  .marketplace-suggested-price__value {
+    font-weight: 600;
+    color: var(--color-gold, #d4a843);
+  }
+
+  .marketplace-card__seller-reputation {
+    color: var(--color-text-muted, #9ca3af);
+    font-size: 0.875rem;
+  }
+
   .marketplace-browse-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -408,6 +428,9 @@
 .marketplace-notice__label { @apply text-xs uppercase font-bold tracking-wider; color: var(--color-text-secondary); }
 .marketplace-notice__value { @apply font-bold text-sm; color: var(--color-text-primary); }
 .marketplace-card__level { @apply text-xs font-medium; color: var(--color-text-secondary); }
+.marketplace-card__rating-row {
+  @apply flex flex-wrap gap-2;
+}
 .marketplace-card__title { @apply text-lg font-bold leading-tight; color: var(--color-text-primary); }
 .marketplace-card__detail-value { @apply font-semibold; color: var(--color-text-primary); }
 .marketplace-card__seller-name { @apply font-medium; color: var(--color-text-secondary); }

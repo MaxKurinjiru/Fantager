@@ -100,6 +100,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             new \App\Service\Calendar\TickClock(),
             $this->createMock(\App\Service\Team\NpcSimulationService::class),
             $this->orchestratorMock,
+            $this->createMock(\App\Service\Hero\HeroMasteryService::class),
         );
     }
 

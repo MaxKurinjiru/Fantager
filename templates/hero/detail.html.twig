@@ -42,6 +42,7 @@
      data-hero-sell-price-label-buy-now-value="{{ 'marketplace.price_gold'|trans }}"
      data-hero-sell-price-label-auction-value="{{ 'marketplace.label_min_bid'|trans }}"
      data-hero-sell-text-loading-value="{{ 'js_flash.common.text_loading'|trans }}"
+     data-hero-sell-suggested-price-value="{{ hero_market_price(hero) }}"
 >
     <div class="hero-detail-nav">
         <div class="hero-detail-nav__trail">
@@ -93,13 +94,17 @@
     {% if tab == 'overview' %}
         <div class="hero-detail-grid">
             <div class="hero-detail-grid__side">
+                {% include 'components/hero/ratings_panel.html.twig' with { hero: hero } %}
+                {% include 'components/hero/trait_panel.html.twig' with { hero: hero } %}
                 {% include 'components/hero/attributes_panel.html.twig' with { hero: hero, statBonuses: statBonuses } %}
+                {% include 'components/hero/derived_combat_stats_panel.html.twig' with { hero: hero } %}
                 {% include 'components/hero/status_panel.html.twig' with { hero: hero } %}
                 {% include 'components/hero/sell_panel.html.twig' with { hero: hero, team: team } %}
                 {% include 'components/hero/dismiss_panel.html.twig' with { hero: hero, team: team } %}
             </div>
             <div class="hero-detail-grid__main">
                 {% include 'components/hero/equipped_gear.html.twig' with { hero: hero, equipped: equipped } %}
+                {% include 'components/hero/weapon_mastery.html.twig' with { hero: hero, equipped: equipped } %}
                 <div class="hero-detail-split">
                     {% include 'components/hero/spell_slots.html.twig' with { hero: hero } %}
                     {% include 'components/hero/school_mastery.html.twig' with { hero: hero } %}

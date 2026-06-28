@@ -13,7 +13,10 @@ use App\Enum\ItemStatus;
 use App\Repository\Item\ItemRepository;
 use App\Exception\UserFacingException;
 use App\Service\Item\ItemService;
+use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
@@ -24,13 +27,26 @@ class ItemServiceTest extends TestCase
     private $itemRepositoryMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
     private $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TranslatorInterface */
+    private $symfonyTranslatorMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&RequestStack */
+    private $requestStackMock;
     private ItemService $itemService;
 
     protected function setUp(): void
     {
         $this->itemRepositoryMock = $this->createMock(ItemRepository::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
-        $this->itemService = new ItemService($this->itemRepositoryMock, $this->entityManagerMock);
+        $this->symfonyTranslatorMock = $this->createMock(TranslatorInterface::class);
+        $this->requestStackMock = $this->createMock(RequestStack::class);
+        
+        $translator = new UserMessageTranslator($this->symfonyTranslatorMock, $this->requestStackMock);
+        
+        $this->itemService = new ItemService(
+            $this->itemRepositoryMock,
+            $this->entityManagerMock,
+            $translator
+        );
     }
 
     public function testDismantleRejectsEquippedItem(): void
@@ -73,5 +89,42 @@ class ItemServiceTest extends TestCase
         $this->expectExceptionMessage('error.item_slot_mismatch');
 
         $this->itemService->equip($item, $hero, ItemSlotType::Body);
+    }
+
+    public function testPurchaseBasicItemSuccess(): void
+    {
+        $team = new Team();
+        $team->setGold(100);
+
+        $this->symfonyTranslatorMock->expects($this->once())
+            ->method('trans')
+            ->with('item.short_sword', [], 'messages', 'cs')
+            ->willReturn('Short Sword');
+
+        $this->entityManagerMock->expects($this->once())
+            ->method('persist')
+            ->with($this->isInstanceOf(Item::class));
+        $this->entityManagerMock->expects($this->once())
+            ->method('flush');
+
+        $item = $this->itemService->purchaseBasicItem($team, 'short_sword');
+
+        $this->assertSame(50, $team->getGold());
+        $this->assertSame($team, $item->getOwnerTeam());
+        $this->assertSame('Short Sword', $item->getName());
+        $this->assertSame(ItemSlotType::MainHand, $item->getSlotType());
+        $this->assertSame(100, $item->getDurability());
+        $this->assertSame(['damage' => 10], $item->getBonuses());
+    }
+
+    public function testPurchaseBasicItemInsufficientGold(): void
+    {
+        $team = new Team();
+        $team->setGold(10);
+
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.item_purchase_insufficient_gold');
+
+        $this->itemService->purchaseBasicItem($team, 'short_sword');
     }
 }

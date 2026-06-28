@@ -239,6 +239,8 @@ error:
   item_cannot_dismantle_equipped: Cannot dismantle an equipped item. Unequip it first.
   item_cannot_repair: Listed or unavailable items cannot be repaired.
   item_repair_insufficient_gold: 'Insufficient gold. Repair costs %cost%, available: %available%.'
+  basic_item_invalid: Invalid basic item.
+  item_purchase_insufficient_gold: 'Insufficient gold. Buying this item costs %cost% 🪙, you only have %available% 🪙.'
   spell_already_known: Hero already knows this spell.
   spell_not_equipped: Spell is not equipped.
   spell_slot_range: 'Slot must be between 1 and %capacity% (hero magic capacity).'
@@ -380,6 +382,8 @@ graveyard:
     form: Form
     fatigue: Fatigue
     morale: Morale
+    base_ovr: Base OVR
+    complex_rating: Market Value
 
 news:
   title: News
@@ -453,11 +457,13 @@ financial_crisis:
   title_warning: Financial Warning
   title_restricted: Financial Restrictions
   title_bankruptcy_pending: Bankruptcy Imminent
-  message_warning: "The team has %debt% gold in unpaid debt (weekly maintenance %maintenance% gold). Cut costs or sell assets."
+  message_warning: "The team has %debt% gold in unpaid debt (weekly fixed costs %expenses% gold). Cut costs or sell assets."
   message_restricted: "The team has been in crisis for %weeks% weeks. HQ passive bonuses are suspended and some actions are blocked until debt is repaid."
   message_bankruptcy_pending: "Without action, the team will soon be declared bankrupt. Debt is %debt% gold and cash reserves are exhausted."
   unpaid_debt: Unpaid Debt
   weekly_maintenance: Weekly Maintenance
+  weekly_payroll: Weekly Payroll
+  weekly_expenses: Weekly Fixed Costs
   gold_on_hand: Cash Reserves
   weeks_until_bankruptcy: Weeks Until Bankruptcy
   restricted_hint: "Blocked: HQ upgrades, summoning, marketplace purchases."
@@ -532,6 +538,7 @@ heroes:
   sort_by: "Sort by:"
   sort_name: "Name (A-Z)"
   sort_level: "Level (High-Low)"
+  sort_base_ovr: "OVR (High-Low)"
   sort_age: "Age (Youngest-Oldest)"
   sort_morale: "Morale (Highest)"
   sort_form: "Form (Highest)"
@@ -600,6 +607,13 @@ heroes:
   equipped: Equipped
   school_mastery: School Mastery
   school_mastery_desc: Tier requirements to learn spells.
+  gear_mastery: Gear & Weapon Mastery
+  gear_mastery_desc: Attune to an equipment or weapon style to unlock combat stat bonuses. Swapping gear does not instantly reset, but inactive ones decay daily.
+  active_style: Active Attunement
+  no_style: None (Unarmed)
+  fully_attuned: Fully Attuned (100%)
+  attuning: Attuning (%progress%%)
+  all_masteries: All Weapon & Armor Masteries
   combat_stats: Combat Statistics
   combat_stats_desc: Historical performance metrics.
   matches: Matches
@@ -612,6 +626,18 @@ heroes:
   recent_activity_desc: Last actions performed by this hero.
   no_activity: No training activity recorded.
   details_title: Hero Details
+  rating:
+    base_ovr: OVR
+    complex: Value
+    panel_title: Hero Value
+    panel_desc: Intrinsic ratings without equipment, spells, or team bonuses.
+    tooltip_base: Cross-race comparison (0–100). Uses a human-neutral combat profile.
+    tooltip_complex: Unique intrinsic value (0–9999) including race, trait, mastery, and age.
+    gold_value: Est. Gold Value
+    gold_value_hint: Base economic value derived from complex rating.
+    weekly_salary: Weekly Salary
+    weekly_salary_hint: Charged every Sunday at the weekly reset.
+    dismiss_estimate: "Estimated value: %value% 🪙 (dismiss compensation: %compensation% 🪙)"
   dismiss_title: Dismiss Hero
   dismiss_desc: Permanently release the hero from your team and receive partial compensation (40% of estimated value).
   dismiss_desc_crisis: A fast path to cashflow — dismissal returns part of the hero's value to your treasury.
@@ -622,6 +648,63 @@ heroes:
   sell_btn: List on Marketplace
   sell_confirm: Are you sure you want to list this hero on the marketplace?
   roster_min_hint: "Team must keep at least %min% combat-ready heroes to play matches (currently %current%). This hero cannot be sold or dismissed."
+  derived_stats: "Derived Combat Stats"
+  derived_stats_desc: "Calculated from primary attributes and equipped gear."
+  combat_hp: "Health (HP)"
+  combat_attack: "Physical Attack"
+  combat_spell_power: "Spell Power"
+  combat_armor: "Armor Value"
+  combat_resistance: "Magic Resistance"
+  combat_initiative: "Initiative"
+  combat_accuracy: "Accuracy"
+  combat_dodge: "Dodge"
+  combat_crit: "Critical Hit Chance"
+  trait_label: Personality
+  trait_panel_title: Personality Trait
+  trait_panel_desc: Permanent innate trait assigned at summoning. Cannot be changed or trained away.
+  traits:
+    quick_learner:
+      name: Quick Learner
+      desc: "+20% attribute training speed."
+    clutch:
+      name: Clutch
+      desc: "When HP is 30% or below: +15% accuracy and +10% armor."
+    audience_favorite:
+      name: Audience Favorite
+      desc: "+5% arena ticket revenue when fielded in a match."
+    battle_hardened:
+      name: Battle Hardened
+      desc: Morale drops half as fast when an ally dies.
+    volatile:
+      name: Volatile
+      desc: Morale drops twice as fast when an ally dies.
+    slacker:
+      name: Slacker
+      desc: "-15% attribute training speed."
+    fragile:
+      name: Fragile
+      desc: "-10% maximum HP."
+    glass_jaw:
+      name: Glass Jaw
+      desc: "When HP is 50% or below: takes 10% more physical damage."
+    berserker:
+      name: Berserker
+      desc: "+15% crit chance and 2.0× crit damage, but -8% accuracy."
+    glass_cannon:
+      name: Glass Cannon
+      desc: "+15% spell power, but -10% armor."
+    reckless:
+      name: Reckless
+      desc: "+15% crit chance, but -10% dodge."
+    loner:
+      name: Loner
+      desc: Ignores both positive and negative race synergy bonuses.
+    overconfident:
+      name: Overconfident
+      desc: "+10% physical attack, but -8% accuracy."
+    perfectionist:
+      name: Perfectionist
+      desc: Consistent damage without RNG variance, but -10% training speed.
 
 summoning:
   title: Summoning Chamber
@@ -709,6 +792,8 @@ finance:
   type_hq_downgrade_refund: Facility Downgrade Refund
   type_hq_upgrade_refund: Facility Upgrade Cancellation Refund
   type_kingdom_reward: Kingdom Reward
+  type_hero_salary: Hero Salaries
+  type_trainer_salary: Trainer Salaries
   actor_system: System
   actor_active: Active Action
   actor_passive: Passive Effect
@@ -719,6 +804,8 @@ hq:
   compound_level: Compound Level
   weekly_maintenance: Weekly Maintenance
   weekly_maintenance_hint: Charged every Sunday at the weekly reset
+  weekly_payroll: Weekly Payroll
+  weekly_payroll_hint: Hero and trainer salaries charged every Sunday at the weekly reset
   active_optimization: Arena Adaptation
   adapted_for: Adapted for
   roster_limit: Roster Limit
@@ -916,6 +1003,17 @@ inventory:
   equipped_by: "Equipped by %hero%"
   available: Available
   unequip: Unequip
+  cat_weapon: "Weapon"
+  cat_shield: "Shield"
+  cat_spell_accelerator: "Spell Accel."
+  cat_armor: "Armor"
+  cat_accessory: "Accessory"
+  stat_damage: "Damage"
+  stat_armor: "Armor"
+  stat_spell_power: "Spell Power"
+  stat_resistance: "Resistance"
+  stat_str: "STR"
+  stat_ranged: "Ranged"
 
 spells:
   title: Spellbook & Academy
@@ -1237,6 +1335,17 @@ marketplace:
   title: Marketplace
   subtitle: Buy and sell heroes, items, and trainers with other players.
   tab_browse: Browse Listings
+  tab_basic_equipment: Basic Equipment
+  basic_equipment_title: Basic Equipment Shop
+  basic_equipment_subtitle: Buy basic gear for your heroes directly from the royal storehouse.
+  col_item_name: Item Name
+  col_category: Category
+  col_slot: Slot
+  col_bonuses: Bonuses
+  btn_buy: Buy
+  insufficient_gold: Insufficient Gold
+  confirm_buy_basic: "Do you really want to buy %item% for %cost% 🪙?"
+  flash_basic_item_purchased: "Item %item% was successfully purchased for %cost% 🪙."
   tab_sell: Sell
   tab_my_listings: My Listings
   tab_history: Transaction History
@@ -1250,9 +1359,30 @@ marketplace:
   filter_all_rarities: All Rarities
   filter_search: Search by name...
   filter_sort: Sort by
+  filter_rating_min: Min Value
+  filter_rating_max: Max Value
+  filter_rating_placeholder: Any
+  filter_level_min: Min Level
+  filter_level_max: Max Level
+  filter_level_placeholder: Any
+  filter_ovr_min: Min OVR
+  filter_ovr_max: Max OVR
+  filter_ovr_placeholder: Any
+  filter_age_phase: Age Phase
+  filter_all_age_phases: All Phases
+  filter_price_min: Min Price
+  filter_price_max: Max Price
+  filter_price_placeholder: Any
+  filter_seller_reputation_min: Min Seller Reputation
+  filter_seller_reputation_placeholder: Any
+  label_seller_reputation: "Rep. %value%"
+  suggested_price: Suggested price
+  btn_use_suggested_price: Use suggested
   sort_newest: Newest First
   sort_price_asc: "Price: Low-High"
   sort_price_desc: "Price: High-Low"
+  sort_rating_desc: "Value (High-Low)"
+  sort_ovr_desc: "OVR (High-Low)"
   sort_expires_asc: Ending Soon
   sort_name_asc: "Name (A-Z)"
   sort_name_desc: "Name (Z-A)"
@@ -1525,6 +1655,53 @@ email:
     greeting: "Hi %displayName%,"
     body: "Your team \"%teamName%\" was released due to prolonged inactivity. You may claim a new team in %cooldownDays% days."
     note: "Your account remains active. After the cooldown, log in to claim another team."
+
+item:
+  short_sword: "Short Sword"
+  short_bow: "Short Bow"
+  wooden_shield: "Wooden Shield"
+  apprentice_wand: "Apprentice Wand"
+  leather_helmet: "Leather Helmet"
+  leather_jerkin: "Leather Jerkin"
+  leather_gloves: "Leather Gloves"
+  leather_boots: "Leather Boots"
+  copper_ring: "Copper Ring"
+  silver_amulet: "Silver Amulet"
+  chain_coif: "Chain Coif"
+  chain_hauberk: "Chain Hauberk"
+  chain_gloves: "Chain Gloves"
+  chain_boots: "Chain Boots"
+  iron_helmet: "Iron Helmet"
+  plate_armor: "Plate Armor"
+  iron_gauntlets: "Iron Gauntlets"
+  iron_greaves: "Iron Greaves"
+  greatsword: "Iron Greatsword"
+  hand_axe: "Hand Axe"
+  battle_axe: "Battle Axe"
+  flanged_mace: "Flanged Mace"
+  warhammer: "Warhammer"
+  iron_dagger: "Iron Dagger"
+  light_crossbow: "Light Crossbow"
+  wooden_wand: "Wooden Wand"
+  wooden_staff: "Wooden Staff"
+
+weapon_style:
+  one_handed_sword: One-Handed Sword
+  two_handed_sword: Two-Handed Sword
+  one_handed_axe: One-Handed Axe
+  two_handed_axe: Two-Handed Axe
+  one_handed_mace: One-Handed Mace
+  two_handed_mace: Two-Handed Mace
+  dagger: Dagger
+  bow: Bow
+  crossbow: Crossbow
+  wand: Wand
+  staff: Staff
+  shield: Shield
+  spell_accelerator: Spell Accelerator
+  light_armor: Light Armor
+  medium_armor: Medium Armor
+  heavy_armor: Heavy Armor
 
 
 

@@ -42,7 +42,13 @@ class GraveyardPresenterTest extends TestCase
             ->with($team, null, null, null, null)
             ->willReturn([$memorial]);
 
-        $presenter = new GraveyardPresenter($repository, new GraveyardService($this->createMock(EntityManagerInterface::class)));
+        $presenter = new GraveyardPresenter(
+            $repository,
+            new GraveyardService(
+                $this->createMock(EntityManagerInterface::class),
+                $this->createMock(\App\Service\Hero\HeroRatingCalculator::class),
+            ),
+        );
 
         $summary = $presenter->presentSummary($team);
         $list = $presenter->presentListForTeam($team);
