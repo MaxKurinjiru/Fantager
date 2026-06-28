@@ -60,10 +60,13 @@ class HeroMasteryServiceTest extends TestCase
 
         $item4 = new Item(); // Null subType (accessory)
 
-        $this->itemRepositoryMock->expects($this->once())
+        $this->itemRepositoryMock
             ->method('findBy')
-            ->with(['equippedHero' => $hero])
-            ->willReturn([$item1, $item2, $item3, $item4]);
+            ->willReturnCallback(static function (array $criteria) use ($hero, $item1, $item2, $item3, $item4): array {
+                self::assertSame(['equippedHero' => $hero], $criteria);
+
+                return [$item1, $item2, $item3, $item4];
+            });
 
         $subTypes = $this->masteryService->getEquippedSubTypes($hero);
 
@@ -82,10 +85,13 @@ class HeroMasteryServiceTest extends TestCase
         $wm->setXp(90);
         $wm->setMasteryTier(1);
 
-        $this->weaponMasteryRepositoryMock->expects($this->once())
+        $this->weaponMasteryRepositoryMock
             ->method('findOneBy')
-            ->with(['hero' => $hero, 'style' => ItemSubType::OneHandedSword])
-            ->willReturn($wm);
+            ->willReturnCallback(static function (array $criteria) use ($hero, $wm): WeaponMastery {
+                self::assertSame(['hero' => $hero, 'style' => ItemSubType::OneHandedSword], $criteria);
+
+                return $wm;
+            });
 
         $this->masteryService->addWeaponMasteryXp($hero, ItemSubType::OneHandedSword, 15);
 

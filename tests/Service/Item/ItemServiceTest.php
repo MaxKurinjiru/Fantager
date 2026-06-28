@@ -93,14 +93,27 @@ class ItemServiceTest extends TestCase
         $team = new Team();
         $team->setGold(100);
 
-        $this->symfonyTranslatorMock->expects($this->once())
+        $this->symfonyTranslatorMock
             ->method('trans')
-            ->with('item.short_sword', [], 'messages', 'cs')
-            ->willReturn('Short Sword');
+            ->willReturnCallback(static function (
+                string $id,
+                array $params = [],
+                ?string $domain = null,
+                ?string $locale = null,
+            ): string {
+                self::assertSame('item.short_sword', $id);
+                self::assertSame([], $params);
+                self::assertSame('messages', $domain);
+                self::assertSame('cs', $locale);
 
-        $this->entityManagerMock->expects($this->once())
+                return 'Short Sword';
+            });
+
+        $this->entityManagerMock
             ->method('persist')
-            ->with($this->isInstanceOf(Item::class));
+            ->willReturnCallback(static function (object $entity): void {
+                self::assertInstanceOf(Item::class, $entity);
+            });
         $this->entityManagerMock->expects($this->once())
             ->method('flush');
 

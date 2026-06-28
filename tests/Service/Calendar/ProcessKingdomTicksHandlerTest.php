@@ -210,11 +210,13 @@ class ProcessKingdomTicksHandlerTest extends TestCase
 
         $this->setupQueryBuilderMock(1);
 
-        // Orchestrator MUST be called once on success
+        // Orchestrator MUST be called once on success with this kingdom
         $this->orchestratorMock
             ->expects($this->once())
             ->method('orchestrate')
-            ->with($kingdom);
+            ->willReturnCallback(static function (Kingdom $actualKingdom) use ($kingdom): void {
+                TestCase::assertSame($kingdom, $actualKingdom);
+            });
 
         // Run the handler
         $message = new ExecuteSingleTickMessage(1);
