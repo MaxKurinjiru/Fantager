@@ -33,6 +33,7 @@ class LeagueMatchResolutionService
         private readonly FanClubService $fanClubService,
         private readonly TeamMoraleReputationService $teamMoraleReputationService,
         private readonly TeamChronicleService $teamChronicleService,
+        private readonly \App\Service\Hero\HeroMasteryService $heroMasteryService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -81,6 +82,24 @@ class LeagueMatchResolutionService
 
         $battle = $this->createBattle($fixture, $outcome, $processedAt);
         $this->em->persist($battle);
+
+        // Process Hero Mastery participation for active heroes in both formations
+        $homeFormation = $fixture->getHomeFormation();
+        if (null !== $homeFormation) {
+            foreach ($homeFormation->getSlots() as $slot) {
+                if (null !== $slot->getHero()) {
+                    $this->heroMasteryService->processMatchParticipation($slot->getHero());
+                }
+            }
+        }
+        $awayFormation = $fixture->getAwayFormation();
+        if (null !== $awayFormation) {
+            foreach ($awayFormation->getSlots() as $slot) {
+                if (null !== $slot->getHero()) {
+                    $this->heroMasteryService->processMatchParticipation($slot->getHero());
+                }
+            }
+        }
 
         $this->teamChronicleService->recordBattleOutcome(
             $homeTeam,

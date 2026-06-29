@@ -6,6 +6,7 @@ namespace App\Service\Hero;
 
 use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
+use App\Enum\HeroTrait;
 use App\Enum\Race;
 use App\Service\Config\RaceConfig;
 
@@ -194,6 +195,13 @@ class HeroGenerator
         $hero->setWilRaw(min(200, $stats['wil'] * 10 + random_int(0, 9)));
         $hero->setChaRaw(min(200, $stats['cha'] * 10 + random_int(0, 9)));
         $hero->setLckRaw(min(200, $stats['lck'] * 10 + random_int(0, 9)));
+
+        // 60% šance na přiřazení osobnostního rysu (trait).
+        // 40 % hrdinů nemá žádný trait — to je záměr (trait = výjimečná vlastnost).
+        if (random_int(1, 100) <= 60) {
+            $traitCases = HeroTrait::cases();
+            $hero->setTrait($traitCases[array_rand($traitCases)]);
+        }
 
         return $hero;
     }

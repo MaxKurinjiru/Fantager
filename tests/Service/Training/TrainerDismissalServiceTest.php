@@ -9,9 +9,11 @@ use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use App\Enum\Race;
+use App\Config\HeroRatingConfig;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Graveyard\GraveyardService;
+use App\Service\Hero\HeroRatingCalculator;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\Exception\UserFacingException;
 use App\Service\Training\TrainerDismissalService;
@@ -22,28 +24,27 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class TrainerDismissalServiceTest extends TestCase
 {
-    public function testEstimateTrainerValueUsesStatSum(): void
+    public function testEstimateTrainerValueUsesRatingCalculator(): void
     {
+        $ratingCalculator = $this->createMock(HeroRatingCalculator::class);
+        $ratingCalculator->expects($this->once())
+            ->method('estimateGoldValue')
+            ->willReturn(420);
+
         $service = new TrainerDismissalService(
             $this->createMock(GraveyardService::class),
             $this->createMock(EconomyService::class),
             $this->createMock(FinancialCrisisService::class),
             $this->createMock(TeamChronicleService::class),
+            $ratingCalculator,
+            new HeroRatingConfig(dirname(__DIR__, 3)),
             $this->createMock(EntityManagerInterface::class),
         );
 
         $trainer = new Hero();
         $trainer->setRole(HeroRole::Trainer);
-        $trainer->setStrRaw(50);
-        $trainer->setDexRaw(50);
-        $trainer->setKonRaw(50);
-        $trainer->setSpdRaw(50);
-        $trainer->setIntelRaw(50);
-        $trainer->setWilRaw(50);
-        $trainer->setChaRaw(50);
-        $trainer->setLckRaw(50);
 
-        $this->assertSame(120, $service->estimateTrainerValue($trainer));
+        $this->assertSame(420, $service->estimateTrainerValue($trainer));
     }
 
     public function testDismissRejectsNonActiveTrainer(): void
@@ -53,6 +54,8 @@ class TrainerDismissalServiceTest extends TestCase
             $this->createMock(EconomyService::class),
             $this->createMock(FinancialCrisisService::class),
             $this->createMock(TeamChronicleService::class),
+            $this->createMock(HeroRatingCalculator::class),
+            new HeroRatingConfig(dirname(__DIR__, 3)),
             $this->createMock(EntityManagerInterface::class),
         );
 

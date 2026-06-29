@@ -11,16 +11,18 @@ use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\MemorialCause;
 use App\Exception\UserFacingException;
+use App\Service\Hero\HeroRatingCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 
 class GraveyardService
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly HeroRatingCalculator $heroRatingCalculator,
     ) {
     }
 
-    public function recordMemorial(Hero $hero, Team $team, MemorialCause $cause, ?\DateTimeImmutable $date = null): GraveyardMemorial
+    public function createMemorial(Hero $hero, Team $team, MemorialCause $cause, ?\DateTimeImmutable $date = null): GraveyardMemorial
     {
         $date ??= new \DateTimeImmutable();
 
@@ -35,6 +37,13 @@ class GraveyardService
         $record->setFinalStats($this->buildStatsSnapshot($hero));
         $record->setDepartedAt($date);
         $record->setOriginalHeroId($hero->getId());
+
+        return $record;
+    }
+
+    public function recordMemorial(Hero $hero, Team $team, MemorialCause $cause, ?\DateTimeImmutable $date = null): GraveyardMemorial
+    {
+        $record = $this->createMemorial($hero, $team, $cause, $date);
 
         $this->em->persist($record);
 
@@ -117,6 +126,10 @@ class GraveyardService
             $stats['fatigue'] = $hero->getFatigue();
             $stats['morale'] = $hero->getMorale();
         }
+
+        $rating = $this->heroRatingCalculator->calculate($hero);
+        $stats['base_ovr'] = $rating->getBaseOvr();
+        $stats['complex_rating'] = $rating->getComplexRating();
 
         return $stats;
     }

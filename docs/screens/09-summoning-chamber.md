@@ -20,6 +20,9 @@ Displayed Information:
 - Recent Summons (history subtab):
 	- Recently acquired heroes
 	- Their basic stats
+- **Summon reveal card** (after successful `POST /api/v1/summoning`):
+	- Name, race, level, primary attributes
+	- **Personality trait badge** when the generated hero has a trait (~60% chance)
 
 Possible Actions/Buttons:
 - Summon Hero (pulls a random compatible race based on the team's arena adaptation)
@@ -32,3 +35,5 @@ Backend Requirements:
 Implementation:
 - **Panel route:** `/app/hq?facility=summoning_chamber`
 - **Stimulus:** `summoning_controller.js` (embedded in HQ panel)
+- **Trait UI:** `data-summoning-traits-value` from `hero_trait_js_labels()`; reveal target `heroTrait` in `portal_chamber.html.twig`
+- **API:** Summon response uses `HeroService::serialize()` — includes nullable `trait` field

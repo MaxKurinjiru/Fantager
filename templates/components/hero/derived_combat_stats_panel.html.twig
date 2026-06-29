@@ -1,0 +1,49 @@
+{# templates/components/hero/derived_combat_stats_panel.html.twig #}
+{% set combat_stats = hero_combat_stats(hero) %}
+<div class="hero-panel">
+    <div>
+        <h2 class="hero-panel__title hero-panel__title--tight">{{ 'heroes.derived_stats'|trans }}</h2>
+        <p class="hero-panel__desc">{{ 'heroes.derived_stats_desc'|trans }}</p>
+    </div>
+
+    <div class="stat-tile-grid">
+        <div class="stat-tile" title="{{ 'heroes.combat_hp'|trans }}">
+            <span class="stat-tile__label">❤️ {{ 'heroes.combat_hp'|trans }}</span>
+            <span class="stat-tile__value">{{ combat_stats.maxHp }}</span>
+        </div>
+        <div class="stat-tile" title="{{ 'heroes.combat_attack'|trans }}">
+            <span class="stat-tile__label">⚔️ {{ 'heroes.combat_attack'|trans }}</span>
+            <span class="stat-tile__value">{{ combat_stats.physicalAttack }}</span>
+        </div>
+        <div class="stat-tile" title="{{ 'heroes.combat_spell_power'|trans }}">
+            <span class="stat-tile__label">🔮 {{ 'heroes.combat_spell_power'|trans }}</span>
+            <span class="stat-tile__value">{{ combat_stats.spellPower }}</span>
+        </div>
+        <div class="stat-tile" title="{{ 'heroes.combat_armor'|trans }}">
+            <span class="stat-tile__label">🛡️ {{ 'heroes.combat_armor'|trans }}</span>
+            <span class="stat-tile__value">{{ combat_stats.armorValue }}</span>
+            <span class="stat-tile__note">(-{{ (combat_stats.physicalDamageReduction * 100)|number_format(1) }}%)</span>
+        </div>
+        <div class="stat-tile" title="{{ 'heroes.combat_resistance'|trans }}">
+            <span class="stat-tile__label">🌀 {{ 'heroes.combat_resistance'|trans }}</span>
+            <span class="stat-tile__value">{{ combat_stats.magicResistance }}</span>
+            <span class="stat-tile__note">(-{{ (combat_stats.magicDamageReduction * 100)|number_format(1) }}%)</span>
+        </div>
+        <div class="stat-tile" title="{{ 'heroes.combat_initiative'|trans }}">
+            <span class="stat-tile__label">⚡ {{ 'heroes.combat_initiative'|trans }}</span>
+            <span class="stat-tile__value">{{ combat_stats.baseInitiative }}</span>
+        </div>
+        <div class="stat-tile" title="{{ 'heroes.combat_accuracy'|trans }}">
+            <span class="stat-tile__label">🎯 {{ 'heroes.combat_accuracy'|trans }}</span>
+            <span class="stat-tile__value">{{ combat_stats.accuracyPercent|number_format(1) }}%</span>
+        </div>
+        <div class="stat-tile" title="{{ 'heroes.combat_dodge'|trans }}">
+            <span class="stat-tile__label">👣 {{ 'heroes.combat_dodge'|trans }}</span>
+            <span class="stat-tile__value">{{ combat_stats.dodgePercent|number_format(1) }}%</span>
+        </div>
+        <div class="stat-tile" title="{{ 'heroes.combat_crit'|trans }}">
+            <span class="stat-tile__label">🍀 {{ 'heroes.combat_crit'|trans }}</span>
+            <span class="stat-tile__value">{{ combat_stats.critPercent|number_format(1) }}%</span>
+        </div>
+    </div>
+</div>

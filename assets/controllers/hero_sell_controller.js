@@ -4,10 +4,11 @@ import { csrfHeaders } from '../utils/csrf.js';
 import { showConfirm } from '../utils/confirm.js';
 
 export default class extends Controller {
-    static targets = ['sellAlert', 'sellAlertMessage', 'modeSelect', 'buyoutContainer', 'priceLabel'];
+    static targets = ['sellAlert', 'sellAlertMessage', 'modeSelect', 'buyoutContainer', 'priceLabel', 'priceInput', 'suggestedPriceRow', 'suggestedPriceValue'];
 
     static values = {
         heroId: Number,
+        suggestedPrice: { type: Number, default: 0 },
         titleSell: String,
         confirmSell: String,
         errorSell: String,
@@ -33,6 +34,30 @@ export default class extends Controller {
                 ? this.priceLabelAuctionValue
                 : this.priceLabelBuyNowValue;
         }
+    }
+
+    applySuggestedPrice(event) {
+        event.preventDefault();
+        if (!this.hasPriceInputTarget) {
+            return;
+        }
+
+        const price = this.hasSuggestedPriceValue
+            ? this.suggestedPriceValue
+            : this._parseSuggestedPriceFromDom();
+
+        if (price > 0) {
+            this.priceInputTarget.value = String(price);
+        }
+    }
+
+    _parseSuggestedPriceFromDom() {
+        if (!this.hasSuggestedPriceValueTarget) {
+            return 0;
+        }
+
+        const raw = this.suggestedPriceValueTarget.textContent.replace(/[^\d]/g, '');
+        return parseInt(raw, 10) || 0;
     }
 
     async submit(e) {

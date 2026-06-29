@@ -9,6 +9,7 @@ Displayed Information:
 	- Hero name
 	- Race (icon)
 	- Level
+	- **Personality trait** (badge when present — name + category color; tooltip with effect description)
 	- Age (+ phase icon: Junior/Prime/Veteran/Elder)
 	- Primary stats (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) - compact display
 	- Form (%)
@@ -36,7 +37,9 @@ Backend Requirements:
 - Heroes list endpoint with filtering/sorting parameters
 - Batch operations support
 
-Sections to fill:
+Implementation:
+- **Twig:** `templates/components/hero/card.html.twig` includes `trait_badge.html.twig` (compact) when `hero.trait` is set.
+- **i18n:** `heroes.traits.{key}.name` / `.desc` — see [hero-system.md](../systems/hero-system.md) § Player UI.
 - Display data contract (fields returned by API)
 - Actions and API calls
 - Validation and server-side checks

@@ -12,6 +12,7 @@ export default class extends Controller {
         'heroName',
         'heroRace',
         'heroLevel',
+        'heroTrait',
         'heroStats',
         'errorMessage',
         'errorAlert',
@@ -27,7 +28,8 @@ export default class extends Controller {
         limitReached: String,
         levelLabel: String,
         races: Object,
-        statLabels: Object
+        statLabels: Object,
+        traits: Object
     };
 
     connect() {
@@ -81,6 +83,7 @@ export default class extends Controller {
         const raceName = (this.hasRacesValue && this.racesValue[hero.race]) || (hero.race.charAt(0).toUpperCase() + hero.race.slice(1));
         this.heroRaceTarget.textContent = raceName;
         this.heroLevelTarget.textContent = `${this.levelLabelValue} ${hero.level}`;
+        this.renderTraitBadge(this.heroTraitTarget, hero.trait);
 
         // Map race icons
         const raceIcons = {
@@ -162,5 +165,34 @@ export default class extends Controller {
         if (this.hasErrorAlertTarget) {
             hideAlert(this.errorAlertTarget);
         }
+    }
+
+    renderTraitBadge(container, traitKey) {
+        if (!container) {
+            return;
+        }
+
+        if (!traitKey || !this.hasTraitsValue || !this.traitsValue[traitKey]) {
+            container.classList.add('hidden');
+            container.replaceChildren();
+            return;
+        }
+
+        const trait = this.traitsValue[traitKey];
+        container.className = `summoning-reveal-card__trait hero-trait-badge hero-trait-badge--${trait.category}`;
+        container.title = trait.desc;
+        container.replaceChildren();
+
+        const icon = document.createElement('span');
+        icon.className = 'hero-trait-badge__icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = trait.icon;
+
+        const label = document.createElement('span');
+        label.className = 'hero-trait-badge__label';
+        label.textContent = trait.name;
+
+        container.append(icon, label);
+        container.classList.remove('hidden');
     }
 }

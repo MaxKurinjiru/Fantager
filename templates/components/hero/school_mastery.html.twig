@@ -9,25 +9,69 @@
         {% set schools = ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
         {% for school in schools %}
             {% set mastery_tier = 1 %}
+            {% set school_xp = 0 %}
             {% for sm in hero.schoolMasteries %}
                 {% if sm.school.value == school %}
                     {% set mastery_tier = sm.masteryTier %}
-                    {% endif %}
+                    {% set school_xp = sm.xp %}
+                {% endif %}
             {% endfor %}
             
-            <div class="hero-school-mastery__cell">
-                <div class="layout-cluster layout-cluster--sm">
-                    <span class="hero-school-mastery__icon">
-                        {% if school == 'fire' %}🔥
-                        {% elseif school == 'water' %}💧
-                        {% elseif school == 'air' %}💨
-                        {% elseif school == 'earth' %}🪨
-                        {% elseif school == 'light' %}☀️
-                        {% else %}🌙{% endif %}
-                    </span>
-                    <span class="hero-school-mastery__label">{{ ('school.' ~ school)|trans }}</span>
+            {% set next_req = 100 %}
+            {% set relative_xp = school_xp %}
+            {% set relative_req = 100 %}
+
+            {% if mastery_tier == 1 %}
+                {% set next_req = 100 %}
+                {% set relative_xp = school_xp %}
+                {% set relative_req = 100 %}
+            {% elseif mastery_tier == 2 %}
+                {% set next_req = 300 %}
+                {% set relative_xp = school_xp - 100 %}
+                {% set relative_req = 200 %}
+            {% elseif mastery_tier == 3 %}
+                {% set next_req = 600 %}
+                {% set relative_xp = school_xp - 300 %}
+                {% set relative_req = 300 %}
+            {% elseif mastery_tier == 4 %}
+                {% set next_req = 1000 %}
+                {% set relative_xp = school_xp - 600 %}
+                {% set relative_req = 400 %}
+            {% else %}
+                {% set next_req = 1000 %}
+                {% set relative_xp = 1 %}
+                {% set relative_req = 1 %}
+            {% endif %}
+
+            {% set progress_pct = (relative_xp / relative_req * 100)|round(0, 'floor') %}
+            {% if mastery_tier == 5 %}
+                {% set progress_pct = 100 %}
+            {% endif %}
+
+            <div class="hero-mastery-card">
+                <div class="layout-cluster layout-cluster--sm layout-cluster--between">
+                    <div class="layout-cluster layout-cluster--sm">
+                        <span class="hero-school-mastery__icon">
+                            {% if school == 'fire' %}🔥
+                            {% elseif school == 'water' %}💧
+                            {% elseif school == 'air' %}💨
+                            {% elseif school == 'earth' %}🪨
+                            {% elseif school == 'light' %}☀️
+                            {% else %}🌙{% endif %}
+                        </span>
+                        <span class="hero-school-mastery__label">{{ ('school.' ~ school)|trans }}</span>
+                    </div>
+                    <span class="hero-school-mastery__tier">T{{ mastery_tier }}</span>
                 </div>
-                <span class="hero-school-mastery__tier">T{{ mastery_tier }}</span>
+                <div class="hero-mastery-card__meta">
+                    <span>XP: {{ school_xp }} / {{ next_req }}</span>
+                    {% if mastery_tier == 5 %}<span>MAX</span>{% else %}<span>{{ progress_pct }}%</span>{% endif %}
+                </div>
+                {% include 'components/ui/progress_bar.html.twig' with {
+                    percentage: progress_pct,
+                    container_class: 'ui-progress ui-progress--compact',
+                    progress_class: 'ui-progress__fill ui-progress__fill--accent'
+                } %}
             </div>
         {% endfor %}
     </div>

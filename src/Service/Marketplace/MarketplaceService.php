@@ -20,12 +20,15 @@ use App\Enum\ListingMode;
 use App\Enum\ListingStatus;
 use App\Enum\ListingType;
 use App\Enum\NotificationType;
+use App\Enum\Race;
 use App\Enum\RoyalTreasuryContributionSource;
 use App\Enum\TransactionType;
 use App\Exception\UserFacingException;
+use App\Service\Config\RaceConfig;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
+use App\Service\Hero\HeroRatingCalculator;
 use App\Service\Notification\NotificationHelper;
 use App\Service\Team\TeamChemistryService;
 use App\Service\Team\TeamRosterService;
@@ -42,6 +45,8 @@ class MarketplaceService
         private readonly TeamRosterService $teamRosterService,
         private readonly \App\Service\TeamChronicle\TeamChronicleService $teamChronicleService,
         private readonly TeamChemistryService $teamChemistryService,
+        private readonly HeroRatingCalculator $heroRatingCalculator,
+        private readonly RaceConfig $raceConfig,
     ) {
     }
 
@@ -583,6 +588,12 @@ class MarketplaceService
      *     rarity?: string|null,
      *     price_min?: string|null,
      *     price_max?: string|null,
+     *     rating_min?: string|null,
+     *     rating_max?: string|null,
+     *     base_ovr_min?: string|null,
+     *     base_ovr_max?: string|null,
+     *     age_phase?: string|null,
+     *     seller_reputation_min?: string|null,
      *     search?: string|null,
      *     sort?: string|null
      * } $filters
@@ -609,10 +620,20 @@ class MarketplaceService
         $rarity = $filters['rarity'] ?? null;
         $priceMin = $filters['price_min'] ?? null;
         $priceMax = $filters['price_max'] ?? null;
+        $ratingMin = $filters['rating_min'] ?? null;
+        $ratingMax = $filters['rating_max'] ?? null;
+        $baseOvrMin = $filters['base_ovr_min'] ?? null;
+        $baseOvrMax = $filters['base_ovr_max'] ?? null;
+        $agePhase = $filters['age_phase'] ?? null;
+        $sellerReputationMin = $filters['seller_reputation_min'] ?? null;
         $search = $filters['search'] ?? null;
 
-        if ($race || $levelMin || $levelMax || $search) {
+        if ($race || $levelMin || $levelMax || $ratingMin || $ratingMax || $baseOvrMin || $baseOvrMax || $agePhase || $search) {
             $qb->leftJoin('l.hero', 'h');
+        }
+
+        if ($sellerReputationMin) {
+            $qb->join('l.sellerTeam', 'st');
         }
 
         if ($rarity || $search) {
@@ -632,6 +653,35 @@ class MarketplaceService
         if (null !== $levelMax && '' !== $levelMax) {
             $qb->andWhere('h.level <= :levelMax')
                 ->setParameter('levelMax', (int) $levelMax);
+        }
+
+        if (null !== $ratingMin && '' !== $ratingMin) {
+            $qb->andWhere('h.complexRating >= :ratingMin')
+                ->setParameter('ratingMin', (int) $ratingMin);
+        }
+
+        if (null !== $ratingMax && '' !== $ratingMax) {
+            $qb->andWhere('h.complexRating <= :ratingMax')
+                ->setParameter('ratingMax', (int) $ratingMax);
+        }
+
+        if (null !== $baseOvrMin && '' !== $baseOvrMin) {
+            $qb->andWhere('h.baseOvr >= :baseOvrMin')
+                ->setParameter('baseOvrMin', (int) $baseOvrMin);
+        }
+
+        if (null !== $baseOvrMax && '' !== $baseOvrMax) {
+            $qb->andWhere('h.baseOvr <= :baseOvrMax')
+                ->setParameter('baseOvrMax', (int) $baseOvrMax);
+        }
+
+        if (null !== $agePhase && '' !== $agePhase) {
+            $this->applyAgePhaseFilter($qb, (string) $agePhase);
+        }
+
+        if (null !== $sellerReputationMin && '' !== $sellerReputationMin) {
+            $qb->andWhere('st.reputation >= :sellerReputationMin')
+                ->setParameter('sellerReputationMin', (int) $sellerReputationMin);
         }
 
         if ($rarity) {
@@ -657,6 +707,59 @@ class MarketplaceService
         return $qb;
     }
 
+    private function applyAgePhaseFilter(\Doctrine\ORM\QueryBuilder $qb, string $agePhase): void
+    {
+        $orX = $qb->expr()->orX();
+        $index = 0;
+
+        foreach (Race::cases() as $race) {
+            $bounds = $this->resolveAgePhaseRawBounds($race, $agePhase);
+            if (null === $bounds) {
+                continue;
+            }
+
+            [$minRaw, $maxRaw] = $bounds;
+            $parts = ['h.race = :agePhaseRace'.$index];
+            $qb->setParameter('agePhaseRace'.$index, $race->value);
+
+            if (null !== $minRaw) {
+                $parts[] = 'h.age >= :agePhaseMin'.$index;
+                $qb->setParameter('agePhaseMin'.$index, $minRaw);
+            }
+
+            if (null !== $maxRaw) {
+                $parts[] = 'h.age <= :agePhaseMax'.$index;
+                $qb->setParameter('agePhaseMax'.$index, $maxRaw);
+            }
+
+            $orX->add(implode(' AND ', $parts));
+            ++$index;
+        }
+
+        if ($orX->count() > 0) {
+            $qb->andWhere($orX);
+        }
+    }
+
+    /**
+     * @return array{0: ?int, 1: ?int}|null
+     */
+    private function resolveAgePhaseRawBounds(Race $race, string $agePhase): ?array
+    {
+        $milestones = $this->raceConfig->getAge($race);
+        $maxJunior = $milestones['max_junior'];
+        $primeLimit = $milestones['prime_limit'];
+        $mortalityThreshold = $milestones['mortality_threshold'];
+
+        return match ($agePhase) {
+            'junior' => [null, $maxJunior * 10 + 9],
+            'prime' => [$maxJunior * 10 + 10, $primeLimit * 10 + 9],
+            'veteran' => [$primeLimit * 10 + 10, max(0, $mortalityThreshold - 1) * 10 + 9],
+            'elder' => [$mortalityThreshold * 10, null],
+            default => null,
+        };
+    }
+
     /**
      * @param array<string, mixed> $filters
      *
@@ -673,6 +776,14 @@ class MarketplaceService
                 break;
             case 'price_desc':
                 $qb->orderBy('l.priceGold', 'DESC');
+                break;
+            case 'rating_desc':
+                $qb->leftJoin('l.hero', 'h_sort');
+                $qb->orderBy('h_sort.complexRating', 'DESC');
+                break;
+            case 'ovr_desc':
+                $qb->leftJoin('l.hero', 'h_sort');
+                $qb->orderBy('h_sort.baseOvr', 'DESC');
                 break;
             case 'expires_asc':
                 $qb->orderBy('l.expiresAt', 'ASC');
@@ -793,6 +904,7 @@ class MarketplaceService
         $entityData = null;
         if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
             $hero = $listing->getHero();
+            $rating = $this->heroRatingCalculator->calculate($hero);
             $entityData = [
                 'id' => $hero->getId(),
                 'name' => $hero->getName(),
@@ -810,6 +922,11 @@ class MarketplaceService
                 'form' => $hero->getForm(),
                 'fatigue' => $hero->getFatigue(),
                 'morale' => $hero->getMorale(),
+                'trait' => $hero->getTrait()?->value,
+                'ratings' => [
+                    'base_ovr' => $rating->getBaseOvr(),
+                    'complex_rating' => $rating->getComplexRating(),
+                ],
             ];
         } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
             $item = $listing->getItem();
@@ -824,6 +941,7 @@ class MarketplaceService
             ];
         } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
             $trainer = $listing->getHero();
+            $rating = $this->heroRatingCalculator->calculate($trainer);
             $entityData = [
                 'id' => $trainer->getId(),
                 'name' => $trainer->getName(),
@@ -837,6 +955,10 @@ class MarketplaceService
                 'wil' => $trainer->getWil(),
                 'cha' => $trainer->getCha(),
                 'lck' => $trainer->getLck(),
+                'ratings' => [
+                    'base_ovr' => $rating->getBaseOvr(),
+                    'complex_rating' => $rating->getComplexRating(),
+                ],
             ];
         }
 
@@ -851,6 +973,7 @@ class MarketplaceService
             'seller_team' => [
                 'id' => $listing->getSellerTeam()->getId(),
                 'name' => $listing->getSellerTeam()->getName(),
+                'reputation' => $listing->getSellerTeam()->getReputation(),
             ],
             'highest_bid' => $highestBid ? [
                 'amount' => $highestBid->getBidAmount(),

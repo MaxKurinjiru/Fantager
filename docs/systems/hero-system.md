@@ -18,6 +18,8 @@ Summary:
 - Heroes are defined by race, age, primary attributes (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) in the **1–20** range, and secondary stats (form, fatigue, morale).
 - No rarity or class: value derives from training and equipment.
 
+See [hero-rating-system.md](hero-rating-system.md) for **base OVR** (0–100, cross-race) and **complex rating** (0–9999, intrinsic hero value for economy).
+
 ## Attribute calculations and derived stats
 
 ### Hero Generation & Stat Capping
@@ -88,4 +90,117 @@ Edge cases:
 - Ensure death is final; move to Graveyard with immutable record
 - Aging and mortality processing must be idempotent per tick
 
+## Weapon & Magic School Mastery
 
+To support distinct playstyles, heroes can gain experience and level up their mastery in specific weapon types and magic schools.
+
+### 1. Weapon & Gear Types
+Masteries and attunement are tracked individually for the following 13 types of equipment:
+- **Swords:** `one_handed_sword`, `two_handed_sword`
+- **Axes:** `one_handed_axe`, `two_handed_axe`
+- **Maces:** `one_handed_mace`, `two_handed_mace`
+- **Daggers:** `dagger`
+- **Ranged:** `bow`, `crossbow`
+- **Magical:** `wand`, `staff`
+- **Off-hand:** `shield`, `spell_accelerator`
+
+### 2. Magic Schools
+Spell-casting heroes gain mastery in the 6 elemental magic schools:
+- `fire`, `water`, `air`, `earth`, `light`, `dark`
+
+### 3. Leveling Curve (T1 to T5)
+Mastery tiers range from **Tier 1** to **Tier 5 (Max)**. Leveling up requires reaching the following total XP thresholds:
+- **Tier 1:** 0 – 99 XP
+- **Tier 2:** 100 – 299 XP
+- **Tier 3:** 300 – 599 XP
+- **Tier 4:** 600 – 999 XP
+- **Tier 5 (Max):** 1000 XP
+
+### 4. Attunement & Decay Mechanics
+To gain passive bonuses from their weapon masteries, heroes must become attuned/sžitý with their equipped gear.
+- **Progress Gains:**
+  - **Combat (League Match):** +50 attunement progress and +15 XP to equipped gear types; +15 XP to schools of equipped spells.
+  - **Weekly Training (Magic):** +50 attunement progress to equipped gear types; +25 XP to schools of equipped spells.
+- **Daily Decay (Daily Reset tick):**
+  - **Unused gear types:** lose **20% attunement progress** and **10 XP** per day.
+  - **Unused magic schools:** lose **10 XP** per day.
+  - If XP drops below the threshold for the current tier, the hero levels down in that mastery (down to a minimum of Tier 1).
+  - Swapping gear does *not* instantly reset attunement. Inactive gear styles decay gradually day-by-day, allowing players to adjust equipment briefly without losing all progress.
+
+## Hero Traits
+
+Enum: `App\Enum\HeroTrait` — authoritative source of all modifiers.
+
+### Assignment
+
+- Each hero has a **60% chance** of receiving a trait when generated (`HeroGenerator::createForTeam()`).
+- The trait is assigned randomly with equal probability across all 14 cases.
+- Trait is **immutable** after assignment — it cannot be trained or changed. It defines the hero's personality permanently.
+- Heroes without a trait (`trait = null`) are fully functional — no modifiers applied.
+
+### Trait Categories
+
+#### Positive (pure upside)
+
+| Trait | Key | Effect |
+|-------|-----|--------|
+| Quick Learner | `quick_learner` | +20% attribute training speed |
+| Clutch | `clutch` | When HP ≤ 30%: +15% accuracy, armor ×1.10 |
+| Audience Favorite | `audience_favorite` | +5% arena ticket revenue when fielded |
+| Battle Hardened | `battle_hardened` | Morale decay on ally death ×0.5 (slower) |
+
+#### Negative (pure downside)
+
+| Trait | Key | Effect |
+|-------|-----|--------|
+| Volatile | `volatile` | Morale decay on ally death ×2.0 (faster) |
+| Slacker | `slacker` | -15% attribute training speed |
+| Fragile | `fragile` | -10% max HP |
+| Glass Jaw | `glass_jaw` | When HP ≤ 50%: incoming physical damage ×1.10 |
+
+#### Mixed / Tradeoff
+
+| Trait | Key | Positive | Negative |
+|-------|-----|----------|----------|
+| Berserker | `berserker` | Crit +15%, crit damage 2.0× | Accuracy -8% |
+| Glasscannon | `glass_cannon` | Spell power +15% | Armor -10% |
+| Reckless | `reckless` | Crit +15% | Dodge -10% |
+| Loner | `loner` | Ignores negative race synergy | Ignores positive race synergy |
+| Overconfident | `overconfident` | Physical attack +10% | Accuracy -8% |
+| Perfectionist | `perfectionist` | Consistent (non-random) damage | Training speed -10% |
+
+### Player UI
+
+Traits are **visible to players** wherever hero identity is shown. Heroes with `trait = null` show no badge (trait is an exceptional property, not guaranteed).
+
+| Surface | Location | Component / file |
+|---------|----------|------------------|
+| Hero roster | Card under level/race line | `templates/components/hero/trait_badge.html.twig` (compact) in `card.html.twig` |
+| Hero detail — header | Meta row next to ratings | Same badge in `header_card.html.twig` |
+| Hero detail — overview | Sidebar panel with full description | `trait_panel.html.twig` (overview tab, before attributes) |
+| Summoning reveal | Below level on recruit card | `summoning_controller.js` + `portal_chamber.html.twig` |
+| Marketplace browse | Listing detail row | `marketplace_controller.js` + `js_templates.html.twig` |
+| Marketplace sell | Sell picker card | `trait_badge.html.twig` in `sell_tab.html.twig` |
+
+**Badge styling** (`assets/styles/components/_hero.scss`):
+
+- `.hero-trait-badge--positive` — green (Quick Learner, Clutch, Audience Favorite, Battle Hardened)
+- `.hero-trait-badge--negative` — red (Volatile, Slacker, Fragile, Glass Jaw)
+- `.hero-trait-badge--mixed` — amber (Berserker, Glass Cannon, Reckless, Loner, Overconfident, Perfectionist)
+
+Category comes from `HeroTrait::getCategory()`; icon from `HeroTrait::getIcon()`. Tooltip and panel body use the translated description key.
+
+**i18n keys:** `heroes.trait_label`, `heroes.trait_panel_title`, `heroes.trait_panel_desc`, and per trait `heroes.traits.{key}.name` / `heroes.traits.{key}.desc` in `translations/messages.{en,cs}.yaml`.
+
+**Stimulus / API labels:** Twig helper `hero_trait_js_labels()` in `GameExtension` builds translated name/desc/category/icon maps for `summoning_controller.js` and `marketplace_controller.js` (`data-*-traits-value`).
+
+**API field:** `trait` — nullable string (enum value, e.g. `"berserker"`) on `HeroService::serialize()` and hero entities inside marketplace listings (`MarketplaceService::serializeListing()`).
+
+### Combat Engine Integration
+
+`DerivedCombatStats` carries trait metadata for the combat engine:
+- Immediate modifiers (HP, attack, accuracy, crit, dodge, spell power, armor) are applied in `CombatStatCalculator`.
+- Situational modifiers (clutch threshold, glass jaw threshold, consistent damage, morale decay, race synergy flag) are passed as metadata and applied by the combat engine at runtime.
+- Arena revenue bonus is consumed by `ArenaRevenueService` (not the combat engine).
+
+See `StubRandomMatchSimulator` for the full list of TODO hooks awaiting the real engine.

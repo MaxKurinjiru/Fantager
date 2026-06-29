@@ -1,0 +1,31 @@
+{# Intrinsic hero value summary for hero detail overview. #}
+{% set rating = hero_rating(hero) %}
+{% set gold_value = hero_gold_value(hero) %}
+{% set weekly_salary = hero_weekly_salary(hero) %}
+<div class="hero-panel hero-ratings-panel">
+    <h2 class="hero-panel__title">{{ 'heroes.rating.panel_title'|trans }}</h2>
+    <p class="hero-panel__desc">{{ 'heroes.rating.panel_desc'|trans }}</p>
+
+    <div class="hero-ratings-panel__grid">
+        <div class="hero-ratings-panel__metric">
+            <span class="hero-ratings-panel__label">{{ 'heroes.rating.base_ovr'|trans }}</span>
+            <span class="hero-ratings-panel__value hero-ratings-panel__value--ovr">{{ rating.baseOvr }}</span>
+            <span class="hero-ratings-panel__hint">{{ 'heroes.rating.tooltip_base'|trans }}</span>
+        </div>
+        <div class="hero-ratings-panel__metric">
+            <span class="hero-ratings-panel__label">{{ 'heroes.rating.complex'|trans }}</span>
+            <span class="hero-ratings-panel__value">{{ rating.complexRating }}</span>
+            <span class="hero-ratings-panel__hint">{{ 'heroes.rating.tooltip_complex'|trans }}</span>
+        </div>
+        <div class="hero-ratings-panel__metric">
+            <span class="hero-ratings-panel__label">{{ 'heroes.rating.weekly_salary'|trans }}</span>
+            <span class="hero-ratings-panel__value">🪙 {{ weekly_salary|number_format(0, '.', ' ') }}</span>
+            <span class="hero-ratings-panel__hint">{{ 'heroes.rating.weekly_salary_hint'|trans }}</span>
+        </div>
+        <div class="hero-ratings-panel__metric">
+            <span class="hero-ratings-panel__label">{{ 'heroes.rating.gold_value'|trans }}</span>
+            <span class="hero-ratings-panel__value">🪙 {{ gold_value|number_format(0, '.', ' ') }}</span>
+            <span class="hero-ratings-panel__hint">{{ 'heroes.rating.gold_value_hint'|trans }}</span>
+        </div>
+    </div>
+</div>

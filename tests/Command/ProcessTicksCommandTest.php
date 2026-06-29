@@ -98,10 +98,13 @@ class ProcessTicksCommandTest extends TestCase
             }
         );
 
+        $calledKingdom = null;
         $tickOrchestrator = $this->createMock(KingdomTickOrchestrator::class);
         $tickOrchestrator->expects($this->once())
             ->method('orchestrate')
-            ->with($kingdom);
+            ->willReturnCallback(function (Kingdom $k) use (&$calledKingdom) {
+                $calledKingdom = $k;
+            });
 
         $singleTickHandler = $this->createMock(ExecuteSingleTickHandler::class);
         $tickRunner = new KingdomTickRunnerService(
@@ -124,6 +127,7 @@ class ProcessTicksCommandTest extends TestCase
         ]);
 
         $this->assertSame(0, $exitCode);
+        $this->assertSame($kingdom, $calledKingdom);
 
         $scheduledTypes = array_map(
             static fn (KingdomTickLog $log): string => $log->getTickType()->value,

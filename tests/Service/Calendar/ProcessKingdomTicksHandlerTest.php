@@ -19,6 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 
 #[AllowMockObjectsWithoutExpectations]
 class ProcessKingdomTicksHandlerTest extends TestCase
@@ -41,6 +42,8 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $financialCrisisServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\RoyalTreasuryService */
     private $royalTreasuryServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Economy\TeamPayrollService */
+    private $teamPayrollServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\Doctrine\ORM\EntityManagerInterface */
     private $entityManagerMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\Psr\Log\LoggerInterface */
@@ -55,8 +58,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $marketplaceServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\League\LeagueMatchResolutionService */
     private $leagueMatchResolutionServiceMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Calendar\KingdomTickOrchestrator */
-    private $orchestratorMock;
+    private KingdomTickOrchestrator&MockObject $orchestratorMock;
     private ExecuteSingleTickHandler $handler;
 
     protected function setUp(): void
@@ -70,6 +72,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
         $this->hqServiceMock = $this->createMock(\App\Service\Headquarters\HeadquartersService::class);
         $this->financialCrisisServiceMock = $this->createMock(\App\Service\Economy\FinancialCrisisService::class);
         $this->royalTreasuryServiceMock = $this->createMock(\App\Service\Economy\RoyalTreasuryService::class);
+        $this->teamPayrollServiceMock = $this->createMock(\App\Service\Economy\TeamPayrollService::class);
         $this->playerInactivityServiceMock = $this->createMock(\App\Service\Auth\PlayerInactivityService::class);
         $this->fixtureFormationServiceMock = $this->createMock(\App\Service\Formation\FixtureFormationService::class);
         $this->marketplaceServiceMock = $this->createMock(\App\Service\Marketplace\MarketplaceService::class);
@@ -89,6 +92,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->hqServiceMock,
             $this->financialCrisisServiceMock,
             $this->royalTreasuryServiceMock,
+            $this->teamPayrollServiceMock,
             $this->playerInactivityServiceMock,
             $this->fixtureFormationServiceMock,
             $this->marketplaceServiceMock,
@@ -100,6 +104,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             new \App\Service\Calendar\TickClock(),
             $this->createMock(\App\Service\Team\NpcSimulationService::class),
             $this->orchestratorMock,
+            $this->createMock(\App\Service\Hero\HeroMasteryService::class),
         );
     }
 
@@ -205,11 +210,13 @@ class ProcessKingdomTicksHandlerTest extends TestCase
 
         $this->setupQueryBuilderMock(1);
 
-        // Orchestrator MUST be called once on success
+        // Orchestrator MUST be called once on success with this kingdom
         $this->orchestratorMock
             ->expects($this->once())
             ->method('orchestrate')
-            ->with($kingdom);
+            ->willReturnCallback(static function (Kingdom $actualKingdom) use ($kingdom): void {
+                TestCase::assertSame($kingdom, $actualKingdom);
+            });
 
         // Run the handler
         $message = new ExecuteSingleTickMessage(1);

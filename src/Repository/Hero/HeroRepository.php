@@ -68,4 +68,21 @@ class HeroRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * @return list<Hero>
+     */
+    public function findPayrollEligibleByTeam(Team $team): array
+    {
+        /** @var list<Hero> $heroes */
+        $heroes = $this->createQueryBuilder('h')
+            ->where('h.team = :team')
+            ->andWhere('h.status NOT IN (:excludedStatuses)')
+            ->setParameter('team', $team)
+            ->setParameter('excludedStatuses', [HeroStatus::Dead, HeroStatus::Retired])
+            ->getQuery()
+            ->getResult();
+
+        return $heroes;
+    }
 }

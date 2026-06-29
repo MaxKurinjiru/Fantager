@@ -32,6 +32,7 @@ class FinancialCrisisService
     public function __construct(
         private readonly HeadquartersRepository $hqRepository,
         private readonly EconomyService $economyService,
+        private readonly TeamPayrollService $teamPayrollService,
         private readonly NotificationHelper $notificationHelper,
         private readonly TeamChronicleService $teamChronicleService,
         private readonly EntityManagerInterface $em,
@@ -48,17 +49,21 @@ class FinancialCrisisService
         $weeklyMaintenance = $hq instanceof Headquarters
             ? HqMaintenanceCalculator::calculateWeeklyMaintenanceFee($hq)
             : 0;
+        $weeklyPayroll = $this->teamPayrollService->calculateWeeklyPayrollFee($team);
+        $weeklyExpenses = $weeklyMaintenance + $weeklyPayroll;
 
-        $level = $this->resolveCrisisLevel($team, $weeklyMaintenance);
-        $weeksUntilBankruptcy = $this->calculateWeeksUntilBankruptcy($team, $weeklyMaintenance, $level);
+        $level = $this->resolveCrisisLevel($team, $weeklyExpenses);
+        $weeksUntilBankruptcy = $this->calculateWeeksUntilBankruptcy($team, $weeklyExpenses, $level);
 
         return [
             'level' => $level->value,
             'unpaid_debt' => $team->getUnpaidDebt(),
             'crisis_weeks' => $team->getCrisisWeeks(),
             'weekly_maintenance' => $weeklyMaintenance,
+            'weekly_payroll' => $weeklyPayroll,
+            'weekly_expenses' => $weeklyExpenses,
             'gold' => $team->getGold(),
-            'bankruptcy_debt_threshold' => $weeklyMaintenance * self::BANKRUPTCY_DEBT_MULTIPLIER,
+            'bankruptcy_debt_threshold' => $weeklyExpenses * self::BANKRUPTCY_DEBT_MULTIPLIER,
             'weeks_until_bankruptcy' => $weeksUntilBankruptcy,
             'hq_bonuses_active' => $this->areHqBonusesActive($team, $level),
             'restricted_actions' => $this->getRestrictedActions($level),
@@ -71,9 +76,9 @@ class FinancialCrisisService
         ];
     }
 
-    public function resolveCrisisLevel(Team $team, int $weeklyMaintenance): FinancialCrisisLevel
+    public function resolveCrisisLevel(Team $team, int $weeklyReferenceExpenses): FinancialCrisisLevel
     {
-        if ($team->isNpc() || $weeklyMaintenance <= 0) {
+        if ($team->isNpc() || $weeklyReferenceExpenses <= 0) {
             return FinancialCrisisLevel::None;
         }
 
@@ -84,7 +89,7 @@ class FinancialCrisisService
             return FinancialCrisisLevel::None;
         }
 
-        if ($this->isBankruptcyPending($team, $weeklyMaintenance)) {
+        if ($this->isBankruptcyPending($team, $weeklyReferenceExpenses)) {
             return FinancialCrisisLevel::BankruptcyPending;
         }
 
@@ -98,11 +103,9 @@ class FinancialCrisisService
     public function areHqBonusesActive(Team $team, ?FinancialCrisisLevel $level = null): bool
     {
         $hq = $this->hqRepository->findOneBy(['team' => $team]);
-        $weeklyMaintenance = $hq instanceof Headquarters
-            ? HqMaintenanceCalculator::calculateWeeklyMaintenanceFee($hq)
-            : 0;
+        $weeklyReferenceExpenses = $this->resolveWeeklyReferenceExpenses($team, $hq);
 
-        $level ??= $this->resolveCrisisLevel($team, $weeklyMaintenance);
+        $level ??= $this->resolveCrisisLevel($team, $weeklyReferenceExpenses);
 
         if (FinancialCrisisLevel::None === $level || FinancialCrisisLevel::Warning === $level) {
             return true;
@@ -120,12 +123,9 @@ class FinancialCrisisService
             return;
         }
 
-        $hq = $this->hqRepository->findOneBy(['team' => $team]);
-        $weeklyMaintenance = $hq instanceof Headquarters
-            ? HqMaintenanceCalculator::calculateWeeklyMaintenanceFee($hq)
-            : 0;
+        $weeklyReferenceExpenses = $this->resolveWeeklyReferenceExpenses($team);
 
-        $level = $this->resolveCrisisLevel($team, $weeklyMaintenance);
+        $level = $this->resolveCrisisLevel($team, $weeklyReferenceExpenses);
         if (!in_array($level, [FinancialCrisisLevel::Restricted, FinancialCrisisLevel::BankruptcyPending], true)) {
             return;
         }
@@ -197,11 +197,11 @@ class FinancialCrisisService
                 continue;
             }
 
-            $weeklyMaintenance = HqMaintenanceCalculator::calculateWeeklyMaintenanceFee($hq);
+            $weeklyReferenceExpenses = $this->resolveWeeklyReferenceExpenses($team, $hq);
             $this->applyGoldToDebt($team);
-            $this->evaluateCrisisProgress($team, $weeklyMaintenance);
+            $this->evaluateCrisisProgress($team, $weeklyReferenceExpenses);
 
-            if ($this->isBankruptcyPending($team, $weeklyMaintenance)) {
+            if ($this->isBankruptcyPending($team, $weeklyReferenceExpenses)) {
                 $user = $team->getUser();
                 if ($user instanceof User) {
                     $this->executeBankruptcy($team, $user);
@@ -248,7 +248,7 @@ class FinancialCrisisService
         );
     }
 
-    private function evaluateCrisisProgress(Team $team, int $weeklyMaintenance): void
+    private function evaluateCrisisProgress(Team $team, int $weeklyReferenceExpenses): void
     {
         $debt = $team->getUnpaidDebt();
 
@@ -261,9 +261,9 @@ class FinancialCrisisService
         $team->setCrisisWeeks($team->getCrisisWeeks() + 1);
     }
 
-    private function isBankruptcyPending(Team $team, int $weeklyMaintenance): bool
+    private function isBankruptcyPending(Team $team, int $weeklyReferenceExpenses): bool
     {
-        if ($weeklyMaintenance <= 0 || $team->isNpc()) {
+        if ($weeklyReferenceExpenses <= 0 || $team->isNpc()) {
             return false;
         }
 
@@ -271,7 +271,7 @@ class FinancialCrisisService
             return false;
         }
 
-        if ($team->getUnpaidDebt() < $weeklyMaintenance * self::BANKRUPTCY_DEBT_MULTIPLIER) {
+        if ($team->getUnpaidDebt() < $weeklyReferenceExpenses * self::BANKRUPTCY_DEBT_MULTIPLIER) {
             return false;
         }
 
@@ -297,14 +297,14 @@ class FinancialCrisisService
 
     private function calculateWeeksUntilBankruptcy(
         Team $team,
-        int $weeklyMaintenance,
+        int $weeklyReferenceExpenses,
         FinancialCrisisLevel $level,
     ): ?int {
         if (FinancialCrisisLevel::BankruptcyPending === $level) {
             return 0;
         }
 
-        if ($weeklyMaintenance <= 0 || $team->isNpc()) {
+        if ($weeklyReferenceExpenses <= 0 || $team->isNpc()) {
             return null;
         }
 
@@ -329,5 +329,15 @@ class FinancialCrisisService
             'marketplace_purchase',
             'marketplace_bid',
         ];
+    }
+
+    private function resolveWeeklyReferenceExpenses(Team $team, ?Headquarters $hq = null): int
+    {
+        $hq ??= $this->hqRepository->findOneBy(['team' => $team]);
+        $weeklyMaintenance = $hq instanceof Headquarters
+            ? HqMaintenanceCalculator::calculateWeeklyMaintenanceFee($hq)
+            : 0;
+
+        return $weeklyMaintenance + $this->teamPayrollService->calculateWeeklyPayrollFee($team);
     }
 }

@@ -2,6 +2,7 @@
 {% set hq = hq|default(null) %}
 {% set team = team|default(null) %}
 {% set maintenance = hq ? hq_weekly_maintenance(hq) : { total: 0, hq: 0, facilities: 0 } %}
+{% set payroll = team ? team_weekly_payroll(team) : { total: 0, heroes_due: 0, trainers_due: 0, hero_count: 0, trainer_count: 0 } %}
 {% set crisis = team ? team_financial_crisis(team) : null %}
 
 <div class="hq-stats-bar">
@@ -9,6 +10,13 @@
         <span class="hq-stats-bar__item-label">{{ 'hq.weekly_maintenance'|trans }}</span>
         <span class="hq-stats-bar__item-value hq-stats-bar__item-value--gold" title="{{ 'hq.weekly_maintenance_hint'|trans }}">
             🪙 {{ maintenance.total|number_format(0, '.', ' ') }}
+        </span>
+    </div>
+    <div class="hq-stats-bar__divider" aria-hidden="true"></div>
+    <div class="hq-stats-bar__item">
+        <span class="hq-stats-bar__item-label">{{ 'hq.weekly_payroll'|trans }}</span>
+        <span class="hq-stats-bar__item-value hq-stats-bar__item-value--gold" title="{{ 'hq.weekly_payroll_hint'|trans }}">
+            🪙 {{ payroll.total|number_format(0, '.', ' ') }}
         </span>
     </div>
     <div class="hq-stats-bar__divider" aria-hidden="true"></div>

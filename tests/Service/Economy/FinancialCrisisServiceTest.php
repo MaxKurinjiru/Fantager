@@ -12,6 +12,7 @@ use App\Enum\FinancialCrisisLevel;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
+use App\Service\Economy\TeamPayrollService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Notification\NotificationHelper;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +27,8 @@ class FinancialCrisisServiceTest extends TestCase
     private $hqRepositoryMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&EconomyService */
     private $economyServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamPayrollService */
+    private $teamPayrollServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&NotificationHelper */
     private $notificationHelperMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChronicleService */
@@ -40,6 +43,7 @@ class FinancialCrisisServiceTest extends TestCase
     {
         $this->hqRepositoryMock = $this->createMock(HeadquartersRepository::class);
         $this->economyServiceMock = $this->createMock(EconomyService::class);
+        $this->teamPayrollServiceMock = $this->createMock(TeamPayrollService::class);
         $this->notificationHelperMock = $this->createMock(NotificationHelper::class);
         $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
@@ -48,11 +52,16 @@ class FinancialCrisisServiceTest extends TestCase
         $this->service = new FinancialCrisisService(
             $this->hqRepositoryMock,
             $this->economyServiceMock,
+            $this->teamPayrollServiceMock,
             $this->notificationHelperMock,
             $this->teamChronicleServiceMock,
             $this->entityManagerMock,
             $this->loggerMock,
         );
+
+        $this->teamPayrollServiceMock
+            ->method('calculateWeeklyPayrollFee')
+            ->willReturn(0);
     }
 
     public function testResolveCrisisLevelNoneForStableTeam(): void
@@ -103,8 +112,10 @@ class FinancialCrisisServiceTest extends TestCase
         $this->hqRepositoryMock
             ->expects($this->once())
             ->method('findOneBy')
-            ->with(['team' => $team])
-            ->willReturn($hq);
+            ->willReturnCallback(function (array $criteria) use ($team, $hq) {
+                $this->assertSame(['team' => $team], $criteria);
+                return $hq;
+            });
 
         $this->expectException(\DomainException::class);
         $this->service->assertSpendingAllowed($team, 'summon');
@@ -114,13 +125,20 @@ class FinancialCrisisServiceTest extends TestCase
     {
         $team = $this->createPlayerTeam(gold: 300, debt: 500, crisisWeeks: 1);
 
+        $calledDeduct = null;
         $this->economyServiceMock
             ->expects($this->once())
             ->method('deductGold')
-            ->with($team, 300, $this->anything(), $this->anything(), $this->anything());
+            ->willReturnCallback(function (Team $t, int $amount) use (&$calledDeduct) {
+                $calledDeduct = [$t, $amount];
+                return true;
+            });
 
         $paid = $this->service->applyGoldToDebt($team);
 
+        $this->assertNotNull($calledDeduct);
+        $this->assertSame($team, $calledDeduct[0]);
+        $this->assertSame(300, $calledDeduct[1]);
         $this->assertSame(300, $paid);
         $this->assertSame(200, $team->getUnpaidDebt());
     }

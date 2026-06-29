@@ -10,6 +10,7 @@ use App\Enum\ItemCategory;
 use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemStatus;
+use App\Enum\ItemSubType;
 use App\Repository\Item\ItemRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -41,6 +42,9 @@ class Item
 
     #[ORM\Column(length: 20, enumType: ItemCategory::class)]
     private ItemCategory $category;
+
+    #[ORM\Column(length: 30, enumType: ItemSubType::class, nullable: true)]
+    private ?ItemSubType $subType = null;
 
     #[ORM\Column(length: 15, enumType: ItemRarity::class)]
     private ItemRarity $rarity;
@@ -132,6 +136,18 @@ class Item
     public function setCategory(ItemCategory $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getSubType(): ?ItemSubType
+    {
+        return $this->subType;
+    }
+
+    public function setSubType(?ItemSubType $subType): static
+    {
+        $this->subType = $subType;
 
         return $this;
     }

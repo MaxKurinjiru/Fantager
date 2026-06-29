@@ -23,7 +23,9 @@ class LeagueFixtureSchedulerTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->exactly(90))
             ->method('persist')
-            ->with($this->isInstanceOf(LeagueFixture::class));
+            ->willReturnCallback(function ($entity) {
+                $this->assertInstanceOf(LeagueFixture::class, $entity);
+            });
 
         $scheduler = new LeagueFixtureScheduler($em);
 

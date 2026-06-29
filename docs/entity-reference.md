@@ -94,8 +94,9 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity            | Key Fields                                                                                                                                     | Relationships                              |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| **Hero**          | id, team_id, name, race (enum), level, xp, age, form, fatigue, morale, magic_capacity, str, dex, kon, spd, intel, wil, cha, lck, status (enum) | → Team, has many HeroSpell, equipped Items |
-| **SchoolMastery** | id, hero_id, school (enum), mastery_tier                                                                                                       | → Hero                                     |
+| **Hero**          | id, team_id, name, race (enum), level, xp, age, form, fatigue, morale, magic_capacity, str, dex, kon, spd, intel, wil, cha, lck, **base_ovr**, **complex_rating** (cached), status (enum), **trait** (nullable `HeroTrait` enum) | → Team, has many HeroSpell, equipped Items |
+| **SchoolMastery** | id, hero_id, school (enum), mastery_tier, xp                                                                                                  | → Hero                                     |
+| **WeaponMastery** | id, hero_id, style (`ItemSubType` enum), mastery_tier, xp, attunement_progress (0–100)                                                         | → Hero                                     |
 | **HeroSpell**     | id, hero_id, spell_id, is_equipped, slot_number                                                                                                | → Hero, → Spell                            |
 
 
@@ -251,6 +252,7 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Race`              | human, elf, dwarf, orc, undead, giant, ent, genie                                                                                                                                                                                                                 |
 | `HeroStatus`        | available, in_match, selling, recovering, dead, **retired**                                                                                                                                                                                               |
+| `HeroTrait`         | quick_learner, clutch, audience_favorite, battle_hardened, volatile, slacker, fragile, glass_jaw, berserker, glass_cannon, reckless, loner, overconfident, perfectionist (nullable on Hero; ~60% assign chance at generation). UI: [hero-system.md](systems/hero-system.md) § Player UI |
 | `School`            | fire, water, air, earth, light, dark                                                                                                                                                                                                              |
 | `SpellType`         | offensive, defensive, utility                                                                                                                                                                                                                     |
 | `ItemSlotType`      | main_hand, off_hand, head, body, hands, feet, amulet, ring                                                                                                                                                                                          |
@@ -258,12 +260,14 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | `ChronicleReleaseReason` | inactivity, bankruptcy, unverified_registration, account_deleted (stored in `data.reason`; used with `player_released`) |
 | `ChronicleCategory` | all, ownership, competition, roster, economy (UI filter groups; not stored on rows) |
 | `ItemCategory`      | weapon, shield, spell_accelerator, armor, accessory, material                                                                                                                                                                                      |
+| `ItemSubType`       | one_handed_sword, two_handed_sword, one_handed_axe, two_handed_axe, one_handed_mace, two_handed_mace, dagger, bow, crossbow, wand, staff, shield, spell_accelerator, light_armor, medium_armor, heavy_armor (weapon/armor mastery & gear attunement) |
 | `ItemRarity`        | common, uncommon, rare, epic, legendary, mythic                                                                                                                                                                                                   |
 | `ItemStatus`        | available, selling                                                                                                                                                                                                                                |
 | `FormationPosition` | front_1, front_2, front_3, back_1, back_2, back_3                                                                                                                                                                                                 |
 | `FormationApproach` | aggressive, balanced, defensive                                                                                                                                                                                                                   |
 | `MatchType`         | league, friendly, dungeon, arena                                                                                                                                                                                                                  |
 | `BattleResult`      | win_a, win_b, draw                                                                                                                                                                                                                                |
+| `CombatStatProfile` | equipped, human_neutral, full_intrinsic (hero rating / combat stat calculation modes)                                                                                                                                                             |
 | `TrainingType`      | attribute, magic, form                                                                                                                                                                                                                            |
 | `ListingType`       | hero, item, trainer                                                                                                                                                                                                                               |
 | `ListingMode`       | buy_now, auction                                                                                                                                                                                                                                  |
@@ -282,7 +286,7 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | `CraftingStatus`    | pending, in_progress, completed, failed, cancelled                                                                                                                                                                                                |
 | `TransactionType`   | buy_now, auction_win                                                                                                                                                                                                                              |
 | `NotificationType`  | battle_result, training_complete, league_update, marketplace_bid, marketplace_sold, event_started, hero_died, season_ended, **system**                                                                                   |
-| `FinancialRecordType` | league_reward, arena_revenue, summon_fee, marketplace_sale, marketplace_purchase, marketplace_fee, dungeon_reward, dismantle_gain, item_repair, spell_learning_cost, spell_slot_cost, hq_upgrade_cost, **hq_maintenance_fee**, morale_restoration, **debt_repayment**, **hero_dismissal_compensation**, **trainer_dismissal_compensation**, **hq_downgrade_refund**, **kingdom_reward** |
+| `FinancialRecordType` | league_reward, arena_revenue, summon_fee, marketplace_sale, marketplace_purchase, marketplace_fee, dungeon_reward, dismantle_gain, item_repair, spell_learning_cost, spell_slot_cost, hq_upgrade_cost, **hq_maintenance_fee**, morale_restoration, **debt_repayment**, **hero_dismissal_compensation**, **trainer_dismissal_compensation**, **hq_downgrade_refund**, **kingdom_reward**, **hero_salary**, **trainer_salary** |
 | `FinancialCrisisLevel` | **none**, **warning**, **restricted**, **bankruptcy_pending** |
 | `FacilityOperation` | **upgrade**, **downgrade** |
 | `FinancialRecordActor` | system, active, passive                                                                                                                                                                                                                        |
@@ -294,10 +298,10 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 
 | Category                   | Count  |
 | -------------------------- | ------ |
-| DB entities (implemented) | 34     |
+| DB entities (implemented) | 35     |
 | Config-based (not DB)      | 5      |
-| PHP enums                  | 32     |
-| **Total modeled concepts** | **70** |
+| PHP enums                  | 34     |
+| **Total modeled concepts** | **73** |
 
 
 ---

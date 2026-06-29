@@ -27,7 +27,9 @@ export default class extends Controller {
 
     sort() {
         const sortValue = this.sortByTarget.value;
-        const [field, direction] = sortValue.split('-');
+        const lastDash = sortValue.lastIndexOf('-');
+        const field = sortValue.slice(0, lastDash);
+        const direction = sortValue.slice(lastDash + 1);
         const isDesc = direction === 'desc';
 
         const cards = Array.from(this.cardTargets);
@@ -41,12 +43,11 @@ export default class extends Controller {
                 return isDesc ? valB.localeCompare(valA) : valA.localeCompare(valB);
             }
 
-            // Numeric sorting
-            valA = parseFloat(a.dataset[field] || '0');
-            valB = parseFloat(b.dataset[field] || '0');
+            const datasetKey = field.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+            valA = parseFloat(a.dataset[datasetKey] || '0');
+            valB = parseFloat(b.dataset[datasetKey] || '0');
 
             if (valA === valB) {
-                // Secondary sort by name
                 const nameA = a.dataset.name || '';
                 const nameB = b.dataset.name || '';
                 return nameA.localeCompare(nameB);
@@ -55,7 +56,6 @@ export default class extends Controller {
             return isDesc ? valB - valA : valA - valB;
         });
 
-        // Re-append sorted card elements to the grid
         const grid = this.gridTarget;
         cards.forEach(card => grid.appendChild(card));
     }

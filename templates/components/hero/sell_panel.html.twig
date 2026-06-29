@@ -35,9 +35,17 @@
                     <label for="hero-sell-price" data-hero-sell-target="priceLabel" class="form-label">
                         {{ 'marketplace.price_gold'|trans }}
                     </label>
+                    <div class="marketplace-suggested-price{% if hero_market_price(hero) <= 0 %} hidden{% endif %}" data-hero-sell-target="suggestedPriceRow">
+                        <span class="marketplace-suggested-price__label">{{ 'marketplace.suggested_price'|trans }}:</span>
+                        <span class="marketplace-suggested-price__value" data-hero-sell-target="suggestedPriceValue">🪙 {{ hero_market_price(hero)|number_format(0, '.', ' ') }}</span>
+                        <button type="button" class="btn btn-outline btn--sm" data-action="click->hero-sell#applySuggestedPrice">
+                            {{ 'marketplace.btn_use_suggested_price'|trans }}
+                        </button>
+                    </div>
                     <div class="form-input-affix">
                         <span class="form-input-affix__icon">🪙</span>
                         <input type="number" id="hero-sell-price" name="price" required min="1"
+                               data-hero-sell-target="priceInput"
                                placeholder="{{ 'marketplace.price_placeholder'|trans }}"
                                class="form-input">
                     </div>

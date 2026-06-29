@@ -9,6 +9,7 @@ use App\Entity\Headquarters\Headquarters;
 use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
 use App\Enum\FacilityType;
+use App\Enum\HeroTrait;
 use App\Enum\Race;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Community\CommunityService;
@@ -17,6 +18,7 @@ use App\Service\Economy\FinancialCrisisService;
 use App\Service\Notification\NotificationService;
 use App\Service\Team\TeamRosterService;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
@@ -31,6 +33,11 @@ class GameExtension extends AbstractExtension
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly TeamRosterService $teamRosterService,
         private readonly Security $security,
+        private readonly \App\Service\Combat\CombatStatCalculator $combatStatCalculator,
+        private readonly \App\Service\Hero\HeroRatingCalculator $heroRatingCalculator,
+        private readonly \App\Service\Hero\HeroSalaryService $heroSalaryService,
+        private readonly \App\Service\Economy\TeamPayrollService $teamPayrollService,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -52,6 +59,13 @@ class GameExtension extends AbstractExtension
             new TwigFunction('hq_downgrade_refund', $this->getHqDowngradeRefund(...)),
             new TwigFunction('team_combat_ready_count', $this->getTeamCombatReadyCount(...)),
             new TwigFunction('hero_can_leave_roster', $this->canHeroLeaveRoster(...)),
+            new TwigFunction('hero_combat_stats', $this->getHeroCombatStats(...)),
+            new TwigFunction('hero_rating', $this->getHeroRating(...)),
+            new TwigFunction('hero_gold_value', $this->getHeroGoldValue(...)),
+            new TwigFunction('hero_market_price', $this->getHeroMarketPrice(...)),
+            new TwigFunction('hero_weekly_salary', $this->getHeroWeeklySalary(...)),
+            new TwigFunction('team_weekly_payroll', $this->getTeamWeeklyPayroll(...)),
+            new TwigFunction('hero_trait_js_labels', $this->getHeroTraitJsLabels(...)),
         ];
     }
 
@@ -173,5 +187,65 @@ class GameExtension extends AbstractExtension
     public function canHeroLeaveRoster(Team $team, Hero $hero): bool
     {
         return $this->teamRosterService->canRemoveCombatReadyHero($team, $hero);
+    }
+
+    public function getHeroCombatStats(Hero $hero): \App\ValueObject\Combat\DerivedCombatStats
+    {
+        return $this->combatStatCalculator->calculate($hero);
+    }
+
+    public function getHeroRating(Hero $hero): \App\ValueObject\Hero\HeroRating
+    {
+        return $this->heroRatingCalculator->calculate($hero);
+    }
+
+    public function getHeroGoldValue(Hero $hero): int
+    {
+        return $this->heroRatingCalculator->estimateGoldValue($hero);
+    }
+
+    public function getHeroMarketPrice(Hero $hero): int
+    {
+        return $this->heroRatingCalculator->estimateMarketPrice($hero);
+    }
+
+    public function getHeroWeeklySalary(Hero $hero): int
+    {
+        return $this->heroSalaryService->calculateWeeklySalary($hero);
+    }
+
+    /**
+     * @return array{
+     *     heroes_due: int,
+     *     trainers_due: int,
+     *     total: int,
+     *     hero_count: int,
+     *     trainer_count: int,
+     * }
+     */
+    public function getTeamWeeklyPayroll(Team $team): array
+    {
+        return $this->teamPayrollService->calculateWeeklyPayrollBreakdown($team);
+    }
+
+    /**
+     * Translated trait labels for Stimulus controllers (summoning, marketplace).
+     *
+     * @return array<string, array{name: string, desc: string, category: string, icon: string}>
+     */
+    public function getHeroTraitJsLabels(): array
+    {
+        $labels = [];
+        foreach (HeroTrait::cases() as $trait) {
+            $key = $trait->value;
+            $labels[$key] = [
+                'name' => $this->translator->trans('heroes.traits.'.$key.'.name'),
+                'desc' => $this->translator->trans('heroes.traits.'.$key.'.desc'),
+                'category' => $trait->getCategory(),
+                'icon' => $trait->getIcon(),
+            ];
+        }
+
+        return $labels;
     }
 }

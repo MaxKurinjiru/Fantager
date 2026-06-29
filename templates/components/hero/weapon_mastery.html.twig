@@ -1,0 +1,130 @@
+{# templates/components/hero/weapon_mastery.html.twig #}
+<div class="hero-panel">
+    <div>
+        <h2 class="hero-panel__title">{{ 'heroes.gear_mastery'|trans }}</h2>
+        <p class="hero-panel__desc">{{ 'heroes.gear_mastery_desc'|trans }}</p>
+    </div>
+
+    {# 1. Active Attunement Status #}
+    <div class="weapon-mastery-active-section">
+        <h3 class="weapon-mastery-active-title">
+            {{ 'heroes.active_style'|trans }}
+        </h3>
+        
+        {% set equipped_masteries = [] %}
+        {% for slot, item in equipped %}
+            {% if item.subType %}
+                {% set equipped_masteries = equipped_masteries|merge([item.subType.value]) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if equipped_masteries|length > 0 %}
+            <div class="layout-stack layout-stack--sm">
+                {% for sub_type in equipped_masteries %}
+                    {% set wm_entity = null %}
+                    {% for wm in hero.weaponMasteries %}
+                        {% if wm.style.value == sub_type %}
+                            {% set wm_entity = wm %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% set attunement = wm_entity ? wm_entity.attunementProgress : 0 %}
+                    
+                    <div class="weapon-attunement-card">
+                        <div class="layout-cluster layout-cluster--sm layout-cluster--between">
+                            <span class="weapon-attunement-label">
+                                {{ ('weapon_style.' ~ sub_type)|trans }}
+                            </span>
+                            <span class="weapon-attunement-status">
+                                {% if attunement == 100 %}
+                                    <span class="copy-status-success">✅ {{ 'heroes.fully_attuned'|trans }}</span>
+                                {% else %}
+                                    <span class="copy-status-warning">⏳ {{ 'heroes.attuning'|trans({'%progress%': attunement}) }}</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% include 'components/ui/progress_bar.html.twig' with {
+                            percentage: attunement,
+                            container_class: 'ui-progress ui-progress--compact',
+                            progress_class: attunement == 100 ? 'ui-progress__fill ui-progress__fill--success' : 'ui-progress__fill ui-progress__fill--warning'
+                        } %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="copy-muted copy-muted--italic">{{ 'heroes.no_style'|trans }}</p>
+        {% endif %}
+    </div>
+
+    {# 2. Grid of All Weapon & Armor Masteries #}
+    <h3 class="weapon-mastery-active-title weapon-mastery-active-title--spaced">
+        {{ 'heroes.all_masteries'|trans }}
+    </h3>
+    <div class="hero-school-mastery__grid">
+        {% set styles = [
+            'one_handed_sword', 'two_handed_sword', 'one_handed_axe', 'two_handed_axe',
+            'one_handed_mace', 'two_handed_mace', 'dagger', 'bow', 'crossbow',
+            'wand', 'staff', 'shield', 'spell_accelerator',
+            'light_armor', 'medium_armor', 'heavy_armor'
+        ] %}
+        {% for style in styles %}
+            {% set wm_tier = 1 %}
+            {% set wm_xp = 0 %}
+            {% for wm in hero.weaponMasteries %}
+                {% if wm.style.value == style %}
+                    {% set wm_tier = wm.masteryTier %}
+                    {% set wm_xp = wm.xp %}
+                {% endif %}
+            {% endfor %}
+            
+            {% set next_req = 100 %}
+            {% set relative_xp = wm_xp %}
+            {% set relative_req = 100 %}
+
+            {% if wm_tier == 1 %}
+                {% set next_req = 100 %}
+                {% set relative_xp = wm_xp %}
+                {% set relative_req = 100 %}
+            {% elseif wm_tier == 2 %}
+                {% set next_req = 300 %}
+                {% set relative_xp = wm_xp - 100 %}
+                {% set relative_req = 200 %}
+            {% elseif wm_tier == 3 %}
+                {% set next_req = 600 %}
+                {% set relative_xp = wm_xp - 300 %}
+                {% set relative_req = 300 %}
+            {% elseif wm_tier == 4 %}
+                {% set next_req = 1000 %}
+                {% set relative_xp = wm_xp - 600 %}
+                {% set relative_req = 400 %}
+            {% else %}
+                {% set next_req = 1000 %}
+                {% set relative_xp = 1 %}
+                {% set relative_req = 1 %}
+            {% endif %}
+
+            {% set progress_pct = (relative_xp / relative_req * 100)|round(0, 'floor') %}
+            {% if wm_tier == 5 %}
+                {% set progress_pct = 100 %}
+            {% endif %}
+
+            <div class="hero-mastery-card">
+                <div class="layout-cluster layout-cluster--sm layout-cluster--between">
+                    <span class="hero-school-mastery__label hero-school-mastery__label--truncate" title="{{ ('weapon_style.' ~ style)|trans }}">
+                        {{ ('weapon_style.' ~ style)|trans }}
+                    </span>
+                    <span class="hero-school-mastery__tier">T{{ wm_tier }}</span>
+                </div>
+                <div class="hero-mastery-card__meta">
+                    <span>XP: {{ wm_xp }} / {{ next_req }}</span>
+                    {% if wm_tier == 5 %}<span>MAX</span>{% else %}<span>{{ progress_pct }}%</span>{% endif %}
+                </div>
+                {% include 'components/ui/progress_bar.html.twig' with {
+                    percentage: progress_pct,
+                    container_class: 'ui-progress ui-progress--compact',
+                    progress_class: 'ui-progress__fill ui-progress__fill--accent'
+                } %}
+            </div>
+        {% endfor %}
+    </div>
+</div>

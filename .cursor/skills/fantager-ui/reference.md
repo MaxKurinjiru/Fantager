@@ -10,7 +10,7 @@
 | `_buttons.scss` | `.btn`, variants, sizes |
 | `_forms.scss` | `.form-input`, `.form-label`, `.form-check` |
 | `_modal.scss` | `.modal-overlay`, `.modal-box`, `.modal-close` |
-| `_hero.scss` | Hero detail, gear, attributes, spell rows |
+| `_hero.scss` | Hero detail, gear, attributes, spell rows, **trait badges** (`.hero-trait-badge`) |
 | `_marketplace.scss` | Cards, filters, tables, sell-card |
 | `_formation.scss` | Pitch, slots, tactics |
 | `_item.scss` | Inventory, paperdoll, item-card |

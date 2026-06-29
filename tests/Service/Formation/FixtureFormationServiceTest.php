@@ -104,9 +104,14 @@ class FixtureFormationServiceTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->once())->method('flush');
 
+        $calledTemp = null;
         $formationService = $this->createMock(FormationService::class);
         $formationService->method('findDefaultForTeam')->willReturn($defaultFormation);
-        $formationService->expects($this->once())->method('deleteTemporary')->with($tempFormation);
+        $formationService->expects($this->once())
+            ->method('deleteTemporary')
+            ->willReturnCallback(function ($tf) use (&$calledTemp) {
+                $calledTemp = $tf;
+            });
 
         $service = new FixtureFormationService(
             $formationService,
@@ -116,6 +121,7 @@ class FixtureFormationServiceTest extends TestCase
         );
         $service->assignDefault($fixture, $homeTeam);
 
+        $this->assertSame($tempFormation, $calledTemp);
         $this->assertNull($fixture->getHomeFormation());
     }
 
@@ -168,8 +174,13 @@ class FixtureFormationServiceTest extends TestCase
         $formationRepository->method('findTemporaryByFixture')->willReturn([]);
         $formationRepository->method('findTemporaryWithCompletedSourceFixture')->willReturn([]);
 
+        $calledTemp = null;
         $formationService = $this->createMock(FormationService::class);
-        $formationService->expects($this->once())->method('deleteTemporary')->with($temp);
+        $formationService->expects($this->once())
+            ->method('deleteTemporary')
+            ->willReturnCallback(function ($tf) use (&$calledTemp) {
+                $calledTemp = $tf;
+            });
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->once())->method('flush');
@@ -183,6 +194,7 @@ class FixtureFormationServiceTest extends TestCase
 
         $removed = $service->cleanupStaleTemporaryFormationsForKingdom($kingdom);
 
+        $this->assertSame($temp, $calledTemp);
         $this->assertSame(1, $removed);
         $this->assertNull($fixture->getHomeFormation());
     }

@@ -1,0 +1,9 @@
+{# Hero personality trait badge — shown only when the hero has a trait. #}
+{% set trait = trait|default(hero is defined ? hero.trait : null) %}
+{% if trait %}
+    <span class="hero-trait-badge hero-trait-badge--{{ trait.category }}{% if compact|default(false) %} hero-trait-badge--compact{% endif %}"
+          title="{{ ('heroes.traits.' ~ trait.value ~ '.desc')|trans }}">
+        <span class="hero-trait-badge__icon" aria-hidden="true">{{ trait.icon }}</span>
+        <span class="hero-trait-badge__label">{{ ('heroes.traits.' ~ trait.value ~ '.name')|trans }}</span>
+    </span>
+{% endif %}

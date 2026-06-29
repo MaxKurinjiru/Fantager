@@ -13,8 +13,18 @@
         </article>
 
         <article class="finance-summary__card">
+            <span class="finance-summary__label">{{ 'financial_crisis.weekly_expenses'|trans }}</span>
+            <span class="finance-summary__value finance-summary__value--muted">🪙 {{ crisis.weekly_expenses|number_format(0, '.', ' ') }}</span>
+        </article>
+
+        <article class="finance-summary__card finance-summary__card--compact">
             <span class="finance-summary__label">{{ 'financial_crisis.weekly_maintenance'|trans }}</span>
             <span class="finance-summary__value finance-summary__value--muted">🪙 {{ crisis.weekly_maintenance|number_format(0, '.', ' ') }}</span>
+        </article>
+
+        <article class="finance-summary__card finance-summary__card--compact">
+            <span class="finance-summary__label">{{ 'financial_crisis.weekly_payroll'|trans }}</span>
+            <span class="finance-summary__value finance-summary__value--muted">🪙 {{ crisis.weekly_payroll|number_format(0, '.', ' ') }}</span>
         </article>
 
         <article class="finance-summary__card">

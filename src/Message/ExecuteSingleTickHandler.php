@@ -46,6 +46,7 @@ class ExecuteSingleTickHandler
         private readonly HeadquartersService $hqService,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly RoyalTreasuryService $royalTreasuryService,
+        private readonly \App\Service\Economy\TeamPayrollService $teamPayrollService,
         private readonly PlayerInactivityService $playerInactivityService,
         private readonly FixtureFormationService $fixtureFormationService,
         private readonly MarketplaceService $marketplaceService,
@@ -57,6 +58,7 @@ class ExecuteSingleTickHandler
         private readonly TickClock $tickClock,
         private readonly NpcSimulationService $npcSimulationService,
         private readonly KingdomTickOrchestrator $orchestrator,
+        private readonly \App\Service\Hero\HeroMasteryService $heroMasteryService,
     ) {
     }
 
@@ -150,6 +152,7 @@ class ExecuteSingleTickHandler
                 if (null !== $team) {
                     $this->npcSimulationService->simulateTraining($kingdom, $scheduledAt, $team);
                     $this->trainingService->processTrainingTick($scheduledAt, $kingdom, $team);
+                    $this->processTrainingMastery($team);
                 }
                 break;
 
@@ -159,6 +162,7 @@ class ExecuteSingleTickHandler
                     $this->npcSimulationService->simulateManagementAndEconomy($kingdom, $scheduledAt, $team);
                     $this->resetWeeklySummons($kingdom, $team);
                     $this->hqService->processMaintenanceTick($kingdom, $team);
+                    $this->teamPayrollService->processPayrollTick($kingdom, $team);
                     $this->hqService->processFacilityDowngradeLockTick($kingdom, $team);
                     $this->financialCrisisService->processWeeklyCrisisTick($kingdom, $team);
                 } else {
@@ -338,6 +342,12 @@ class ExecuteSingleTickHandler
             }
         }
 
+        // Process Daily Decay for Hero Mastery
+        $combatants = $this->heroRepository->findCombatantsByTeam($team);
+        foreach ($combatants as $hero) {
+            $this->heroMasteryService->processDailyDecayTick($hero);
+        }
+
         // Check if we need to pre-create the next season (Option A: Monday of Week 11)
         if (1 === (int) $scheduledAt->format('N')) {
             /** @var \App\Entity\League\LeagueSeason|null $activeSeason */
@@ -388,6 +398,36 @@ class ExecuteSingleTickHandler
         $count = $this->fixtureFormationService->cleanupTemporaryFormationsAfterCompletion($fixture);
         if ($count > 0) {
             $this->logger->info(sprintf('Removed %d stale temporary formation(s) for completed Fixture ID %d', $count, $fixture->getId()));
+        }
+    }
+
+    private function processTrainingMastery(Team $team): void
+    {
+        // Find all combatant heroes of the team who have a trainer and that trainer is training MAGIC
+        $heroes = $this->heroRepository->createQueryBuilder('h')
+            ->join('h.trainer', 't')
+            ->where('h.team = :team')
+            ->andWhere('h.role = :combatant')
+            ->andWhere('t.trainingType = :magicTraining')
+            ->setParameter('team', $team)
+            ->setParameter('combatant', \App\Enum\HeroRole::Combatant)
+            ->setParameter('magicTraining', \App\Enum\TrainingType::Magic)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($heroes as $hero) {
+            // 1. Award +50 attunement progress to equipped gear sub-types
+            $equippedSubTypes = $this->heroMasteryService->getEquippedSubTypes($hero);
+            foreach ($equippedSubTypes as $subType) {
+                $wm = $this->heroMasteryService->getOrCreateWeaponMastery($hero, $subType);
+                $wm->setAttunementProgress(min(100, $wm->getAttunementProgress() + 50));
+            }
+
+            // 2. Award +25 XP to equipped magic school masteries
+            $equippedSchools = $this->heroMasteryService->getEquippedSpellSchools($hero);
+            foreach ($equippedSchools as $school) {
+                $this->heroMasteryService->addSchoolMasteryXp($hero, $school, 25);
+            }
         }
     }
 }

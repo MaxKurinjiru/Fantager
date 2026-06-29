@@ -20,6 +20,7 @@
          'ent': 'heroes.race_ent'|trans,
          'genie': 'heroes.race_genie'|trans
      }|json_encode|e('html_attr') }}"
+     data-marketplace-traits-value="{{ hero_trait_js_labels()|json_encode|e('html_attr') }}"
      data-marketplace-rarities-value="{{ {
          'common': 'inventory.rarity_common'|trans,
          'uncommon': 'inventory.rarity_uncommon'|trans,
@@ -87,7 +88,8 @@
          'label_processing': 'marketplace.label_processing'|trans,
          'text_loading': 'js_flash.common.text_loading'|trans,
          'hero_level_short': 'js_flash.common.hero_level_short'|trans,
-         'page_info': 'news.page_info'|trans
+         'page_info': 'news.page_info'|trans,
+         'label_seller_reputation': 'marketplace.label_seller_reputation'|trans
      }|json_encode|e('html_attr') }}">
 
     {% set right_content %}
@@ -110,21 +112,25 @@
     } %}
 
     <div class="tab-nav-bar">
-        <a href="{{ path('app_marketplace', { tab: 'browse', category: category }) }}" class="tab-btn {{ tab == 'browse' ? 'tab-btn--active' : '' }}">
+        <a href="{{ path('app_marketplace', { tab: 'browse', category: category }) }}" class="tab-btn {{ tab == 'browse' ? 'tab-btn--active' : '' }}" data-marketplace-target="tabButton" data-tab="browse" data-action="click->marketplace#switchTab">
             ⚖️ {{ 'marketplace.tab_browse'|trans }}
         </a>
-        <a href="{{ path('app_marketplace', { tab: 'sell' }) }}" class="tab-btn {{ tab == 'sell' ? 'tab-btn--active' : '' }}">
+        <a href="{{ path('app_marketplace', { tab: 'basic_equipment' }) }}" class="tab-btn {{ tab == 'basic_equipment' ? 'tab-btn--active' : '' }}" data-marketplace-target="tabButton" data-tab="basic_equipment" data-action="click->marketplace#switchTab">
+            ⚔️ {{ 'marketplace.tab_basic_equipment'|trans }}
+        </a>
+        <a href="{{ path('app_marketplace', { tab: 'sell' }) }}" class="tab-btn {{ tab == 'sell' ? 'tab-btn--active' : '' }}" data-marketplace-target="tabButton" data-tab="sell" data-action="click->marketplace#switchTab">
             💰 {{ 'marketplace.tab_sell'|trans }}
         </a>
-        <a href="{{ path('app_marketplace', { tab: 'mylistings' }) }}" class="tab-btn {{ tab == 'mylistings' ? 'tab-btn--active' : '' }}">
+        <a href="{{ path('app_marketplace', { tab: 'mylistings' }) }}" class="tab-btn {{ tab == 'mylistings' ? 'tab-btn--active' : '' }}" data-marketplace-target="tabButton" data-tab="mylistings" data-action="click->marketplace#switchTab">
             📦 {{ 'marketplace.tab_my_listings'|trans }}
         </a>
-        <a href="{{ path('app_marketplace', { tab: 'history' }) }}" class="tab-btn {{ tab == 'history' ? 'tab-btn--active' : '' }}">
+        <a href="{{ path('app_marketplace', { tab: 'history' }) }}" class="tab-btn {{ tab == 'history' ? 'tab-btn--active' : '' }}" data-marketplace-target="tabButton" data-tab="history" data-action="click->marketplace#switchTab">
             📜 {{ 'marketplace.tab_history'|trans }}
         </a>
     </div>
 
     {% include 'components/marketplace/browse_tab.html.twig' %}
+    {% include 'components/marketplace/basic_equipment_tab.html.twig' %}
     {% include 'components/marketplace/sell_tab.html.twig' with { heroes: heroes, items: items, trainers: trainers, taxRate: taxRate, team: team } %}
     {% include 'components/marketplace/mylistings_tab.html.twig' %}
     {% include 'components/marketplace/history_tab.html.twig' %}

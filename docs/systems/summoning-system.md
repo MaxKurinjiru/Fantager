@@ -112,6 +112,9 @@ All stats are stored in the database **scaled by ×10** (internal range `10–20
 ### Hero Name
 A random first name and surname are drawn from race-specific name lists defined in `HeroGenerator` (hardcoded; each list contains 30 entries per race).
 
+### Personality Trait
+After generation, the hero has a **60% chance** of receiving a random `HeroTrait` (see [hero-system.md](hero-system.md) § Hero Traits). The summon reveal card shows a trait badge when assigned; the full `POST /api/v1/summoning` response includes nullable `trait`.
+
 ### Scaling Reference
 
 | Chamber Level | Approx. max single stat (with +3 race bonus) | Approx. total stat sum range |

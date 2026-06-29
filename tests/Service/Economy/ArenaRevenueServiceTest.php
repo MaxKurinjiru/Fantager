@@ -155,18 +155,22 @@ class ArenaRevenueServiceTest extends TestCase
 
         $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
 
+        $calledAddGold = null;
         $this->economyServiceMock
             ->expects($this->once())
             ->method('addGold')
-            ->with(
-                $home,
-                $this->greaterThan(0),
-                FinancialRecordType::ArenaRevenue,
-                FinancialRecordActor::System,
-                $this->callback(static fn(array $ctx): bool => isset($ctx['away_team_name']) && 'Away FC' === $ctx['away_team_name'])
-            );
+            ->willReturnCallback(function ($t, $amount, $type, $actor, $context) use (&$calledAddGold, $home) {
+                $this->assertSame($home, $t);
+                $this->assertGreaterThan(0, $amount);
+                $this->assertSame(FinancialRecordType::ArenaRevenue, $type);
+                $this->assertSame(FinancialRecordActor::System, $actor);
+                $this->assertTrue(isset($context['away_team_name']) && 'Away FC' === $context['away_team_name']);
+                $calledAddGold = true;
+            });
 
         $this->arenaRevenueService->payFixtureRevenue($fixture);
+
+        $this->assertTrue($calledAddGold);
     }
 
     public function testPayFixtureRevenueSkipsGoldWhenNobodyAttends(): void
@@ -213,8 +217,11 @@ class ArenaRevenueServiceTest extends TestCase
         $this->fixtureRepositoryMock
             ->expects($this->once())
             ->method('findScheduledFixturesAtTime')
-            ->with($kingdom, $scheduledAt)
-            ->willReturn([$fixture]);
+            ->willReturnCallback(function (Kingdom $k, \DateTimeImmutable $dt) use ($kingdom, $scheduledAt, $fixture) {
+                $this->assertSame($kingdom, $k);
+                $this->assertSame($scheduledAt, $dt);
+                return [$fixture];
+            });
 
         $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
 

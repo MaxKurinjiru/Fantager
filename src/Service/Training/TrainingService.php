@@ -334,6 +334,10 @@ class TrainingService
                         $raceMod = $this->raceConfig->getTrainingSpeedModifier($hero->getRace());
                         $finalRawGainExt = $baseGainScaled * (1.0 + $facilityEfficiency) * $raceMod * $speed;
 
+                        // Trait modifier: QuickLearner +20 %, Slacker -15 %, Perfectionist -10 %
+                        $traitMult = $hero->getTrait()?->getTrainingSpeedMultiplier() ?? 1.0;
+                        $finalRawGainExt *= $traitMult;
+
                         $gainRaw = (int) round($finalRawGainExt * 10);
                         $gainRaw = max(1, min((int) round(9 * $speed), $gainRaw));
 

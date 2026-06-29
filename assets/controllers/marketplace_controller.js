@@ -7,10 +7,11 @@ export default class extends Controller {
         'tabButton', 'tabContent',
         'browseContainer', 'myListingsContainer', 'historyContainer',
         'browseFilterForm', 'browseTypeInput',
-        'raceFilterContainer', 'rarityFilterContainer',
+        'raceFilterContainer', 'rarityFilterContainer', 'heroEntityFilter',
         'sellCatButton', 'sellEntitiesContainer',
         'selectedEntityLabel', 'sellIdInput',
         'listingModeSelect', 'buyoutFieldContainer', 'priceLabel',
+        'suggestedPriceRow', 'suggestedPriceValue', 'listingPriceInput',
         'alert', 'alertMessage', 'sellSearchInput', 'sellSortSelect', 'sellSortOption',
         'browsePagination', 'browsePrevBtn', 'browseNextBtn', 'browsePageInfo',
         'myListingsPagination', 'myListingsPrevBtn', 'myListingsNextBtn', 'myListingsPageInfo',
@@ -25,6 +26,7 @@ export default class extends Controller {
         rarities: Object,
         slots: Object,
         statuses: Object,
+        traits: Object,
         translations: Object,
         initialTab: { type: String, default: 'browse' },
         initialBrowseCategory: { type: String, default: 'hero' },
@@ -45,7 +47,7 @@ export default class extends Controller {
         this.historyPage = 1;
         this.historyTotalPages = 1;
 
-        if (['browse', 'sell', 'mylistings', 'history'].includes(this.activeTab)) {
+        if (['browse', 'sell', 'mylistings', 'history', 'basic_equipment'].includes(this.activeTab)) {
             this._showTab(this.activeTab);
         }
 
@@ -94,12 +96,20 @@ export default class extends Controller {
             return;
         }
 
+        const isItem = catName === 'item';
+
         if (catName === 'item') {
             this.raceFilterContainerTarget.classList.add('hidden');
             this.rarityFilterContainerTarget.classList.remove('hidden');
         } else {
             this.raceFilterContainerTarget.classList.remove('hidden');
             this.rarityFilterContainerTarget.classList.add('hidden');
+        }
+
+        if (this.hasHeroEntityFilterTarget) {
+            this.heroEntityFilterTargets.forEach(el => {
+                el.classList.toggle('hidden', isItem);
+            });
         }
     }
 
@@ -221,10 +231,12 @@ export default class extends Controller {
 
         const id = card.dataset.entityId;
         const name = card.dataset.entityName;
+        const suggestedPrice = parseInt(card.dataset.suggestedPrice || '0', 10);
 
         this.selectedEntityId = id;
         this.sellIdInputTarget.value = id;
         this.selectedEntityLabelTarget.textContent = name;
+        this._updateSuggestedPrice(suggestedPrice);
 
         // Highlight selection
         const container = card.closest('[data-marketplace-target="sellEntitiesContainer"]');
@@ -245,10 +257,38 @@ export default class extends Controller {
         this.selectedEntityId = String(heroId);
         this.sellIdInputTarget.value = String(heroId);
         this.selectedEntityLabelTarget.textContent = card.dataset.entityName || '';
+        this._updateSuggestedPrice(parseInt(card.dataset.suggestedPrice || '0', 10));
 
         heroContainer.querySelectorAll('.sell-card').forEach(c => {
             c.classList.toggle('sell-card--selected', c === card);
         });
+    }
+
+    applySuggestedPrice(event) {
+        event.preventDefault();
+        if (!this.hasListingPriceInputTarget || !this.hasSuggestedPriceValueTarget) {
+            return;
+        }
+
+        const raw = this.suggestedPriceValueTarget.textContent.replace(/[^\d]/g, '');
+        const price = parseInt(raw, 10);
+        if (price > 0) {
+            this.listingPriceInputTarget.value = String(price);
+        }
+    }
+
+    _updateSuggestedPrice(price) {
+        if (!this.hasSuggestedPriceRowTarget || !this.hasSuggestedPriceValueTarget) {
+            return;
+        }
+
+        if (price > 0) {
+            this.suggestedPriceRowTarget.classList.remove('hidden');
+            this.suggestedPriceValueTarget.textContent = `🪙 ${price.toLocaleString()}`;
+        } else {
+            this.suggestedPriceRowTarget.classList.add('hidden');
+            this.suggestedPriceValueTarget.textContent = '';
+        }
     }
 
     onListingModeChange(event) {
@@ -408,11 +448,18 @@ export default class extends Controller {
 
                 card.querySelector('.js-level').textContent = (this.translationsValue.hero_level_short || '%level%')
                     .replace('%level%', hero.level);
+                if (hero.ratings) {
+                    card.querySelector('.js-base-ovr').textContent = hero.ratings.base_ovr;
+                    card.querySelector('.js-complex-rating').textContent = hero.ratings.complex_rating;
+                } else {
+                    card.querySelector('.js-rating-row')?.classList.add('hidden');
+                }
                 card.querySelector('.js-name').textContent = hero.name;
                 card.querySelector('.js-race').textContent = this.racesValue[hero.race] || hero.race;
                 card.querySelector('.js-age').textContent = `${hero.age} ${this.translationsValue.years_suffix || ''}`;
                 card.querySelector('.js-form').textContent = `${hero.form}%`;
                 card.querySelector('.js-fatigue').textContent = `${hero.fatigue}%`;
+                this.renderHeroTrait(card, hero.trait);
 
                 card.querySelector('.js-str').textContent = hero.str;
                 card.querySelector('.js-dex').textContent = hero.dex;
@@ -462,6 +509,12 @@ export default class extends Controller {
 
                 const ageLabel = this.translationsValue.label_age;
                 card.querySelector('.js-age').textContent = `${ageLabel}: ${trainer.age} ${this.translationsValue.years_suffix || ''}`;
+                if (trainer.ratings) {
+                    card.querySelector('.js-base-ovr').textContent = trainer.ratings.base_ovr;
+                    card.querySelector('.js-complex-rating').textContent = trainer.ratings.complex_rating;
+                } else {
+                    card.querySelector('.js-rating-row')?.classList.add('hidden');
+                }
                 card.querySelector('.js-name').textContent = trainer.name;
                 card.querySelector('.js-race').textContent = this.racesValue[trainer.race] || trainer.race;
 
@@ -480,6 +533,11 @@ export default class extends Controller {
             const currentHighestBid = listing.highest_bid ? listing.highest_bid.amount : null;
 
             card.querySelector('.js-seller-name').textContent = listing.seller_team.name;
+            const sellerRepEl = card.querySelector('.js-seller-reputation');
+            if (sellerRepEl) {
+                const repLabel = this.translationsValue.label_seller_reputation || '%value%';
+                sellerRepEl.textContent = repLabel.replace('%value%', listing.seller_team.reputation ?? 0);
+            }
 
             const expiresAt = new Date(listing.expires_at);
             card.querySelector('.js-time-remaining').textContent = this.formatTimeRemaining(expiresAt);
@@ -1001,5 +1059,38 @@ export default class extends Controller {
         if (this.hasAlertTarget) {
             hideAlert(this.alertTarget);
         }
+    }
+
+    renderHeroTrait(card, traitKey) {
+        const row = card.querySelector('.js-trait-row');
+        const badge = card.querySelector('.js-trait-badge');
+        if (!row || !badge) {
+            return;
+        }
+
+        if (!traitKey || !this.hasTraitsValue || !this.traitsValue[traitKey]) {
+            row.classList.add('hidden');
+            badge.replaceChildren();
+            badge.className = 'js-trait-badge';
+            badge.removeAttribute('title');
+            return;
+        }
+
+        const trait = this.traitsValue[traitKey];
+        row.classList.remove('hidden');
+        badge.className = `hero-trait-badge hero-trait-badge--${trait.category} hero-trait-badge--compact js-trait-badge`;
+        badge.title = trait.desc;
+        badge.replaceChildren();
+
+        const icon = document.createElement('span');
+        icon.className = 'hero-trait-badge__icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = trait.icon;
+
+        const label = document.createElement('span');
+        label.className = 'hero-trait-badge__label';
+        label.textContent = trait.name;
+
+        badge.append(icon, label);
     }
 }

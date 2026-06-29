@@ -1,0 +1,73 @@
+# Hero rating weights and economy constants.
+# Calibrate via future simulations; values are placeholders.
+
+physical_weights:
+  max_hp: 0.14
+  physical_attack: 0.18
+  armor_value: 0.14
+  base_initiative: 0.08
+  accuracy_percent: 0.10
+  dodge_percent: 0.08
+  crit_percent: 0.08
+  cha: 0.10
+  physical_damage_reduction: 0.10
+
+magic_weights:
+  spell_power: 0.30
+  magic_resistance: 0.25
+  cha: 0.15
+  wil: 0.15
+  magic_damage_reduction: 0.15
+
+# Reference ceilings for normalizing derived stats (level 20, primary stat 20).
+reference_ceilings:
+  max_hp: 900
+  physical_attack: 80
+  spell_power: 90
+  armor_value: 50
+  magic_resistance: 60
+  base_initiative: 50
+  accuracy_percent: 120
+  dodge_percent: 50
+  crit_percent: 50
+  cha: 20
+  wil: 20
+  physical_damage_reduction: 0.67
+  magic_damage_reduction: 0.67
+
+scale:
+  base_ovr_max: 100
+  complex_rating_max: 9999
+
+mastery:
+  points_per_tier: 25
+
+trait:
+  quick_learner: 150
+  clutch: 80
+  audience_favorite: 120
+  battle_hardened: 90
+  volatile: -100
+  slacker: -120
+  fragile: -80
+  glass_jaw: -60
+  berserker: 40
+  glass_cannon: 50
+  reckless: 30
+  loner: 0
+  overconfident: 35
+  perfectionist: 20
+
+age_multiplier:
+  junior: 1.05
+  prime: 1.00
+  veteran: 0.98
+  elder: 0.95
+
+economy:
+  gold_per_complex_point: 0.5
+  dismiss_compensation_ratio: 0.4
+  trainer_dismiss_compensation_ratio: 0.3
+  hero_salary_factor: 0.02
+  trainer_salary_factor: 0.03
+  trainer_market_multiplier: 1.5

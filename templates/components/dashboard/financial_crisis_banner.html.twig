@@ -18,7 +18,9 @@
                 <p class="financial-crisis-banner__message">
                     {{ ('financial_crisis.message_' ~ crisis.level)|trans({
                         '%debt%': crisis.unpaid_debt|number_format(0, '.', ' '),
+                        '%expenses%': crisis.weekly_expenses|number_format(0, '.', ' '),
                         '%maintenance%': crisis.weekly_maintenance|number_format(0, '.', ' '),
+                        '%payroll%': crisis.weekly_payroll|number_format(0, '.', ' '),
                         '%weeks%': crisis.crisis_weeks,
                         '%weeks_until%': crisis.weeks_until_bankruptcy
                     }) }}
@@ -30,8 +32,16 @@
                         <dd>🪙 {{ crisis.unpaid_debt|number_format(0, '.', ' ') }}</dd>
                     </div>
                     <div class="financial-crisis-banner__stat">
+                        <dt>{{ 'financial_crisis.weekly_expenses'|trans }}</dt>
+                        <dd>🪙 {{ crisis.weekly_expenses|number_format(0, '.', ' ') }}</dd>
+                    </div>
+                    <div class="financial-crisis-banner__stat">
                         <dt>{{ 'financial_crisis.weekly_maintenance'|trans }}</dt>
                         <dd>🪙 {{ crisis.weekly_maintenance|number_format(0, '.', ' ') }}</dd>
+                    </div>
+                    <div class="financial-crisis-banner__stat">
+                        <dt>{{ 'financial_crisis.weekly_payroll'|trans }}</dt>
+                        <dd>🪙 {{ crisis.weekly_payroll|number_format(0, '.', ' ') }}</dd>
                     </div>
                     <div class="financial-crisis-banner__stat">
                         <dt>{{ 'financial_crisis.gold_on_hand'|trans }}</dt>

@@ -11,12 +11,23 @@
                 <span class="marketplace-card__type-badge marketplace-card__type-badge--hero">👥 {{ 'marketplace.type_hero'|trans }}</span>
                 <span class="marketplace-card__level js-level"></span>
             </div>
+            <div class="marketplace-card__rating-row js-rating-row">
+                <span class="hero-rating-badge__item hero-rating-badge__item--ovr">
+                    <span class="hero-rating-badge__label">{{ 'heroes.rating.base_ovr'|trans }}</span>
+                    <span class="hero-rating-badge__value js-base-ovr"></span>
+                </span>
+                <span class="hero-rating-badge__item hero-rating-badge__item--complex">
+                    <span class="hero-rating-badge__label">{{ 'heroes.rating.complex'|trans }}</span>
+                    <span class="hero-rating-badge__value js-complex-rating"></span>
+                </span>
+            </div>
             <h3 class="marketplace-card__title js-name"></h3>
             <div class="marketplace-card__details">
                 <div>{{ 'heroes.race'|trans }}: <span class="marketplace-card__detail-value js-race"></span></div>
                 <div>{{ 'heroes.age'|trans }}: <span class="marketplace-card__detail-value js-age"></span></div>
                 <div>{{ 'marketplace.card_form'|trans }} <span class="marketplace-card__detail-value js-form"></span></div>
                 <div>{{ 'heroes.fatigue'|trans }}: <span class="marketplace-card__detail-value js-fatigue"></span></div>
+                <div class="js-trait-row hidden">{{ 'heroes.trait_label'|trans }}: <span class="js-trait-badge"></span></div>
             </div>
             <div class="marketplace-card__stats">
                 <div class="marketplace-card__stat-item">{{ 'heroes.abbr_str'|trans }}<span class="marketplace-card__stat-value js-str"></span></div>
@@ -31,7 +42,7 @@
         </div>
         <div class="marketplace-card__footer js-footer-info">
             <div class="marketplace-card__footer-row">
-                <span>{{ 'marketplace.col_seller'|trans }}: <span class="marketplace-card__seller-name js-seller-name"></span></span>
+                <span>{{ 'marketplace.col_seller'|trans }}: <span class="marketplace-card__seller-name js-seller-name"></span> · <span class="marketplace-card__seller-reputation js-seller-reputation"></span></span>
                 <span class="marketplace-card__time-remaining js-time-remaining"></span>
             </div>
             <div class="marketplace-card__footer-row js-buyout-section hidden">
@@ -64,7 +75,7 @@
         </div>
         <div class="marketplace-card__footer js-footer-info">
             <div class="marketplace-card__footer-row">
-                <span>{{ 'marketplace.col_seller'|trans }}: <span class="marketplace-card__seller-name js-seller-name"></span></span>
+                <span>{{ 'marketplace.col_seller'|trans }}: <span class="marketplace-card__seller-name js-seller-name"></span> · <span class="marketplace-card__seller-reputation js-seller-reputation"></span></span>
                 <span class="marketplace-card__time-remaining js-time-remaining"></span>
             </div>
             <div class="marketplace-card__footer-row js-buyout-section hidden">
@@ -88,6 +99,16 @@
                 <span class="marketplace-card__type-badge marketplace-card__type-badge--trainer">🏋️ {{ 'marketplace.type_trainer'|trans }}</span>
                 <span class="marketplace-card__level js-age"></span>
             </div>
+            <div class="marketplace-card__rating-row js-rating-row">
+                <span class="hero-rating-badge__item hero-rating-badge__item--ovr">
+                    <span class="hero-rating-badge__label">{{ 'heroes.rating.base_ovr'|trans }}</span>
+                    <span class="hero-rating-badge__value js-base-ovr"></span>
+                </span>
+                <span class="hero-rating-badge__item hero-rating-badge__item--complex">
+                    <span class="hero-rating-badge__label">{{ 'heroes.rating.complex'|trans }}</span>
+                    <span class="hero-rating-badge__value js-complex-rating"></span>
+                </span>
+            </div>
             <h3 class="marketplace-card__title js-name"></h3>
             <div class="marketplace-card__details">
                 <div>{{ 'heroes.race'|trans }}: <span class="marketplace-card__detail-value js-race"></span></div>
@@ -105,7 +126,7 @@
         </div>
         <div class="marketplace-card__footer js-footer-info">
             <div class="marketplace-card__footer-row">
-                <span>{{ 'marketplace.col_seller'|trans }}: <span class="marketplace-card__seller-name js-seller-name"></span></span>
+                <span>{{ 'marketplace.col_seller'|trans }}: <span class="marketplace-card__seller-name js-seller-name"></span> · <span class="marketplace-card__seller-reputation js-seller-reputation"></span></span>
                 <span class="marketplace-card__time-remaining js-time-remaining"></span>
             </div>
             <div class="marketplace-card__footer-row js-buyout-section hidden">

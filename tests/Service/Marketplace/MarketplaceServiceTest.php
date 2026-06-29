@@ -14,6 +14,7 @@ use App\Enum\ListingType;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Exception\UserFacingException;
+use App\Service\Hero\HeroRatingCalculator;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Notification\NotificationHelper;
 use App\Service\Team\TeamRosterService;
@@ -41,6 +42,10 @@ class MarketplaceServiceTest extends TestCase
     private $teamChronicleServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&TeamChemistryService */
     private $teamChemistryServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&HeroRatingCalculator */
+    private $heroRatingCalculatorMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Config\RaceConfig */
+    private $raceConfigMock;
     private MarketplaceService $marketplaceService;
 
     protected function setUp(): void
@@ -53,6 +58,8 @@ class MarketplaceServiceTest extends TestCase
         $this->teamRosterServiceMock = $this->createMock(TeamRosterService::class);
         $this->teamChronicleServiceMock = $this->createMock(\App\Service\TeamChronicle\TeamChronicleService::class);
         $this->teamChemistryServiceMock = $this->createMock(TeamChemistryService::class);
+        $this->heroRatingCalculatorMock = $this->createMock(HeroRatingCalculator::class);
+        $this->raceConfigMock = $this->createMock(\App\Service\Config\RaceConfig::class);
 
         $this->marketplaceService = new MarketplaceService(
             $this->entityManagerMock,
@@ -63,6 +70,8 @@ class MarketplaceServiceTest extends TestCase
             $this->teamRosterServiceMock,
             $this->teamChronicleServiceMock,
             $this->teamChemistryServiceMock,
+            $this->heroRatingCalculatorMock,
+            $this->raceConfigMock,
         );
     }
 
@@ -117,13 +126,17 @@ class MarketplaceServiceTest extends TestCase
         $listing->setStatus(ListingStatus::Active);
 
         $listingRepo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
-        $listingRepo->expects($this->once())->method('find')->with(42)->willReturn($listing);
+        $listingRepo->method('find')->willReturnCallback(function ($id) use ($listing) {
+            $this->assertSame(42, $id);
+            return $listing;
+        });
 
         $this->entityManagerMock
-            ->expects($this->once())
             ->method('getRepository')
-            ->with(MarketplaceListing::class)
-            ->willReturn($listingRepo);
+            ->willReturnCallback(function ($className) use ($listingRepo) {
+                $this->assertSame(MarketplaceListing::class, $className);
+                return $listingRepo;
+            });
 
         $this->entityManagerMock->expects($this->once())->method('flush');
 

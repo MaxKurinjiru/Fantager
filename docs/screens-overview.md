@@ -121,6 +121,7 @@ The site is divided into two main sections:
   - Hero name
   - Race (icon)
   - Level
+  - **Personality trait** (badge when present; tooltip describes the effect)
   - Age (+ phase icon: Junior/Prime/Veteran/Elder)
   - Primary stats (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) — values 1–20, compact display
   - Form (%)
@@ -160,6 +161,7 @@ The site is divided into two main sections:
   - 3D/2D hero avatar
   - Level + XP progress bar
   - Age (+ milestone indicator)
+  - **Personality trait** (header badge when present; overview panel with full description)
 - **Primary Attributes:**
   - STR, DEX, KON, SPD, INT, WIL, CHA, LCK (values + race flat bonus tooltip)
 - **Secondary Attributes:**
@@ -366,6 +368,9 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Age range preview (Min Age - Max Junior Age for summonable races)
   - Expected stat range (based on race flat bonuses and Summoning Chamber level)
   - Summon Cost (Gold)
+- **Summon reveal** (after successful summon):
+  - New hero name, race, level, primary stats
+  - **Personality trait badge** when assigned (~60% of summons)
 - **Recent Summons (history):**
   - Recently acquired heroes
   - Their basic stats
@@ -607,6 +612,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Level (for heroes/trainers)
   - Age (for heroes/trainers)
   - Stats/Attributes (compact)
+  - **Personality trait** (hero listings, when present)
   - Rarity (for items)
   - Price (Gold)
   - Seller Name

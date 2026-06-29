@@ -29,7 +29,7 @@
             </div>
 
             {# Race Filter (Heroes/Trainers) #}
-            <div class="form-field-group form-field-group--tight{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="raceFilterContainer">
+            <div class="form-field-group form-field-group--tight{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="raceFilterContainer heroEntityFilter">
                 <label for="filter-race" class="form-label">{{ 'heroes.race'|trans }}</label>
                 <select id="filter-race" name="race" class="form-input">
                     <option value="">{{ 'marketplace.filter_all_races'|trans }}</option>
@@ -41,6 +41,30 @@
                     <option value="giant">{{ 'heroes.race_giant'|trans }}</option>
                     <option value="ent">{{ 'heroes.race_ent'|trans }}</option>
                     <option value="genie">{{ 'heroes.race_genie'|trans }}</option>
+                </select>
+            </div>
+
+            {# Level filter (Heroes/Trainers) #}
+            <div class="form-field-group form-field-group--tight{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="heroEntityFilter">
+                <label for="filter-level-min" class="form-label">{{ 'marketplace.filter_level_min'|trans }}</label>
+                <input type="number" id="filter-level-min" name="level_min" min="1" max="99" placeholder="{{ 'marketplace.filter_level_placeholder'|trans }}"
+                       class="form-input">
+            </div>
+            <div class="form-field-group form-field-group--tight{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="heroEntityFilter">
+                <label for="filter-level-max" class="form-label">{{ 'marketplace.filter_level_max'|trans }}</label>
+                <input type="number" id="filter-level-max" name="level_max" min="1" max="99" placeholder="{{ 'marketplace.filter_level_placeholder'|trans }}"
+                       class="form-input">
+            </div>
+
+            {# Age phase filter (Heroes/Trainers) #}
+            <div class="form-field-group form-field-group--tight{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="heroEntityFilter">
+                <label for="filter-age-phase" class="form-label">{{ 'marketplace.filter_age_phase'|trans }}</label>
+                <select id="filter-age-phase" name="age_phase" class="form-input">
+                    <option value="">{{ 'marketplace.filter_all_age_phases'|trans }}</option>
+                    <option value="junior">{{ 'heroes.age_phase.junior'|trans }}</option>
+                    <option value="prime">{{ 'heroes.age_phase.prime'|trans }}</option>
+                    <option value="veteran">{{ 'heroes.age_phase.veteran'|trans }}</option>
+                    <option value="elder">{{ 'heroes.age_phase.elder'|trans }}</option>
                 </select>
             </div>
 
@@ -58,6 +82,49 @@
                 </select>
             </div>
 
+            {# Complex rating filter (Heroes/Trainers) #}
+            <div class="form-field-group form-field-group--tight{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="ratingFilterContainer heroEntityFilter">
+                <label for="filter-rating-min" class="form-label">{{ 'marketplace.filter_rating_min'|trans }}</label>
+                <input type="number" id="filter-rating-min" name="rating_min" min="0" max="9999" placeholder="{{ 'marketplace.filter_rating_placeholder'|trans }}"
+                       class="form-input">
+            </div>
+            <div class="form-field-group form-field-group--tight{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="ratingFilterContainer heroEntityFilter">
+                <label for="filter-rating-max" class="form-label">{{ 'marketplace.filter_rating_max'|trans }}</label>
+                <input type="number" id="filter-rating-max" name="rating_max" min="0" max="9999" placeholder="{{ 'marketplace.filter_rating_placeholder'|trans }}"
+                       class="form-input">
+            </div>
+
+            {# Base OVR filter (Heroes/Trainers) #}
+            <div class="form-field-group form-field-group--tight{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="heroEntityFilter">
+                <label for="filter-ovr-min" class="form-label">{{ 'marketplace.filter_ovr_min'|trans }}</label>
+                <input type="number" id="filter-ovr-min" name="base_ovr_min" min="0" max="100" placeholder="{{ 'marketplace.filter_ovr_placeholder'|trans }}"
+                       class="form-input">
+            </div>
+            <div class="form-field-group form-field-group--tight{% if category|default('hero') == 'item' %} hidden{% endif %}" data-marketplace-target="heroEntityFilter">
+                <label for="filter-ovr-max" class="form-label">{{ 'marketplace.filter_ovr_max'|trans }}</label>
+                <input type="number" id="filter-ovr-max" name="base_ovr_max" min="0" max="100" placeholder="{{ 'marketplace.filter_ovr_placeholder'|trans }}"
+                       class="form-input">
+            </div>
+
+            {# Price filter #}
+            <div class="form-field-group form-field-group--tight">
+                <label for="filter-price-min" class="form-label">{{ 'marketplace.filter_price_min'|trans }}</label>
+                <input type="number" id="filter-price-min" name="price_min" min="1" placeholder="{{ 'marketplace.filter_price_placeholder'|trans }}"
+                       class="form-input">
+            </div>
+            <div class="form-field-group form-field-group--tight">
+                <label for="filter-price-max" class="form-label">{{ 'marketplace.filter_price_max'|trans }}</label>
+                <input type="number" id="filter-price-max" name="price_max" min="1" placeholder="{{ 'marketplace.filter_price_placeholder'|trans }}"
+                       class="form-input">
+            </div>
+
+            {# Seller reputation filter #}
+            <div class="form-field-group form-field-group--tight">
+                <label for="filter-seller-reputation" class="form-label">{{ 'marketplace.filter_seller_reputation_min'|trans }}</label>
+                <input type="number" id="filter-seller-reputation" name="seller_reputation_min" min="0" placeholder="{{ 'marketplace.filter_seller_reputation_placeholder'|trans }}"
+                       class="form-input">
+            </div>
+
             {# Sort #}
             <div class="form-field-group form-field-group--tight">
                 <label for="filter-sort" class="form-label">{{ 'marketplace.filter_sort'|trans }}</label>
@@ -65,6 +132,8 @@
                     <option value="newest">{{ 'marketplace.sort_newest'|trans }}</option>
                     <option value="price_asc">{{ 'marketplace.sort_price_asc'|trans }}</option>
                     <option value="price_desc">{{ 'marketplace.sort_price_desc'|trans }}</option>
+                    <option value="rating_desc">{{ 'marketplace.sort_rating_desc'|trans }}</option>
+                    <option value="ovr_desc">{{ 'marketplace.sort_ovr_desc'|trans }}</option>
                     <option value="expires_asc">{{ 'marketplace.sort_expires_asc'|trans }}</option>
                 </select>
             </div>

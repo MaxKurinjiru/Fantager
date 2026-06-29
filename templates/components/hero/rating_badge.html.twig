@@ -1,0 +1,19 @@
+{# Hero intrinsic value badges — base OVR (cross-race) and optional complex rating. #}
+{% set rating = rating|default(hero is defined and hero ? hero_rating(hero) : null) %}
+{% if rating %}
+    <div class="hero-rating-badge{% if layout|default('inline') == 'stacked' %} hero-rating-badge--stacked{% endif %}"
+         {% if show_tooltips|default(true) %}title="{{ 'heroes.rating.tooltip_base'|trans }}"{% endif %}>
+        <span class="hero-rating-badge__item hero-rating-badge__item--ovr"
+              {% if show_tooltips|default(true) %}title="{{ 'heroes.rating.tooltip_base'|trans }}"{% endif %}>
+            <span class="hero-rating-badge__label">{{ 'heroes.rating.base_ovr'|trans }}</span>
+            <span class="hero-rating-badge__value">{{ rating.baseOvr }}</span>
+        </span>
+        {% if show_complex|default(false) %}
+            <span class="hero-rating-badge__item hero-rating-badge__item--complex"
+                  title="{{ 'heroes.rating.tooltip_complex'|trans }}">
+                <span class="hero-rating-badge__label">{{ 'heroes.rating.complex'|trans }}</span>
+                <span class="hero-rating-badge__value">{{ rating.complexRating }}</span>
+            </span>
+        {% endif %}
+    </div>
+{% endif %}

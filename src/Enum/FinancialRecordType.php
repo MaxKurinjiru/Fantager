@@ -26,4 +26,6 @@ enum FinancialRecordType: string
     case HqDowngradeRefund = 'hq_downgrade_refund';
     case HqUpgradeRefund = 'hq_upgrade_refund';
     case KingdomReward = 'kingdom_reward';
+    case HeroSalary = 'hero_salary';
+    case TrainerSalary = 'trainer_salary';
 }

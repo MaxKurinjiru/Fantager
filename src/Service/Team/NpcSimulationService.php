@@ -16,19 +16,22 @@ use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
+use App\Enum\HeroTrait;
 use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemStatus;
+use App\Enum\ItemSubType;
 use App\Enum\ListingMode;
 use App\Enum\ListingStatus;
 use App\Enum\ListingType;
 use App\Enum\Race;
 use App\Enum\TrainingType;
 use App\Service\Headquarters\HeadquartersService;
+use App\Service\Hero\HeroDismissalService;
+use App\Service\Hero\HeroRatingCalculator;
 use App\Service\Item\ItemService;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Summoning\SummoningService;
-use App\Service\Hero\HeroDismissalService;
 use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -49,6 +52,43 @@ class NpcSimulationService
         self::ROLE_SCAVENGER_CLAN,
     ];
 
+    private const SUBTYPE_TO_BASIC_ITEM = [
+        'one_handed_sword' => 'short_sword',
+        'two_handed_sword' => 'greatsword',
+        'one_handed_axe' => 'hand_axe',
+        'two_handed_axe' => 'battle_axe',
+        'one_handed_mace' => 'flanged_mace',
+        'two_handed_mace' => 'warhammer',
+        'dagger' => 'iron_dagger',
+        'bow' => 'short_bow',
+        'crossbow' => 'light_crossbow',
+        'wand' => 'wooden_wand',
+        'staff' => 'wooden_staff',
+        'shield' => 'wooden_shield',
+        'spell_accelerator' => 'apprentice_wand',
+    ];
+
+    private const ARMOR_TO_BASIC_ITEM = [
+        'light_armor' => [
+            'head' => 'leather_helmet',
+            'body' => 'leather_jerkin',
+            'hands' => 'leather_gloves',
+            'feet' => 'leather_boots',
+        ],
+        'medium_armor' => [
+            'head' => 'chain_coif',
+            'body' => 'chain_hauberk',
+            'hands' => 'chain_gloves',
+            'feet' => 'chain_boots',
+        ],
+        'heavy_armor' => [
+            'head' => 'iron_helmet',
+            'body' => 'plate_armor',
+            'hands' => 'iron_gauntlets',
+            'feet' => 'iron_greaves',
+        ],
+    ];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly SummoningService $summoningService,
@@ -57,6 +97,7 @@ class NpcSimulationService
         private readonly TrainingService $trainingService,
         private readonly ItemService $itemService,
         private readonly HeroDismissalService $dismissalService,
+        private readonly HeroRatingCalculator $heroRatingCalculator,
     ) {
     }
 
@@ -147,6 +188,33 @@ class NpcSimulationService
 
                 $frontScore = ($hero->getKon() + $hero->getStr()) * $readinessMultiplier;
                 $backScore = ($hero->getIntel() + $hero->getSpd() + $hero->getDex()) * $readinessMultiplier;
+
+                // Trait-aware score adjustments
+                $trait = $hero->getTrait();
+                if (null !== $trait) {
+                    // Traits boosting physical front-row performance
+                    if (\in_array($trait, [HeroTrait::Berserker, HeroTrait::Overconfident, HeroTrait::BattleHardened], true)) {
+                        $frontScore *= 1.20;
+                    }
+                    // Traits boosting back-row / ranged / magic performance
+                    if (\in_array($trait, [HeroTrait::Glasscannon, HeroTrait::Reckless], true)) {
+                        $backScore *= 1.20;
+                        $frontScore *= 0.85; // Penalty for fragile back-row heroes in front
+                    }
+                    // Clutch: better front-row (thrives under pressure)
+                    if (HeroTrait::Clutch === $trait) {
+                        $frontScore *= 1.10;
+                    }
+                    // Fragile / GlassJaw: penalize front-row placement
+                    if (\in_array($trait, [HeroTrait::Fragile, HeroTrait::GlassJaw], true)) {
+                        $frontScore *= 0.80;
+                    }
+                    // Volatile: penalize — unstable heroes are suboptimal, prefer bench
+                    if (HeroTrait::Volatile === $trait) {
+                        $frontScore *= 0.90;
+                        $backScore *= 0.90;
+                    }
+                }
 
                 $frontCandidates[] = ['hero' => $hero, 'id' => $heroId, 'score' => $frontScore];
                 $backCandidates[] = ['hero' => $hero, 'id' => $heroId, 'score' => $backScore];
@@ -334,6 +402,18 @@ class NpcSimulationService
                 return $b->getLevel() <=> $a->getLevel();
             });
 
+            // Exclude purely negative-trait heroes from trainer promotion:
+            // They have no place as trainers either (Slacker/Volatile/Fragile/GlassJaw)
+            // unless the team is desperate (no other candidates).
+            $promotionCandidatesPositive = array_filter(
+                $promotionCandidates,
+                fn (Hero $h) => !$this->isPurelyNegativeTrait($h->getTrait())
+            );
+            if (count($promotionCandidatesPositive) >= 1) {
+                $promotionCandidates = array_values($promotionCandidatesPositive);
+            }
+            // else: fall back to all candidates (better a Slacker trainer than no trainer)
+
             $trainerLimit = $this->trainingService->getTrainerLimit($team);
             $needed = $trainerLimit - count($trainers);
             for ($i = 0; $i < $needed && $i < count($promotionCandidates); ++$i) {
@@ -382,6 +462,14 @@ class NpcSimulationService
             }
 
             // Assign trainees to active trainers up to their slot limits
+            // Priority: QuickLearner heroes first (gain more from training), then rest
+            usort($trainees, function (Hero $a, Hero $b): int {
+                $aIsQuick = HeroTrait::QuickLearner === $a->getTrait() ? 0 : 1;
+                $bIsQuick = HeroTrait::QuickLearner === $b->getTrait() ? 0 : 1;
+
+                return $aIsQuick <=> $bIsQuick;
+            });
+
             $traineeIndex = 0;
             foreach ($activeTrainers as $trainer) {
                 $slotsLimit = $this->trainingService->getTrainerSlotsLimit($trainer);
@@ -439,7 +527,59 @@ class NpcSimulationService
                 }
             }
 
-            // 0. Recycle Roster: If roster is full and we have at least 1 hero listed for sale,
+            // 0a. Trait-aware dismissal:
+            // Heroes with a purely negative trait are unlikely to sell on the marketplace
+            // and degrade team performance. Dismiss them unless they qualify as trainer candidates
+            // (high level or age — someone may want them for training despite the trait).
+            if (!($heroCount >= $rosterLimit && $sellingCount >= 1)) {
+                // Only run proactive dismissal when the roster is NOT already in recycle mode
+                foreach ($aliveHeroes as $hero) {
+                    $heroId = $hero->getId();
+                    if (null === $heroId) {
+                        continue;
+                    }
+                    if (HeroStatus::Available !== $hero->getStatus()) {
+                        continue;
+                    }
+                    if ($hero->isTrainer()) {
+                        continue; // Never dismiss active trainers
+                    }
+                    if (!$this->isPurelyNegativeTrait($hero->getTrait())) {
+                        continue; // Only negative-trait heroes
+                    }
+
+                    // Keep if high-level — could still become a trainer at some point
+                    if ($hero->getLevel() >= 4) {
+                        continue;
+                    }
+
+                    // Keep if in active formation (we need the body count)
+                    $activeFormationsTrait = $this->em->getRepository(Formation::class)->findBy(['team' => $team]);
+                    $activeHeroIdsTrait = [];
+                    foreach ($activeFormationsTrait as $form) {
+                        foreach ($form->getSlots() as $slot) {
+                            $heroInSlot = $slot->getHero();
+                            if (null !== $heroInSlot && null !== $heroInSlot->getId()) {
+                                $activeHeroIdsTrait[$heroInSlot->getId()] = true;
+                            }
+                        }
+                    }
+                    if (isset($activeHeroIdsTrait[$heroId])) {
+                        continue;
+                    }
+
+                    try {
+                        $this->dismissalService->dismiss($team, $hero);
+                        $aliveHeroes = array_filter($aliveHeroes, static fn (Hero $h) => $h->getId() !== $heroId);
+                        $heroCount = count($aliveHeroes);
+                        break; // Dismiss at most one negative-trait hero per tick
+                    } catch (\Throwable) {
+                        // Dismissal failed, continue
+                    }
+                }
+            }
+
+            // 0b. Recycle Roster: If roster is full and we have at least 1 hero listed for sale,
             // dismiss the worst available combatant to make room for a new summon.
             if ($heroCount >= $rosterLimit && $sellingCount >= 1) {
                 $summonStatus = $this->summoningService->getStatus($team);
@@ -557,7 +697,7 @@ class NpcSimulationService
                     $cost = $this->hqService->calculateUpgradeCost($facilityType, $facility->getLevel(), $hq->getComputedTotalLevel());
                     if ($team->getGold() >= ($safetyReserve + $cost)) {
                         // Compute level difference constraint among ALL facilities:
-                        // Level difference between highest and lowest facilities after this upgrade must be <= 2
+                        // Level difference between highest and lowest facilities after this upgrade must be <= 3
                         $tempLevels = [];
                         foreach ($upgradeCandidates as $uc) {
                             $tempLevels[] = ($uc['type'] === $facilityType) ? $uc['level'] + 1 : $uc['level'];
@@ -565,7 +705,7 @@ class NpcSimulationService
                         $maxLevel = max($tempLevels);
                         $minLevel = min($tempLevels);
 
-                        if (($maxLevel - $minLevel) <= 2) {
+                        if (($maxLevel - $minLevel) <= 3) {
                             try {
                                 $this->hqService->upgradeFacility($team, $facilityType, $now);
                                 break; // Upgrade at most one facility per week
@@ -751,7 +891,8 @@ class NpcSimulationService
     }
 
     /**
-     * Auto-equip best available items from inventory to active heroes.
+     * Auto-equip best available items from inventory to active heroes, considering masteries
+     * and buying basic items as a fallback.
      *
      * @param array<Hero> $heroes
      */
@@ -763,11 +904,7 @@ class NpcSimulationService
             'equippedHero' => null,
         ]);
 
-        if (empty($unequippedItems)) {
-            return;
-        }
-
-        // Sort items by rarity descending
+        // Sort unequipped items by rarity descending to prioritize equipping better quality gear first
         $rarityValues = [
             'mythic' => 6,
             'legendary' => 5,
@@ -776,35 +913,276 @@ class NpcSimulationService
             'uncommon' => 2,
             'common' => 1,
         ];
-
         usort($unequippedItems, fn ($a, $b) => $rarityValues[$b->getRarity()->value] <=> $rarityValues[$a->getRarity()->value]);
 
+        // Define a list of slots that we manage with masteries/basic items
+        $managedSlots = [
+            ItemSlotType::MainHand,
+            ItemSlotType::OffHand,
+            ItemSlotType::Head,
+            ItemSlotType::Body,
+            ItemSlotType::Hands,
+            ItemSlotType::Feet,
+        ];
+
+        // 1. Optimal Mastery Pass
         foreach ($heroes as $hero) {
-            foreach (ItemSlotType::cases() as $slotType) {
-                // Check if slot already has an item
+            $prefWeapon = $this->getPreferredWeaponSubType($hero);
+            $prefArmor = $this->getPreferredArmorSubType($hero);
+            $prefOffHand = $this->getPreferredOffHandSubType($hero, $prefWeapon);
+
+            foreach ($managedSlots as $slot) {
+                // Get the preferred sub-type for this slot
+                $prefSubType = match ($slot) {
+                    ItemSlotType::MainHand => $prefWeapon,
+                    ItemSlotType::OffHand => $prefOffHand,
+                    default => $prefArmor,
+                };
+
+                // Find currently equipped item in this slot
                 $equipped = $this->em->getRepository(Item::class)->findOneBy([
                     'equippedHero' => $hero,
-                    'equippedSlot' => $slotType,
+                    'equippedSlot' => $slot,
+                ]);
+
+                if (null === $prefSubType) {
+                    // Two-handed weapon equipped, offhand must be empty
+                    if (null !== $equipped) {
+                        try {
+                            $this->itemService->unequip($equipped);
+                        } catch (\Throwable) {
+                        }
+                    }
+                    continue;
+                }
+
+                // If currently equipped item matches preferred subtype, keep it
+                if (null !== $equipped && $equipped->getSubType() === $prefSubType) {
+                    continue;
+                }
+
+                // Try to find a matching item in the inventory
+                $foundInInventory = false;
+                foreach ($unequippedItems as $idx => $item) {
+                    if ($item->getSlotType() === $slot && $item->getSubType() === $prefSubType) {
+                        try {
+                            $this->itemService->equip($item, $hero, $slot);
+                            unset($unequippedItems[$idx]);
+                            $foundInInventory = true;
+                            break;
+                        } catch (\Throwable) {
+                        }
+                    }
+                }
+
+                if ($foundInInventory) {
+                    continue;
+                }
+
+                // Fallback: If no matching item in inventory, check if we should purchase the basic item.
+                // Only purchase if nothing is equipped or the equipped item is common (and doesn't match).
+                if (null === $equipped || ItemRarity::Common === $equipped->getRarity()) {
+                    // Determine the basic item key
+                    $itemKey = null;
+                    if (in_array($slot, [ItemSlotType::Head, ItemSlotType::Body, ItemSlotType::Hands, ItemSlotType::Feet], true)) {
+                        $itemKey = self::ARMOR_TO_BASIC_ITEM[$prefArmor->value][$slot->value] ?? null;
+                    } else {
+                        $itemKey = self::SUBTYPE_TO_BASIC_ITEM[$prefSubType->value] ?? null;
+                    }
+
+                    if (null !== $itemKey) {
+                        $cost = ItemService::BASIC_EQUIPMENT[$itemKey]['cost'];
+                        // Keep a minimum reserve of 150 gold so NPC teams don't fully go broke on basic gear
+                        if ($team->getGold() - $cost >= 150) {
+                            try {
+                                $newItem = $this->itemService->purchaseBasicItem($team, $itemKey);
+                                $this->itemService->equip($newItem, $hero, $slot);
+                            } catch (\Throwable) {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Re-filter remaining unequipped items for fallback slots (Rings, Amulets, and leftovers)
+        $unequippedItems = array_values($unequippedItems);
+
+        // 2. Fallback Empty-Slot Pass
+        foreach ($heroes as $hero) {
+            foreach (ItemSlotType::cases() as $slot) {
+                // If a two-handed weapon is equipped, we must skip OffHand
+                if (ItemSlotType::OffHand === $slot) {
+                    $mainHand = $this->em->getRepository(Item::class)->findOneBy([
+                        'equippedHero' => $hero,
+                        'equippedSlot' => ItemSlotType::MainHand,
+                    ]);
+                    if (null !== $mainHand && null !== $mainHand->getSubType()) {
+                        $twoHandedWeapons = [
+                            ItemSubType::TwoHandedSword,
+                            ItemSubType::TwoHandedAxe,
+                            ItemSubType::TwoHandedMace,
+                            ItemSubType::Bow,
+                            ItemSubType::Crossbow,
+                            ItemSubType::Staff,
+                        ];
+                        if (in_array($mainHand->getSubType(), $twoHandedWeapons, true)) {
+                            continue;
+                        }
+                    }
+                }
+
+                $equipped = $this->em->getRepository(Item::class)->findOneBy([
+                    'equippedHero' => $hero,
+                    'equippedSlot' => $slot,
                 ]);
 
                 if (null !== $equipped) {
                     continue;
                 }
 
-                // Find the best available item for this slot
+                // Equip the first available item of correct slot type
                 foreach ($unequippedItems as $idx => $item) {
-                    if ($item->getSlotType() === $slotType && null === $item->getEquippedHero()) {
+                    if ($item->getSlotType() === $slot) {
                         try {
-                            $this->itemService->equip($item, $hero, $slotType);
-                            unset($unequippedItems[$idx]); // Remove from unequipped list
+                            $this->itemService->equip($item, $hero, $slot);
+                            unset($unequippedItems[$idx]);
+                            $unequippedItems = array_values($unequippedItems);
                             break;
                         } catch (\Throwable) {
-                            // Try next item
                         }
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Get preferred weapon sub-type for a hero based on masteries or attributes.
+     */
+    private function getPreferredWeaponSubType(Hero $hero): ItemSubType
+    {
+        $weaponSubTypes = [
+            ItemSubType::OneHandedSword,
+            ItemSubType::TwoHandedSword,
+            ItemSubType::OneHandedAxe,
+            ItemSubType::TwoHandedAxe,
+            ItemSubType::OneHandedMace,
+            ItemSubType::TwoHandedMace,
+            ItemSubType::Dagger,
+            ItemSubType::Bow,
+            ItemSubType::Crossbow,
+            ItemSubType::Wand,
+            ItemSubType::Staff,
+        ];
+
+        // Find highest weapon mastery
+        $bestMastery = null;
+        foreach ($hero->getWeaponMasteries() as $wm) {
+            if (in_array($wm->getStyle(), $weaponSubTypes, true)) {
+                if (null === $bestMastery) {
+                    $bestMastery = $wm;
+                } else {
+                    $bestCompare = $bestMastery->getMasteryTier() <=> $wm->getMasteryTier();
+                    if (0 === $bestCompare) {
+                        $bestCompare = $bestMastery->getXp() <=> $wm->getXp();
+                    }
+                    if ($bestCompare < 0) {
+                        $bestMastery = $wm;
+                    }
+                }
+            }
+        }
+
+        if (null !== $bestMastery && ($bestMastery->getMasteryTier() > 1 || $bestMastery->getXp() > 0)) {
+            return $bestMastery->getStyle();
+        }
+
+        // Default based on stats
+        $str = $hero->getStr();
+        $dex = $hero->getDex();
+        $intel = $hero->getIntel();
+
+        if ($intel > $str && $intel > $dex) {
+            return ItemSubType::Staff;
+        } elseif ($dex > $str) {
+            return ItemSubType::Bow;
+        }
+
+        return ItemSubType::OneHandedSword;
+    }
+
+    /**
+     * Get preferred armor sub-type for a hero based on masteries or attributes.
+     */
+    private function getPreferredArmorSubType(Hero $hero): ItemSubType
+    {
+        $armorSubTypes = [
+            ItemSubType::LightArmor,
+            ItemSubType::MediumArmor,
+            ItemSubType::HeavyArmor,
+        ];
+
+        // Find highest armor mastery
+        $bestMastery = null;
+        foreach ($hero->getWeaponMasteries() as $wm) {
+            if (in_array($wm->getStyle(), $armorSubTypes, true)) {
+                if (null === $bestMastery) {
+                    $bestMastery = $wm;
+                } else {
+                    $bestCompare = $bestMastery->getMasteryTier() <=> $wm->getMasteryTier();
+                    if (0 === $bestCompare) {
+                        $bestCompare = $bestMastery->getXp() <=> $wm->getXp();
+                    }
+                    if ($bestCompare < 0) {
+                        $bestMastery = $wm;
+                    }
+                }
+            }
+        }
+
+        if (null !== $bestMastery && ($bestMastery->getMasteryTier() > 1 || $bestMastery->getXp() > 0)) {
+            return $bestMastery->getStyle();
+        }
+
+        // Default based on stats
+        $str = $hero->getStr();
+        $dex = $hero->getDex();
+        $kon = $hero->getKon();
+        $intel = $hero->getIntel();
+
+        if ($str + $kon > $intel + $dex) {
+            return ItemSubType::HeavyArmor;
+        } elseif ($dex > $intel) {
+            return ItemSubType::MediumArmor;
+        }
+
+        return ItemSubType::LightArmor;
+    }
+
+    /**
+     * Get preferred off-hand sub-type for a hero.
+     */
+    private function getPreferredOffHandSubType(Hero $hero, ItemSubType $preferredWeapon): ?ItemSubType
+    {
+        $twoHandedWeapons = [
+            ItemSubType::TwoHandedSword,
+            ItemSubType::TwoHandedAxe,
+            ItemSubType::TwoHandedMace,
+            ItemSubType::Bow,
+            ItemSubType::Crossbow,
+            ItemSubType::Staff,
+        ];
+
+        if (in_array($preferredWeapon, $twoHandedWeapons, true)) {
+            return null;
+        }
+
+        if (ItemSubType::Wand === $preferredWeapon || ($hero->getIntel() > $hero->getStr() && $hero->getIntel() > $hero->getDex())) {
+            return ItemSubType::SpellAccelerator;
+        }
+
+        return ItemSubType::Shield;
     }
 
     /**
@@ -920,19 +1298,26 @@ class NpcSimulationService
 
     private function calculateHeroMarketPrice(Hero $hero): int
     {
-        $base = match ($hero->getLevel()) {
-            1 => 300,
-            2 => 500,
-            3 => 800,
-            4 => 1200,
-            5 => 1800,
-            default => 2500,
-        };
+        return max(1, $this->heroRatingCalculator->estimateMarketPrice($hero));
+    }
 
-        if ($hero->isTrainer()) {
-            $base = (int) round($base * 1.5); // Trainers are highly valuable
+    /**
+     * Returns true if the trait is purely negative (no upside for combat, training, or economy).
+     * Used to identify heroes that NPC teams should proactively dismiss or discount heavily.
+     *
+     * Purely negative: Volatile, Slacker, Fragile, GlassJaw.
+     */
+    private function isPurelyNegativeTrait(?HeroTrait $trait): bool
+    {
+        if (null === $trait) {
+            return false;
         }
 
-        return $base;
+        return \in_array($trait, [
+            HeroTrait::Volatile,
+            HeroTrait::Slacker,
+            HeroTrait::Fragile,
+            HeroTrait::GlassJaw,
+        ], true);
     }
 }
