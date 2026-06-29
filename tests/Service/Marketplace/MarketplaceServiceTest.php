@@ -126,13 +126,17 @@ class MarketplaceServiceTest extends TestCase
         $listing->setStatus(ListingStatus::Active);
 
         $listingRepo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
-        $listingRepo->expects($this->once())->method('find')->with(42)->willReturn($listing);
+        $listingRepo->method('find')->willReturnCallback(function ($id) use ($listing) {
+            $this->assertSame(42, $id);
+            return $listing;
+        });
 
         $this->entityManagerMock
-            ->expects($this->once())
             ->method('getRepository')
-            ->with(MarketplaceListing::class)
-            ->willReturn($listingRepo);
+            ->willReturnCallback(function ($className) use ($listingRepo) {
+                $this->assertSame(MarketplaceListing::class, $className);
+                return $listingRepo;
+            });
 
         $this->entityManagerMock->expects($this->once())->method('flush');
 

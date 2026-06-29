@@ -31,16 +31,13 @@ class EconomyServiceTest extends TestCase
         $team = new Team();
         $team->setGold(100);
 
+        $calledRecord = null;
         $this->entityManagerMock
             ->expects($this->once())
             ->method('persist')
-            ->with($this->callback(function (FinancialRecord $record) use ($team) {
-                return $record->getTeam() === $team &&
-                    $record->getGoldChange() === -30 &&
-                    $record->getType() === FinancialRecordType::SummonFee &&
-                    $record->getActor() === FinancialRecordActor::Active &&
-                    $record->getContext() === ['test' => 123];
-            }));
+            ->willReturnCallback(function ($record) use (&$calledRecord) {
+                $calledRecord = $record;
+            });
 
         $this->economyService->deductGold(
             $team,
@@ -50,6 +47,12 @@ class EconomyServiceTest extends TestCase
             ['test' => 123]
         );
 
+        $this->assertInstanceOf(FinancialRecord::class, $calledRecord);
+        $this->assertSame($team, $calledRecord->getTeam());
+        $this->assertSame(-30, $calledRecord->getGoldChange());
+        $this->assertSame(FinancialRecordType::SummonFee, $calledRecord->getType());
+        $this->assertSame(FinancialRecordActor::Active, $calledRecord->getActor());
+        $this->assertSame(['test' => 123], $calledRecord->getContext());
         $this->assertSame(70, $team->getGold());
     }
 
@@ -73,15 +76,13 @@ class EconomyServiceTest extends TestCase
         $team = new Team();
         $team->setGold(50);
 
+        $calledRecord = null;
         $this->entityManagerMock
             ->expects($this->once())
             ->method('persist')
-            ->with($this->callback(function (FinancialRecord $record) use ($team) {
-                return $record->getTeam() === $team &&
-                    $record->getGoldChange() === 40 &&
-                    $record->getType() === FinancialRecordType::ArenaRevenue &&
-                    $record->getActor() === FinancialRecordActor::System;
-            }));
+            ->willReturnCallback(function ($record) use (&$calledRecord) {
+                $calledRecord = $record;
+            });
 
         $this->economyService->addGold(
             $team,
@@ -90,6 +91,11 @@ class EconomyServiceTest extends TestCase
             FinancialRecordActor::System
         );
 
+        $this->assertInstanceOf(FinancialRecord::class, $calledRecord);
+        $this->assertSame($team, $calledRecord->getTeam());
+        $this->assertSame(40, $calledRecord->getGoldChange());
+        $this->assertSame(FinancialRecordType::ArenaRevenue, $calledRecord->getType());
+        $this->assertSame(FinancialRecordActor::System, $calledRecord->getActor());
         $this->assertSame(90, $team->getGold());
     }
 
@@ -98,13 +104,13 @@ class EconomyServiceTest extends TestCase
         $team = new Team();
         $team->setEssenceCommon(2);
 
+        $calledRecord = null;
         $this->entityManagerMock
             ->expects($this->once())
             ->method('persist')
-            ->with($this->callback(function (FinancialRecord $record) use ($team) {
-                return $record->getTeam() === $team &&
-                    $record->getEssenceCommonChange() === -2;
-            }));
+            ->willReturnCallback(function ($record) use (&$calledRecord) {
+                $calledRecord = $record;
+            });
 
         $this->economyService->deductEssence(
             $team,
@@ -114,6 +120,9 @@ class EconomyServiceTest extends TestCase
             FinancialRecordActor::Active
         );
 
+        $this->assertInstanceOf(FinancialRecord::class, $calledRecord);
+        $this->assertSame($team, $calledRecord->getTeam());
+        $this->assertSame(-2, $calledRecord->getEssenceCommonChange());
         $this->assertSame(0, $team->getEssenceCommon());
     }
 
@@ -128,12 +137,13 @@ class EconomyServiceTest extends TestCase
         $team = new Team();
         $team->setGold(100);
 
+        $calledRecord = null;
         $this->entityManagerMock
             ->expects($this->once())
             ->method('persist')
-            ->with($this->callback(function (FinancialRecord $record) use ($customTime) {
-                return $record->getCreatedAt() === $customTime;
-            }));
+            ->willReturnCallback(function ($record) use (&$calledRecord) {
+                $calledRecord = $record;
+            });
 
         $service->deductGold(
             $team,
@@ -141,5 +151,8 @@ class EconomyServiceTest extends TestCase
             FinancialRecordType::SummonFee,
             FinancialRecordActor::Active
         );
+
+        $this->assertInstanceOf(FinancialRecord::class, $calledRecord);
+        $this->assertSame($customTime, $calledRecord->getCreatedAt());
     }
 }

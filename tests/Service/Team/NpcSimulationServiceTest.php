@@ -455,12 +455,20 @@ class NpcSimulationServiceTest extends TestCase
         $this->hqService->method('calculateUpgradeCost')->willReturn(500);
 
         // Expect dismiss to be called on the Fragile hero (heroes[0])
+        $calledDismissParams = null;
         $this->dismissalService->expects($this->once())
             ->method('dismiss')
-            ->with($team, $this->callback(fn (Hero $h) => $h->getTrait() === \App\Enum\HeroTrait::Fragile));
+            ->willReturnCallback(function (Team $t, Hero $h) use (&$calledDismissParams) {
+                $calledDismissParams = [$t, $h];
+                return 0;
+            });
 
         // Run
         $this->service->simulateManagementAndEconomy($kingdom, new \DateTimeImmutable());
+
+        $this->assertNotNull($calledDismissParams);
+        $this->assertSame($team, $calledDismissParams[0]);
+        $this->assertSame(\App\Enum\HeroTrait::Fragile, $calledDismissParams[1]->getTrait());
     }
 
     public function testCalculateHeroMarketPriceWithTraits(): void
@@ -528,21 +536,25 @@ class NpcSimulationServiceTest extends TestCase
         $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
 
         // We expect createListing to use the rating calculator market price
+        $calledListingParams = null;
         $this->marketplaceService->expects($this->once())
             ->method('createListing')
-            ->with(
-                $team,
-                'hero',
-                $heroes[0]->getId(),
-                650,
-                650,
-                'buy_now',
-                7,
-                $this->anything()
-            );
+            ->willReturnCallback(function ($t, $type, $id, $price, $price2, $mode, $duration, $extra) use (&$calledListingParams) {
+                $calledListingParams = [$t, $type, $id, $price, $price2, $mode, $duration];
+                return new \App\Entity\Marketplace\MarketplaceListing();
+            });
 
         // Run
         $this->service->simulateManagementAndEconomy($kingdom, new \DateTimeImmutable());
+
+        $this->assertNotNull($calledListingParams);
+        $this->assertSame($team, $calledListingParams[0]);
+        $this->assertSame('hero', $calledListingParams[1]);
+        $this->assertSame($heroes[0]->getId(), $calledListingParams[2]);
+        $this->assertSame(650, $calledListingParams[3]);
+        $this->assertSame(650, $calledListingParams[4]);
+        $this->assertSame('buy_now', $calledListingParams[5]);
+        $this->assertSame(7, $calledListingParams[6]);
     }
 
     public function testSimulateTrainingExcludesNegativeTraitsFromPromotion(): void

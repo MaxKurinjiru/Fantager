@@ -57,8 +57,10 @@ class TeamPayrollServiceTest extends TestCase
         $this->heroRepositoryMock
             ->expects($this->once())
             ->method('findPayrollEligibleByTeam')
-            ->with($team)
-            ->willReturn([$hero, $trainer]);
+            ->willReturnCallback(function (Team $t) use ($team, $hero, $trainer) {
+                $this->assertSame($team, $t);
+                return [$hero, $trainer];
+            });
 
         $this->heroSalaryServiceMock
             ->expects($this->exactly(2))
@@ -89,8 +91,10 @@ class TeamPayrollServiceTest extends TestCase
 
         $this->heroRepositoryMock
             ->method('findPayrollEligibleByTeam')
-            ->with($team)
-            ->willReturn([$hero, $trainer]);
+            ->willReturnCallback(function (Team $t) use ($team, $hero, $trainer) {
+                $this->assertSame($team, $t);
+                return [$hero, $trainer];
+            });
 
         $this->heroSalaryServiceMock
             ->method('calculateWeeklySalary')
@@ -99,20 +103,34 @@ class TeamPayrollServiceTest extends TestCase
                 [$trainer, 80],
             ]);
 
+        $deductions = [];
         $this->economyServiceMock
             ->expects($this->exactly(2))
             ->method('deductGold')
-            ->with(
-                $team,
-                $this->logicalOr(100, 80),
-                $this->logicalOr(FinancialRecordType::HeroSalary, FinancialRecordType::TrainerSalary),
-                FinancialRecordActor::System,
-                $this->isArray(),
-            );
+            ->willReturnCallback(function ($t, $amount, $type, $actor, $context) use (&$deductions, $team) {
+                $this->assertSame($team, $t);
+                $deductions[] = [$amount, $type, $actor, $context];
+                return true;
+            });
 
         $this->entityManagerMock->expects($this->once())->method('flush');
 
         $this->service->processPayrollTick($kingdom, $team);
+
+        $this->assertCount(2, $deductions);
+        $matchHero = false;
+        $matchTrainer = false;
+        foreach ($deductions as $d) {
+            $this->assertSame(FinancialRecordActor::System, $d[2]);
+            $this->assertIsArray($d[3]);
+            if ($d[0] === 100 && $d[1] === FinancialRecordType::HeroSalary) {
+                $matchHero = true;
+            } elseif ($d[0] === 80 && $d[1] === FinancialRecordType::TrainerSalary) {
+                $matchTrainer = true;
+            }
+        }
+        $this->assertTrue($matchHero);
+        $this->assertTrue($matchTrainer);
     }
 
     public function testProcessPayrollTickAddsDebtWhenGoldInsufficient(): void
@@ -126,21 +144,35 @@ class TeamPayrollServiceTest extends TestCase
 
         $this->heroRepositoryMock
             ->method('findPayrollEligibleByTeam')
-            ->with($team)
-            ->willReturn([$hero]);
+            ->willReturnCallback(function (Team $t) use ($team, $hero) {
+                $this->assertSame($team, $t);
+                return [$hero];
+            });
 
         $this->heroSalaryServiceMock
             ->method('calculateWeeklySalary')
-            ->with($hero)
-            ->willReturn(200);
+            ->willReturnCallback(function (Hero $h) use ($hero) {
+                $this->assertSame($hero, $h);
+                return 200;
+            });
 
+        $calledDeduct = null;
         $this->economyServiceMock
             ->expects($this->once())
             ->method('deductGold')
-            ->with($team, 50, FinancialRecordType::HeroSalary, FinancialRecordActor::System, $this->isArray());
+            ->willReturnCallback(function ($t, $amount, $type, $actor, $context) use (&$calledDeduct, $team) {
+                $this->assertSame($team, $t);
+                $this->assertSame(50, $amount);
+                $this->assertSame(FinancialRecordType::HeroSalary, $type);
+                $this->assertSame(FinancialRecordActor::System, $actor);
+                $this->assertIsArray($context);
+                $calledDeduct = true;
+                return true;
+            });
 
         $this->service->processPayrollTick($kingdom, $team);
 
+        $this->assertTrue($calledDeduct);
         $this->assertSame(150, $team->getUnpaidDebt());
     }
 
@@ -155,30 +187,37 @@ class TeamPayrollServiceTest extends TestCase
 
         $this->heroRepositoryMock
             ->method('findPayrollEligibleByTeam')
-            ->with($team)
-            ->willReturn([$trainer]);
+            ->willReturnCallback(function (Team $t) use ($team, $trainer) {
+                $this->assertSame($team, $t);
+                return [$trainer];
+            });
 
         $this->heroSalaryServiceMock
             ->method('calculateWeeklySalary')
-            ->with($trainer)
-            ->willReturn(120);
+            ->willReturnCallback(function (Hero $h) use ($trainer) {
+                $this->assertSame($trainer, $h);
+                return 120;
+            });
 
         $this->economyServiceMock
             ->expects($this->never())
             ->method('deductGold');
 
+        $calledRecord = null;
         $this->economyServiceMock
             ->expects($this->once())
             ->method('recordLedgerEntry')
-            ->with(
-                $team,
-                FinancialRecordType::TrainerSalary,
-                FinancialRecordActor::System,
-                $this->callback(static fn (array $context): bool => isset($context['fully_unpaid']) && true === $context['fully_unpaid']),
-            );
+            ->willReturnCallback(function ($t, $type, $actor, $context) use (&$calledRecord, $team) {
+                $this->assertSame($team, $t);
+                $this->assertSame(FinancialRecordType::TrainerSalary, $type);
+                $this->assertSame(FinancialRecordActor::System, $actor);
+                $this->assertTrue(isset($context['fully_unpaid']) && true === $context['fully_unpaid']);
+                $calledRecord = true;
+            });
 
         $this->service->processPayrollTick($kingdom, $team);
 
+        $this->assertTrue($calledRecord);
         $this->assertSame(120, $team->getUnpaidDebt());
     }
 
@@ -193,14 +232,18 @@ class TeamPayrollServiceTest extends TestCase
         $teamRepositoryMock
             ->expects($this->once())
             ->method('findBy')
-            ->with(['kingdom' => $kingdom])
-            ->willReturn([$team]);
+            ->willReturnCallback(function (array $criteria) use ($kingdom, $team) {
+                $this->assertSame(['kingdom' => $kingdom], $criteria);
+                return [$team];
+            });
 
         $this->entityManagerMock
             ->expects($this->once())
             ->method('getRepository')
-            ->with(Team::class)
-            ->willReturn($teamRepositoryMock);
+            ->willReturnCallback(function ($className) use ($teamRepositoryMock) {
+                $this->assertSame(Team::class, $className);
+                return $teamRepositoryMock;
+            });
 
         $this->heroRepositoryMock
             ->method('findPayrollEligibleByTeam')

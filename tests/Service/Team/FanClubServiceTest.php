@@ -125,8 +125,10 @@ class FanClubServiceTest extends TestCase
         $this->teamRepositoryMock
             ->expects($this->once())
             ->method('findBy')
-            ->with(['kingdom' => $kingdom])
-            ->willReturn([$team]);
+            ->willReturnCallback(function (array $criteria) use ($kingdom, $team) {
+                $this->assertSame(['kingdom' => $kingdom], $criteria);
+                return [$team];
+            });
 
         $updated = $this->fanClubService->processDailyEvolutionTick($kingdom);
 

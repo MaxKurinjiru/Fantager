@@ -89,23 +89,34 @@ class LeagueMatchResolutionServiceTest extends TestCase
         ]);
         $this->matchSimulator->method('simulate')->willReturn(new MatchOutcome(2, 1));
 
-        $this->em->expects($this->once())->method('persist')->with($this->callback(
-            function (Battle $battle): bool {
-                return 2 === $battle->getScoreA()
-                    && 1 === $battle->getScoreB()
-                    && BattleResult::WinA === $battle->getResult()
-                    && MatchType::League === $battle->getMatchType()
-                    && 'stub_random' === $battle->getCombatLog()['simulator'];
-            }
-        ));
+        $calledBattle = null;
+        $this->em->expects($this->once())->method('persist')->willReturnCallback(function ($battle) use (&$calledBattle) {
+            $calledBattle = $battle;
+        });
 
         $this->fixtureCompletionService->expects($this->once())->method('complete');
 
+        $calledParams = null;
         $this->fanClubService->expects($this->once())
             ->method('applyFixtureResult')
-            ->with($fixture->getHomeTeam(), $fixture->getAwayTeam(), 2, 1);
+            ->willReturnCallback(function ($home, $away, $scoreHome, $scoreAway) use (&$calledParams) {
+                $calledParams = [$home, $away, $scoreHome, $scoreAway];
+            });
 
         $result = $this->service->resolveFixture($fixture, new \DateTimeImmutable('2026-06-17 18:00:00'));
+
+        $this->assertInstanceOf(Battle::class, $calledBattle);
+        $this->assertSame(2, $calledBattle->getScoreA());
+        $this->assertSame(1, $calledBattle->getScoreB());
+        $this->assertSame(BattleResult::WinA, $calledBattle->getResult());
+        $this->assertSame(MatchType::League, $calledBattle->getMatchType());
+        $this->assertSame('stub_random', $calledBattle->getCombatLog()['simulator']);
+
+        $this->assertNotNull($calledParams);
+        $this->assertSame($fixture->getHomeTeam(), $calledParams[0]);
+        $this->assertSame($fixture->getAwayTeam(), $calledParams[1]);
+        $this->assertSame(2, $calledParams[2]);
+        $this->assertSame(1, $calledParams[3]);
 
         $this->assertSame(2, $result['home_score']);
         $this->assertSame(1, $result['away_score']);
@@ -129,15 +140,17 @@ class LeagueMatchResolutionServiceTest extends TestCase
         ]);
         $this->matchSimulator->expects($this->never())->method('simulate');
 
-        $this->em->expects($this->once())->method('persist')->with($this->callback(
-            function (Battle $battle): bool {
-                return 3 === $battle->getScoreA()
-                    && 0 === $battle->getScoreB()
-                    && 'forfeit' === $battle->getCombatLog()['simulator'];
-            }
-        ));
+        $calledBattle = null;
+        $this->em->expects($this->once())->method('persist')->willReturnCallback(function ($battle) use (&$calledBattle) {
+            $calledBattle = $battle;
+        });
 
         $result = $this->service->resolveFixture($fixture, new \DateTimeImmutable('2026-06-17 18:00:00'));
+
+        $this->assertInstanceOf(Battle::class, $calledBattle);
+        $this->assertSame(3, $calledBattle->getScoreA());
+        $this->assertSame(0, $calledBattle->getScoreB());
+        $this->assertSame('forfeit', $calledBattle->getCombatLog()['simulator']);
 
         $this->assertTrue($result['is_forfeit']);
         $this->assertSame(3, $result['home_score']);
@@ -175,8 +188,11 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->fixtureRepository
             ->expects($this->once())
             ->method('findScheduledFixturesAtTime')
-            ->with($kingdom, $scheduledAt)
-            ->willReturn([$fixture]);
+            ->willReturnCallback(function (Kingdom $k, \DateTimeImmutable $dt) use ($kingdom, $scheduledAt, $fixture) {
+                $this->assertSame($kingdom, $k);
+                $this->assertSame($scheduledAt, $dt);
+                return [$fixture];
+            });
 
         $partial = $this->createPartialMock(LeagueMatchResolutionService::class, ['resolveFixture']);
         $partial->__construct(
@@ -194,8 +210,11 @@ class LeagueMatchResolutionServiceTest extends TestCase
         );
         $partial->expects($this->once())
             ->method('resolveFixture')
-            ->with($fixture, $scheduledAt)
-            ->willReturn(['fixture_id' => 42]);
+            ->willReturnCallback(function (LeagueFixture $f, \DateTimeImmutable $dt) use ($fixture, $scheduledAt) {
+                $this->assertSame($fixture, $f);
+                $this->assertSame($scheduledAt, $dt);
+                return ['fixture_id' => 42];
+            });
 
         $results = $partial->processLeagueMatchTick($kingdom, $scheduledAt);
 

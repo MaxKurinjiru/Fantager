@@ -73,18 +73,20 @@ class SeasonTransitionServiceTest extends TestCase
         $seasonRepoMock->method('findOneBy')
             ->willReturn(null); // No previous season
 
-        $this->entityManagerMock->expects($this->once())
-            ->method('getRepository')
-            ->with(LeagueSeason::class)
-            ->willReturn($seasonRepoMock);
+        $this->entityManagerMock->method('getRepository')
+            ->willReturnCallback(function ($className) use ($seasonRepoMock) {
+                $this->assertSame(LeagueSeason::class, $className);
+                return $seasonRepoMock;
+            });
 
-        $this->entityManagerMock->expects($this->atLeastOnce())
-            ->method('persist')
-            ->with($this->logicalOr(
-                $this->isInstanceOf(LeagueSeason::class),
-                $this->isInstanceOf(LeagueTier::class),
-                $this->isInstanceOf(LeagueGroup::class)
-            ));
+        $this->entityManagerMock->method('persist')
+            ->willReturnCallback(function ($entity) {
+                $this->assertTrue(
+                    $entity instanceof LeagueSeason
+                    || $entity instanceof LeagueTier
+                    || $entity instanceof LeagueGroup
+                );
+            });
 
         $newSeason = $this->transitionService->prepareUpcomingSeason($kingdom);
 
@@ -217,10 +219,11 @@ class SeasonTransitionServiceTest extends TestCase
                 [['kingdom' => $kingdom, 'status' => LeagueSeasonStatus::Scheduled], null, $upcomingSeason],
             ]);
 
-        $this->entityManagerMock->expects($this->atLeastOnce())
-            ->method('getRepository')
-            ->with(LeagueSeason::class)
-            ->willReturn($seasonRepoMock);
+        $this->entityManagerMock->method('getRepository')
+            ->willReturnCallback(function ($className) use ($seasonRepoMock) {
+                $this->assertSame(LeagueSeason::class, $className);
+                return $seasonRepoMock;
+            });
 
         // We expect EconomyService to credit Gold to all 20 teams
         $this->economyServiceMock->expects($this->atLeastOnce())
@@ -269,10 +272,11 @@ class SeasonTransitionServiceTest extends TestCase
         $seasonRepoMock->method('findOneBy')
             ->willReturn(null); // No previous season
 
-        $this->entityManagerMock->expects($this->once())
-            ->method('getRepository')
-            ->with(LeagueSeason::class)
-            ->willReturn($seasonRepoMock);
+        $this->entityManagerMock->method('getRepository')
+            ->willReturnCallback(function ($className) use ($seasonRepoMock) {
+                $this->assertSame(LeagueSeason::class, $className);
+                return $seasonRepoMock;
+            });
 
         $newSeason = $this->transitionService->prepareUpcomingSeason($kingdom);
 

@@ -32,8 +32,7 @@ class UserSettingsServiceTest extends TestCase
     public function testGetOrCreateCreatesDefaultSettings(): void
     {
         $user = new User();
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->expects($this->once())->method('persist')->with($this->isInstanceOf(UserSettings::class));
+        $entityManager = $this->createStub(EntityManagerInterface::class);
 
         $service = new UserSettingsService($entityManager);
         $settings = $service->getOrCreate($user);

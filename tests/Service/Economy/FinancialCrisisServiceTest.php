@@ -112,8 +112,10 @@ class FinancialCrisisServiceTest extends TestCase
         $this->hqRepositoryMock
             ->expects($this->once())
             ->method('findOneBy')
-            ->with(['team' => $team])
-            ->willReturn($hq);
+            ->willReturnCallback(function (array $criteria) use ($team, $hq) {
+                $this->assertSame(['team' => $team], $criteria);
+                return $hq;
+            });
 
         $this->expectException(\DomainException::class);
         $this->service->assertSpendingAllowed($team, 'summon');
@@ -123,13 +125,20 @@ class FinancialCrisisServiceTest extends TestCase
     {
         $team = $this->createPlayerTeam(gold: 300, debt: 500, crisisWeeks: 1);
 
+        $calledDeduct = null;
         $this->economyServiceMock
             ->expects($this->once())
             ->method('deductGold')
-            ->with($team, 300, $this->anything(), $this->anything(), $this->anything());
+            ->willReturnCallback(function (Team $t, int $amount) use (&$calledDeduct) {
+                $calledDeduct = [$t, $amount];
+                return true;
+            });
 
         $paid = $this->service->applyGoldToDebt($team);
 
+        $this->assertNotNull($calledDeduct);
+        $this->assertSame($team, $calledDeduct[0]);
+        $this->assertSame(300, $calledDeduct[1]);
         $this->assertSame(300, $paid);
         $this->assertSame(200, $team->getUnpaidDebt());
     }

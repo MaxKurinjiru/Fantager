@@ -254,7 +254,9 @@ class TrainingServiceTest extends TestCase
         $this->entityManagerMock
             ->expects($this->once())
             ->method('persist')
-            ->with($this->isInstanceOf(HeroTrainingHistory::class));
+            ->willReturnCallback(function ($entity) {
+                $this->assertInstanceOf(HeroTrainingHistory::class, $entity);
+            });
 
         $this->trainingService->processTrainingTick(new \DateTimeImmutable());
 

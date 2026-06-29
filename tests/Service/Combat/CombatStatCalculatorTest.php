@@ -60,8 +60,10 @@ class CombatStatCalculatorTest extends TestCase
 
         $this->itemRepositoryMock->expects($this->once())
             ->method('findBy')
-            ->with(['equippedHero' => $hero])
-            ->willReturn([]);
+            ->willReturnCallback(function (array $criteria) use ($hero) {
+                $this->assertSame(['equippedHero' => $hero], $criteria);
+                return [];
+            });
 
         $stats = $this->calculator->calculate($hero);
 
@@ -126,8 +128,10 @@ class CombatStatCalculatorTest extends TestCase
 
         $this->itemRepositoryMock->expects($this->once())
             ->method('findBy')
-            ->with(['equippedHero' => $hero])
-            ->willReturn([$sword, $armor, $ring]);
+            ->willReturnCallback(function (array $criteria) use ($hero, $sword, $armor, $ring) {
+                $this->assertSame(['equippedHero' => $hero], $criteria);
+                return [$sword, $armor, $ring];
+            });
 
         $stats = $this->calculator->calculate($hero);
 

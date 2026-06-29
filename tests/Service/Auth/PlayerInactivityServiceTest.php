@@ -134,16 +134,27 @@ class PlayerInactivityServiceTest extends TestCase
         // The regular user should receive a warning (notification & email)
         // The test user should NOT receive any warning or email
         // Therefore, sendNotification and send should only be called ONCE (for the regular user)
+        $calledUser = null;
+        $calledType = null;
+        $calledMessage = null;
         $this->notificationHelperMock
             ->expects($this->once())
             ->method('sendNotification')
-            ->with($regularUser, NotificationType::System, 'Inactivity warning');
+            ->willReturnCallback(function (User $user, NotificationType $type, string $message) use (&$calledUser, &$calledType, &$calledMessage) {
+                $calledUser = $user;
+                $calledType = $type;
+                $calledMessage = $message;
+            });
 
         $this->mailerMock
             ->expects($this->once())
             ->method('send');
 
         $this->service->processDailyInactivityTick($kingdom, $scheduledAt);
+
+        $this->assertSame($regularUser, $calledUser);
+        $this->assertSame(NotificationType::System, $calledType);
+        $this->assertSame('Inactivity warning', $calledMessage);
 
         // Verify regular user has warning timestamp set, but test user does not
         $this->assertNotNull($regularUser->getInactiveWarningSentAt());

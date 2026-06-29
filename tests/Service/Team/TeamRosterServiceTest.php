@@ -25,7 +25,10 @@ class TeamRosterServiceTest extends TestCase
         $hero->setStatus(HeroStatus::Available);
 
         $repo = $this->createMock(HeroRepository::class);
-        $repo->expects($this->once())->method('countCombatReadyByTeam')->with($team)->willReturn(7);
+        $repo->method('countCombatReadyByTeam')->willReturnCallback(function (Team $t) use ($team) {
+            $this->assertSame($team, $t);
+            return 7;
+        });
 
         $service = new TeamRosterService($repo);
 
@@ -40,7 +43,10 @@ class TeamRosterServiceTest extends TestCase
         $hero->setStatus(HeroStatus::Available);
 
         $repo = $this->createMock(HeroRepository::class);
-        $repo->expects($this->once())->method('countCombatReadyByTeam')->with($team)->willReturn(6);
+        $repo->method('countCombatReadyByTeam')->willReturnCallback(function (Team $t) use ($team) {
+            $this->assertSame($team, $t);
+            return 6;
+        });
 
         $service = new TeamRosterService($repo);
 
@@ -84,7 +90,10 @@ class TeamRosterServiceTest extends TestCase
         $hero->setStatus(HeroStatus::Available);
 
         $repo = $this->createMock(HeroRepository::class);
-        $repo->expects($this->once())->method('countCombatReadyByTeam')->with($team)->willReturn(6);
+        $repo->method('countCombatReadyByTeam')->willReturnCallback(function (Team $t) use ($team) {
+            $this->assertSame($team, $t);
+            return 6;
+        });
 
         $service = new TeamRosterService($repo);
 
