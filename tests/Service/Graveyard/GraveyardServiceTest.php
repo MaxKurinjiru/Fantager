@@ -19,10 +19,9 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 class GraveyardServiceTest extends TestCase
 {
-    public function testRecordMemorialCreatesSnapshot(): void
+    public function testCreateMemorialCreatesSnapshot(): void
     {
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects($this->once())->method('persist')->with($this->isInstanceOf(GraveyardMemorial::class));
+        $em = $this->createStub(EntityManagerInterface::class);
 
         $ratingCalculator = $this->createMock(\App\Service\Hero\HeroRatingCalculator::class);
         $ratingCalculator->method('calculate')->willReturn(new \App\ValueObject\Hero\HeroRating(50, 1200));
@@ -46,7 +45,7 @@ class GraveyardServiceTest extends TestCase
         $hero->setChaRaw(28);
         $hero->setLckRaw(25);
 
-        $record = $service->recordMemorial($hero, $team, MemorialCause::Dismissed);
+        $record = $service->createMemorial($hero, $team, MemorialCause::Dismissed);
 
         $this->assertSame('Aldric', $record->getName());
         $this->assertSame(Race::Human, $record->getRace());

@@ -22,7 +22,7 @@ class GraveyardService
     ) {
     }
 
-    public function recordMemorial(Hero $hero, Team $team, MemorialCause $cause, ?\DateTimeImmutable $date = null): GraveyardMemorial
+    public function createMemorial(Hero $hero, Team $team, MemorialCause $cause, ?\DateTimeImmutable $date = null): GraveyardMemorial
     {
         $date ??= new \DateTimeImmutable();
 
@@ -37,6 +37,13 @@ class GraveyardService
         $record->setFinalStats($this->buildStatsSnapshot($hero));
         $record->setDepartedAt($date);
         $record->setOriginalHeroId($hero->getId());
+
+        return $record;
+    }
+
+    public function recordMemorial(Hero $hero, Team $team, MemorialCause $cause, ?\DateTimeImmutable $date = null): GraveyardMemorial
+    {
+        $record = $this->createMemorial($hero, $team, $cause, $date);
 
         $this->em->persist($record);
 
