@@ -6,14 +6,20 @@ namespace App\Service\Item;
 
 use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
+use App\Entity\Marketplace\MarketplaceTransaction;
 use App\Entity\Team\Team;
+use App\Enum\FinancialRecordActor;
+use App\Enum\FinancialRecordType;
 use App\Enum\ItemCategory;
 use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemStatus;
 use App\Enum\ItemSubType;
+use App\Enum\TransactionType;
 use App\Exception\UserFacingException;
 use App\Repository\Item\ItemRepository;
+use App\Service\Economy\EconomyService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -46,6 +52,8 @@ class ItemService
         private readonly ItemRepository $itemRepository,
         private readonly EntityManagerInterface $em,
         private readonly UserMessageTranslator $translator,
+        private readonly EconomyService $economyService,
+        private readonly TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -469,7 +477,12 @@ class ItemService
         }
 
         // Deduct gold
-        $team->setGold($team->getGold() - $cost);
+        $this->economyService->deductGold(
+            $team,
+            $cost,
+            FinancialRecordType::MarketplacePurchase,
+            FinancialRecordActor::Active
+        );
 
         // Create Item
         $item = new Item();
@@ -485,6 +498,22 @@ class ItemService
         $item->setSubType(isset($template['sub_type']) ? ItemSubType::tryFrom($template['sub_type']) : null);
 
         $this->em->persist($item);
+        $this->em->flush();
+
+        // Record chronicle entry
+        $this->teamChronicleService->recordItemPurchased($team, $item, null, $cost);
+
+        // Record marketplace transaction
+        $transaction = new MarketplaceTransaction();
+        $transaction->setBuyerTeam($team);
+        $transaction->setSellerTeam(null);
+        $transaction->setListing(null);
+        $transaction->setAmount($cost);
+        $transaction->setFeeAmount(0);
+        $transaction->setType(TransactionType::BuyNow);
+        $transaction->setEntityName($item->getName());
+
+        $this->em->persist($transaction);
         $this->em->flush();
 
         return $item;

@@ -24,6 +24,7 @@ See [team-chronicle-system.md](team-chronicle-system.md).
 Summoning is blocked if `hero_count >= roster_limit`.
 - Base roster limit: **10 heroes**.
 - Scales with Barracks facility level (see [Headquarters System](headquarters-system.md#roster-capacity-formula-barracks)).
+- The check uses `HeroRepository::countActiveCombatantsByTeam` — only **active combatants** (role = `Combatant`, status not in `Dead`/`Retired`) count toward the limit. Trainers and dead heroes are excluded.
 
 ### Cycle Limit
 Each team may only summon a limited number of heroes per **weekly cycle**. The limit resets every Sunday at 23:59 as part of the `weekly_reset` tick.
@@ -72,8 +73,9 @@ The race of a summoned hero is **not freely chosen** by the player. It is drawn 
 2. All 8 races are evaluated against the adapted race using the **relationship matrix** (`config/game/race_relations.yaml`).
 3. Races with a relationship score `>= 50` to the adapted race are included in the pool.
 4. A race always has a self-relationship of `100` and is always included.
-5. If no adaptation is set (`race_optimization = null`), **all 8 races** are in the pool.
-6. One race is drawn uniformly at random from the pool.
+5. **Exception — Genie teams:** When the adapted race is `Genie`, the pool is restricted to `[Genie]` only. This prevents hostile racial pairs that occur when applying the standard compatibility matrix to Genie.
+6. If no adaptation is set (`race_optimization = null`), **all 8 races** are in the pool.
+7. One race is drawn uniformly at random from the pool.
 
 ---
 

@@ -12,9 +12,12 @@ use App\Enum\ChronicleReleaseReason;
 use App\Enum\ChronicleEventType;
 use App\Enum\Race;
 use App\Service\TeamChronicle\TeamChronicleService;
+use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AllowMockObjectsWithoutExpectations]
 class TeamChronicleServiceTest extends TestCase
@@ -36,7 +39,7 @@ class TeamChronicleServiceTest extends TestCase
         $user = new User();
         $user->setDisplayName('Alice');
 
-        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service = $this->createService($em, new \App\Service\Calendar\TickClock());
         $service->recordPlayerJoined($team, $user);
     }
 
@@ -57,7 +60,7 @@ class TeamChronicleServiceTest extends TestCase
         $user = new User();
         $user->setDisplayName('Bob');
 
-        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service = $this->createService($em, new \App\Service\Calendar\TickClock());
         $service->recordPlayerReleased($team, $user, ChronicleReleaseReason::Bankruptcy);
     }
 
@@ -70,7 +73,7 @@ class TeamChronicleServiceTest extends TestCase
         $kingdom->setName('Test Kingdom');
         $team = new Team();
 
-        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service = $this->createService($em, new \App\Service\Calendar\TickClock());
         $log = $service->recordTeamEstablished($team, $kingdom, 1);
 
         $this->assertSame(ChronicleEventType::TeamEstablished, $log->getType());
@@ -84,7 +87,7 @@ class TeamChronicleServiceTest extends TestCase
         $em->expects($this->once())->method('persist');
 
         $team = new Team();
-        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service = $this->createService($em, new \App\Service\Calendar\TickClock());
         $log = $service->recordSeasonEnded($team, 2, 'T1', 4, '', 1000);
 
         $this->assertSame('maintained', $log->getSubjectParams()['status']);
@@ -100,7 +103,7 @@ class TeamChronicleServiceTest extends TestCase
         $hero = new \App\Entity\Hero\Hero();
         $hero->setName('Thorin');
 
-        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service = $this->createService($em, new \App\Service\Calendar\TickClock());
         $log = $service->recordSummonCompleted($team, $hero, Race::Dwarf, 750);
 
         $this->assertSame(ChronicleEventType::SummonCompleted, $log->getType());
@@ -125,7 +128,7 @@ class TeamChronicleServiceTest extends TestCase
         $user = new User();
         $user->setDisplayName('Alice');
 
-        $service = new TeamChronicleService($em, $clock);
+        $service = $this->createService($em, $clock);
         $service->recordPlayerJoined($team, $user);
     }
 
@@ -150,7 +153,7 @@ class TeamChronicleServiceTest extends TestCase
         $idProp = $reflection->getProperty('id');
         $idProp->setValue($hero, 123);
 
-        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service = $this->createService($em, new \App\Service\Calendar\TickClock());
         $service->recordHeroDismissed($team, $hero, 200);
     }
 
@@ -175,7 +178,7 @@ class TeamChronicleServiceTest extends TestCase
         $idProp = $reflection->getProperty('id');
         $idProp->setValue($trainer, 456);
 
-        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service = $this->createService($em, new \App\Service\Calendar\TickClock());
         $service->recordTrainerDismissed($team, $trainer, 150);
     }
 
@@ -218,7 +221,7 @@ class TeamChronicleServiceTest extends TestCase
         $heroId = $heroReflection->getProperty('id');
         $heroId->setValue($hero, 123);
 
-        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service = $this->createService($em, new \App\Service\Calendar\TickClock());
         $service->recordHeroPurchased($buyer, $hero, $seller, 500);
         $service->recordHeroSold($seller, $hero, $buyer, 500);
     }
@@ -239,7 +242,60 @@ class TeamChronicleServiceTest extends TestCase
 
         $team = new Team();
 
-        $service = new TeamChronicleService($em, new \App\Service\Calendar\TickClock());
+        $service = $this->createService($em, new \App\Service\Calendar\TickClock());
         $service->recordTeamRenamed($team, 'Old Name', 'New Name');
+    }
+
+    public function testRecordItemPurchasedAndSoldPersistExpectedEntries(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->exactly(2))
+            ->method('persist')
+            ->with($this->callback(function (TeamChronicle $log): bool {
+                if (ChronicleEventType::ItemPurchased === $log->getType()) {
+                    $this->assertSame('activity.item_purchased', $log->getSubjectKey());
+                    $this->assertSame(['item' => 'Iron Sword', 'seller' => 'Sellers', 'price' => '300'], $log->getSubjectParams());
+                    $this->assertSame(['item_id' => 789, 'seller_team_id' => 2, 'price' => 300], $log->getData());
+                } else {
+                    $this->assertSame(ChronicleEventType::ItemSold, $log->getType());
+                    $this->assertSame('activity.item_sold', $log->getSubjectKey());
+                    $this->assertSame(['item' => 'Iron Sword', 'buyer' => 'Buyers', 'price' => '300'], $log->getSubjectParams());
+                    $this->assertSame(['item_id' => 789, 'buyer_team_id' => 1, 'price' => 300], $log->getData());
+                }
+
+                return true;
+            }));
+
+        $buyer = new Team();
+        $buyerReflection = new \ReflectionClass($buyer);
+        $buyerId = $buyerReflection->getProperty('id');
+        $buyerId->setValue($buyer, 1);
+        $buyer->setName('Buyers');
+
+        $seller = new Team();
+        $sellerReflection = new \ReflectionClass($seller);
+        $sellerId = $sellerReflection->getProperty('id');
+        $sellerId->setValue($seller, 2);
+        $seller->setName('Sellers');
+
+        $item = new \App\Entity\Item\Item();
+        $item->setName('Iron Sword');
+        $itemReflection = new \ReflectionClass($item);
+        $itemId = $itemReflection->getProperty('id');
+        $itemId->setValue($item, 789);
+
+        $service = $this->createService($em, new \App\Service\Calendar\TickClock());
+        $service->recordItemPurchased($buyer, $item, $seller, 300);
+        $service->recordItemSold($seller, $item, $buyer, 300);
+    }
+
+    private function createService(EntityManagerInterface $em, \App\Service\Calendar\TickClock $clock): TeamChronicleService
+    {
+        $symfonyTranslatorMock = $this->createMock(TranslatorInterface::class);
+        $symfonyTranslatorMock->method('trans')->willReturn('Merchant');
+        $requestStackMock = $this->createMock(RequestStack::class);
+        $translator = new UserMessageTranslator($symfonyTranslatorMock, $requestStackMock);
+
+        return new TeamChronicleService($em, $clock, $translator);
     }
 }

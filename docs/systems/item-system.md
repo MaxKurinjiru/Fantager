@@ -112,11 +112,25 @@ Gold Cost = (100 - current_durability) × cost_per_point[rarity]
 
 ---
 
+## Merchant Purchase (`ItemService::buyFromMerchant`)
+
+Teams can buy items directly from the in-game merchant via `POST /api/v1/items/buy`.
+
+| Step | Details |
+|------|---------|
+| Gold deduction | `EconomyService::deductGold` (`MarketplacePurchase`, actor `Active`) |
+| Item creation | New `Item` with `owner_team_id = buyer`, `status = Available` |
+| Chronicle | `TeamChronicleService::recordItemPurchased` with `seller = null` (shows as "merchant") |
+| Transaction | `MarketplaceTransaction` with `seller_team_id = null`, `listing_id = null`, `fee_amount = 0` |
+
+---
+
 ## Marketplace Interactions
 
 - Listing an item for sale sets `status = selling` (escrow). The item cannot be equipped or dismantled while listed.
 - Cancelling a listing returns the item to `status = available`.
 - On a successful sale the item is transferred to the buyer's team; `owner_team_id` changes and `equipped_hero_id` is cleared.
+- Chronicle events `item_purchased` (buyer) and `item_sold` (seller) are recorded on buy-now and auction settlement.
 
 See [Marketplace System](marketplace-system.md) for listing, bidding, and transaction details.
 
@@ -130,6 +144,7 @@ See [Marketplace System](marketplace-system.md) for listing, bidding, and transa
 | PUT | `/api/v1/heroes/{heroId}/equipment` | Equip or unequip an item |
 | POST | `/api/v1/items/dismantle` | Dismantle item for Essence |
 | POST | `/api/v1/items/{id}/repair` | Repair durability (costs Gold) |
+| POST | `/api/v1/items/buy` | Purchase item from the merchant |
 
 ---
 

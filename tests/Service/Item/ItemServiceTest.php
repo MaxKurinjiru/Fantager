@@ -6,6 +6,7 @@ namespace App\Tests\Service\Item;
 
 use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
+use App\Entity\Marketplace\MarketplaceTransaction;
 use App\Entity\Team\Team;
 use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
@@ -13,6 +14,8 @@ use App\Enum\ItemStatus;
 use App\Repository\Item\ItemRepository;
 use App\Exception\UserFacingException;
 use App\Service\Item\ItemService;
+use App\Service\Economy\EconomyService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -28,6 +31,8 @@ class ItemServiceTest extends TestCase
     private EntityManagerInterface&MockObject $entityManagerMock;
     private TranslatorInterface&MockObject $symfonyTranslatorMock;
     private RequestStack&MockObject $requestStackMock;
+    private EconomyService&MockObject $economyServiceMock;
+    private TeamChronicleService&MockObject $teamChronicleServiceMock;
     private ItemService $itemService;
 
     protected function setUp(): void
@@ -36,13 +41,22 @@ class ItemServiceTest extends TestCase
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
         $this->symfonyTranslatorMock = $this->createMock(TranslatorInterface::class);
         $this->requestStackMock = $this->createMock(RequestStack::class);
+        $this->economyServiceMock = $this->createMock(EconomyService::class);
+        $this->economyServiceMock
+            ->method('deductGold')
+            ->willReturnCallback(static function (Team $team, int $amount): void {
+                $team->setGold($team->getGold() - $amount);
+            });
+        $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
         
         $translator = new UserMessageTranslator($this->symfonyTranslatorMock, $this->requestStackMock);
         
         $this->itemService = new ItemService(
             $this->itemRepositoryMock,
             $this->entityManagerMock,
-            $translator
+            $translator,
+            $this->economyServiceMock,
+            $this->teamChronicleServiceMock
         );
     }
 
@@ -112,9 +126,9 @@ class ItemServiceTest extends TestCase
         $this->entityManagerMock
             ->method('persist')
             ->willReturnCallback(static function (object $entity): void {
-                self::assertInstanceOf(Item::class, $entity);
+                self::assertTrue($entity instanceof Item || $entity instanceof MarketplaceTransaction || $entity instanceof \App\Entity\Team\TeamChronicle);
             });
-        $this->entityManagerMock->expects($this->once())
+        $this->entityManagerMock->expects($this->exactly(2))
             ->method('flush');
 
         $item = $this->itemService->purchaseBasicItem($team, 'short_sword');

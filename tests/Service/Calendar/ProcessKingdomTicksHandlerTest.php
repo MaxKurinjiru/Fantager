@@ -65,6 +65,16 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     {
         $this->tickLogRepositoryMock = $this->createMock(KingdomTickLogRepository::class);
         $this->heroRepositoryMock = $this->createMock(HeroRepository::class);
+        $heroQbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $heroQueryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $heroQbMock->method('join')->willReturnSelf();
+        $heroQbMock->method('where')->willReturnSelf();
+        $heroQbMock->method('andWhere')->willReturnSelf();
+        $heroQbMock->method('setParameter')->willReturnSelf();
+        $heroQbMock->method('getQuery')->willReturn($heroQueryMock);
+        $heroQueryMock->method('getResult')->willReturn([]);
+        $this->heroRepositoryMock->method('createQueryBuilder')->willReturn($heroQbMock);
+
         $this->trainingServiceMock = $this->createMock(TrainingService::class);
         $this->arenaRevenueServiceMock = $this->createMock(ArenaRevenueService::class);
         $this->fanClubServiceMock = $this->createMock(\App\Service\Team\FanClubService::class);

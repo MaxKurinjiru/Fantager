@@ -12,7 +12,7 @@ The game world operates on automated server ticks executed at scheduled times. T
 
 | Day | Time | Event / Tick | Action Details |
 |:---|:---|:---|:---|
-| **Daily** | 00:00 | **Daily Reset & Maintenance** | Cleanup stale match formations, fan club evolution, expired marketplace listings, completed HQ facility upgrades, hero/trainer aging, and season pre-creation on Monday of Week 11. |
+| **Daily** | 00:00 | **Daily Reset & Maintenance** | Cleanup stale match formations, fan club evolution, expired marketplace listings, completed HQ facility upgrades, hero/trainer aging, and season pre-creation on Monday of Week 11. **NPC Simulation:** runs daily roster maintenance (dismissal of negative-trait heroes, roster recycling, summoning). On Tuesday and Friday, runs NPC marketplace actions (buying/selling). On Tuesday, runs NPC training queue configuration. |
 | **Daily** | 03:30 | **Inactive Registration Cleanup** | Remove team assignments and delete unverified player accounts older than 1 day. |
 | **Daily** | 03:45 | **Inactive Player Cleanup** | Release teams from verified players inactive for 28+ days. |
 | **Daily** | 04:00 | **Fatigue & Form Recovery** | Recovery tick for hero fatigue and form (passive restoration). |
@@ -21,7 +21,7 @@ The game world operates on automated server ticks executed at scheduled times. T
 | **Friday** | 18:00 | **League Match (End-Week)** | Process scheduled end-week league fixtures. **Currently implemented:** home-team arena ticket revenue. **Planned (Phase 5):** combat resolution, match XP, post-match fatigue/form/morale/aging. |
 | **Friday** | 19:00 | **Season Transition** *(Week 11 only)* | Run season resolution service: finalize standings, distribute tier promotion/relegation rewards, execute team transfers (promotions/relegations), initialize the next season. |
 | **Sunday** | 09:30 | **Arena Adaptation** | Apply pending headquarters arena adaptation changes and manage weekly adaptation lock cycles. |
-| **Weekly** | Sun 23:59 | **Weekly Reset** | Reset summoning chamber cooldowns, process HQ maintenance fees, **hero/trainer payroll**, **Royal Treasury distribution**, facility downgrade lock expiry, and weekly financial-crisis checks. |
+| **Weekly** | Sun 23:59 | **Weekly Reset** | Reset summoning chamber cooldowns, process HQ maintenance fees, **hero/trainer payroll**, **Royal Treasury distribution**, facility downgrade lock expiry, and weekly financial-crisis checks. **NPC Simulation:** runs weekly HQ upgrades. |
 
 ---
 

@@ -26,6 +26,7 @@ use App\Enum\ListingStatus;
 use App\Enum\ListingType;
 use App\Enum\Race;
 use App\Enum\TrainingType;
+use App\Service\Config\RaceConfig;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroDismissalService;
 use App\Service\Hero\HeroRatingCalculator;
@@ -98,6 +99,7 @@ class NpcSimulationService
         private readonly ItemService $itemService,
         private readonly HeroDismissalService $dismissalService,
         private readonly HeroRatingCalculator $heroRatingCalculator,
+        private readonly RaceConfig $raceConfig,
     ) {
     }
 
@@ -209,10 +211,10 @@ class NpcSimulationService
                     if (\in_array($trait, [HeroTrait::Fragile, HeroTrait::GlassJaw], true)) {
                         $frontScore *= 0.80;
                     }
-                    // Volatile: penalize — unstable heroes are suboptimal, prefer bench
-                    if (HeroTrait::Volatile === $trait) {
-                        $frontScore *= 0.90;
-                        $backScore *= 0.90;
+                    // Purely negative trait: heavily penalize so they prefer bench
+                    if ($this->isPurelyNegativeTrait($trait)) {
+                        $frontScore *= 0.10;
+                        $backScore *= 0.10;
                     }
                 }
 
@@ -255,27 +257,6 @@ class NpcSimulationService
                     if ($hero->isTrainer()) {
                         continue;
                     }
-                    $heroId = $hero->getId();
-                    if (null === $heroId) {
-                        continue;
-                    }
-                    if (count($selectedFront) + count($selectedBack) >= 6) {
-                        break;
-                    }
-                    if (!isset($usedHeroIds[$heroId])) {
-                        if (count($selectedFront) < 3) {
-                            $selectedFront[] = $hero;
-                        } else {
-                            $selectedBack[] = $hero;
-                        }
-                        $usedHeroIds[$heroId] = true;
-                    }
-                }
-            }
-
-            // Absolute fallback (including trainers if needed to avoid forfeit)
-            if (count($selectedFront) + count($selectedBack) < 6) {
-                foreach ($heroes as $hero) {
                     $heroId = $hero->getId();
                     if (null === $heroId) {
                         continue;
@@ -421,6 +402,13 @@ class NpcSimulationService
                 $candidate->setRole(HeroRole::Trainer);
                 $trainers[] = $candidate;
 
+                // Unequip all items from the NPC candidate being promoted to trainer
+                $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $candidate]);
+                foreach ($equippedItems as $item) {
+                    $item->setEquippedHero(null);
+                    $item->setEquippedSlot(null);
+                }
+
                 // Remove from trainees list
                 $idx = array_search($candidate, $trainees, true);
                 if (false !== $idx) {
@@ -491,11 +479,14 @@ class NpcSimulationService
     }
 
     /**
-     * Run management and economy simulation: summoning, HQ upgrades, and marketplace buy/sell behavior.
+     * Run daily management and economy simulation: proactive dismissal, roster recycling, and summoning.
      */
-    public function simulateManagementAndEconomy(Kingdom $kingdom, \DateTimeImmutable $now, ?Team $team = null): void
+    public function simulateDailyManagementAndEconomy(Kingdom $kingdom, \DateTimeImmutable $now, ?Team $team = null): void
     {
         if (null !== $team) {
+            if (!$team->isNpc()) {
+                return;
+            }
             $teams = [$team];
         } else {
             $teams = $this->em->getRepository(Team::class)->findBy([
@@ -505,8 +496,6 @@ class NpcSimulationService
         }
 
         foreach ($teams as $team) {
-            $role = $this->getEconomicRole($team);
-
             // Fetch alive heroes
             $aliveHeroes = $this->em->getRepository(Hero::class)->createQueryBuilder('h')
                 ->where('h.team = :team')
@@ -517,6 +506,12 @@ class NpcSimulationService
                 ->getResult();
 
             $heroCount = count($aliveHeroes);
+            $combatantCount = 0;
+            foreach ($aliveHeroes as $h) {
+                if ($h->isCombatant()) {
+                    ++$combatantCount;
+                }
+            }
             $rosterLimit = $this->hqService->getRosterLimit($team);
 
             // Calculate selling count
@@ -531,57 +526,55 @@ class NpcSimulationService
             // Heroes with a purely negative trait are unlikely to sell on the marketplace
             // and degrade team performance. Dismiss them unless they qualify as trainer candidates
             // (high level or age — someone may want them for training despite the trait).
-            if (!($heroCount >= $rosterLimit && $sellingCount >= 1)) {
-                // Only run proactive dismissal when the roster is NOT already in recycle mode
-                foreach ($aliveHeroes as $hero) {
-                    $heroId = $hero->getId();
-                    if (null === $heroId) {
-                        continue;
-                    }
-                    if (HeroStatus::Available !== $hero->getStatus()) {
-                        continue;
-                    }
-                    if ($hero->isTrainer()) {
-                        continue; // Never dismiss active trainers
-                    }
-                    if (!$this->isPurelyNegativeTrait($hero->getTrait())) {
-                        continue; // Only negative-trait heroes
-                    }
+            foreach ($aliveHeroes as $hero) {
+                $heroId = $hero->getId();
+                if (null === $heroId) {
+                    continue;
+                }
+                if (HeroStatus::Available !== $hero->getStatus()) {
+                    continue;
+                }
+                if ($hero->isTrainer()) {
+                    continue; // Never dismiss active trainers
+                }
+                if (!$this->isPurelyNegativeTrait($hero->getTrait())) {
+                    continue; // Only negative-trait heroes
+                }
 
-                    // Keep if high-level — could still become a trainer at some point
-                    if ($hero->getLevel() >= 4) {
-                        continue;
-                    }
+                // Keep if high-level — could still become a trainer at some point
+                if ($hero->getLevel() >= 4) {
+                    continue;
+                }
 
-                    // Keep if in active formation (we need the body count)
-                    $activeFormationsTrait = $this->em->getRepository(Formation::class)->findBy(['team' => $team]);
-                    $activeHeroIdsTrait = [];
-                    foreach ($activeFormationsTrait as $form) {
-                        foreach ($form->getSlots() as $slot) {
-                            $heroInSlot = $slot->getHero();
-                            if (null !== $heroInSlot && null !== $heroInSlot->getId()) {
-                                $activeHeroIdsTrait[$heroInSlot->getId()] = true;
-                            }
+                // Keep if in active formation (we need the body count)
+                $activeFormationsTrait = $this->em->getRepository(Formation::class)->findBy(['team' => $team]);
+                $activeHeroIdsTrait = [];
+                foreach ($activeFormationsTrait as $form) {
+                    foreach ($form->getSlots() as $slot) {
+                        $heroInSlot = $slot->getHero();
+                        if (null !== $heroInSlot && null !== $heroInSlot->getId()) {
+                            $activeHeroIdsTrait[$heroInSlot->getId()] = true;
                         }
                     }
-                    if (isset($activeHeroIdsTrait[$heroId])) {
-                        continue;
-                    }
+                }
+                if (isset($activeHeroIdsTrait[$heroId])) {
+                    continue;
+                }
 
-                    try {
-                        $this->dismissalService->dismiss($team, $hero);
-                        $aliveHeroes = array_filter($aliveHeroes, static fn (Hero $h) => $h->getId() !== $heroId);
-                        $heroCount = count($aliveHeroes);
-                        break; // Dismiss at most one negative-trait hero per tick
-                    } catch (\Throwable) {
-                        // Dismissal failed, continue
-                    }
+                try {
+                    $this->dismissalService->dismiss($team, $hero);
+                    $aliveHeroes = array_filter($aliveHeroes, static fn (Hero $h) => $h->getId() !== $heroId);
+                    $heroCount = count($aliveHeroes);
+                    --$combatantCount;
+                    break; // Dismiss at most one negative-trait hero per tick
+                } catch (\Throwable) {
+                    // Dismissal failed, continue
                 }
             }
 
             // 0b. Recycle Roster: If roster is full and we have at least 1 hero listed for sale,
             // dismiss the worst available combatant to make room for a new summon.
-            if ($heroCount >= $rosterLimit && $sellingCount >= 1) {
+            if ($combatantCount >= $rosterLimit && $sellingCount >= 1) {
                 $summonStatus = $this->summoningService->getStatus($team);
                 if ($team->getGold() >= ($summonStatus['gold_cost'] + 150)) {
                     // Find active formation hero IDs to avoid dismissing active combatants
@@ -636,6 +629,7 @@ class NpcSimulationService
                             // Refresh hero list and count
                             $aliveHeroes = array_filter($aliveHeroes, static fn (Hero $h) => $h->getId() !== $worstHero->getId());
                             $heroCount = count($aliveHeroes);
+                            --$combatantCount;
                         } catch (\Throwable) {
                             // Dismissal failed, ignore
                         }
@@ -647,78 +641,59 @@ class NpcSimulationService
             // NPC teams keep summoning to train and sell up to roster limit whenever they have space
             $summonThreshold = $rosterLimit - 1;
 
-            if ($heroCount <= $summonThreshold) {
+            if ($combatantCount <= $summonThreshold) {
                 $summonStatus = $this->summoningService->getStatus($team);
                 if ($summonStatus['available'] && $team->getGold() >= ($summonStatus['gold_cost'] + 150)) {
                     try {
                         $this->summoningService->summon($team);
-                        ++$heroCount;
                     } catch (\Throwable) {
                         // Summon failed, ignore
                     }
                 }
             }
+        }
 
-            // 2. HQ Upgrades
+        $this->em->flush();
+    }
+
+    /**
+     * Run marketplace simulation: buying and selling items/heroes twice weekly.
+     */
+    public function simulateMarketplaceActions(Kingdom $kingdom, \DateTimeImmutable $now, ?Team $team = null): void
+    {
+        if (null !== $team) {
+            if (!$team->isNpc()) {
+                return;
+            }
+            $teams = [$team];
+        } else {
+            $teams = $this->em->getRepository(Team::class)->findBy([
+                'kingdom' => $kingdom,
+                'isNpc' => true,
+            ]);
+        }
+
+        foreach ($teams as $team) {
+            $role = $this->getEconomicRole($team);
+
+            // Fetch alive heroes
+            $aliveHeroes = $this->em->getRepository(Hero::class)->createQueryBuilder('h')
+                ->where('h.team = :team')
+                ->andWhere('h.status NOT IN (:deadStatuses)')
+                ->setParameter('team', $team)
+                ->setParameter('deadStatuses', [HeroStatus::Dead, HeroStatus::Retired])
+                ->getQuery()
+                ->getResult();
+
+            $heroCount = count($aliveHeroes);
+
+            // HQ reference for safety reserve
             $hq = $this->hqService->getForTeam($team);
             $weeklyMaintenance = $this->hqService->calculateWeeklyMaintenanceFee($hq);
             $safetyReserve = 2 * $weeklyMaintenance;
 
-            if (null === $hq->getUpgradingFacility()) {
-                $priorities = $this->getFacilityPrioritiesForRole($role);
-                $upgradeCandidates = [];
-                foreach ($hq->getFacilities() as $facility) {
-                    $facilityType = $facility->getType();
-                    $priorityIndex = array_search($facilityType, $priorities, true);
-                    if (false === $priorityIndex) {
-                        $priorityIndex = 3;
-                    }
-
-                    $upgradeCandidates[] = [
-                        'facility' => $facility,
-                        'type' => $facilityType,
-                        'level' => $facility->getLevel(),
-                        'priorityIndex' => $priorityIndex,
-                    ];
-                }
-
-                // Sort candidates: first by level ascending (balance levels), then by priorityIndex ascending
-                usort($upgradeCandidates, static function (array $a, array $b): int {
-                    if ($a['level'] !== $b['level']) {
-                        return $a['level'] <=> $b['level'];
-                    }
-
-                    return $a['priorityIndex'] <=> $b['priorityIndex'];
-                });
-
-                foreach ($upgradeCandidates as $candidate) {
-                    $facility = $candidate['facility'];
-                    $facilityType = $candidate['type'];
-                    $cost = $this->hqService->calculateUpgradeCost($facilityType, $facility->getLevel(), $hq->getComputedTotalLevel());
-                    if ($team->getGold() >= ($safetyReserve + $cost)) {
-                        // Compute level difference constraint among ALL facilities:
-                        // Level difference between highest and lowest facilities after this upgrade must be <= 3
-                        $tempLevels = [];
-                        foreach ($upgradeCandidates as $uc) {
-                            $tempLevels[] = ($uc['type'] === $facilityType) ? $uc['level'] + 1 : $uc['level'];
-                        }
-                        $maxLevel = max($tempLevels);
-                        $minLevel = min($tempLevels);
-
-                        if (($maxLevel - $minLevel) <= 3) {
-                            try {
-                                $this->hqService->upgradeFacility($team, $facilityType, $now);
-                                break; // Upgrade at most one facility per week
-                            } catch (\Throwable) {
-                                // Try next candidate
-                            }
-                        }
-                    }
-                }
-            }
-
             // 3. Marketplace - Selling (Item and Hero/Trainer)
-            // Limit to at most 1 item and 1 hero/trainer listing per week to avoid spam
+            // Limit to at most 1 item and 1 hero/trainer listing per tick to avoid spam
             $unequippedItems = $this->em->getRepository(Item::class)->findBy([
                 'ownerTeam' => $team,
                 'status' => ItemStatus::Available,
@@ -764,7 +739,8 @@ class NpcSimulationService
                     }
                 }
 
-                $sellingCandidate = null;
+                $combatantCandidates = [];
+                $trainerCandidates = [];
                 foreach ($aliveHeroes as $hero) {
                     $heroId = $hero->getId();
                     if (null === $heroId) {
@@ -776,22 +752,53 @@ class NpcSimulationService
                     if (isset($activeHeroIds[$heroId])) {
                         continue;
                     }
+                    if ($hero->getLevel() < 1) {
+                        continue;
+                    }
 
-                    if (self::ROLE_MERCENARY_ACADEMY === $role) {
-                        if (!$hero->isTrainer() && $hero->getLevel() >= 1) {
-                            $sellingCandidate = $hero;
-                            break;
-                        }
-                    } elseif (self::ROLE_VETERAN_GUILD === $role) {
-                        if ($hero->isTrainer()) {
-                            $sellingCandidate = $hero;
-                            break;
-                        }
+                    if ($hero->isTrainer()) {
+                        $trainerCandidates[] = $hero;
                     } else {
-                        if ($hero->getLevel() >= 1) {
-                            $sellingCandidate = $hero;
-                            break;
-                        }
+                        $combatantCandidates[] = $hero;
+                    }
+                }
+
+                $theme = $this->summoningService->getArenaRaceTheme($team);
+
+                // Sort combatants: prioritize those with negative traits and lower compatibility
+                usort($combatantCandidates, function (Hero $a, Hero $b) use ($theme): int {
+                    $hasNegA = 'negative' === $a->getTrait()?->getCategory();
+                    $hasNegB = 'negative' === $b->getTrait()?->getCategory();
+
+                    $relA = $theme ? $this->raceConfig->getRelationship($a->getRace(), $theme) : 100;
+                    $relB = $theme ? $this->raceConfig->getRelationship($b->getRace(), $theme) : 100;
+
+                    $priorityA = ($hasNegA ? 100 : 0) + (100 - $relA);
+                    $priorityB = ($hasNegB ? 100 : 0) + (100 - $relB);
+
+                    return $priorityB <=> $priorityA;
+                });
+
+                // Sort trainers: prioritize those with negative traits
+                usort($trainerCandidates, static function (Hero $a, Hero $b): int {
+                    $hasNegA = 'negative' === $a->getTrait()?->getCategory();
+                    $hasNegB = 'negative' === $b->getTrait()?->getCategory();
+
+                    return ($hasNegB ? 1 : 0) <=> ($hasNegA ? 1 : 0);
+                });
+
+                $sellingCandidate = null;
+                if (self::ROLE_VETERAN_GUILD === $role) {
+                    if (count($trainerCandidates) > 0) {
+                        $sellingCandidate = $trainerCandidates[0];
+                    } elseif (count($combatantCandidates) > 0) {
+                        $sellingCandidate = $combatantCandidates[0];
+                    }
+                } else {
+                    if (count($combatantCandidates) > 0) {
+                        $sellingCandidate = $combatantCandidates[0];
+                    } elseif (count($trainerCandidates) > 0) {
+                        $sellingCandidate = $trainerCandidates[0];
                     }
                 }
 
@@ -819,11 +826,14 @@ class NpcSimulationService
             }
 
             // 4. Marketplace - Buying
-            // Scan and buy player listings in the same Kingdom if budget allows
+            // Scan and buy player listings in the same Kingdom if budget allows, based on priority score
             $listings = $this->em->getRepository(MarketplaceListing::class)->findBy([
                 'kingdom' => $kingdom,
                 'status' => ListingStatus::Active,
             ], ['id' => 'ASC'], 20);
+
+            $bestListing = null;
+            $bestScore = -1;
 
             foreach ($listings as $listing) {
                 if ($listing->getSellerTeam()->getId() === $team->getId()) {
@@ -835,52 +845,162 @@ class NpcSimulationService
                     continue;
                 }
 
-                $shouldBuy = false;
+                $score = 0; // 0 means not interested
 
-                if (self::ROLE_ROYAL_COLLECTOR === $role) {
-                    // Rich collectors buy high-end items and heroes
-                    if (ListingType::Item === $listing->getListingType()) {
-                        $item = $listing->getItem();
-                        if (null !== $item && in_array($item->getRarity(), [ItemRarity::Epic, ItemRarity::Legendary, ItemRarity::Mythic], true)) {
-                            $shouldBuy = true;
-                        }
-                    } elseif (in_array($listing->getListingType(), [ListingType::Hero, ListingType::Trainer], true)) {
-                        $hero = $listing->getHero();
-                        if (null !== $hero && $hero->getLevel() >= 1) {
-                            $shouldBuy = true;
-                        }
-                    }
-                } elseif (self::ROLE_SCAVENGER_CLAN === $role) {
-                    // Scavengers buy cheap items to dismantle
-                    if (ListingType::Item === $listing->getListingType() && $price < 150) {
-                        $shouldBuy = true;
-                    }
-                } elseif (self::ROLE_MERCENARY_ACADEMY === $role) {
-                    // Mercenary Academies buy physical/combat heroes
-                    if (ListingType::Hero === $listing->getListingType()) {
-                        $hero = $listing->getHero();
-                        if (null !== $hero && $hero->getLevel() >= 1 && in_array($hero->getRace(), [Race::Orc, Race::Dwarf, Race::Human], true)) {
-                            $shouldBuy = true;
+                if (ListingType::Item === $listing->getListingType()) {
+                    $item = $listing->getItem();
+                    if (null !== $item) {
+                        if (self::ROLE_ROYAL_COLLECTOR === $role) {
+                            if (in_array($item->getRarity(), [ItemRarity::Epic, ItemRarity::Legendary, ItemRarity::Mythic], true)) {
+                                $score = 100;
+                            } else {
+                                $score = 10;
+                            }
+                        } elseif (self::ROLE_SCAVENGER_CLAN === $role) {
+                            if ($price < 150) {
+                                $score = 100;
+                            } else {
+                                $score = 20;
+                            }
+                        } else {
+                            if (in_array($item->getRarity(), [ItemRarity::Epic, ItemRarity::Rare], true) && $price < 300) {
+                                $score = 30;
+                            }
                         }
                     }
-                } elseif (self::ROLE_VETERAN_GUILD === $role) {
-                    // Veteran Guilds buy trainers
-                    if (ListingType::Trainer === $listing->getListingType()) {
-                        $hero = $listing->getHero();
-                        if (null !== $hero && $hero->getLevel() >= 1) {
-                            $shouldBuy = true;
+                } elseif (ListingType::Hero === $listing->getListingType()) {
+                    $hero = $listing->getHero();
+                    if (null !== $hero && $hero->getLevel() >= 1) {
+                        $theme = $this->summoningService->getArenaRaceTheme($team);
+                        if (Race::Genie === $theme) {
+                            $compatibleRaces = [Race::Genie];
+                        } else {
+                            $compatibleRaces = $this->summoningService->getCompatibleRacesForTeam($team);
+                        }
+
+                        if (!in_array($hero->getRace(), $compatibleRaces, true)) {
+                            $score = 0;
+                        } else {
+                            if (self::ROLE_MERCENARY_ACADEMY === $role) {
+                                if (in_array($hero->getRace(), [Race::Orc, Race::Dwarf, Race::Human], true)) {
+                                    $score = 100;
+                                } else {
+                                    $score = 60;
+                                }
+                            } elseif (self::ROLE_ROYAL_COLLECTOR === $role) {
+                                $score = 80;
+                            } else {
+                                $score = 20;
+                            }
+                        }
+                    }
+                } elseif (ListingType::Trainer === $listing->getListingType()) {
+                    $hero = $listing->getHero();
+                    if (null !== $hero && $hero->getLevel() >= 1) {
+                        if (self::ROLE_VETERAN_GUILD === $role) {
+                            $score = 100;
+                        } elseif (self::ROLE_ROYAL_COLLECTOR === $role) {
+                            $score = 80;
+                        } else {
+                            $score = 20;
                         }
                     }
                 }
 
-                if ($shouldBuy) {
-                    $listingId = $listing->getId();
-                    if (null !== $listingId) {
-                        try {
-                            $this->marketplaceService->buyListing($team, $listingId, $now);
-                            break; // Buy at most one listing per week to maintain budget
-                        } catch (\Throwable) {
-                            // Ignore buy error
+                if ($score > 0 && $score > $bestScore) {
+                    $bestScore = $score;
+                    $bestListing = $listing;
+                }
+            }
+
+            if (null !== $bestListing) {
+                $listingId = $bestListing->getId();
+                if (null !== $listingId) {
+                    try {
+                        $this->marketplaceService->buyListing($team, $listingId, $now);
+                    } catch (\Throwable) {
+                        // Ignore buy error
+                    }
+                }
+            }
+        }
+
+        $this->em->flush();
+    }
+
+    /**
+     * Run weekly management and economy simulation: HQ upgrades.
+     */
+    public function simulateWeeklyManagementAndEconomy(Kingdom $kingdom, \DateTimeImmutable $now, ?Team $team = null): void
+    {
+        if (null !== $team) {
+            if (!$team->isNpc()) {
+                return;
+            }
+            $teams = [$team];
+        } else {
+            $teams = $this->em->getRepository(Team::class)->findBy([
+                'kingdom' => $kingdom,
+                'isNpc' => true,
+            ]);
+        }
+
+        foreach ($teams as $team) {
+            $role = $this->getEconomicRole($team);
+
+            // 2. HQ Upgrades
+            $hq = $this->hqService->getForTeam($team);
+            $weeklyMaintenance = $this->hqService->calculateWeeklyMaintenanceFee($hq);
+            $safetyReserve = 2 * $weeklyMaintenance;
+
+            if (null === $hq->getUpgradingFacility()) {
+                $priorities = $this->getFacilityPrioritiesForRole($role);
+                $upgradeCandidates = [];
+                foreach ($hq->getFacilities() as $facility) {
+                    $facilityType = $facility->getType();
+                    $priorityIndex = array_search($facilityType, $priorities, true);
+                    if (false === $priorityIndex) {
+                        $priorityIndex = 3;
+                    }
+
+                    $upgradeCandidates[] = [
+                        'facility' => $facility,
+                        'type' => $facilityType,
+                        'level' => $facility->getLevel(),
+                        'priorityIndex' => $priorityIndex,
+                    ];
+                }
+
+                // Sort candidates: first by priorityIndex ascending (higher priority first), then by level ascending (balance equal priorities)
+                usort($upgradeCandidates, static function (array $a, array $b): int {
+                    if ($a['priorityIndex'] !== $b['priorityIndex']) {
+                        return $a['priorityIndex'] <=> $b['priorityIndex'];
+                    }
+
+                    return $a['level'] <=> $b['level'];
+                });
+
+                foreach ($upgradeCandidates as $candidate) {
+                    $facility = $candidate['facility'];
+                    $facilityType = $candidate['type'];
+                    $cost = $this->hqService->calculateUpgradeCost($facilityType, $facility->getLevel(), $hq->getComputedTotalLevel());
+                    if ($team->getGold() >= ($safetyReserve + $cost)) {
+                        // Compute level difference constraint among ALL facilities:
+                        // Level difference between highest and lowest facilities after this upgrade must be <= 3
+                        $tempLevels = [];
+                        foreach ($upgradeCandidates as $uc) {
+                            $tempLevels[] = ($uc['type'] === $facilityType) ? $uc['level'] + 1 : $uc['level'];
+                        }
+                        $maxLevel = max($tempLevels);
+                        $minLevel = min($tempLevels);
+
+                        if (($maxLevel - $minLevel) <= 3) {
+                            try {
+                                $this->hqService->upgradeFacility($team, $facilityType, $now);
+                                break; // Upgrade at most one facility per week
+                            } catch (\Throwable) {
+                                // Try next candidate
+                            }
                         }
                     }
                 }

@@ -6,6 +6,7 @@ namespace App\Service\Training;
 
 use App\Entity\Hero\Hero;
 use App\Entity\Hero\HeroTrainingHistory;
+use App\Entity\Item\Item;
 use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
@@ -122,6 +123,13 @@ class TrainingService
         $hero->setRole(HeroRole::Trainer);
         $hero->setTrainingType(null);
         $hero->setTargetAttribute(null);
+
+        // Unequip all items from the hero being promoted to trainer
+        $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
+        foreach ($equippedItems as $item) {
+            $item->setEquippedHero(null);
+            $item->setEquippedSlot(null);
+        }
 
         // Remove hero from active formations
         /** @var list<\App\Entity\Formation\FormationSlot> $slots */

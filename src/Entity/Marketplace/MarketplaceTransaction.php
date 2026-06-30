@@ -23,12 +23,15 @@ class MarketplaceTransaction
     private Team $buyerTeam;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private Team $sellerTeam;
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Team $sellerTeam = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private MarketplaceListing $listing;
+    #[ORM\JoinColumn(nullable: true)]
+    private ?MarketplaceListing $listing = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $entityName = null;
 
     #[ORM\Column]
     private int $amount;
@@ -64,26 +67,38 @@ class MarketplaceTransaction
         return $this;
     }
 
-    public function getSellerTeam(): Team
+    public function getSellerTeam(): ?Team
     {
         return $this->sellerTeam;
     }
 
-    public function setSellerTeam(Team $sellerTeam): static
+    public function setSellerTeam(?Team $sellerTeam): static
     {
         $this->sellerTeam = $sellerTeam;
 
         return $this;
     }
 
-    public function getListing(): MarketplaceListing
+    public function getListing(): ?MarketplaceListing
     {
         return $this->listing;
     }
 
-    public function setListing(MarketplaceListing $listing): static
+    public function setListing(?MarketplaceListing $listing): static
     {
         $this->listing = $listing;
+
+        return $this;
+    }
+
+    public function getEntityName(): ?string
+    {
+        return $this->entityName;
+    }
+
+    public function setEntityName(?string $entityName): static
+    {
+        $this->entityName = $entityName;
 
         return $this;
     }

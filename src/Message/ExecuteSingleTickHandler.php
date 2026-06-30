@@ -150,7 +150,6 @@ class ExecuteSingleTickHandler
         switch ($type) {
             case TickType::WeeklyTraining:
                 if (null !== $team) {
-                    $this->npcSimulationService->simulateTraining($kingdom, $scheduledAt, $team);
                     $this->trainingService->processTrainingTick($scheduledAt, $kingdom, $team);
                     $this->processTrainingMastery($team);
                 }
@@ -159,7 +158,7 @@ class ExecuteSingleTickHandler
             case TickType::WeeklyReset:
                 if (null !== $team) {
                     // Team-scoped weekly reset
-                    $this->npcSimulationService->simulateManagementAndEconomy($kingdom, $scheduledAt, $team);
+                    $this->npcSimulationService->simulateWeeklyManagementAndEconomy($kingdom, $scheduledAt, $team);
                     $this->resetWeeklySummons($kingdom, $team);
                     $this->hqService->processMaintenanceTick($kingdom, $team);
                     $this->teamPayrollService->processPayrollTick($kingdom, $team);
@@ -369,6 +368,24 @@ class ExecuteSingleTickHandler
                 if ($scheduledAt->setTime(0, 0, 0) >= $mondayWeek11) {
                     $this->seasonTransitionService->prepareUpcomingSeason($kingdom);
                 }
+            }
+        }
+
+        // Run daily NPC simulation actions
+        if ($team->isNpc()) {
+            $this->npcSimulationService->simulateDailyManagementAndEconomy($kingdom, $scheduledAt, $team);
+
+            // Determine local day of the week to run weekly/twice-weekly tasks
+            $tz = new \DateTimeZone($kingdom->getTimezone());
+            $localTime = $scheduledAt->setTimezone($tz);
+            $localDay = (int) $localTime->format('N');
+
+            if (2 === $localDay || 5 === $localDay) {
+                $this->npcSimulationService->simulateMarketplaceActions($kingdom, $scheduledAt, $team);
+            }
+
+            if (2 === $localDay) {
+                $this->npcSimulationService->simulateTraining($kingdom, $scheduledAt, $team);
             }
         }
     }

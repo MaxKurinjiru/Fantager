@@ -34,7 +34,7 @@ Every team in the system, including AI-controlled opponents, is represented by t
 - **Fully staffed**: Each NPC team is created with **10 heroes** and a default formation.
 - **Assigned to a real player on registration**: When a player registers, a random unclaimed NPC team (`user_id IS NULL`) in their Kingdom is assigned to them immediately (`user_id` set, `is_npc` set to false). A `team_chronicle` entry with type `player_joined` is recorded on the team chronicle. If the registration is not verified within 24 hours, a daily maintenance tick (running at 03:30 AM) removes the team assignment, writes `player_released` / `unverified_registration`, and deletes the user.
 - **Inactive player release**: Verified players who do not log in or play for **28 days** have their team released back to the NPC pool (daily tick at 03:45 AM). Chronicle entry: `player_released` / `inactivity`. A warning is sent after **21 days** of inactivity. See [player-inactivity-system.md](player-inactivity-system.md).
-- **AI-controlled gameplay**: NPC matches are resolved by the combat engine automatically; NPC teams do not submit lineup changes unless an AI controller is implemented.
+- **AI-controlled gameplay**: NPC matches are resolved by the combat engine automatically. NPC tactics (lineup, gear, and slot strategies), training setups, summoning, and marketplace activities are autonomously simulated. See [npc-simulation-system.md](npc-simulation-system.md) for full implementation details.
 
 ## Sections to Fill
 
