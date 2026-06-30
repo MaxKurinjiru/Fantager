@@ -198,14 +198,14 @@ class KingdomInitializationService
 
         $today = new \DateTimeImmutable('today');
         $status = LeagueSeasonStatus::Scheduled;
-        if ($start <= $today && $today <= $end) {
-            $active = (string) ($seasonConfig['status_when_started'] ?? 'active');
-            $status = LeagueSeasonStatus::tryFrom($active) ?? LeagueSeasonStatus::Active;
-        } elseif ($start > $today) {
+        if ($start > $today) {
             $future = (string) ($seasonConfig['status_when_future'] ?? 'scheduled');
             $status = LeagueSeasonStatus::tryFrom($future) ?? LeagueSeasonStatus::Scheduled;
         } else {
-            $status = LeagueSeasonStatus::Completed;
+            // Even if the season end date is in the past, we initialize it as Active
+            // so that catch-up ticks can run and transition it to subsequent seasons correctly.
+            $active = (string) ($seasonConfig['status_when_started'] ?? 'active');
+            $status = LeagueSeasonStatus::tryFrom($active) ?? LeagueSeasonStatus::Active;
         }
 
         $season = new LeagueSeason();
@@ -319,8 +319,13 @@ class KingdomInitializationService
     {
         $count = (int) ($teamConfig['heroes_per_team'] ?? 10);
 
-        // Limit hero races to those with at least neutral (>=50) affinity to the team's race.
-        $compatibleRaces = $this->raceConfig->getCompatibleRaces($teamRace, 50);
+        if (Race::Genie === $teamRace) {
+            // Genie starting roster is restricted to Genie only to prevent hostile pairs among various compatible races.
+            $compatibleRaces = [$teamRace];
+        } else {
+            // Limit hero races to those with at least neutral (>=50) affinity to the team's race.
+            $compatibleRaces = $this->raceConfig->getCompatibleRaces($teamRace, 50);
+        }
 
         $heroes = [];
         for ($i = 0; $i < $count; ++$i) {

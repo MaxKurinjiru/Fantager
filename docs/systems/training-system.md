@@ -38,6 +38,7 @@ During the lock period, players cannot configure trainers, assign heroes, or una
 | **Attribute Cap** | A hero cannot train a primary attribute beyond the Trainer's frozen value for that attribute. |
 | **No monetary cost** | Training has no Gold or Essence cost. It is instead balanced by a high fatigue load. |
 | **Trainer aging** | Trainers age during each weekly tick by the same amount a hero would age from a combat death (applies to all races, including Undead). |
+| **Auto-unequip on promotion** | When a combatant is promoted to trainer role (`TrainingService::promoteToTrainer`), all items equipped on that hero are automatically unequipped (set to `Available`). The same unequip step also applies when a trainer is listed for sale on the marketplace. |
 
 ## Hero Creation Age
 

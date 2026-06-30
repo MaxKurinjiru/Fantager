@@ -69,6 +69,34 @@ class HeroRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    public function countActiveCombatantsByTeam(Team $team): int
+    {
+        return (int) $this->createQueryBuilder('h')
+            ->select('COUNT(h.id)')
+            ->where('h.team = :team')
+            ->andWhere('h.role = :role')
+            ->andWhere('h.status NOT IN (:deadStatuses)')
+            ->setParameter('team', $team)
+            ->setParameter('role', HeroRole::Combatant)
+            ->setParameter('deadStatuses', [HeroStatus::Dead, HeroStatus::Retired])
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countActiveTrainersByTeam(Team $team): int
+    {
+        return (int) $this->createQueryBuilder('h')
+            ->select('COUNT(h.id)')
+            ->where('h.team = :team')
+            ->andWhere('h.role = :role')
+            ->andWhere('h.status NOT IN (:deadStatuses)')
+            ->setParameter('team', $team)
+            ->setParameter('role', HeroRole::Trainer)
+            ->setParameter('deadStatuses', [HeroStatus::Dead, HeroStatus::Retired])
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     /**
      * @return list<Hero>
      */

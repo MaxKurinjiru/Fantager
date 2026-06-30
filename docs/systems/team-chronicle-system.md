@@ -50,6 +50,8 @@ Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter`
 | `player_released` | Team returned to NPC pool | See release reasons below |
 | `season_ended` | League season transition rewards applied | `SeasonTransitionService` |
 | `summon_completed` | Hero successfully summoned | `SummoningService` |
+| `item_purchased` | Item bought on marketplace or from merchant | `TeamChronicleService::recordItemPurchased()` |
+| `item_sold` | Item sold on marketplace | `TeamChronicleService::recordItemSold()` |
 
 ### `player_released` reasons (`ChronicleReleaseReason`)
 
@@ -62,9 +64,25 @@ Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter`
 
 Translation keys: `activity.player_released.{reason}` with `%player%` param.
 
+### `item_purchased` data shape
+
+```json
+{ "item_id": 123, "seller_team_id": 456, "price": 350 }
+```
+
+`seller_team_id` is `null` when purchased from the in-game merchant (`ItemService::buyFromMerchant`). Subject params: `%item%`, `%seller%`, `%price%`.
+
+### `item_sold` data shape
+
+```json
+{ "item_id": 123, "buyer_team_id": 789, "price": 350 }
+```
+
+Subject params: `%item%`, `%buyer%`, `%price%`.
+
 ### Reserved (enum exists; write hooks pending)
 
-`battle_win`, `battle_loss`, `battle_draw`, `hero_levelup`, `hero_died`, `hero_retired`, `training_completed`, `item_purchased`, `item_sold`, `dungeon_completed` — to be wired when combat, XP, marketplace chronicle integration, etc. are implemented.
+`battle_win`, `battle_loss`, `battle_draw`, `hero_levelup`, `hero_died`, `hero_retired`, `training_completed`, `dungeon_completed` — to be wired when combat, XP, etc. are implemented.
 
 ---
 
@@ -86,7 +104,7 @@ Translation keys: `activity.player_released.{reason}` with `%player%` param.
 
 | Class | Responsibility |
 |-------|----------------|
-| `TeamChronicleService` | Create and persist chronicle entries (single write entry point) |
+| `TeamChronicleService` | Create and persist chronicle entries (single write entry point). Depends on `EntityManagerInterface`, `TickClock`, and `UserMessageTranslator`. |
 | `TeamChroniclePresenter` | Load entries, translate messages, attach icons and type labels |
 | `TeamChronicleRepository` | `findRecentByTeam()`, `findByTeamFiltered()` |
 
@@ -133,6 +151,8 @@ Styles: `assets/styles/components/_chronicle.scss`.
 - [Financial Crisis System](financial-crisis-system.md) — `player_released` / bankruptcy
 - [League System](league-system.md) — `season_ended`
 - [Summoning System](summoning-system.md) — `summon_completed` (parallel detail in `TeamSummonHistory` per hero)
+- [Marketplace System](marketplace-system.md) — `item_purchased` / `item_sold` on buy-now and auction settlement
+- [Item System](item-system.md) — `item_purchased` on merchant purchase
 
 ---
 

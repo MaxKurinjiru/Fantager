@@ -7,6 +7,7 @@ namespace App\Service\TeamChronicle;
 use App\Entity\Auth\User;
 use App\Entity\Combat\Battle;
 use App\Entity\Hero\Hero;
+use App\Entity\Item\Item;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
 use App\Entity\Team\TeamChronicle;
@@ -14,6 +15,7 @@ use App\Enum\ChronicleEventType;
 use App\Enum\ChronicleReleaseReason;
 use App\Enum\Race;
 use App\Service\Calendar\TickClock;
+use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TeamChronicleService
@@ -21,6 +23,7 @@ class TeamChronicleService
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly TickClock $tickClock,
+        private readonly UserMessageTranslator $translator,
     ) {
     }
 
@@ -359,6 +362,46 @@ class TeamChronicleService
             [
                 'race' => $race,
             ]
+        );
+    }
+
+    public function recordItemPurchased(Team $buyer, Item $item, ?Team $seller, int $price): TeamChronicle
+    {
+        $sellerName = $seller?->getName() ?? $this->translator->trans('marketplace.merchant');
+
+        return $this->create(
+            $buyer,
+            ChronicleEventType::ItemPurchased,
+            'activity.item_purchased',
+            [
+                'item' => $item->getName(),
+                'seller' => $sellerName,
+                'price' => (string) $price,
+            ],
+            [
+                'item_id' => $item->getId(),
+                'seller_team_id' => $seller?->getId(),
+                'price' => $price,
+            ],
+        );
+    }
+
+    public function recordItemSold(Team $seller, Item $item, Team $buyer, int $price): TeamChronicle
+    {
+        return $this->create(
+            $seller,
+            ChronicleEventType::ItemSold,
+            'activity.item_sold',
+            [
+                'item' => $item->getName(),
+                'buyer' => $buyer->getName(),
+                'price' => (string) $price,
+            ],
+            [
+                'item_id' => $item->getId(),
+                'buyer_team_id' => $buyer->getId(),
+                'price' => $price,
+            ],
         );
     }
 

@@ -29,6 +29,7 @@ use App\Service\Summoning\SummoningService;
 use App\Service\Team\NpcSimulationService;
 use App\Service\Training\TrainingService;
 use App\Service\Hero\HeroDismissalService;
+use App\Service\Config\RaceConfig;
 use App\Service\Hero\HeroRatingCalculator;
 use App\Entity\Item\Item;
 use Doctrine\ORM\EntityManagerInterface;
@@ -56,6 +57,8 @@ class NpcSimulationServiceTest extends TestCase
     private $dismissalService;
     /** @var HeroRatingCalculator&MockObject */
     private $heroRatingCalculator;
+    /** @var RaceConfig&MockObject */
+    private $raceConfig;
     private NpcSimulationService $service;
 
     protected function setUp(): void
@@ -68,6 +71,7 @@ class NpcSimulationServiceTest extends TestCase
         $this->itemService = $this->createMock(ItemService::class);
         $this->dismissalService = $this->createMock(HeroDismissalService::class);
         $this->heroRatingCalculator = $this->createMock(HeroRatingCalculator::class);
+        $this->raceConfig = $this->createMock(RaceConfig::class);
 
         $this->service = new NpcSimulationService(
             $this->em,
@@ -78,6 +82,7 @@ class NpcSimulationServiceTest extends TestCase
             $this->itemService,
             $this->dismissalService,
             $this->heroRatingCalculator,
+            $this->raceConfig,
         );
     }
 
@@ -454,6 +459,14 @@ class NpcSimulationServiceTest extends TestCase
         $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
         $this->hqService->method('calculateUpgradeCost')->willReturn(500);
 
+        $this->summoningService->method('getStatus')->willReturn([
+            'available' => false,
+            'reason' => 'test',
+            'gold_cost' => 100,
+            'summons_used' => 0,
+            'summons_max' => 5,
+        ]);
+
         // Expect dismiss to be called on the Fragile hero (heroes[0])
         $calledDismissParams = null;
         $this->dismissalService->expects($this->once())
@@ -464,7 +477,7 @@ class NpcSimulationServiceTest extends TestCase
             });
 
         // Run
-        $this->service->simulateManagementAndEconomy($kingdom, new \DateTimeImmutable());
+        $this->service->simulateDailyManagementAndEconomy($kingdom, new \DateTimeImmutable());
 
         $this->assertNotNull($calledDismissParams);
         $this->assertSame($team, $calledDismissParams[0]);
@@ -545,7 +558,7 @@ class NpcSimulationServiceTest extends TestCase
             });
 
         // Run
-        $this->service->simulateManagementAndEconomy($kingdom, new \DateTimeImmutable());
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable());
 
         $this->assertNotNull($calledListingParams);
         $this->assertSame($team, $calledListingParams[0]);
@@ -617,5 +630,168 @@ class NpcSimulationServiceTest extends TestCase
         $this->assertEquals(HeroRole::Trainer, $hero2->getRole());
         $this->assertEquals(HeroRole::Combatant, $hero1->getRole());
     }
+
+    public function testSimulateTrainingUnequipsItemsFromPromotedTrainer(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // ROLE_MERCENARY_ACADEMY
+        $team->setKingdom($kingdom);
+
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setAgeRaw(300);
+        $hero->setLevel(10);
+        $hero->setStatus(HeroStatus::Available);
+        $this->setEntityId($hero, 123);
+
+        $hero2 = new Hero();
+        $hero2->setRole(HeroRole::Combatant);
+        $hero2->setTeam($team);
+        $hero2->setAgeRaw(100);
+        $hero2->setLevel(1);
+        $hero2->setStatus(HeroStatus::Available);
+        $this->setEntityId($hero2, 124);
+
+        $item = new Item();
+        $item->setOwnerTeam($team);
+        $item->setEquippedHero($hero);
+        $item->setEquippedSlot(ItemSlotType::MainHand);
+
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findBy')->willReturn([$hero, $hero2]);
+
+        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo->expects($this->once())->method('findBy')
+            ->with(['equippedHero' => $hero])
+            ->willReturn([$item]);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findBy')->willReturn([]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $heroRepo, $itemRepo, $formationRepo) {
+            if (Team::class === $class) return $teamRepo;
+            if (Hero::class === $class) return $heroRepo;
+            if (Item::class === $class) return $itemRepo;
+            if (Formation::class === $class) return $formationRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $this->trainingService->method('getTrainerLimit')->willReturn(1);
+        $this->trainingService->method('getTrainerSlotsLimit')->willReturn(2);
+
+        $this->service->simulateTraining($kingdom, new \DateTimeImmutable());
+
+        $this->assertEquals(HeroRole::Trainer, $hero->getRole());
+        $this->assertNull($item->getEquippedHero());
+        $this->assertNull($item->getEquippedSlot());
+    }
+
+    public function testSimulateWeeklyManagementAndEconomyHqUpgrades(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // ROLE_MERCENARY_ACADEMY: Training (0), SummoningChamber (1), Barracks (2)
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(10000);
+
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo) {
+            if (Team::class === $class) return $teamRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+
+        $training = new Facility();
+        $training->setType(FacilityType::Training);
+        $training->setLevel(3);
+        $hq->addFacility($training);
+
+        $summoning = new Facility();
+        $summoning->setType(FacilityType::SummoningChamber);
+        $summoning->setLevel(1);
+        $hq->addFacility($summoning);
+
+        $barracks = new Facility();
+        $barracks->setType(FacilityType::Barracks);
+        $barracks->setLevel(1);
+        $hq->addFacility($barracks);
+
+        $treasury = new Facility();
+        $treasury->setType(FacilityType::Treasury);
+        $treasury->setLevel(1);
+        $hq->addFacility($treasury);
+
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->hqService->method('calculateUpgradeCost')->willReturn(100);
+
+        $this->hqService->expects($this->once())
+            ->method('upgradeFacility')
+            ->with($team, FacilityType::Training);
+
+        $this->service->simulateWeeklyManagementAndEconomy($kingdom, new \DateTimeImmutable(), $team);
+    }
+
+    public function testSimulateWeeklyManagementAndEconomyHqUpgradesExceedingLimitFallsBack(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // ROLE_MERCENARY_ACADEMY: Training (0), SummoningChamber (1), Barracks (2)
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(10000);
+
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo) {
+            if (Team::class === $class) return $teamRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+
+        $training = new Facility();
+        $training->setType(FacilityType::Training);
+        $training->setLevel(4);
+        $hq->addFacility($training);
+
+        $summoning = new Facility();
+        $summoning->setType(FacilityType::SummoningChamber);
+        $summoning->setLevel(1);
+        $hq->addFacility($summoning);
+
+        $barracks = new Facility();
+        $barracks->setType(FacilityType::Barracks);
+        $barracks->setLevel(1);
+        $hq->addFacility($barracks);
+
+        $treasury = new Facility();
+        $treasury->setType(FacilityType::Treasury);
+        $treasury->setLevel(1);
+        $hq->addFacility($treasury);
+
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->hqService->method('calculateUpgradeCost')->willReturn(100);
+
+        $this->hqService->expects($this->once())
+            ->method('upgradeFacility')
+            ->with($team, FacilityType::SummoningChamber);
+
+        $this->service->simulateWeeklyManagementAndEconomy($kingdom, new \DateTimeImmutable(), $team);
+    }
 }
+
 

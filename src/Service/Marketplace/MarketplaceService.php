@@ -28,10 +28,13 @@ use App\Service\Config\RaceConfig;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
+use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroRatingCalculator;
 use App\Service\Notification\NotificationHelper;
 use App\Service\Team\TeamChemistryService;
 use App\Service\Team\TeamRosterService;
+use App\Service\Training\TrainingService;
+use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 
 class MarketplaceService
@@ -47,6 +50,9 @@ class MarketplaceService
         private readonly TeamChemistryService $teamChemistryService,
         private readonly HeroRatingCalculator $heroRatingCalculator,
         private readonly RaceConfig $raceConfig,
+        private readonly UserMessageTranslator $translator,
+        private readonly HeadquartersService $hqService,
+        private readonly TrainingService $trainingService,
     ) {
     }
 
@@ -109,6 +115,13 @@ class MarketplaceService
 
             $this->teamRosterService->assertCanRemoveCombatReadyHero($seller, $hero);
 
+            // Unequip all items from the hero before sale
+            $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
+            foreach ($equippedItems as $item) {
+                $item->setEquippedHero(null);
+                $item->setEquippedSlot(null);
+            }
+
             // Escrow hero
             $hero->setStatus(HeroStatus::Selling);
             $listing->setHero($hero);
@@ -144,6 +157,13 @@ class MarketplaceService
 
             foreach ($trainer->getTrainees() as $hero) {
                 $trainer->removeTrainee($hero);
+            }
+
+            // Unequip all items from the trainer before sale
+            $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $trainer]);
+            foreach ($equippedItems as $item) {
+                $item->setEquippedHero(null);
+                $item->setEquippedSlot(null);
             }
 
             $trainer->setStatus(HeroStatus::Selling);
@@ -200,6 +220,20 @@ class MarketplaceService
 
         if ($listing->getSellerTeam()->getId() === $buyer->getId()) {
             throw new UserFacingException('error.marketplace_cannot_buy_own');
+        }
+
+        if (ListingType::Hero === $listing->getListingType()) {
+            $rosterLimit = $this->hqService->getRosterLimit($buyer);
+            $combatantCount = $this->em->getRepository(Hero::class)->countActiveCombatantsByTeam($buyer);
+            if ($combatantCount >= $rosterLimit) {
+                throw new UserFacingException('error.marketplace_buy_roster_full');
+            }
+        } elseif (ListingType::Trainer === $listing->getListingType()) {
+            $trainerLimit = $this->trainingService->getTrainerLimit($buyer);
+            $trainerCount = $this->em->getRepository(Hero::class)->countActiveTrainersByTeam($buyer);
+            if ($trainerCount >= $trainerLimit) {
+                throw new UserFacingException('error.marketplace_buy_trainer_limit_reached');
+            }
         }
 
         $buyoutPrice = $listing->getBuyoutPriceGold();
@@ -266,6 +300,17 @@ class MarketplaceService
         $transaction->setAmount($buyoutPrice);
         $transaction->setFeeAmount($tax);
         $transaction->setType(TransactionType::BuyNow);
+
+        $entityName = 'Unknown';
+        if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
+            $entityName = $listing->getHero()->getName();
+        } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
+            $entityName = $listing->getItem()->getName();
+        } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
+            $entityName = $listing->getHero()->getName();
+        }
+        $transaction->setEntityName($entityName);
+
         $this->em->persist($transaction);
 
         // Transfer ownership
@@ -280,6 +325,8 @@ class MarketplaceService
             $item = $listing->getItem();
             $item->setOwnerTeam($buyer);
             $item->setStatus(ItemStatus::Available);
+            $this->teamChronicleService->recordItemPurchased($buyer, $item, $seller, $buyoutPrice);
+            $this->teamChronicleService->recordItemSold($seller, $item, $buyer, $buyoutPrice);
         } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
             $trainer = $listing->getHero();
             $trainer->setTeam($buyer);
@@ -332,6 +379,20 @@ class MarketplaceService
 
         if ($listing->getSellerTeam()->getId() === $bidder->getId()) {
             throw new UserFacingException('error.marketplace_cannot_bid_own');
+        }
+
+        if (ListingType::Hero === $listing->getListingType()) {
+            $rosterLimit = $this->hqService->getRosterLimit($bidder);
+            $combatantCount = $this->em->getRepository(Hero::class)->countActiveCombatantsByTeam($bidder);
+            if ($combatantCount >= $rosterLimit) {
+                throw new UserFacingException('error.marketplace_buy_roster_full');
+            }
+        } elseif (ListingType::Trainer === $listing->getListingType()) {
+            $trainerLimit = $this->trainingService->getTrainerLimit($bidder);
+            $trainerCount = $this->em->getRepository(Hero::class)->countActiveTrainersByTeam($bidder);
+            if ($trainerCount >= $trainerLimit) {
+                throw new UserFacingException('error.marketplace_buy_trainer_limit_reached');
+            }
         }
 
         if ($bidder->getGold() < $bidAmount) {
@@ -485,6 +546,17 @@ class MarketplaceService
                 $transaction->setAmount($winningBidAmount);
                 $transaction->setFeeAmount($tax);
                 $transaction->setType(TransactionType::AuctionWin);
+
+                $entityName = 'Unknown';
+                if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
+                    $entityName = $listing->getHero()->getName();
+                } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
+                    $entityName = $listing->getItem()->getName();
+                } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
+                    $entityName = $listing->getHero()->getName();
+                }
+                $transaction->setEntityName($entityName);
+
                 $this->em->persist($transaction);
 
                 // Transfer ownership
@@ -501,6 +573,8 @@ class MarketplaceService
                     $item = $listing->getItem();
                     $item->setOwnerTeam($winner);
                     $item->setStatus(ItemStatus::Available);
+                    $this->teamChronicleService->recordItemPurchased($winner, $item, $seller, $winningBidAmount);
+                    $this->teamChronicleService->recordItemSold($seller, $item, $winner, $winningBidAmount);
                 } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
                     $trainer = $listing->getHero();
                     $trainer->setTeam($winner);
@@ -862,19 +936,39 @@ class MarketplaceService
         $data = [];
         foreach ($transactions as $tx) {
             $listing = $tx->getListing();
+            $listingId = $listing?->getId();
+            $listingType = $listing?->getListingType()->value ?? ListingType::Item->value;
+
+            $entityName = $tx->getEntityName();
+            if (null === $entityName) {
+                if (null !== $listing) {
+                    if (null !== $listing->getHero()) {
+                        $entityName = $listing->getHero()->getName();
+                    } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
+                        $entityName = $listing->getItem()->getName();
+                    } else {
+                        $entityName = 'Unknown';
+                    }
+                } else {
+                    $entityName = 'Unknown';
+                }
+            }
+
+            $sellerName = null !== $tx->getSellerTeam()
+                ? $tx->getSellerTeam()->getName()
+                : $this->translator->trans('marketplace.merchant');
 
             $data[] = [
                 'id' => $tx->getId(),
                 'buyer_name' => $tx->getBuyerTeam()->getName(),
-                'seller_name' => $tx->getSellerTeam()->getName(),
+                'seller_name' => $sellerName,
                 'amount' => $tx->getAmount(),
                 'fee_amount' => $tx->getFeeAmount(),
                 'type' => $tx->getType()->value,
                 'created_at' => $tx->getCreatedAt()->format(\DateTimeInterface::ATOM),
-                'listing_id' => $listing->getId(),
-                'listing_type' => $listing->getListingType()->value,
-                'entity_name' => null !== $listing->getHero() ? $listing->getHero()->getName() :
-                    (ListingType::Item === $listing->getListingType() && null !== $listing->getItem() ? $listing->getItem()->getName() : 'Unknown'),
+                'listing_id' => $listingId,
+                'listing_type' => $listingType,
+                'entity_name' => $entityName,
             ];
         }
 

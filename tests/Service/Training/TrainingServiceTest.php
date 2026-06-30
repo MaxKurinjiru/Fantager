@@ -9,6 +9,7 @@ use App\Entity\Team\Team;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Headquarters\Headquarters;
 use App\Entity\Headquarters\Facility;
+use App\Entity\Item\Item;
 use App\Entity\Hero\HeroTrainingHistory;
 use App\Enum\FacilityType;
 use App\Enum\HeroRole;
@@ -310,5 +311,66 @@ class TrainingServiceTest extends TestCase
         $this->heroRepositoryMock
             ->method('createQueryBuilder')
             ->willReturn($qbMock);
+    }
+
+    public function testPromoteToTrainerUnequipsItems(): void
+    {
+        $team = $this->createMock(Team::class);
+        $team->method('getId')->willReturn(1);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getTimezone')->willReturn('UTC');
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setStatus(HeroStatus::Available);
+
+        $item = new Item();
+        $item->setOwnerTeam($team);
+        $item->setEquippedHero($hero);
+        $item->setEquippedSlot(\App\Enum\ItemSlotType::MainHand);
+
+        $this->heroRepositoryMock
+            ->expects($this->once())
+            ->method('countTrainersByTeam')
+            ->with($team)
+            ->willReturn(0);
+
+        $hq = new Headquarters();
+        $this->hqRepositoryMock
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with(['team' => $team])
+            ->willReturn($hq);
+
+        $itemRepo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        $itemRepo->expects($this->once())->method('findBy')
+            ->with(['equippedHero' => $hero])
+            ->willReturn([$item]);
+
+        $formationSlotRepo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        $formationSlotRepo->method('findBy')->willReturn([]);
+
+        $this->entityManagerMock
+            ->method('getRepository')
+            ->willReturnCallback(function ($className) use ($itemRepo, $formationSlotRepo) {
+                if ($className === Item::class) {
+                    return $itemRepo;
+                }
+                if ($className === \App\Entity\Formation\FormationSlot::class) {
+                    return $formationSlotRepo;
+                }
+                throw new \InvalidArgumentException("Unexpected class: $className");
+            });
+
+        $this->entityManagerMock->expects($this->once())->method('flush');
+
+        $now = new \DateTimeImmutable('2026-06-01 10:00:00');
+        $this->trainingService->promoteToTrainer($hero, $team, $now);
+
+        $this->assertSame(HeroRole::Trainer, $hero->getRole());
+        $this->assertNull($item->getEquippedHero());
+        $this->assertNull($item->getEquippedSlot());
     }
 }

@@ -207,6 +207,8 @@ error:
   marketplace_cannot_bid_own: Na vlastní nabídku nelze přihazovat.
   marketplace_first_bid_minimum: 'První příhoz musí být alespoň vyvolávací cena %amount% zlata.'
   marketplace_bid_too_low: 'Příhoz je příliš nízký. Minimální další příhoz je %min% zlata (min. krok: %increment%).'
+  marketplace_buy_roster_full: Nákupem nebo příhozem by byl překročen limit soupisky.
+  marketplace_buy_trainer_limit_reached: Nákupem nebo příhozem by byl překročen limit trenérů.
   insufficient_gold: 'Nedostatek zlata. Potřeba: %required%, k dispozici: %available%.'
   insufficient_essence: 'Nedostatek esence. Potřeba: %required%, k dispozici: %available%.'
   insufficient_school_mastery: 'Nedostatečná úroveň školy. Potřeba: %required%, aktuální: %current%.'
@@ -411,6 +413,8 @@ activity:
   hero_sold: 'Hrdina %hero% (%race%) byl prodán na tržišti týmu %buyer% za %price% zlata.'
   trainer_purchased: 'Trenér %trainer% (%race%) byl zakoupen na tržišti od týmu %seller% za %price% zlata.'
   trainer_sold: 'Trenér %trainer% (%race%) byl prodán na tržišti týmu %buyer% za %price% zlata.'
+  item_purchased: 'Předmět %item% byl zakoupen na tržišti od týmu %seller% za %price% zlata.'
+  item_sold: 'Předmět %item% byl prodán na tržišti týmu %buyer% za %price% zlata.'
   team_renamed: 'Tým byl přejmenován z %old_name% na %new_name%.'
   battle_win: 'Výhra %score% proti týmu %opponent%.'
   battle_loss: 'Prohra %score% proti týmu %opponent%.'
@@ -1331,6 +1335,7 @@ arena:
   upgrade_hint: Vylepšete arénu v základně pro vyšší kapacitu a bonusy k příjmům.
 
 marketplace:
+  merchant: Obchodník
   title: Tržiště
   subtitle: Nakupujte a prodávejte hrdiny, předměty a trenéry s ostatními hráči.
   tab_browse: Procházet nabídky

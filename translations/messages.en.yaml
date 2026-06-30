@@ -207,6 +207,8 @@ error:
   marketplace_cannot_bid_own: You cannot bid on your own listing.
   marketplace_first_bid_minimum: 'First bid must be at least the starting bid of %amount% gold.'
   marketplace_bid_too_low: 'Bid is too low. Minimum next bid is %min% gold (min increment: %increment%).'
+  marketplace_buy_roster_full: Purchase or bid would exceed the roster limit.
+  marketplace_buy_trainer_limit_reached: Purchase or bid would exceed the trainer limit.
   insufficient_gold: 'Insufficient gold. Required: %required%, available: %available%.'
   insufficient_essence: 'Insufficient essence. Required: %required%, available: %available%.'
   insufficient_school_mastery: 'Insufficient school mastery. Required: %required%, current: %current%.'
@@ -411,6 +413,8 @@ activity:
   hero_sold: 'Hero %hero% (%race%) was sold on the marketplace to %buyer% for %price% gold.'
   trainer_purchased: 'Trainer %trainer% (%race%) was purchased on the marketplace from %seller% for %price% gold.'
   trainer_sold: 'Trainer %trainer% (%race%) was sold on the marketplace to %buyer% for %price% gold.'
+  item_purchased: 'Item %item% was purchased on the marketplace from %seller% for %price% gold.'
+  item_sold: 'Item %item% was sold on the marketplace to %buyer% for %price% gold.'
   team_renamed: 'Team was renamed from %old_name% to %new_name%.'
   battle_win: 'Won %score% against %opponent%.'
   battle_loss: 'Lost %score% against %opponent%.'
@@ -1332,6 +1336,7 @@ arena:
   upgrade_hint: Upgrade the Arena in Headquarters to increase seating capacity and revenue bonuses.
 
 marketplace:
+  merchant: Merchant
   title: Marketplace
   subtitle: Buy and sell heroes, items, and trainers with other players.
   tab_browse: Browse Listings

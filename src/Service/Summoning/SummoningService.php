@@ -79,7 +79,7 @@ class SummoningService
         $maxSummons = (int) max(1, round(self::MAX_SUMMONS_PER_CYCLE * (float) $team->getKingdom()->getGameSpeed()));
 
         $rosterLimit = $this->hqService->getRosterLimit($team);
-        $heroCount = $this->em->getRepository(Hero::class)->count(['team' => $team]);
+        $heroCount = $this->em->getRepository(Hero::class)->countActiveCombatantsByTeam($team);
         if ($heroCount >= $rosterLimit) {
             return [
                 'available' => false,
@@ -197,7 +197,7 @@ class SummoningService
     public function summon(Team $team): Hero
     {
         $rosterLimit = $this->hqService->getRosterLimit($team);
-        $heroCount = $this->em->getRepository(Hero::class)->count(['team' => $team]);
+        $heroCount = $this->em->getRepository(Hero::class)->countActiveCombatantsByTeam($team);
         if ($heroCount >= $rosterLimit) {
             throw new UserFacingException('error.summoning_roster_full');
         }

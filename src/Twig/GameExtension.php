@@ -163,7 +163,7 @@ class GameExtension extends AbstractExtension
 
     public function getTeamHeroCount(Team $team): int
     {
-        return $this->heroRepository->count(['team' => $team]);
+        return $this->heroRepository->countActiveCombatantsByTeam($team);
     }
 
     /**
