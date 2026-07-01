@@ -69,6 +69,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/app/dashboard` | Web\DashboardController | Team Dashboard (main game screen) |
 | GET | `/app/chronicle` | Web\TeamChronicleController | Full team chronicle with category/type/sort filters |
 | GET | `/api/v1/teams/{id}/dashboard` | Api\V1\TeamController | Aggregated dashboard data |
+| GET | `/api/v1/teams/{id}/history` | Api\V1\TeamController | Last 30-day daily snapshots (morale, reputation, chemistry, fan_base) for team history chart |
 | POST | `/api/v1/teams/{id}/settings` | Api\V1\TeamController | Update team name/emblem/colors |
 
 ---

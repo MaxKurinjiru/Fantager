@@ -87,6 +87,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | **FinancialRecord** | id, team_id, type (enum), actor (enum), gold_change, essence_common_change, essence_uncommon_change, essence_rare_change, essence_epic_change, essence_legendary_change, essence_mythic_change, context (JSON), created_at | → Team (N:1)                                                 |
 | **TeamChronicle**   | id, team_id, type (`ChronicleEventType` enum), subject_key, subject_params (JSON), data (JSON), created_at | → Team (N:1)                                                 |
 | **TeamSummonHistory** | id, team_id, race_selected, hero_id, gold_cost, summoned_at | → Team (N:1), → Hero (N:1)                                   |
+| **TeamDailySnapshot** | id, team_id, recorded_at (date), morale, reputation, chemistry, fan_base | → Team (N:1); table `team_daily_snapshot`; unique on (team_id, recorded_at); used to power the team history chart (last 30 days of morale/reputation/chemistry/fan_base trends) |
 
 
 ### 4. Hero Domain
