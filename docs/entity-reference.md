@@ -99,6 +99,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | **SchoolMastery** | id, hero_id, school (enum), mastery_tier, xp                                                                                                  | → Hero                                     |
 | **WeaponMastery** | id, hero_id, style (`ItemSubType` enum), mastery_tier, xp, attunement_progress (0–100)                                                         | → Hero                                     |
 | **HeroSpell**     | id, hero_id, spell_id, is_equipped, slot_number                                                                                                | → Hero, → Spell                            |
+| **HeroChronicle** | id, hero_id, original_hero_id (nullable), team_id (nullable), type (`HeroChronicleEventType` enum), subject_key, subject_params (JSON), data (JSON), created_at | → Hero, → Team                             |
 
 
 ### 5. Training Domain
@@ -257,7 +258,8 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | `School`            | fire, water, air, earth, light, dark                                                                                                                                                                                                              |
 | `SpellType`         | offensive, defensive, utility                                                                                                                                                                                                                     |
 | `ItemSlotType`      | main_hand, off_hand, head, body, hands, feet, amulet, ring                                                                                                                                                                                          |
-| `ChronicleEventType`   | team_established, player_joined, player_released, battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_purchased, item_sold, dungeon_completed, summon_completed, season_ended |
+| `ChronicleEventType`   | team_established, player_joined, player_released, battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_purchased, item_sold, dungeon_completed, summon_completed, season_ended, starting_roster |
+| `HeroChronicleEventType` | summoned, transferred, match_played, levelup, mastery_gained, training_completed, injured, recovered, retired, died |
 | `ChronicleReleaseReason` | inactivity, bankruptcy, unverified_registration, account_deleted (stored in `data.reason`; used with `player_released`) |
 | `ChronicleCategory` | all, ownership, competition, roster, economy (UI filter groups; not stored on rows) |
 | `ItemCategory`      | weapon, shield, spell_accelerator, armor, accessory, material                                                                                                                                                                                      |
@@ -299,10 +301,10 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 
 | Category                   | Count  |
 | -------------------------- | ------ |
-| DB entities (implemented) | 35     |
+| DB entities (implemented) | 36     |
 | Config-based (not DB)      | 5      |
-| PHP enums                  | 34     |
-| **Total modeled concepts** | **73** |
+| PHP enums                  | 35     |
+| **Total modeled concepts** | **76** |
 
 
 ---

@@ -552,6 +552,15 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
     text-align: center;
+
+    &--cols-5 {
+      @media (min-width: 640px) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      @media (min-width: 1024px) {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+    }
   }
 
   .hero-school-mastery__grid {
@@ -567,6 +576,12 @@
     max-height: 175px;
     overflow-y: auto;
     padding-right: 0.25rem;
+
+    &--no-scroll {
+      max-height: none;
+      overflow-y: visible;
+      padding-right: 0;
+    }
   }
 
   .hero-activity-item__aside {

@@ -31,4 +31,5 @@ enum ChronicleEventType: string
     case FacilityUpgraded = 'facility_upgraded';
     case FacilityDowngraded = 'facility_downgraded';
     case RaceOptimizationChanged = 'race_optimization_changed';
+    case StartingRoster = 'starting_roster';
 }

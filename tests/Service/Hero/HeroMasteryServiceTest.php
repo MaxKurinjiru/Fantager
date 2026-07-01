@@ -41,6 +41,7 @@ class HeroMasteryServiceTest extends TestCase
             $this->itemRepositoryMock,
             $this->weaponMasteryRepositoryMock,
             $this->schoolMasteryRepositoryMock,
+            $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             $this->entityManagerMock
         );
     }

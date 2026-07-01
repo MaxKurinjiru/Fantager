@@ -120,6 +120,15 @@ class Hero
     #[ORM\OneToMany(targetEntity: WeaponMastery::class, mappedBy: 'hero', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $weaponMasteries;
 
+    #[ORM\Column(options: ['default' => 0])]
+    private int $matchesPlayed = 0;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $matchesWon = 0;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $combatsFallen = 0;
+
     public function __construct()
     {
         $this->trainees = new ArrayCollection();
@@ -634,5 +643,56 @@ class Hero
     public function getHeroSpells(): Collection
     {
         return $this->heroSpells;
+    }
+
+    public function getMatchesPlayed(): int
+    {
+        return $this->matchesPlayed;
+    }
+
+    public function setMatchesPlayed(int $matchesPlayed): static
+    {
+        $this->matchesPlayed = $matchesPlayed;
+
+        return $this;
+    }
+
+    public function getMatchesWon(): int
+    {
+        return $this->matchesWon;
+    }
+
+    public function setMatchesWon(int $matchesWon): static
+    {
+        $this->matchesWon = $matchesWon;
+
+        return $this;
+    }
+
+    public function getCombatsFallen(): int
+    {
+        return $this->combatsFallen;
+    }
+
+    public function setCombatsFallen(int $combatsFallen): static
+    {
+        $this->combatsFallen = $combatsFallen;
+
+        return $this;
+    }
+
+    public function getRawStat(string $attribute): int
+    {
+        return match ($attribute) {
+            'str' => $this->str,
+            'dex' => $this->dex,
+            'kon' => $this->kon,
+            'spd' => $this->spd,
+            'int' => $this->intel,
+            'wil' => $this->wil,
+            'cha' => $this->cha,
+            'lck' => $this->lck,
+            default => throw new \InvalidArgumentException(sprintf('Unknown attribute "%s"', $attribute)),
+        };
     }
 }

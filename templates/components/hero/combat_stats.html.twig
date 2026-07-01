@@ -5,19 +5,24 @@
         <p class="hero-panel__desc">{{ 'heroes.combat_stats_desc'|trans }}</p>
     </div>
 
-    <div class="stat-tile-grid">
-        {# Show realistic mockup stats as required #}
+    <div class="stat-tile-grid stat-tile-grid--cols-5">
         <div class="stat-tile">
             <span class="stat-tile__label">{{ 'heroes.matches'|trans }}</span>
-            <span class="stat-tile__value">0</span>
+            <span class="stat-tile__value">{{ hero.matchesPlayed }}</span>
         </div>
         <div class="stat-tile">
             <span class="stat-tile__label">{{ 'heroes.win_rate'|trans }}</span>
-            <span class="stat-tile__value">-%</span>
+            <span class="stat-tile__value">
+                {% if hero.matchesPlayed > 0 %}
+                    {{ (hero.matchesWon / hero.matchesPlayed * 100)|number_format(0) }}%
+                {% else %}
+                    -%
+                {% endif %}
+            </span>
         </div>
         <div class="stat-tile">
             <span class="stat-tile__label">{{ 'heroes.fallen'|trans }}</span>
-            <span class="stat-tile__value">0</span>
+            <span class="stat-tile__value">{{ hero.combatsFallen }}</span>
         </div>
         <div class="stat-tile">
             <span class="stat-tile__label">{{ 'heroes.trainings'|trans }}</span>
@@ -25,7 +30,7 @@
         </div>
         <div class="stat-tile">
             <span class="stat-tile__label">{{ 'heroes.total_stat_gain'|trans }}</span>
-            <span class="stat-tile__value stat-tile__value--success">+{{ (totalStatGain|default(0) / 10)|number_format(1) }}</span>
+            <span class="stat-tile__value stat-tile__value--success">+{{ totalStatGain|default(0) }}</span>
         </div>
     </div>
 </div>

@@ -11,6 +11,7 @@ use App\Repository\Item\ItemRepository;
 use App\Repository\Spell\SpellRepository;
 use App\Repository\Team\TeamSummonHistoryRepository;
 use App\Service\Config\RaceConfig;
+use App\Service\Hero\HeroChroniclePresenter;
 use App\Service\Training\TrainingService;
 use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,6 +34,7 @@ class HeroController extends AbstractController
         private readonly TrainingService $trainingService,
         private readonly RaceConfig $raceConfig,
         private readonly UserMessageTranslator $userMessages,
+        private readonly HeroChroniclePresenter $heroChroniclePresenter,
     ) {
     }
 
@@ -104,7 +106,9 @@ class HeroController extends AbstractController
         $completedTrainings = 0;
         foreach ($trainingHistory as $log) {
             if (null !== $log->getStatGain()) {
-                $totalStatGain += $log->getStatGain();
+                if (\App\Enum\TrainingType::Attribute === $log->getTrainingType()) {
+                    $totalStatGain += $log->getStatGain();
+                }
                 ++$completedTrainings;
             }
         }
@@ -120,12 +124,15 @@ class HeroController extends AbstractController
         $nextTick = $this->trainingService->getNextTrainingTime($nowLocal);
         $nextLock = $nextTick->modify('-46 hours');
 
+        $heroHistory = $this->heroChroniclePresenter->presentRecentForHero($hero, 15);
+
         return $this->render('hero/detail.html.twig', [
             'team' => $team,
             'hero' => $hero,
             'tab' => $tab,
             'equipped' => $equippedBySlot,
             'trainingHistory' => $trainingHistory,
+            'heroHistory' => $heroHistory,
             'statBonuses' => $statBonuses,
             'summonRecord' => $summonRecord,
             'totalStatGain' => $totalStatGain,

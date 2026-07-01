@@ -49,6 +49,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
     private $teamChronicleService;
     /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
     private $em;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Formation\FormationRepository */
+    private $formationRepository;
     private LeagueMatchResolutionService $service;
 
     protected function setUp(): void
@@ -61,6 +63,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->fanClubService = $this->createMock(FanClubService::class);
         $this->teamMoraleReputationService = $this->createMock(TeamMoraleReputationService::class);
         $this->teamChronicleService = $this->createMock(TeamChronicleService::class);
+        $this->formationRepository = $this->createMock(\App\Repository\Formation\FormationRepository::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
 
         $this->service = new LeagueMatchResolutionService(
@@ -74,6 +77,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->teamMoraleReputationService,
             $this->teamChronicleService,
             $this->createMock(\App\Service\Hero\HeroMasteryService::class),
+            $this->createMock(\App\Service\Hero\HeroChronicleService::class),
+            $this->formationRepository,
             $this->em,
         );
     }
@@ -206,6 +211,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->teamMoraleReputationService,
             $this->teamChronicleService,
             $this->createMock(\App\Service\Hero\HeroMasteryService::class),
+            $this->createMock(\App\Service\Hero\HeroChronicleService::class),
+            $this->formationRepository,
             $this->em,
         );
         $partial->expects($this->once())

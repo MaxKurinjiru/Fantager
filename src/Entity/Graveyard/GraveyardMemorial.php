@@ -56,6 +56,15 @@ class GraveyardMemorial
     #[ORM\Column(length: 30, nullable: true, enumType: HeroTrait::class)]
     private ?HeroTrait $trait = null;
 
+    #[ORM\Column(options: ['default' => 0])]
+    private int $matchesPlayed = 0;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $matchesWon = 0;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $combatsFallen = 0;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -191,6 +200,42 @@ class GraveyardMemorial
     public function setTrait(?HeroTrait $trait): static
     {
         $this->trait = $trait;
+
+        return $this;
+    }
+
+    public function getMatchesPlayed(): int
+    {
+        return $this->matchesPlayed;
+    }
+
+    public function setMatchesPlayed(int $matchesPlayed): static
+    {
+        $this->matchesPlayed = $matchesPlayed;
+
+        return $this;
+    }
+
+    public function getMatchesWon(): int
+    {
+        return $this->matchesWon;
+    }
+
+    public function setMatchesWon(int $matchesWon): static
+    {
+        $this->matchesWon = $matchesWon;
+
+        return $this;
+    }
+
+    public function getCombatsFallen(): int
+    {
+        return $this->combatsFallen;
+    }
+
+    public function setCombatsFallen(int $combatsFallen): static
+    {
+        $this->combatsFallen = $combatsFallen;
 
         return $this;
     }

@@ -32,6 +32,7 @@ enum ChronicleCategory: string
                 ChronicleEventType::SeasonEnded,
             ],
             self::Roster => [
+                ChronicleEventType::StartingRoster,
                 ChronicleEventType::HeroLevelup,
                 ChronicleEventType::HeroDied,
                 ChronicleEventType::HeroRetired,

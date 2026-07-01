@@ -15,6 +15,7 @@ use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
 use App\Service\Headquarters\HeadquartersService;
+use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroGenerator;
 use App\Service\Team\TeamChemistryService;
 use App\Service\TeamChronicle\TeamChronicleService;
@@ -35,6 +36,7 @@ class SummoningService
         private readonly RaceConfig $raceConfig,
         private readonly TeamChronicleService $teamChronicleService,
         private readonly TeamChemistryService $teamChemistryService,
+        private readonly HeroChronicleService $heroChronicleService,
     ) {
     }
 
@@ -244,6 +246,7 @@ class SummoningService
         $this->em->persist($hero);
         $this->em->persist($history);
         $this->teamChronicleService->recordSummonCompleted($team, $hero, $race, $cost);
+        $this->heroChronicleService->recordSummoned($hero, $cost);
         $this->em->flush();
 
         $this->teamChemistryService->recalculate($team);

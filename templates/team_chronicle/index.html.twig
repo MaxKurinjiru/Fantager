@@ -58,9 +58,9 @@
                     <div class="chronicle-entry__body">
                         <div class="chronicle-entry__meta">
                             <span class="chronicle-entry__type">{{ entry.type_label }}</span>
-                            <time class="chronicle-entry__time" datetime="{{ entry.created_at|date('c') }}"
-                                  {% if entry.processed_at %}title="{{ 'js_flash.common.processed_at_title'|trans({'%date%': entry.processed_at|date('Y-m-d H:i:s')}) }}"{% endif %}>
-                                {{ entry.created_at|date('Y-m-d H:i') }}
+                            <time class="chronicle-entry__time" datetime="{{ entry.created_at|date('c', team.kingdom.timezone) }}"
+                                  {% if entry.processed_at %}title="{{ 'js_flash.common.processed_at_title'|trans({'%date%': entry.processed_at|date('Y-m-d H:i', team.kingdom.timezone)}) }}"{% endif %}>
+                                {{ entry.created_at|date('Y-m-d H:i', team.kingdom.timezone) }}
                             </time>
                         </div>
                         <p class="chronicle-entry__message">{{ entry.message }}</p>

@@ -454,6 +454,14 @@ class NpcSimulationServiceTest extends TestCase
             $hero->setRole(HeroRole::Combatant);
             $hero->setStatus(HeroStatus::Available);
             $hero->setLevel(1);
+            $hero->setStrRaw(0);
+            $hero->setDexRaw(0);
+            $hero->setKonRaw(0);
+            $hero->setSpdRaw(0);
+            $hero->setIntelRaw(0);
+            $hero->setWilRaw(0);
+            $hero->setChaRaw(0);
+            $hero->setLckRaw(0);
             $heroes[] = $hero;
         }
 
@@ -526,6 +534,175 @@ class NpcSimulationServiceTest extends TestCase
         $this->assertNotNull($calledDismissParams);
         $this->assertSame($team, $calledDismissParams[0]);
         $this->assertSame(\App\Enum\HeroTrait::Fragile, $calledDismissParams[1]->getTrait());
+    }
+
+    public function testProactiveDismissNegativeTraitConvertsToTrainerIfHighStat(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // ROLE_MERCENARY_ACADEMY
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        // Create 8 heroes. One has a purely negative trait (Fragile) and high stat (160)
+        $heroes = [];
+        for ($i = 1; $i <= 8; $i++) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            $hero->setLevel(1);
+            $hero->setStrRaw(0);
+            $hero->setDexRaw(0);
+            $hero->setKonRaw(0);
+            $hero->setSpdRaw(0);
+            $hero->setIntelRaw(0);
+            $hero->setWilRaw(0);
+            $hero->setChaRaw(0);
+            $hero->setLckRaw(0);
+            $heroes[] = $hero;
+        }
+
+        // Set Fragile trait and high stat on hero 0
+        $heroes[0]->setTrait(\App\Enum\HeroTrait::Fragile); // Purely negative
+        $heroes[0]->setStrRaw(160); // High stat (>= 150)
+
+        // Setup mock repos
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($heroes);
+
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+        $heroRepo->method('findBy')->willReturn($heroes);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findBy')->willReturn([]);
+
+        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo->method('findBy')->willReturn([]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $formationRepo, $heroRepo, $itemRepo) {
+            if (Team::class === $class) return $teamRepo;
+            if (Formation::class === $class) return $formationRepo;
+            if (Hero::class === $class) return $heroRepo;
+            if (Item::class === $class) return $itemRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        // Mock HQ service
+        $hq = new Headquarters();
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('getRosterLimit')->willReturn(15);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->hqService->method('calculateUpgradeCost')->willReturn(500);
+
+        $this->summoningService->method('getStatus')->willReturn([
+            'available' => false,
+            'reason' => 'test',
+            'gold_cost' => 100,
+            'summons_used' => 0,
+            'summons_max' => 5,
+        ]);
+
+        // Expect dismiss NOT to be called
+        $this->dismissalService->expects($this->never())->method('dismiss');
+
+        // Run
+        $this->service->simulateDailyManagementAndEconomy($kingdom, new \DateTimeImmutable());
+
+        // Hero 0 should have been promoted to trainer (which sets role to Trainer and trait to null)
+        $this->assertSame(HeroRole::Trainer, $heroes[0]->getRole());
+        $this->assertNull($heroes[0]->getTrait());
+    }
+
+    public function testMarketplaceExcludesPurelyNegativeTraitCombatants(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // ROLE_MERCENARY_ACADEMY
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        // We need 10 heroes to trigger the selling candidate flow in simulateManagementAndEconomy
+        $heroes = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            $hero->setLevel(2);
+            $heroes[] = $hero;
+        }
+
+        // Hero 0 has a negative trait (Fragile)
+        $heroes[0]->setTrait(\App\Enum\HeroTrait::Fragile);
+
+        // Setup mock repos
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($heroes);
+
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+        $heroRepo->method('findBy')->willReturn($heroes);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findBy')->willReturn([]);
+
+        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo->method('findBy')->willReturn([]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $formationRepo, $heroRepo, $itemRepo) {
+            if (Team::class === $class) return $teamRepo;
+            if (Formation::class === $class) return $formationRepo;
+            if (Hero::class === $class) return $heroRepo;
+            if (Item::class === $class) return $itemRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        // Mock HQ service
+        $hq = new Headquarters();
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('getRosterLimit')->willReturn(15);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+
+        // We expect createListing NOT to list hero 0 (which has the negative trait)
+        $listedHeroIds = [];
+        $this->marketplaceService->expects($this->any())
+            ->method('createListing')
+            ->willReturnCallback(function ($t, $type, $id, $price, $price2, $mode, $duration, $extra) use (&$listedHeroIds) {
+                if ('hero' === $type) {
+                    $listedHeroIds[] = $id;
+                }
+                return new \App\Entity\Marketplace\MarketplaceListing();
+            });
+
+        // Run
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable());
+
+        // Listed heroes should not include hero 0 (which is ID 1)
+        $this->assertNotContains(1, $listedHeroIds);
     }
 
     public function testCalculateHeroMarketPriceWithTraits(): void

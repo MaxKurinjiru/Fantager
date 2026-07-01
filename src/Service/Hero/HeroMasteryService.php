@@ -28,6 +28,7 @@ class HeroMasteryService
         private readonly ItemRepository $itemRepository,
         private readonly WeaponMasteryRepository $weaponMasteryRepository,
         private readonly SchoolMasteryRepository $schoolMasteryRepository,
+        private readonly HeroChronicleService $heroChronicleService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -154,6 +155,12 @@ class HeroMasteryService
      */
     public function getOrCreateWeaponMastery(Hero $hero, ItemSubType $style): WeaponMastery
     {
+        foreach ($hero->getWeaponMasteries() as $wm) {
+            if ($wm->getStyle() === $style) {
+                return $wm;
+            }
+        }
+
         $wm = $this->weaponMasteryRepository->findOneBy(['hero' => $hero, 'style' => $style]);
         if (null !== $wm) {
             return $wm;
@@ -177,6 +184,12 @@ class HeroMasteryService
      */
     public function getOrCreateSchoolMastery(Hero $hero, School $school): SchoolMastery
     {
+        foreach ($hero->getSchoolMasteries() as $sm) {
+            if ($sm->getSchool() === $school) {
+                return $sm;
+            }
+        }
+
         $sm = $this->schoolMasteryRepository->findOneBy(['hero' => $hero, 'school' => $school]);
         if (null !== $sm) {
             return $sm;
@@ -196,6 +209,7 @@ class HeroMasteryService
 
     private function recalculateWeaponMasteryTier(WeaponMastery $wm): void
     {
+        $currentTier = $wm->getMasteryTier();
         $newTier = 1;
         $xp = $wm->getXp();
         foreach (self::MASTERY_LEVEL_XP as $tier => $reqXp) {
@@ -204,10 +218,14 @@ class HeroMasteryService
             }
         }
         $wm->setMasteryTier($newTier);
+        if ($newTier > $currentTier) {
+            $this->heroChronicleService->recordMasteryGained($wm->getHero(), $wm->getStyle()->value, $newTier);
+        }
     }
 
     private function recalculateSchoolMasteryTier(SchoolMastery $sm): void
     {
+        $currentTier = $sm->getMasteryTier();
         $newTier = 1;
         $xp = $sm->getXp();
         foreach (self::MASTERY_LEVEL_XP as $tier => $reqXp) {
@@ -216,5 +234,8 @@ class HeroMasteryService
             }
         }
         $sm->setMasteryTier($newTier);
+        if ($newTier > $currentTier) {
+            $this->heroChronicleService->recordMasteryGained($sm->getHero(), $sm->getSchool()->value, $newTier);
+        }
     }
 }

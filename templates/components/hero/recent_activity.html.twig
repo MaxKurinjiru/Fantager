@@ -5,42 +5,37 @@
         <p class="hero-panel__desc">{{ 'heroes.recent_activity_desc'|trans }}</p>
     </div>
 
-    <div class="hero-activity-list">
-        {% if summonRecord %}
-            <div class="hero-activity-item">
-                <div>
-                    <div class="hero-activity-item__title">🌀 {{ 'heroes.summoned'|trans }}</div>
-                    <div class="hero-activity-item__time">{{ summonRecord.summonedAt|date('Y-m-d H:i') }}</div>
-                </div>
-                <div class="hero-activity-item__aside">
-                    <span class="status-chip status-chip--indigo">
-                        {{ ('heroes.race_' ~ summonRecord.raceSelected.value)|trans }}
-                    </span>
-                </div>
-            </div>
-        {% endif %}
-        {% for log in trainingHistory %}
+    <div class="hero-activity-list hero-activity-list--no-scroll">
+        {% for log in heroHistory %}
             <div class="hero-activity-item">
                 <div>
                     <div class="hero-activity-item__title">
-                        {% if log.trainingType.value == 'attribute' %}
-                            💪 {{ 'training.type_attribute'|trans }}: {{ ('training.attr.' ~ log.targetAttribute)|trans }}
-                        {% elseif log.trainingType.value == 'magic' %}
-                            🔮 {{ 'training.type_magic'|trans }}
-                        {% else %}
-                            🛌 {{ 'training.type_form'|trans }}
-                        {% endif %}
+                        {{ log.icon }} {{ log.message|raw }}
                     </div>
-                    <div class="hero-activity-item__time">{{ log.completedAt|date('Y-m-d H:i') }}</div>
+                    <div class="hero-activity-item__time">{{ log.created_at|date('Y-m-d H:i', hero.team.kingdom.timezone) }}</div>
                 </div>
                 <div class="hero-activity-item__aside">
-                    <span class="status-chip status-chip--success">
-                        {% if log.statGain is not null and log.statGain > 0 %}
-                            +{{ (log.statGain / 10)|number_format(1) }}
+                    {% if log.type == 'summoned' %}
+                        <span class="status-chip status-chip--indigo">
+                            {{ ('heroes.race_' ~ hero.race.value)|trans }}
+                        </span>
+                    {% elseif log.type == 'levelup' %}
+                        <span class="status-chip status-chip--success">
+                            LVL {{ hero.level }}
+                        </span>
+                    {% elseif log.type == 'mastery_gained' %}
+                        <span class="status-chip status-chip--warning">
+                            MASTERY
+                        </span>
+                    {% elseif log.type == 'match_played' %}
+                        {% if 'win' in log.message or 'Výhra' in log.message or 'Won' in log.message %}
+                            <span class="status-chip status-chip--success">{{ 'activity.battle_win_chip'|default('WIN')|trans }}</span>
+                        {% elseif 'loss' in log.message or 'Prohra' in log.message or 'Lost' in log.message %}
+                            <span class="status-chip status-chip--danger">{{ 'activity.battle_loss_chip'|default('LOSS')|trans }}</span>
                         {% else %}
-                            {{ 'training.status.completed'|trans }}
+                            <span class="status-chip status-chip--warning">{{ 'activity.battle_draw_chip'|default('DRAW')|trans }}</span>
                         {% endif %}
-                    </span>
+                    {% endif %}
                 </div>
             </div>
         {% else %}

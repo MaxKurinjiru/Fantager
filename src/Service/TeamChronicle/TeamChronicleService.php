@@ -27,7 +27,7 @@ class TeamChronicleService
     ) {
     }
 
-    public function recordTeamEstablished(Team $team, Kingdom $kingdom, int $seasonNumber): TeamChronicle
+    public function recordTeamEstablished(Team $team, Kingdom $kingdom, int $seasonNumber, ?\DateTimeImmutable $createdAt = null): TeamChronicle
     {
         return $this->create(
             $team,
@@ -41,6 +41,7 @@ class TeamChronicleService
                 'kingdom_id' => $kingdom->getId(),
                 'season' => $seasonNumber,
             ],
+            $createdAt,
         );
     }
 
@@ -115,6 +116,24 @@ class TeamChronicleService
                 'race' => $race->value,
                 'gold_cost' => $goldCost,
             ],
+        );
+    }
+
+    public function recordJoinedStartingRoster(Team $team, Hero $hero, Race $race, ?\DateTimeImmutable $createdAt = null): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::StartingRoster,
+            'activity.starting_roster',
+            [
+                'hero' => $hero->getName(),
+                'race' => $race->value,
+            ],
+            [
+                'hero_id' => $hero->getId(),
+                'race' => $race->value,
+            ],
+            $createdAt,
         );
     }
 
@@ -285,16 +304,11 @@ class TeamChronicleService
         Hero $trainer,
         string $trainingTypeValue,
         ?string $attribute,
-        int $gainRaw,
+        int $gain,
     ): TeamChronicle {
         $subjectKey = 'activity.training_completed.'.$trainingTypeValue;
 
-        $gainFormatted = '';
-        if ('attribute' === $trainingTypeValue) {
-            $gainFormatted = '+'.number_format($gainRaw / 10, 1);
-        } else {
-            $gainFormatted = '+'.$gainRaw;
-        }
+        $gainFormatted = '+'.$gain;
 
         return $this->create(
             $team,
@@ -311,7 +325,7 @@ class TeamChronicleService
                 'trainer_id' => $trainer->getId(),
                 'type' => $trainingTypeValue,
                 'attribute' => $attribute,
-                'gain_raw' => $gainRaw,
+                'gain_raw' => $gain,
             ]
         );
     }
@@ -415,6 +429,7 @@ class TeamChronicleService
         string $subjectKey,
         array $subjectParams,
         array $data = [],
+        ?\DateTimeImmutable $createdAt = null,
     ): TeamChronicle {
         $entry = new TeamChronicle();
         $entry->setTeam($team);
@@ -422,7 +437,7 @@ class TeamChronicleService
         $entry->setSubjectKey($subjectKey);
         $entry->setSubjectParams($subjectParams);
         $entry->setData($data);
-        $entry->setCreatedAt($this->tickClock->getCurrentTime());
+        $entry->setCreatedAt($createdAt ?? $this->tickClock->getCurrentTime());
         $entry->setProcessedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
 
         $this->em->persist($entry);

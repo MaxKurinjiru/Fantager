@@ -11,6 +11,7 @@ use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\MemorialCause;
 use App\Exception\UserFacingException;
+use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroRatingCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -19,6 +20,7 @@ class GraveyardService
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly HeroRatingCalculator $heroRatingCalculator,
+        private readonly HeroChronicleService $heroChronicleService,
     ) {
     }
 
@@ -38,6 +40,9 @@ class GraveyardService
         $record->setDepartedAt($date);
         $record->setOriginalHeroId($hero->getId());
         $record->setTrait($hero->getTrait());
+        $record->setMatchesPlayed($hero->getMatchesPlayed());
+        $record->setMatchesWon($hero->getMatchesWon());
+        $record->setCombatsFallen($hero->getCombatsFallen());
 
         return $record;
     }
@@ -47,6 +52,7 @@ class GraveyardService
         $record = $this->createMemorial($hero, $team, $cause, $date);
 
         $this->em->persist($record);
+        $this->heroChronicleService->recordDied($hero, $cause->value);
 
         return $record;
     }
