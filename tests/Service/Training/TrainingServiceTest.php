@@ -14,6 +14,7 @@ use App\Entity\Hero\HeroTrainingHistory;
 use App\Enum\FacilityType;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
+use App\Enum\HeroTrait;
 use App\Enum\Race;
 use App\Enum\TrainingType;
 use App\Repository\Headquarters\HeadquartersRepository;
@@ -325,6 +326,7 @@ class TrainingServiceTest extends TestCase
         $hero->setRole(HeroRole::Combatant);
         $hero->setTeam($team);
         $hero->setStatus(HeroStatus::Available);
+        $hero->setTrait(HeroTrait::QuickLearner);
 
         $item = new Item();
         $item->setOwnerTeam($team);
@@ -370,6 +372,7 @@ class TrainingServiceTest extends TestCase
         $this->trainingService->promoteToTrainer($hero, $team, $now);
 
         $this->assertSame(HeroRole::Trainer, $hero->getRole());
+        $this->assertNull($hero->getTrait());
         $this->assertNull($item->getEquippedHero());
         $this->assertNull($item->getEquippedSlot());
     }

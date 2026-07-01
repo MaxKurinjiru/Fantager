@@ -91,6 +91,9 @@
                 <span>{{ ('heroes.race_' ~ selected_memorial.race.value)|trans }}</span>
                 <span>{{ ('graveyard.role.' ~ selected_memorial.roleAtDeparture.value)|trans }}</span>
                 <span>{{ ('graveyard.cause.' ~ selected_memorial.cause.value)|trans }}</span>
+                {% if selected_memorial.trait %}
+                    {% include 'components/hero/trait_badge.html.twig' with { trait: selected_memorial.trait, compact: true } %}
+                {% endif %}
                 <time datetime="{{ selected_memorial.departedAt|date('Y-m-d') }}">{{ selected_memorial.departedAt|date('Y-m-d') }}</time>
             </div>
             <dl class="graveyard-detail__stats">
@@ -120,6 +123,9 @@
                         <div class="graveyard-entry__meta">
                             <span class="graveyard-entry__name">{{ memorial.name }}</span>
                             <span class="graveyard-entry__badge">{{ ('graveyard.role.' ~ memorial.type)|trans }}</span>
+                            {% if memorial.trait %}
+                                {% include 'components/hero/trait_badge.html.twig' with { trait: memorial.trait, compact: true } %}
+                            {% endif %}
                             <time class="graveyard-entry__time" datetime="{{ memorial.date }}">{{ memorial.date }}</time>
                         </div>
                         <p class="graveyard-entry__details">

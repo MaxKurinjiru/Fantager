@@ -1,0 +1,49 @@
+{# templates/dashboard/_team_history_modal.html.twig #}
+<div data-controller="team-history-chart"
+     data-team-history-chart-url-value="{{ path('api_team_history', { teamId: team.id }) }}"
+     data-team-history-chart-event-name-value="modal:open-team-history"
+     data-team-history-chart-morale-axis-value="{{ 'dashboard.history_axis_morale'|trans }}"
+     data-team-history-chart-fanbase-axis-value="{{ 'dashboard.history_axis_fan_base'|trans }}"
+     data-team-history-chart-label-morale-value="{{ 'dashboard.morale'|trans }}"
+     data-team-history-chart-label-chemistry-value="{{ 'dashboard.chemistry'|trans }}"
+     data-team-history-chart-label-reputation-value="{{ 'dashboard.reputation'|trans }}"
+     data-team-history-chart-label-fanbase-value="{{ 'dashboard.fan_base'|trans }}"
+     id="team-history-modal">
+    <div data-team-history-chart-target="dialog"
+         class="hidden modal-overlay"
+         data-action="click->team-history-chart#closeBackdrop">
+        <div class="modal-box modal-box--spacious" role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
+            <button type="button" data-action="click->team-history-chart#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="modal-close__icon">✕</span>
+                <span class="sr-only">{{ 'modal.close'|trans }}</span>
+            </button>
+
+            <div class="modal-header">
+                <h2 id="history-modal-title" class="modal-header__title">📈 {{ 'dashboard.history_title'|trans }}</h2>
+            </div>
+
+            <div class="modal-body layout-stack layout-stack--md">
+                {# Přepínače zobrazení #}
+                <div class="layout-cluster layout-cluster--sm layout-cluster--wrap">
+                    <button type="button" class="btn btn--sm btn-outline" data-team-history-chart-target="btn" data-action="click->team-history-chart#selectMetric" data-metric="morale">
+                        😊 {{ 'dashboard.morale'|trans }}
+                    </button>
+                    <button type="button" class="btn btn--sm btn-outline" data-team-history-chart-target="btn" data-action="click->team-history-chart#selectMetric" data-metric="chemistry">
+                        ⚡ {{ 'dashboard.chemistry'|trans }}
+                    </button>
+                    <button type="button" class="btn btn--sm btn-outline" data-team-history-chart-target="btn" data-action="click->team-history-chart#selectMetric" data-metric="reputation">
+                        ⭐ {{ 'dashboard.reputation'|trans }}
+                    </button>
+                    <button type="button" class="btn btn--sm btn-outline" data-team-history-chart-target="btn" data-action="click->team-history-chart#selectMetric" data-metric="fanBase">
+                        📣 {{ 'dashboard.fan_base'|trans }}
+                    </button>
+                </div>
+
+                {# Canvas pro Chart.js #}
+                <div class="team-history-chart-wrapper">
+                    <canvas data-team-history-chart-target="canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

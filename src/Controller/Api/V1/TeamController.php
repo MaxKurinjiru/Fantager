@@ -6,7 +6,9 @@ namespace App\Controller\Api\V1;
 
 use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
+use App\Entity\Team\TeamDailySnapshot;
 use App\Service\Team\TeamService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +21,7 @@ class TeamController extends AbstractController
 
     public function __construct(
         private readonly TeamService $teamService,
+        private readonly EntityManagerInterface $em,
     ) {
     }
 
@@ -69,6 +72,31 @@ class TeamController extends AbstractController
             'emblem' => $team->getEmblem(),
             'colors' => $team->getColors(),
         ]);
+    }
+
+    #[Route('/history', name: 'api_team_history', methods: ['GET'])]
+    public function history(int $teamId): JsonResponse
+    {
+        $team = $this->getPlayerTeam();
+        if (null === $team) {
+            return $this->jsonError('error.no_team', 422);
+        }
+
+        if ($team->getId() !== $teamId) {
+            return $this->jsonError('error.access_denied', 403);
+        }
+
+        $snapshots = $this->em->getRepository(TeamDailySnapshot::class)->findLastMonthHistory($team);
+
+        $data = array_map(fn (TeamDailySnapshot $s) => [
+            'date' => $s->getRecordedAt()->format('Y-m-d'),
+            'morale' => $s->getMorale(),
+            'reputation' => $s->getReputation(),
+            'chemistry' => $s->getChemistry(),
+            'fanBase' => $s->getFanBase(),
+        ], $snapshots);
+
+        return $this->json($data);
     }
 
     private function getPlayerTeam(): ?\App\Entity\Team\Team

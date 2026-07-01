@@ -36,11 +36,11 @@ class MarketplaceListing
     #[ORM\Column(length: 20, enumType: ListingType::class)]
     private ListingType $listingType;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Hero $hero = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Item $item = null;
 

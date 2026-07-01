@@ -11,6 +11,7 @@ use App\Entity\Kingdom\KingdomTickLog;
 use App\Entity\League\LeagueFixture;
 use App\Entity\Notification\Notification;
 use App\Entity\Team\Team;
+use App\Entity\Team\TeamDailySnapshot;
 use App\Enum\ChronicleReleaseReason;
 use App\Enum\TickType;
 use App\Repository\Hero\HeroRepository;
@@ -310,6 +311,30 @@ class ExecuteSingleTickHandler
         $this->cleanupStaleTemporaryFormationsForTeam($team);
         $this->fanClubService->processDailyEvolutionTick($kingdom, $team);
         $this->teamMoraleReputationService->processDailyEvolutionTick($kingdom, $team);
+
+        // Create a daily values snapshot
+        $dateOnly = $scheduledAt->setTime(0, 0, 0);
+        $snapshotRepo = $this->em->getRepository(TeamDailySnapshot::class);
+        $existingSnapshot = $snapshotRepo->findOneBy([
+            'team' => $team,
+            'recordedAt' => $dateOnly,
+        ]);
+
+        if (null === $existingSnapshot) {
+            $snapshot = new TeamDailySnapshot();
+            $snapshot->setTeam($team);
+            $snapshot->setRecordedAt($dateOnly);
+            $snapshot->setMorale($team->getMorale());
+            $snapshot->setReputation($team->getReputation());
+            $snapshot->setChemistry($team->getChemistry());
+            $snapshot->setFanBase($team->getFanBase());
+
+            $this->em->persist($snapshot);
+        }
+
+        // Clean up snapshots older than 30 days
+        $snapshotRepo->deleteOlderThan($team, new \DateTimeImmutable('-30 days'));
+
         $this->marketplaceService->processExpiredListingsForKingdom($kingdom, $scheduledAt, $team);
 
         // Process pending facility upgrades
