@@ -34,7 +34,7 @@ During the lock period, players cannot configure trainers, assign heroes, or una
 
 | Rule | Detail |
 |------|--------|
-| **Single Active Training** | A hero can be assigned to at most one Trainer. While assigned, the hero's status is set to `Training`. |
+| **Single Active Training** | A hero can be assigned to at most one Trainer. While assigned, the hero's status remains `Available` (training is a parallel activity, not a blocking state, similar to being assigned to a formation slot). A hero can still be selected for match lineups while training. |
 | **Attribute Cap** | A hero cannot train a primary attribute beyond the Trainer's frozen value for that attribute. |
 | **No monetary cost** | Training has no Gold or Essence cost. It is instead balanced by a high fatigue load. |
 | **Trainer aging** | Trainers age during each weekly tick by the same amount a hero would age from a combat death (applies to all races, including Undead). |
@@ -88,8 +88,10 @@ At the end of the tick, a `HeroTrainingHistory` row is persisted for each traine
 All mutating routes validate the lock state.
 
 - `GET /api/v1/training/trainers` — List team's trainers, current configurations, hero slot occupancy, limits, and team lock status.
+- `POST /api/v1/training/trainers/promote` — Promote a hero to trainer (request parameter: `hero_id`).
 - `POST /api/v1/training/trainers/{id}/configure` — Configure trainer focus (request parameters: `type`, `attribute`).
 - `POST /api/v1/training/trainers/{id}/assign` — Assign a hero to a trainer's slot (request parameter: `hero_id`).
-- `POST /api/v1/training/trainers/{id}/unassign` — Unassign a hero from a trainer (request parameter: `hero_id`).
+- `POST /api/v1/training/trainers/{id}/unassign` — Remove assignment of hero from trainer (request parameter: `hero_id`).
+- `POST /api/v1/training/trainers/{id}/dismiss` — Dismiss trainer for partial compensation.
 
 

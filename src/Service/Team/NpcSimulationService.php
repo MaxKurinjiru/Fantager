@@ -693,15 +693,69 @@ class NpcSimulationService
             $safetyReserve = 2 * $weeklyMaintenance;
 
             // 3. Marketplace - Selling (Item and Hero/Trainer)
-            // Limit to at most 1 item and 1 hero/trainer listing per tick to avoid spam
             $unequippedItems = $this->em->getRepository(Item::class)->findBy([
                 'ownerTeam' => $team,
                 'status' => ItemStatus::Available,
                 'equippedHero' => null,
             ]);
 
-            if (count($unequippedItems) > 0) {
-                $itemToList = $unequippedItems[0];
+            // Group unequipped items by slot type
+            $itemsBySlot = [];
+            foreach ($unequippedItems as $item) {
+                $slotKey = $item->getSlotType()->value;
+                $itemsBySlot[$slotKey][] = $item;
+            }
+
+            // Define the rarities sorting map
+            $rarityMap = [
+                ItemRarity::Common->value => 1,
+                ItemRarity::Uncommon->value => 2,
+                ItemRarity::Rare->value => 3,
+                ItemRarity::Epic->value => 4,
+                ItemRarity::Legendary->value => 5,
+                ItemRarity::Mythic->value => 6,
+            ];
+
+            // Sort helper
+            $sortItems = function (Item $a, Item $b) use ($rarityMap) {
+                $aRarity = $rarityMap[$a->getRarity()->value];
+                $bRarity = $rarityMap[$b->getRarity()->value];
+                if ($aRarity !== $bRarity) {
+                    return $aRarity <=> $bRarity;
+                }
+
+                return ($a->getId() ?? 0) <=> ($b->getId() ?? 0);
+            };
+
+            $sellableCandidates = [];
+            foreach ($itemsBySlot as $slotKey => $slotItems) {
+                // Sort within the slot group
+                usort($slotItems, $sortItems);
+
+                // Roll a random safety reserve of 1 to 2 items per slot
+                $reserveLimit = random_int(1, 2);
+
+                if (count($slotItems) > $reserveLimit) {
+                    // Sell lower-rarity items first (keep best in reserve at the end of the sorted array)
+                    $excessCount = count($slotItems) - $reserveLimit;
+                    $excessItems = array_slice($slotItems, 0, $excessCount);
+                    foreach ($excessItems as $item) {
+                        $sellableCandidates[] = $item;
+                    }
+                }
+            }
+
+            // Sort all sellable candidates combined to ensure we list lowest-value items first
+            usort($sellableCandidates, $sortItems);
+
+            // Roll how many items we should sell this tick (0 to 3)
+            $targetSellCount = random_int(0, 3);
+            $itemsSold = 0;
+
+            foreach ($sellableCandidates as $itemToList) {
+                if ($itemsSold >= $targetSellCount) {
+                    break;
+                }
                 $itemId = $itemToList->getId();
                 if (null !== $itemId) {
                     $price = $this->calculateItemMarketPrice($itemToList);
@@ -716,13 +770,43 @@ class NpcSimulationService
                             7,
                             $now
                         );
+                        ++$itemsSold;
                     } catch (\Throwable) {
                         // Ignore
                     }
                 }
             }
 
-            // Selling surplus/trained heroes or redundant trainers
+            // Fetch default formation to determine active lineup and equipment needs
+            $formation = $this->em->getRepository(Formation::class)->findOneBy([
+                'team' => $team,
+                'isDefault' => true,
+                'isTemporary' => false,
+            ]);
+
+            $activeLineup = [];
+            $lineupGear = [];
+
+            if (null !== $formation) {
+                foreach ($formation->getSlots() as $slot) {
+                    $hero = $slot->getHero();
+                    if (null !== $hero) {
+                        $activeLineup[] = $hero;
+                        $heroId = $hero->getId();
+                        if (null !== $heroId) {
+                            $lineupGear[$heroId] = [];
+                            $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
+                            foreach ($equippedItems as $equipped) {
+                                if (null !== $equipped->getEquippedSlot()) {
+                                    $lineupGear[$heroId][$equipped->getEquippedSlot()->value] = $this->getRarityValue($equipped->getRarity());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Selling surplus/trained heroes and redundant trainers (processed separately)
             if ($heroCount >= 10) {
                 // Find candidates who are available and not in active formations
                 $activeFormations = $this->em->getRepository(Formation::class)->findBy(['team' => $team]);
@@ -787,37 +871,56 @@ class NpcSimulationService
                     return ($hasNegB ? 1 : 0) <=> ($hasNegA ? 1 : 0);
                 });
 
-                $sellingCandidate = null;
-                if (self::ROLE_VETERAN_GUILD === $role) {
-                    if (count($trainerCandidates) > 0) {
-                        $sellingCandidate = $trainerCandidates[0];
-                    } elseif (count($combatantCandidates) > 0) {
-                        $sellingCandidate = $combatantCandidates[0];
+                // 1. Sell combatants up to limit
+                $heroSellLimit = $this->getHeroSellLimitForRole($role);
+                $heroesSold = 0;
+                foreach ($combatantCandidates as $sellingHero) {
+                    if ($heroesSold >= $heroSellLimit) {
+                        break;
                     }
-                } else {
-                    if (count($combatantCandidates) > 0) {
-                        $sellingCandidate = $combatantCandidates[0];
-                    } elseif (count($trainerCandidates) > 0) {
-                        $sellingCandidate = $trainerCandidates[0];
-                    }
-                }
-
-                if (null !== $sellingCandidate) {
-                    $sellingCandidateId = $sellingCandidate->getId();
-                    if (null !== $sellingCandidateId) {
-                        $price = $this->calculateHeroMarketPrice($sellingCandidate);
-                        $listingType = $sellingCandidate->isTrainer() ? ListingType::Trainer->value : ListingType::Hero->value;
+                    $sellingHeroId = $sellingHero->getId();
+                    if (null !== $sellingHeroId) {
+                        $price = $this->calculateHeroMarketPrice($sellingHero);
                         try {
                             $this->marketplaceService->createListing(
                                 $team,
-                                $listingType,
-                                $sellingCandidateId,
+                                ListingType::Hero->value,
+                                $sellingHeroId,
                                 $price,
                                 $price,
                                 ListingMode::BuyNow->value,
                                 7,
                                 $now
                             );
+                            ++$heroesSold;
+                        } catch (\Throwable) {
+                            // Ignore
+                        }
+                    }
+                }
+
+                // 2. Sell trainers up to limit
+                $trainerSellLimit = $this->getTrainerSellLimitForRole($role);
+                $trainersSold = 0;
+                foreach ($trainerCandidates as $sellingTrainer) {
+                    if ($trainersSold >= $trainerSellLimit) {
+                        break;
+                    }
+                    $sellingTrainerId = $sellingTrainer->getId();
+                    if (null !== $sellingTrainerId) {
+                        $price = $this->calculateHeroMarketPrice($sellingTrainer);
+                        try {
+                            $this->marketplaceService->createListing(
+                                $team,
+                                ListingType::Trainer->value,
+                                $sellingTrainerId,
+                                $price,
+                                $price,
+                                ListingMode::BuyNow->value,
+                                7,
+                                $now
+                            );
+                            ++$trainersSold;
                         } catch (\Throwable) {
                             // Ignore
                         }
@@ -830,10 +933,11 @@ class NpcSimulationService
             $listings = $this->em->getRepository(MarketplaceListing::class)->findBy([
                 'kingdom' => $kingdom,
                 'status' => ListingStatus::Active,
-            ], ['id' => 'ASC'], 20);
+            ], ['id' => 'ASC'], 50);
 
-            $bestListing = null;
-            $bestScore = -1;
+            $itemCandidates = [];
+            $heroCandidates = [];
+            $trainerCandidates = [];
 
             foreach ($listings as $listing) {
                 if ($listing->getSellerTeam()->getId() === $team->getId()) {
@@ -841,10 +945,6 @@ class NpcSimulationService
                 }
 
                 $price = $listing->getBuyoutPriceGold() ?? $listing->getPriceGold();
-                if ($team->getGold() < ($safetyReserve + $price)) {
-                    continue;
-                }
-
                 $score = 0; // 0 means not interested
 
                 if (ListingType::Item === $listing->getListingType()) {
@@ -868,6 +968,9 @@ class NpcSimulationService
                             }
                         }
                     }
+                    if ($score > 0) {
+                        $itemCandidates[] = ['listing' => $listing, 'score' => $score, 'price' => $price];
+                    }
                 } elseif (ListingType::Hero === $listing->getListingType()) {
                     $hero = $listing->getHero();
                     if (null !== $hero && $hero->getLevel() >= 1) {
@@ -878,9 +981,7 @@ class NpcSimulationService
                             $compatibleRaces = $this->summoningService->getCompatibleRacesForTeam($team);
                         }
 
-                        if (!in_array($hero->getRace(), $compatibleRaces, true)) {
-                            $score = 0;
-                        } else {
+                        if (in_array($hero->getRace(), $compatibleRaces, true)) {
                             if (self::ROLE_MERCENARY_ACADEMY === $role) {
                                 if (in_array($hero->getRace(), [Race::Orc, Race::Dwarf, Race::Human], true)) {
                                     $score = 100;
@@ -894,6 +995,9 @@ class NpcSimulationService
                             }
                         }
                     }
+                    if ($score > 0) {
+                        $heroCandidates[] = ['listing' => $listing, 'score' => $score, 'price' => $price];
+                    }
                 } elseif (ListingType::Trainer === $listing->getListingType()) {
                     $hero = $listing->getHero();
                     if (null !== $hero && $hero->getLevel() >= 1) {
@@ -905,21 +1009,84 @@ class NpcSimulationService
                             $score = 20;
                         }
                     }
-                }
-
-                if ($score > 0 && $score > $bestScore) {
-                    $bestScore = $score;
-                    $bestListing = $listing;
+                    if ($score > 0) {
+                        $trainerCandidates[] = ['listing' => $listing, 'score' => $score, 'price' => $price];
+                    }
                 }
             }
 
-            if (null !== $bestListing) {
-                $listingId = $bestListing->getId();
-                if (null !== $listingId) {
-                    try {
-                        $this->marketplaceService->buyListing($team, $listingId, $now);
-                    } catch (\Throwable) {
-                        // Ignore buy error
+            // Sort helper
+            $sortCandidates = function (array $a, array $b): int {
+                if ($a['score'] !== $b['score']) {
+                    return $b['score'] <=> $a['score'];
+                }
+
+                return $a['price'] <=> $b['price'];
+            };
+
+            usort($itemCandidates, $sortCandidates);
+            usort($heroCandidates, $sortCandidates);
+            usort($trainerCandidates, $sortCandidates);
+
+            // 1. Buy items that are useful upgrades for active lineup
+            foreach ($itemCandidates as $cand) {
+                if ($team->getGold() < ($safetyReserve + $cand['price'])) {
+                    continue;
+                }
+                $item = $cand['listing']->getItem();
+                if (null !== $item) {
+                    $targetHero = $this->isItemUsefulForLineup($activeLineup, $item, $lineupGear);
+                    if (null !== $targetHero) {
+                        $listingId = $cand['listing']->getId();
+                        if (null !== $listingId) {
+                            try {
+                                $this->marketplaceService->buyListing($team, $listingId, $now);
+                                // Update in-memory gear tracking
+                                $heroId = $targetHero->getId();
+                                if (null !== $heroId) {
+                                    $lineupGear[$heroId][$item->getSlotType()->value] = $this->getRarityValue($item->getRarity());
+                                }
+                            } catch (\Throwable) {
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. Buy heroes up to limit
+            $heroBuyLimit = $this->getHeroBuyLimitForRole($role);
+            $heroesBought = 0;
+            foreach ($heroCandidates as $cand) {
+                if ($heroesBought >= $heroBuyLimit) {
+                    break;
+                }
+                if ($team->getGold() >= ($safetyReserve + $cand['price'])) {
+                    $listingId = $cand['listing']->getId();
+                    if (null !== $listingId) {
+                        try {
+                            $this->marketplaceService->buyListing($team, $listingId, $now);
+                            ++$heroesBought;
+                        } catch (\Throwable) {
+                        }
+                    }
+                }
+            }
+
+            // 3. Buy trainers up to limit
+            $trainerBuyLimit = $this->getTrainerBuyLimitForRole($role);
+            $trainersBought = 0;
+            foreach ($trainerCandidates as $cand) {
+                if ($trainersBought >= $trainerBuyLimit) {
+                    break;
+                }
+                if ($team->getGold() >= ($safetyReserve + $cand['price'])) {
+                    $listingId = $cand['listing']->getId();
+                    if (null !== $listingId) {
+                        try {
+                            $this->marketplaceService->buyListing($team, $listingId, $now);
+                            ++$trainersBought;
+                        } catch (\Throwable) {
+                        }
                     }
                 }
             }
@@ -947,6 +1114,9 @@ class NpcSimulationService
 
         foreach ($teams as $team) {
             $role = $this->getEconomicRole($team);
+
+            // 1. Arena Theme Optimization
+            $this->simulateArenaOptimizationForTeam($team, $role);
 
             // 2. HQ Upgrades
             $hq = $this->hqService->getForTeam($team);
@@ -1406,6 +1576,11 @@ class NpcSimulationService
 
     private function calculateItemMarketPrice(Item $item): int
     {
+        $merchantPrice = $this->itemService->getBasicItemMerchantPrice($item);
+        if (null !== $merchantPrice) {
+            return (int) round($merchantPrice * 0.7);
+        }
+
         return match ($item->getRarity()) {
             ItemRarity::Common => 75,
             ItemRarity::Uncommon => 180,
@@ -1419,6 +1594,172 @@ class NpcSimulationService
     private function calculateHeroMarketPrice(Hero $hero): int
     {
         return max(1, $this->heroRatingCalculator->estimateMarketPrice($hero));
+    }
+
+    private function getHeroBuyLimitForRole(string $role): int
+    {
+        return match ($role) {
+            self::ROLE_MERCENARY_ACADEMY => random_int(1, 3),
+            self::ROLE_ROYAL_COLLECTOR => random_int(1, 2),
+            self::ROLE_SCAVENGER_CLAN => random_int(1, 2),
+            default => random_int(1, 1), // veteran_guild
+        };
+    }
+
+    private function getHeroSellLimitForRole(string $role): int
+    {
+        return match ($role) {
+            self::ROLE_MERCENARY_ACADEMY => random_int(1, 3),
+            self::ROLE_ROYAL_COLLECTOR => random_int(1, 2),
+            self::ROLE_SCAVENGER_CLAN => random_int(1, 2),
+            default => random_int(1, 1),
+        };
+    }
+
+    private function getTrainerBuyLimitForRole(string $role): int
+    {
+        return match ($role) {
+            self::ROLE_VETERAN_GUILD => random_int(1, 3),
+            self::ROLE_ROYAL_COLLECTOR => random_int(1, 2),
+            default => random_int(1, 1), // mercenary_academy, scavenger_clan
+        };
+    }
+
+    private function getTrainerSellLimitForRole(string $role): int
+    {
+        return match ($role) {
+            self::ROLE_VETERAN_GUILD => random_int(1, 3),
+            self::ROLE_ROYAL_COLLECTOR => random_int(1, 2),
+            default => random_int(1, 1),
+        };
+    }
+
+    private function getRarityValue(ItemRarity $rarity): int
+    {
+        return match ($rarity) {
+            ItemRarity::Common => 1,
+            ItemRarity::Uncommon => 2,
+            ItemRarity::Rare => 3,
+            ItemRarity::Epic => 4,
+            ItemRarity::Legendary => 5,
+            ItemRarity::Mythic => 6,
+        };
+    }
+
+    /**
+     * @param array<Hero>                    $activeLineup
+     * @param array<int, array<string, int>> $lineupGear
+     */
+    private function isItemUsefulForLineup(array $activeLineup, Item $item, array &$lineupGear): ?Hero
+    {
+        $slot = $item->getSlotType();
+        $subType = $item->getSubType();
+        $rarityVal = $this->getRarityValue($item->getRarity());
+
+        foreach ($activeLineup as $hero) {
+            $heroId = $hero->getId();
+            if (null === $heroId) {
+                continue;
+            }
+
+            if (in_array($slot, [ItemSlotType::MainHand, ItemSlotType::OffHand, ItemSlotType::Head, ItemSlotType::Body, ItemSlotType::Hands, ItemSlotType::Feet], true)) {
+                $prefWeapon = $this->getPreferredWeaponSubType($hero);
+                $prefArmor = $this->getPreferredArmorSubType($hero);
+                $prefOffHand = $this->getPreferredOffHandSubType($hero, $prefWeapon);
+
+                if (ItemSlotType::OffHand === $slot && null === $prefOffHand) {
+                    continue;
+                }
+
+                $prefSubType = match ($slot) {
+                    ItemSlotType::MainHand => $prefWeapon,
+                    ItemSlotType::OffHand => $prefOffHand,
+                    default => $prefArmor,
+                };
+
+                if (null !== $prefSubType && $subType !== $prefSubType) {
+                    continue;
+                }
+            }
+
+            $currentRarityVal = $lineupGear[$heroId][$slot->value] ?? 0;
+
+            if ($currentRarityVal < $rarityVal) {
+                return $hero;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<Hero> $aliveHeroes
+     */
+    private function determineOptimalRace(Team $team, string $role, array $aliveHeroes): Race
+    {
+        $raceCounts = [];
+        foreach ($aliveHeroes as $hero) {
+            $raceVal = $hero->getRace()->value;
+            $raceCounts[$raceVal] = ($raceCounts[$raceVal] ?? 0) + 1;
+        }
+
+        if (self::ROLE_MERCENARY_ACADEMY === $role) {
+            $academyRaces = [Race::Orc->value, Race::Dwarf->value, Race::Human->value];
+            $bestRaceVal = null;
+            $maxCount = -1;
+            foreach ($academyRaces as $r) {
+                $count = $raceCounts[$r] ?? 0;
+                if ($count > $maxCount) {
+                    $maxCount = $count;
+                    $bestRaceVal = $r;
+                }
+            }
+
+            return Race::from($bestRaceVal);
+        }
+
+        if (count($raceCounts) > 0) {
+            arsort($raceCounts);
+            $bestRaceVal = array_key_first($raceCounts);
+
+            return Race::from($bestRaceVal);
+        }
+
+        $hq = $this->hqService->getForTeam($team);
+        $currentOpt = $hq->getRaceOptimization();
+        if (null !== $currentOpt) {
+            $currentRace = Race::tryFrom($currentOpt);
+            if (null !== $currentRace) {
+                return $currentRace;
+            }
+        }
+
+        return Race::Human;
+    }
+
+    private function simulateArenaOptimizationForTeam(Team $team, string $role): void
+    {
+        $hq = $this->hqService->getForTeam($team);
+
+        if ($hq->isRaceOptimizationLockCycle()) {
+            return;
+        }
+
+        $aliveHeroes = $this->em->getRepository(Hero::class)->createQueryBuilder('h')
+            ->where('h.team = :team')
+            ->andWhere('h.status NOT IN (:deadStatuses)')
+            ->setParameter('team', $team)
+            ->setParameter('deadStatuses', [HeroStatus::Dead, HeroStatus::Retired])
+            ->getQuery()
+            ->getResult();
+
+        $optimalRace = $this->determineOptimalRace($team, $role, $aliveHeroes);
+        $currentOpt = $hq->getRaceOptimization();
+
+        if ($currentOpt !== $optimalRace->value) {
+            $hq->setRaceOptimization($optimalRace->value);
+            $hq->setRaceOptimizationLockCycle(true);
+        }
     }
 
     /**

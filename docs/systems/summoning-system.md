@@ -73,7 +73,7 @@ The race of a summoned hero is **not freely chosen** by the player. It is drawn 
 2. All 8 races are evaluated against the adapted race using the **relationship matrix** (`config/game/race_relations.yaml`).
 3. Races with a relationship score `>= 50` to the adapted race are included in the pool.
 4. A race always has a self-relationship of `100` and is always included.
-5. **Exception — Genie teams:** When the adapted race is `Genie`, the pool is restricted to `[Genie]` only. This prevents hostile racial pairs that occur when applying the standard compatibility matrix to Genie.
+5. **Exception — Genie teams:** Although planned as restricted to `[Genie]` only, the core `SummoningService` evaluates Genie using the standard relationship matrix. Because Genie has relationship scores `>= 50` with all other 7 races, Genie adapted player teams can currently summon any race. (The restriction to `[Genie]` is only simulated locally by the NPC simulation system when evaluating marketplace decisions).
 6. If no adaptation is set (`race_optimization = null`), **all 8 races** are in the pool.
 7. One race is drawn uniformly at random from the pool.
 
