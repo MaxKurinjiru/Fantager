@@ -518,4 +518,28 @@ class ItemService
 
         return $item;
     }
+
+    /**
+     * If the item is a common basic item matching the merchant catalog, return its merchant cost.
+     */
+    public function getBasicItemMerchantPrice(Item $item): ?int
+    {
+        if (ItemRarity::Common !== $item->getRarity()) {
+            return null;
+        }
+
+        foreach (self::BASIC_EQUIPMENT as $template) {
+            if ($template['slot'] === $item->getSlotType()) {
+                $subTypeVal = $item->getSubType()?->value;
+                if (isset($template['sub_type']) && $subTypeVal === $template['sub_type']) {
+                    return $template['cost'];
+                }
+                if (!isset($template['sub_type']) && null === $subTypeVal) {
+                    return $template['cost'];
+                }
+            }
+        }
+
+        return null;
+    }
 }

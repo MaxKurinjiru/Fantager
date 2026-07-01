@@ -112,14 +112,14 @@ Gold Cost = (100 - current_durability) × cost_per_point[rarity]
 
 ---
 
-## Merchant Purchase (`ItemService::buyFromMerchant`)
+## Merchant Purchase (`ItemService::purchaseBasicItem`)
 
-Teams can buy items directly from the in-game merchant via `POST /api/v1/items/buy`.
+Teams can purchase fixed-price basic equipment from the merchant via the web frontend at `POST /app/marketplace/buy-basic` (request parameters: `item_key`, CSRF token `buy_basic`).
 
 | Step | Details |
 |------|---------|
 | Gold deduction | `EconomyService::deductGold` (`MarketplacePurchase`, actor `Active`) |
-| Item creation | New `Item` with `owner_team_id = buyer`, `status = Available` |
+| Item creation | New `Item` with `ownerTeam = buyer`, `status = Available` |
 | Chronicle | `TeamChronicleService::recordItemPurchased` with `seller = null` (shows as "merchant") |
 | Transaction | `MarketplaceTransaction` with `seller_team_id = null`, `listing_id = null`, `fee_amount = 0` |
 
@@ -136,7 +136,7 @@ See [Marketplace System](marketplace-system.md) for listing, bidding, and transa
 
 ---
 
-## API Endpoints
+## API & Web Endpoints
 
 | Method | Path | Purpose |
 |--------|------|---------|
@@ -144,7 +144,7 @@ See [Marketplace System](marketplace-system.md) for listing, bidding, and transa
 | PUT | `/api/v1/heroes/{heroId}/equipment` | Equip or unequip an item |
 | POST | `/api/v1/items/dismantle` | Dismantle item for Essence |
 | POST | `/api/v1/items/{id}/repair` | Repair durability (costs Gold) |
-| POST | `/api/v1/items/buy` | Purchase item from the merchant |
+| POST | `/app/marketplace/buy-basic` | Purchase basic item from the merchant (Web route, redirects back) |
 
 ---
 

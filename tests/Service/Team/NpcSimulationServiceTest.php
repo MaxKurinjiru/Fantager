@@ -32,6 +32,9 @@ use App\Service\Hero\HeroDismissalService;
 use App\Service\Config\RaceConfig;
 use App\Service\Hero\HeroRatingCalculator;
 use App\Entity\Item\Item;
+use App\Entity\Marketplace\MarketplaceListing;
+use App\Enum\ItemSubType;
+use App\Enum\ListingType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -91,6 +94,26 @@ class NpcSimulationServiceTest extends TestCase
         $ref = new \ReflectionClass($entity);
         $prop = $ref->getProperty('id');
         $prop->setValue($entity, $id);
+    }
+
+    /**
+     * @param array<Hero> $heroes
+     */
+    private function createHeroRepositoryMock(array $heroes = []): HeroRepository
+    {
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($heroes);
+
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        return $heroRepo;
     }
 
     public function testGetEconomicRole(): void
@@ -550,10 +573,12 @@ class NpcSimulationServiceTest extends TestCase
 
         // We expect createListing to use the rating calculator market price
         $calledListingParams = null;
-        $this->marketplaceService->expects($this->once())
+        $this->marketplaceService->expects($this->any())
             ->method('createListing')
             ->willReturnCallback(function ($t, $type, $id, $price, $price2, $mode, $duration, $extra) use (&$calledListingParams) {
-                $calledListingParams = [$t, $type, $id, $price, $price2, $mode, $duration];
+                if (null === $calledListingParams) {
+                    $calledListingParams = [$t, $type, $id, $price, $price2, $mode, $duration];
+                }
                 return new \App\Entity\Marketplace\MarketplaceListing();
             });
 
@@ -702,9 +727,11 @@ class NpcSimulationServiceTest extends TestCase
 
         $teamRepo = $this->createMock(EntityRepository::class);
         $teamRepo->method('findBy')->willReturn([$team]);
+        $heroRepo = $this->createHeroRepositoryMock();
 
-        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo) {
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $heroRepo) {
             if (Team::class === $class) return $teamRepo;
+            if (Hero::class === $class) return $heroRepo;
             return $this->createMock(EntityRepository::class);
         });
 
@@ -753,9 +780,11 @@ class NpcSimulationServiceTest extends TestCase
 
         $teamRepo = $this->createMock(EntityRepository::class);
         $teamRepo->method('findBy')->willReturn([$team]);
+        $heroRepo = $this->createHeroRepositoryMock();
 
-        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo) {
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $heroRepo) {
             if (Team::class === $class) return $teamRepo;
+            if (Hero::class === $class) return $heroRepo;
             return $this->createMock(EntityRepository::class);
         });
 
@@ -791,6 +820,384 @@ class NpcSimulationServiceTest extends TestCase
             ->with($team, FacilityType::SummoningChamber);
 
         $this->service->simulateWeeklyManagementAndEconomy($kingdom, new \DateTimeImmutable(), $team);
+    }
+
+    public function testSimulateMarketplaceActionsListsItemsWithReserveAndBasicDiscount(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // ROLE_MERCENARY_ACADEMY
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        // Create 4 MainHand items
+        $items = [];
+        $item1 = new Item();
+        $this->setEntityId($item1, 1);
+        $item1->setOwnerTeam($team);
+        $item1->setRarity(ItemRarity::Common);
+        $item1->setSlotType(ItemSlotType::MainHand);
+        $item1->setStatus(ItemStatus::Available);
+        $items[] = $item1;
+
+        $item2 = new Item();
+        $this->setEntityId($item2, 2);
+        $item2->setOwnerTeam($team);
+        $item2->setRarity(ItemRarity::Common);
+        $item2->setSlotType(ItemSlotType::MainHand);
+        $item2->setStatus(ItemStatus::Available);
+        $items[] = $item2;
+
+        $item3 = new Item();
+        $this->setEntityId($item3, 3);
+        $item3->setOwnerTeam($team);
+        $item3->setRarity(ItemRarity::Common);
+        $item3->setSlotType(ItemSlotType::MainHand);
+        $item3->setStatus(ItemStatus::Available);
+        $items[] = $item3;
+
+        $item4 = new Item();
+        $this->setEntityId($item4, 4);
+        $item4->setOwnerTeam($team);
+        $item4->setRarity(ItemRarity::Common);
+        $item4->setSlotType(ItemSlotType::MainHand);
+        $item4->setStatus(ItemStatus::Available);
+        $items[] = $item4;
+
+        // Create 2 Body items
+        $item5 = new Item();
+        $this->setEntityId($item5, 5);
+        $item5->setOwnerTeam($team);
+        $item5->setRarity(ItemRarity::Common);
+        $item5->setSlotType(ItemSlotType::Body);
+        $item5->setStatus(ItemStatus::Available);
+        $items[] = $item5;
+
+        $item6 = new Item();
+        $this->setEntityId($item6, 6);
+        $item6->setOwnerTeam($team);
+        $item6->setRarity(ItemRarity::Common);
+        $item6->setSlotType(ItemSlotType::Body);
+        $item6->setStatus(ItemStatus::Available);
+        $items[] = $item6;
+
+        // Mock ItemService::getBasicItemMerchantPrice
+        // Item 1 and 2 are basic (price 50), others are not (null)
+        $this->itemService->method('getBasicItemMerchantPrice')
+            ->willReturnCallback(function (Item $item) {
+                if (in_array($item->getId(), [1, 2], true)) {
+                    return 50;
+                }
+                return null;
+            });
+
+        // Setup mock repos
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findBy')->willReturn([]); // no heroes listed
+        // Return empty query result for simulateMarketplaceActions heroes query
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn([]);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findBy')->willReturn([]);
+
+        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo->method('findBy')->willReturn($items);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $formationRepo, $heroRepo, $itemRepo) {
+            if (Team::class === $class) return $teamRepo;
+            if (Formation::class === $class) return $formationRepo;
+            if (Hero::class === $class) return $heroRepo;
+            if (Item::class === $class) return $itemRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        // Mock HQ service
+        $hq = new Headquarters();
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+
+        // Capture listings created
+        $createdListings = [];
+        $this->marketplaceService->method('createListing')
+            ->willReturnCallback(function ($t, $type, $id, $price, $price2, $mode, $duration, $extra) use (&$createdListings) {
+                $createdListings[] = [
+                    'type' => $type,
+                    'id' => $id,
+                    'price' => $price,
+                ];
+                return new \App\Entity\Marketplace\MarketplaceListing();
+            });
+
+        // Run
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable());
+
+        // Assertions:
+        // 1. Number of listings is between 0 and 3
+        $this->assertLessThanOrEqual(3, count($createdListings));
+
+        foreach ($createdListings as $listing) {
+            $this->assertEquals('item', $listing['type']);
+            // Item 4 and Item 6 should never be listed because they are part of the slot reserves
+            $this->assertNotEquals(4, $listing['id']);
+            $this->assertNotEquals(6, $listing['id']);
+
+            // Verify prices
+            if (in_array($listing['id'], [1, 2], true)) {
+                // Basic items discounted: round(50 * 0.7) = 35
+                $this->assertEquals(35, $listing['price']);
+            } else {
+                // Non-basic common items: 75
+                $this->assertEquals(75, $listing['price']);
+            }
+        }
+    }
+
+    public function testSimulateArenaOptimization(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // mercenary_academy
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+        $hq->setRaceOptimization(Race::Elf->value); // initial opt
+        $hq->setRaceOptimizationLockCycle(false);
+
+        $this->hqService->method('getForTeam')->willReturn($hq);
+
+        // Mock hero list query builder in determineOptimalRace
+        $heroes = [];
+        // Add 2 Dwarf combatants, 1 Orc, 1 Elf
+        $h1 = new Hero();
+        $h1->setRace(Race::Dwarf);
+        $h1->setStatus(HeroStatus::Available);
+        $heroes[] = $h1;
+
+        $h2 = new Hero();
+        $h2->setRace(Race::Dwarf);
+        $h2->setStatus(HeroStatus::Available);
+        $heroes[] = $h2;
+
+        $h3 = new Hero();
+        $h3->setRace(Race::Orc);
+        $h3->setStatus(HeroStatus::Available);
+        $heroes[] = $h3;
+
+        $h4 = new Hero();
+        $h4->setRace(Race::Elf);
+        $h4->setStatus(HeroStatus::Available);
+        $heroes[] = $h4;
+
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($heroes);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($heroRepo) {
+            if (Hero::class === $class) return $heroRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        // Run weekly simulation which triggers arena optimization
+        $this->service->simulateWeeklyManagementAndEconomy($kingdom, new \DateTimeImmutable(), $team);
+
+        // Since role is mercenary_academy and we have 2 Dwarfs, 1 Orc, 1 Elf, optimal should be Dwarf
+        $this->assertEquals(Race::Dwarf->value, $hq->getRaceOptimization());
+        $this->assertTrue($hq->isRaceOptimizationLockCycle());
+    }
+
+    public function testSimulateMarketplaceSeparateHeroTrainerSelling(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 1); // veteran_guild: prefers trainers (sell limit 1-3 trainers, 1 hero)
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        // Create 10 heroes to trigger selling ($heroCount >= 10)
+        $heroes = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $h = new Hero();
+            $this->setEntityId($h, $i);
+            $h->setStatus(HeroStatus::Available);
+            $h->setLevel(1);
+            if ($i <= 5) {
+                $h->setRole(HeroRole::Trainer);
+            } else {
+                $h->setRole(HeroRole::Combatant);
+            }
+            $heroes[] = $h;
+        }
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($heroes);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findBy')->willReturn([]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($formationRepo, $heroRepo) {
+            if (Formation::class === $class) return $formationRepo;
+            if (Hero::class === $class) return $heroRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $this->heroRatingCalculator->method('estimateMarketPrice')->willReturn(100);
+
+        $hq = new Headquarters();
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+
+        // Track listings created
+        $createdTypes = [];
+        $this->marketplaceService->method('createListing')
+            ->willReturnCallback(function ($t, $type, $id, $price, $price2, $mode, $duration, $extra) use (&$createdTypes) {
+                $createdTypes[] = $type;
+                return new \App\Entity\Marketplace\MarketplaceListing();
+            });
+
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable(), $team);
+
+        // Verify that we listed both combatants and trainers (separately)
+        $this->assertContains('hero', $createdTypes);
+        $this->assertContains('trainer', $createdTypes);
+    }
+
+    public function testSimulateMarketplaceNeedBasedItemBuying(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 2); // royal_collector
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        // Active lineup has 1 hero
+        $hero = new Hero();
+        $this->setEntityId($hero, 1);
+        $hero->setStr(10);
+        $hero->setKon(10);
+        $hero->setDex(5);
+        $hero->setIntel(5);
+
+        // Mock formation with 1 slot containing the hero
+        $slot = new FormationSlot();
+        $slot->setHero($hero);
+        $slot->setPosition(FormationPosition::Front1);
+
+        $formation = new Formation();
+        $formation->addSlot($slot);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findOneBy')->willReturn($formation);
+
+        // Hero currently has nothing equipped in MainHand
+        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo->method('findBy')->willReturnCallback(function (array $criteria) use ($hero) {
+            // If fetching equipped items for the hero
+            if (isset($criteria['equippedHero']) && $criteria['equippedHero'] === $hero) {
+                return []; // none equipped
+            }
+            return [];
+        });
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        // Empty queries for other parts
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn([]);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        // Set up active listings in kingdom
+        $sellerTeam = new Team();
+        $this->setEntityId($sellerTeam, 99);
+
+        // Listing 1: Common Bow (not preferred weapon, default is OneHandedSword since STR/KON are higher)
+        $item1 = new Item();
+        $item1->setSlotType(ItemSlotType::MainHand);
+        $item1->setSubType(ItemSubType::Bow);
+        $item1->setRarity(ItemRarity::Common);
+
+        $listing1 = new MarketplaceListing();
+        $this->setEntityId($listing1, 101);
+        $listing1->setSellerTeam($sellerTeam);
+        $listing1->setListingType(ListingType::Item);
+        $listing1->setItem($item1);
+        $listing1->setPriceGold(50);
+        $listing1->setBuyoutPriceGold(50);
+
+        // Listing 2: Epic OneHandedSword (preferred weapon, highly rated upgrade)
+        $item2 = new Item();
+        $item2->setSlotType(ItemSlotType::MainHand);
+        $item2->setSubType(ItemSubType::OneHandedSword);
+        $item2->setRarity(ItemRarity::Epic);
+
+        $listing2 = new MarketplaceListing();
+        $this->setEntityId($listing2, 102);
+        $listing2->setSellerTeam($sellerTeam);
+        $listing2->setListingType(ListingType::Item);
+        $listing2->setItem($item2);
+        $listing2->setPriceGold(200);
+        $listing2->setBuyoutPriceGold(200);
+
+        $listingRepo = $this->createMock(EntityRepository::class);
+        $listingRepo->method('findBy')->willReturn([$listing1, $listing2]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($formationRepo, $itemRepo, $heroRepo, $listingRepo) {
+            if (Formation::class === $class) return $formationRepo;
+            if (Item::class === $class) return $itemRepo;
+            if (Hero::class === $class) return $heroRepo;
+            if (MarketplaceListing::class === $class) return $listingRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $hq = new Headquarters();
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+
+        // Capture bought listings
+        $boughtListingIds = [];
+        $this->marketplaceService->method('buyListing')
+            ->willReturnCallback(function ($team, $listingId, $now) use (&$boughtListingIds) {
+                $boughtListingIds[] = $listingId;
+            });
+
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable(), $team);
+
+        // Should buy listing 2 (Epic OneHandedSword) because it matches preferred weapon and is epic
+        // Should NOT buy listing 1 because it's a Bow (not preferred subtype)
+        $this->assertContains(102, $boughtListingIds);
+        $this->assertNotContains(101, $boughtListingIds);
     }
 }
 
