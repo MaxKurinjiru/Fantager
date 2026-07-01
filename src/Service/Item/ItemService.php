@@ -189,7 +189,13 @@ class ItemService
             throw new UserFacingException('error.item_repair_insufficient_gold', ['%cost%' => $cost, '%available%' => $team->getGold()]);
         }
 
-        $team->setGold($team->getGold() - $cost);
+        $this->economyService->deductGold(
+            $team,
+            $cost,
+            FinancialRecordType::ItemRepair,
+            FinancialRecordActor::Active,
+            ['item_id' => $item->getId(), 'durability_repaired' => $missing]
+        );
         $item->setDurability(100);
 
         $this->em->flush();

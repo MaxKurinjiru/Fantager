@@ -37,6 +37,7 @@ class GraveyardService
         $record->setFinalStats($this->buildStatsSnapshot($hero));
         $record->setDepartedAt($date);
         $record->setOriginalHeroId($hero->getId());
+        $record->setTrait($hero->getTrait());
 
         return $record;
     }
@@ -150,6 +151,7 @@ class GraveyardService
             'final_stats' => $record->getFinalStats(),
             'date' => $record->getDepartedAt()->format('Y-m-d'),
             'original_hero_id' => $record->getOriginalHeroId(),
+            'trait' => $record->getTrait(),
         ];
     }
 }

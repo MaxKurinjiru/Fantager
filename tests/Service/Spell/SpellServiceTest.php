@@ -12,6 +12,7 @@ use App\Enum\School;
 use App\Repository\Hero\HeroSpellRepository;
 use App\Repository\Hero\SchoolMasteryRepository;
 use App\Repository\Spell\SpellRepository;
+use App\Service\Economy\EconomyService;
 use App\Service\Spell\SpellService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -28,6 +29,8 @@ class SpellServiceTest extends TestCase
     private $masteryRepositoryMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
     private $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EconomyService */
+    private $economyServiceMock;
     private SpellService $spellService;
 
     protected function setUp(): void
@@ -36,12 +39,14 @@ class SpellServiceTest extends TestCase
         $this->heroSpellRepositoryMock = $this->createMock(HeroSpellRepository::class);
         $this->masteryRepositoryMock = $this->createMock(SchoolMasteryRepository::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
+        $this->economyServiceMock = $this->createMock(EconomyService::class);
 
         $this->spellService = new SpellService(
             $this->spellRepositoryMock,
             $this->heroSpellRepositoryMock,
             $this->masteryRepositoryMock,
             $this->entityManagerMock,
+            $this->economyServiceMock,
         );
     }
 

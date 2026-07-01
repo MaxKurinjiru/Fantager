@@ -9,6 +9,7 @@ use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
+use App\Enum\HeroTrait;
 use App\Enum\MemorialCause;
 use App\Enum\Race;
 use App\Service\Graveyard\GraveyardService;
@@ -44,6 +45,7 @@ class GraveyardServiceTest extends TestCase
         $hero->setWilRaw(32);
         $hero->setChaRaw(28);
         $hero->setLckRaw(25);
+        $hero->setTrait(HeroTrait::QuickLearner);
 
         $record = $service->createMemorial($hero, $team, MemorialCause::Dismissed);
 
@@ -55,5 +57,9 @@ class GraveyardServiceTest extends TestCase
         $this->assertSame(5, $record->getFinalStats()['str']);
         $this->assertSame(50, $record->getFinalStats()['base_ovr']);
         $this->assertSame(1200, $record->getFinalStats()['complex_rating']);
+        $this->assertSame(HeroTrait::QuickLearner, $record->getTrait());
+
+        $serialized = $service->serializeMemorial($record);
+        $this->assertSame(HeroTrait::QuickLearner, $serialized['trait']);
     }
 }

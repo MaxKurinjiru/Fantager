@@ -27,6 +27,7 @@ use App\Service\Item\ItemService;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Summoning\SummoningService;
 use App\Service\Team\NpcSimulationService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Training\TrainingService;
 use App\Service\Hero\HeroDismissalService;
 use App\Service\Config\RaceConfig;
@@ -62,6 +63,8 @@ class NpcSimulationServiceTest extends TestCase
     private $heroRatingCalculator;
     /** @var RaceConfig&MockObject */
     private $raceConfig;
+    /** @var TeamChronicleService&MockObject */
+    private $teamChronicleService;
     private NpcSimulationService $service;
 
     protected function setUp(): void
@@ -75,6 +78,7 @@ class NpcSimulationServiceTest extends TestCase
         $this->dismissalService = $this->createMock(HeroDismissalService::class);
         $this->heroRatingCalculator = $this->createMock(HeroRatingCalculator::class);
         $this->raceConfig = $this->createMock(RaceConfig::class);
+        $this->teamChronicleService = $this->createMock(TeamChronicleService::class);
 
         $this->service = new NpcSimulationService(
             $this->em,
@@ -86,6 +90,7 @@ class NpcSimulationServiceTest extends TestCase
             $this->dismissalService,
             $this->heroRatingCalculator,
             $this->raceConfig,
+            $this->teamChronicleService,
         );
     }
 
@@ -977,6 +982,10 @@ class NpcSimulationServiceTest extends TestCase
         $hq->setRaceOptimizationLockCycle(false);
 
         $this->hqService->method('getForTeam')->willReturn($hq);
+
+        $this->teamChronicleService->expects($this->once())
+            ->method('recordRaceOptimizationChanged')
+            ->with($team, Race::Dwarf->value);
 
         // Mock hero list query builder in determineOptimalRace
         $heroes = [];

@@ -177,6 +177,9 @@ class Hero
     public function setRole(HeroRole $role): static
     {
         $this->role = $role;
+        if (HeroRole::Trainer === $role) {
+            $this->trait = null;
+        }
 
         return $this;
     }

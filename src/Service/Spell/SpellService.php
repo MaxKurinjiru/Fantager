@@ -9,11 +9,14 @@ use App\Entity\Hero\HeroSpell;
 use App\Entity\Hero\SchoolMastery;
 use App\Entity\Spell\Spell;
 use App\Entity\Team\Team;
+use App\Enum\FinancialRecordActor;
+use App\Enum\FinancialRecordType;
 use App\Enum\School;
 use App\Exception\UserFacingException;
 use App\Repository\Hero\HeroSpellRepository;
 use App\Repository\Hero\SchoolMasteryRepository;
 use App\Repository\Spell\SpellRepository;
+use App\Service\Economy\EconomyService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class SpellService
@@ -23,6 +26,7 @@ class SpellService
         private readonly HeroSpellRepository $heroSpellRepository,
         private readonly SchoolMasteryRepository $masteryRepository,
         private readonly EntityManagerInterface $em,
+        private readonly EconomyService $economyService,
     ) {
     }
 
@@ -75,16 +79,29 @@ class SpellService
             throw new UserFacingException('error.insufficient_school_mastery', ['%required%' => $spell->getRequiredMasteryTier(), '%current%' => $currentTier]);
         }
 
-        // Cost check
-        if ($team->getGold() < $spell->getLearningCostGold()) {
-            throw new UserFacingException('error.insufficient_gold', ['%required%' => $spell->getLearningCostGold(), '%available%' => $team->getGold()]);
-        }
-        if ($team->getEssenceCommon() < $spell->getLearningCostEssence()) {
-            throw new UserFacingException('error.insufficient_essence', ['%required%' => $spell->getLearningCostEssence(), '%available%' => $team->getEssenceCommon()]);
+        $goldCost = $spell->getLearningCostGold();
+        $essenceCost = $spell->getLearningCostEssence();
+
+        if ($goldCost > 0) {
+            $this->economyService->deductGold(
+                $team,
+                $goldCost,
+                FinancialRecordType::SpellLearningCost,
+                FinancialRecordActor::Active,
+                ['hero_id' => $hero->getId(), 'spell_id' => $spell->getId()]
+            );
         }
 
-        $team->setGold($team->getGold() - $spell->getLearningCostGold());
-        $team->setEssenceCommon($team->getEssenceCommon() - $spell->getLearningCostEssence());
+        if ($essenceCost > 0) {
+            $this->economyService->deductEssence(
+                $team,
+                'common',
+                $essenceCost,
+                FinancialRecordType::SpellLearningCost,
+                FinancialRecordActor::Active,
+                ['hero_id' => $hero->getId(), 'spell_id' => $spell->getId()]
+            );
+        }
 
         $heroSpell = new HeroSpell();
         $heroSpell->setHero($hero);

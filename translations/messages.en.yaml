@@ -285,6 +285,9 @@ notification:
   marketplace_auction_won_buyer_body: 'You won the auction #%listing% for %amount% gold.'
 
 dashboard:
+  history_title: Team History
+  history_axis_morale: Morale / Chemistry / Reputation
+  history_axis_fan_base: Fan Club
   treasury: Treasury
   gold: Gold
   total_essence: Total Essence
@@ -385,7 +388,7 @@ graveyard:
     fatigue: Fatigue
     morale: Morale
     base_ovr: Base OVR
-    complex_rating: Market Value
+    complex_rating: Potential
 
 news:
   title: News
@@ -632,13 +635,13 @@ heroes:
   details_title: Hero Details
   rating:
     base_ovr: OVR
-    complex: Value
-    panel_title: Hero Value
-    panel_desc: Intrinsic ratings without equipment, spells, or team bonuses.
+    complex: Potential
+    panel_title: Hero Evaluation
+    panel_desc: Intrinsic potential and financial values without equipment, spells, or temporary bonuses.
     tooltip_base: Cross-race comparison (0–100). Uses a human-neutral combat profile.
-    tooltip_complex: Unique intrinsic value (0–9999) including race, trait, mastery, and age.
-    gold_value: Est. Gold Value
-    gold_value_hint: Base economic value derived from complex rating.
+    tooltip_complex: Unique intrinsic potential (0–9999) including race, trait, mastery, and age.
+    gold_value: Value
+    gold_value_hint: Estimated market value derived from the hero's potential.
     weekly_salary: Weekly Salary
     weekly_salary_hint: Charged every Sunday at the weekly reset.
     dismiss_estimate: "Estimated value: %value% 🪙 (dismiss compensation: %compensation% 🪙)"
@@ -758,6 +761,15 @@ finance:
   summary_transactions_period: Transactions (last %days% days)
   summary_net_all_time: All-time balance
   summary_recent_transactions: Recent transactions
+  tooltip_gold_on_hand: Current amount of gold in the team treasury. Used for weekly expenses and marketplace purchases.
+  tooltip_unpaid_debt: Total outstanding debt. Must be paid off as soon as possible to avoid penalties and financial crisis.
+  tooltip_weekly_expenses: Total estimated fixed expenses for the next weekly reset. Includes weekly hero salaries and HQ maintenance.
+  tooltip_weekly_payroll: Sum of the weekly salaries of all heroes currently on your roster.
+  tooltip_weekly_maintenance: Operational and maintenance costs of all built and upgraded facilities in your Headquarters (HQ).
+  tooltip_income_period: Total gold earned by your team over the last 7 days (from league rewards, arena, sales, etc.).
+  tooltip_expense_period: Total gold spent by your team over the last 7 days (on salaries, maintenance, summoning, purchases, etc.).
+  tooltip_net_period: Net financial balance over the last 7 days (income minus expenses).
+  tooltip_net_all_time: Cumulative financial balance of the team since its creation.
   filter_type: Filter by Type
   all_types: All Types
   filter_actor: Filter by Actor
@@ -1364,8 +1376,8 @@ marketplace:
   filter_all_rarities: All Rarities
   filter_search: Search by name...
   filter_sort: Sort by
-  filter_rating_min: Min Value
-  filter_rating_max: Max Value
+  filter_rating_min: Min Potential
+  filter_rating_max: Max Potential
   filter_rating_placeholder: Any
   filter_level_min: Min Level
   filter_level_max: Max Level
@@ -1386,7 +1398,7 @@ marketplace:
   sort_newest: Newest First
   sort_price_asc: "Price: Low-High"
   sort_price_desc: "Price: High-Low"
-  sort_rating_desc: "Value (High-Low)"
+  sort_rating_desc: "Potential (High-Low)"
   sort_ovr_desc: "OVR (High-Low)"
   sort_expires_asc: Ending Soon
   sort_name_asc: "Name (A-Z)"

@@ -6,6 +6,7 @@ namespace App\Entity\Graveyard;
 
 use App\Entity\Team\Team;
 use App\Enum\HeroRole;
+use App\Enum\HeroTrait;
 use App\Enum\MemorialCause;
 use App\Enum\Race;
 use App\Repository\Graveyard\GraveyardMemorialRepository;
@@ -51,6 +52,9 @@ class GraveyardMemorial
 
     #[ORM\Column(nullable: true)]
     private ?int $originalHeroId = null;
+
+    #[ORM\Column(length: 30, nullable: true, enumType: HeroTrait::class)]
+    private ?HeroTrait $trait = null;
 
     public function getId(): ?int
     {
@@ -175,6 +179,18 @@ class GraveyardMemorial
     public function setOriginalHeroId(?int $originalHeroId): static
     {
         $this->originalHeroId = $originalHeroId;
+
+        return $this;
+    }
+
+    public function getTrait(): ?HeroTrait
+    {
+        return $this->trait;
+    }
+
+    public function setTrait(?HeroTrait $trait): static
+    {
+        $this->trait = $trait;
 
         return $this;
     }

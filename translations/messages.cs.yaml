@@ -285,6 +285,9 @@ notification:
   marketplace_auction_won_buyer_body: 'Vyhráli jste aukci #%listing% za %amount% zlata.'
 
 dashboard:
+  history_title: Historie týmu
+  history_axis_morale: Morálka / Chemie / Reputace
+  history_axis_fan_base: Fanklub
   treasury: Pokladnice
   gold: Zlato
   total_essence: Celková esence
@@ -385,7 +388,7 @@ graveyard:
     fatigue: Únava
     morale: Morálka
     base_ovr: Základní OVR
-    complex_rating: Tržní hodnota
+    complex_rating: Potenciál
 
 news:
   title: Novinky
@@ -631,14 +634,14 @@ heroes:
   details_title: Detaily hrdiny
   rating:
     base_ovr: OVR
-    complex: Hodnota
-    panel_title: Hodnota hrdiny
-    panel_desc: Vnitřní hodnocení bez vybavení, kouzel a týmových bonusů.
+    complex: Potenciál
+    panel_title: Ohodnocení hrdiny
+    panel_desc: Vnitřní potenciál a finanční ohodnocení bez dočasných bonusů a vybavení.
     tooltip_base: Srovnání napříč rasami (0–100). Human-neutrální bojový profil.
-    tooltip_complex: Unikátní vnitřní hodnota (0–9999) včetně rasy, traitu, mastery a věku.
-    gold_value: Odh. zlatá hodnota
-    gold_value_hint: Ekonomická hodnota odvozená z komplexního ratingu.
-    weekly_salary: Týdenní mzda
+    tooltip_complex: Unikátní vnitřní potenciál (0–9999) včetně rasy, traitu, mastery a věku.
+    gold_value: Hodnota
+    gold_value_hint: Odhadovaná tržní hodnota odvozená z potenciálu hrdiny.
+    weekly_salary: Týdenní plat
     weekly_salary_hint: Strhává se každou neděli při týdenním resetu.
     dismiss_estimate: "Odhadovaná hodnota: %value% 🪙 (odstupné: %compensation% 🪙)"
   dismiss_title: Propustit hrdinu
@@ -757,6 +760,15 @@ finance:
   summary_transactions_period: Transakcí (posledních %days% dní)
   summary_net_all_time: Celková bilance
   summary_recent_transactions: Poslední transakce
+  tooltip_gold_on_hand: Aktuální zásoba zlata v týmové pokladně. Používá se pro úhradu týdenních výdajů a nákupy na tržišti.
+  tooltip_unpaid_debt: Dosud nesplacené pohledávky a dluhy týmu. Je nutné je co nejdříve splatit, aby se předešlo penalizacím a finanční krizi.
+  tooltip_weekly_expenses: Celkové předpokládané fixní náklady na příští týdenní reset. Skládají se z týdenních platů hrdinů a údržby budov centrály.
+  tooltip_weekly_payroll: Součet týdenních mezd všech hrdinů aktuálně zapsaných na vaší soupisce.
+  tooltip_weekly_maintenance: Náklady na provoz a údržbu všech postavených a vylepšených budov ve vaší centrále (HQ).
+  tooltip_income_period: Celková částka zlata, kterou váš tým utržil za posledních 7 dní (z ligy, arény, tržiště atd.).
+  tooltip_expense_period: Celková částka zlata, kterou váš tým utratil za posledních 7 dní (za mzdy, údržbu, vyvolávání, nákupy atd.).
+  tooltip_net_period: Čistá finanční bilance za posledních 7 dní (příjmy minus výdaje).
+  tooltip_net_all_time: Celková historická finanční bilance týmu od jeho založení.
   filter_type: Filtrovat podle typu
   all_types: Všechny typy
   filter_actor: Filtrovat podle iniciátora
@@ -1363,8 +1375,8 @@ marketplace:
   filter_all_rarities: Všechny rarity
   filter_search: Hledat podle názvu...
   filter_sort: Seřadit podle
-  filter_rating_min: Min. hodnota
-  filter_rating_max: Max. hodnota
+  filter_rating_min: Min. potenciál
+  filter_rating_max: Max. potenciál
   filter_rating_placeholder: Libovolná
   filter_level_min: Min. úroveň
   filter_level_max: Max. úroveň
@@ -1385,7 +1397,7 @@ marketplace:
   sort_newest: Nejnovější
   sort_price_asc: "Cena: Vzestupně"
   sort_price_desc: "Cena: Sestupně"
-  sort_rating_desc: "Hodnota: Sestupně"
+  sort_rating_desc: "Potenciál: Sestupně"
   sort_ovr_desc: "OVR: Sestupně"
   sort_expires_asc: Končící brzy
   sort_name_asc: "Jméno (A-Z)"

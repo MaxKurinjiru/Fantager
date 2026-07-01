@@ -33,6 +33,7 @@ use App\Service\Hero\HeroRatingCalculator;
 use App\Service\Item\ItemService;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Summoning\SummoningService;
+use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -100,6 +101,7 @@ class NpcSimulationService
         private readonly HeroDismissalService $dismissalService,
         private readonly HeroRatingCalculator $heroRatingCalculator,
         private readonly RaceConfig $raceConfig,
+        private readonly TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -1759,6 +1761,7 @@ class NpcSimulationService
         if ($currentOpt !== $optimalRace->value) {
             $hq->setRaceOptimization($optimalRace->value);
             $hq->setRaceOptimizationLockCycle(true);
+            $this->teamChronicleService->recordRaceOptimizationChanged($team, $optimalRace->value);
         }
     }
 
