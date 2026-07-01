@@ -96,6 +96,42 @@ class TrainingService
         return 3 + (int) floor(($trainingLevel - 1) / 2);
     }
 
+    /**
+     * Returns true if the trainee can gain something from the trainer's current training configuration.
+     * Used by NPC simulation to skip saturated heroes and give the slot to a hero who can still improve.
+     */
+    public function canBenefitFromTraining(Hero $trainee, Hero $trainer): bool
+    {
+        $type = $trainer->getTrainingType();
+        if (null === $type) {
+            return false;
+        }
+
+        return match ($type) {
+            TrainingType::Attribute => $this->canBenefitFromAttributeTraining($trainee, $trainer),
+            TrainingType::Magic => $trainee->getMagicCapacity() < 5,
+            TrainingType::Form => $trainee->getForm() < 100,
+        };
+    }
+
+    private function canBenefitFromAttributeTraining(Hero $trainee, Hero $trainer): bool
+    {
+        $attribute = $trainer->getTargetAttribute();
+        if (null === $attribute) {
+            return false;
+        }
+
+        try {
+            $heroStatRaw = $this->getHeroRawStatByName($trainee, $attribute);
+            $trainerStatRaw = $this->getHeroRawStatByName($trainer, $attribute);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        // Hero is saturated when their raw stat has already reached the trainer's raw stat cap
+        return $heroStatRaw < $trainerStatRaw;
+    }
+
     public function promoteToTrainer(Hero $hero, Team $team, \DateTimeImmutable $now): void
     {
         if ($this->isTrainingLockedForTeam($team, $now)) {

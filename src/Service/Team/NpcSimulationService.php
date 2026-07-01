@@ -460,19 +460,71 @@ class NpcSimulationService
                 return $aIsQuick <=> $bIsQuick;
             });
 
-            $traineeIndex = 0;
-            foreach ($activeTrainers as $trainer) {
-                $slotsLimit = $this->trainingService->getTrainerSlotsLimit($trainer);
-                for ($j = 0; $j < $slotsLimit; ++$j) {
-                    if ($traineeIndex >= count($trainees)) {
+            // Assign trainees to active trainers up to their slot limits.
+            // Two-pass strategy:
+            //   Pass 1 – heroes who can still gain from this trainer's training type/attribute.
+            //   Pass 2 – saturated heroes fill any remaining slots so trainer capacity is not wasted.
+            // Within each pass, QuickLearner heroes retain priority (pre-sorted above).
+
+            /** @var array<int, int> $trainerSlotsRemaining tracks remaining slot capacity per trainer index */
+            $trainerSlotsRemaining = [];
+            foreach ($activeTrainers as $tIdx => $trainer) {
+                $trainerSlotsRemaining[$tIdx] = $this->trainingService->getTrainerSlotsLimit($trainer);
+            }
+
+            $benefiting = [];
+            $saturated = [];
+            foreach ($trainees as $trainee) {
+                // Determine whether this trainee benefits from *any* of the active trainers.
+                // We optimistically place them in the benefiting bucket if at least one trainer can help.
+                // The actual per-slot check is done during assignment.
+                $canBenefit = false;
+                foreach ($activeTrainers as $trainer) {
+                    if ($this->trainingService->canBenefitFromTraining($trainee, $trainer)) {
+                        $canBenefit = true;
                         break;
                     }
-                    $trainee = $trainees[$traineeIndex++];
-                    // Only assign available, non-selling trainees (Combatants)
-                    if (HeroStatus::Available === $trainee->getStatus()) {
-                        $trainee->setTrainer($trainer);
-                        $trainer->addTrainee($trainee);
+                }
+                if ($canBenefit) {
+                    $benefiting[] = $trainee;
+                } else {
+                    $saturated[] = $trainee;
+                }
+            }
+
+            // Pass 1: assign heroes who can benefit
+            foreach ($activeTrainers as $tIdx => $trainer) {
+                foreach ($benefiting as $bKey => $trainee) {
+                    if ($trainerSlotsRemaining[$tIdx] <= 0) {
+                        break;
                     }
+                    if (HeroStatus::Available !== $trainee->getStatus()) {
+                        unset($benefiting[$bKey]);
+                        continue;
+                    }
+                    if (!$this->trainingService->canBenefitFromTraining($trainee, $trainer)) {
+                        // This specific trainer can't help this trainee; leave for another trainer
+                        continue;
+                    }
+                    $trainee->setTrainer($trainer);
+                    $trainer->addTrainee($trainee);
+                    --$trainerSlotsRemaining[$tIdx];
+                    unset($benefiting[$bKey]);
+                }
+            }
+
+            // Pass 2: fill remaining slots with saturated heroes (better than leaving slots empty)
+            $saturatedQueue = $saturated;
+            $saturatedIndex = 0;
+            foreach ($activeTrainers as $tIdx => $trainer) {
+                while ($trainerSlotsRemaining[$tIdx] > 0 && $saturatedIndex < count($saturatedQueue)) {
+                    $trainee = $saturatedQueue[$saturatedIndex++];
+                    if (HeroStatus::Available !== $trainee->getStatus()) {
+                        continue;
+                    }
+                    $trainee->setTrainer($trainer);
+                    $trainer->addTrainee($trainee);
+                    --$trainerSlotsRemaining[$tIdx];
                 }
             }
         }
