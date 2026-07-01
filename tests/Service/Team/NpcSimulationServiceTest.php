@@ -80,17 +80,33 @@ class NpcSimulationServiceTest extends TestCase
         $this->raceConfig = $this->createMock(RaceConfig::class);
         $this->teamChronicleService = $this->createMock(TeamChronicleService::class);
 
-        $this->service = new NpcSimulationService(
+        $tacticsSimulator = new \App\Service\Team\NpcTacticsSimulator(
+            $this->em,
+            $this->itemService
+        );
+
+        $trainingSimulator = new \App\Service\Team\NpcTrainingSimulator(
+            $this->em,
+            $this->trainingService
+        );
+
+        $economySimulator = new \App\Service\Team\NpcEconomySimulator(
             $this->em,
             $this->summoningService,
             $this->marketplaceService,
             $this->hqService,
-            $this->trainingService,
-            $this->itemService,
             $this->dismissalService,
             $this->heroRatingCalculator,
             $this->raceConfig,
             $this->teamChronicleService,
+            $tacticsSimulator,
+            $this->itemService
+        );
+
+        $this->service = new NpcSimulationService(
+            $tacticsSimulator,
+            $trainingSimulator,
+            $economySimulator
         );
     }
 
