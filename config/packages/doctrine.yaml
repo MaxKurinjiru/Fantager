@@ -1,5 +1,7 @@
 doctrine:
   dbal:
+    types:
+      datetime_immutable: App\Doctrine\Type\UTCDateTimeImmutableType
     default_connection: default
     connections:
       default:

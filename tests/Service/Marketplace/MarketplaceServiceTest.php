@@ -92,6 +92,7 @@ class MarketplaceServiceTest extends TestCase
             $translator,
             $this->hqServiceMock,
             $this->trainingServiceMock,
+            $this->createMock(\App\Service\Hero\HeroChronicleService::class),
         );
     }
 

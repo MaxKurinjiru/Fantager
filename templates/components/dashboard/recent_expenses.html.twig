@@ -13,7 +13,7 @@
                         <span class="db-expenses-item__title">{{ ('finance.type_' ~ item.type)|trans }}</span>
                         <span class="db-expenses-item__amount{% if item.gold_change > 0 %} db-expenses-item__amount--positive{% endif %}">{{ item.gold_change > 0 ? '+' : '' }}{{ item.gold_change|number_format(0, '.', ' ') }} 🪙</span>
                     </div>
-                    <div class="db-expenses-item__time">{{ item.created_at|date('Y-m-d H:i') }}</div>
+                    <div class="db-expenses-item__time">{{ item.created_at|date('Y-m-d H:i', team.kingdom.timezone) }}</div>
                 </div>
             </div>
         {% else %}

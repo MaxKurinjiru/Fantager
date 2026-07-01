@@ -410,6 +410,7 @@ activity:
     account_deleted: 'Hráč %player% uvolnil tým — účet byl smazán.'
   season_ended: 'Sezóna %season% skončila v %tier% (pozice %position%, %status%).'
   summon_completed: 'Vyvolán hrdina %hero% (%race%).'
+  starting_roster: 'Hrdina %hero% (%race%) se připojil k týmu jako zakládající člen.'
   hero_dismissed: 'Hrdina %hero% byl propuštěn z týmu (odstupné %compensation% zlata).'
   trainer_dismissed: 'Trenér %trainer% byl propuštěn z týmu (odstupné %compensation% zlata).'
   hero_purchased: 'Hrdina %hero% (%race%) byl zakoupen na tržišti od týmu %seller% za %price% zlata.'
@@ -429,6 +430,9 @@ activity:
   facility_upgraded: 'Budova %facility% byla vylepšena na úroveň %level%.'
   facility_downgraded: 'Budova %facility% byla snížena na úroveň %level%.'
   race_optimization_changed: 'Uzpůsobení domácí arény bylo změněno na: %race%.'
+  battle_win_chip: Výhra
+  battle_loss_chip: Prohra
+  battle_draw_chip: Remíza
   season_status:
     promoted: postup
     relegated: sestup
@@ -448,6 +452,7 @@ activity:
     item_sold: Prodej předmětu
     dungeon_completed: Dokončen dungeon
     summon_completed: Vyvolání hrdiny
+    starting_roster: Zakládající člen
     season_ended: Konec sezóny
     hero_dismissed: Propuštění hrdiny
     trainer_dismissed: Propuštění trenéra
@@ -459,6 +464,27 @@ activity:
     facility_upgraded: Vylepšení budovy
     facility_downgraded: Snížení budovy
     race_optimization_changed: Uzpůsobení arény
+
+hero_activity:
+  summoned: 'Vyvolán do týmu %team% (cena %gold% zlata).'
+  starting_roster: 'Začal svou kariéru jako zakládající člen týmu %team%.'
+  transferred: 'Přestoupil z týmu %from_team% do týmu %to_team% za %price% zlata.'
+  match_played:
+    win: 'Výhra proti týmu %opponent%.'
+    loss: 'Prohra proti týmu %opponent%.'
+    draw: 'Remíza proti týmu %opponent%.'
+  levelup: 'Zvýšení úrovně z levelu %old_level% na %new_level%.'
+  mastery_gained: 'Dosaženo mistrovství úrovně %tier% v %mastery%.'
+  training_completed:
+    attribute: 'Dokončen trénink pod vedením trenéra %trainer% (vlastnost %attribute%, %gain% k základu).'
+    magic: 'Dokončen trénink pod vedením trenéra %trainer% (kapacita magie, %gain% slotů).'
+    form: 'Dokončen trénink pod vedením trenéra %trainer% (zotavení, %gain% k formě).'
+  died:
+    dismissed: 'Propuštěn z týmu.'
+    combat_death: 'Padl v boji.'
+    age: 'Zemřel stářím.'
+    retired: 'Odešel na odpočinek.'
+    death: 'Zemřel.'
 
 financial_crisis:
   title_warning: Finanční varování
@@ -630,7 +656,7 @@ heroes:
   summoned: Vyvolán
   recent_activity: Nedávná aktivita
   recent_activity_desc: Poslední akce provedené tímto hrdinou.
-  no_activity: Nebyly zaznamenány žádné tréninkové aktivity.
+  no_activity: Nebyly zaznamenány žádné aktivity hrdiny.
   details_title: Detaily hrdiny
   rating:
     base_ovr: OVR
@@ -1106,7 +1132,7 @@ js_flash:
     badge_overflow: 99+
     text_loading: …
     text_processing: …
-    processed_at_title: 'Zpracováno: %date% UTC'
+    processed_at_title: 'Zpracováno: %date%'
     hero_level_short: 'Úr. %level%'
   training:
     success_queue: Trénink byl úspěšně zařazen do fronty.

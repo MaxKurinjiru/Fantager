@@ -235,9 +235,9 @@
         </div>
 
     {% elseif tab == 'history' %}
-        <div class="hero-detail-split">
+        <div class="layout-stack layout-stack--lg">
             {% include 'components/hero/combat_stats.html.twig' with { hero: hero, trainingHistory: trainingHistory } %}
-            {% include 'components/hero/recent_activity.html.twig' with { hero: hero, trainingHistory: trainingHistory } %}
+            {% include 'components/hero/recent_activity.html.twig' with { hero: hero, trainingHistory: trainingHistory, heroHistory: heroHistory } %}
         </div>
     {% endif %}
 </div>

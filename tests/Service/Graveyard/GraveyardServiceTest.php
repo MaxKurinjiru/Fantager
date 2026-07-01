@@ -27,7 +27,8 @@ class GraveyardServiceTest extends TestCase
         $ratingCalculator = $this->createMock(\App\Service\Hero\HeroRatingCalculator::class);
         $ratingCalculator->method('calculate')->willReturn(new \App\ValueObject\Hero\HeroRating(50, 1200));
 
-        $service = new GraveyardService($em, $ratingCalculator);
+        $chronicleService = $this->createMock(\App\Service\Hero\HeroChronicleService::class);
+        $service = new GraveyardService($em, $ratingCalculator, $chronicleService);
 
         $team = new Team();
         $hero = new Hero();

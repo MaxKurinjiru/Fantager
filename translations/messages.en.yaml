@@ -410,6 +410,7 @@ activity:
     account_deleted: '%player% released the team — account was deleted.'
   season_ended: 'Season %season% ended in tier %tier% (position %position%, %status%).'
   summon_completed: 'Summoned hero %hero% (%race%).'
+  starting_roster: 'Hero %hero% (%race%) joined the team as a founding member.'
   hero_dismissed: 'Hero %hero% was dismissed from the team (compensation %compensation% gold).'
   trainer_dismissed: 'Trainer %trainer% was dismissed from the team (compensation %compensation% gold).'
   hero_purchased: 'Hero %hero% (%race%) was purchased on the marketplace from %seller% for %price% gold.'
@@ -429,6 +430,9 @@ activity:
   facility_upgraded: 'Facility %facility% was upgraded to level %level%.'
   facility_downgraded: 'Facility %facility% was downgraded to level %level%.'
   race_optimization_changed: 'Home arena adaptation was changed to: %race%.'
+  battle_win_chip: Win
+  battle_loss_chip: Loss
+  battle_draw_chip: Draw
   season_status:
     promoted: promoted
     relegated: relegated
@@ -448,6 +452,7 @@ activity:
     item_sold: Item sold
     dungeon_completed: Dungeon completed
     summon_completed: Hero summoned
+    starting_roster: Founding member
     season_ended: Season ended
     hero_dismissed: Hero dismissed
     trainer_dismissed: Trainer dismissed
@@ -459,6 +464,27 @@ activity:
     facility_upgraded: Facility upgraded
     facility_downgraded: Facility downgraded
     race_optimization_changed: Arena adaptation changed
+
+hero_activity:
+  summoned: 'Summoned into team %team% (cost %gold% gold).'
+  starting_roster: 'Started career as a founding member of team %team%.'
+  transferred: 'Transferred from %from_team% to %to_team% for %price% gold.'
+  match_played:
+    win: 'Won against %opponent%.'
+    loss: 'Lost against %opponent%.'
+    draw: 'Drew against %opponent%.'
+  levelup: 'Leveled up from level %old_level% to %new_level%.'
+  mastery_gained: 'Reached mastery level %tier% with %mastery%.'
+  training_completed:
+    attribute: 'Completed training under trainer %trainer% (attribute %attribute%, %gain% to base).'
+    magic: 'Completed training under trainer %trainer% (magic capacity, %gain% slots).'
+    form: 'Completed training under trainer %trainer% (recovery, %gain% to form).'
+  died:
+    dismissed: 'Dismissed from the team.'
+    combat_death: 'Fallen in combat.'
+    age: 'Passed away due to old age.'
+    retired: 'Retired from active roster.'
+    death: 'Passed away.'
 
 financial_crisis:
   title_warning: Financial Warning
@@ -631,7 +657,7 @@ heroes:
   summoned: Summoned
   recent_activity: Recent Activity
   recent_activity_desc: Last actions performed by this hero.
-  no_activity: No training activity recorded.
+  no_activity: No hero activities recorded.
   details_title: Hero Details
   rating:
     base_ovr: OVR
@@ -1107,7 +1133,7 @@ js_flash:
     badge_overflow: 99+
     text_loading: …
     text_processing: …
-    processed_at_title: 'Processed: %date% UTC'
+    processed_at_title: 'Processed: %date%'
     hero_level_short: 'Lvl %level%'
   training:
     success_queue: Training job successfully queued.

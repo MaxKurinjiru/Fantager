@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\Service\League;
 
 use App\Entity\Combat\Battle;
+use App\Entity\Formation\Formation;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\League\LeagueFixture;
 use App\Entity\League\LeagueGroup;
 use App\Entity\League\LeagueStanding;
 use App\Entity\Team\Team;
+use App\Enum\BattleResult;
 use App\Enum\MatchType;
+use App\Repository\Formation\FormationRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueStandingRepository;
 use App\Service\Combat\MatchSimulatorInterface;
+use App\Service\Hero\HeroChronicleService;
 use App\Service\Team\FanClubService;
 use App\Service\Team\TeamMoraleReputationService;
 use App\Service\Team\TeamRosterService;
@@ -34,6 +38,8 @@ class LeagueMatchResolutionService
         private readonly TeamMoraleReputationService $teamMoraleReputationService,
         private readonly TeamChronicleService $teamChronicleService,
         private readonly \App\Service\Hero\HeroMasteryService $heroMasteryService,
+        private readonly HeroChronicleService $heroChronicleService,
+        private readonly FormationRepository $formationRepository,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -80,23 +86,61 @@ class LeagueMatchResolutionService
         $homeTeam = $fixture->getHomeTeam();
         $awayTeam = $fixture->getAwayTeam();
 
-        $battle = $this->createBattle($fixture, $outcome, $processedAt);
+        $homeFormation = $fixture->getHomeFormation();
+        if (null === $homeFormation && !$outcome->isForfeit()) {
+            $homeFormation = $this->formationRepository->findOneBy([
+                'team' => $homeTeam,
+                'isDefault' => true,
+                'isTemporary' => false,
+            ]);
+        }
+
+        $awayFormation = $fixture->getAwayFormation();
+        if (null === $awayFormation && !$outcome->isForfeit()) {
+            $awayFormation = $this->formationRepository->findOneBy([
+                'team' => $awayTeam,
+                'isDefault' => true,
+                'isTemporary' => false,
+            ]);
+        }
+
+        $battle = $this->createBattle($fixture, $outcome, $processedAt, $homeFormation, $awayFormation);
         $this->em->persist($battle);
 
+        $battleResult = $battle->getResult();
+
         // Process Hero Mastery participation for active heroes in both formations
-        $homeFormation = $fixture->getHomeFormation();
         if (null !== $homeFormation) {
             foreach ($homeFormation->getSlots() as $slot) {
-                if (null !== $slot->getHero()) {
-                    $this->heroMasteryService->processMatchParticipation($slot->getHero());
+                $hero = $slot->getHero();
+                if (null !== $hero) {
+                    $this->heroMasteryService->processMatchParticipation($hero);
+                    $hero->setMatchesPlayed($hero->getMatchesPlayed() + 1);
+                    $resultStr = 'draw';
+                    if (BattleResult::WinA === $battleResult) {
+                        $hero->setMatchesWon($hero->getMatchesWon() + 1);
+                        $resultStr = 'win';
+                    } elseif (BattleResult::WinB === $battleResult) {
+                        $resultStr = 'loss';
+                    }
+                    $this->heroChronicleService->recordMatchPlayed($hero, $awayTeam, $resultStr, 0);
                 }
             }
         }
-        $awayFormation = $fixture->getAwayFormation();
         if (null !== $awayFormation) {
             foreach ($awayFormation->getSlots() as $slot) {
-                if (null !== $slot->getHero()) {
-                    $this->heroMasteryService->processMatchParticipation($slot->getHero());
+                $hero = $slot->getHero();
+                if (null !== $hero) {
+                    $this->heroMasteryService->processMatchParticipation($hero);
+                    $hero->setMatchesPlayed($hero->getMatchesPlayed() + 1);
+                    $resultStr = 'draw';
+                    if (BattleResult::WinB === $battleResult) {
+                        $hero->setMatchesWon($hero->getMatchesWon() + 1);
+                        $resultStr = 'win';
+                    } elseif (BattleResult::WinA === $battleResult) {
+                        $resultStr = 'loss';
+                    }
+                    $this->heroChronicleService->recordMatchPlayed($hero, $homeTeam, $resultStr, 0);
                 }
             }
         }
@@ -137,8 +181,8 @@ class LeagueMatchResolutionService
             $homeTeam,
             $awayTeam,
             $outcome,
-            $fixture->getHomeFormation(),
-            $fixture->getAwayFormation(),
+            $homeFormation,
+            $awayFormation,
         );
 
         $this->fixtureCompletionService->complete($fixture, $battle);
@@ -193,6 +237,8 @@ class LeagueMatchResolutionService
         LeagueFixture $fixture,
         MatchOutcome $outcome,
         \DateTimeImmutable $processedAt,
+        ?Formation $homeFormation = null,
+        ?Formation $awayFormation = null,
     ): Battle {
         $homeTeam = $fixture->getHomeTeam();
         $awayTeam = $fixture->getAwayTeam();
@@ -202,8 +248,8 @@ class LeagueMatchResolutionService
         $battle->setMatchType(MatchType::League);
         $battle->setTeamA($homeTeam);
         $battle->setTeamB($awayTeam);
-        $battle->setFormationA($fixture->getHomeFormation());
-        $battle->setFormationB($fixture->getAwayFormation());
+        $battle->setFormationA($homeFormation);
+        $battle->setFormationB($awayFormation);
         $battle->setScoreA($outcome->getHomeScore());
         $battle->setScoreB($outcome->getAwayScore());
         $battle->setResult($outcome->toBattleResult());

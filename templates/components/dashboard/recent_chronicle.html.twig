@@ -10,7 +10,7 @@
             <div class="db-chronicle-item">
                 <div class="db-chronicle-item__main">
                     <div class="db-chronicle-item__title">{{ entry.icon }} {{ entry.message }}</div>
-                    <div class="db-chronicle-item__time">{{ entry.created_at|date('Y-m-d H:i') }}</div>
+                    <div class="db-chronicle-item__time">{{ entry.created_at|date('Y-m-d H:i', team.kingdom.timezone) }}</div>
                 </div>
             </div>
         {% else %}

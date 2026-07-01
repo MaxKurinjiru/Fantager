@@ -55,6 +55,7 @@ class TrainingServiceTest extends TestCase
             $this->hqRepositoryMock,
             $this->raceConfigMock,
             $this->teamChronicleServiceMock,
+            $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             $this->entityManagerMock
         );
     }

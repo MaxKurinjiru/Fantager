@@ -63,6 +63,7 @@ class GraveyardPresenterTest extends TestCase
             new GraveyardService(
                 $this->createMock(EntityManagerInterface::class),
                 $this->createMock(\App\Service\Hero\HeroRatingCalculator::class),
+                $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             ),
         );
 

@@ -46,6 +46,7 @@ class TrainingTraitSpeedTest extends TestCase
             $hqRepositoryMock,
             $raceConfigMock,
             $teamChronicleServiceMock,
+            $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             $entityManagerMock
         );
 

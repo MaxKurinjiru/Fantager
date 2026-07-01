@@ -67,9 +67,9 @@
                                 {% endif %}
                             </td>
                             <td class="finance-ledger-table__cell finance-ledger-table__cell--date">
-                                <time datetime="{{ item.createdAt|date('c') }}"
-                                      {% if item.processedAt %}title="{{ 'js_flash.common.processed_at_title'|trans({'%date%': item.processedAt|date('Y-m-d H:i:s')}) }}"{% endif %}>
-                                    {{ item.createdAt|date('Y-m-d H:i') }}
+                                <time datetime="{{ item.createdAt|date('c', team.kingdom.timezone) }}"
+                                      {% if item.processedAt %}title="{{ 'js_flash.common.processed_at_title'|trans({'%date%': item.processedAt|date('Y-m-d H:i', team.kingdom.timezone)}) }}"{% endif %}>
+                                    {{ item.createdAt|date('Y-m-d H:i', team.kingdom.timezone) }}
                                 </time>
                             </td>
                         </tr>

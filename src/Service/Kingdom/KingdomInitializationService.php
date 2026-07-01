@@ -23,6 +23,7 @@ use App\Enum\Race;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Service\Config\KingdomInitConfig;
 use App\Service\Config\RaceConfig;
+use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroGenerator;
 use App\Service\League\LeagueFixtureScheduler;
 use App\Service\Team\TeamChemistryService;
@@ -36,6 +37,7 @@ class KingdomInitializationService
         private readonly KingdomRepository $kingdomRepository,
         private readonly KingdomInitConfig $initConfig,
         private readonly HeroGenerator $heroGenerator,
+        private readonly HeroChronicleService $heroChronicleService,
         private readonly RaceConfig $raceConfig,
         private readonly LeagueFixtureScheduler $fixtureScheduler,
         private readonly TeamChronicleService $teamChronicleService,
@@ -112,12 +114,12 @@ class KingdomInitializationService
                     $teamRace = $this->pickTeamRace($npcConfig);
                     $team = $this->createNpcTeam($kingdom, $teamConfig, $npcConfig, $teamIndex);
                     $createdTeams[] = $team;
-                    $this->teamChronicleService->recordTeamEstablished($team, $kingdom, $season->getSeasonNumber());
+                    $this->teamChronicleService->recordTeamEstablished($team, $kingdom, $season->getSeasonNumber(), $season->getStartDate());
                     ++$teamIndex;
 
                     $hq = $this->createHeadquarters($team, $hqConfig, $teamRace);
                     $chamberBonuses = $this->extractChamberBonuses($hq);
-                    $heroes = $this->createStartingRoster($team, $teamConfig, $teamRace, $chamberBonuses);
+                    $heroes = $this->createStartingRoster($team, $teamConfig, $teamRace, $season->getStartDate(), $chamberBonuses);
                     $heroTotal += count($heroes);
                     $this->createDefaultFormation($team, $teamConfig, $heroes);
 
@@ -315,7 +317,7 @@ class KingdomInitializationService
      *
      * @return list<Hero>
      */
-    private function createStartingRoster(Team $team, array $teamConfig, Race $teamRace, array $chamberBonuses = []): array
+    private function createStartingRoster(Team $team, array $teamConfig, Race $teamRace, \DateTimeImmutable $establishedAt, array $chamberBonuses = []): array
     {
         $count = (int) ($teamConfig['heroes_per_team'] ?? 10);
 
@@ -332,6 +334,8 @@ class KingdomInitializationService
             $race = $compatibleRaces[array_rand($compatibleRaces)];
             $hero = $this->heroGenerator->createForTeam($team, $race, $chamberBonuses);
             $this->em->persist($hero);
+            $this->heroChronicleService->recordJoinedStartingRoster($hero, $establishedAt);
+            $this->teamChronicleService->recordJoinedStartingRoster($team, $hero, $race, $establishedAt);
             $heroes[] = $hero;
         }
 

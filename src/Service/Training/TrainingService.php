@@ -15,6 +15,7 @@ use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
+use App\Service\Hero\HeroChronicleService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -28,6 +29,7 @@ class TrainingService
         private readonly HeadquartersRepository $hqRepository,
         private readonly RaceConfig $raceConfig,
         private readonly TeamChronicleService $teamChronicleService,
+        private readonly HeroChronicleService $heroChronicleService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -338,13 +340,13 @@ class TrainingService
             $type = $trainer->getTrainingType();
             /** @var TrainingType $type — only trainers with non-null type are queried */
             $attribute = $trainer->getTargetAttribute();
-
             foreach ($trainer->getTrainees() as $hero) {
                 if (HeroStatus::Dead === $hero->getStatus()) {
                     continue;
                 }
 
                 $gainRaw = 0;
+                $gainExt = 0;
 
                 if (TrainingType::Attribute === $type && null !== $attribute) {
                     $heroStatExt = $this->getHeroStatByName($hero, $attribute);
@@ -390,6 +392,7 @@ class TrainingService
                         }
 
                         $this->setHeroRawStatByName($hero, $attribute, $heroStatRaw + $gainRaw);
+                        $gainExt = (int) floor(($heroStatRaw + $gainRaw) / 10) - (int) floor($heroStatRaw / 10);
                     }
 
                     // Standard training adds +20 fatigue (capped at 100)
@@ -423,7 +426,7 @@ class TrainingService
                 $history->setTrainingType($type);
                 $history->setTargetAttribute($attribute);
                 $history->setTrainer($trainer);
-                $history->setStatGain($gainRaw);
+                $history->setStatGain(TrainingType::Attribute === $type ? $gainExt : $gainRaw);
                 $history->setCompletedAt($now);
 
                 $this->em->persist($history);
@@ -434,7 +437,15 @@ class TrainingService
                     $trainer,
                     $type->value,
                     $attribute,
-                    $gainRaw
+                    TrainingType::Attribute === $type ? $gainExt : $gainRaw
+                );
+
+                $this->heroChronicleService->recordTrainingCompleted(
+                    $hero,
+                    $trainer,
+                    $type->value,
+                    $attribute,
+                    TrainingType::Attribute === $type ? $gainExt : $gainRaw
                 );
             }
         }

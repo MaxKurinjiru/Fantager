@@ -65,7 +65,8 @@ class SummoningServiceTest extends TestCase
             $this->entityManagerMock,
             $this->raceConfigMock,
             $this->teamChronicleServiceMock,
-            $this->teamChemistryServiceMock
+            $this->teamChemistryServiceMock,
+            $this->createMock(\App\Service\Hero\HeroChronicleService::class),
         );
     }
 

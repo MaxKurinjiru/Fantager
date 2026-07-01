@@ -29,6 +29,7 @@ use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
 use App\Service\Headquarters\HeadquartersService;
+use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroRatingCalculator;
 use App\Service\Notification\NotificationHelper;
 use App\Service\Team\TeamChemistryService;
@@ -53,6 +54,7 @@ class MarketplaceService
         private readonly UserMessageTranslator $translator,
         private readonly HeadquartersService $hqService,
         private readonly TrainingService $trainingService,
+        private readonly HeroChronicleService $heroChronicleService,
     ) {
     }
 
@@ -321,6 +323,7 @@ class MarketplaceService
             $hero->setMorale(50); // Reset morale to base
             $this->teamChronicleService->recordHeroPurchased($buyer, $hero, $seller, $buyoutPrice);
             $this->teamChronicleService->recordHeroSold($seller, $hero, $buyer, $buyoutPrice);
+            $this->heroChronicleService->recordTransferred($hero, $seller, $buyer, $buyoutPrice);
         } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
             $item = $listing->getItem();
             $item->setOwnerTeam($buyer);
@@ -333,6 +336,7 @@ class MarketplaceService
             $trainer->setStatus(HeroStatus::Available);
             $this->teamChronicleService->recordTrainerPurchased($buyer, $trainer, $seller, $buyoutPrice);
             $this->teamChronicleService->recordTrainerSold($seller, $trainer, $buyer, $buyoutPrice);
+            $this->heroChronicleService->recordTransferred($trainer, $seller, $buyer, $buyoutPrice);
         }
 
         $listing->setStatus(ListingStatus::Sold);
@@ -567,6 +571,7 @@ class MarketplaceService
                     $hero->setMorale(50);
                     $this->teamChronicleService->recordHeroPurchased($winner, $hero, $seller, $winningBidAmount);
                     $this->teamChronicleService->recordHeroSold($seller, $hero, $winner, $winningBidAmount);
+                    $this->heroChronicleService->recordTransferred($hero, $seller, $winner, $winningBidAmount);
                     $teamsToRecalculate[] = $winner;
                     $teamsToRecalculate[] = $seller;
                 } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
@@ -581,6 +586,7 @@ class MarketplaceService
                     $trainer->setStatus(HeroStatus::Available);
                     $this->teamChronicleService->recordTrainerPurchased($winner, $trainer, $seller, $winningBidAmount);
                     $this->teamChronicleService->recordTrainerSold($seller, $trainer, $winner, $winningBidAmount);
+                    $this->heroChronicleService->recordTransferred($trainer, $seller, $winner, $winningBidAmount);
                 }
 
                 $listing->setStatus(ListingStatus::Sold);
