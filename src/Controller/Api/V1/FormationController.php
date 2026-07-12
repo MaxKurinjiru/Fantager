@@ -75,7 +75,7 @@ class FormationController extends AbstractController
             return $this->jsonError('error.invalid_approach', 400, ['%values%' => $valid]);
         }
 
-        $id = isset($body['id']) ? (int) $body['id'] : null;
+        $id = (isset($body['id']) && 'new' !== $body['id']) ? (int) $body['id'] : null;
         $isDefault = (bool) ($body['is_default'] ?? false);
 
         /** @var list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slots */

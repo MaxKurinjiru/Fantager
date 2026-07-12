@@ -8,7 +8,6 @@ use App\Entity\Auth\User;
 use App\Entity\Headquarters\Headquarters;
 use App\Entity\Team\Team;
 use App\Repository\Headquarters\HeadquartersRepository;
-use App\Repository\Hero\HeroRepository;
 use App\Repository\Team\TeamSummonHistoryRepository;
 use App\Service\Headquarters\ArenaService;
 use App\Service\Summoning\SummoningService;
@@ -35,7 +34,6 @@ class HeadquartersController extends AbstractController
         private readonly ArenaService $arenaService,
         private readonly SummoningService $summoningService,
         private readonly TeamSummonHistoryRepository $historyRepository,
-        private readonly HeroRepository $heroRepository,
         private readonly TrainingService $trainingService,
         private readonly UserMessageTranslator $userMessages,
     ) {
@@ -91,12 +89,8 @@ class HeadquartersController extends AbstractController
             $page = $totalPages;
         }
 
-        $heroes = $this->heroRepository->findCombatantsByTeam($team);
-        $trainers = $this->heroRepository->findTrainersByTeam($team);
         $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
         $nowLocal = new \DateTimeImmutable('now', $tz);
-        $nextTick = $this->trainingService->getNextTrainingTime($nowLocal);
-        $nextLock = $nextTick->modify('-46 hours');
 
         return [
             'arena_status' => $this->arenaService->getArenaStatus($team),
@@ -117,18 +111,7 @@ class HeadquartersController extends AbstractController
             'summon_subtab' => 'summoning_chamber' === $request->query->get('facility')
                 ? $request->query->get('subtab', 'summon')
                 : 'summon',
-            'heroes' => $heroes,
-            'trainers' => $trainers,
             'is_locked' => $this->trainingService->isTrainingLockedForTeam($team, $nowLocal),
-            'next_tick' => $nextTick,
-            'next_lock' => $nextLock,
-            'next_tick_formatted' => $nextTick->format('d. m. Y H:i'),
-            'next_lock_formatted' => $nextLock->format('d. m. Y H:i'),
-            'trainer_limit' => $this->trainingService->getTrainerLimit($team),
-            'training_service' => $this->trainingService,
-            'training_subtab' => 'training' === $request->query->get('facility')
-                ? $request->query->get('subtab', 'trainers')
-                : 'trainers',
             'race_optimization' => $hq?->getRaceOptimization(),
             'pending_race_optimization' => $hq?->getPendingRaceOptimization(),
             'is_optimization_locked' => $hq ? ($hq->hasPendingRaceOptimizationChange() || $hq->isRaceOptimizationLockCycle()) : false,

@@ -28,17 +28,4 @@
     </div>
 </div>
 
-{# Training #}
-<div data-controller="modal" data-modal-event-name-value="modal:open-hq-training" id="hq-training-modal">
-    <div data-modal-target="dialog"
-         class="hidden modal-overlay"
-         data-action="click->modal#closeBackdrop">
-        <div class="modal-box modal-box--wide modal-box--facility" role="dialog" aria-modal="true" aria-labelledby="hq-training-modal-title">
-            <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
-                <span aria-hidden="true" class="modal-close__icon">✕</span>
-            </button>
-            <div id="hq-training-modal-title" class="sr-only">{{ 'hq.facilities_list.training.name'|trans }}</div>
-            {% include 'components/hq/facility_panel/_training.html.twig' %}
-        </div>
-    </div>
-</div>
+

@@ -12,10 +12,8 @@ use App\Service\Translation\UserMessageTranslator;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use App\Repository\Kingdom\KingdomTickLogRepository;
-use App\Repository\Hero\HeroTrainingHistoryRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
-use App\Repository\Hero\HeroRepository;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
@@ -26,14 +24,10 @@ class CalendarServiceTest extends TestCase
     private $scheduleCalculatorMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Kingdom\KingdomTickLogRepository */
     private $tickLogRepositoryMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Hero\HeroTrainingHistoryRepository */
-    private $heroTrainingHistoryRepositoryMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\League\LeagueFixtureRepository */
     private $leagueFixtureRepositoryMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\League\LeagueSeasonRepository */
     private $seasonRepositoryMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Hero\HeroRepository */
-    private $heroRepositoryMock;
     private UserMessageTranslator $userMessages;
     private CalendarService $service;
 
@@ -41,10 +35,8 @@ class CalendarServiceTest extends TestCase
     {
         $this->scheduleCalculatorMock = $this->createMock(TickScheduleCalculator::class);
         $this->tickLogRepositoryMock = $this->createMock(KingdomTickLogRepository::class);
-        $this->heroTrainingHistoryRepositoryMock = $this->createMock(HeroTrainingHistoryRepository::class);
         $this->leagueFixtureRepositoryMock = $this->createMock(LeagueFixtureRepository::class);
         $this->seasonRepositoryMock = $this->createMock(LeagueSeasonRepository::class);
-        $this->heroRepositoryMock = $this->createMock(HeroRepository::class);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(
             static fn (string $id): string => match ($id) {
@@ -61,10 +53,8 @@ class CalendarServiceTest extends TestCase
         $this->service = new CalendarService(
             $this->scheduleCalculatorMock,
             $this->tickLogRepositoryMock,
-            $this->heroTrainingHistoryRepositoryMock,
             $this->leagueFixtureRepositoryMock,
             $this->seasonRepositoryMock,
-            $this->heroRepositoryMock,
             $this->userMessages,
         );
     }

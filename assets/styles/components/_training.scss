@@ -198,6 +198,18 @@
 }
 .trainer-card__dismiss-desc {
   font-size: 0.875rem;
+
+  &--warning {
+    color: var(--color-error-text);
+    font-weight: 600;
+  }
+}
+
+.training-mini-stats {
+  font-size: 0.675rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono, monospace);
+  margin-top: 0.125rem;
 }
 
 @layer components {
@@ -213,6 +225,55 @@
   }
   .training-promote-section__form {
     @apply flex flex-col gap-3 sm:flex-row sm:items-center max-w-lg;
+  }
+
+  .trainer-card__mortality-warning {
+    color: var(--color-error-text);
+    font-weight: 700;
+  }
+
+  .trainer-card__trainee-level {
+    font-size: 0.625rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .trainer-card__trainee-progress-wrap {
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+  }
+
+  .training-hero-link {
+    color: var(--color-text-primary);
+    font-weight: 700;
+
+    &:hover {
+      color: var(--color-brand-400);
+    }
+  }
+
+  .training-progress-value {
+    font-weight: 600;
+
+    &--capped {
+      color: var(--color-error-text);
+      font-weight: 700;
+    }
+  }
+
+  .training-progress-cap-label {
+    color: var(--color-error-text);
+    font-size: 0.625rem;
+    font-weight: 700;
+
+    &--table {
+      font-size: 0.5625rem;
+      display: block;
+    }
+  }
+
+  .training-progress-cell {
+    font-family: var(--font-mono, monospace);
   }
 }
 

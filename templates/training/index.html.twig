@@ -131,7 +131,8 @@
                 {% include 'components/training/trainer_card.html.twig' with {
                     trainer: trainer,
                     heroes: heroes,
-                    isLocked: isLocked
+                    isLocked: isLocked,
+                    trainingService: trainingService
                 } %}
             {% else %}
                 <div class="training-empty-state">
@@ -146,7 +147,8 @@
     {# --- Content: Active Trainees Tab --- #}
     <div id="active-tab" class="tab-content hidden">
         {% include 'components/training/active_trainees_table.html.twig' with {
-            trainers: trainers
+            trainers: trainers,
+            isLocked: isLocked
         } %}
     </div>
 

@@ -40,16 +40,16 @@ Passive bonuses scale **linearly** with the facility level. The bonus value is `
 
 | Facility | Bonus Key | Per-Level Value | Example at Level 5 |
 |----------|-----------|-----------------|---------------------|
-| Training | `training_efficiency_pct` | +5.0% | +25% training efficiency |
-| Medical | `fatigue_reduction_pct` | +8.0% | +40% fatigue reduction |
-| Medical | `recovery_speed_pct` | +5.0% | +25% recovery speed |
-| Library | `xp_gain_pct` | +4.0% | +20% XP gain |
-| Treasury | `gold_income_pct` | +4.0% | +20% gold income |
+| Training | `training_efficiency_pct` | +3.0% | +15% training efficiency |
+| Medical | `fatigue_reduction_pct` | +4.0% | +20% fatigue reduction |
+| Medical | `recovery_speed_pct` | +3.0% | +15% recovery speed |
+| Library | `xp_gain_pct` | +3.0% | +15% XP gain |
+| Treasury | `gold_income_pct` | +3.0% | +15% gold income |
 | Barracks | `roster_capacity` | +2 heroes | +10 heroes (base 10 → 20) |
 | Summoning Chamber | `summon_base_stat_bonus` | +0.4 | +2.0 base stat bonus on summon |
 | Summoning Chamber | `summon_stat_random_bonus` | +1.0 | +5.0 random stat bonus on summon |
 | Summoning Chamber | `summon_stat_total_cap` | +7.0 | +35.0 total stat cap on summon |
-| Arena | `ticket_revenue_pct` | +6.0% | +30% ticket revenue |
+| Arena | `ticket_revenue_pct` | +3.0% | +15% ticket revenue |
 | Arena | `arena_capacity` | +10.0% | +50% seating capacity |
 
 > The `Facility` entity stores a `metadata` (JSON) field. The `getPassiveBonuses()` method on `FacilityType` combines `metadata` with the static per-level values to compute the effective bonuses.

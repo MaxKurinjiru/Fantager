@@ -47,6 +47,9 @@ class KingdomTickLog
     #[ORM\Column(name: 'executed_at')]
     private \DateTimeImmutable $executedAt;
 
+    #[ORM\Column(name: 'retry_count', type: 'integer', options: ['default' => 0])]
+    private int $retryCount = 0;
+
     public function __construct()
     {
         $this->executedAt = new \DateTimeImmutable('now');
@@ -149,6 +152,18 @@ class KingdomTickLog
     public function setFixture(?LeagueFixture $fixture): static
     {
         $this->fixture = $fixture;
+
+        return $this;
+    }
+
+    public function getRetryCount(): int
+    {
+        return $this->retryCount;
+    }
+
+    public function setRetryCount(int $retryCount): static
+    {
+        $this->retryCount = $retryCount;
 
         return $this;
     }

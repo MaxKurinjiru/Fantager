@@ -24,7 +24,8 @@
         {% set team_links = [
             { route: 'app_heroes', emoji: '👥', label: 'nav.team', active_check: 'starts_with' },
             { route: 'app_hq', emoji: '🏰', label: 'nav.hq', active_check: 'exact' },
-            { route: 'app_formation', emoji: '🛡️', label: 'nav.formation', active_check: 'exact' }
+            { route: 'app_formation', emoji: '🛡️', label: 'nav.formation', active_check: 'exact' },
+            { route: 'app_training', emoji: '🏋️', label: 'nav.training', active_check: 'starts_with' }
         ] %}
         {% for link in team_links %}
             {% set is_active = (link.active_check == 'exact' and route == link.route) or (link.active_check == 'starts_with' and route starts with link.route) %}

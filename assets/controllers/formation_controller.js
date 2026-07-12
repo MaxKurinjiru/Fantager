@@ -450,7 +450,7 @@ export default class extends Controller {
             }
 
             const isDefault = this.hasDefaultCheckboxTarget ? this.defaultCheckboxTarget.checked : false;
-            const formationId = this.hasFormationSelectTarget && this.formationSelectTarget.value
+            const formationId = this.hasFormationSelectTarget && this.formationSelectTarget.value && this.formationSelectTarget.value !== 'new'
                 ? parseInt(this.formationSelectTarget.value, 10)
                 : null;
 

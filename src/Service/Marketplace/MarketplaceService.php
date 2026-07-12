@@ -905,7 +905,7 @@ class MarketplaceService
 
         /** @var list<MarketplaceListing> $listings */
         $listings = $this->em->getRepository(MarketplaceListing::class)->findBy(
-            ['sellerTeam' => $team],
+            ['sellerTeam' => $team, 'status' => ListingStatus::Active],
             ['id' => 'DESC'],
             $limit,
             $offset
@@ -918,6 +918,7 @@ class MarketplaceService
     {
         return $this->em->getRepository(MarketplaceListing::class)->count([
             'sellerTeam' => $team,
+            'status' => ListingStatus::Active,
         ]);
     }
 
