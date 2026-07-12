@@ -200,6 +200,13 @@
   font-size: 0.875rem;
 }
 
+.training-mini-stats {
+  font-size: 0.675rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono, monospace);
+  margin-top: 0.125rem;
+}
+
 @layer components {
   .training-promote-section {
     @apply rounded-2xl p-5 space-y-4;

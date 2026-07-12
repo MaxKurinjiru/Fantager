@@ -189,6 +189,10 @@ class TrainingService
             throw new UserFacingException('error.trainer_not_on_team');
         }
 
+        if (HeroStatus::Available !== $trainer->getStatus()) {
+            throw new UserFacingException('error.trainer_only_active_configure');
+        }
+
         if ($this->isTrainingLockedForTeam($team, $now)) {
             throw new UserFacingException('error.trainer_config_locked');
         }
@@ -224,6 +228,10 @@ class TrainingService
             throw new UserFacingException('error.trainer_hero_not_on_team');
         }
 
+        if (HeroStatus::Available !== $trainer->getStatus()) {
+            throw new UserFacingException('error.trainer_only_active_assign');
+        }
+
         if ($this->isTrainingLockedForTeam($team, $now)) {
             throw new UserFacingException('error.trainer_assignments_locked');
         }
@@ -252,6 +260,10 @@ class TrainingService
 
         if ($trainer->getTeam()->getId() !== $team->getId() || $hero->getTeam()->getId() !== $team->getId()) {
             throw new UserFacingException('error.trainer_hero_not_on_team');
+        }
+
+        if (HeroStatus::Available !== $trainer->getStatus()) {
+            throw new UserFacingException('error.trainer_only_active_unassign');
         }
 
         if ($this->isTrainingLockedForTeam($team, $now)) {
@@ -371,7 +383,7 @@ class TrainingService
                             foreach ($hq->getFacilities() as $fac) {
                                 if (\App\Enum\FacilityType::Training === $fac->getType()) {
                                     $bonuses = $fac->getPassiveBonuses();
-                                    $facilityEfficiency = ($bonuses['training_efficiency_pct'] ?? 5.0) / 100.0;
+                                    $facilityEfficiency = ($bonuses['training_efficiency_pct'] ?? 3.0) / 100.0;
                                     break;
                                 }
                             }

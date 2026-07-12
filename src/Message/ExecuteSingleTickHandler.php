@@ -80,9 +80,11 @@ class ExecuteSingleTickHandler
         $qb = $this->em->createQueryBuilder()
             ->update(KingdomTickLog::class, 'l')
             ->set('l.status', ':processing')
+            ->set('l.executedAt', ':now')
             ->where('l.id = :id')
             ->andWhere('l.status IN (:allowed_statuses)')
             ->setParameter('processing', 'processing')
+            ->setParameter('now', new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
             ->setParameter('id', $log->getId())
             ->setParameter('allowed_statuses', ['pending', 'dispatched']);
 
@@ -227,9 +229,28 @@ class ExecuteSingleTickHandler
         $kingdom = $team->getKingdom();
         $speed = (float) $kingdom->getGameSpeed();
 
-        // Base recovery amounts
-        $fatigueReduction = (int) round(10 * $speed);
-        $formIncrease = (int) round(5 * $speed);
+        $fatigueReductionPct = 0.0;
+        $recoverySpeedPct = 0.0;
+
+        try {
+            if ($this->financialCrisisService->areHqBonusesActive($team)) {
+                $hq = $this->hqService->getForTeam($team);
+                foreach ($hq->getFacilities() as $facility) {
+                    if (\App\Enum\FacilityType::Medical === $facility->getType()) {
+                        $bonuses = $facility->getPassiveBonuses();
+                        $fatigueReductionPct = (float) ($bonuses['fatigue_reduction_pct'] ?? 0.0);
+                        $recoverySpeedPct = (float) ($bonuses['recovery_speed_pct'] ?? 0.0);
+                        break;
+                    }
+                }
+            }
+        } catch (\Throwable) {
+            // Safe fallback if HQ not initialized or accessible
+        }
+
+        // Base recovery amounts modified by Medical Wing facility bonuses
+        $fatigueReduction = (int) round(10 * $speed * (1.0 + $fatigueReductionPct / 100.0));
+        $formIncrease = (int) round(5 * $speed * (1.0 + $recoverySpeedPct / 100.0));
 
         // Fetch heroes belonging to this Team that need recovery
         $qb = $this->heroRepository->createQueryBuilder('h')

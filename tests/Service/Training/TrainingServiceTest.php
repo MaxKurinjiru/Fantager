@@ -241,7 +241,7 @@ class TrainingServiceTest extends TestCase
         $hq->setTeam($team);
         $facility = new Facility();
         $facility->setType(FacilityType::Training);
-        $facility->setPassiveBonuses(['training_efficiency_pct' => 5.0]);
+        $facility->setPassiveBonuses(['training_efficiency_pct' => 3.0]);
         $hq->addFacility($facility);
 
         $this->hqRepositoryMock

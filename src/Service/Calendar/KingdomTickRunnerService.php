@@ -76,6 +76,16 @@ class KingdomTickRunnerService
     }
 
     /**
+     * Recovers stale ticks for the kingdom (e.g. processing or dispatched for more than 30 seconds).
+     */
+    public function recoverStaleTicks(Kingdom $kingdom): int
+    {
+        $threshold = new \DateTimeImmutable('-30 seconds', new \DateTimeZone('UTC'));
+
+        return $this->tickLogRepository->recoverStaleTicks($kingdom, $threshold);
+    }
+
+    /**
      * Checks if there are any pending ticks for the kingdom.
      */
     public function hasPendingTicks(Kingdom $kingdom): bool

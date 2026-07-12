@@ -6,8 +6,6 @@ namespace App\Service\Calendar;
 
 use App\Entity\Kingdom\Kingdom;
 use App\Enum\TickType;
-use App\Repository\Hero\HeroRepository;
-use App\Repository\Hero\HeroTrainingHistoryRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
@@ -18,10 +16,8 @@ class CalendarService
     public function __construct(
         private readonly TickScheduleCalculator $scheduleCalculator,
         private readonly KingdomTickLogRepository $tickLogRepository,
-        private readonly HeroTrainingHistoryRepository $heroTrainingHistoryRepository,
         private readonly LeagueFixtureRepository $leagueFixtureRepository,
         private readonly LeagueSeasonRepository $seasonRepository,
-        private readonly HeroRepository $heroRepository,
         private readonly UserMessageTranslator $userMessages,
     ) {
     }
@@ -180,75 +176,6 @@ class CalendarService
                     'groupName' => $fixture->getGroup()->getGroupName(),
                 ],
             ];
-        }
-
-        // 3. Aggregating team training history completions
-        if (null !== $teamId) {
-            $historyEntries = $this->heroTrainingHistoryRepository->findInPeriodForTeam($teamId, $start, $end);
-
-            foreach ($historyEntries as $entry) {
-                $feed[] = [
-                    'id' => sprintf('hero_training_history_%d', $entry->getId()),
-                    'type' => 'hero_training_history',
-                    'title' => $this->userMessages->trans('calendar.training_complete_title', ['%hero%' => $entry->getHero()->getName()], $locale),
-                    'description' => sprintf(
-                        'Scheduled training for %s (%s)',
-                        $entry->getHero()->getName(),
-                        $entry->getTrainingType()->value.($entry->getTargetAttribute() ? ': '.$entry->getTargetAttribute() : '')
-                    ),
-                    'scheduledAt' => $entry->getCompletedAt()->format(\DateTimeInterface::ATOM),
-                    'visibility' => 'team_only',
-                    'status' => 'completed',
-                    'metadata' => [
-                        'historyId' => $entry->getId(),
-                        'heroId' => $entry->getHero()->getId(),
-                        'trainingType' => $entry->getTrainingType()->value,
-                        'attribute' => $entry->getTargetAttribute(),
-                    ],
-                ];
-            }
-
-            // Append virtual upcoming completed entries for currently assigned heroes
-            $activeTrainees = $this->heroRepository->createQueryBuilder('h')
-                ->where('h.team = :teamId')
-                ->andWhere('h.trainer IS NOT NULL')
-                ->setParameter('teamId', $teamId)
-                ->getQuery()
-                ->getResult();
-
-            foreach ($activeTrainees as $hero) {
-                /** @var \App\Entity\Hero\Hero $hero */
-                $trainer = $hero->getTrainer();
-                if (null === $trainer || null === $trainer->getTrainingType()) {
-                    continue;
-                }
-
-                // For each WeeklyTraining tick in the period, add a scheduled entry
-                foreach ($occurrences as $occ) {
-                    if (TickType::WeeklyTraining === $occ['type']) {
-                        $occTime = $occ['time'];
-                        $feed[] = [
-                            'id' => sprintf('active_training_%d_%s', $hero->getId(), $occTime->format('YmdHis')),
-                            'type' => 'hero_training_history',
-                            'title' => $this->userMessages->trans('calendar.training_complete_title', ['%hero%' => $hero->getName()], $locale),
-                            'description' => sprintf(
-                                'Scheduled training for %s (%s)',
-                                $hero->getName(),
-                                $trainer->getTrainingType()->value.($trainer->getTargetAttribute() ? ': '.$trainer->getTargetAttribute() : '')
-                            ),
-                            'scheduledAt' => $occTime->format(\DateTimeInterface::ATOM),
-                            'visibility' => 'team_only',
-                            'status' => 'scheduled',
-                            'metadata' => [
-                                'historyId' => null,
-                                'heroId' => $hero->getId(),
-                                'trainingType' => $trainer->getTrainingType()->value,
-                                'attribute' => $trainer->getTargetAttribute(),
-                            ],
-                        ];
-                    }
-                }
-            }
         }
 
         // Sort entire feed chronologically

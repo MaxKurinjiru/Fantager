@@ -185,6 +185,9 @@ error:
   trainer_hero_not_assigned: Hrdina není přiřazen tomuto trenérovi.
   trainer_only_active_dismiss: Propustit lze pouze aktivní trenéry.
   trainer_only_active_list: Na trh lze vystavit pouze aktivní trenéry.
+  trainer_only_active_configure: Nastavení lze měnit pouze aktivním trenérům.
+  trainer_only_active_assign: Svěřence lze přiřadit pouze aktivnímu trenérovi.
+  trainer_only_active_unassign: Svěřence lze odebrat pouze aktivnímu trenérovi.
   training_trainer_limit_reached: Byl dosažen limit počtu trenérů pro váš tým.
   invalid_attribute: 'Neplatný atribut. Povolené hodnoty: %values%.'
   unknown_attribute: 'Neznámý atribut "%attribute%".'
@@ -974,6 +977,10 @@ training:
   trainer_slots: "Sloty pro hrdiny: %occupied% / %limit%"
   lock_warning: "Tréninkové změny jsou uzamčeny před blížícím se vyhodnocením."
   idle: "Neaktivní (Idle)"
+  mortality_warning: "Riziko úmrtí věkem!"
+  capped: "Dosažen limit"
+  trainer_stats: "Statistiky trenéra"
+  progress_cap: "Pokrok / Limit"
   training_focus: "Zaměření tréninku"
   assign_hero: "Přiřadit hrdinu"
   unassign_hero: "Odebrat"
@@ -999,6 +1006,7 @@ training:
   average: "Průměr"
   lock_desc: "Od úterý 12:00 do čtvrtku 10:00 jsou tréninky uzamčeny a nelze měnit konfiguraci ani přiřazovat hrdiny."
   dismiss_desc: Propustíte trenéra z týmu. Svěřenci budou automaticky odebráni a obdržíte odstupné (30 % odhadované hodnoty).
+  dismiss_selling_desc: Trenér je momentálně nabízen na tržišti. Pro propuštění nejprve zrušte nabídku na tržišti.
   dismiss_btn: Propustit trenéra
   dismiss_confirm: Opravdu chcete propustit tohoto trenéra? Svěřenci budou odebráni z tréninku. Akce je nevratná.
   promote_btn: "Povýšit na trenéra"

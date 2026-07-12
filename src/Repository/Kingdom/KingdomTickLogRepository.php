@@ -154,4 +154,53 @@ class KingdomTickLogRepository extends ServiceEntityRepository
             return $log->getTickType()->getPriority() === $priority;
         }));
     }
+
+    /**
+     * Finds and recovers/fails stale ticks that are stuck in 'dispatched' or 'processing' state.
+     * Ticks are reset to 'pending' (incrementing retry_count) or marked as 'failed' (if maximum retries reached).
+     *
+     * @return int Number of recovered ticks
+     */
+    public function recoverStaleTicks(Kingdom $kingdom, \DateTimeImmutable $threshold): int
+    {
+        /** @var list<KingdomTickLog> $staleTicks */
+        $staleTicks = $this->createQueryBuilder('l')
+            ->where('l.kingdom = :kingdom')
+            ->andWhere('l.status IN (:statuses)')
+            ->andWhere('l.executedAt < :threshold')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('statuses', ['dispatched', 'processing'])
+            ->setParameter('threshold', $threshold)
+            ->getQuery()
+            ->getResult();
+
+        $recoveredCount = 0;
+        foreach ($staleTicks as $tick) {
+            $newRetryCount = $tick->getRetryCount() + 1;
+            $tick->setRetryCount($newRetryCount);
+            $tick->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+
+            if ($newRetryCount < 3) {
+                $tick->setStatus('pending');
+                $tick->setErrorMessage(sprintf(
+                    'Worker timeout/crash detected. Auto-retry #%d. (Previous error: %s)',
+                    $newRetryCount,
+                    $tick->getErrorMessage() ?? 'none'
+                ));
+            } else {
+                $tick->setStatus('failed');
+                $tick->setErrorMessage(sprintf(
+                    'Worker timeout/crash detected. Maximum retries reached (3). Last error: %s',
+                    $tick->getErrorMessage() ?? 'none'
+                ));
+            }
+            ++$recoveredCount;
+        }
+
+        if ($recoveredCount > 0) {
+            $this->getEntityManager()->flush();
+        }
+
+        return $recoveredCount;
+    }
 }

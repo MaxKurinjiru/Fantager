@@ -1,4 +1,5 @@
 {# templates/components/training/active_trainees_table.html.twig #}
+{% set isLocked = isLocked|default(false) %}
 <div class="game-panel">
     <h2 class="game-panel__title">{{ 'training.active_trainees'|trans }}</h2>
 
@@ -9,8 +10,10 @@
                     <th>{{ 'nav.heroes'|trans }}</th>
                     <th>{{ 'training.trainer'|trans }}</th>
                     <th>{{ 'training.type'|trans }}</th>
+                    <th class="data-table__col--center">{{ 'training.progress_cap'|trans }}</th>
                     <th class="data-table__col--center">{{ 'heroes.fatigue'|trans }} ({{ 'training.forecast'|trans }})</th>
                     <th class="data-table__col--center">{{ 'heroes.combat_form'|trans }} ({{ 'training.forecast'|trans }})</th>
+                    <th class="data-table__col--center">Akce</th>
                 </tr>
             </thead>
             <tbody>
@@ -20,7 +23,24 @@
                         {% set totalActive = totalActive + 1 %}
                         <tr>
                             <td class="data-table__cell--title">
-                                <span aria-hidden="true">💪</span> {{ hero.name }} (Lvl {{ hero.level }})
+                                <div class="layout-stack --tight">
+                                    <div>
+                                        <a href="{{ path('app_heroes_detail', { id: hero.id }) }}" class="copy-primary font-bold">
+                                            <span aria-hidden="true">💪</span> {{ hero.name }}
+                                        </a>
+                                        <span class="copy-muted text-xs">(Lvl {{ hero.level }})</span>
+                                    </div>
+                                    <div class="training-mini-stats">
+                                        {{ 'heroes.abbr_str'|trans }}:{{ hero.str }} · 
+                                        {{ 'heroes.abbr_dex'|trans }}:{{ hero.dex }} · 
+                                        {{ 'heroes.abbr_kon'|trans }}:{{ hero.kon }} · 
+                                        {{ 'heroes.abbr_spd'|trans }}:{{ hero.spd }} · 
+                                        {{ 'heroes.abbr_int'|trans }}:{{ hero.intel }} · 
+                                        {{ 'heroes.abbr_wil'|trans }}:{{ hero.wil }} · 
+                                        {{ 'heroes.abbr_cha'|trans }}:{{ hero.cha }} · 
+                                        {{ 'heroes.abbr_lck'|trans }}:{{ hero.lck }}
+                                    </div>
+                                </div>
                             </td>
                             <td>{{ trainer.name }}</td>
                             <td class="data-table__cell--accent">
@@ -31,6 +51,32 @@
                                     {% endif %}
                                 {% else %}
                                     <span class="data-table__cell--muted">{{ 'training.idle'|trans }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="data-table__col--center font-mono">
+                                {% if trainer.trainingType %}
+                                    {% if trainer.trainingType.value == 'attribute' and trainer.targetAttribute %}
+                                        {% set attrKey = trainer.targetAttribute %}
+                                        {% set heroVal = attribute(hero, attrKey == 'int' ? 'intel' : attrKey) %}
+                                        {% set trainerVal = attribute(trainer, attrKey == 'int' ? 'intel' : attrKey) %}
+                                        <span class="{% if heroVal >= trainerVal %}copy-status-error font-bold{% else %}font-semibold{% endif %}">
+                                            {{ heroVal }} / {{ trainerVal }}
+                                        </span>
+                                        {% if heroVal >= trainerVal %}
+                                            <div class="text-[9px] copy-status-error font-bold">{{ 'training.capped'|trans }}</div>
+                                        {% endif %}
+                                    {% elseif trainer.trainingType.value == 'magic' %}
+                                        <span class="{% if hero.magicCapacity >= 5 %}copy-status-error font-bold{% else %}font-semibold{% endif %}">
+                                            {{ hero.magicCapacity }} / 5
+                                        </span>
+                                        {% if hero.magicCapacity >= 5 %}
+                                            <div class="text-[9px] copy-status-error font-bold">{{ 'training.capped'|trans }}</div>
+                                        {% endif %}
+                                    {% else %}
+                                        &mdash;
+                                    {% endif %}
+                                {% else %}
+                                    &mdash;
                                 {% endif %}
                             </td>
                             <td class="data-table__col--center">
@@ -53,13 +99,23 @@
                                     <span>{{ hero.form }}%</span>
                                 {% endif %}
                             </td>
+                            <td class="data-table__col--center">
+                                <button type="button"
+                                        data-action="click->training#unassignTrainee"
+                                        data-trainer-id="{{ trainer.id }}"
+                                        data-hero-id="{{ hero.id }}"
+                                        class="btn btn-outline btn--sm"
+                                        {% if isLocked %}disabled{% endif %}>
+                                    {{ 'training.unassign_hero'|trans }}
+                                </button>
+                            </td>
                         </tr>
                     {% endfor %}
                 {% endfor %}
 
                 {% if totalActive == 0 %}
                     <tr>
-                        <td colspan="5" class="empty-state">
+                        <td colspan="7" class="empty-state">
                             {{ 'training.no_active_trainees'|trans }}
                         </td>
                     </tr>

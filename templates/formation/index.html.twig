@@ -10,12 +10,14 @@
 
 {% if is_match_prep %}
     {# Match prep loads assigned or effective formation data #}
-{% elseif selected_formation_id %}
-    {% for f in formations %}
-        {% if f.id == selected_formation_id %}
-            {% set selected_formation = f %}
-        {% endif %}
-    {% endfor %}
+{% elseif selected_formation_id is not null and selected_formation_id != '' %}
+    {% if selected_formation_id != 'new' %}
+        {% for f in formations %}
+            {% if f.id == selected_formation_id %}
+                {% set selected_formation = f %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 {% else %}
     {% for f in formations %}
         {% if f.isDefault %}
@@ -80,7 +82,7 @@
             <label for="formation-select" class="sr-only">{{ 'formation.title'|trans }}</label>
             <select id="formation-select" data-formation-target="formationSelect" data-action="change->formation#changeFormation"
                     class="form-input form-input--emphasis form-input--formation-select">
-                <option value="">{{ 'formation.create_new'|trans }}</option>
+                <option value="new" {% if app.request.query.get('formation_id') == 'new' or not selected_formation %}selected{% endif %}>{{ 'formation.create_new'|trans }}</option>
                 {% for f in formations %}
                     <option value="{{ f.id }}" {% if selected_formation and selected_formation.id == f.id %}selected{% endif %}>
                         {{ f.name }} {% if f.isDefault %}({{ 'formation.default'|trans }}){% endif %}
