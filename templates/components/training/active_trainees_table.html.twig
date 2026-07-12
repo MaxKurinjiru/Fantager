@@ -25,10 +25,10 @@
                             <td class="data-table__cell--title">
                                 <div class="layout-stack --tight">
                                     <div>
-                                        <a href="{{ path('app_heroes_detail', { id: hero.id }) }}" class="copy-primary font-bold">
+                                        <a href="{{ path('app_heroes_detail', { id: hero.id }) }}" class="training-hero-link">
                                             <span aria-hidden="true">💪</span> {{ hero.name }}
                                         </a>
-                                        <span class="copy-muted text-xs">(Lvl {{ hero.level }})</span>
+                                        <span class="copy-muted copy-xs">(Lvl {{ hero.level }})</span>
                                     </div>
                                     <div class="training-mini-stats">
                                         {{ 'heroes.abbr_str'|trans }}:{{ hero.str }} · 
@@ -53,24 +53,24 @@
                                     <span class="data-table__cell--muted">{{ 'training.idle'|trans }}</span>
                                 {% endif %}
                             </td>
-                            <td class="data-table__col--center font-mono">
+                            <td class="data-table__col--center training-progress-cell">
                                 {% if trainer.trainingType %}
                                     {% if trainer.trainingType.value == 'attribute' and trainer.targetAttribute %}
                                         {% set attrKey = trainer.targetAttribute %}
                                         {% set heroVal = attribute(hero, attrKey == 'int' ? 'intel' : attrKey) %}
                                         {% set trainerVal = attribute(trainer, attrKey == 'int' ? 'intel' : attrKey) %}
-                                        <span class="{% if heroVal >= trainerVal %}copy-status-error font-bold{% else %}font-semibold{% endif %}">
+                                        <span class="training-progress-value{% if heroVal >= trainerVal %} training-progress-value--capped{% endif %}">
                                             {{ heroVal }} / {{ trainerVal }}
                                         </span>
                                         {% if heroVal >= trainerVal %}
-                                            <div class="text-[9px] copy-status-error font-bold">{{ 'training.capped'|trans }}</div>
+                                            <div class="training-progress-cap-label training-progress-cap-label--table">{{ 'training.capped'|trans }}</div>
                                         {% endif %}
                                     {% elseif trainer.trainingType.value == 'magic' %}
-                                        <span class="{% if hero.magicCapacity >= 5 %}copy-status-error font-bold{% else %}font-semibold{% endif %}">
+                                        <span class="training-progress-value{% if hero.magicCapacity >= 5 %} training-progress-value--capped{% endif %}">
                                             {{ hero.magicCapacity }} / 5
                                         </span>
                                         {% if hero.magicCapacity >= 5 %}
-                                            <div class="text-[9px] copy-status-error font-bold">{{ 'training.capped'|trans }}</div>
+                                            <div class="training-progress-cap-label training-progress-cap-label--table">{{ 'training.capped'|trans }}</div>
                                         {% endif %}
                                     {% else %}
                                         &mdash;

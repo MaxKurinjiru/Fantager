@@ -14,7 +14,7 @@
                         {{ 'heroes.age'|trans }}: {{ trainer.age }} {{ 'heroes.years'|trans }} 
                         ({{ ('heroes.age_phase.' ~ hero_age_phase(trainer)|lower)|trans }} {{ hero_age_phase_icon(trainer) }})
                         {% if hero_at_mortality_threshold(trainer) %}
-                            <span class="copy-status-error font-bold" title="{{ 'heroes.mortality_threshold_warning'|trans({'%threshold%': hero_mortality_threshold(trainer)}) }}">
+                            <span class="trainer-card__mortality-warning" title="{{ 'heroes.mortality_threshold_warning'|trans({'%threshold%': hero_mortality_threshold(trainer)}) }}">
                                 ⚠️ {{ 'training.mortality_warning'|trans }}
                             </span>
                         {% endif %}
@@ -81,37 +81,37 @@
                             <span class="trainer-card__trainee-icon" aria-hidden="true">💪</span>
                             <div>
                                 <span class="trainer-card__trainee-name">
-                                    <a href="{{ path('app_heroes_detail', { id: hero.id }) }}" class="copy-primary font-bold">
+                                    <a href="{{ path('app_heroes_detail', { id: hero.id }) }}" class="training-hero-link">
                                         {{ hero.name }}
                                     </a>
-                                    <span class="copy-muted text-[10px]">(Lvl {{ hero.level }})</span>
+                                    <span class="trainer-card__trainee-level">(Lvl {{ hero.level }})</span>
                                 </span>
                                 <span class="trainer-card__trainee-meta">
                                     {{ 'heroes.fatigue'|trans }}: {{ hero.fatigue }}% &bull; {{ 'heroes.combat_form'|trans }}: {{ hero.form }}%
                                 </span>
                                 {# Trainee Training Progress / Cap #}
-                                <div class="mt-1 text-[11px]">
+                                <div class="trainer-card__trainee-progress-wrap">
                                     {% if trainer.trainingType and trainer.trainingType.value == 'attribute' and trainer.targetAttribute %}
                                         {% set attrKey = trainer.targetAttribute %}
                                         {% set heroVal = attribute(hero, attrKey == 'int' ? 'intel' : attrKey) %}
                                         {% set trainerVal = attribute(trainer, attrKey == 'int' ? 'intel' : attrKey) %}
                                         <span class="copy-secondary">
                                             {{ ('training.attr.' ~ attrKey)|trans }}: 
-                                            <span class="{% if heroVal >= trainerVal %}copy-status-error font-bold{% else %}font-semibold{% endif %}">
+                                            <span class="training-progress-value{% if heroVal >= trainerVal %} training-progress-value--capped{% endif %}">
                                                 {{ heroVal }} / {{ trainerVal }}
                                             </span>
                                             {% if heroVal >= trainerVal %}
-                                                <span class="copy-status-error text-[10px] font-bold">({{ 'training.capped'|trans }})</span>
+                                                <span class="training-progress-cap-label">({{ 'training.capped'|trans }})</span>
                                             {% endif %}
                                         </span>
                                     {% elseif trainer.trainingType and trainer.trainingType.value == 'magic' %}
                                         <span class="copy-secondary">
                                             {{ 'training.type_magic'|trans }}: 
-                                            <span class="{% if hero.magicCapacity >= 5 %}copy-status-error font-bold{% else %}font-semibold{% endif %}">
+                                            <span class="training-progress-value{% if hero.magicCapacity >= 5 %} training-progress-value--capped{% endif %}">
                                                 {{ hero.magicCapacity }} / 5
                                             </span>
                                             {% if hero.magicCapacity >= 5 %}
-                                                <span class="copy-status-error text-[10px] font-bold">({{ 'training.capped'|trans }})</span>
+                                                <span class="training-progress-cap-label">({{ 'training.capped'|trans }})</span>
                                             {% endif %}
                                         </span>
                                     {% elseif trainer.trainingType and trainer.trainingType.value == 'form' %}
@@ -158,7 +158,7 @@
             </div>
         {% elseif trainer.status.value == 'selling' %}
             <div class="trainer-card__section trainer-card__dismiss">
-                <p class="trainer-card__dismiss-desc copy-status-error font-semibold">
+                <p class="trainer-card__dismiss-desc trainer-card__dismiss-desc--warning">
                     ⚠️ {{ 'training.dismiss_selling_desc'|trans }}
                 </p>
                 <button type="button"
