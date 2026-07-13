@@ -4,20 +4,17 @@
 {% if hero and team and hero.status.value == 'available' and hero.trainer is null %}
     {% set can_leave = hero_can_leave_roster(team, hero) %}
     {% set tax_rate = team.kingdom.marketplaceTaxRate %}
-    <div class="hero-panel hero-sell-panel">
-        <div>
-            <h2 class="hero-panel__title">{{ 'heroes.sell_title'|trans }}</h2>
-            <p class="hero-panel__desc">{{ 'heroes.sell_desc'|trans }}</p>
-            {% if not can_leave %}
-                <p class="hero-panel__hint hero-panel__hint--warning">
-                    {{ 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}
-                </p>
-            {% else %}
-                <p class="hero-panel__hint hero-panel__hint--muted">
-                    ⚠️ {{ 'marketplace.tax_hint'|trans({'%tax%': tax_rate}) }}
-                </p>
-            {% endif %}
-        </div>
+    <div class="layout-stack layout-stack--form">
+        <p class="hero-panel__desc">{{ 'heroes.sell_desc'|trans }}</p>
+        {% if not can_leave %}
+            <p class="hero-panel__hint hero-panel__hint--warning">
+                {{ 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}
+            </p>
+        {% else %}
+            <p class="hero-panel__hint hero-panel__hint--muted">
+                ⚠️ {{ 'marketplace.tax_hint'|trans({'%tax%': tax_rate}) }}
+            </p>
+        {% endif %}
 
         {% if can_leave %}
             <form class="hero-sell-form"

@@ -1,18 +1,35 @@
 {# templates/components/item/equip_manager.html.twig #}
+{# hide_hero_select: when true, replaces the hero dropdown with a static label (used on hero detail page) #}
+{% set hide_hero_select = hide_hero_select ?? false %}
 <div class="game-panel">
     <div>
         <h2 class="hero-panel__title">{{ 'inventory.equip_manager'|trans }}</h2>
-        <label for="equip-hero-select" class="form-label">{{ 'inventory.select_hero_opt'|trans }}</label>
-        <select id="equip-hero-select" data-equipment-target="heroSelect" data-action="change->equipment#loadHeroEquipment"
-                class="form-input form-input--medium">
-            <option value="">{{ 'inventory.select_hero_opt'|trans }}</option>
-            {% for h in heroes %}
-                <option value="{{ h.id }}" {% if selected_hero_id == h.id %}selected{% endif %}>
-                    {{ h.name }} ({{ 'heroes.level'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }})
-                </option>
-            {% endfor %}
-        </select>
+        {% if hide_hero_select %}
+            {# On the hero detail page: show hero name, pass id via hidden input #}
+            <input type="hidden"
+                   id="equip-hero-select"
+                   data-equipment-target="heroSelect"
+                   value="{{ selected_hero_id }}">
+            <p class="equip-manager-hero-name">
+                {% if selected_hero %}
+                    {{ selected_hero.name }}
+                    <span class="copy-secondary">· {{ ('heroes.race_' ~ selected_hero.race.value)|trans }} · {{ 'heroes.level'|trans }} {{ selected_hero.level }}</span>
+                {% endif %}
+            </p>
+        {% else %}
+            <label for="equip-hero-select" class="form-label">{{ 'inventory.select_hero_opt'|trans }}</label>
+            <select id="equip-hero-select" data-equipment-target="heroSelect" data-action="change->equipment#loadHeroEquipment"
+                    class="form-input form-input--medium">
+                <option value="">{{ 'inventory.select_hero_opt'|trans }}</option>
+                {% for h in heroes %}
+                    <option value="{{ h.id }}" {% if selected_hero_id == h.id %}selected{% endif %}>
+                        {{ h.name }} ({{ 'heroes.level'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }})
+                    </option>
+                {% endfor %}
+            </select>
+        {% endif %}
     </div>
+
 
     {# Paperdoll Grid #}
     {% if selected_hero %}

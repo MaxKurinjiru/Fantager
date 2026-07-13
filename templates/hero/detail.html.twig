@@ -24,7 +24,7 @@
     {% set masteries = masteries|merge({(sm.school.value): sm.masteryTier}) %}
 {% endfor %}
 
-<div class="hero-detail-page page-shell" data-controller="hero-rename hero-dismiss hero-sell"
+<div class="hero-detail-page page-shell" data-controller="hero-rename hero-dismiss hero-sell hero-promote"
      data-hero-rename-hero-id-value="{{ hero.id }}"
      data-hero-rename-error-empty-value="{{ 'js_flash.heroes.name_empty'|trans }}"
      data-hero-rename-error-rename-value="{{ 'js_flash.heroes.failed_rename'|trans }}"
@@ -43,6 +43,12 @@
      data-hero-sell-price-label-auction-value="{{ 'marketplace.label_min_bid'|trans }}"
      data-hero-sell-text-loading-value="{{ 'js_flash.common.text_loading'|trans }}"
      data-hero-sell-suggested-price-value="{{ hero_market_price(hero) }}"
+     data-hero-promote-hero-id-value="{{ hero.id }}"
+     data-hero-promote-title-promote-value="{{ 'training.promote_title'|trans }}"
+     data-hero-promote-confirm-promote-value="{{ 'training.promote_confirm'|trans }}"
+     data-hero-promote-error-promote-value="{{ 'training.error_promote'|trans }}"
+     data-hero-promote-success-promote-value="{{ 'training.success_promote'|trans }}"
+     data-hero-promote-text-loading-value="{{ 'js_flash.common.text_loading'|trans }}"
 >
     <div class="hero-detail-nav">
         <div class="hero-detail-nav__trail">
@@ -50,9 +56,34 @@
             <span>/</span>
             <span class="hero-detail-nav__current">{{ hero.name }}</span>
         </div>
-        <a href="{{ path('app_heroes') }}" class="btn btn-outline btn--sm btn--icon-lead">
-            <span>⬅️</span> {{ 'heroes.back_roster'|trans }}
-        </a>
+        <div class="navbar-dropdown hero-actions-dropdown" data-controller="dropdown">
+            <button type="button" data-action="click->dropdown#toggle" class="btn btn-outline btn--sm btn--icon-lead">
+                ⚙️ {{ 'heroes.manage_btn'|default('Správa hrdiny')|trans }}
+            </button>
+            <div data-dropdown-target="menu" class="dropdown-menu dropdown-menu--narrow hidden">
+                <button type="button" data-action="click->hero-rename#edit" class="dropdown-item">
+                    ✏️ {{ 'heroes.rename_title'|trans }}
+                </button>
+                
+                {% if hero.isCombatant and hero.status.value == 'available' and hero.trainer is null %}
+                    {% set can_leave = hero_can_leave_roster(team, hero) %}
+                    {% if can_leave %}
+                        <button type="button" onclick="window.dispatchEvent(new CustomEvent('modal:open-sell-hero'))" class="dropdown-item">
+                            🪙 {{ 'heroes.sell_title'|trans }}
+                        </button>
+                        <button type="button" onclick="window.dispatchEvent(new CustomEvent('modal:open-dismiss-hero'))" class="dropdown-item dropdown-item--danger">
+                            ❌ {{ 'heroes.dismiss_btn'|trans }}
+                        </button>
+                    {% endif %}
+                    
+                    {% if trainers|length < trainer_limit %}
+                        <button type="button" data-action="click->hero-promote#promote" class="dropdown-item">
+                            🏋️ {{ 'training.promote_btn'|trans }}
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     {% include 'components/ui/alert_box.html.twig' with {
@@ -80,39 +111,44 @@
         classes: 'alert-box--spaced'
     } %}
 
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'hero-promote',
+        container_target: 'promoteAlert',
+        message_target: 'promoteAlertMessage',
+        close_action: 'hero-promote#hideAlert',
+        type: 'info',
+        classes: 'alert-box--spaced'
+    } %}
+
     {% include 'components/hero/header_card.html.twig' with { hero: hero } %}
 
-    <div class="tab-nav-bar hero-detail-tabs">
+    <div class="tab-nav-bar hero-detail-tabs" data-controller="tab">
         {% for t in hero_tabs %}
-            <a href="{{ path('app_heroes_detail', { id: hero.id, tab: t.id }) }}"
-               class="tab-btn {{ tab == t.id ? 'tab-btn--active' : '' }}">
+            <button type="button" data-tab-target="btn" data-action="click->tab#switch" data-tab="hero-tab-{{ t.id }}"
+                    class="tab-btn {{ tab == t.id ? 'tab-btn--active' : '' }}">
                 {{ t.emoji }} {{ t.label|trans }}
-            </a>
+            </button>
         {% endfor %}
     </div>
 
-    {% if tab == 'overview' %}
+    <div id="hero-tab-overview" class="tab-content {% if tab != 'overview' %}hidden{% endif %}">
         <div class="hero-detail-grid">
             <div class="hero-detail-grid__side">
-                {% include 'components/hero/ratings_panel.html.twig' with { hero: hero } %}
-                {% include 'components/hero/trait_panel.html.twig' with { hero: hero } %}
-                {% include 'components/hero/attributes_panel.html.twig' with { hero: hero, statBonuses: statBonuses } %}
-                {% include 'components/hero/derived_combat_stats_panel.html.twig' with { hero: hero } %}
                 {% include 'components/hero/status_panel.html.twig' with { hero: hero } %}
-                {% include 'components/hero/sell_panel.html.twig' with { hero: hero, team: team } %}
-                {% include 'components/hero/dismiss_panel.html.twig' with { hero: hero, team: team } %}
+                {% include 'components/hero/attributes_panel.html.twig' with { hero: hero, equipped: equipped } %}
             </div>
             <div class="hero-detail-grid__main">
+                {% include 'components/hero/trait_panel.html.twig' with { hero: hero } %}
                 {% include 'components/hero/equipped_gear.html.twig' with { hero: hero, equipped: equipped } %}
-                {% include 'components/hero/weapon_mastery.html.twig' with { hero: hero, equipped: equipped } %}
                 <div class="hero-detail-split">
+                    {% include 'components/hero/derived_combat_stats_panel.html.twig' with { hero: hero } %}
                     {% include 'components/hero/spell_slots.html.twig' with { hero: hero } %}
-                    {% include 'components/hero/school_mastery.html.twig' with { hero: hero } %}
                 </div>
             </div>
         </div>
+    </div>
 
-    {% elseif tab == 'equipment' %}
+    <div id="hero-tab-equipment" class="tab-content {% if tab != 'equipment' %}hidden{% endif %}">
         <div class="layout-stack layout-stack--lg" data-controller="equipment"
              data-equipment-text-equipping-value="{{ 'js_flash.inventory.equipping'|trans }}"
              data-equipment-error-equip-value="{{ 'js_flash.inventory.failed_equip'|trans }}"
@@ -135,14 +171,19 @@
                         selected_hero_id: hero.id,
                         selected_hero: hero,
                         heroes: heroes,
-                        equipped: equipped
+                        equipped: equipped,
+                        hide_hero_select: true
                     } %}
                 </div>
-                {% include 'components/item/rucksack_items.html.twig' with { items: items, selected_hero: hero } %}
+                <div class="screen-3col__main">
+                    {% include 'components/hero/weapon_mastery.html.twig' with { hero: hero, equipped: equipped } %}
+                </div>
             </div>
+            {% include 'components/item/rucksack_items.html.twig' with { items: items, selected_hero: hero } %}
         </div>
+    </div>
 
-    {% elseif tab == 'spells' %}
+    <div id="hero-tab-spells" class="tab-content {% if tab != 'spells' %}hidden{% endif %}">
         <div class="spellbook-page" data-controller="spellbook"
              data-spellbook-text-learning-value="{{ 'js_flash.spells.learning'|trans }}"
              data-spellbook-error-learn-value="{{ 'js_flash.spells.failed_learn'|trans }}"
@@ -162,6 +203,9 @@
                         equipped: equipped_spells,
                         masteries: masteries
                     } %}
+                    <div class="hero-school-mastery-section">
+                        {% include 'components/hero/school_mastery.html.twig' with { hero: hero } %}
+                    </div>
                 </div>
                 <div class="screen-grid__main">
                     <div class="tab-nav" data-controller="tab">
@@ -177,8 +221,9 @@
                 </div>
             </div>
         </div>
+    </div>
 
-    {% elseif tab == 'training' %}
+    <div id="hero-tab-training" class="tab-content {% if tab != 'training' %}hidden{% endif %}">
         <div class="layout-stack" data-controller="training"
              data-training-success-configure-value="{{ 'training.success_configure'|trans }}"
              data-training-success-assign-value="{{ 'training.success_assign'|trans }}"
@@ -197,47 +242,262 @@
             {% include 'components/ui/alert_box.html.twig' with { target: 'training', message_target: 'alertMessage', close_action: 'training#closeAlert' } %}
 
             {% if hero.trainer %}
-                <div class="game-panel">
-                    <h3 class="game-panel__title">{{ 'heroes.current_trainer'|trans }}</h3>
-                    <p>{{ hero.trainer.name }} — {{ ('training.type_' ~ (hero.trainer.trainingType ? hero.trainer.trainingType.value : 'idle'))|trans }}</p>
-                    <button type="button" data-action="click->training#unassignTrainee"
-                            data-trainer-id="{{ hero.trainer.id }}" data-hero-id="{{ hero.id }}"
-                            class="btn btn-outline btn--sm btn--spaced-top" {% if is_training_locked %}disabled{% endif %}>
-                        {{ 'training.unassign_hero'|trans }}
-                    </button>
+                <div class="game-panel training-hero-dashboard">
+                    <div class="training-hero-dashboard__header">
+                        <h3 class="game-panel__title">{{ 'heroes.current_trainer'|trans }}</h3>
+                        {% if is_training_locked %}
+                            <span class="status-chip status-chip--danger">🔒 {{ 'training.locked'|trans }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="training-hero-dashboard__grid">
+                        {# Trainer info #}
+                        <div class="training-hero-dashboard__trainer-info">
+                            <div class="trainer-identity">
+                                <span class="trainer-avatar" aria-hidden="true">👨‍🏫</span>
+                                <div>
+                                    <span class="trainer-name">{{ hero.trainer.name }}</span>
+                                    <span class="trainer-meta">
+                                        {{ race_icon(hero.trainer.race) }} {{ ('heroes.race_' ~ hero.trainer.race.value)|trans }} &bull; 
+                                        {{ 'heroes.age'|trans }}: {{ hero.trainer.age }} {{ 'heroes.years'|trans }} 
+                                        ({{ ('heroes.age_phase.' ~ hero_age_phase(hero.trainer)|lower)|trans }} {{ hero_age_phase_icon(hero.trainer) }})
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Focus & Progress #}
+                        <div class="training-hero-dashboard__progress-panel">
+                            <h4 class="training-section-title">{{ 'training.training_focus'|trans }}</h4>
+                            <div class="focus-details">
+                                <div class="focus-details__type">
+                                    <span class="focus-type-label">{{ 'training.type'|trans }}:</span>
+                                    <span class="focus-type-value">
+                                        {% if hero.trainer.trainingType %}
+                                            {{ ('training.type_' ~ hero.trainer.trainingType.value)|trans }}
+                                            {% if hero.trainer.trainingType.value == 'attribute' and hero.trainer.targetAttribute %}
+                                                — {{ ('training.attr.' ~ hero.trainer.targetAttribute)|trans }}
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="copy-muted">{{ 'training.idle'|trans }}</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                {% if hero.trainer.trainingType and hero.trainer.trainingType.value == 'attribute' and hero.trainer.targetAttribute %}
+                                    {% set attrKey = hero.trainer.targetAttribute %}
+                                    {% set heroVal = attribute(hero, attrKey == 'int' ? 'intel' : attrKey) %}
+                                    {% set trainerVal = attribute(hero.trainer, attrKey == 'int' ? 'intel' : attrKey) %}
+                                    {% set progressPct = min(100, (heroVal / trainerVal) * 100) %}
+                                    <div class="focus-details__progress-bar">
+                                        <div class="progress-bar-header">
+                                            <span class="progress-bar-label">{{ 'training.progress_cap'|trans }}:</span>
+                                            <span class="progress-bar-values">
+                                                <span class="training-progress-value{% if heroVal >= trainerVal %} training-progress-value--capped{% endif %}">
+                                                    {{ heroVal }} / {{ trainerVal }}
+                                                </span>
+                                                {% if heroVal >= trainerVal %}
+                                                    <span class="training-progress-cap-label">({{ 'training.capped'|trans }})</span>
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        {% include 'components/ui/progress_bar.html.twig' with {
+                                            percentage: progressPct,
+                                            container_class: 'ui-progress ui-progress--compact',
+                                            progress_class: heroVal >= trainerVal ? 'ui-progress__fill ui-progress__fill--danger' : 'ui-progress__fill ui-progress__fill--accent'
+                                        } %}
+                                    </div>
+                                {% elseif hero.trainer.trainingType and hero.trainer.trainingType.value == 'magic' %}
+                                    {% set progressPct = min(100, (hero.magicCapacity / 5) * 100) %}
+                                    <div class="focus-details__progress-bar">
+                                        <div class="progress-bar-header">
+                                            <span class="progress-bar-label">{{ 'training.progress_cap'|trans }}:</span>
+                                            <span class="progress-bar-values">
+                                                <span class="training-progress-value{% if hero.magicCapacity >= 5 %} training-progress-value--capped{% endif %}">
+                                                    {{ hero.magicCapacity }} / 5
+                                                </span>
+                                                {% if hero.magicCapacity >= 5 %}
+                                                    <span class="training-progress-cap-label">({{ 'training.capped'|trans }})</span>
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        {% include 'components/ui/progress_bar.html.twig' with {
+                                            percentage: progressPct,
+                                            container_class: 'ui-progress ui-progress--compact',
+                                            progress_class: hero.magicCapacity >= 5 ? 'ui-progress__fill ui-progress__fill--danger' : 'ui-progress__fill ui-progress__fill--accent'
+                                        } %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {# Forecast #}
+                        <div class="training-hero-dashboard__forecast">
+                            <h4 class="training-section-title">{{ 'training.forecast'|trans }} ({{ next_lock_formatted }})</h4>
+                            <div class="forecast-indicators">
+                                <div class="forecast-row">
+                                    <span class="forecast-label">{{ 'heroes.fatigue'|trans }}:</span>
+                                    <span class="forecast-values">
+                                        {{ hero.fatigue }}% &rarr;
+                                        {% if hero.trainer.trainingType %}
+                                            {% if hero.trainer.trainingType.value == 'form' %}
+                                                <span class="copy-status-success">{{ max(0, hero.fatigue - 20) }}%</span>
+                                            {% else %}
+                                                <span class="copy-status-error">{{ min(100, hero.fatigue + 20) }}%</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span>{{ hero.fatigue }}%</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="forecast-row">
+                                    <span class="forecast-label">{{ 'heroes.combat_form'|trans }}:</span>
+                                    <span class="forecast-values">
+                                        {{ hero.form }}% &rarr;
+                                        {% if hero.trainer.trainingType and hero.trainer.trainingType.value == 'form' %}
+                                            <span class="copy-status-success copy-strong">{{ min(100, hero.form + 20) }}%</span>
+                                        {% else %}
+                                            <span>{{ hero.form }}%</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="training-hero-dashboard__footer">
+                        <button type="button" data-action="click->training#unassignTrainee"
+                                data-trainer-id="{{ hero.trainer.id }}" data-hero-id="{{ hero.id }}"
+                                class="btn btn-outline btn--sm" {% if is_training_locked %}disabled{% endif %}>
+                            {{ 'training.unassign_hero'|trans }}
+                        </button>
+                    </div>
                 </div>
             {% else %}
                 <div class="game-panel">
                     <h3 class="game-panel__title">{{ 'training.assign_hero'|trans }}</h3>
-                    <div class="dashboard-grid-2">
+                    <p class="copy-muted copy-xs training-subtitle">{{ 'training.select_trainee'|trans }}</p>
+                    
+                    <div class="training-trainer-grid">
                         {% for trainer in trainers %}
                             {% set maxSlots = training_service.getTrainerSlotsLimit(trainer) %}
-                            {% if trainer.heroes|length < maxSlots %}
-                                <div class="trainer-card">
-                                    <p class="trainer-card__name">{{ trainer.name }}</p>
-                                    <div class="form-field">
-                                        <label for="hero-trainer-select-{{ trainer.id }}" class="sr-only">{{ 'training.select_trainee'|trans }}</label>
-                                        <select id="hero-trainer-select-{{ trainer.id }}" class="form-input" data-action="change->training#assignTrainee" data-trainer-id="{{ trainer.id }}"
-                                                {% if is_training_locked %}disabled{% endif %}>
-                                            <option value="">-- {{ 'training.select_trainee'|trans }} --</option>
-                                            <option value="{{ hero.id }}" selected>{{ hero.name }}</option>
-                                        </select>
+                            {% set occupiedSlots = trainer.heroes|length %}
+                            {% set isFull = occupiedSlots >= maxSlots %}
+                            {% set isTrainerAvailable = trainer.status.value == 'available' %}
+                            
+                            <div class="trainer-card">
+                                <div class="trainer-card__main">
+                                    <div class="trainer-card__header">
+                                        <div class="trainer-card__identity">
+                                            <span class="trainer-card__emoji" aria-hidden="true">👨‍🏫</span>
+                                            <div>
+                                                <h3 class="trainer-card__name">{{ trainer.name }}</h3>
+                                                <span class="trainer-card__meta">
+                                                    {{ race_icon(trainer.race) }} {{ ('heroes.race_' ~ trainer.race.value)|trans }} &bull; 
+                                                    {{ 'heroes.age'|trans }}: {{ trainer.age }} {{ 'heroes.years'|trans }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span class="trainer-slot-badge">
+                                            {{ 'training.trainer_slots'|trans({'%occupied%': occupiedSlots, '%limit%': maxSlots}) }}
+                                        </span>
+                                    </div>
+
+                                    <div class="trainer-card__section">
+                                        <h4 class="trainer-card__section-title">{{ 'training.training_focus'|trans }}</h4>
+                                        <p class="copy-primary trainer-card__focus-value">
+                                            {% if trainer.trainingType %}
+                                                {{ ('training.type_' ~ trainer.trainingType.value)|trans }}
+                                                {% if trainer.trainingType.value == 'attribute' and trainer.targetAttribute %}
+                                                    — {{ ('training.attr.' ~ trainer.targetAttribute)|trans }} ({{ attribute(trainer, trainer.targetAttribute == 'int' ? 'intel' : trainer.targetAttribute) }})
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="copy-muted">{{ 'training.idle'|trans }}</span>
+                                            {% endif %}
+                                        </p>
                                     </div>
                                 </div>
-                            {% endif %}
+
+                                <div class="trainer-card__assign">
+                                    {% if is_training_locked %}
+                                        <button type="button" class="btn btn-outline btn--sm btn--block" disabled>
+                                            🔒 {{ 'training.locked'|trans }}
+                                        </button>
+                                    {% elseif not isTrainerAvailable %}
+                                        <button type="button" class="btn btn-outline btn--sm btn--block" disabled>
+                                            {{ 'training.dismiss_selling_desc'|trans }}
+                                        </button>
+                                    {% elseif isFull %}
+                                        <button type="button" class="btn btn-outline btn--sm btn--block" disabled>
+                                            {{ 'training.capped'|trans }}
+                                        </button>
+                                    {% else %}
+                                        <button type="button" 
+                                                data-action="click->training#assignTraineeDirect" 
+                                                data-trainer-id="{{ trainer.id }}" 
+                                                data-hero-id="{{ hero.id }}"
+                                                class="btn btn-primary btn--sm btn--block">
+                                            💪 {{ 'training.assign_hero'|trans }}
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="training-empty-state">
+                                <span class="training-empty-state__icon">📭</span>
+                                <h3 class="game-panel__title">{{ 'training.no_trainers_title'|trans }}</h3>
+                                <p class="training-empty-state__desc">{{ 'training.no_trainers_desc'|trans }}</p>
+                            </div>
                         {% endfor %}
                     </div>
-                    <a href="{{ path('app_hq', { facility: 'training' }) }}" class="link link--block">
+                    
+                    <a href="{{ path('app_hq', { facility: 'training' }) }}" class="link link--block training-manage-link">
                         {{ 'heroes.manage_all_trainers'|trans }} →
                     </a>
                 </div>
             {% endif %}
         </div>
+    </div>
 
-    {% elseif tab == 'history' %}
+    <div id="hero-tab-history" class="tab-content {% if tab != 'history' %}hidden{% endif %}">
         <div class="layout-stack layout-stack--lg">
             {% include 'components/hero/combat_stats.html.twig' with { hero: hero, trainingHistory: trainingHistory } %}
             {% include 'components/hero/recent_activity.html.twig' with { hero: hero, trainingHistory: trainingHistory, heroHistory: heroHistory } %}
+        </div>
+    </div>
+
+    {# Sell Hero Modal #}
+    {% if hero.isCombatant and hero.status.value == 'available' and hero.trainer is null %}
+        {% set can_leave = hero_can_leave_roster(team, hero) %}
+        <div data-controller="modal" data-modal-event-name-value="modal:open-sell-hero" id="sell-hero-modal">
+            <div data-modal-target="dialog" class="hidden modal-overlay" data-action="click->modal#closeBackdrop">
+                <div class="modal-box modal-form" role="dialog" aria-modal="true" aria-labelledby="sell-modal-title">
+                    <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+                        <span aria-hidden="true" class="modal-close__icon">✕</span>
+                        <span class="sr-only">{{ 'modal.close'|trans }}</span>
+                    </button>
+                    <h2 id="sell-modal-title" class="modal-form__title">🪙 {{ 'heroes.sell_title'|trans }}</h2>
+                    <div class="modal-form__body">
+                        {% include 'components/hero/sell_panel.html.twig' with { hero: hero, team: team } %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Dismiss Hero Modal #}
+        <div data-controller="modal" data-modal-event-name-value="modal:open-dismiss-hero" id="dismiss-hero-modal">
+            <div data-modal-target="dialog" class="hidden modal-overlay" data-action="click->modal#closeBackdrop">
+                <div class="modal-box modal-form" role="dialog" aria-modal="true" aria-labelledby="dismiss-modal-title">
+                    <button type="button" data-action="click->modal#close" class="modal-close" aria-label="{{ 'modal.close'|trans }}">
+                        <span aria-hidden="true" class="modal-close__icon">✕</span>
+                        <span class="sr-only">{{ 'modal.close'|trans }}</span>
+                    </button>
+                    <h2 id="dismiss-modal-title" class="modal-form__title">❌ {{ 'heroes.dismiss_title'|trans }}</h2>
+                    <div class="modal-form__body">
+                        {% include 'components/hero/dismiss_panel.html.twig' with { hero: hero, team: team } %}
+                    </div>
+                </div>
+            </div>
         </div>
     {% endif %}
 </div>

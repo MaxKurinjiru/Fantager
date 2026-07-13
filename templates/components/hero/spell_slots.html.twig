@@ -39,13 +39,13 @@
                         <span class="status-chip status-chip--purple">{{ 'heroes.equipped'|trans }}</span>
                     </div>
                 {% else %}
-                    <div class="hero-spell-row hero-spell-row--empty">
+                    <a href="javascript:void(0)" onclick="document.querySelector('[data-tab=\'hero-tab-spells\']').click()" class="hero-spell-row hero-spell-row--empty">
                         <div class="layout-cluster layout-cluster--sm">
                             <span class="hero-spell-row__empty-icon">🔮</span>
                             <span class="hero-spell-row__empty-label">{{ 'spells.slot_empty'|trans({'%slot%': i}) }}</span>
                         </div>
-                        <a href="{{ path('app_heroes_detail', { id: hero.id, tab: 'spells' }) }}" class="inline-link">{{ 'heroes.equip'|trans }}</a>
-                    </div>
+                        <span class="inline-link">{{ 'heroes.equip'|trans }}</span>
+                    </a>
                 {% endif %}
             {% endfor %}
         {% else %}

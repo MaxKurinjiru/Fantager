@@ -11,33 +11,36 @@
                 <div class="layout-stack layout-stack--sm">
                     {# Item Header #}
                     <div class="item-card__header">
-                        <div class="layout-cluster">
+                        <div class="layout-cluster layout-cluster--start">
                             <span class="emoji-icon emoji-icon--lg">
                                 {% if item.slotType.value == 'main_hand' or item.slotType.value == 'weapon' %}🗡️
+                                {% elseif item.slotType.value == 'off_hand' %}🛡️
                                 {% elseif item.slotType.value == 'head' %}🪖
-                                {% elseif item.slotType.value == 'body' %}🛡️
+                                {% elseif item.slotType.value == 'body' %}🧥
+                                {% elseif item.slotType.value == 'hands' %}🧤
+                                {% elseif item.slotType.value == 'feet' %}🥾
+                                {% elseif item.slotType.value == 'amulet' %}📿
                                 {% elseif item.slotType.value == 'ring' %}💍
                                 {% else %}🎒{% endif %}
                             </span>
                             <div>
                                 <h3 class="item-card__title">{{ item.name }}</h3>
-                                <span class="item-card__rarity-line rarity-tag rarity-tag--{{ item.rarity.value }}">
-                                    {{ ('inventory.rarity_' ~ item.rarity.value)|trans }} &bull; {{ ('inventory.slot_' ~ item.slotType.value)|trans }}
-                                </span>
+                                <div class="item-card__meta-tags">
+                                    <span class="rarity-tag rarity-tag--{{ item.rarity.value }}">{{ ('inventory.rarity_' ~ item.rarity.value)|trans }}</span>
+                                    <span class="item-slot-tag">{{ ('inventory.slot_' ~ item.slotType.value)|trans }}</span>
+                                </div>
                             </div>
                         </div>
-                        
-                        <span class="item-durability-badge">
-                            {{ 'inventory.durability'|trans }}: {{ item.durability }}%
-                        </span>
                     </div>
 
                     {# Stats / Bonuses #}
                     <div class="item-bonus-panel">
                         {% for stat, bonus in item.bonuses %}
-                            <span class="item-bonus-tag">
-                                {{ stat|upper }}: <strong class="item-bonus-tag__value">+{{ bonus }}</strong>
-                            </span>
+                            {% if (bonus ~ '') matches '/^-?[0-9]/' %}
+                                <span class="item-bonus-tag">
+                                    {{ ('inventory.stat_' ~ stat)|trans({}, null, null)|default(stat|upper) }}: <strong class="item-bonus-tag__value">+{{ bonus }}</strong>
+                                </span>
+                            {% endif %}
                         {% else %}
                             <span class="item-bonus-empty">{{ 'inventory.no_bonuses'|trans }}</span>
                         {% endfor %}
@@ -53,6 +56,7 @@
                         {% else %}
                             <span class="item-available-label">{{ 'inventory.available'|trans }}</span>
                         {% endif %}
+                        <span class="item-durability-badge {% if item.durability < 100 %}item-durability-badge--low{% endif %}">{{ 'inventory.durability'|trans }}: {{ item.durability }}%</span>
                     </div>
 
                     {# Dynamic Swap/Equip Buttons #}

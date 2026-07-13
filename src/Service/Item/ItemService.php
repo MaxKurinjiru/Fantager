@@ -18,6 +18,7 @@ use App\Enum\ItemSubType;
 use App\Enum\TransactionType;
 use App\Exception\UserFacingException;
 use App\Repository\Item\ItemRepository;
+use App\Service\Config\RaceConfig;
 use App\Service\Economy\EconomyService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Translation\UserMessageTranslator;
@@ -54,6 +55,7 @@ class ItemService
         private readonly UserMessageTranslator $translator,
         private readonly EconomyService $economyService,
         private readonly TeamChronicleService $teamChronicleService,
+        private readonly RaceConfig $raceConfig,
     ) {
     }
 
@@ -90,6 +92,25 @@ class ItemService
 
         if ($item->getSlotType() !== $slot) {
             throw new UserFacingException('error.item_slot_mismatch', ['%item_slot%' => $item->getSlotType()->value, '%slot%' => $slot->value]);
+        }
+
+        // Validate race-specific equipment restrictions
+        $restrictions = $this->raceConfig->getEquipmentRestrictions($hero->getRace());
+        foreach ($restrictions as $restriction) {
+            if ($item->getSlotType()->value === $restriction || $item->getCategory()->value === $restriction) {
+                $raceKey = 'heroes.race_'.$hero->getRace()->value;
+                $translatedRace = $this->translator->trans($raceKey);
+
+                $restrictionKey = $restriction;
+                if (null !== ItemSlotType::tryFrom($restriction)) {
+                    $restrictionKey = 'inventory.slot_'.$restriction;
+                } elseif (null !== ItemCategory::tryFrom($restriction)) {
+                    $restrictionKey = 'inventory.cat_'.$restriction;
+                }
+                $translatedRestriction = $this->translator->trans($restrictionKey);
+
+                throw new UserFacingException('error.item_race_restricted', ['%race%' => $translatedRace, '%restriction%' => $translatedRestriction]);
+            }
         }
 
         // Unequip whatever is currently in that slot for this hero

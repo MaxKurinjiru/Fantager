@@ -58,6 +58,16 @@
                 <span class="hero-header__meta-item">
                     {% include 'components/hero/rating_badge.html.twig' with { hero: hero, show_complex: true, layout: 'inline' } %}
                 </span>
+                <span class="hero-header__divider"></span>
+                <span class="hero-header__meta-item" title="{{ 'heroes.rating.weekly_salary_hint'|trans }}">
+                    <span class="emoji-icon emoji-icon--sm">🪙</span>
+                    {{ 'heroes.rating.weekly_salary'|trans }}: <strong class="hero-header__meta-strong">{{ hero_weekly_salary(hero)|number_format(0, '.', ' ') }}</strong>
+                </span>
+                <span class="hero-header__divider"></span>
+                <span class="hero-header__meta-item" title="{{ 'heroes.rating.gold_value_hint'|trans }}">
+                    <span class="emoji-icon emoji-icon--sm">💰</span>
+                    {{ 'heroes.rating.gold_value'|trans }}: <strong class="hero-header__meta-strong">{{ hero_gold_value(hero)|number_format(0, '.', ' ') }}</strong>
+                </span>
                 {% if hero.trait %}
                     <span class="hero-header__divider"></span>
                     <span class="hero-header__meta-item">
