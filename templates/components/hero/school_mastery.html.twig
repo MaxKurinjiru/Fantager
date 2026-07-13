@@ -1,5 +1,5 @@
 {# templates/components/hero/school_mastery.html.twig #}
-<div class="hero-panel">
+<div class="hero-panel" data-controller="mastery-toggle">
     <div>
         <h2 class="hero-panel__title">{{ 'heroes.school_mastery'|trans }}</h2>
         <p class="hero-panel__desc">{{ 'heroes.school_mastery_desc'|trans }}</p>
@@ -48,7 +48,10 @@
                 {% set progress_pct = 100 %}
             {% endif %}
 
-            <div class="hero-mastery-card">
+            {% set is_inactive = mastery_tier == 1 and school_xp == 0 %}
+
+            <div class="hero-mastery-card {% if is_inactive %}hidden{% endif %}"
+                 {% if is_inactive %}data-mastery-toggle-target="item"{% endif %}>
                 <div class="layout-cluster layout-cluster--sm layout-cluster--between">
                     <div class="layout-cluster layout-cluster--sm">
                         <span class="hero-school-mastery__icon">
@@ -74,5 +77,12 @@
                 } %}
             </div>
         {% endfor %}
+    </div>
+
+    <div class="layout-cluster layout-cluster--center">
+        <button type="button" class="btn btn-outline btn--sm btn--spaced-top" data-action="click->mastery-toggle#toggle"
+                data-toggle-text="{{ 'heroes.btn_hide_inactive_masteries'|trans }}">
+            {{ 'heroes.btn_show_all_masteries'|trans }}
+        </button>
     </div>
 </div>

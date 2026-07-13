@@ -11,12 +11,26 @@
     {% else %}
         <div class="formation-pool">
             {% for h in heroes %}
-                <div data-formation-target="poolHero" data-hero-id="{{ h.id }}" data-name="{{ h.name }}" data-level="{{ h.level }}" data-race="{{ h.race.value }}" data-race-icon="{{ race_icon(h.race) }}"
-                     draggable="true"
+                {% set is_available = h.status.value == 'available' %}
+                <div data-formation-target="poolHero"
+                     data-hero-id="{{ h.id }}"
+                     data-name="{{ h.name }}"
+                     data-level="{{ h.level }}"
+                     data-race="{{ h.race.value }}"
+                     data-race-icon="{{ race_icon(h.race) }}"
+                     data-status="{{ h.status.value }}"
+                     draggable="{{ is_available ? 'true' : 'false' }}"
+                     {% if is_available %}
                      data-action="dragstart->formation#poolDragStart dragend->formation#dragEnd"
-                     class="formation-pool-item">
+                     {% endif %}
+                     class="formation-pool-item {% if not is_available %}formation-pool-item--unavailable{% endif %}">
                     <span data-assigned-badge class="hidden formation-pool-item__badge">{{ 'formation.assigned'|trans }}</span>
-                    {% include 'components/hero/avatar.html.twig' with { race: h.race, text_size: 'text-lg' } %}
+                    {% if not is_available %}
+                        <span class="formation-pool-item__status-badge formation-pool-item__status-badge--{{ h.status.value }}">
+                            {{ ('heroes.status_' ~ h.status.value)|trans }}
+                        </span>
+                    {% endif %}
+                    {% include 'components/hero/avatar.html.twig' with { race: h.race, text_size: 'hero-avatar-emoji--lg' } %}
                     <h4 class="formation-pool-item__name">{{ h.name }}</h4>
                     <p class="formation-pool-item__meta">{{ 'js_flash.hq.lvl_short'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }}</p>
                 </div>

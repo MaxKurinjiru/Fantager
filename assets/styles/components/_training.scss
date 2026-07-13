@@ -150,6 +150,7 @@
   .trainer-card__assign {
     padding-top: 1rem;
     border-top: 1px solid var(--color-border);
+    margin-top: 0.5rem;
   }
 }
 
@@ -274,6 +275,175 @@
 
   .training-progress-cell {
     font-family: var(--font-mono, monospace);
+  }
+
+  .training-hero-dashboard {
+    background: color-mix(in srgb, var(--color-surface-overlay) 65%, transparent);
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(16px);
+    box-shadow: var(--shadow-panel-lg);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+  }
+
+  .training-hero-dashboard__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+
+    .game-panel__title {
+      margin: 0;
+    }
+  }
+
+  .training-hero-dashboard__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: 1.2fr 1fr 1fr;
+    }
+  }
+
+  .training-hero-dashboard__trainer-info {
+    .trainer-identity {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      .trainer-avatar {
+        font-size: 2.25rem;
+        user-select: none;
+      }
+
+      .trainer-name {
+        display: block;
+        font-size: 1.125rem;
+        font-weight: 800;
+        color: var(--color-text-primary);
+        line-height: 1.2;
+      }
+
+      .trainer-meta {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
+      }
+    }
+  }
+
+  .training-hero-dashboard__progress-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .focus-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      &__type {
+        font-size: 0.875rem;
+        
+        .focus-type-label {
+          color: var(--color-text-muted);
+          margin-right: 0.25rem;
+        }
+
+        .focus-type-value {
+          font-weight: 700;
+          color: var(--color-text-primary);
+        }
+      }
+
+      &__progress-bar {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+
+        .progress-bar-header {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.75rem;
+
+          .progress-bar-label {
+            color: var(--color-text-muted);
+          }
+
+          .progress-bar-values {
+            font-family: var(--font-mono, monospace);
+          }
+        }
+      }
+    }
+  }
+
+  .training-hero-dashboard__forecast {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .forecast-indicators {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      background-color: var(--color-surface-base);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: 0.75rem 1rem;
+    }
+
+    .forecast-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+
+      .forecast-label {
+        color: var(--color-text-secondary);
+        font-weight: 500;
+      }
+
+      .forecast-values {
+        font-weight: 600;
+        color: var(--color-text-primary);
+        font-family: var(--font-mono, monospace);
+      }
+    }
+  }
+
+  .training-hero-dashboard__footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .training-subtitle {
+    margin-bottom: 1rem;
+  }
+
+  .trainer-card__focus-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .training-manage-link {
+    margin-top: 1rem;
+  }
+
+  .training-section-title {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin: 0 0 0.5rem;
   }
 }
 

@@ -113,7 +113,7 @@ class HeroController extends AbstractController
             }
         }
 
-        $items = $this->itemRepository->findBy(['ownerTeam' => $team]);
+        $items = $this->itemRepository->findBy(['ownerTeam' => $team, 'equippedHero' => null]);
         $spells = $this->spellRepository->findAll();
         $heroes = $this->heroRepository->findCombatantsByTeam($team);
         $trainers = $this->heroRepository->findTrainersByTeam($team);

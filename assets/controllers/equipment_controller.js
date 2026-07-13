@@ -29,24 +29,17 @@ export default class extends Controller {
     };
 
     connect() {
-        if (this.hasHeroSelectTarget && this.heroSelectTarget.value) {
-            this.loadHeroEquipment();
-        }
+        // No automatic redirect on connect is needed now.
     }
 
-    async loadHeroEquipment() {
+    loadHeroEquipment() {
         const heroId = this.heroSelectTarget.value;
         if (!heroId) {
-            window.location.search = '';
+            window.location.href = '/app/heroes';
             return;
         }
 
-        // Redirect to URL with query param to let Twig render paperdoll and filter list correctly
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('hero_id') !== heroId) {
-            urlParams.set('hero_id', heroId);
-            window.location.search = urlParams.toString();
-        }
+        window.location.href = `/app/heroes/${heroId}?tab=equipment`;
     }
 
     async equip(e) {

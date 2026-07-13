@@ -1,22 +1,69 @@
 {# templates/components/hero/attributes_panel.html.twig #}
 <div class="hero-panel">
     <div>
-        <h2 class="hero-panel__title hero-panel__title--spaced">{{ 'heroes.primary_attrs'|trans }}</h2>
+        <h2 class="hero-panel__title hero-panel__title--tight">{{ 'heroes.primary_attrs'|trans }}</h2>
         <p class="hero-panel__desc">{{ 'heroes.primary_attrs_desc'|trans }}</p>
     </div>
 
-    <div class="layout-stack layout-stack--md">
-        {% set attr_keys = ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'] %}
+    {% set gear_bonuses = {
+        str: 0,
+        dex: 0,
+        kon: 0,
+        spd: 0,
+        int: 0,
+        wil: 0,
+        cha: 0,
+        lck: 0
+    } %}
 
-        {% for attr_key in attr_keys %}
-            {% set val = attribute(hero, attr_key == 'int' ? 'intel' : attr_key) %}
-            {% set bonus = statBonuses[attr_key] ?? 0 %}
-            {% include 'components/hero/attribute_bar.html.twig' with {
-                label: ('training.attr.' ~ attr_key)|trans,
-                val: val,
-                bonus: bonus,
-                max_val: 20
-            } %}
+    {% for slot, item in equipped|default([]) %}
+        {% if item and item.durability > 0 %}
+            {% set factor = item.durability / 100.0 %}
+            {% set b = item.bonuses %}
+            {% set gear_bonuses = gear_bonuses|merge({
+                str: gear_bonuses.str + ((b.str ?? 0) * factor),
+                dex: gear_bonuses.dex + ((b.dex ?? 0) * factor),
+                kon: gear_bonuses.kon + ((b.kon ?? 0) * factor),
+                spd: gear_bonuses.spd + ((b.spd ?? 0) * factor),
+                int: gear_bonuses.int + (((b.intel ?? b.int ?? 0)) * factor),
+                wil: gear_bonuses.wil + ((b.wil ?? 0) * factor),
+                cha: gear_bonuses.cha + ((b.cha ?? 0) * factor),
+                lck: gear_bonuses.lck + ((b.lck ?? 0) * factor)
+            }) %}
+        {% endif %}
+    {% endfor %}
+
+    {% set attr_configs = [
+        { key: 'str', field: 'str', icon: '💪' },
+        { key: 'dex', field: 'dex', icon: '🎯' },
+        { key: 'kon', field: 'kon', icon: '🛡️' },
+        { key: 'spd', field: 'spd', icon: '⚡' },
+        { key: 'int', field: 'intel', icon: '🧠' },
+        { key: 'wil', field: 'wil', icon: '🔮' },
+        { key: 'cha', field: 'cha', icon: '✨' },
+        { key: 'lck', field: 'lck', icon: '🍀' }
+    ] %}
+
+    <div class="layout-stack layout-stack--form layout-stack--spaced">
+        {% for attr in attr_configs %}
+            {% set val = attribute(hero, attr.field) %}
+            {% set gear_bonus = gear_bonuses[attr.key]|round %}
+            {% set total_val = val + gear_bonus %}
+            {% set full_label = ('training.attr.' ~ attr.key)|trans %}
+            
+            {% set tooltip_title = gear_bonus != 0
+                ? 'heroes.attribute_tooltip_with_gear'|trans({'%label%': full_label, '%total%': total_val, '%base%': val, '%bonus%': gear_bonus > 0 ? '+' ~ gear_bonus : gear_bonus})
+                : full_label ~ ': ' ~ val
+            %}
+            
+            <div title="{{ tooltip_title }}">
+                {% include 'components/hero/attribute_bar.html.twig' with {
+                    label: attr.icon ~ ' ' ~ full_label,
+                    val: val,
+                    bonus: gear_bonus,
+                    max_val: max(20, total_val)
+                } %}
+            </div>
         {% endfor %}
     </div>
 </div>

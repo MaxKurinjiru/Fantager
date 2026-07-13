@@ -42,11 +42,11 @@
                 </div>
             {% else %}
                 {# Empty Slot Placeholder #}
-                <div class="hero-gear-slot hero-gear-slot--empty">
+                <button type="button" onclick="document.querySelector('[data-tab=\'hero-tab-equipment\']').click()" class="hero-gear-slot hero-gear-slot--empty">
                     <span class="hero-gear-slot__label hero-gear-slot__label--faint">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
                     <span class="hero-gear-slot__icon">{{ slot.emoji }}</span>
                     <span class="hero-gear-slot__empty-hint">{{ 'inventory.empty_slot'|trans }}</span>
-                </div>
+                </button>
             {% endif %}
         {% endfor %}
     </div>

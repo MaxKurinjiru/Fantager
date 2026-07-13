@@ -238,6 +238,7 @@ error:
   item_cannot_equip: Listed or unavailable items cannot be equipped.
   item_wrong_team: Item does not belong to the same team as the hero.
   item_slot_mismatch: 'Item slot type "%item_slot%" cannot be equipped in slot "%slot%".'
+  item_race_restricted: 'Heroes of race %race% cannot equip items of type/slot %restriction%.'
   item_not_equipped: Item is not equipped.
   item_cannot_dismantle: Listed or unavailable items cannot be dismantled.
   item_not_on_team: Item does not belong to your team.
@@ -588,6 +589,7 @@ heroes:
   status_selling: For Sale
   status_recovering: Recovering
   status_dead: Dead
+  status_retired: Retired
   no_heroes: No heroes in roster
   no_heroes_desc: Go to the summoning chamber to recruit your first heroes.
   go_summoning: Go to Summoning
@@ -596,6 +598,11 @@ heroes:
   tab_spells: Spells
   tab_training: Training
   tab_history: History
+  btn_show_all_masteries: "Show all masteries"
+  btn_hide_inactive_masteries: "Hide inactive masteries"
+  attribute_tooltip_with_bonus: "%label%: %total% (Base: %base%, Race Bonus: %bonus%)"
+  attribute_tooltip_no_bonus: "%label%: %total% (Base: %base%)"
+  attribute_tooltip_with_gear: "%label%: %total% (Base: %base%, Gear Bonus: %bonus%)"
   current_trainer: Current Trainer
   manage_all_trainers: Manage all trainers at HQ
   back_roster: Back to Roster
@@ -687,14 +694,23 @@ heroes:
   derived_stats: "Derived Combat Stats"
   derived_stats_desc: "Calculated from primary attributes and equipped gear."
   combat_hp: "Health (HP)"
+  combat_hp_desc: "Base health pool, modified by Constitution (KON) and gear bonuses."
   combat_attack: "Physical Attack"
+  combat_attack_desc: "Physical attack power, modified by Strength (STR) and equipped weapon."
   combat_spell_power: "Spell Power"
+  combat_spell_power_desc: "Spell casting strength, modified by Intelligence (INT)."
   combat_armor: "Armor Value"
+  combat_armor_desc: "Physical armor from gear, reducing incoming physical damage."
   combat_resistance: "Magic Resistance"
+  combat_resistance_desc: "Magic resistance from Willpower (WIL) and gear, reducing magic damage."
   combat_initiative: "Initiative"
+  combat_initiative_desc: "Determines combat turn order. Influenced by Speed (SPD) and Dexterity (DEX)."
   combat_accuracy: "Accuracy"
+  combat_accuracy_desc: "Chance to hit enemies. Modified by Dexterity (DEX)."
   combat_dodge: "Dodge"
+  combat_dodge_desc: "Chance to evade enemy attacks. Modified by Speed (SPD)."
   combat_crit: "Critical Hit Chance"
+  combat_crit_desc: "Chance for a critical strike with extra damage. Modified by Luck (LCK)."
   trait_label: Personality
   trait_panel_title: Personality Trait
   trait_panel_desc: Permanent innate trait assigned at summoning. Cannot be changed or trained away.
@@ -789,7 +805,12 @@ finance:
   summary_net_period: Balance (last %days% days)
   summary_transactions_period: Transactions (last %days% days)
   summary_net_all_time: All-time balance
+  all_time_income: All-time income
+  all_time_expense: All-time expenses
   summary_recent_transactions: Recent transactions
+  gold_on_hand_hint: Used for running expenses and marketplace purchases.
+  unpaid_debt_ok_hint: The team has no outstanding debt.
+  unpaid_debt_warning_hint: Pay off the debt as soon as possible to avoid penalties.
   tooltip_gold_on_hand: Current amount of gold in the team treasury. Used for weekly expenses and marketplace purchases.
   tooltip_unpaid_debt: Total outstanding debt. Must be paid off as soon as possible to avoid penalties and financial crisis.
   tooltip_weekly_expenses: Total estimated fixed expenses for the next weekly reset. Includes weekly hero salaries and HQ maintenance.
@@ -799,6 +820,8 @@ finance:
   tooltip_expense_period: Total gold spent by your team over the last 7 days (on salaries, maintenance, summoning, purchases, etc.).
   tooltip_net_period: Net financial balance over the last 7 days (income minus expenses).
   tooltip_net_all_time: Cumulative financial balance of the team since its creation.
+  tooltip_all_time_income: Total gold earned by the team since its creation.
+  tooltip_all_time_expense: Total gold spent by the team since its creation.
   filter_type: Filter by Type
   all_types: All Types
   filter_actor: Filter by Actor

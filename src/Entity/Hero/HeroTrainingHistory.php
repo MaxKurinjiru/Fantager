@@ -28,7 +28,7 @@ class HeroTrainingHistory
     private ?string $targetAttribute = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Hero $trainer = null;
 
     #[ORM\Column(nullable: true)]

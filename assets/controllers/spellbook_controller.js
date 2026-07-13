@@ -31,15 +31,10 @@ export default class extends Controller {
     changeHero() {
         const heroId = this.heroSelectTarget.value;
         if (!heroId) {
-            window.location.search = '';
+            window.location.href = '/app/heroes';
             return;
         }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('hero_id') !== heroId) {
-            urlParams.set('hero_id', heroId);
-            window.location.search = urlParams.toString();
-        }
+        window.location.href = `/app/heroes/${heroId}?tab=spells`;
     }
 
     async learn(e) {

@@ -10,6 +10,7 @@ use App\Entity\Item\Item;
 use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
+use App\Enum\Race;
 use App\Enum\TrainingType;
 use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
@@ -390,7 +391,46 @@ class TrainingService
                         }
 
                         $raceMod = $this->raceConfig->getTrainingSpeedModifier($hero->getRace());
-                        $finalRawGainExt = $baseGainScaled * (1.0 + $facilityEfficiency) * $raceMod * $speed;
+
+                        $arenaBonus = 1.0;
+                        if (null !== $hq && null !== $hq->getRaceOptimization()) {
+                            $adaptedRace = Race::tryFrom($hq->getRaceOptimization());
+                            if (null !== $adaptedRace) {
+                                if ($hero->getRace() === $adaptedRace) {
+                                    $arenaBonus = 1.10;
+                                } elseif ($this->raceConfig->getRelationship($hero->getRace(), $adaptedRace) >= 70) {
+                                    $arenaBonus = 1.05;
+                                }
+                            }
+                        }
+
+                        $groupMod = 1.0;
+                        $otherTrainees = [];
+                        foreach ($trainer->getTrainees() as $other) {
+                            if ($other !== $hero && HeroStatus::Dead !== $other->getStatus()) {
+                                $otherTrainees[] = $other;
+                            }
+                        }
+                        if (count($otherTrainees) > 0) {
+                            $hasCompatible = false;
+                            $hasHostile = false;
+                            foreach ($otherTrainees as $other) {
+                                $rel = $this->raceConfig->getRelationship($hero->getRace(), $other->getRace());
+                                if ($rel >= 70) {
+                                    $hasCompatible = true;
+                                } elseif ($rel <= 20) {
+                                    $hasHostile = true;
+                                }
+                            }
+                            if ($hasCompatible) {
+                                $groupMod += 0.05;
+                            }
+                            if ($hasHostile) {
+                                $groupMod -= 0.15;
+                            }
+                        }
+
+                        $finalRawGainExt = $baseGainScaled * (1.0 + $facilityEfficiency) * $raceMod * $arenaBonus * $groupMod * $speed;
 
                         // Trait modifier: QuickLearner +20 %, Slacker -15 %, Perfectionist -10 %
                         $traitMult = $hero->getTrait()?->getTrainingSpeedMultiplier() ?? 1.0;

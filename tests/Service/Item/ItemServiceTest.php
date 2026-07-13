@@ -11,6 +11,9 @@ use App\Entity\Team\Team;
 use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemStatus;
+use App\Enum\Race;
+use App\Enum\ItemCategory;
+use App\Service\Config\RaceConfig;
 use App\Repository\Item\ItemRepository;
 use App\Exception\UserFacingException;
 use App\Service\Item\ItemService;
@@ -33,6 +36,7 @@ class ItemServiceTest extends TestCase
     private RequestStack&MockObject $requestStackMock;
     private EconomyService&MockObject $economyServiceMock;
     private TeamChronicleService&MockObject $teamChronicleServiceMock;
+    private RaceConfig&MockObject $raceConfigMock;
     private ItemService $itemService;
 
     protected function setUp(): void
@@ -48,6 +52,7 @@ class ItemServiceTest extends TestCase
                 $team->setGold($team->getGold() - $amount);
             });
         $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
+        $this->raceConfigMock = $this->createMock(RaceConfig::class);
         
         $translator = new UserMessageTranslator($this->symfonyTranslatorMock, $this->requestStackMock);
         
@@ -56,7 +61,8 @@ class ItemServiceTest extends TestCase
             $this->entityManagerMock,
             $translator,
             $this->economyServiceMock,
-            $this->teamChronicleServiceMock
+            $this->teamChronicleServiceMock,
+            $this->raceConfigMock
         );
     }
 
@@ -150,5 +156,79 @@ class ItemServiceTest extends TestCase
         $this->expectExceptionMessage('error.item_purchase_insufficient_gold');
 
         $this->itemService->purchaseBasicItem($team, 'short_sword');
+    }
+
+    public function testEquipRejectsRestrictedRaceCategory(): void
+    {
+        $team = new Team();
+        $hero = new Hero();
+        $hero->setTeam($team);
+        $hero->setRace(Race::Ent);
+
+        $item = new Item();
+        $item->setOwnerTeam($team);
+        $item->setStatus(ItemStatus::Available);
+        $item->setSlotType(ItemSlotType::MainHand);
+        $item->setCategory(ItemCategory::Weapon);
+
+        $this->raceConfigMock
+            ->expects($this->once())
+            ->method('getEquipmentRestrictions')
+            ->with(Race::Ent)
+            ->willReturn(['weapon', 'shield', 'armor']);
+
+        $this->symfonyTranslatorMock
+            ->method('trans')
+            ->willReturnCallback(static function (string $id): string {
+                if ($id === 'heroes.race_ent') {
+                    return 'Ent';
+                }
+                if ($id === 'inventory.cat_weapon') {
+                    return 'Weapon';
+                }
+                return $id;
+            });
+
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.item_race_restricted');
+
+        $this->itemService->equip($item, $hero, ItemSlotType::MainHand);
+    }
+
+    public function testEquipRejectsRestrictedRaceSlotType(): void
+    {
+        $team = new Team();
+        $hero = new Hero();
+        $hero->setTeam($team);
+        $hero->setRace(Race::Giant);
+
+        $item = new Item();
+        $item->setOwnerTeam($team);
+        $item->setStatus(ItemStatus::Available);
+        $item->setSlotType(ItemSlotType::OffHand);
+        $item->setCategory(ItemCategory::Shield);
+
+        $this->raceConfigMock
+            ->expects($this->once())
+            ->method('getEquipmentRestrictions')
+            ->with(Race::Giant)
+            ->willReturn(['off_hand']);
+
+        $this->symfonyTranslatorMock
+            ->method('trans')
+            ->willReturnCallback(static function (string $id): string {
+                if ($id === 'heroes.race_giant') {
+                    return 'Giant';
+                }
+                if ($id === 'inventory.slot_off_hand') {
+                    return 'Off-Hand';
+                }
+                return $id;
+            });
+
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.item_race_restricted');
+
+        $this->itemService->equip($item, $hero, ItemSlotType::OffHand);
     }
 }

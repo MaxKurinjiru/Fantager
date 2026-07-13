@@ -17,7 +17,15 @@
                 aria-label="{{ 'formation.assign'|trans }}">
             <option value="">-- {{ 'formation.assign'|trans }} --</option>
             {% for h in heroes %}
-                <option value="{{ h.id }}">{{ h.name }}</option>
+                {% set opt_disabled = h.status.value != 'available' and (not hero or hero.id != h.id) %}
+                <option value="{{ h.id }}" 
+                        data-status="{{ h.status.value }}"
+                        {% if opt_disabled %}disabled{% endif %}>
+                    {{ h.name }}
+                    {% if h.status.value != 'available' %}
+                        ({{ ('heroes.status_' ~ h.status.value)|trans }})
+                    {% endif %}
+                </option>
             {% endfor %}
         </select>
     </div>
@@ -25,7 +33,7 @@
     <div data-occupied-view
          draggable="true"
          data-action="dragstart->formation#slotDragStart dragend->formation#dragEnd"
-         class="formation-slot__occupied {% if not hero %}hidden{% endif %}">
+         class="formation-slot__occupied {% if not hero %}hidden{% endif %} {% if hero and hero.status.value != 'available' %}formation-slot__occupied--unavailable{% endif %}">
         <button type="button"
                 draggable="false"
                 data-action="click->formation#removeHero" data-position="{{ slot.pos }}"
@@ -33,6 +41,11 @@
                 aria-label="{{ 'formation.remove_from_slot'|trans }}">
             <span aria-hidden="true">✕</span>
         </button>
+        {% if hero and hero.status.value != 'available' %}
+            <span class="formation-slot__status-badge formation-pool-item__status-badge--{{ hero.status.value }}">
+                {{ ('heroes.status_' ~ hero.status.value)|trans }}
+            </span>
+        {% endif %}
         <span data-hero-avatar class="formation-slot__avatar hero-avatar-emoji" title="{{ hero ? ('heroes.race_' ~ hero.race.value)|trans : '' }}">{{ hero ? race_icon(hero.race) : '' }}</span>
         <h4 data-hero-name class="formation-slot__hero-name">{{ hero ? hero.name : '' }}</h4>
         <p data-hero-details class="formation-slot__hero-details">{{ hero ? 'js_flash.hq.lvl_short'|trans ~ ' ' ~ hero.level ~ ' ' ~ ('heroes.race_' ~ hero.race.value)|trans : '' }}</p>

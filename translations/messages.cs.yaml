@@ -238,6 +238,7 @@ error:
   item_cannot_equip: Vystavené nebo nedostupné předměty nelze vybavit.
   item_wrong_team: Předmět nepatří ke stejnému týmu jako hrdina.
   item_slot_mismatch: 'Typ slotu předmětu "%item_slot%" nelze vybavit do slotu "%slot%".'
+  item_race_restricted: 'Hrdinové rasy %race% nemohou používat předměty typu/slotu %restriction%.'
   item_not_equipped: Předmět není vybaven.
   item_cannot_dismantle: Vystavené nebo nedostupné předměty nelze rozložit.
   item_not_on_team: Předmět nepatří k vašemu týmu.
@@ -587,6 +588,7 @@ heroes:
   status_selling: Na prodej
   status_recovering: Zotavování
   status_dead: Mrtvý
+  status_retired: V důchodu
   no_heroes: Na soupisce nejsou žádní hrdinové
   no_heroes_desc: Jděte do vyvolávací síně a naverbujte své první hrdiny.
   go_summoning: Přejít do vyvolávací síně
@@ -595,6 +597,11 @@ heroes:
   tab_spells: Kouzla
   tab_training: Trénink
   tab_history: Historie
+  btn_show_all_masteries: "Zobrazit všechny dovednosti"
+  btn_hide_inactive_masteries: "Skrýt neaktivní dovednosti"
+  attribute_tooltip_with_bonus: "%label%: %total% (Základ: %base%, Rasový bonus: %bonus%)"
+  attribute_tooltip_no_bonus: "%label%: %total% (Základ: %base%)"
+  attribute_tooltip_with_gear: "%label%: %total% (Základ: %base%, Bonus z výbavy: %bonus%)"
   current_trainer: Aktuální trenér
   manage_all_trainers: Spravovat všechny trenéry v základně
   back_roster: Zpět na soupisku
@@ -686,14 +693,23 @@ heroes:
   derived_stats: "Bojové staty"
   derived_stats_desc: "Vypočítáno z primárních atributů a vybavené zbroje."
   combat_hp: "Životy (HP)"
+  combat_hp_desc: "Základní životy hrdiny, zvýšené o bonusy z Konstituce (KON) a vybavení."
   combat_attack: "Fyzický útok"
+  combat_attack_desc: "Fyzická útočná síla, ovlivněná Silou (STR) a vybavenou zbraní."
   combat_spell_power: "Síla kouzel"
+  combat_spell_power_desc: "Síla magických kouzel, ovlivněná Inteligencí (INT)."
   combat_armor: "Zbroj"
+  combat_armor_desc: "Fyzická zbroj z vybavení, snižující příchozí fyzické poškození."
   combat_resistance: "Magický odpor"
+  combat_resistance_desc: "Odolnost vůči magii z Vůle (WIL) a vybavení, snižující magické poškození."
   combat_initiative: "Iniciativa"
+  combat_initiative_desc: "Určuje rychlost reakce a pořadí tahů v boji. Ovlivněna Rychlostí (SPD) a Obratností (DEX)."
   combat_accuracy: "Přesnost"
+  combat_accuracy_desc: "Šance na přesný zásah nepřítele. Ovlivněna Obratností (DEX)."
   combat_dodge: "Úhyb"
+  combat_dodge_desc: "Šance na vyhnutí se nepřátelským útokům. Ovlivněna Rychlostí (SPD)."
   combat_crit: "Kritický zásah"
+  combat_crit_desc: "Šance na kritický zásah se zvýšeným poškozením. Ovlivněna Štěstím (LCK)."
   trait_label: Osobnost
   trait_panel_title: Osobnostní rys
   trait_panel_desc: Trvalý vrozený rys přiřazený při vyvolání. Nelze změnit ani natrénovat pryč.
@@ -788,7 +804,12 @@ finance:
   summary_net_period: Bilance (posledních %days% dní)
   summary_transactions_period: Transakcí (posledních %days% dní)
   summary_net_all_time: Celková bilance
+  all_time_income: Celkové příjmy
+  all_time_expense: Celkové výdaje
   summary_recent_transactions: Poslední transakce
+  gold_on_hand_hint: Používá se pro běžné výdaje a nákupy na tržišti.
+  unpaid_debt_ok_hint: Tým nemá žádné neuhrazené dluhy.
+  unpaid_debt_warning_hint: Splaťte dluh co nejdříve k zamezení penalizací.
   tooltip_gold_on_hand: Aktuální zásoba zlata v týmové pokladně. Používá se pro úhradu týdenních výdajů a nákupy na tržišti.
   tooltip_unpaid_debt: Dosud nesplacené pohledávky a dluhy týmu. Je nutné je co nejdříve splatit, aby se předešlo penalizacím a finanční krizi.
   tooltip_weekly_expenses: Celkové předpokládané fixní náklady na příští týdenní reset. Skládají se z týdenních platů hrdinů a údržby budov centrály.
@@ -798,6 +819,8 @@ finance:
   tooltip_expense_period: Celková částka zlata, kterou váš tým utratil za posledních 7 dní (za mzdy, údržbu, vyvolávání, nákupy atd.).
   tooltip_net_period: Čistá finanční bilance za posledních 7 dní (příjmy minus výdaje).
   tooltip_net_all_time: Celková historická finanční bilance týmu od jeho založení.
+  tooltip_all_time_income: Celková částka zlata získaná týmem od založení.
+  tooltip_all_time_expense: Celková částka zlata utracená týmem od založení.
   filter_type: Filtrovat podle typu
   all_types: Všechny typy
   filter_actor: Filtrovat podle iniciátora

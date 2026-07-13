@@ -126,4 +126,13 @@ class RaceConfig
 
         return $compatible;
     }
+
+    /**
+     * @return list<string>
+     */
+    public function getEquipmentRestrictions(Race $race): array
+    {
+        /* @var list<string> */
+        return $this->get($race)['equipment_restrictions'] ?? [];
+    }
 }

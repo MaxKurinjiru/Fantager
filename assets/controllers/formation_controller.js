@@ -121,6 +121,10 @@ export default class extends Controller {
 
     poolDragStart(e) {
         const card = e.currentTarget;
+        if (card.dataset.status && card.dataset.status !== 'available') {
+            e.preventDefault();
+            return;
+        }
         const heroId = parseInt(card.dataset.heroId, 10);
         this.startDrag(e, { heroId, sourcePosition: null });
         card.classList.add('formation-pool-item--dragging');
@@ -244,6 +248,11 @@ export default class extends Controller {
             return;
         }
 
+        const heroCard = this.poolHeroTargets.find(hc => parseInt(hc.dataset.heroId, 10) === heroId);
+        if (heroCard && heroCard.dataset.status && heroCard.dataset.status !== 'available') {
+            return;
+        }
+
         const fromPosition = sourcePosition
             ?? Object.keys(this.slotsState).find(pos => this.slotsState[pos] === heroId);
         const targetHero = this.slotsState[targetPosition];
@@ -359,6 +368,24 @@ export default class extends Controller {
                             avatarElem.textContent = heroCard.dataset.raceIcon || '👤';
                             avatarElem.title = raceTranslated;
                         }
+
+                        // Update status badge & unavailable class based on heroCard status
+                        const isAvailable = heroCard.dataset.status === 'available';
+                        const badge = occupiedView.querySelector('.formation-slot__status-badge');
+                        if (isAvailable) {
+                            occupiedView.classList.remove('formation-slot__occupied--unavailable');
+                            if (badge) badge.remove();
+                        } else {
+                            occupiedView.classList.add('formation-slot__occupied--unavailable');
+                            if (!badge) {
+                                const statusVal = heroCard.dataset.status;
+                                const statusText = heroCard.querySelector('.formation-pool-item__status-badge')?.textContent || statusVal;
+                                const newBadge = document.createElement('span');
+                                newBadge.className = `formation-slot__status-badge formation-pool-item__status-badge--${statusVal}`;
+                                newBadge.textContent = statusText;
+                                occupiedView.insertBefore(newBadge, occupiedView.firstChild);
+                            }
+                        }
                     }
                     if (removeBtn) {
                         removeBtn.dataset.position = position;
@@ -400,7 +427,9 @@ export default class extends Controller {
                 Array.from(select.options).forEach(opt => {
                     if (!opt.value) return;
                     const optId = parseInt(opt.value, 10);
-                    opt.disabled = assignedIds.includes(optId) && optId.toString() !== currentVal;
+                    const isAssignedElsewhere = assignedIds.includes(optId) && optId.toString() !== currentVal;
+                    const isUnavailable = opt.dataset.status !== 'available' && optId.toString() !== currentVal;
+                    opt.disabled = isAssignedElsewhere || isUnavailable;
                 });
             }
         });

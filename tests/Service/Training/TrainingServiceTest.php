@@ -377,4 +377,238 @@ class TrainingServiceTest extends TestCase
         $this->assertNull($item->getEquippedHero());
         $this->assertNull($item->getEquippedSlot());
     }
+
+    public function testProcessTrainingTickArenaAdaptationExactBonus(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getGameSpeed')->willReturn('1.00');
+        $team->method('getKingdom')->willReturn($kingdom);
+        
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setRace(Race::Elf);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setStrRaw(140);
+        $hero->setFatigue(10);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setAgeRaw(250);
+        $trainer->setTrainingType(TrainingType::Attribute);
+        $trainer->setTargetAttribute('str');
+        $trainer->setStrRaw(160);
+        $trainer->addTrainee($hero);
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+        $hq->setRaceOptimization('elf');
+        $facility = new Facility();
+        $facility->setType(FacilityType::Training);
+        $facility->setPassiveBonuses(['training_efficiency_pct' => 0.0]);
+        $hq->addFacility($facility);
+
+        $this->hqRepositoryMock
+            ->method('findOneBy')
+            ->willReturn($hq);
+
+        $this->raceConfigMock
+            ->expects($this->any())
+            ->method('getTrainingSpeedModifier')
+            ->with(Race::Elf)
+            ->willReturn(1.0);
+
+        $this->mockTrainerQueryResult([$trainer]);
+
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable());
+
+        $this->assertSame(143, $hero->getStrRaw());
+    }
+
+    public function testProcessTrainingTickArenaAdaptationCompatibleBonus(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getGameSpeed')->willReturn('1.00');
+        $team->method('getKingdom')->willReturn($kingdom);
+        
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setRace(Race::Elf);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setStrRaw(140);
+        $hero->setFatigue(10);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setAgeRaw(250);
+        $trainer->setTrainingType(TrainingType::Attribute);
+        $trainer->setTargetAttribute('str');
+        $trainer->setStrRaw(160);
+        $trainer->addTrainee($hero);
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+        $hq->setRaceOptimization('human');
+        $facility = new Facility();
+        $facility->setType(FacilityType::Training);
+        $facility->setPassiveBonuses(['training_efficiency_pct' => 0.0]);
+        $hq->addFacility($facility);
+
+        $this->hqRepositoryMock
+            ->method('findOneBy')
+            ->willReturn($hq);
+
+        $this->raceConfigMock
+            ->expects($this->any())
+            ->method('getTrainingSpeedModifier')
+            ->with(Race::Elf)
+            ->willReturn(1.0);
+
+        $this->raceConfigMock
+            ->expects($this->any())
+            ->method('getRelationship')
+            ->with(Race::Elf, Race::Human)
+            ->willReturn(90);
+
+        $this->mockTrainerQueryResult([$trainer]);
+
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable());
+
+        $this->assertSame(143, $hero->getStrRaw());
+    }
+
+    public function testProcessTrainingTickGroupCompatibleBonus(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getGameSpeed')->willReturn('1.00');
+        $team->method('getKingdom')->willReturn($kingdom);
+        
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setRace(Race::Elf);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setStrRaw(140);
+        $hero->setFatigue(10);
+
+        $otherTrainee = new Hero();
+        $otherTrainee->setRole(HeroRole::Combatant);
+        $otherTrainee->setTeam($team);
+        $otherTrainee->setRace(Race::Human);
+        $otherTrainee->setStatus(HeroStatus::Available);
+        $otherTrainee->setStrRaw(140);
+        $otherTrainee->setFatigue(10);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setAgeRaw(250);
+        $trainer->setTrainingType(TrainingType::Attribute);
+        $trainer->setTargetAttribute('str');
+        $trainer->setStrRaw(160);
+        
+        $trainer->addTrainee($hero);
+        $trainer->addTrainee($otherTrainee);
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+        $facility = new Facility();
+        $facility->setType(FacilityType::Training);
+        $facility->setPassiveBonuses(['training_efficiency_pct' => 0.0]);
+        $hq->addFacility($facility);
+
+        $this->hqRepositoryMock
+            ->method('findOneBy')
+            ->willReturn($hq);
+
+        $this->raceConfigMock
+            ->method('getTrainingSpeedModifier')
+            ->willReturn(1.0);
+
+        $this->raceConfigMock
+            ->method('getRelationship')
+            ->willReturnCallback(function (Race $a, Race $b) {
+                if (($a === Race::Elf && $b === Race::Human) || ($a === Race::Human && $b === Race::Elf)) {
+                    return 90;
+                }
+                return 100;
+            });
+
+        $this->mockTrainerQueryResult([$trainer]);
+
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable());
+
+        $this->assertSame(143, $hero->getStrRaw());
+    }
+
+    public function testProcessTrainingTickGroupHostilePenalty(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getGameSpeed')->willReturn('1.00');
+        $team->method('getKingdom')->willReturn($kingdom);
+        
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setRace(Race::Elf);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setStrRaw(110);
+        $hero->setFatigue(10);
+
+        $otherTrainee = new Hero();
+        $otherTrainee->setRole(HeroRole::Combatant);
+        $otherTrainee->setTeam($team);
+        $otherTrainee->setRace(Race::Orc);
+        $otherTrainee->setStatus(HeroStatus::Available);
+        $otherTrainee->setStrRaw(110);
+        $otherTrainee->setFatigue(10);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setAgeRaw(250);
+        $trainer->setTrainingType(TrainingType::Attribute);
+        $trainer->setTargetAttribute('str');
+        $trainer->setStrRaw(160);
+        
+        $trainer->addTrainee($hero);
+        $trainer->addTrainee($otherTrainee);
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+        $facility = new Facility();
+        $facility->setType(FacilityType::Training);
+        $facility->setPassiveBonuses(['training_efficiency_pct' => 0.0]);
+        $hq->addFacility($facility);
+
+        $this->hqRepositoryMock
+            ->method('findOneBy')
+            ->willReturn($hq);
+
+        $this->raceConfigMock
+            ->method('getTrainingSpeedModifier')
+            ->willReturn(1.0);
+
+        $this->raceConfigMock
+            ->method('getRelationship')
+            ->willReturnCallback(function (Race $a, Race $b) {
+                if (($a === Race::Elf && $b === Race::Orc) || ($a === Race::Orc && $b === Race::Elf)) {
+                    return 0;
+                }
+                return 100;
+            });
+
+        $this->mockTrainerQueryResult([$trainer]);
+
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable());
+
+        $this->assertSame(113, $hero->getStrRaw());
+    }
 }

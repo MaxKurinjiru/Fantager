@@ -6,25 +6,23 @@
     {% set crisis = team_financial_crisis(team) %}
     {% set gold_value = hero_gold_value(hero) %}
     {% set compensation = (gold_value * 0.4)|round %}
-    <div class="hero-panel hero-dismiss-panel">
-        <div>
-            <h2 class="hero-panel__title">{{ 'heroes.dismiss_title'|trans }}</h2>
-            <p class="hero-panel__desc">
-                {% if crisis.level != 'none' %}
-                    {{ 'heroes.dismiss_desc_crisis'|trans }}
-                {% else %}
-                    {{ 'heroes.dismiss_desc'|trans }}
-                {% endif %}
-            </p>
-            <p class="hero-panel__hint">
-                {{ 'heroes.rating.dismiss_estimate'|trans({'%value%': gold_value, '%compensation%': compensation}) }}
-            </p>
-            {% if not can_leave %}
-                <p class="hero-panel__hint hero-panel__hint--warning">
-                    {{ 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}
-                </p>
+    <div class="layout-stack layout-stack--form">
+        <p class="hero-panel__desc">
+            {% if crisis.level != 'none' %}
+                {{ 'heroes.dismiss_desc_crisis'|trans }}
+            {% else %}
+                {{ 'heroes.dismiss_desc'|trans }}
             {% endif %}
-        </div>
+        </p>
+        <p class="hero-panel__hint">
+            {{ 'heroes.rating.dismiss_estimate'|trans({'%value%': gold_value, '%compensation%': compensation}) }}
+        </p>
+        {% if not can_leave %}
+            <p class="hero-panel__hint hero-panel__hint--warning">
+                {{ 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}
+            </p>
+        {% endif %}
+
         {% if can_leave %}
             <button type="button"
                     class="btn btn-outline btn--sm"
