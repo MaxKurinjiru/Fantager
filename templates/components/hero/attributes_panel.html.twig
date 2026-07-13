@@ -44,7 +44,7 @@
         { key: 'lck', field: 'lck', icon: '🍀' }
     ] %}
 
-    <div class="layout-stack layout-stack--form mt-4">
+    <div class="layout-stack layout-stack--form layout-stack--spaced">
         {% for attr in attr_configs %}
             {% set val = attribute(hero, attr.field) %}
             {% set gear_bonus = gear_bonuses[attr.key]|round %}
