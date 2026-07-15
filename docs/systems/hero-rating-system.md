@@ -1,6 +1,6 @@
 # Hero Rating System — Implementation Plan
 
-Reference: [hero-system.md](hero-system.md), [combat-formulas-draft.md](combat-formulas-draft.md), [marketplace-system.md](marketplace-system.md)
+Reference: [hero-system.md](hero-system.md), [combat-system.md](combat-system.md), [marketplace-system.md](marketplace-system.md)
 
 Purpose: Define a unified, intrinsic hero value model with two metrics — cross-race **base OVR** and hero-specific **complex rating** — and plan its backend rollout. External influences (equipment, spells, team morale/chemistry, form/fatigue) are excluded by design.
 
@@ -15,7 +15,7 @@ Purpose: Define a unified, intrinsic hero value model with two metrics — cross
 | `base_ovr` | 0–100 (FIFA-style) | Fair comparison across all races |
 | `complex_rating` | 0–9999 | Marketplace value, dismiss compensation, NPC pricing, hero/trainer salaries |
 
-Both values are computed **on-demand** (no DB cache in the first iteration). API exposes **two integers only** — no breakdown payload yet.
+Both values are **cached on the `Hero` entity** (`base_ovr`, `complex_rating` columns) for fast listing, sorting, and marketplace filters. Cache is refreshed automatically on hero/mastery changes via `HeroRatingCacheSubscriber` (Doctrine `onFlush`). Bulk backfill: `php bin/console app:hero-ratings:refresh`. API exposes **two integers** — no breakdown payload yet.
 
 Gold amounts across the economy should derive from `complex_rating` (recalibrated constants), replacing ad-hoc formulas today in `HeroDismissalService` and `NpcSimulationService`.
 
@@ -86,6 +86,16 @@ src/Config/HeroRatingConfig.php
 src/ValueObject/Hero/HeroRating.php
 src/Service/Hero/HeroRatingCalculator.php
 ```
+
+### Cache refresh
+
+| Trigger | Mechanism |
+|---------|-----------|
+| Hero insert/update/delete | `HeroRatingCacheSubscriber` recalculates on flush |
+| Weapon/school mastery change | Subscriber collects parent hero and recalculates |
+| Migration / bulk repair | `app:hero-ratings:refresh` console command |
+
+Marketplace list queries and roster sort/filter use the cached columns directly (`MarketplaceService`, repository queries).
 
 ### Refactor existing combat layer
 

@@ -455,7 +455,6 @@ activity:
     training_completed: Dokončený trénink
     item_purchased: Nákup předmětu
     item_sold: Prodej předmětu
-    dungeon_completed: Dokončen dungeon
     summon_completed: Vyvolání hrdiny
     starting_roster: Zakládající člen
     season_ended: Konec sezóny
@@ -861,7 +860,6 @@ finance:
   type_marketplace_sale: Prodej na tržišti
   type_marketplace_purchase: Nákup na tržišti
   type_marketplace_fee: Poplatek tržiště
-  type_dungeon_reward: Odměna z dungeonu
   type_dismantle_gain: Zisk z rozložení
   type_item_repair: Oprava předmětu
   type_spell_learning_cost: Nákup svitku kouzla

@@ -38,7 +38,6 @@ enum ChronicleCategory: string
                 ChronicleEventType::HeroRetired,
                 ChronicleEventType::TrainingCompleted,
                 ChronicleEventType::SummonCompleted,
-                ChronicleEventType::DungeonCompleted,
                 ChronicleEventType::HeroDismissed,
                 ChronicleEventType::TrainerDismissed,
             ],

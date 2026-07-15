@@ -455,7 +455,6 @@ activity:
     training_completed: Training completed
     item_purchased: Item purchased
     item_sold: Item sold
-    dungeon_completed: Dungeon completed
     summon_completed: Hero summoned
     starting_roster: Founding member
     season_ended: Season ended
@@ -862,7 +861,6 @@ finance:
   type_marketplace_sale: Marketplace Sale
   type_marketplace_purchase: Marketplace Purchase
   type_marketplace_fee: Marketplace Fee
-  type_dungeon_reward: Dungeon Reward
   type_dismantle_gain: Dismantle Gain
   type_item_repair: Item Repair
   type_spell_learning_cost: Spell Scroll Purchase

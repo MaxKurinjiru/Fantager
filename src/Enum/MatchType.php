@@ -8,6 +8,5 @@ enum MatchType: string
 {
     case League = 'league';
     case Friendly = 'friendly';
-    case Dungeon = 'dungeon';
     case Arena = 'arena';
 }

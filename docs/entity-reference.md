@@ -32,6 +32,8 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | **Kingdom initialization** creates all NPC teams + first LeagueSeason | Ensures a full league bracket exists before any player joins.                                                                                                                                                                                                       |
 | `**display_name` + `display_name_slug`** both on User                 | `display_name` is stored and displayed exactly as entered. `display_name_slug` is the webalized form (lowercase, diacritics stripped, non-alphanumeric replaced with `-`) and carries a unique index — used solely for collision detection.                         |
 | **TeamChronicle** as single generic table (team chronicle)              | One table (`team_chronicle`) covers all game event types, scoped by **`team_id`** (not `user_id`). `type` (enum) enables filtering; `data` (JSON) holds event-specific context. `subject_key` + `subject_params` (JSON) allow translated rendering at display time in the player's locale. Append-only team history across NPC periods and multiple managers. See [team-chronicle-system.md](systems/team-chronicle-system.md). |
+| **HeroChronicle** as append-only per-hero log | Table `hero_chronicle` scoped by **`hero_id`** (with `original_hero_id` for post-dismiss lookups). Same translation pattern as team chronicle (`subject_key` + `subject_params`). See [hero-chronicle-system.md](systems/hero-chronicle-system.md). |
+| **Hero rating cache** | `Hero.base_ovr` and `Hero.complex_rating` are **cached DB columns**, refreshed on flush via `HeroRatingCacheSubscriber` and bulk backfill via `app:hero-ratings:refresh`. |
 | `**league_tiers_config` JSON on Kingdom**                             | Configurable per kingdom; total player capacity is derived as `sum(tier.groups) × teams_per_group`. Eliminates redundant `max_players` field.                                                                                                                       |
 | **Team `morale` default value = 50**                                  | Range 0–100; 50 represents neutral/mid morale. Applied at team creation and on hero transfer/sell.                                                                                                                                                                  |
 | `**Facility.passive_bonuses` design**                         | In DB, `Facility` uses a `metadata` (JSON) field. The passive bonuses are computed using `getPassiveBonuses()`, combining `metadata` with static bonuses defined per `FacilityType` level.                                                                         |
@@ -47,7 +49,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Concept | Entity / data | Service namespace | Responsibility |
 | ------- | ------------- | ----------------- | -------------- |
-| **Combat** | `App\Entity\Combat\Battle` (`combat_battle`) | `App\Service\Combat` *(planned)* | Turn-based battle simulation, combat log, post-match XP/form/fatigue |
+| **Combat** | `App\Entity\Combat\Battle` (`combat_battle`) | `App\Service\Combat` | Derived stats (`CombatStatCalculator`) ✅; turn engine + replay ⏳ |
 | **Arena facility** | `Headquarters` + `Facility` (`FacilityType::Arena`) | `App\Service\Headquarters\ArenaService` | Arena level, seating capacity, fan appeal, next-home-match projection |
 | **Arena revenue** | `FinancialRecord` (`arena_revenue`) | `App\Service\Economy\ArenaRevenueService` | Ticket payout on league match tick, attendance calculation |
 
@@ -57,7 +59,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 ---
 
-## Database Entities (34 implemented)
+## Database Entities (37 implemented)
 
 ### 1. Auth Domain
 
@@ -95,7 +97,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity            | Key Fields                                                                                                                                     | Relationships                              |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| **Hero**          | id, team_id, name, race (enum), level, xp, age, form, fatigue, morale, magic_capacity, str, dex, kon, spd, intel, wil, cha, lck, **base_ovr**, **complex_rating** (cached), status (enum), **trait** (nullable `HeroTrait` enum) | → Team, has many HeroSpell, equipped Items |
+| **Hero**          | id, team_id, name, race (enum), level, xp, age, form, fatigue, morale, magic_capacity, str, dex, kon, spd, intel, wil, cha, lck, **base_ovr**, **complex_rating** (cached), **matches_played**, **matches_won**, status (enum), **trait** (nullable `HeroTrait` enum) | → Team, has many HeroSpell, HeroChronicle, equipped Items |
 | **SchoolMastery** | id, hero_id, school (enum), mastery_tier, xp                                                                                                  | → Hero                                     |
 | **WeaponMastery** | id, hero_id, style (`ItemSubType` enum), mastery_tier, xp, attunement_progress (0–100)                                                         | → Hero                                     |
 | **HeroSpell**     | id, hero_id, spell_id, is_equipped, slot_number                                                                                                | → Hero, → Spell                            |
@@ -108,7 +110,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | Entity                  | Key Fields                                                                                                                                              | Relationships                |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | **Hero (Trainer role)** | Trainers are heroes with `role = trainer`. Fields: `training_type` (nullable enum), `target_attribute` (nullable string), trainee assignments via `hero.trainer_id` | → Team, has many trainee Heroes |
-| **HeroTrainingHistory** | id, hero_id, training_type (enum), target_attribute (nullable), trainer_id (nullable), stat_gain (nullable), completed_at                               | → Hero (trainee), → Hero (trainer, optional). Append-only log written after each weekly training tick |
+| **HeroTrainingHistory** | id, hero_id, training_type (enum), target_attribute (nullable), trainer_id (nullable), stat_gain (nullable), completed_at                               | → Hero (trainee), → Hero (trainer, optional). Append-only log written after each weekly training tick. Supplemented by `hero_chronicle.training_completed` entries. |
 
 
 ### 6. Formation Domain
@@ -258,7 +260,7 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | `School`            | fire, water, air, earth, light, dark                                                                                                                                                                                                              |
 | `SpellType`         | offensive, defensive, utility                                                                                                                                                                                                                     |
 | `ItemSlotType`      | main_hand, off_hand, head, body, hands, feet, amulet, ring                                                                                                                                                                                          |
-| `ChronicleEventType`   | team_established, player_joined, player_released, battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_purchased, item_sold, dungeon_completed, summon_completed, season_ended, starting_roster |
+| `ChronicleEventType`   | team_established, player_joined, player_released, battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_purchased, item_sold, summon_completed, season_ended, starting_roster |
 | `HeroChronicleEventType` | summoned, transferred, match_played, levelup, mastery_gained, training_completed, injured, recovered, retired, died |
 | `ChronicleReleaseReason` | inactivity, bankruptcy, unverified_registration, account_deleted (stored in `data.reason`; used with `player_released`) |
 | `ChronicleCategory` | all, ownership, competition, roster, economy (UI filter groups; not stored on rows) |
@@ -268,7 +270,7 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | `ItemStatus`        | available, selling                                                                                                                                                                                                                                |
 | `FormationPosition` | front_1, front_2, front_3, back_1, back_2, back_3                                                                                                                                                                                                 |
 | `FormationApproach` | aggressive, balanced, defensive                                                                                                                                                                                                                   |
-| `MatchType`         | league, friendly, dungeon, arena                                                                                                                                                                                                                  |
+| `MatchType`         | league, friendly, arena                                                                                                                                                                                                                  |
 | `BattleResult`      | win_a, win_b, draw                                                                                                                                                                                                                                |
 | `CombatStatProfile` | equipped, human_neutral, full_intrinsic (hero rating / combat stat calculation modes)                                                                                                                                                             |
 | `TrainingType`      | attribute, magic, form                                                                                                                                                                                                                            |
@@ -289,7 +291,7 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | `CraftingStatus`    | pending, in_progress, completed, failed, cancelled                                                                                                                                                                                                |
 | `TransactionType`   | buy_now, auction_win                                                                                                                                                                                                                              |
 | `NotificationType`  | battle_result, training_complete, league_update, marketplace_bid, marketplace_sold, event_started, hero_died, season_ended, **system**                                                                                   |
-| `FinancialRecordType` | league_reward, arena_revenue, summon_fee, marketplace_sale, marketplace_purchase, marketplace_fee, dungeon_reward, dismantle_gain, item_repair, spell_learning_cost, spell_slot_cost, hq_upgrade_cost, **hq_maintenance_fee**, morale_restoration, **debt_repayment**, **hero_dismissal_compensation**, **trainer_dismissal_compensation**, **hq_downgrade_refund**, **kingdom_reward**, **hero_salary**, **trainer_salary** |
+| `FinancialRecordType` | league_reward, arena_revenue, summon_fee, marketplace_sale, marketplace_purchase, marketplace_fee, dismantle_gain, item_repair, spell_learning_cost, spell_slot_cost, hq_upgrade_cost, **hq_maintenance_fee**, morale_restoration, **debt_repayment**, **hero_dismissal_compensation**, **trainer_dismissal_compensation**, **hq_downgrade_refund**, **kingdom_reward**, **hero_salary**, **trainer_salary** |
 | `FinancialCrisisLevel` | **none**, **warning**, **restricted**, **bankruptcy_pending** |
 | `FacilityOperation` | **upgrade**, **downgrade** |
 | `FinancialRecordActor` | system, active, passive                                                                                                                                                                                                                        |
@@ -301,7 +303,7 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 
 | Category                   | Count  |
 | -------------------------- | ------ |
-| DB entities (implemented) | 36     |
+| DB entities (implemented) | 37     |
 | Config-based (not DB)      | 5      |
 | PHP enums                  | 35     |
 | **Total modeled concepts** | **76** |

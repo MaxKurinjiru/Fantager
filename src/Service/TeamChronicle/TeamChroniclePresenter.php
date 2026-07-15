@@ -220,7 +220,6 @@ class TeamChroniclePresenter
             ChronicleEventType::TrainingCompleted => '💪',
             ChronicleEventType::ItemPurchased => '🛒',
             ChronicleEventType::ItemSold => '💰',
-            ChronicleEventType::DungeonCompleted => '🗺️',
             ChronicleEventType::SummonCompleted => '🌀',
             ChronicleEventType::SeasonEnded => '🏆',
             ChronicleEventType::HeroDismissed => '👋',

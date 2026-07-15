@@ -1,6 +1,6 @@
 # Dungeon System (Deferred)
 
-> **Status:** Not implemented. The dungeon backend was removed from the codebase; this document preserves the intended design for a future phase (after the combat engine is complete). Reserved enums (`MatchType::Dungeon`, `FinancialRecordType::DungeonReward`, `ChronicleEventType::DungeonCompleted`) remain in code for forward compatibility.
+> **Status:** Not implemented. The dungeon backend was removed from the codebase; this document preserves the intended design for a future phase (after the combat engine is complete).
 
 Reference: [game-summary.md](../game-summary.md#215-dungeon-system)
 

@@ -599,7 +599,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 15. Marketplace Screen
 **When:** Buying and selling heroes, items, trainers
 
-> **Implemented** as part of the Economy hub at `/app/economy` (legacy `/app/marketplace` redirects). See [15-marketplace.md](screens/15-marketplace.md).
+> **Implemented** at `/app/marketplace` (browse, sell, my listings, history, basic equipment). Financial ledger: `/app/finance`. See [15-marketplace.md](screens/15-marketplace.md).
 
 ### Displayed Information:
 - **Marketplace Tabs:**

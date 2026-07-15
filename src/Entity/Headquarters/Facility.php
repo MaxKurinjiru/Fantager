@@ -106,18 +106,4 @@ class Facility
 
         return $bonuses;
     }
-
-    /**
-     * @param array<string, float|int|string> $passiveBonuses
-     *
-     * @deprecated Use setMetadata() instead
-     */
-    public function setPassiveBonuses(array $passiveBonuses): static
-    {
-        foreach ($passiveBonuses as $key => $value) {
-            $this->metadata[$key] = $value;
-        }
-
-        return $this;
-    }
 }

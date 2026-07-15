@@ -38,7 +38,7 @@ Every currency modification (gold and essence tiers) is recorded in the `Financi
 
 ### Implemented `FinancialRecordType` values
 
-`league_reward`, `arena_revenue`, `summon_fee`, `marketplace_sale`, `marketplace_purchase`, `marketplace_fee`, `dungeon_reward` *(reserved)*, `dismantle_gain`, `item_repair`, `spell_learning_cost`, `spell_slot_cost`, `hq_upgrade_cost`, `hq_maintenance_fee`, `morale_restoration`, `debt_repayment`, `hero_dismissal_compensation`, `trainer_dismissal_compensation`, `hq_downgrade_refund`, `kingdom_reward`, **`hero_salary`**, **`trainer_salary`**
+`league_reward`, `arena_revenue`, `summon_fee`, `marketplace_sale`, `marketplace_purchase`, `marketplace_fee`, `dismantle_gain`, `item_repair`, `spell_learning_cost`, `spell_slot_cost`, `hq_upgrade_cost`, `hq_maintenance_fee`, `morale_restoration`, `debt_repayment`, `hero_dismissal_compensation`, `trainer_dismissal_compensation`, `hq_downgrade_refund`, `kingdom_reward`, **`hero_salary`**, **`trainer_salary`**
 
 ---
 
@@ -129,11 +129,23 @@ If the team lacks sufficient gold after HQ maintenance, only the available balan
 
 ---
 
+## Player-Facing Web Screens
+
+Economy features are **not** merged into a single page. The sidebar exposes two routes:
+
+| Route | Controller | Purpose |
+|-------|------------|---------|
+| `GET /app/marketplace` | `Web\MarketplaceController` | Marketplace tabs: browse, sell, my listings, transaction history, basic equipment |
+| `GET /app/finance` | `Web\FinanceController` | Financial ledger with type/actor filters and overview summary |
+
+See [screens/15-marketplace.md](../screens/15-marketplace.md) and [route-map.md](../route-map.md#economy--marketplace).
+
+---
+
 ## API Endpoints
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/app/economy` | Economy hub (marketplace + ledger tabs) |
 | GET | `/api/v1/finance/status` | Financial crisis status |
 | GET | `/api/v1/finance/recent` | Recent ledger entries |
 | GET | `/api/v1/marketplace` | Search listings |

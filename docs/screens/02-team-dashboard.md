@@ -23,31 +23,32 @@ Displayed Information:
 	- Localized message + timestamp per entry
 	- Link **Full chronicle** → `/app/chronicle` (`app_team_chronicle`)
 	- Includes ownership changes, season results, summons, etc. (see [team-chronicle-system.md](../systems/team-chronicle-system.md))
+- **Team history chart (modal):**
+	- Triggered from the team banner — opens a modal with a **30-day trend chart**
+	- Metrics: morale, reputation, chemistry, fan club size (`TeamDailySnapshot`)
+	- Data source: `GET /api/v1/teams/{teamId}/history`
+	- Stimulus: `team_history_chart_controller.js`; template `templates/dashboard/_team_history_modal.html.twig`
 - **Shortcuts:**
-	- Quick access to Formation, Training, Economy (`/app/economy`), League
+	- Quick access to Formation, Training, Marketplace (`/app/marketplace`), League
 
 Possible Actions/Buttons:
 - **View Full Roster** - navigate to Hero Roster Screen
 - **Manage Headquarters** - navigate to HQ Screen
 - **Check League** - navigate to League Screen
-- **Go to Economy / Marketplace** - navigate to `/app/economy`
+- **Go to Marketplace** - navigate to `/app/marketplace`
+- **View Finance Ledger** - navigate to `/app/finance`
 - **View Calendar** - navigate to Calendar
 - **View Team Chronicle** - navigate to `/app/chronicle`
+- **Open team history chart** - modal from team banner
 - **Team Settings** - change name, emblem, colors
 
 Backend Requirements:
 - Dashboard aggregation: `TeamService::getDashboardData()` + `TeamChroniclePresenter::presentRecentForTeam()` (5 entries)
+- Team history chart: `TeamController::history()` → `TeamDailySnapshotRepository` (last 30 days)
 - Full chronicle: `TeamChronicleController` with category/type/sort filters
 - Real-time notifications (Server-Sent Events / SSE) — planned; separate from chronicle
 
 Implementation:
 - **Route:** `GET /app/dashboard` — `DashboardController`
-- **Templates:** `templates/dashboard/index.html.twig`, `templates/components/dashboard/recent_chronicle.html.twig`
+- **Templates:** `templates/dashboard/index.html.twig`, `templates/components/dashboard/recent_chronicle.html.twig`, `templates/dashboard/_team_history_modal.html.twig`
 - **Chronicle page:** `GET /app/chronicle` — [team-chronicle-system.md](../systems/team-chronicle-system.md)
-
-Sections to fill:
-- Display data contract (fields returned by API)
-- Actions and API calls
-- Validation and server-side checks
-- UX notes and edge cases
-- Tests and mocks

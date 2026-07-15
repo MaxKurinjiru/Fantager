@@ -689,7 +689,7 @@ class NpcSimulationServiceTest extends TestCase
 
         // We expect createListing NOT to list hero 0 (which has the negative trait)
         $listedHeroIds = [];
-        $this->marketplaceService->expects($this->any())
+        $this->marketplaceService
             ->method('createListing')
             ->willReturnCallback(function ($t, $type, $id, $price, $price2, $mode, $duration, $extra) use (&$listedHeroIds) {
                 if ('hero' === $type) {
@@ -771,7 +771,7 @@ class NpcSimulationServiceTest extends TestCase
 
         // We expect createListing to use the rating calculator market price
         $calledListingParams = null;
-        $this->marketplaceService->expects($this->any())
+        $this->marketplaceService
             ->method('createListing')
             ->willReturnCallback(function ($t, $type, $id, $price, $price2, $mode, $duration, $extra) use (&$calledListingParams) {
                 if (null === $calledListingParams) {
