@@ -10,7 +10,7 @@ Purpose: Document combat simulation, match eligibility, scoring, derived combat 
 
 Combat is **fully automated**. Players configure behaviour **before** the match via the [Formation System](formation-system.md) (`approach` today; per-slot targeting / spell priorities in later AI layers). The engine simulates the entire bout server-side; the UI is a **replay viewer** over `combat_log` — see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
-There is **no** mid-battle player input (no turn submission, target picking, Auto-Battle toggle, or surrender during simulation). Architecture, log format, and AI phases: [Simulation Contract](#simulation-contract), [Engine Architecture Decisions](#engine-architecture-decisions), and [Formation AI](#formation-ai-phased).
+There is **no** mid-battle player input (no turn submission, target picking, Auto-Battle toggle, or surrender during simulation). Architecture, log format, wave orchestration, and AI phases: [Simulation Contract](#simulation-contract), [Engine Architecture Decisions](#engine-architecture-decisions), and [Formation AI](#formation-ai-phased).
 
 ---
 
@@ -19,13 +19,14 @@ There is **no** mid-battle player input (no turn submission, target picking, Aut
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Match eligibility & forfeit rules | ✅ Implemented | `LeagueMatchResolutionService::resolveForfeitOutcome()` |
-| Kill-based scoring & standings | ✅ Implemented | `StubRandomMatchSimulator` until full engine ships |
-| `Battle` entity persistence | ✅ Implemented | Scores, formations, result enum |
+| Kill-based scoring & standings | 🔄 Placeholder | Seeded 0–6 scores via thin `CombatEngine` (`placeholder_scores`); turn loop pending |
+| `Battle` entity persistence | ✅ Implemented | Scores, formations, result enum; `combat_log` from `MatchOutcome` |
 | Post-match side effects | ✅ Implemented | Standings, fan club, morale, hero/team chronicle, mastery XP |
 | `CombatStatCalculator` + `DerivedCombatStats` | ✅ Implemented | Profile-aware (`Equipped`, `HumanNeutral`, `FullIntrinsic`) |
-| Deterministic turn engine | ⏳ Pending | Milestone 6 Step 6.1 — see [Simulation Contract](#simulation-contract) |
-| `combat_log` JSON + replay UI | ⏳ Pending | Event-stream contract decided; UI pending |
-| Simulation contract (VO / API layers) | ✅ Documented | Pending code — see below |
+| Simulation contract (VO / API layers) | ✅ Implemented (transitional) | One-shot thin engine wired; **target** is wave Messenger — see [orchestration](#wave-based-messenger-orchestration) |
+| Wave / round Messenger orchestration | ⏳ Pending | Cohort lockstep rounds; `MAX_ROUNDS=200`; no wave timeout; `stalled` isolation |
+| Deterministic turn engine | ⏳ Pending | Per-round resolution inside `ProcessCombatRound` |
+| `combat_log` JSON + replay UI | 🔄 Partial | Envelope + placeholder `match_start`/`match_end`; full events + post-match replay UI pending |
 | Combat death → graveyard | ⏳ Pending | Blocked on full engine |
 | Formation AI (L0–L2) | ⏳ Pending | Phased — see [Formation AI](#formation-ai-phased) |
 
@@ -64,10 +65,12 @@ A team needs 6 combat-ready heroes to **enter** a match, independent of formatio
 
 1. Formation selection (6 heroes per team, 3 front / 3 back)
 2. Roster eligibility check (see above)
-3. Queue match for simulation (Redis) — skipped on forfeit/draw
-4. PHP worker runs deterministic turn-based simulation *(pending — stub random scores today)*
-5. Apply post-match updates (XP, form, fatigue, morale, aging)
-6. Store result in `Battle` entity
+3. League match tick: forfeit understaffed fixtures; enqueue **wave cohort** for the rest *(Messenger — see [orchestration](#wave-based-messenger-orchestration))*
+4. Workers resolve **round by round in lockstep across the cohort** (max 200 rounds); append to `combat_log`
+5. On each battle completion: apply post-match updates (XP, form, fatigue, morale, aging when 6.1d ships)
+6. Persist final result on `Battle`; product UI is post-match replay only
+
+*(Transitional today: thin one-shot `LeagueMatchSimulator` still completes fixtures synchronously with placeholder scores.)*
 
 ---
 
@@ -245,19 +248,23 @@ Each equipped spell's school: **Spell Power +5% per tier above 1** (stacks acros
 
 ## Simulation Contract
 
-Locked design for Milestone 6 Step 6.1 implementation. Align PHP value objects and `MatchSimulatorInterface` with this section; do not invent alternate shapes without updating the docs.
+Locked design for Milestone 6 Step 6.1 implementation. Align PHP value objects and Messenger orchestration with this section; do not invent alternate shapes without updating the docs.
 
 ### API layers
 
 | Layer | Responsibility |
 |-------|----------------|
-| `MatchSimulatorInterface::simulate(LeagueFixture): MatchOutcome` | Keep for league resolution. Builds engine request from fixture formations, calls `CombatEngine`, maps result onto `MatchOutcome`. |
-| `CombatEngine::simulate(CombatMatchRequest): CombatSimulationResult` | Pure core — no Doctrine fixtures, testable without league. |
-| `LeagueMatchResolutionService` | Eligibility / **forfeit before** engine; after sim: persist `Battle`, standings, fan club, morale, chronicles, mastery. |
+| League match tick / cohort starter | Eligibility + forfeit; create `Battle` + persisted run state for each non-forfeit fixture at `scheduledAt`; start wave orchestration (see [Wave-based Messenger orchestration](#wave-based-messenger-orchestration)). |
+| `CombatEngine` (target) | Pure **per-round** (and per-turn within a round) resolution — no Doctrine fixtures, no standings writes. Input: run state + round number; output: updated state + appended events. |
+| `CombatEngine::simulate()` (transitional) | Current thin one-shot placeholder (seeded scores + envelope). Replaced when wave + turn loop ship. |
+| `MatchSimulatorInterface` / `LeagueMatchSimulator` (transitional) | Temporary adapter until league tick drives waves instead of a single `simulate()` call. |
+| Completion handler | When a battle reaches `match_end`: persist final scores/log, apply post-match side effects (standings, fan club, morale, chronicles, mastery). |
 
 Forfeit outcomes stay **outside** the engine (existing `resolveForfeitOutcome()`).
 
 Identity: side **A** = home / `Battle.team_a`; side **B** = away / `Battle.team_b`.
+
+**NPC vs player:** Combat orchestration and the engine do **not** distinguish NPC teams from player teams. NPC “management” is handled only by [npc-simulation-system.md](npc-simulation-system.md) before kickoff (formations, roster, etc.) so that lineups look player-like.
 
 ### Value objects (planned)
 
@@ -281,16 +288,13 @@ CombatantSnapshot
   spellPriorities: array            // [] ⇒ L0 defaults
   spells: list<{ id, school, … }>   // equipped / formation overrides
 
-CombatSimulationResult
-  outcome scores via MatchOutcome   // isForfeit = false
+CombatSimulationResult              // transitional one-shot; wave path evolves toward round deltas
+  outcome scores via MatchOutcome
   seed: int
-  combatLog: array                  // envelope below
-  // 6.1d+: optional death/durability hints — not in 6.1a
+  combatLog: array
 ```
 
 #### `MatchOutcome` extension
-
-Extend the existing VO (prefer over a parallel wrapper for league wiring):
 
 ```text
 MatchOutcome(homeScore, awayScore, isForfeit = false, combatLog = [], seed = null)
@@ -299,10 +303,10 @@ MatchOutcome(homeScore, awayScore, isForfeit = false, combatLog = [], seed = nul
 | Producer | `combatLog` |
 |----------|-------------|
 | Forfeit | `{ "version": 1, "simulator": "forfeit", "events": [] }` |
-| Stub (until removed) | `{ "version": 1, "simulator": "stub_random", "events": [] }` |
+| Stub (unused in DI) | `{ "version": 1, "simulator": "stub_random", "events": [] }` |
 | Engine | Full envelope (`simulator`: `combat_engine`) |
 
-`LeagueMatchResolutionService::createBattle()` must persist `$outcome->getCombatLog()` (and stop hard-coding stub metadata once the engine ships).
+`LeagueMatchResolutionService::createBattle()` must persist `$outcome->getCombatLog()` when using the transitional one-shot path.
 
 ### Seed
 
@@ -310,6 +314,68 @@ MatchOutcome(homeScore, awayScore, isForfeit = false, combatLog = [], seed = nul
   `seed = hash_to_u32(fixtureId, seasonId?, scheduledAt timestamp, engineVersion)`.
 - Practice / sandbox (`POST /api/v1/combat/simulate`): client may pass `seed`, or server picks random and **returns** it in the result.
 - Same request + seed + `engineVersion` ⇒ same scores and event stream.
+- Under wave processing, persist **mutable RNG state** derived from the seed between rounds so determinism spans Messenger messages.
+
+### Wave-based Messenger orchestration
+
+**Goal:** At a calendar kickoff, all eligible fixtures in that kingdom/slot start together. Combat advances in **global waves of rounds**: round 1 for every active battle, then round 2 for every still-incomplete battle, and so on — not “each match runs all its rounds to completion independently before the next match starts.”
+
+#### Cohort
+
+A **cohort** = all non-forfeit battles created for the same kingdom + `scheduledAt` (one league match tick group).
+
+| Concept | Detail |
+|---------|--------|
+| Cohort start | League match tick creates battles + run state, appends `match_start`, sets battles to `simulating`, dispatches `CombatWave(scheduledAt, round=1)` |
+| Wave N | Dispatch `ProcessCombatRound(battleId, N)` for every battle in the cohort with status `simulating` whose `current_round == N - 1` |
+| Wave barrier | Wave **N + 1** may start only when every cohort battle that is still `simulating` has finished round N. **`stalled` and `completed` battles are ignored** by the barrier |
+| No wave timeout | Wall-clock timeouts are **not** used — they would break the intended lockstep. Progress relies on successful round handlers and on marking failures as `stalled` |
+| Max rounds | **`MAX_ROUNDS = 200`**. If neither side has a decisive kill-score outcome by then, force `match_end` (draw on kill scores, or current scores as-is) after round 200 |
+| Live UI | **Not required** for now. Partial logs may exist on disk for ops/debug; product UI is post-match replay only |
+
+#### Battle / run statuses (planned)
+
+| Status | Meaning |
+|--------|---------|
+| `simulating` | Participates in waves; waiting for or processing the next round |
+| `stalled` | Failed a round handler (exception / poison). **Excluded from wave barrier** so other matches continue. Ops/fix resumes later |
+| `completed` | `match_end` applied; post-match side effects done |
+
+Persisted **run state** (entity or JSON on `Battle` — TBD at implementation) must include at least: `current_round`, RNG state, combatant HP/status snapshots, accumulated `events` (or append-only log), cohort key (`scheduledAt` + kingdom), status.
+
+#### Message flow (planned)
+
+```text
+LeagueMatchTick(kingdom, scheduledAt)
+  → forfeit understaffed fixtures (sync)
+  → create Battle + run state for each eligible fixture
+  → Dispatch CombatWave(kingdom, scheduledAt, round=1)
+
+CombatWave(kingdom, scheduledAt, round=N)
+  → enqueue ProcessCombatRound(battleId, N) for each simulating battle at current_round N-1
+  → when barrier satisfied (all simulating battles finished round N):
+        if any simulating remain and N < 200 → Dispatch CombatWave(..., N+1)
+        else → nothing (completed/stalled only)
+
+ProcessCombatRound(battleId, N)   // idempotent on (battleId, N)
+  → if already applied or status ≠ simulating → no-op ack
+  → resolve round N (turns inside the round); append events; current_round = N
+  → if match over (one side all KO, or N == 200) → CompleteBattle
+  → on failure → set status=stalled, store error; do not retry forever without ops
+
+CompleteBattle(battleId)
+  → finalize score + combat_log; fixture completed; post-match side effects
+```
+
+#### Isolation and resume (no timeout)
+
+- **Failure isolation:** a battle that throws in `ProcessCombatRound` becomes `stalled` and drops out of the barrier. Other matches keep advancing waves.
+- **Hung / lost messages without an error:** there is no wave timeout by design. Operational recovery is: inspect stuck `simulating` battles, mark `stalled` or re-dispatch the missing round, then resume. Document runbooks when implementing.
+- **Resume after fix:** `ResumeCombat(battleId)` runs remaining rounds **solo** (sequential messages or sync loop) until `completed`, without re-joining the original cohort wave. This avoids barrier edge cases when the cohort has already moved on.
+
+#### Within a round
+
+Turn order, actions, damage, and status ticks follow the combat formulas and AI layers. A “round” is one full pass of the turn engine as defined when the turn loop lands (SPD order); the wave coordinator only counts **round index 1…200**.
 
 ### `combat_log` envelope (v1)
 
@@ -345,7 +411,7 @@ MatchOutcome(homeScore, awayScore, isForfeit = false, combatLog = [], seed = nul
 | `simulator` | `combat_engine` \| `forfeit` \| `stub_random` |
 | `seed` | PRNG seed used for this run |
 | `lineup` | Slot → hero labels for replay UI |
-| `events` | Ordered combat events |
+| `events` | Ordered combat events (appended across waves) |
 | `result` | Final kill scores (also mirrored on `Battle.score_a/b`) |
 
 ### Event types and payloads (6.1a minimum)
@@ -368,7 +434,7 @@ Common fields: `t` (monotonic index), `type`; commonly also `round`, `side` (`a`
 | `kill_score` | `score_a`, `score_b` — emit **after each** `ko` |
 | `match_end` | `score_a`, `score_b`, `rounds` |
 
-Deferred event types (not required for 6.1a): `morale_change`, `revive`, `heal` as a distinct action type if covered by `spell`, hybrid `snapshot`.
+Deferred event types: `morale_change`, `revive`, hybrid `snapshot`. Live streaming of partial logs to clients is deferred (replay-only product UI).
 
 Replay reconstructs HP/status by folding `events` — see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
@@ -386,25 +452,27 @@ L0 spell pick: at most one ready “best damage / spell power” equipped spell;
 
 ### Engine vs post-match boundary
 
-| Inside engine (6.1a) | Stays in `LeagueMatchResolutionService` (already) | Later (6.1d+) |
-|----------------------|-----------------------------------------------------|---------------|
-| Turn loop, damage, KO, kill score, event log, seed | Standings, fan club, team/hero match morale, chronicles, mastery XP, `matches_played` / wins | Combat deaths → aging → permanent death → graveyard; item durability loss; per-hero XP/form/fatigue derived from log |
+| Inside engine / round handlers | On `CompleteBattle` (existing resolution services) | Later (6.1d+) |
+|--------------------------------|-----------------------------------------------------|---------------|
+| Round/turn resolution, damage, KO, kill score, event append, RNG state | Standings, fan club, team/hero match morale, chronicles, mastery XP, `matches_played` / wins | Combat deaths → aging → permanent death → graveyard; item durability loss; per-hero XP/form/fatigue derived from log |
 
-Engine must **not** write graveyard or item rows directly. At 6.1d it may attach side-effect *hints* on the result for the resolution layer to apply.
+Engine must **not** write graveyard or item rows directly. At 6.1d it may attach side-effect *hints* on completion for the resolution layer to apply.
 
 ### Recommended code order (contract → engine)
 
-1. VO: `CombatMatchRequest`, `CombatSide`, `CombatantSnapshot`; extend `MatchOutcome`.
-2. Builder: `Formation` → snapshots via `CombatStatCalculator`.
-3. Thin `CombatEngine` (e.g. emit `match_start` / `match_end` only) wired through `MatchSimulatorInterface` — prove `Battle.combat_log` persistence.
-4. Turn loop + L0 AI + full event set.
-5. Fixture→seed helper + regression test: same seed ⇒ same log and scores.
+1. ✅ VO: `CombatMatchRequest`, `CombatSide`, `CombatantSnapshot`; extend `MatchOutcome`.
+2. ✅ Builder: `Formation` → snapshots via `CombatStatCalculator`.
+3. ✅ Thin one-shot `CombatEngine` + `LeagueMatchSimulator` (transitional placeholder scores + envelope).
+4. Persisted run state + Messenger wave/round messages + barrier (**target orchestration**).
+5. Real per-round turn loop + L0 AI + full event set (`MAX_ROUNDS = 200`).
+6. `stalled` / `ResumeCombat` path; remove transitional one-shot league binding.
+7. Regression: same seed ⇒ same log across wave boundaries.
 
 ---
 
 ## Engine Architecture Decisions
 
-Decided model for Milestone 6 Step 6.1. Detailed request/result shapes and event payloads: [Simulation Contract](#simulation-contract). Do not invent alternate formats without updating both sections.
+Decided model for Milestone 6 Step 6.1. Detailed request/result shapes, event payloads, and **wave orchestration**: [Simulation Contract](#simulation-contract). Do not invent alternate formats without updating both sections.
 
 ### Combat log format — event stream
 
@@ -419,6 +487,7 @@ If replay seek becomes costly: emit optional `snapshot` events every N turns or 
 ### Determinism and RNG
 
 - Simulation is **seeded** (see [Seed](#seed)); same formations + same seed ⇒ same log and scores (modulo intentional `engineVersion` bumps).
+- Persist RNG state across Messenger round messages.
 - Trait **Perfectionist** removes damage variance for that hero; it does not disable all combat RNG (accuracy, dodge, crit still apply unless separately specified).
 - Replay **never re-simulates** for display — it only plays back `events`. Re-sim with seed is for tests/debug only.
 
@@ -432,6 +501,8 @@ If replay seek becomes costly: emit optional `snapshot` events every N turns or 
 | Per-turn full state snapshots as primary log | Only if hybrid extension ships |
 | Full racial / role synergy number tables | Can land as flat modifiers after L1 |
 | Action-sequence script UI | Layer L3 |
+| Live / in-progress match UI | Explicitly deferred — replay after completion only |
+| Wave wall-clock timeout | Rejected — lockstep without timeout; isolation via `stalled` |
 
 ---
 
@@ -474,17 +545,18 @@ L0 may use a simpler approach→heuristic path without a full scorer; replace wi
 
 | Phase | Deliverable | Replaces / unlocks |
 |-------|-------------|-------------------|
-| **6.1a** | Contract VO + turn engine + L0 AI + event `combat_log` + seed; plug into `MatchSimulatorInterface` | `StubRandomMatchSimulator` for league |
+| **6.1a-0** | ✅ Contract VO + thin one-shot engine + `LeagueMatchSimulator` (placeholder scores) | Stub DI binding |
+| **6.1a** | Persisted run state + **wave Messenger** (cohort lockstep, `MAX_ROUNDS=200`, `stalled`/`ResumeCombat`) + real per-round turn loop + L0 AI + full events | Transitional one-shot league path |
 | **6.1b** | L1 targeting via `strategy.target_order`; freeze JSON schema even if UI still defaults | Real “who hits whom” control |
-| **6.1c** | L2 spell conditions; replay viewer MVP (play/pause/speed/skip) | [screen 12](../screens/12-combat-battle.md) |
+| **6.1c** | L2 spell conditions; **post-match** replay viewer MVP (no live UI) | [screen 12](../screens/12-combat-battle.md) |
 | **6.1d** | Combat deaths → aging → permanent death → graveyard; durability loss formula | [known-issues](../known-issues.md) #1 remainder |
-| **Later** | L3 sequences UI; hybrid snapshots; friendly-match scheduling; synergy tables | Post–core combat |
+| **Later** | L3 sequences UI; hybrid snapshots; friendly-match scheduling; synergy tables; optional live UI | Post–core combat |
 
 ---
 
 ## Summary
 
-Combat runs as a **deterministic, fully automated** simulation (server-side) that reads both teams’ formations and produces an **event-stream** `combat_log` plus final kill scores. The [Simulation Contract](#simulation-contract) defines API layers, VOs, seed, log envelope, and engine vs post-match boundaries. Players only watch a replay; mid-battle decisions are not interactive. AI ships in layers (**L0 approach → L1 targeting → L2 spells → L3 sequences later**). Turn order is determined by speed (SPD); actions resolve per turn with spell and status interactions. Kill-based scoring determines the displayed match result; understaffed teams forfeit without simulation. **Today**, league fixtures use random kill scores via `StubRandomMatchSimulator` while derived stats and post-match processing are production-ready.
+Combat is a **deterministic, fully automated** simulation. At each calendar kickoff, eligible fixtures form a **cohort** and advance in **Messenger waves of rounds** (round N for all active battles, then N+1), capped at **200 rounds**, without wave timeouts. Failed battles become **`stalled`** so others continue; resume is solo catch-up. The engine produces an append-only **event-stream** `combat_log`; players use **post-match replay** only (no live UI for now). NPC and player teams use the same combat path. The [Simulation Contract](#simulation-contract) defines VOs, seed/RNG state, wave orchestration, and post-match boundaries. AI ships in layers (**L0 → L1 → L2 → L3 later**). Kill-based scoring decides the result; understaffed teams forfeit without simulation. **Today**, league still uses the transitional thin engine (seeded placeholder scores + log envelope) until wave orchestration and the turn loop replace it.
 
 ---
 
@@ -492,8 +564,8 @@ Combat runs as a **deterministic, fully automated** simulation (server-side) tha
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| POST | `/api/v1/combat/simulate` | Practice/sandbox match |
-| GET | `/api/v1/battles/{id}` | Battle result |
+| POST | `/api/v1/combat/simulate` | Practice/sandbox match (may stay one-shot or enqueue a private cohort) |
+| GET | `/api/v1/battles/{id}` | Battle result (after completion) |
 | GET | `/api/v1/battles/{id}/log` | Combat log / replay |
 
 See [route-map.md](../route-map.md#combat).

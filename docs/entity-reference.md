@@ -49,7 +49,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Concept | Entity / data | Service namespace | Responsibility |
 | ------- | ------------- | ----------------- | -------------- |
-| **Combat** | `App\Entity\Combat\Battle` (`combat_battle`) | `App\Service\Combat` | Derived stats (`CombatStatCalculator`) ✅; turn engine + replay ⏳ |
+| **Combat** | `App\Entity\Combat\Battle` (`combat_battle`) | `App\Service\Combat` | Derived stats ✅; thin envelope engine ✅; wave Messenger + turn loop ⏳ |
 | **Arena facility** | `Headquarters` + `Facility` (`FacilityType::Arena`) | `App\Service\Headquarters\ArenaService` | Arena level, seating capacity, fan appeal, next-home-match projection |
 | **Arena revenue** | `FinancialRecord` (`arena_revenue`) | `App\Service\Economy\ArenaRevenueService` | Ticket payout on league match tick, attendance calculation |
 
@@ -152,7 +152,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity     | Key Fields                                                                                                                                                                                  | Relationships                    |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| **Battle** | id, kingdom_id, match_type (enum), team_a_id, team_b_id, formation_a_id, formation_b_id, result (enum), score_a, score_b (kill score 0–6 each), combat_log (JSON), xp_awarded, processed_at | → Kingdom, → Teams, → Formations |
+| **Battle** | id, kingdom_id, match_type (enum), team_a_id, team_b_id, formation_a_id, formation_b_id, result (enum), score_a, score_b (kill score 0–6 each), combat_log (JSON), xp_awarded, processed_at; **planned:** run status (`simulating`/`stalled`/`completed`), current_round, rng_state / run snapshot for wave Messenger | → Kingdom, → Teams, → Formations |
 
 
 ### 11. League Domain

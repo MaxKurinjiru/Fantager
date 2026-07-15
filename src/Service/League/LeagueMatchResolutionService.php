@@ -253,9 +253,7 @@ class LeagueMatchResolutionService
         $battle->setScoreA($outcome->getHomeScore());
         $battle->setScoreB($outcome->getAwayScore());
         $battle->setResult($outcome->toBattleResult());
-        $battle->setCombatLog([
-            'simulator' => $outcome->isForfeit() ? 'forfeit' : 'stub_random',
-        ]);
+        $battle->setCombatLog($outcome->getCombatLog());
         $battle->setProcessedAt($processedAt);
 
         return $battle;

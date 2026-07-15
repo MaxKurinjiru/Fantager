@@ -8,7 +8,7 @@ Single source of truth for documentation gaps, design questions, and known incon
 
 | ID | Area | Issue | Severity | Blocks | Status |
 |----|------|-------|----------|--------|--------|
-| 1 | Combat | Simulation contract + event-stream `combat_log` + seeded L0→L2 AI documented in [combat-system.md](systems/combat-system.md#simulation-contract); `CombatStatCalculator` implemented. Engine phases 6.1a–d still pending | High | Real league match simulation, graveyard combat death triggers | Partially resolved |
+| 1 | Combat | Contract VO + thin engine done. Target: wave Messenger (lockstep rounds, max 200, no wave timeout, `stalled` isolation), turn loop, L0–L2 AI, post-match replay, combat deaths — see [combat-system.md](systems/combat-system.md#wave-based-messenger-orchestration) | High | Real league match simulation, graveyard combat death triggers | Partially resolved |
 | 2 | Item System | Durability & enchanting mechanics referenced in economy docs but undefined in item system | High | Phase 6 enchanting | Open |
 | 3 | Friendly Matches | Rules documented in `calendar-system.md`; scheduling UI/API pending combat engine | Low | Phase 5 friendly match scheduling | Partially resolved |
 | 4 | Arena Matches | Home-match revenue implemented; friendly match scheduling pending combat | Low | Phase 5 | Partially resolved |

@@ -1043,10 +1043,10 @@ Spells provide tactical options based on hero **magic proficiency**.
 |---:|:---|
 | **1** | Formation selection and setup *(each player can save up to 4 formations, set one as default, and manually select which to use per fixture — this is where all combat “decisions” are made)* |
 | **2** | **Roster eligibility check** — each team must have ≥ 6 combat-ready heroes; otherwise apply forfeit rules *(see below)* |
-| **3** | Queue match in Redis *(skipped for forfeit/draw outcomes)* |
-| **4** | PHP worker runs a fully automated turn-based simulation from both formations *(when both teams are eligible)* |
-| **5** | XP, form, fatigue, and morale updates applied |
-| **6** | Result and `combat_log` stored in `battles`; clients may be notified that a result is ready for replay |
+| **3** | League match tick starts a **cohort** of fixtures at that kickoff *(forfeits skip simulation)* |
+| **4** | Messenger workers resolve combat in **lockstep rounds across the cohort** (round 1 for all, then round 2, …; max 200 rounds). Failed battles become `stalled` so others continue; see [combat-system.md](systems/combat-system.md#wave-based-messenger-orchestration) |
+| **5** | On each battle completion: XP, form, fatigue, and morale updates applied |
+| **6** | Result and `combat_log` stored; product UI is **post-match replay** only *(no live match UI for now)* |
 
 ### Match Scoring
 

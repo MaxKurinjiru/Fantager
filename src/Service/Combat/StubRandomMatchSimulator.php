@@ -8,6 +8,8 @@ use App\Entity\League\LeagueFixture;
 use App\ValueObject\Combat\MatchOutcome;
 
 /**
+ * @deprecated Kept for reference; league wiring uses {@see LeagueMatchSimulator}.
+ *
  * Placeholder combat engine: random kill scores (0–6) until the real simulator ships.
  *
  * TODO [Combat Engine — Trait Hooks]:
@@ -38,6 +40,12 @@ class StubRandomMatchSimulator implements MatchSimulatorInterface
         return new MatchOutcome(
             random_int(0, 6),
             random_int(0, 6),
+            false,
+            [
+                'version' => 1,
+                'simulator' => 'stub_random',
+                'events' => [],
+            ],
         );
     }
 }

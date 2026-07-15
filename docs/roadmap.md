@@ -159,22 +159,23 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 *Implement the core combat engine, chronological event tick scheduler, the weekly league competition, and hero mortality.*
 
 ### Step 6.1: Combat Simulation Engine (Core Block)
-- **Design Prerequisites (Phase 0)**: Locked in [combat-system.md](systems/combat-system.md#simulation-contract) — API layers, VOs, event-stream `combat_log` + seed, L0 defaults, engine vs post-match boundary; AI **L0→L2** ([Formation AI](systems/combat-system.md#formation-ai-phased)). `CombatStatCalculator` implemented; turn engine and replay UI pending.
+- **Design Prerequisites (Phase 0)**: Locked in [combat-system.md](systems/combat-system.md#simulation-contract) — VOs, event-stream `combat_log`, seed, **wave Messenger orchestration** (cohort lockstep, `MAX_ROUNDS=200`, no wave timeout, `stalled` isolation, no live UI), L0→L2 AI. NPC teams use the same combat path.
 - **Service/Business Logic** (phased — see combat-system § Implementation phases):
-  - **6.1a** — Contract VO + deterministic turn engine + L0 (`approach`) AI + event `combat_log`; replace `StubRandomMatchSimulator` via `MatchSimulatorInterface` (order: VO → Formation builder → thin engine wiring → full turn loop).
+  - **6.1a-0** — ✅ Contract VO + thin one-shot `CombatEngine` / `LeagueMatchSimulator` (placeholder scores + envelope).
+  - **6.1a** — Persisted run state; `CombatWave` / `ProcessCombatRound` / `CompleteBattle`; barrier without timeout; `stalled` + `ResumeCombat`; real per-round turn loop + L0; replace one-shot league binding.
   - **6.1b** — L1 targeting (`strategy.target_order`); freeze slot JSON schema ([formation-system.md](systems/formation-system.md#strategy-json-schema-phased)).
-  - **6.1c** — L2 spell conditions; replay viewer MVP.
+  - **6.1c** — L2 spell conditions; **post-match** replay viewer MVP (not live).
   - **6.1d** — Combat deaths → aging → graveyard; item durability loss after battle.
-  - Apply status effects per tick (speed order); post-match XP / form / fatigue / morale (aging in 6.1d).
+  - Status effects per tick (speed order); post-match XP / form / fatigue / morale on completion (aging in 6.1d).
 - **API Contracts**:
-  - `POST /api/v1/combat/simulate` — Practice/sandbox match between two rosters (requires 6 combat-ready heroes per team); optional `seed`.
-  - `GET /api/v1/battles/{id}` / `GET /api/v1/battles/{id}/log` — Result + replay log.
+  - `POST /api/v1/combat/simulate` — Practice/sandbox match (requires 6 combat-ready heroes per team); optional `seed`.
+  - `GET /api/v1/battles/{id}` / `GET /api/v1/battles/{id}/log` — Result + replay log after completion.
 - **Frontend Views**:
-  - **[NEW]** Combat Replay Viewer UI: Reads event-stream `combat_log` and plays back a fully automated battle (no mid-battle player actions — tactics come from formations). Playback controls: play/pause, speed, skip to end.
+  - **[NEW]** Combat Replay Viewer UI (post-match only): Reads event-stream `combat_log`. Playback: play/pause, speed, skip to end. No in-progress / live match UI in this milestone.
 - **Verification**:
-  - Write extensive unit tests for combat calculations (accuracy, dodge, crit multipliers) and seed reproducibility.
-  - Test forfeit validation: if one team has <6 combat-ready heroes, ensure immediate 3-0 forfeit without simulator trigger.
-- **Status**: ⏳ Not Started (Battle entity scaffolded; **simulation contract documented**; combat engine pending).
+  - Unit tests for combat math, seed + RNG-state reproducibility across wave messages, barrier ignoring `stalled`, hard stop at round 200.
+  - Forfeit: <6 combat-ready → 3–0 / 0–0 without enqueueing waves.
+- **Status**: 🔄 In progress — 6.1a-0 done; wave orchestration + turn loop pending.
 
 ### Step 6.2: Calendar & Server Ticks System
 - **Database & Entities**: `KingdomTickLog` (implemented).

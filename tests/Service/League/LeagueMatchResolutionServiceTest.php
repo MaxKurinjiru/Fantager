@@ -92,7 +92,12 @@ class LeagueMatchResolutionServiceTest extends TestCase
             [['group' => $fixture->getGroup(), 'team' => $fixture->getHomeTeam()], $homeStanding],
             [['group' => $fixture->getGroup(), 'team' => $fixture->getAwayTeam()], $awayStanding],
         ]);
-        $this->matchSimulator->method('simulate')->willReturn(new MatchOutcome(2, 1));
+        $this->matchSimulator->method('simulate')->willReturn(new MatchOutcome(2, 1, false, [
+            'version' => 1,
+            'simulator' => 'combat_engine',
+            'events' => [],
+            'result' => ['score_a' => 2, 'score_b' => 1],
+        ], 42));
 
         $calledBattle = null;
         $this->em->expects($this->once())->method('persist')->willReturnCallback(function ($battle) use (&$calledBattle) {
@@ -115,7 +120,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->assertSame(1, $calledBattle->getScoreB());
         $this->assertSame(BattleResult::WinA, $calledBattle->getResult());
         $this->assertSame(MatchType::League, $calledBattle->getMatchType());
-        $this->assertSame('stub_random', $calledBattle->getCombatLog()['simulator']);
+        $this->assertSame('combat_engine', $calledBattle->getCombatLog()['simulator']);
 
         $this->assertNotNull($calledParams);
         $this->assertSame($fixture->getHomeTeam(), $calledParams[0]);
