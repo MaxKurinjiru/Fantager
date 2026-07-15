@@ -59,7 +59,8 @@ class HeroDismissalService
         }
 
         if (null !== $hero->getTrainer()) {
-            throw new UserFacingException('error.hero_assigned_trainer_dismiss');
+            $trainer = $hero->getTrainer();
+            $trainer->removeTrainee($hero);
         }
 
         $this->teamRosterService->assertCanRemoveCombatReadyHero($team, $hero);

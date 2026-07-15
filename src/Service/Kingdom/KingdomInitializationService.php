@@ -26,6 +26,7 @@ use App\Service\Config\RaceConfig;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroGenerator;
 use App\Service\League\LeagueFixtureScheduler;
+use App\Service\Spell\SpellService;
 use App\Service\Team\TeamChemistryService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -42,6 +43,7 @@ class KingdomInitializationService
         private readonly LeagueFixtureScheduler $fixtureScheduler,
         private readonly TeamChronicleService $teamChronicleService,
         private readonly TeamChemistryService $teamChemistryService,
+        private readonly SpellService $spellService,
     ) {
     }
 
@@ -63,6 +65,9 @@ class KingdomInitializationService
         if (null !== $this->kingdomRepository->findOneBy(['name' => $name])) {
             throw new \DomainException(sprintf('Kingdom "%s" already exists.', $name));
         }
+
+        // Seed default spells if they do not exist
+        $this->spellService->seedDefaultSpells();
 
         $kingdomSettings = $this->initConfig->kingdom();
         $leagueConfig = $this->initConfig->leagueTiers();

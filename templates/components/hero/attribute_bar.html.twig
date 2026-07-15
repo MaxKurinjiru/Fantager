@@ -1,12 +1,28 @@
+{% set attr_key = attr_key|default('') %}
 {% set bonus = bonus|default(0) %}
 {% set max_val = max_val|default(20) %}
-{% set stat_pct = (val / max_val) * 100 %}
+
+{% if bonus >= 0 %}
+    {% set base_pct = (val / max_val) * 100 %}
+    {% set bonus_pct = (bonus / max_val) * 100 %}
+    {% if base_pct + bonus_pct > 100 %}
+        {% set bonus_pct = 100 - base_pct %}
+    {% endif %}
+{% else %}
+    {% set abs_bonus = bonus|abs %}
+    {% set effective_val = val - abs_bonus %}
+    {% set base_pct = (effective_val / max_val) * 100 %}
+    {% set penalty_pct = (abs_bonus / max_val) * 100 %}
+    {% if base_pct + penalty_pct > 100 %}
+        {% set penalty_pct = 100 - base_pct %}
+    {% endif %}
+{% endif %}
 
 <div class="hero-attr-bar">
     <div class="hero-attr-bar__header">
         <span class="hero-attr-bar__label" title="{{ label }}">{{ label }}</span>
         <div class="hero-attr-bar__values">
-            <span class="hero-attr-bar__value">{{ val }}</span>
+            <span class="hero-attr-bar__value">{{ val + bonus }}</span>
             {% if bonus != 0 %}
                 <span class="{{ bonus > 0 ? 'hero-attr-bar__bonus hero-attr-bar__bonus--positive' : 'hero-attr-bar__bonus hero-attr-bar__bonus--negative' }}"
                       title="{{ 'heroes.race_adjustment'|trans({'%bonus%': bonus > 0 ? '+' ~ bonus : bonus}) }}">
@@ -16,9 +32,19 @@
         </div>
     </div>
     
-    {% include 'components/ui/progress_bar.html.twig' with {
-        percentage: stat_pct,
-        container_class: 'ui-progress ui-progress--compact hero-attr-bar__track-border',
-        progress_class: 'ui-progress__fill ui-progress__fill--accent'
-    } %}
+    {% if bonus > 0 %}
+        <div class="ui-progress ui-progress--compact hero-attr-bar__track-border hero-attr-bar__track-stacked">
+            <div class="ui-progress__fill ui-progress__fill--attr-{{ attr_key }}" style="--ui-progress-pct: {{ base_pct }}%"></div>
+            <div class="ui-progress__fill ui-progress__fill--bonus" style="--ui-progress-pct: {{ bonus_pct }}%"></div>
+        </div>
+    {% elseif bonus < 0 %}
+        <div class="ui-progress ui-progress--compact hero-attr-bar__track-border hero-attr-bar__track-stacked">
+            <div class="ui-progress__fill ui-progress__fill--attr-{{ attr_key }}" style="--ui-progress-pct: {{ base_pct }}%"></div>
+            <div class="ui-progress__fill ui-progress__fill--penalty" style="--ui-progress-pct: {{ penalty_pct }}%"></div>
+        </div>
+    {% else %}
+        <div class="ui-progress ui-progress--compact hero-attr-bar__track-border">
+            <div class="ui-progress__fill ui-progress__fill--attr-{{ attr_key }}" style="--ui-progress-pct: {{ base_pct }}%"></div>
+        </div>
+    {% endif %}
 </div>

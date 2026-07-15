@@ -146,9 +146,9 @@ class HeroMasteryServiceTest extends TestCase
 
         // Attunement progress increases by 50 to 70
         $this->assertSame(70, $wm->getAttunementProgress());
-        // Weapon XP increases by 15 to 25
-        $this->assertSame(25, $wm->getXp());
-        // Magic School XP increases by 15 to 65
+        // Weapon XP: xpGain = round(BASE_MATCH_XP * 70 / 100) = round(30 * 0.7) = 21 → 10 + 21 = 31
+        $this->assertSame(31, $wm->getXp());
+        // Magic School XP increases by fixed 15 to 65
         $this->assertSame(65, $sm->getXp());
     }
 
@@ -214,8 +214,9 @@ class HeroMasteryServiceTest extends TestCase
 
         // Inactive weapon mastery decays
         $this->assertSame(30, $wmInactive->getAttunementProgress()); // 50 - 20 = 30
-        $this->assertSame(95, $wmInactive->getXp()); // 105 - 10 = 95
-        $this->assertSame(1, $wmInactive->getMasteryTier()); // Levels down to T1 (95 < 100)
+        // xpDecay = round(BASE_DECAY_XP * (1 - 30/100)) = round(20 * 0.7) = 14 → 105 - 14 = 91
+        $this->assertSame(91, $wmInactive->getXp());
+        $this->assertSame(1, $wmInactive->getMasteryTier()); // Levels down to T1 (91 < 100)
 
         // Active school mastery remains unchanged
         $this->assertSame(80, $smActive->getXp());

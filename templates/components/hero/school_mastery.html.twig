@@ -2,20 +2,49 @@
 <div class="hero-panel" data-controller="mastery-toggle">
     <div>
         <h2 class="hero-panel__title">{{ 'heroes.school_mastery'|trans }}</h2>
-        <p class="hero-panel__desc">{{ 'heroes.school_mastery_desc'|trans }}</p>
     </div>
 
-    <div class="hero-school-mastery__grid">
-        {% set schools = ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
-        {% for school in schools %}
-            {% set mastery_tier = 1 %}
-            {% set school_xp = 0 %}
-            {% for sm in hero.schoolMasteries %}
-                {% if sm.school.value == school %}
-                    {% set mastery_tier = sm.masteryTier %}
-                    {% set school_xp = sm.xp %}
-                {% endif %}
-            {% endfor %}
+    {% set schools = ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
+    {% set school_list = [] %}
+    {% for school in schools %}
+        {% set mastery_tier = 1 %}
+        {% set school_xp = 0 %}
+        {% for sm in hero.schoolMasteries %}
+            {% if sm.school.value == school %}
+                {% set mastery_tier = sm.masteryTier %}
+                {% set school_xp = sm.xp %}
+            {% endif %}
+        {% endfor %}
+        {% set school_list = school_list|merge([{
+            school: school,
+            mastery_tier: mastery_tier,
+            school_xp: school_xp
+        }]) %}
+    {% endfor %}
+
+    {# Build list of schools of currently equipped spells #}
+    {% set equipped_schools = [] %}
+    {% for hs in hero.heroSpells|default([]) %}
+        {% if hs.isEquipped and hs.spell.school.value not in equipped_schools %}
+            {% set equipped_schools = equipped_schools|merge([hs.spell.school.value]) %}
+        {% endif %}
+    {% endfor %}
+
+    {% set active_count = 0 %}
+    {% for item in school_list %}
+        {% if item.school_xp > 0 or item.mastery_tier > 1 or item.school in equipped_schools %}
+            {% set active_count = active_count + 1 %}
+        {% endif %}
+    {% endfor %}
+
+    {# Sort descending by school_xp #}
+    {% set sorted_schools = school_list|sort((a, b) => b.school_xp <=> a.school_xp) %}
+
+    <div class="hero-mastery-list">
+        {% for item in sorted_schools %}
+            {% set school = item.school %}
+            {% set mastery_tier = item.mastery_tier %}
+            {% set school_xp = item.school_xp %}
             
             {% set next_req = 100 %}
             {% set relative_xp = school_xp %}
@@ -48,41 +77,47 @@
                 {% set progress_pct = 100 %}
             {% endif %}
 
-            {% set is_inactive = mastery_tier == 1 and school_xp == 0 %}
+            {% set is_equipped = school in equipped_schools %}
+            {% set is_inactive = not (school_xp > 0 or mastery_tier > 1 or is_equipped) %}
 
-            <div class="hero-mastery-card {% if is_inactive %}hidden{% endif %}"
+            {% set school_icon = '🔮' %}
+            {% if school == 'fire' %}{% set school_icon = '🔥' %}
+            {% elseif school == 'water' %}{% set school_icon = '💧' %}
+            {% elseif school == 'air' %}{% set school_icon = '💨' %}
+            {% elseif school == 'earth' %}{% set school_icon = '🪨' %}
+            {% elseif school == 'light' %}{% set school_icon = '☀️' %}
+            {% elseif school == 'dark' %}{% set school_icon = '🌙' %}{% endif %}
+
+            <div class="hero-mastery-row {% if is_equipped %}hero-mastery-row--equipped{% endif %} {% if is_inactive %}hidden{% endif %}"
                  {% if is_inactive %}data-mastery-toggle-target="item"{% endif %}>
-                <div class="layout-cluster layout-cluster--sm layout-cluster--between">
-                    <div class="layout-cluster layout-cluster--sm">
-                        <span class="hero-school-mastery__icon">
-                            {% if school == 'fire' %}🔥
-                            {% elseif school == 'water' %}💧
-                            {% elseif school == 'air' %}💨
-                            {% elseif school == 'earth' %}🪨
-                            {% elseif school == 'light' %}☀️
-                            {% else %}🌙{% endif %}
-                        </span>
-                        <span class="hero-school-mastery__label">{{ ('school.' ~ school)|trans }}</span>
+                <div class="hero-mastery-row__info">
+                    <span class="hero-mastery-row__icon">{{ school_icon }}</span>
+                    <span class="hero-mastery-row__name" title="{{ ('school.' ~ school)|trans }}">{{ ('school.' ~ school)|trans }}</span>
+                </div>
+                <div class="hero-mastery-row__progress">
+                    <div class="ui-progress ui-progress--compact hero-mastery-row__bar-track">
+                        <div class="ui-progress__fill ui-progress__fill--accent" style="--ui-progress-pct: {{ progress_pct }}%"></div>
                     </div>
-                    <span class="hero-school-mastery__tier">T{{ mastery_tier }}</span>
+                    <span class="hero-mastery-row__pct">{{ progress_pct }}%</span>
                 </div>
-                <div class="hero-mastery-card__meta">
-                    <span>XP: {{ school_xp }} / {{ next_req }}</span>
-                    {% if mastery_tier == 5 %}<span>MAX</span>{% else %}<span>{{ progress_pct }}%</span>{% endif %}
+                <div class="hero-mastery-row__meta">
+                    {% if mastery_tier == 5 %}
+                        <span>{{ 'heroes.mastery_xp_max'|trans }}</span>
+                    {% else %}
+                        <span>{{ relative_xp }}/{{ relative_req }} XP</span>
+                    {% endif %}
+                    <span class="hero-mastery-row__tier">T{{ mastery_tier }}</span>
                 </div>
-                {% include 'components/ui/progress_bar.html.twig' with {
-                    percentage: progress_pct,
-                    container_class: 'ui-progress ui-progress--compact',
-                    progress_class: 'ui-progress__fill ui-progress__fill--accent'
-                } %}
             </div>
         {% endfor %}
     </div>
 
-    <div class="layout-cluster layout-cluster--center">
-        <button type="button" class="btn btn-outline btn--sm btn--spaced-top" data-action="click->mastery-toggle#toggle"
-                data-toggle-text="{{ 'heroes.btn_hide_inactive_masteries'|trans }}">
-            {{ 'heroes.btn_show_all_masteries'|trans }}
-        </button>
-    </div>
+    {% if active_count < school_list|length %}
+        <div class="layout-cluster layout-cluster--center">
+            <button type="button" class="btn btn-outline btn--sm btn--spaced-top" data-action="click->mastery-toggle#toggle"
+                    data-toggle-text="{{ 'heroes.btn_hide_inactive_masteries'|trans }}">
+                {{ 'heroes.btn_show_all_masteries'|trans }}
+            </button>
+        </div>
+    {% endif %}
 </div>

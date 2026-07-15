@@ -30,6 +30,17 @@ export default class extends Controller {
 
     changeHero() {
         const heroId = this.heroSelectTarget.value;
+        if (window.location.pathname.includes('/app/academy')) {
+            const params = new URLSearchParams(window.location.search);
+            if (!heroId) {
+                params.delete('hero_id');
+            } else {
+                params.set('hero_id', heroId);
+            }
+            window.location.href = `/app/academy?${params.toString()}`;
+            return;
+        }
+
         if (!heroId) {
             window.location.href = '/app/heroes';
             return;

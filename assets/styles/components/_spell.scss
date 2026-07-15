@@ -134,3 +134,8 @@
 .spell-slot__name { @apply text-xs font-bold; color: var(--color-text-primary); }
 .spell-slot__meta { @apply text-[9px] uppercase font-semibold; color: var(--color-text-muted); }
 .spell-slot__empty-label { @apply text-xs font-bold; color: var(--color-text-muted); }
+
+.academy-filter__reset-row {
+  margin-top: 0.5rem;
+}
+

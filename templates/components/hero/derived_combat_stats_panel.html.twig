@@ -1,48 +1,93 @@
 {# templates/components/hero/derived_combat_stats_panel.html.twig #}
 {% set combat_stats = hero_combat_stats(hero) %}
 <div class="hero-panel">
-    <div>
-        <h2 class="hero-panel__title hero-panel__title--tight">{{ 'heroes.derived_stats'|trans }}</h2>
-        <p class="hero-panel__desc">{{ 'heroes.derived_stats_desc'|trans }}</p>
-    </div>
 
-    <div class="stat-tile-grid">
+    <div class="combat-stats-grid">
         <div class="stat-tile" title="{{ 'heroes.combat_hp_desc'|trans }}">
-            <span class="stat-tile__label">❤️ {{ 'heroes.combat_hp'|trans }}</span>
+            <span class="stat-tile__label">
+                <svg class="stat-tile__icon stat-tile__icon--hp" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                {{ 'heroes.combat_hp'|trans }}
+            </span>
             <span class="stat-tile__value">{{ combat_stats.maxHp }}</span>
         </div>
         <div class="stat-tile" title="{{ 'heroes.combat_attack_desc'|trans }}">
-            <span class="stat-tile__label">⚔️ {{ 'heroes.combat_attack'|trans }}</span>
+            <span class="stat-tile__label">
+                <svg class="stat-tile__icon stat-tile__icon--atk" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l3 3M19 21l2-2"/>
+                </svg>
+                {{ 'heroes.combat_attack'|trans }}
+            </span>
             <span class="stat-tile__value">{{ combat_stats.physicalAttack }}</span>
         </div>
         <div class="stat-tile" title="{{ 'heroes.combat_spell_power_desc'|trans }}">
-            <span class="stat-tile__label">🔮 {{ 'heroes.combat_spell_power'|trans }}</span>
+            <span class="stat-tile__label">
+                <svg class="stat-tile__icon stat-tile__icon--sp" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                </svg>
+                {{ 'heroes.combat_spell_power'|trans }}
+            </span>
             <span class="stat-tile__value">{{ combat_stats.spellPower }}</span>
         </div>
         <div class="stat-tile" title="{{ 'heroes.combat_armor_desc'|trans }}">
-            <span class="stat-tile__label">🛡️ {{ 'heroes.combat_armor'|trans }}</span>
-            <span class="stat-tile__value">{{ combat_stats.armorValue }}</span>
-            <span class="stat-tile__note">(-{{ (combat_stats.physicalDamageReduction * 100)|number_format(1) }}%)</span>
+            <span class="stat-tile__label">
+                <svg class="stat-tile__icon stat-tile__icon--arm" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                {{ 'heroes.combat_armor'|trans }}
+            </span>
+            <span class="stat-tile__value">
+                {{ combat_stats.armorValue }}
+                <span class="stat-tile__note">(-{{ (combat_stats.physicalDamageReduction * 100)|number_format(1) }}%)</span>
+            </span>
         </div>
         <div class="stat-tile" title="{{ 'heroes.combat_resistance_desc'|trans }}">
-            <span class="stat-tile__label">🌀 {{ 'heroes.combat_resistance'|trans }}</span>
-            <span class="stat-tile__value">{{ combat_stats.magicResistance }}</span>
-            <span class="stat-tile__note">(-{{ (combat_stats.magicDamageReduction * 100)|number_format(1) }}%)</span>
+            <span class="stat-tile__label">
+                <svg class="stat-tile__icon stat-tile__icon--res" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                {{ 'heroes.combat_resistance'|trans }}
+            </span>
+            <span class="stat-tile__value">
+                {{ combat_stats.magicResistance }}
+                <span class="stat-tile__note">(-{{ (combat_stats.magicDamageReduction * 100)|number_format(1) }}%)</span>
+            </span>
         </div>
         <div class="stat-tile" title="{{ 'heroes.combat_initiative_desc'|trans }}">
-            <span class="stat-tile__label">⚡ {{ 'heroes.combat_initiative'|trans }}</span>
+            <span class="stat-tile__label">
+                <svg class="stat-tile__icon stat-tile__icon--init" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                {{ 'heroes.combat_initiative'|trans }}
+            </span>
             <span class="stat-tile__value">{{ combat_stats.baseInitiative }}</span>
         </div>
         <div class="stat-tile" title="{{ 'heroes.combat_accuracy_desc'|trans }}">
-            <span class="stat-tile__label">🎯 {{ 'heroes.combat_accuracy'|trans }}</span>
+            <span class="stat-tile__label">
+                <svg class="stat-tile__icon stat-tile__icon--acc" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z"/>
+                </svg>
+                {{ 'heroes.combat_accuracy'|trans }}
+            </span>
             <span class="stat-tile__value">{{ combat_stats.accuracyPercent|number_format(1) }}%</span>
         </div>
         <div class="stat-tile" title="{{ 'heroes.combat_dodge_desc'|trans }}">
-            <span class="stat-tile__label">👣 {{ 'heroes.combat_dodge'|trans }}</span>
+            <span class="stat-tile__label">
+                <svg class="stat-tile__icon stat-tile__icon--ddg" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                </svg>
+                {{ 'heroes.combat_dodge'|trans }}
+            </span>
             <span class="stat-tile__value">{{ combat_stats.dodgePercent|number_format(1) }}%</span>
         </div>
         <div class="stat-tile" title="{{ 'heroes.combat_crit_desc'|trans }}">
-            <span class="stat-tile__label">🍀 {{ 'heroes.combat_crit'|trans }}</span>
+            <span class="stat-tile__label">
+                <svg class="stat-tile__icon stat-tile__icon--crit" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.969 0 1.371 1.24.588 1.81l-3.97 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.97-2.888a1 1 0 00-1.176 0l-3.97 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.97-2.888c-.784-.57-.38-1.81.588-1.81h4.906a1 1 0 00.95-.69l1.519-4.674z"/>
+                </svg>
+                {{ 'heroes.combat_crit'|trans }}
+            </span>
             <span class="stat-tile__value">{{ combat_stats.critPercent|number_format(1) }}%</span>
         </div>
     </div>

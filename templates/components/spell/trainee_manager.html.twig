@@ -2,16 +2,23 @@
 <div class="game-panel">
     <div>
         <h2 class="hero-panel__title">{{ 'spells.trainee_mage'|trans }}</h2>
-        <label for="spellbook-hero-select" class="form-label">{{ 'spells.select_hero_opt'|trans }}</label>
-        <select id="spellbook-hero-select" data-spellbook-target="heroSelect" data-action="change->spellbook#changeHero"
-                class="form-input form-input--medium">
-            <option value="">{{ 'spells.select_hero_opt'|trans }}</option>
-            {% for h in heroes %}
-                <option value="{{ h.id }}" {% if selected_hero_id == h.id %}selected{% endif %}>
-                    {{ h.name }} ({{ 'js_flash.hq.lvl_short'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }})
-                </option>
-            {% endfor %}
-        </select>
+        {% if hide_hero_select ?? false %}
+            <input type="hidden"
+                   id="spellbook-hero-select"
+                   data-spellbook-target="heroSelect"
+                   value="{{ selected_hero_id }}">
+        {% else %}
+            <label for="spellbook-hero-select" class="form-label">{{ 'spells.select_hero_opt'|trans }}</label>
+            <select id="spellbook-hero-select" data-spellbook-target="heroSelect" data-action="change->spellbook#changeHero"
+                    class="form-input form-input--medium">
+                <option value="">{{ 'spells.select_hero_opt'|trans }}</option>
+                {% for h in heroes %}
+                    <option value="{{ h.id }}" {% if selected_hero_id == h.id %}selected{% endif %}>
+                        {{ h.name }} ({{ 'js_flash.hq.lvl_short'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }})
+                    </option>
+                {% endfor %}
+            </select>
+        {% endif %}
     </div>
 
     {% if selected_hero %}
@@ -59,19 +66,21 @@
         </div>
 
         {# School Mastery #}
-        <div class="panel-divider panel-divider--stack">
-            <span class="section-label--xs">{{ 'heroes.school_mastery'|trans }}</span>
-            <div class="spell-mastery-grid">
-                {% set schools = ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
-                {% for school in schools %}
-                    {% set level = masteries[school] ?? 1 %}
-                    <div class="spell-mastery-cell">
-                        <span class="spell-mastery-cell__label">{{ ('school.' ~ school)|trans }}</span>
-                        <span class="spell-mastery-tier">T{{ level }}</span>
-                    </div>
-                {% endfor %}
+        {% if not (hide_hero_select ?? false) %}
+            <div class="panel-divider panel-divider--stack">
+                <span class="section-label--xs">{{ 'heroes.school_mastery'|trans }}</span>
+                <div class="spell-mastery-grid">
+                    {% set schools = ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
+                    {% for school in schools %}
+                        {% set level = masteries[school] ?? 1 %}
+                        <div class="spell-mastery-cell">
+                            <span class="spell-mastery-cell__label">{{ ('school.' ~ school)|trans }}</span>
+                            <span class="spell-mastery-tier">T{{ level }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
-        </div>
+        {% endif %}
     {% else %}
         <div class="spell-empty-state">
             <span class="spell-empty-state__icon">🧙</span>

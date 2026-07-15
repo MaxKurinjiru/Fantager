@@ -3,7 +3,7 @@
 {% set stats = [
     { label: 'dashboard.total_heroes', value: dashboard.heroes.total, route: 'app_heroes', params: {} },
     { label: 'dashboard.available_heroes', value: dashboard.heroes.available, modifier: 'success', route: 'app_heroes', params: {} },
-    { label: 'dashboard.in_training', value: dashboard.heroes.in_training, modifier: 'warning', route: 'app_hq', params: { facility: 'training' } },
+    { label: 'dashboard.in_training', value: dashboard.heroes.in_training, modifier: 'warning', route: 'app_training', params: {} },
     { label: 'dashboard.hq_level', value: dashboard.headquarters.total_level, route: 'app_hq', params: {} },
     { label: 'dashboard.summons_cycle', value: dashboard.summoning.summons_this_cycle, route: 'app_hq', params: { facility: 'summoning_chamber' } }
 ] %}

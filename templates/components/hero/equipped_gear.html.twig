@@ -26,7 +26,7 @@
             {% set item = equipped[slot.key] ?? null %}
             {% if item %}
                 {# Active Item Slot #}
-                <div class="hero-gear-slot hero-gear-slot--filled">
+                <button type="button" onclick="document.querySelector('[data-tab=\'hero-tab-equipment\']').click()" class="hero-gear-slot hero-gear-slot--filled hero-gear-slot--clickable">
                     <span class="hero-gear-slot__label">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
                     <span class="hero-gear-slot__icon">
                         {% if item.slotType.value == 'main_hand' or item.slotType.value == 'weapon' %}🗡️
@@ -39,7 +39,7 @@
                     <span class="rarity-tag rarity-tag--{{ item.rarity.value }}">
                         {{ ('inventory.rarity_' ~ item.rarity.value)|trans }}
                     </span>
-                </div>
+                </button>
             {% else %}
                 {# Empty Slot Placeholder #}
                 <button type="button" onclick="document.querySelector('[data-tab=\'hero-tab-equipment\']').click()" class="hero-gear-slot hero-gear-slot--empty">

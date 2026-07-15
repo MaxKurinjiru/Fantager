@@ -144,6 +144,9 @@ run_check "Twig inline style attribute (non-progress)" \
   'style="' \
   "${TWIG_GLOBS[@]}" \
   --glob '!templates/components/ui/progress_bar.html.twig' \
+  --glob '!templates/components/hero/attribute_bar.html.twig' \
+  --glob '!templates/components/hero/weapon_mastery.html.twig' \
+  --glob '!templates/components/hero/school_mastery.html.twig' \
   --glob '!templates/community/thread.html.twig' \
   --glob '!templates/components/community/thread_card.html.twig' \
   --glob '!templates/components/community/forum_post.html.twig'

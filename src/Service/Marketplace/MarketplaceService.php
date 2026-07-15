@@ -112,7 +112,8 @@ class MarketplaceService
             }
 
             if (null !== $hero->getTrainer()) {
-                throw new UserFacingException('error.marketplace_hero_assigned_trainer');
+                $trainer = $hero->getTrainer();
+                $trainer->removeTrainee($hero);
             }
 
             $this->teamRosterService->assertCanRemoveCombatReadyHero($seller, $hero);

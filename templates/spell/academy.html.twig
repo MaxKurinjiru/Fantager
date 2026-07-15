@@ -1,0 +1,87 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'nav.academy'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="academy-page page-shell" data-controller="spellbook"
+     data-spellbook-text-learning-value="{{ 'js_flash.spells.learning'|trans }}"
+     data-spellbook-error-learn-value="{{ 'js_flash.spells.failed_learn'|trans }}"
+     data-spellbook-success-learn-value="{{ 'js_flash.spells.success_learn'|trans }}"
+     data-spellbook-error-equip-value="{{ 'js_flash.spells.failed_equip'|trans }}"
+     data-spellbook-success-equip-value="{{ 'js_flash.spells.success_equip'|trans }}"
+     data-spellbook-error-unequip-value="{{ 'js_flash.spells.failed_unequip'|trans }}"
+     data-spellbook-text-equipping-value="{{ 'js_flash.inventory.equipping'|trans }}"
+     data-spellbook-success-unequip-value="{{ 'js_flash.spells.success_unequip'|trans }}"
+>
+    <div class="layout-toolbar">
+        <div>
+            <h1 class="page-title">🔮 {{ 'nav.academy'|trans }}</h1>
+            <p class="page-subtitle">{{ 'spells.subtitle'|trans }}</p>
+        </div>
+        <div class="treasury-badge">
+            <span class="treasury-badge__label">{{ 'dashboard.treasury'|trans }}:</span>
+            <span class="treasury-badge__value">🪙 {{ team.gold|number_format(0, '.', ' ') }}</span>
+        </div>
+    </div>
+
+    {% include 'components/ui/alert_box.html.twig' with { target: 'spellbook', message_target: 'alertMessage', close_action: 'spellbook#hideAlert' } %}
+
+    <div class="game-panel">
+        <form method="GET" action="{{ path('app_academy') }}" class="form-reset">
+            <div class="scroll-grid">
+                {# Hero Selector #}
+                <div class="form-field-group">
+                    <label for="spellbook-hero-select" class="form-label">{{ 'spells.trainee_mage'|trans }}</label>
+                    <select id="spellbook-hero-select" name="hero_id" data-spellbook-target="heroSelect" data-action="change->spellbook#changeHero" class="form-input form-input--medium">
+                        <option value="">{{ 'spells.select_hero_opt'|trans }}</option>
+                        {% for h in heroes %}
+                            <option value="{{ h.id }}" {% if selected_hero and selected_hero.id == h.id %}selected{% endif %}>
+                                {{ h.name }} ({{ 'js_flash.hq.lvl_short'|trans }} {{ h.level }} &bull; {{ ('heroes.race_' ~ h.race.value)|trans }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {# School Filter #}
+                <div class="form-field-group">
+                    <label for="filter-school" class="form-label">{{ 'heroes.tab_spells'|trans }}</label>
+                    <select id="filter-school" name="school" class="form-input form-input--medium" onchange="this.form.submit()">
+                        <option value="">{{ 'marketplace.filter_all'|trans }}</option>
+                        {% for school in schools %}
+                            <option value="{{ school.value }}" {% if selected_school == school.value %}selected{% endif %}>
+                                {{ ('school.' ~ school.value)|trans }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {# Tier Filter #}
+                <div class="form-field-group">
+                    <label for="filter-tier" class="form-label">Tier</label>
+                    <select id="filter-tier" name="tier" class="form-input form-input--medium" onchange="this.form.submit()">
+                        <option value="">{{ 'marketplace.filter_all'|trans }}</option>
+                        <option value="1" {% if selected_tier == 1 %}selected{% endif %}>Tier 1</option>
+                        <option value="2" {% if selected_tier == 2 %}selected{% endif %}>Tier 2</option>
+                    </select>
+                </div>
+
+                <div class="layout-cluster layout-cluster--end grid-span-full academy-filter__reset-row">
+                    <a href="{{ path('app_academy') }}" class="btn btn-outline btn--sm">❌ {{ 'marketplace.btn_reset'|trans }}</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {# Spells listing #}
+    <div class="academy-spells-section">
+        {% include 'components/spell/academy_store.html.twig' with {
+            spells: spells,
+            known_spell_ids: known_spell_ids,
+            selected_hero: selected_hero,
+            masteries: masteries,
+            team: team,
+            show_visible: true
+        } %}
+    </div>
+</div>
+{% endblock %}

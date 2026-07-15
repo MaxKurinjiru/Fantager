@@ -1,9 +1,5 @@
 {# templates/components/hero/attributes_panel.html.twig #}
 <div class="hero-panel">
-    <div>
-        <h2 class="hero-panel__title hero-panel__title--tight">{{ 'heroes.primary_attrs'|trans }}</h2>
-        <p class="hero-panel__desc">{{ 'heroes.primary_attrs_desc'|trans }}</p>
-    </div>
 
     {% set gear_bonuses = {
         str: 0,
@@ -44,7 +40,7 @@
         { key: 'lck', field: 'lck', icon: '🍀' }
     ] %}
 
-    <div class="layout-stack layout-stack--form layout-stack--spaced">
+    <div class="attributes-panel-grid">
         {% for attr in attr_configs %}
             {% set val = attribute(hero, attr.field) %}
             {% set gear_bonus = gear_bonuses[attr.key]|round %}
@@ -61,7 +57,8 @@
                     label: attr.icon ~ ' ' ~ full_label,
                     val: val,
                     bonus: gear_bonus,
-                    max_val: max(20, total_val)
+                    max_val: max(20, val, total_val),
+                    attr_key: attr.key
                 } %}
             </div>
         {% endfor %}

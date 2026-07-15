@@ -22,6 +22,7 @@ nav:
   formation: Formace
   league: Liga
   marketplace: Tržiště
+  academy: Akademie
   economy: Ekonomika
   settings: Nastavení
   toggle_menu: Zobrazit/skrýt menu
@@ -553,6 +554,13 @@ team_profile:
   submit: Uložit profil
 
 heroes:
+  cannot_manage_role: "Nemůžete spravovat hrdinu s touto rolí."
+  cannot_manage_selling: "Hrdina je nabízen na tržišti. Pro správu ho musíte stáhnout z prodeje."
+  cannot_manage_recovering: "Hrdina se zotavuje v lazaretu a nelze jej prodat ani propustit."
+  cannot_manage_match: "Hrdina je nasazen v zápase a nelze jej nyní spravovat."
+  cannot_manage_dead: "Mrtvého hrdinu nelze spravovat."
+  cannot_manage_retired: "Hrdina v důchodu nelze spravovat."
+  cannot_manage_generic: "Hrdinu v tomto stavu nelze spravovat."
   title: Soupiska hrdinů
   subtitle: "Spravujte, filtrujte a prohlížejte hrdiny vašeho týmu."
   search_placeholder: "Vyhledat hrdinu..."
@@ -592,11 +600,12 @@ heroes:
   no_heroes: Na soupisce nejsou žádní hrdinové
   no_heroes_desc: Jděte do vyvolávací síně a naverbujte své první hrdiny.
   go_summoning: Přejít do vyvolávací síně
+  no_trait_desc: "Tento hrdina nemá žádný vrozený osobnostní rys."
   tab_overview: Přehled
   tab_equipment: Vybavení
   tab_spells: Kouzla
   tab_training: Trénink
-  tab_history: Historie
+  tab_history: Statistiky a vývoj
   btn_show_all_masteries: "Zobrazit všechny dovednosti"
   btn_hide_inactive_masteries: "Skrýt neaktivní dovednosti"
   attribute_tooltip_with_bonus: "%label%: %total% (Základ: %base%, Rasový bonus: %bonus%)"
@@ -605,6 +614,7 @@ heroes:
   current_trainer: Aktuální trenér
   manage_all_trainers: Spravovat všechny trenéry v základně
   back_roster: Zpět na soupisku
+  manage_btn: Správa hrdiny
   rename_title: Přejmenovat hrdinu
   save: Uložit
   cancel: Zrušit
@@ -652,10 +662,16 @@ heroes:
   gear_mastery: Mistrovství ve výstroji a zbraních
   gear_mastery_desc: Slaďte se s typem výstroje a odemkněte bojové bonusy. Změna předmětu neresetuje sžití ihned, ale nepoužívaná výstroj denně upadá.
   active_style: Aktivní sžití
-  no_style: Žádné (Bez zbraně)
-  fully_attuned: Plně sžitý (100 %)
-  attuning: Sžívá se (%progress%%)
+  active_style_desc: Krátkodobá naladěnost na daný styl — klesá bez nasazení, neresetuje mistrovství.
+  equipped_masteries: Aktuálně nasazená mistrovství
   all_masteries: Všechna mistrovství ve zbrani a zbroji
+  all_masteries_desc: Trvalá zkušenost — roste zápasem, nesouvisí se sžitím.
+  mastery_xp_to_tier: "%xp% / %req% XP do T%tier%"
+  mastery_xp_max: MAX (T5)
+  mastery_cat_melee: Zbraně na blízko
+  mastery_cat_ranged: Zbraně na dálku
+  mastery_cat_magic: Magické předměty
+  mastery_cat_defense: Obranná výzbroj
   combat_stats: Bojové statistiky
   combat_stats_desc: Historické výkonnostní metriky.
   matches: Zápasy
@@ -943,6 +959,8 @@ hq:
 
 training:
   title: Trénink
+  assign_trainer_title: "Přiřadit k trenérovi"
+  select_trainer_desc: "Vyberte trenéra, pod kterým bude tento hrdina trénovat."
   subtitle: Naplánujte tréninky ke zlepšení atributů, rozšíření slotů pro kouzla nebo snížení únavy.
   status:
     completed: Hotovo
@@ -1002,6 +1020,7 @@ training:
   idle: "Neaktivní (Idle)"
   mortality_warning: "Riziko úmrtí věkem!"
   capped: "Dosažen limit"
+  capped_hero_warning: "Trénink tohoto hrdiny byl završen. Dosáhl limitu trenéra a nezískává žádné další atributy. Změňte trenéra nebo jeho zaměření."
   trainer_stats: "Statistiky trenéra"
   progress_cap: "Pokrok / Limit"
   training_focus: "Zaměření tréninku"
@@ -1106,6 +1125,8 @@ spells:
   slots_full: Sloty plné
   no_spells: Zatím nejsou naučena žádná kouzla
   no_spells_desc: Zvolte "Obchod akademie" výše pro naučení nových svitků kouzel.
+  no_store_spells: V akademii nejsou dostupná žádná kouzla
+  no_store_spells_desc: Zkontrolujte, zda byla kouzla načtena do databáze (spustit fixture).
   req_mastery: "Vyž: %school% T%tier%"
   scroll_fee: Cena svitku
   learn_spell: Naučit se kouzlo

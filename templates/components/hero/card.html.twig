@@ -28,8 +28,8 @@
                         <a href="{{ path('app_heroes_detail', {id: hero.id}) }}">{{ hero.name }}</a>
                     </h3>
                     <p class="hero-card__meta">{{ 'heroes.level'|trans }} {{ hero.level }} &bull; {{ ('heroes.race_' ~ hero.race.value)|trans }}</p>
-                    {% include 'components/hero/trait_badge.html.twig' with { trait: hero.trait, compact: true } %}
                     {% include 'components/hero/rating_badge.html.twig' with { rating: rating } %}
+                    {% include 'components/hero/trait_badge.html.twig' with { trait: hero.trait, compact: true } %}
                 </div>
             </div>
         </div>
