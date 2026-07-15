@@ -562,7 +562,10 @@
     color: var(--color-text-muted);
   }
   .hero-header__xp-labels {
-    @apply flex justify-between text-xs font-semibold;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.75rem;
+    font-weight: 600;
     color: var(--color-text-secondary);
     span {
       white-space: nowrap;

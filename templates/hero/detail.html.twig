@@ -109,7 +109,7 @@
                             </div>
                             
                             {% if is_capped %}
-                                <div class="alert alert-warning" role="alert" style="margin-bottom: 1.25rem;">
+                                <div class="alert alert-warning alert--training-cap" role="alert">
                                     <span class="emoji-icon" aria-hidden="true">⚠️</span>
                                     <span>{{ 'training.capped_hero_warning'|trans }}</span>
                                 </div>
@@ -240,9 +240,9 @@
                         </div>
                     {% else %}
                         <div class="game-panel">
-                            <div class="layout-stack layout-stack--xs">
-                                <h3 class="game-panel__title" style="margin: 0;">{{ 'training.assign_trainer_title'|trans }}</h3>
-                                <p class="copy-muted copy-xs" style="margin: 0;">{{ 'training.select_trainer_desc'|trans }}</p>
+                            <div class="layout-stack layout-stack--xs training-assign-header">
+                                <h3 class="game-panel__title">{{ 'training.assign_trainer_title'|trans }}</h3>
+                                <p class="copy-muted copy-xs">{{ 'training.select_trainer_desc'|trans }}</p>
                             </div>
                             
                             <div class="training-trainer-grid">
