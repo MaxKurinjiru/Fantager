@@ -159,22 +159,22 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 *Implement the core combat engine, chronological event tick scheduler, the weekly league competition, and hero mortality.*
 
 ### Step 6.1: Combat Simulation Engine (Core Block)
-- **Design Prerequisites (Phase 0)**: Decisions locked in [combat-system.md](systems/combat-system.md#engine-architecture-decisions): automated async sim + replay, **event-stream** `combat_log` + **seed**, Formation AI **L0→L2** (L3 deferred). `CombatStatCalculator` / `DerivedCombatStats` implemented; turn engine and replay UI pending.
+- **Design Prerequisites (Phase 0)**: Locked in [combat-system.md](systems/combat-system.md#simulation-contract) — API layers, VOs, event-stream `combat_log` + seed, L0 defaults, engine vs post-match boundary; AI **L0→L2** ([Formation AI](systems/combat-system.md#formation-ai-phased)). `CombatStatCalculator` implemented; turn engine and replay UI pending.
 - **Service/Business Logic** (phased — see combat-system § Implementation phases):
-  - **6.1a** — Deterministic turn engine + L0 (`approach`) AI + event `combat_log`; replace `StubRandomMatchSimulator` via `MatchSimulatorInterface`.
+  - **6.1a** — Contract VO + deterministic turn engine + L0 (`approach`) AI + event `combat_log`; replace `StubRandomMatchSimulator` via `MatchSimulatorInterface` (order: VO → Formation builder → thin engine wiring → full turn loop).
   - **6.1b** — L1 targeting (`strategy.target_order`); freeze slot JSON schema ([formation-system.md](systems/formation-system.md#strategy-json-schema-phased)).
   - **6.1c** — L2 spell conditions; replay viewer MVP.
   - **6.1d** — Combat deaths → aging → graveyard; item durability loss after battle.
   - Apply status effects per tick (speed order); post-match XP / form / fatigue / morale (aging in 6.1d).
 - **API Contracts**:
-  - `POST /api/v1/combat/simulate` — Practice/sandbox match between two rosters (requires 6 combat-ready heroes per team).
+  - `POST /api/v1/combat/simulate` — Practice/sandbox match between two rosters (requires 6 combat-ready heroes per team); optional `seed`.
   - `GET /api/v1/battles/{id}` / `GET /api/v1/battles/{id}/log` — Result + replay log.
 - **Frontend Views**:
   - **[NEW]** Combat Replay Viewer UI: Reads event-stream `combat_log` and plays back a fully automated battle (no mid-battle player actions — tactics come from formations). Playback controls: play/pause, speed, skip to end.
 - **Verification**:
   - Write extensive unit tests for combat calculations (accuracy, dodge, crit multipliers) and seed reproducibility.
   - Test forfeit validation: if one team has <6 combat-ready heroes, ensure immediate 3-0 forfeit without simulator trigger.
-- **Status**: ⏳ Not Started (Battle entity scaffolded; combat engine pending; architecture decisions documented).
+- **Status**: ⏳ Not Started (Battle entity scaffolded; **simulation contract documented**; combat engine pending).
 
 ### Step 6.2: Calendar & Server Ticks System
 - **Database & Entities**: `KingdomTickLog` (implemented).

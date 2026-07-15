@@ -99,7 +99,7 @@ Explicit action sequences and advanced conditional tactics (substitution, mid-ma
 
 Formations are 6-slot layouts (3 front, 3 back) with per-hero action priority and spell/targeting settings. Synergy calculations (planned) consider race relationships and role balance.
 
-**Combat integration:** Combat is fully automated — the engine reads `approach` and (phased) strategy / spell priorities and runs the match without mid-battle player input. The battle UI is a replay of `combat_log` only; see [combat-system.md](combat-system.md#automation-model) and [screens/12-combat-battle.md](../screens/12-combat-battle.md).
+**Combat integration:** Combat is fully automated — the engine reads `approach` and (phased) strategy / spell priorities and runs the match without mid-battle player input. Snapshot building and match request shape: [combat-system.md — Simulation Contract](combat-system.md#simulation-contract). The battle UI is a replay of `combat_log` only; see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
 ## APIs
 

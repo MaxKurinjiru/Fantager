@@ -10,7 +10,7 @@ Purpose: Document combat simulation, match eligibility, scoring, derived combat 
 
 Combat is **fully automated**. Players configure behaviour **before** the match via the [Formation System](formation-system.md) (`approach` today; per-slot targeting / spell priorities in later AI layers). The engine simulates the entire bout server-side; the UI is a **replay viewer** over `combat_log` — see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
-There is **no** mid-battle player input (no turn submission, target picking, Auto-Battle toggle, or surrender during simulation). Architecture, log format, and AI phases: [Engine Architecture Decisions](#engine-architecture-decisions) and [Formation AI](#formation-ai-phased).
+There is **no** mid-battle player input (no turn submission, target picking, Auto-Battle toggle, or surrender during simulation). Architecture, log format, and AI phases: [Simulation Contract](#simulation-contract), [Engine Architecture Decisions](#engine-architecture-decisions), and [Formation AI](#formation-ai-phased).
 
 ---
 
@@ -23,8 +23,9 @@ There is **no** mid-battle player input (no turn submission, target picking, Aut
 | `Battle` entity persistence | ✅ Implemented | Scores, formations, result enum |
 | Post-match side effects | ✅ Implemented | Standings, fan club, morale, hero/team chronicle, mastery XP |
 | `CombatStatCalculator` + `DerivedCombatStats` | ✅ Implemented | Profile-aware (`Equipped`, `HumanNeutral`, `FullIntrinsic`) |
-| Deterministic turn engine | ⏳ Pending | Milestone 6 Step 6.1 — see [Engine Architecture Decisions](#engine-architecture-decisions) |
-| `combat_log` JSON + replay UI | ⏳ Pending | Event-stream format decided; UI pending |
+| Deterministic turn engine | ⏳ Pending | Milestone 6 Step 6.1 — see [Simulation Contract](#simulation-contract) |
+| `combat_log` JSON + replay UI | ⏳ Pending | Event-stream contract decided; UI pending |
+| Simulation contract (VO / API layers) | ✅ Documented | Pending code — see below |
 | Combat death → graveyard | ⏳ Pending | Blocked on full engine |
 | Formation AI (L0–L2) | ⏳ Pending | Phased — see [Formation AI](#formation-ai-phased) |
 
@@ -242,55 +243,174 @@ Each equipped spell's school: **Spell Power +5% per tier above 1** (stacks acros
 
 ---
 
-## Engine Architecture Decisions
+## Simulation Contract
 
-Decided model for Milestone 6 Step 6.1. Do not invent alternate formats without updating this section.
+Locked design for Milestone 6 Step 6.1 implementation. Align PHP value objects and `MatchSimulatorInterface` with this section; do not invent alternate shapes without updating the docs.
 
-### Combat log format — event stream
+### API layers
 
-`Battle.combat_log` is an **append-only event stream** (not per-turn full snapshots).
+| Layer | Responsibility |
+|-------|----------------|
+| `MatchSimulatorInterface::simulate(LeagueFixture): MatchOutcome` | Keep for league resolution. Builds engine request from fixture formations, calls `CombatEngine`, maps result onto `MatchOutcome`. |
+| `CombatEngine::simulate(CombatMatchRequest): CombatSimulationResult` | Pure core — no Doctrine fixtures, testable without league. |
+| `LeagueMatchResolutionService` | Eligibility / **forfeit before** engine; after sim: persist `Battle`, standings, fan club, morale, chronicles, mastery. |
 
-**Rationale:** Smaller payloads, easy unit tests, replay seek via replay+reduce; hybrid snapshots can be added later if UI needs fast scrubbing.
+Forfeit outcomes stay **outside** the engine (existing `resolveForfeitOutcome()`).
 
-#### Envelope (planned)
+Identity: side **A** = home / `Battle.team_a`; side **B** = away / `Battle.team_b`.
+
+### Value objects (planned)
+
+```text
+CombatMatchRequest
+  sideA, sideB: CombatSide
+  matchType: MatchType
+  seed: int                         // required
+  engineVersion: int = 1
+
+CombatSide
+  teamId: int
+  formationId: int|null
+  approach: FormationApproach       // aggressive | balanced | defensive
+  combatants: list<CombatantSnapshot>  // exactly 6, ordered by slot
+
+CombatantSnapshot
+  heroId, slot, race, level, form, fatigue, morale
+  derived: DerivedCombatStats       // CombatStatCalculator, Equipped profile
+  strategy: array                   // {} ⇒ L0 defaults
+  spellPriorities: array            // [] ⇒ L0 defaults
+  spells: list<{ id, school, … }>   // equipped / formation overrides
+
+CombatSimulationResult
+  outcome scores via MatchOutcome   // isForfeit = false
+  seed: int
+  combatLog: array                  // envelope below
+  // 6.1d+: optional death/durability hints — not in 6.1a
+```
+
+#### `MatchOutcome` extension
+
+Extend the existing VO (prefer over a parallel wrapper for league wiring):
+
+```text
+MatchOutcome(homeScore, awayScore, isForfeit = false, combatLog = [], seed = null)
+```
+
+| Producer | `combatLog` |
+|----------|-------------|
+| Forfeit | `{ "version": 1, "simulator": "forfeit", "events": [] }` |
+| Stub (until removed) | `{ "version": 1, "simulator": "stub_random", "events": [] }` |
+| Engine | Full envelope (`simulator`: `combat_engine`) |
+
+`LeagueMatchResolutionService::createBattle()` must persist `$outcome->getCombatLog()` (and stop hard-coding stub metadata once the engine ships).
+
+### Seed
+
+- League: deterministic from fixture context, e.g.  
+  `seed = hash_to_u32(fixtureId, seasonId?, scheduledAt timestamp, engineVersion)`.
+- Practice / sandbox (`POST /api/v1/combat/simulate`): client may pass `seed`, or server picks random and **returns** it in the result.
+- Same request + seed + `engineVersion` ⇒ same scores and event stream.
+
+### `combat_log` envelope (v1)
 
 ```json
 {
   "version": 1,
-  "seed": 18446744073709551615,
+  "simulator": "combat_engine",
+  "seed": 987654321,
   "match_type": "league",
   "teams": {
     "a": { "team_id": 1, "formation_id": 10, "approach": "balanced" },
     "b": { "team_id": 2, "formation_id": 11, "approach": "aggressive" }
   },
-  "lineup": { },
-  "events": [ ]
+  "lineup": {
+    "a": {
+      "front_1": { "hero_id": 5, "name": "…" },
+      "front_2": { "hero_id": 6, "name": "…" },
+      "front_3": { "hero_id": 7, "name": "…" },
+      "back_1": { "hero_id": 8, "name": "…" },
+      "back_2": { "hero_id": 9, "name": "…" },
+      "back_3": { "hero_id": 10, "name": "…" }
+    },
+    "b": { }
+  },
+  "events": [ ],
+  "result": { "score_a": 4, "score_b": 2 }
 }
 ```
 
 | Field | Role |
 |-------|------|
 | `version` | Schema version; replay client must understand or refuse |
-| `seed` | Deterministic PRNG seed for the simulation |
-| `lineup` | Slot → hero identity / starting snapshot (ids, positions) for replay labels |
+| `simulator` | `combat_engine` \| `forfeit` \| `stub_random` |
+| `seed` | PRNG seed used for this run |
+| `lineup` | Slot → hero labels for replay UI |
 | `events` | Ordered combat events |
+| `result` | Final kill scores (also mirrored on `Battle.score_a/b`) |
 
-#### Event types (v1 set)
+### Event types and payloads (6.1a minimum)
 
-| `type` | Purpose |
-|--------|---------|
-| `match_start` / `match_end` | Boundaries; `match_end` carries final kill scores |
-| `round_start` | Round index |
-| `turn_start` | Whose turn (`actor` slot / hero id), initiative |
-| `attack` / `spell` / `defend` / `heal` | Chosen action + target(s) |
-| `hit` / `miss` / `crit` | Attack resolution |
-| `damage` / `heal_applied` | Numeric change + remaining HP |
-| `status_applied` / `status_tick` / `status_expired` | Status effects |
-| `ko` / `revive` | Lineup removal / mid-match resurrection |
-| `morale_change` | Per-hero or team morale delta |
-| `kill_score` | Optional incremental score update |
+Common fields: `t` (monotonic index), `type`; commonly also `round`, `side` (`a`\|`b`), `slot`, `hero_id`.
 
-Payload fields are type-specific; keep events small. The replay viewer reconstructs HP/status by folding events (see [screens/12-combat-battle.md](../screens/12-combat-battle.md)).
+| `type` | Payload (v1) |
+|--------|----------------|
+| `match_start` | — |
+| `round_start` | `round` |
+| `turn_start` | `side`, `slot`, `hero_id`, `initiative` |
+| `attack` | `target_side`, `target_slot` |
+| `spell` | `spell_id`, `target_side`, `target_slot` or `targets[]` |
+| `defend` | — |
+| `hit` / `miss` / `crit` | Follows the preceding action event in order |
+| `damage` | `target_side`, `target_slot`, `amount`, `hp_after`, `source` (`physical` \| `magical` \| `dot`) |
+| `heal_applied` | Same shape as `damage` where applicable |
+| `status_applied` / `status_tick` / `status_expired` | `effect`, optional `stacks` |
+| `ko` | `side`, `slot`, `hero_id` — awards +1 kill to the opposing side |
+| `kill_score` | `score_a`, `score_b` — emit **after each** `ko` |
+| `match_end` | `score_a`, `score_b`, `rounds` |
+
+Deferred event types (not required for 6.1a): `morale_change`, `revive`, `heal` as a distinct action type if covered by `spell`, hybrid `snapshot`.
+
+Replay reconstructs HP/status by folding `events` — see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
+
+### L0 defaults (config-backed)
+
+Weights / thresholds live in planned `config/game/combat_ai_l0.yaml` (not hardcoded magic numbers in services).
+
+| Approach | Default target order (first living enemy) | Action bias |
+|----------|-------------------------------------------|-------------|
+| `aggressive` | Enemy back row left→right, then front | Attack; heal only if self/ally HP < 25% |
+| `balanced` | Enemy front left→right, then back | Attack; heal if ally HP < 40% |
+| `defensive` | Enemy front; else highest threat | Defend/heal if HP < 50%; else attack |
+
+L0 spell pick: at most one ready “best damage / spell power” equipped spell; otherwise basic attack. Full `spell_priorities` interpretation is **L2**.
+
+### Engine vs post-match boundary
+
+| Inside engine (6.1a) | Stays in `LeagueMatchResolutionService` (already) | Later (6.1d+) |
+|----------------------|-----------------------------------------------------|---------------|
+| Turn loop, damage, KO, kill score, event log, seed | Standings, fan club, team/hero match morale, chronicles, mastery XP, `matches_played` / wins | Combat deaths → aging → permanent death → graveyard; item durability loss; per-hero XP/form/fatigue derived from log |
+
+Engine must **not** write graveyard or item rows directly. At 6.1d it may attach side-effect *hints* on the result for the resolution layer to apply.
+
+### Recommended code order (contract → engine)
+
+1. VO: `CombatMatchRequest`, `CombatSide`, `CombatantSnapshot`; extend `MatchOutcome`.
+2. Builder: `Formation` → snapshots via `CombatStatCalculator`.
+3. Thin `CombatEngine` (e.g. emit `match_start` / `match_end` only) wired through `MatchSimulatorInterface` — prove `Battle.combat_log` persistence.
+4. Turn loop + L0 AI + full event set.
+5. Fixture→seed helper + regression test: same seed ⇒ same log and scores.
+
+---
+
+## Engine Architecture Decisions
+
+Decided model for Milestone 6 Step 6.1. Detailed request/result shapes and event payloads: [Simulation Contract](#simulation-contract). Do not invent alternate formats without updating both sections.
+
+### Combat log format — event stream
+
+`Battle.combat_log` is an **append-only event stream** (not per-turn full snapshots). Envelope, event table, and seed rules are defined in the [Simulation Contract](#simulation-contract).
+
+**Rationale:** Smaller payloads, easy unit tests, replay seek via fold-reduce; hybrid snapshots can be added later if UI needs fast scrubbing.
 
 #### Planned extension — hybrid snapshots
 
@@ -298,8 +418,7 @@ If replay seek becomes costly: emit optional `snapshot` events every N turns or 
 
 ### Determinism and RNG
 
-- Simulation is **seeded**: same formations + same seed ⇒ same log and scores (modulo intentional engine version bumps).
-- Store `seed` in the log envelope and/or battle metadata.
+- Simulation is **seeded** (see [Seed](#seed)); same formations + same seed ⇒ same log and scores (modulo intentional `engineVersion` bumps).
 - Trait **Perfectionist** removes damage variance for that hero; it does not disable all combat RNG (accuracy, dodge, crit still apply unless separately specified).
 - Replay **never re-simulates** for display — it only plays back `events`. Re-sim with seed is for tests/debug only.
 
@@ -318,7 +437,7 @@ If replay seek becomes costly: emit optional `snapshot` events every N turns or 
 
 ## Formation AI (Phased)
 
-Combat AI is fully automated. It reads `Formation.approach` and per-slot `strategy` / `spell_priorities`. Empty `{}` / `[]` ⇒ engine defaults from approach + heuristics (same idea as NPC tactics). Schema details: [formation-system.md](formation-system.md#strategy-json-schema-phased).
+Combat AI is fully automated. It reads `Formation.approach` and per-slot `strategy` / `spell_priorities`. Empty `{}` / `[]` ⇒ engine defaults from approach + heuristics (same idea as NPC tactics). Schema details: [formation-system.md](formation-system.md#strategy-json-schema-phased). L0 numeric defaults: [Simulation Contract — L0](#l0-defaults-config-backed).
 
 ### Layers
 
@@ -331,13 +450,15 @@ Combat AI is fully automated. It reads `Formation.approach` and per-slot `strate
 
 ### Approach weight sketch (L0)
 
+High-level bias (concrete target order and heal thresholds in [L0 defaults](#l0-defaults-config-backed)):
+
 | Approach | Bias |
 |----------|------|
 | `aggressive` | Prefer focus fire / high damage; less early heal; riskier targets (back line) |
 | `balanced` | Mix damage and sustain; default targeting order |
 | `defensive` | Prefer protect/heal/defend thresholds; focus remaining threats on front line first |
 
-Exact numeric weights live in engine code/config once implemented; document them here when checked in.
+Config file: planned `config/game/combat_ai_l0.yaml`.
 
 ### Decision algorithm (target: L1+, after L0 ship)
 
@@ -353,7 +474,7 @@ L0 may use a simpler approach→heuristic path without a full scorer; replace wi
 
 | Phase | Deliverable | Replaces / unlocks |
 |-------|-------------|-------------------|
-| **6.1a** | Turn engine + L0 AI + event `combat_log` + seed; plug into `MatchSimulatorInterface` | `StubRandomMatchSimulator` for league |
+| **6.1a** | Contract VO + turn engine + L0 AI + event `combat_log` + seed; plug into `MatchSimulatorInterface` | `StubRandomMatchSimulator` for league |
 | **6.1b** | L1 targeting via `strategy.target_order`; freeze JSON schema even if UI still defaults | Real “who hits whom” control |
 | **6.1c** | L2 spell conditions; replay viewer MVP (play/pause/speed/skip) | [screen 12](../screens/12-combat-battle.md) |
 | **6.1d** | Combat deaths → aging → permanent death → graveyard; durability loss formula | [known-issues](../known-issues.md) #1 remainder |
@@ -363,7 +484,7 @@ L0 may use a simpler approach→heuristic path without a full scorer; replace wi
 
 ## Summary
 
-Combat runs as a **deterministic, fully automated** simulation (server-side) that reads both teams’ formations and produces an **event-stream** `combat_log` plus final kill scores. Players only watch a replay; mid-battle decisions are not interactive. AI ships in layers (**L0 approach → L1 targeting → L2 spells → L3 sequences later**). Turn order is determined by speed (SPD); actions resolve per turn with spell and status interactions. Kill-based scoring determines the displayed match result; understaffed teams forfeit without simulation. **Today**, league fixtures use random kill scores via `StubRandomMatchSimulator` while derived stats and post-match processing are production-ready.
+Combat runs as a **deterministic, fully automated** simulation (server-side) that reads both teams’ formations and produces an **event-stream** `combat_log` plus final kill scores. The [Simulation Contract](#simulation-contract) defines API layers, VOs, seed, log envelope, and engine vs post-match boundaries. Players only watch a replay; mid-battle decisions are not interactive. AI ships in layers (**L0 approach → L1 targeting → L2 spells → L3 sequences later**). Turn order is determined by speed (SPD); actions resolve per turn with spell and status interactions. Kill-based scoring determines the displayed match result; understaffed teams forfeit without simulation. **Today**, league fixtures use random kill scores via `StubRandomMatchSimulator` while derived stats and post-match processing are production-ready.
 
 ---
 

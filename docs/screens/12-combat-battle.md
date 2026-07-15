@@ -65,7 +65,7 @@ Replay controls only — **no** Perform Action, target selection, Auto-Battle to
 
 ## Log contract
 
-Canonical `combat_log` format (event stream + seed, event type list, phased hybrid snapshots): [combat-system.md — Engine Architecture Decisions](../systems/combat-system.md#engine-architecture-decisions).
+Canonical `combat_log` format (event stream + seed, event payloads, VOs): [combat-system.md — Simulation Contract](../systems/combat-system.md#simulation-contract).
 
 ## Sections still to fill (implementation)
 

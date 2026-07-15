@@ -92,7 +92,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Items** | Fully Implemented | Implemented | Implemented | Inventory, equip/unequip, dismantle. |
 | **Spells** | Fully Implemented | Implemented | Implemented | Spell library, learning, slot equipping. |
 | **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, and `LeagueService` implemented; league match tick resolves fixtures via stub random simulator and updates standings. |
-| **Combat** | Partially Implemented | Not Implemented | Not Implemented | Event-stream `combat_log` + seeded L0→L2 AI decided ([combat-system.md](systems/combat-system.md)); `StubRandomMatchSimulator` drives league until engine phases 6.1a–d ship. |
+| **Combat** | Partially Implemented | Not Implemented | Not Implemented | Simulation contract documented ([combat-system.md](systems/combat-system.md#simulation-contract)); `StubRandomMatchSimulator` drives league until engine phases 6.1a–d ship. |
 | **World Events** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/world-events-system.md](future/world-events-system.md). |
 | **Dungeons** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/dungeon-system.md](future/dungeon-system.md). Backend removed from codebase. |
 | **Marketplace** | Fully Implemented | Implemented | Implemented | Listings with hero ratings and **trait** on hero cards; browse filter/sort by value and OVR (cached DB columns). |
