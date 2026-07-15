@@ -8,7 +8,7 @@ Single source of truth for documentation gaps, design questions, and known incon
 
 | ID | Area | Issue | Severity | Blocks | Status |
 |----|------|-------|----------|--------|--------|
-| 1 | Combat | Derived combat formulas documented in [combat-system.md](systems/combat-system.md); `CombatStatCalculator` implemented. Turn-resolution engine, `combat_log`, replay UI, and combat deaths still pending | High | Real league match simulation, graveyard combat death triggers | Partially resolved |
+| 1 | Combat | Automation model, event-stream `combat_log`, seeded RNG, and phased Formation AI (L0→L2) documented in [combat-system.md](systems/combat-system.md); `CombatStatCalculator` implemented. Engine phases 6.1a–d (turn engine, L1/L2 AI, replay UI, deaths) still pending | High | Real league match simulation, graveyard combat death triggers | Partially resolved |
 | 2 | Item System | Durability & enchanting mechanics referenced in economy docs but undefined in item system | High | Phase 6 enchanting | Open |
 | 3 | Friendly Matches | Rules documented in `calendar-system.md`; scheduling UI/API pending combat engine | Low | Phase 5 friendly match scheduling | Partially resolved |
 | 4 | Arena Matches | Home-match revenue implemented; friendly match scheduling pending combat | Low | Phase 5 | Partially resolved |

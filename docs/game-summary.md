@@ -1034,18 +1034,19 @@ Spells provide tactical options based on hero **magic proficiency**.
 ### Concept
 
 - **Turn-based**, asynchronous battles
+- **Fully automated** — players configure behaviour via formations before kickoff; there is no mid-battle player input. The UI is a **replay** of the stored combat log.
 - Hero performance depends on **primary stats, form, fatigue, level, age, and morale**
 
 ### Combat Flow
 
 | Step | Description |
 |---:|:---|
-| **1** | Formation selection and setup *(each player can save up to 4 formations, set one as default, and manually select which to use per fixture)* |
+| **1** | Formation selection and setup *(each player can save up to 4 formations, set one as default, and manually select which to use per fixture — this is where all combat “decisions” are made)* |
 | **2** | **Roster eligibility check** — each team must have ≥ 6 combat-ready heroes; otherwise apply forfeit rules *(see below)* |
 | **3** | Queue match in Redis *(skipped for forfeit/draw outcomes)* |
-| **4** | PHP worker simulates turn-based combat *(when both teams are eligible)* |
+| **4** | PHP worker runs a fully automated turn-based simulation from both formations *(when both teams are eligible)* |
 | **5** | XP, form, fatigue, and morale updates applied |
-| **6** | Result stored in `battles` table and broadcast via Server-Sent Events (SSE) |
+| **6** | Result and `combat_log` stored in `battles`; clients may be notified that a result is ready for replay |
 
 ### Match Scoring
 

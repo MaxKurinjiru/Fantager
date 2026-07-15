@@ -475,27 +475,29 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 
 ---
 
-## 12. Combat/Battle Screen
-**When:** During simulation or watching a match
+## 12. Combat/Battle Screen (Replay Viewer)
+**When:** After a match has been simulated (or while watching a server-generated replay)
+
+Combat is **fully automated**. Pre-match tactics come from the Formation Setup screen; this screen only **replays** the stored `combat_log`. Players do not issue mid-battle actions. Detail: [screens/12-combat-battle.md](screens/12-combat-battle.md).
 
 ### Displayed Information:
 - **Battle Header:**
   - Opponent Team Name & Logo
   - Match Type (League, Friendly, Dungeon, Arena)
   - Kill score (0–6 per team; e.g. 3–2). Forfeit: 3–0; double understaffed: 0–0
-- **Combat Area (visual representation):**
+- **Combat Area (replay visualization):**
   - **Front Line vs Front Line** (hero positions)
   - **Back Line vs Back Line**
   - Hero avatars/models in positions
-  - Current HP bars above each hero
+  - Current HP bars above each hero (driven by log events)
   - Status effects icons (buffs/debuffs)
   - Morale indicator per hero
 - **Turn Indicator:**
-  - Current turn number
-  - Active hero highlight (whose turn)
+  - Current turn number during playback
+  - Active hero highlight
   - Speed order queue (next turns preview)
 - **Combat Log (scrollable feed):**
-  - Action-by-action text log
+  - Action-by-action text log synced with playback
   - Damage numbers
   - Spell casts
   - Deaths/resurrections
@@ -506,18 +508,19 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Formation integrity indicator
 
 ### Possible Actions/Buttons:
-- **Pause/Resume** (if live simulation)
+- **Play / Pause** — replay playback only
 - **Speed Control** (1x, 2x, 4x)
-- **Skip to End** - skip to result
-- **View Detailed Stats** - expand combat statistics mid-battle
-- **Surrender** (in some modes) - instant defeat
-- **Return to Dashboard** (after end) - return
+- **Skip to End** — jump to final result
+- **View Detailed Stats** — post-match / summary stats
+- **Return to Dashboard** (or League) after viewing
+
+*(No Perform Action, target selection, Auto-Battle, or mid-match surrender — combat is not interactive.)*
 
 ### Backend Requirements:
-- Combat simulation engine (PHP worker)
-- Combat state streaming (polling/HTTP fetch)
-- Battle result endpoint
-- Post-battle updates (XP, form, fatigue, morale, age)
+- Fully automated combat simulation engine (PHP worker / service)
+- Persisted battle result + `combat_log` for replay
+- Battle result and combat-log endpoints
+- Post-battle updates (XP, form, fatigue, morale, age) applied by resolution pipeline
 
 ---
 
@@ -822,7 +825,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 
 ### Frontend Requirements:
 - Responsive design (desktop + mobile/tablet)
-- Regular status updates/polling for combat and notifications
+- Regular status updates/polling for notifications (and optional “match result ready”); combat UI consumes a finished `combat_log` for replay, not live turn actions
 - Drag & Drop support (formation setup, equipment, spells)
 - Data visualization (stats charts, progress bars, morale indicators)
 - Filtering & sorting for all list views
