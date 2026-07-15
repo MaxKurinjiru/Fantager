@@ -33,7 +33,7 @@ Quick reference: which files implement each game screen.
 | [02-team-dashboard.md](screens/02-team-dashboard.md) | `/app/dashboard` | `Web\DashboardController` | `Api\V1\TeamController` (`/dashboard`, `/settings`) | `templates/dashboard/` | `dashboard_banner`, `modal` (team profile) |
 | [02a-team-chronicle.md](screens/02a-team-chronicle.md) | `/app/chronicle` | `Web\TeamChronicleController` | — (server-rendered) | `templates/team_chronicle/` | — |
 | [03-hero-roster.md](screens/03-hero-roster.md) | `/app/heroes` | `Web\HeroController` | `Api\V1\HeroController` | `templates/hero/roster.html.twig`, `components/hero/trait_badge.html.twig` | `roster_filter` |
-| [04-hero-detail.md](screens/04-hero-detail.md) | `/app/heroes/{id}` | `Web\HeroController` | `Api\V1\HeroController`, `Api\V1\ItemController`, `Api\V1\SpellController` | `templates/hero/detail.html.twig`, `components/hero/` (`trait_badge`, `trait_panel`, …) | `hero_rename`, `hero_dismiss`, `hero_sell`, `equipment`, `spellbook` |
+| [04-hero-detail.md](screens/04-hero-detail.md) | `/app/heroes/{id}` | `Web\HeroController` | `Api\V1\HeroController`, `Api\V1\ItemController`, `Api\V1\SpellController` | `templates/hero/detail.html.twig`, `components/hero/` (`trait_badge`, `trait_panel`, `combat_stats`, `recent_activity`, …) | `hero_rename`, `hero_dismiss`, `hero_sell`, `equipment`, `spellbook` |
 | [05-training.md](screens/05-training.md) | `/app/training` | `Web\TrainingController` | `Api\V1\TrainingController` | `templates/training/` | `training` |
 | [06-trainer-management.md](screens/06-trainer-management.md) | `/app/training` (same page) | `Web\TrainingController` | `Api\V1\TrainingController` | `templates/components/training/` | `training` |
 | [07-formation-setup.md](screens/07-formation-setup.md) | `/app/formation` | `Web\FormationController` | `Api\V1\FormationController`, `Api\V1\FixtureFormationController` | `templates/formation/`, `templates/components/formation/` | `formation` |
@@ -67,8 +67,9 @@ Quick reference: which files implement each game screen.
 | Domain | Services | Tests |
 |--------|----------|-------|
 | Team / dashboard | `TeamService`, `TeamRosterService`, `FanClubService` | `tests/Service/Team/` |
+| Team history chart | `TeamDailySnapshot` + `TeamController::history()` API | — |
 | Chronicle | `TeamChronicleService`, `TeamChroniclePresenter` | `tests/Service/TeamChronicle/` |
-| Heroes | `HeroService`, `HeroGenerator`, `HeroDismissalService` | `tests/Service/Hero/` *(add as needed)* |
+| Heroes | `HeroService`, `HeroGenerator`, `HeroDismissalService`, `HeroChronicleService`, `HeroChroniclePresenter` | `tests/Service/Hero/` *(add as needed)* |
 | Training | `TrainingService`, `TrainerDismissalService` | `tests/Service/Training/` |
 | Formation | `FormationService`, `FixtureFormationService` | `tests/Service/Formation/` |
 | HQ | `HeadquartersService`, `ArenaService`, `HqMaintenanceCalculator` | `tests/Service/Headquarters/` |

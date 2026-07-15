@@ -241,7 +241,7 @@ class TrainingServiceTest extends TestCase
         $hq->setTeam($team);
         $facility = new Facility();
         $facility->setType(FacilityType::Training);
-        $facility->setPassiveBonuses(['training_efficiency_pct' => 3.0]);
+        $facility->setMetadata(['training_efficiency_pct' => 3.0]);
         $hq->addFacility($facility);
 
         $this->hqRepositoryMock
@@ -407,7 +407,7 @@ class TrainingServiceTest extends TestCase
         $hq->setRaceOptimization('elf');
         $facility = new Facility();
         $facility->setType(FacilityType::Training);
-        $facility->setPassiveBonuses(['training_efficiency_pct' => 0.0]);
+        $facility->setMetadata(['training_efficiency_pct' => 0.0]);
         $hq->addFacility($facility);
 
         $this->hqRepositoryMock
@@ -415,7 +415,7 @@ class TrainingServiceTest extends TestCase
             ->willReturn($hq);
 
         $this->raceConfigMock
-            ->expects($this->any())
+            ->expects($this->atLeastOnce())
             ->method('getTrainingSpeedModifier')
             ->with(Race::Elf)
             ->willReturn(1.0);
@@ -456,7 +456,7 @@ class TrainingServiceTest extends TestCase
         $hq->setRaceOptimization('human');
         $facility = new Facility();
         $facility->setType(FacilityType::Training);
-        $facility->setPassiveBonuses(['training_efficiency_pct' => 0.0]);
+        $facility->setMetadata(['training_efficiency_pct' => 0.0]);
         $hq->addFacility($facility);
 
         $this->hqRepositoryMock
@@ -464,13 +464,13 @@ class TrainingServiceTest extends TestCase
             ->willReturn($hq);
 
         $this->raceConfigMock
-            ->expects($this->any())
+            ->expects($this->atLeastOnce())
             ->method('getTrainingSpeedModifier')
             ->with(Race::Elf)
             ->willReturn(1.0);
 
         $this->raceConfigMock
-            ->expects($this->any())
+            ->expects($this->atLeastOnce())
             ->method('getRelationship')
             ->with(Race::Elf, Race::Human)
             ->willReturn(90);
@@ -520,7 +520,7 @@ class TrainingServiceTest extends TestCase
         $hq->setTeam($team);
         $facility = new Facility();
         $facility->setType(FacilityType::Training);
-        $facility->setPassiveBonuses(['training_efficiency_pct' => 0.0]);
+        $facility->setMetadata(['training_efficiency_pct' => 0.0]);
         $hq->addFacility($facility);
 
         $this->hqRepositoryMock
@@ -585,7 +585,7 @@ class TrainingServiceTest extends TestCase
         $hq->setTeam($team);
         $facility = new Facility();
         $facility->setType(FacilityType::Training);
-        $facility->setPassiveBonuses(['training_efficiency_pct' => 0.0]);
+        $facility->setMetadata(['training_efficiency_pct' => 0.0]);
         $hq->addFacility($facility);
 
         $this->hqRepositoryMock

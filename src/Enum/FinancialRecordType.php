@@ -12,7 +12,6 @@ enum FinancialRecordType: string
     case MarketplaceSale = 'marketplace_sale';
     case MarketplacePurchase = 'marketplace_purchase';
     case MarketplaceFee = 'marketplace_fee';
-    case DungeonReward = 'dungeon_reward';
     case DismantleGain = 'dismantle_gain';
     case ItemRepair = 'item_repair';
     case SpellLearningCost = 'spell_learning_cost';

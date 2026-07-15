@@ -82,7 +82,7 @@ Subject params: `%item%`, `%buyer%`, `%price%`.
 
 ### Reserved (enum exists; write hooks pending)
 
-`battle_win`, `battle_loss`, `battle_draw`, `hero_levelup`, `hero_died`, `hero_retired`, `training_completed`, `dungeon_completed` — to be wired when combat, XP, etc. are implemented.
+`battle_win`, `battle_loss`, `battle_draw`, `hero_levelup`, `hero_died`, `hero_retired`, `training_completed` — to be wired when combat, XP, etc. are implemented.
 
 ---
 
@@ -94,7 +94,7 @@ Subject params: `%item%`, `%buyer%`, `%price%`.
 |----------|-------|
 | `ownership` | `team_established`, `player_joined`, `player_released` |
 | `competition` | `battle_*`, `season_ended` |
-| `roster` | hero lifecycle, `training_completed`, `summon_completed`, `dungeon_completed` |
+| `roster` | hero lifecycle, `training_completed`, `summon_completed` |
 | `economy` | `item_purchased`, `item_sold` |
 | `all` | no type restriction |
 

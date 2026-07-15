@@ -28,7 +28,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **API/Web Controllers**: Implement signup, login, email verification, and password reset routes.
 - **Frontend Views**: Create registration and login templates matching design guidelines.
 - **Verification**: Run integration tests for signup/login validation.
-- **Status**: ✅ Complete (`SecurityController`, `RegistrationController`, `ResetPasswordController`).
+- **Status**: ✅ Complete (`AuthController`, `RegisterController`, `PasswordResetController`).
 
 ### Step 1.3: Kingdom Selection
 - **Database & Entities**: `Kingdom` entity with `league_tiers_config` (JSON configuration for league capacities). Load static kingdom data.
@@ -142,7 +142,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - **[NEW]** Marketplace Hub: Search filters (item level, rarity, class), bidding card widgets, active listing forms.
 - **Verification**: List a hero, bid from a different account, verify gold deductions and escrow refunds on higher bids.
-- **Status**: ✅ Complete (MarketplaceService, CLI processor, API & Web Controllers, and templates/controllers refactored per UI guidelines).
+- **Status**: ✅ Complete (`MarketplaceService`, CLI processor, `Web\MarketplaceController`, `Api\V1\MarketplaceController`, templates/controllers refactored per UI guidelines).
 
 ### Step 5.2: Kingdom Community Forum
 - **Database & Entities**: `ForumThread`, `ForumPost`, and `Message` entities.
@@ -159,7 +159,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 *Implement the core combat engine, chronological event tick scheduler, the weekly league competition, and hero mortality.*
 
 ### Step 6.1: Combat Simulation Engine (Core Block)
-- **Design Prerequisites (Phase 0)**: Resolve [known-issues.md](known-issues.md) #1 (Combat formulas: HP, damage, defense, accuracy, dodge, crits, status effects).
+- **Design Prerequisites (Phase 0)**: Combat formulas are documented in [combat-system.md](systems/combat-system.md). `CombatStatCalculator` and `DerivedCombatStats` are implemented; the turn-resolution engine and replay UI remain pending.
 - **Service/Business Logic**:
   - Implement a deterministic turn-resolution engine resolving combat round-by-round.
   - Apply status effects (poison, stun, buffs) per tick based on speed order.
@@ -298,8 +298,8 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 6 (Combat & Leagues)** | 🔄 | 🔄 | 🔄 | ✅ | *In Progress* (calendar/ticks + graveyard read path done; combat engine pending) |
+| **Milestone 6 (Combat & Leagues)** | 🔄 | 🔄 | 🔄 | 🔄 | *In Progress* — League/Calendar/Graveyard UI ✅; derived stats calculator ✅; combat engine + replay UI ⏳ |
 | **Milestone 7 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | *Not Started* |
 | **Milestone 8 (Endgame & Crafting)** | ⏳ | 🔄 | ⏳ | 🔄 | *Partially Complete* (arena revenue done; dungeons/crafting/quests deferred) |
 
-*Last updated: June 17, 2026 — Synced calendar, graveyard, arena, and deferred feature statuses*
+*Last updated: July 15, 2026 — Docs synced with separate marketplace/finance screens, hero chronicle, hero rating cache, combat formulas*

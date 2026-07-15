@@ -122,7 +122,7 @@ class ArenaRevenueServiceTest extends TestCase
         $hq = new Headquarters();
         $arena = new Facility();
         $arena->setType(FacilityType::Arena);
-        $arena->setPassiveBonuses(['arena_capacity' => 20.0, 'ticket_revenue_pct' => 10.0]);
+        $arena->setMetadata(['arena_capacity' => 20.0, 'ticket_revenue_pct' => 10.0]);
         $hq->addFacility($arena);
 
         $this->hqRepositoryMock->method('findOneBy')->willReturn($hq);

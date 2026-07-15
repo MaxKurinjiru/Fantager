@@ -22,6 +22,8 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 - [Economy System](systems/economy-system.md)
 - [Financial Crisis System](systems/financial-crisis-system.md)
 - [Hero System](systems/hero-system.md)
+- [Hero Rating System](systems/hero-rating-system.md) — Base OVR, complex rating, cached columns, economy integration
+- [Hero Chronicle System](systems/hero-chronicle-system.md) — Per-hero append-only event log (`hero_chronicle`), hero detail History tab
 - [Training System](systems/training-system.md)
 - [Team System](systems/team-system.md)
 - [Team Chronicle System](systems/team-chronicle-system.md) — Append-only team event log (`team_chronicle`), dashboard widget, full history page
@@ -80,7 +82,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | :--- | :--- | :--- | :--- | :--- |
 | **Authentication** | Fully Implemented | Implemented | N/A (Session-based) | Register, verification, login, password reset. Account settings modal (language, UI prefs, email change, delete account). |
 | **Kingdom & Locale**| Fully Implemented | Implemented | Implemented | Data loading from JSON, capacity calculations. Locale switcher (`/change-locale/{locale}`) implemented. |
-| **Team / Dashboard**| Fully Implemented | Implemented | Implemented | Dashboard, settings, economy hub (`/app/economy`), financial records, **team chronicle** (recent events + `/app/chronicle`). |
+| **Team / Dashboard**| Fully Implemented | Implemented | Implemented | Dashboard, settings, **team history chart** modal, financial records at `/app/finance`, **team chronicle** (recent events + `/app/chronicle`). |
 | **Hero Roster** | Fully Implemented | Implemented | Implemented | Hero CRUD, rename, summoning chamber, `HeroGenerator`, **base OVR + complex rating** (`HeroRatingCalculator`), **personality trait badges** (roster + detail). |
 | **Summoning** | Fully Implemented | Implemented | Implemented | Summoning random compatible race based on arena adaptation, cooldowns, `TeamSummonHistory` logging, **trait reveal on summon card**. |
 | **Training** | Fully Implemented | Implemented | Implemented | Training calculations + automated tick processing. |
@@ -99,7 +101,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Quests** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/quest-system.md](future/quest-system.md). |
 | **Crafting** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/crafting-system.md](future/crafting-system.md). Backend and UI removed from codebase. |
 | **Arena Management** | Partially Implemented | Implemented (HQ panel) | Partial | Home-match revenue model; arena panel in HQ (`/app/hq?facility=arena`); `/app/arena` is a redirect. Payout on league match tick. Friendly matches pending combat. |
-| **Economy / Finance** | Fully Implemented | Implemented | Partial | Royal Treasury weekly distribution, financial crisis, ledger at `/app/economy?tab=ledger`; `GET /api/v1/finance/*` implemented. |
+| **Economy / Finance** | Fully Implemented | Implemented | Partial | Royal Treasury weekly distribution, financial crisis, marketplace at `/app/marketplace`, ledger at `/app/finance`; `GET /api/v1/finance/*` implemented. |
 | **Notifications** | Fully Implemented | Implemented | Implemented | Write + read API, navbar modal with unread badge. See [notification-system.md](systems/notification-system.md). |
 
 ---
