@@ -44,6 +44,7 @@
         <div class="game-sidebar__section-label">{{ 'sidebar.section_social'|trans }}</div>
         {% set social_links = [
             { route: 'app_marketplace', emoji: '⚖️', label: 'nav.marketplace', active_check: 'exact' },
+            { route: 'app_academy', emoji: '🔮', label: 'nav.academy', active_check: 'exact' },
             { route: 'app_community', emoji: '💬', label: 'nav.community', active_check: 'starts_with' }
         ] %}
         {% for link in social_links %}

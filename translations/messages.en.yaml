@@ -22,6 +22,7 @@ nav:
   formation: Formation
   league: League
   marketplace: Marketplace
+  academy: Academy
   economy: Economy
   settings: Settings
   toggle_menu: Toggle menu
@@ -554,6 +555,13 @@ team_profile:
 
 
 heroes:
+  cannot_manage_role: "You cannot manage a hero with this role."
+  cannot_manage_selling: "This hero is listed on the marketplace. You must cancel the listing to manage them."
+  cannot_manage_recovering: "This hero is recovering in the medical wing and cannot be sold or dismissed."
+  cannot_manage_match: "This hero is currently in a match and cannot be managed."
+  cannot_manage_dead: "A deceased hero cannot be managed."
+  cannot_manage_retired: "A retired hero cannot be managed."
+  cannot_manage_generic: "A hero in this status cannot be managed."
   title: Hero Roster
   subtitle: "Manage, filter, and inspect your team's heroes."
   search_placeholder: "Search hero..."
@@ -593,11 +601,12 @@ heroes:
   no_heroes: No heroes in roster
   no_heroes_desc: Go to the summoning chamber to recruit your first heroes.
   go_summoning: Go to Summoning
+  no_trait_desc: "This hero has no innate personality trait."
   tab_overview: Overview
   tab_equipment: Equipment
   tab_spells: Spells
   tab_training: Training
-  tab_history: History
+  tab_history: Stats & Progression
   btn_show_all_masteries: "Show all masteries"
   btn_hide_inactive_masteries: "Hide inactive masteries"
   attribute_tooltip_with_bonus: "%label%: %total% (Base: %base%, Race Bonus: %bonus%)"
@@ -606,6 +615,7 @@ heroes:
   current_trainer: Current Trainer
   manage_all_trainers: Manage all trainers at HQ
   back_roster: Back to Roster
+  manage_btn: Manage Hero
   rename_title: Rename Hero
   save: Save
   cancel: Cancel
@@ -653,10 +663,16 @@ heroes:
   gear_mastery: Gear & Weapon Mastery
   gear_mastery_desc: Attune to an equipment or weapon style to unlock combat stat bonuses. Swapping gear does not instantly reset, but inactive ones decay daily.
   active_style: Active Attunement
-  no_style: None (Unarmed)
-  fully_attuned: Fully Attuned (100%)
-  attuning: Attuning (%progress%%)
+  active_style_desc: Short-term readiness to a style — decays without equipment, does not reset mastery.
+  equipped_masteries: Currently Equipped Masteries
   all_masteries: All Weapon & Armor Masteries
+  all_masteries_desc: Permanent experience — grows through matches, unrelated to attunement.
+  mastery_xp_to_tier: "%xp% / %req% XP to T%tier%"
+  mastery_xp_max: MAX (T5)
+  mastery_cat_melee: Melee Weapons
+  mastery_cat_ranged: Ranged Weapons
+  mastery_cat_magic: Magical Catalysts
+  mastery_cat_defense: Defensive Gear
   combat_stats: Combat Statistics
   combat_stats_desc: Historical performance metrics.
   matches: Matches
@@ -944,6 +960,8 @@ hq:
 
 training:
   title: Training Grounds
+  assign_trainer_title: "Assign to Trainer"
+  select_trainer_desc: "Select a trainer for this hero to train under."
   subtitle: Schedule training jobs to improve attributes, expand spell slots, or recover fatigue.
   status:
     completed: Done
@@ -1003,6 +1021,7 @@ training:
   idle: "Idle"
   mortality_warning: "Mortality risk!"
   capped: "Capped"
+  capped_hero_warning: "This hero's training has been capped. They have reached the trainer's limit and will not gain any more attributes. Change the trainer or their training focus."
   trainer_stats: "Trainer Stats"
   progress_cap: "Progress / Cap"
   training_focus: "Training Focus"
@@ -1107,6 +1126,8 @@ spells:
   slots_full: Slots Full
   no_spells: No spells learned yet
   no_spells_desc: Choose "Academy Store" above to learn new spell scrolls.
+  no_store_spells: No spells available in the academy
+  no_store_spells_desc: Make sure spell fixtures have been loaded into the database.
   req_mastery: "Req: %school% T%tier%"
   scroll_fee: Scroll Fee
   learn_spell: Learn Spell

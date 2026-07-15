@@ -160,7 +160,8 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/spells` | Web\SpellController | Spell Management page |
+| GET | `/app/spells` | Web\SpellController | Spell Management page (redirects to Hero details) |
+| GET | `/app/academy` | Web\SpellController | Academy Store page |
 | GET | `/api/v1/spells` | Api\V1\SpellController | Spell library |
 | GET | `/api/v1/heroes/{heroId}/spells` | Api\V1\SpellController | Hero's known spells |
 | POST | `/api/v1/heroes/{heroId}/spells/learn` | Api\V1\SpellController | Learn spell |

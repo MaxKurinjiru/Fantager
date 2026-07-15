@@ -164,7 +164,9 @@ class HeroChronicleService
             [],
             [
                 'cause' => $cause,
-            ]
+            ],
+            null,
+            true
         );
     }
 
@@ -180,9 +182,12 @@ class HeroChronicleService
         array $subjectParams,
         array $data = [],
         ?\DateTimeImmutable $createdAt = null,
+        bool $isRemoved = false,
     ): HeroChronicle {
         $entry = new HeroChronicle();
-        $entry->setHero($hero);
+        if (!$isRemoved) {
+            $entry->setHero($hero);
+        }
         $entry->setOriginalHeroId($hero->getId());
         $entry->setTeam($team);
         $entry->setType($type);

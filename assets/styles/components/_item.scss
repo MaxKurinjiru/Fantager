@@ -20,55 +20,130 @@
     }
   }
 
+  // Equipment screen side-by-side layout
+  .equipment-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    @media (min-width: 1024px) {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    &__paperdoll {
+      flex-shrink: 0;
+      width: 100%;
+
+      @media (min-width: 1024px) {
+        width: 380px;
+      }
+    }
+
+    &__rucksack {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  .paperdoll-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 0.75rem;
+    justify-content: center;
+    align-content: center;
+    margin: 1.5rem auto 0.5rem;
+  }
+
   .paperdoll-slot {
-    @apply flex flex-col items-center justify-center gap-1 rounded-lg p-2;
-    min-height: 6.5rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    border-radius: var(--radius-lg);
     background-color: var(--color-surface-base);
     border: 1px solid var(--color-border-strong);
+    padding: 0.5rem;
+    min-height: auto;
+    aspect-ratio: 1 / 1;
+    transition: all var(--transition-fast);
+    overflow: hidden;
 
     &--equipped {
-      position: relative;
-      border-color: color-mix(in srgb, var(--color-brand-500) 30%, var(--color-border));
+      background-color: color-mix(in srgb, var(--color-surface-overlay) 40%, transparent);
+
+      &:hover {
+        transform: scale(1.03);
+        z-index: 10;
+        
+        .paperdoll-slot__unequip {
+          opacity: 1;
+        }
+      }
     }
 
     &--empty {
       border-style: dashed;
       color: var(--color-text-muted);
-      font-size: 0.625rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+
+      &:hover {
+        border-color: color-mix(in srgb, var(--color-brand-400) 40%, var(--color-border-strong));
+        background-color: color-mix(in srgb, var(--color-surface-raised) 20%, transparent);
+      }
     }
-  }
 
-  .equip-manager-hero-name {
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: var(--color-text-primary);
-    padding: 0.5rem 0 0.25rem;
-  }
+    // Grid coordinates
+    &--head { grid-row: 1; grid-column: 2; }
+    &--amulet { grid-row: 1; grid-column: 3; }
+    &--main_hand { grid-row: 2; grid-column: 1; }
+    &--body { grid-row: 2; grid-column: 2; }
+    &--off_hand { grid-row: 2; grid-column: 3; }
+    &--hands { grid-row: 3; grid-column: 1; }
+    &--ring { grid-row: 3; grid-column: 2; }
+    &--feet { grid-row: 3; grid-column: 3; }
 
-  .paperdoll-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
+    // Rarity border colors
+    &--rarity-common { border-color: var(--color-border-strong); }
+    &--rarity-uncommon { border-color: var(--color-info-border); box-shadow: 0 0 4px color-mix(in srgb, var(--color-info-border) 40%, transparent); }
+    &--rarity-rare { border-color: var(--color-warning-border); box-shadow: 0 0 4px color-mix(in srgb, var(--color-warning-border) 40%, transparent); }
+    &--rarity-epic { border-color: var(--color-amber-500); box-shadow: 0 0 4px color-mix(in srgb, var(--color-amber-500) 40%, transparent); }
+    &--rarity-legendary { border-color: var(--color-error-border); box-shadow: 0 0 4px color-mix(in srgb, var(--color-error-border) 40%, transparent); }
   }
 
   .paperdoll-slot__unequip {
     position: absolute;
-    right: 0.375rem;
-    top: 0.375rem;
-    width: 1.25rem;
-    height: 1.25rem;
-    padding: 0;
-    font-size: 0.5rem;
+    top: 0.25rem;
+    right: 0.25rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background-color: var(--color-error-bg);
+    border: 1px solid var(--color-error-border);
+    color: var(--color-error-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 900;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    z-index: 15;
+
+    &:hover {
+      background-color: var(--color-error-border);
+      color: white;
+    }
   }
 
   .paperdoll-slot__icon {
-    font-size: 1.5rem;
-    margin-bottom: 0.25rem;
-    user-select: none;
+    font-size: 1.75rem;
     line-height: 1;
+    user-select: none;
   }
 
   .item-cards-grid {
@@ -146,6 +221,107 @@
     border: 1px solid var(--color-border);
     backdrop-filter: blur(12px);
   }
+
+  .rucksack-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .rucksack-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 50%, transparent);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    transition: all var(--transition-fast);
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--color-brand-500) 30%, var(--color-border));
+      background-color: color-mix(in srgb, var(--color-surface-overlay) 70%, transparent);
+    }
+
+    &__main {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    &__icon {
+      font-size: 2rem;
+      line-height: 1;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    &__details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__name {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+    }
+
+    &__bonuses {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+      margin-top: 0.125rem;
+    }
+
+    &__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      flex-shrink: 0;
+      margin-left: auto;
+
+      @media (max-width: 767px) {
+        width: 100%;
+        justify-content: flex-end;
+        margin-left: 0;
+      }
+
+      .btn {
+        white-space: nowrap;
+      }
+    }
+
+    // Rarity borders for inventory rows
+    &--rarity-common { border-color: var(--color-border); }
+    &--rarity-uncommon { border-color: color-mix(in srgb, var(--color-info-border) 40%, var(--color-border)); }
+    &--rarity-rare { border-color: color-mix(in srgb, var(--color-warning-border) 40%, var(--color-border)); }
+    &--rarity-epic { border-color: color-mix(in srgb, var(--color-amber-500) 40%, var(--color-border)); }
+    &--rarity-legendary { border-color: color-mix(in srgb, var(--color-error-border) 40%, var(--color-border)); }
+  }
 }
 
 .item-card__title {
@@ -190,10 +366,11 @@
   border: 1px solid var(--color-border);
 }
 .item-bonus-tag {
-  @apply px-2 py-0.5 rounded;
+  @apply px-2 py-0.5 rounded text-[10px] font-semibold;
   background-color: var(--color-surface-raised);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 .item-bonus-tag__value { color: var(--color-success-text); }
 .item-bonus-empty { @apply italic; color: var(--color-text-muted); }
@@ -215,7 +392,38 @@
     color: var(--color-text-primary);
   }
 }
-.paperdoll-slot__label { @apply text-[9px] font-bold uppercase tracking-wider mb-1; color: var(--color-text-muted); }
-.paperdoll-slot__item-name { @apply text-[11px] font-bold truncate w-full; color: var(--color-text-primary); }
-.paperdoll-slot__equipped-label { @apply text-[8px] font-bold uppercase mt-1; color: var(--color-success-text); }
-.paperdoll-slot__empty-hint { @apply text-[10px] font-medium; color: var(--color-text-muted); }
+.paperdoll-slot__label {
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.paperdoll-slot__item-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: var(--color-text-primary);
+  font-size: 8px;
+  font-weight: 700;
+  padding: 0.25rem 0.375rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+.paperdoll-slot__equipped-label {
+  display: none;
+}
+.paperdoll-slot__empty-hint {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-muted) 60%, transparent);
+  line-height: 1;
+}

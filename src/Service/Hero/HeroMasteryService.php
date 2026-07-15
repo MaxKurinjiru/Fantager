@@ -24,6 +24,19 @@ class HeroMasteryService
         5 => 1000,
     ];
 
+    /**
+     * Base XP awarded per match at full attunement (100%).
+     * Scales linearly: xp_gain = round(BASE_MATCH_XP * attunement / 100).
+     */
+    public const BASE_MATCH_XP = 30;
+
+    /**
+     * Maximum XP lost per day at zero attunement (0%).
+     * Scales linearly: xp_decay = round(BASE_DECAY_XP * (1 - attunement / 100))
+     * At full attunement (100%) no XP is lost.
+     */
+    public const BASE_DECAY_XP = 20;
+
     public function __construct(
         private readonly ItemRepository $itemRepository,
         private readonly WeaponMasteryRepository $weaponMasteryRepository,
@@ -72,6 +85,7 @@ class HeroMasteryService
     /**
      * Handle match participation for a hero.
      * Increases attunement progress, and awards XP for equipped weapon types and magic schools.
+     * Weapon mastery XP gain scales with attunement: fully attuned = BASE_MATCH_XP, zero = 0 XP.
      */
     public function processMatchParticipation(Hero $hero): void
     {
@@ -81,10 +95,13 @@ class HeroMasteryService
         foreach ($equippedSubTypes as $subType) {
             $mastery = $this->getOrCreateWeaponMastery($hero, $subType);
             $mastery->setAttunementProgress(min(100, $mastery->getAttunementProgress() + 50));
-            $this->addWeaponMasteryXp($hero, $subType, 15);
+            $xpGain = (int) round(self::BASE_MATCH_XP * $mastery->getAttunementProgress() / 100);
+            if ($xpGain > 0) {
+                $this->addWeaponMasteryXp($hero, $subType, $xpGain);
+            }
         }
 
-        // Magic mastery
+        // Magic mastery — fixed XP, no attunement mechanic
         $equippedSchools = $this->getEquippedSpellSchools($hero);
         foreach ($equippedSchools as $school) {
             $this->addSchoolMasteryXp($hero, $school, 15);
@@ -95,7 +112,9 @@ class HeroMasteryService
 
     /**
      * Daily reset decay tick for a hero.
-     * Decreases attunement progress and XP of inactive masteries.
+     * Weapon mastery XP decay scales inversely with attunement: zero attunement = BASE_DECAY_XP lost,
+     * full attunement = 0 XP lost. Attunement itself decays at a fixed rate.
+     * School mastery uses fixed decay (no attunement mechanic).
      */
     public function processDailyDecayTick(Hero $hero): void
     {
@@ -108,14 +127,17 @@ class HeroMasteryService
                 // Decay attunement
                 $wm->setAttunementProgress(max(0, $wm->getAttunementProgress() - 20));
 
-                // Decay XP
-                $newXp = max(0, $wm->getXp() - 10);
-                $wm->setXp($newXp);
-                $this->recalculateWeaponMasteryTier($wm);
+                // Decay XP: inversely proportional to attunement (lower attunement = faster decay)
+                $xpDecay = (int) round(self::BASE_DECAY_XP * (1 - $wm->getAttunementProgress() / 100));
+                if ($xpDecay > 0) {
+                    $newXp = max(0, $wm->getXp() - $xpDecay);
+                    $wm->setXp($newXp);
+                    $this->recalculateWeaponMasteryTier($wm);
+                }
             }
         }
 
-        // 2. Decay inactive School Masteries
+        // 2. Decay inactive School Masteries — fixed rate, no attunement mechanic
         foreach ($hero->getSchoolMasteries() as $sm) {
             if (!in_array($sm->getSchool(), $equippedSchools, true)) {
                 // Decay XP

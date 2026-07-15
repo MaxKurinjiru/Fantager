@@ -285,6 +285,14 @@
     padding-top: 0.25rem;
   }
 
+  .dropdown-menu__message {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+    min-width: 12.5rem; // 200px
+  }
+
   .dropdown-item {
     display: flex;
     align-items: center;

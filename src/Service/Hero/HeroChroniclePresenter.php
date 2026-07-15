@@ -65,15 +65,25 @@ class HeroChroniclePresenter
         }
 
         if (HeroChronicleEventType::MasteryGained === $type && isset($params['mastery'])) {
-            // Check if mastery starts with one_handed or spell styles
-            $masteryKey = 'training.attr.'.$params['mastery'];
+            $mastery = $params['mastery'];
+
+            // Try weapon style translation (e.g. weapon_style.staff)
+            $masteryKey = 'weapon_style.'.$mastery;
             $translatedMastery = $this->translator->trans($masteryKey, [], 'messages', $locale);
+
             if ($translatedMastery === $masteryKey) {
-                // Try weapon style prefix or magic school
-                $masteryKey = 'heroes.race_'.$params['mastery']; // fallback check, or elemental school
+                // Try magic school translation (e.g. school.fire)
+                $masteryKey = 'school.'.$mastery;
                 $translatedMastery = $this->translator->trans($masteryKey, [], 'messages', $locale);
+
                 if ($translatedMastery === $masteryKey) {
-                    $translatedMastery = $params['mastery'];
+                    // Try training attribute fallback
+                    $masteryKey = 'training.attr.'.$mastery;
+                    $translatedMastery = $this->translator->trans($masteryKey, [], 'messages', $locale);
+
+                    if ($translatedMastery === $masteryKey) {
+                        $translatedMastery = $mastery;
+                    }
                 }
             }
             $params['mastery'] = $translatedMastery;

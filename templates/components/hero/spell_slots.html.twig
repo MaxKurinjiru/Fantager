@@ -28,7 +28,7 @@
                 {% endfor %}
 
                 {% if matching_hs %}
-                    <div class="hero-spell-row hero-spell-row--filled">
+                    <a href="javascript:void(0)" onclick="document.querySelector('[data-tab=\'hero-tab-spells\']').click()" class="hero-spell-row hero-spell-row--filled hero-spell-row--clickable">
                         <div class="layout-cluster layout-cluster--sm">
                             <span class="emoji-icon">✨</span>
                             <div>
@@ -37,7 +37,7 @@
                             </div>
                         </div>
                         <span class="status-chip status-chip--purple">{{ 'heroes.equipped'|trans }}</span>
-                    </div>
+                    </a>
                 {% else %}
                     <a href="javascript:void(0)" onclick="document.querySelector('[data-tab=\'hero-tab-spells\']').click()" class="hero-spell-row hero-spell-row--empty">
                         <div class="layout-cluster layout-cluster--sm">

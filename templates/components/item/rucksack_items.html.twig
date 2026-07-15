@@ -2,89 +2,77 @@
 <div class="inventory-rucksack">
     <h2 class="hero-panel__title">{{ 'inventory.rucksack'|trans }}</h2>
 
-    <div class="item-cards-grid">
+    <div class="rucksack-list">
         {% for item in items %}
             {% set is_equipped = item.equippedHero is not null %}
             {% set is_equipped_on_selected = selected_hero and is_equipped and item.equippedHero.id == selected_hero.id %}
 
-            <div class="item-card">
-                <div class="layout-stack layout-stack--sm">
-                    {# Item Header #}
-                    <div class="item-card__header">
-                        <div class="layout-cluster layout-cluster--start">
-                            <span class="emoji-icon emoji-icon--lg">
-                                {% if item.slotType.value == 'main_hand' or item.slotType.value == 'weapon' %}🗡️
-                                {% elseif item.slotType.value == 'off_hand' %}🛡️
-                                {% elseif item.slotType.value == 'head' %}🪖
-                                {% elseif item.slotType.value == 'body' %}🧥
-                                {% elseif item.slotType.value == 'hands' %}🧤
-                                {% elseif item.slotType.value == 'feet' %}🥾
-                                {% elseif item.slotType.value == 'amulet' %}📿
-                                {% elseif item.slotType.value == 'ring' %}💍
-                                {% else %}🎒{% endif %}
+            <div class="rucksack-item rucksack-item--rarity-{{ item.rarity.value }}">
+                <div class="rucksack-item__main">
+                    <span class="rucksack-item__icon">
+                        {% if item.slotType.value == 'main_hand' or item.slotType.value == 'weapon' %}🗡️
+                        {% elseif item.slotType.value == 'off_hand' %}🛡️
+                        {% elseif item.slotType.value == 'head' %}🪖
+                        {% elseif item.slotType.value == 'body' %}🧥
+                        {% elseif item.slotType.value == 'hands' %}🧤
+                        {% elseif item.slotType.value == 'feet' %}🥾
+                        {% elseif item.slotType.value == 'amulet' %}📿
+                        {% elseif item.slotType.value == 'ring' %}💍
+                        {% else %}🎒{% endif %}
+                    </span>
+                    <div class="rucksack-item__details">
+                        <h3 class="rucksack-item__name">{{ item.name }}</h3>
+                        <div class="rucksack-item__meta">
+                            <span class="rarity-tag rarity-tag--{{ item.rarity.value }}">{{ ('inventory.rarity_' ~ item.rarity.value)|trans }}</span>
+                            <span class="item-slot-tag">{{ ('inventory.slot_' ~ item.slotType.value)|trans }}</span>
+                            <span class="item-durability-badge {% if item.durability < 100 %}item-durability-badge--low{% endif %}">
+                                {{ 'inventory.durability'|trans }}: {{ item.durability }}%
                             </span>
-                            <div>
-                                <h3 class="item-card__title">{{ item.name }}</h3>
-                                <div class="item-card__meta-tags">
-                                    <span class="rarity-tag rarity-tag--{{ item.rarity.value }}">{{ ('inventory.rarity_' ~ item.rarity.value)|trans }}</span>
-                                    <span class="item-slot-tag">{{ ('inventory.slot_' ~ item.slotType.value)|trans }}</span>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-
-                    {# Stats / Bonuses #}
-                    <div class="item-bonus-panel">
+                        {% set has_bonuses = false %}
                         {% for stat, bonus in item.bonuses %}
                             {% if (bonus ~ '') matches '/^-?[0-9]/' %}
-                                <span class="item-bonus-tag">
-                                    {{ ('inventory.stat_' ~ stat)|trans({}, null, null)|default(stat|upper) }}: <strong class="item-bonus-tag__value">+{{ bonus }}</strong>
-                                </span>
+                                {% set has_bonuses = true %}
                             {% endif %}
-                        {% else %}
-                            <span class="item-bonus-empty">{{ 'inventory.no_bonuses'|trans }}</span>
                         {% endfor %}
+                        {% if has_bonuses %}
+                            <div class="rucksack-item__bonuses">
+                                {% for stat, bonus in item.bonuses %}
+                                    {% if (bonus ~ '') matches '/^-?[0-9]/' %}
+                                        <span class="item-bonus-tag">
+                                            {{ ('inventory.stat_' ~ stat)|trans({}, null, null)|default(stat|upper) }}: <strong class="item-bonus-tag__value">+{{ bonus }}</strong>
+                                        </span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
 
-                {# Actions panel #}
-                <div class="panel-divider panel-divider-row">
-                    {# Equipped Badge / State #}
-                    <div class="item-card__footer-meta">
-                        {% if is_equipped %}
-                            {{ 'inventory.equipped_by'|trans({'%hero%': '<span class="item-card__equipped-name">' ~ item.equippedHero.name ~ '</span>'})|raw }}
-                        {% else %}
-                            <span class="item-available-label">{{ 'inventory.available'|trans }}</span>
-                        {% endif %}
-                        <span class="item-durability-badge {% if item.durability < 100 %}item-durability-badge--low{% endif %}">{{ 'inventory.durability'|trans }}: {{ item.durability }}%</span>
-                    </div>
+                <div class="rucksack-item__actions">
+                    {# Repair option if durability < 100 #}
+                    {% if item.durability < 100 %}
+                        <button type="button" data-action="click->equipment#repair" data-item-id="{{ item.id }}"
+                                class="btn btn-outline-warning btn--sm">
+                            {{ 'inventory.repair'|trans }}
+                        </button>
+                    {% endif %}
 
-                    {# Dynamic Swap/Equip Buttons #}
-                    <div class="item-card__actions">
-                        {# Repair option if durability < 100 #}
-                        {% if item.durability < 100 %}
-                            <button type="button" data-action="click->equipment#repair" data-item-id="{{ item.id }}"
-                                    class="btn btn-outline-warning btn--sm btn--compact">
-                                {{ 'inventory.repair'|trans }}
-                            </button>
-                        {% endif %}
+                    {# Dismantle option if NOT equipped #}
+                    {% if not is_equipped %}
+                        <button type="button" data-action="click->equipment#dismantle" data-item-id="{{ item.id }}"
+                                class="btn btn-outline-danger btn--sm">
+                            {{ 'inventory.dismantle'|trans }}
+                        </button>
+                    {% endif %}
 
-                        {# Dismantle option if NOT equipped #}
-                        {% if not is_equipped %}
-                            <button type="button" data-action="click->equipment#dismantle" data-item-id="{{ item.id }}"
-                                    class="btn btn-outline-danger btn--sm btn--compact">
-                                {{ 'inventory.dismantle'|trans }}
-                            </button>
-                        {% endif %}
-
-                        {# Equip to selected hero if selected, matches slot type, and NOT already equipped there #}
-                        {% if selected_hero and not is_equipped %}
-                            <button type="button" data-action="click->equipment#equip" data-item-id="{{ item.id }}" data-slot="{{ item.slotType.value }}"
-                                    class="btn btn-primary btn--sm btn--compact">
-                                {{ 'inventory.equip_slot_btn'|trans }}
-                            </button>
-                        {% endif %}
-                    </div>
+                    {# Equip to selected hero #}
+                    {% if selected_hero and not is_equipped %}
+                        <button type="button" data-action="click->equipment#equip" data-item-id="{{ item.id }}" data-slot="{{ item.slotType.value }}"
+                                class="btn btn-primary btn--sm">
+                            {{ 'inventory.equip_slot_btn'|trans }}
+                        </button>
+                    {% endif %}
                 </div>
             </div>
         {% else %}

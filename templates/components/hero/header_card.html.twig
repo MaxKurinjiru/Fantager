@@ -1,93 +1,233 @@
 {# templates/components/hero/header_card.html.twig #}
-<div class="hero-panel">
+<div class="hero-panel hero-panel--with-manage">
     <div class="panel-accent-glow panel-accent-glow--lg"></div>
 
-    <div class="hero-header__layout">
-        {% include 'components/hero/avatar.html.twig' with { race: hero.race, style: 'box', size_class: 'hero-avatar-box--header' } %}
-
-        <div class="hero-header__body">
-            <div class="hero-header__title-row">
-                <div class="hero-header__rename-group group">
-                    <h1 data-hero-rename-target="nameDisplay" class="hero-header__title">
-                        {{ hero.name }}
-                    </h1>
-                    <label for="hero-rename-input" class="sr-only">{{ 'heroes.rename_title'|trans }}</label>
-                    <input type="text" id="hero-rename-input" data-hero-rename-target="nameInput" data-action="keydown.enter->hero-rename#save keydown.esc->hero-rename#cancel"
-                           class="form-input form-input--rename hidden">
-
-                    <button type="button" data-hero-rename-target="editBtn" data-action="click->hero-rename#edit"
-                            class="hero-header__rename-btn"
-                            title="{{ 'heroes.rename_title'|trans }}"
-                            aria-label="{{ 'heroes.rename_title'|trans }}">
-                        ✏️
+    {% if show_manage|default(false) %}
+        <div class="navbar-dropdown hero-header__manage-dropdown" data-controller="dropdown">
+            <button type="button"
+                    data-action="click->dropdown#toggle"
+                    class="hero-header__manage-btn"
+                    aria-label="{{ 'heroes.manage_btn'|trans }}"
+                    title="{{ 'heroes.manage_btn'|trans }}">
+                <span aria-hidden="true">⚙️</span>
+                <span class="sr-only">{{ 'heroes.manage_btn'|trans }}</span>
+            </button>
+            <div data-dropdown-target="menu" class="dropdown-menu dropdown-menu--narrow hidden">
+                {% if hero.isCombatant and hero.status.value == 'available' %}
+                    <button type="button" onclick="window.dispatchEvent(new CustomEvent('modal:open-sell-hero'))" class="dropdown-item">
+                        🪙 {{ 'heroes.sell_title'|trans }}
+                    </button>
+                    <button type="button" onclick="window.dispatchEvent(new CustomEvent('modal:open-dismiss-hero'))" class="dropdown-item dropdown-item--danger">
+                        ❌ {{ 'heroes.dismiss_btn'|trans }}
                     </button>
 
-                    <div data-hero-rename-target="actions" class="hero-header__rename-actions hidden">
-                        <button type="button" data-action="click->hero-rename#save" class="btn btn-primary btn--sm">{{ 'heroes.save'|trans }}</button>
-                        <button type="button" data-action="click->hero-rename#cancel" class="btn btn-outline btn--sm">{{ 'heroes.cancel'|trans }}</button>
+                    {% if trainers is defined and trainers|length < trainer_limit and hero.trainer is null %}
+                        <button type="button" data-action="click->hero-promote#promote" class="dropdown-item">
+                            🏋️ {{ 'training.promote_btn'|trans }}
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <div class="dropdown-menu__message">
+                        {% if not hero.isCombatant %}
+                            {{ 'heroes.cannot_manage_role'|trans }}
+                        {% elseif hero.status.value == 'selling' %}
+                            {{ 'heroes.cannot_manage_selling'|trans }}
+                        {% elseif hero.status.value == 'recovering' %}
+                            {{ 'heroes.cannot_manage_recovering'|trans }}
+                        {% elseif hero.status.value == 'in_match' %}
+                            {{ 'heroes.cannot_manage_match'|trans }}
+                        {% elseif hero.status.value == 'dead' %}
+                            {{ 'heroes.cannot_manage_dead'|trans }}
+                        {% elseif hero.status.value == 'retired' %}
+                            {{ 'heroes.cannot_manage_retired'|trans }}
+                        {% else %}
+                            {{ 'heroes.cannot_manage_generic'|trans }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="hero-header__grid-layout">
+        {# Top Section: Icon & Identity #}
+        <div class="hero-header__top-section">
+            {% include 'components/hero/avatar.html.twig' with { race: hero.race, style: 'box', size_class: 'hero-avatar-box--header' } %}
+
+            <div class="hero-header__identity">
+                <div class="hero-header__status-row">
+                    {% include 'components/hero/status_badge.html.twig' with { status: hero.status, rounded_full: true } %}
+                </div>
+
+                <div class="hero-header__title-row">
+                    <div class="hero-header__rename-group group">
+                        <h1 data-hero-rename-target="nameDisplay" class="hero-header__title">
+                            {{ hero.name }}
+                        </h1>
+                        <label for="hero-rename-input" class="sr-only">{{ 'heroes.rename_title'|trans }}</label>
+                        <input type="text" id="hero-rename-input" data-hero-rename-target="nameInput" data-action="keydown.enter->hero-rename#save keydown.esc->hero-rename#cancel"
+                               class="form-input form-input--rename hidden">
+
+                        <button type="button" data-hero-rename-target="editBtn" data-action="click->hero-rename#edit"
+                                class="hero-header__rename-btn"
+                                title="{{ 'heroes.rename_title'|trans }}"
+                                aria-label="{{ 'heroes.rename_title'|trans }}">
+                            ✏️
+                        </button>
+
+                        <div data-hero-rename-target="actions" class="hero-header__rename-actions hidden">
+                            <button type="button" data-action="click->hero-rename#save" class="btn btn-primary btn--sm">{{ 'heroes.save'|trans }}</button>
+                            <button type="button" data-action="click->hero-rename#cancel" class="btn btn-outline btn--sm">{{ 'heroes.cancel'|trans }}</button>
+                        </div>
                     </div>
                 </div>
 
-                {% include 'components/hero/status_badge.html.twig' with { status: hero.status, rounded_full: true } %}
-            </div>
-
-            <div class="hero-header__meta">
-                <span class="hero-header__meta-item">
-                    <span class="emoji-icon emoji-icon--sm">🧬</span>
-                    {{ 'heroes.race'|trans }}: <strong class="hero-header__meta-strong">{{ ('heroes.race_' ~ hero.race.value)|trans }}</strong>
-                </span>
-                <span class="hero-header__divider"></span>
-                <span class="hero-header__meta-item">
-                    <span class="emoji-icon emoji-icon--sm">{{ hero_age_phase_icon(hero) }}</span>
-                    {{ 'heroes.age'|trans }}: <strong class="hero-header__meta-strong">{{ hero.age }} {{ 'heroes.years'|trans }}</strong>
-                    <span class="hero-header__phase-badge">
-                        {{ ('heroes.age_phase.' ~ hero_age_phase(hero)|lower)|trans }}
+                <div class="hero-header__bio-row">
+                    <span class="hero-header__bio-item">
+                        <span class="emoji-icon emoji-icon--sm" aria-hidden="true">🧬</span>
+                        {{ 'heroes.race'|trans }}: <strong class="hero-header__meta-strong">{{ ('heroes.race_' ~ hero.race.value)|trans }}</strong>
                     </span>
-                    {% if hero_at_mortality_threshold(hero) %}
-                        <span class="hero-header__mortality-warning" title="{{ 'heroes.mortality_threshold_warning'|trans({'%threshold%': hero_mortality_threshold(hero)}) }}">
-                            ⚠️
+                    <span class="hero-header__bio-divider">•</span>
+                    <span class="hero-header__bio-item">
+                        <span class="emoji-icon emoji-icon--sm cursor-help" title="{{ ('heroes.age_phase.' ~ hero_age_phase(hero)|lower)|trans }}">
+                            {{ hero_age_phase_icon(hero) }}
                         </span>
-                    {% endif %}
-                </span>
-                <span class="hero-header__divider"></span>
-                <span class="hero-header__meta-item">
-                    <span class="emoji-icon emoji-icon--sm">🔥</span>
-                    {{ 'heroes.level'|trans }}: <strong class="hero-header__meta-strong">{{ hero.level }}</strong>
-                </span>
-                <span class="hero-header__divider"></span>
-                <span class="hero-header__meta-item">
-                    {% include 'components/hero/rating_badge.html.twig' with { hero: hero, show_complex: true, layout: 'inline' } %}
-                </span>
-                <span class="hero-header__divider"></span>
-                <span class="hero-header__meta-item" title="{{ 'heroes.rating.weekly_salary_hint'|trans }}">
-                    <span class="emoji-icon emoji-icon--sm">🪙</span>
-                    {{ 'heroes.rating.weekly_salary'|trans }}: <strong class="hero-header__meta-strong">{{ hero_weekly_salary(hero)|number_format(0, '.', ' ') }}</strong>
-                </span>
-                <span class="hero-header__divider"></span>
-                <span class="hero-header__meta-item" title="{{ 'heroes.rating.gold_value_hint'|trans }}">
-                    <span class="emoji-icon emoji-icon--sm">💰</span>
-                    {{ 'heroes.rating.gold_value'|trans }}: <strong class="hero-header__meta-strong">{{ hero_gold_value(hero)|number_format(0, '.', ' ') }}</strong>
-                </span>
-                {% if hero.trait %}
-                    <span class="hero-header__divider"></span>
-                    <span class="hero-header__meta-item">
-                        {% include 'components/hero/trait_badge.html.twig' with { trait: hero.trait } %}
+                        {{ 'heroes.age'|trans }}: <strong class="hero-header__meta-strong">{{ hero.age }} {{ 'heroes.years'|trans }}</strong>
+                        {% if hero_at_mortality_threshold(hero) %}
+                            <span class="hero-header__mortality-warning" title="{{ 'heroes.mortality_threshold_warning'|trans({'%threshold%': hero_mortality_threshold(hero)}) }}">
+                                ⚠️
+                            </span>
+                        {% endif %}
                     </span>
-                {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Divider #}
+        <div class="hero-header__separator"></div>
+
+        {# Bottom Section: Grid #}
+        <div class="hero-header__bottom-section">
+            {# Left Column: Ratings & Finance #}
+            <div class="hero-header__ratings-col">
+                {% set rating = hero_rating(hero) %}
+                <div class="stat-tile" title="{{ 'heroes.rating.tooltip_base'|trans }}">
+                    <span class="stat-tile__label">{{ 'heroes.rating.base_ovr'|trans }}</span>
+                    <span class="stat-tile__value stat-tile__value--ovr">{{ rating.baseOvr }}</span>
+                </div>
+                <div class="stat-tile" title="{{ 'heroes.rating.tooltip_complex'|trans }}">
+                    <span class="stat-tile__label">{{ 'heroes.rating.complex'|trans }}</span>
+                    <span class="stat-tile__value stat-tile__value--complex">{{ rating.complexRating }}</span>
+                </div>
+                <div class="stat-tile" title="{{ 'heroes.rating.gold_value_hint'|trans }}">
+                    <span class="stat-tile__label">💰 {{ 'heroes.rating.gold_value'|trans }}</span>
+                    <span class="stat-tile__value">{{ hero_gold_value(hero)|number_format(0, '.', ' ') }}</span>
+                </div>
+                <div class="stat-tile" title="{{ 'heroes.rating.weekly_salary_hint'|trans }}">
+                    <span class="stat-tile__label">🪙 {{ 'heroes.rating.weekly_salary'|trans }}</span>
+                    <span class="stat-tile__value">{{ hero_weekly_salary(hero)|number_format(0, '.', ' ') }}</span>
+                </div>
             </div>
 
-            <div class="hero-header__xp-track">
-                <div class="hero-header__xp-labels">
-                    <span>{{ 'heroes.xp'|trans }}</span>
-                    {% set next_level_xp = 1000 * hero.level %}
-                    <span>{{ hero.xp }} / {{ next_level_xp }} XP</span>
+            {# Right Column: Stats (Level, XP, Condition) #}
+            <div class="hero-header__stats-col">
+                {# Row 1: Level & Zkušenosti #}
+                <div class="hero-header__progression-panel">
+                    <div class="hero-header-dashboard__level-row">
+                        <span class="emoji-icon emoji-icon--sm" aria-hidden="true">🔥</span>
+                        <span class="label">{{ 'heroes.level'|trans }}:</span>
+                        <span class="value">{{ hero.level }}</span>
+                    </div>
+                    <div class="hero-header-dashboard__xp-track">
+                        <div class="hero-header__xp-labels flex justify-end">
+                            {% set next_level_xp = 1000 * hero.level %}
+                            <span>{{ hero.xp }} / {{ next_level_xp }} XP</span>
+                        </div>
+                        {% set xp_pct = min(100, (hero.xp / next_level_xp) * 100) %}
+                        {% include 'components/ui/progress_bar.html.twig' with {
+                            percentage: xp_pct,
+                            container_class: 'ui-progress ui-progress--xp',
+                            progress_class: 'ui-progress__fill ui-progress__fill--xp'
+                        } %}
+                    </div>
                 </div>
-                {% set xp_pct = min(100, (hero.xp / next_level_xp) * 100) %}
-                {% include 'components/ui/progress_bar.html.twig' with {
-                    percentage: xp_pct,
-                    container_class: 'ui-progress ui-progress--xp',
-                    progress_class: 'ui-progress__fill ui-progress__fill--xp'
-                } %}
+
+                <hr class="hero-header__details-divider" />
+
+                {# Row 2: Stav a kondice #}
+                <div class="hero-header__condition-panel">
+                    {# Form #}
+                    <div class="hero-header__condition-item">
+                        <div class="hero-bar-row">
+                            <span class="hero-bar-row__label">{{ 'heroes.combat_form'|trans }}</span>
+                            <span class="hero-bar-row__value hero-bar-row__value--cluster">
+                                {{ hero.form }}%
+                                {% if hero.form >= 75 %}📈
+                                {% elseif hero.form >= 40 %}➡️
+                                {% else %}📉{% endif %}
+                            </span>
+                        </div>
+                        {% include 'components/ui/progress_bar.html.twig' with {
+                            percentage: hero.form,
+                            container_class: 'ui-progress ui-progress--compact',
+                            progress_class: 'ui-progress__fill hero-progress-fill ' ~ (hero.form > 75 ? 'hero-progress-fill--success' : (hero.form > 40 ? 'hero-progress-fill--warning' : 'hero-progress-fill--danger'))
+                        } %}
+                    </div>
+
+                    {# Fatigue #}
+                    <div class="hero-header__condition-item">
+                        <div class="hero-bar-row">
+                            <span class="hero-bar-row__label">{{ 'heroes.fatigue'|trans }}</span>
+                            <span class="hero-bar-row__value hero-bar-row__value--cluster">
+                                {{ hero.fatigue }}%
+                                {% if hero.fatigue >= 70 %}💤
+                                {% elseif hero.fatigue >= 30 %}⚡
+                                {% else %}🔋{% endif %}
+                            </span>
+                        </div>
+                        {% include 'components/ui/progress_bar.html.twig' with {
+                            percentage: hero.fatigue,
+                            container_class: 'ui-progress ui-progress--compact',
+                            progress_class: 'ui-progress__fill hero-progress-fill ' ~ (hero.fatigue < 30 ? 'hero-progress-fill--success' : (hero.fatigue < 70 ? 'hero-progress-fill--warning' : 'hero-progress-fill--danger'))
+                        } %}
+                    </div>
+
+                    {# Morale #}
+                    <div class="hero-header__condition-item">
+                        <div class="hero-bar-row">
+                            <span class="hero-bar-row__label">{{ 'heroes.morale_label'|trans }}</span>
+                            <span class="hero-bar-row__value hero-bar-row__value--cluster">
+                                {{ hero.morale }}%
+                                {% if hero.morale >= 80 %}🥰
+                                {% elseif hero.morale >= 60 %}🙂
+                                {% elseif hero.morale >= 40 %}😐
+                                {% elseif hero.morale >= 20 %}🙁
+                                {% else %}😭{% endif %}
+                            </span>
+                        </div>
+                        {% include 'components/ui/progress_bar.html.twig' with {
+                            percentage: hero.morale,
+                            container_class: 'ui-progress ui-progress--compact',
+                            progress_class: 'ui-progress__fill hero-progress-fill hero-progress-fill--accent'
+                        } %}
+                    </div>
+                </div>
+
+                {# Row 3: Osobnostní rys #}
+                {% if hero.trait %}
+                    <hr class="hero-header__details-divider" />
+                    <div class="hero-header__trait-panel">
+                        <div class="hero-bar-row">
+                            <span class="hero-bar-row__label">{{ 'heroes.trait_panel_title'|trans }}</span>
+                        </div>
+                        <div class="hero-header__trait-content">
+                            {% include 'components/hero/trait_badge.html.twig' with { trait: hero.trait } %}
+                            <span class="hero-header__trait-desc">
+                                {{ ('heroes.traits.' ~ hero.trait.value ~ '.desc')|trans }}
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
