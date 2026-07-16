@@ -25,6 +25,10 @@ use App\Service\Team\TeamRosterService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Service\Combat\CombatMatchRequestBuilder;
+use App\Service\Combat\CombatSeedGenerator;
+use App\Service\Combat\CombatEngine;
+use Symfony\Component\Messenger\MessageBusInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
@@ -37,8 +41,6 @@ class LeagueMatchResolutionServiceTest extends TestCase
     private $standingRepository;
     /** @var \PHPUnit\Framework\MockObject\MockObject&TeamRosterService */
     private $teamRosterService;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&MatchSimulatorInterface */
-    private $matchSimulator;
     /** @var \PHPUnit\Framework\MockObject\MockObject&LeagueFixtureCompletionService */
     private $fixtureCompletionService;
     /** @var \PHPUnit\Framework\MockObject\MockObject&FanClubService */
@@ -51,6 +53,14 @@ class LeagueMatchResolutionServiceTest extends TestCase
     private $em;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Formation\FormationRepository */
     private $formationRepository;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&CombatMatchRequestBuilder */
+    private $requestBuilder;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&CombatSeedGenerator */
+    private $seedGenerator;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&CombatEngine */
+    private $combatEngine;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&MessageBusInterface */
+    private $messageBus;
     private LeagueMatchResolutionService $service;
 
     protected function setUp(): void
@@ -58,19 +68,21 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->fixtureRepository = $this->createMock(LeagueFixtureRepository::class);
         $this->standingRepository = $this->createMock(LeagueStandingRepository::class);
         $this->teamRosterService = $this->createMock(TeamRosterService::class);
-        $this->matchSimulator = $this->createMock(MatchSimulatorInterface::class);
         $this->fixtureCompletionService = $this->createMock(LeagueFixtureCompletionService::class);
         $this->fanClubService = $this->createMock(FanClubService::class);
         $this->teamMoraleReputationService = $this->createMock(TeamMoraleReputationService::class);
         $this->teamChronicleService = $this->createMock(TeamChronicleService::class);
         $this->formationRepository = $this->createMock(\App\Repository\Formation\FormationRepository::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
+        $this->requestBuilder = $this->createMock(CombatMatchRequestBuilder::class);
+        $this->seedGenerator = new CombatSeedGenerator();
+        $this->combatEngine = $this->createMock(CombatEngine::class);
+        $this->messageBus = $this->createMock(MessageBusInterface::class);
 
         $this->service = new LeagueMatchResolutionService(
             $this->fixtureRepository,
             $this->standingRepository,
             $this->teamRosterService,
-            $this->matchSimulator,
             new LeagueStandingService(),
             $this->fixtureCompletionService,
             $this->fanClubService,
@@ -80,31 +92,94 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             $this->formationRepository,
             $this->em,
+            $this->requestBuilder,
+            $this->seedGenerator,
+            $this->combatEngine,
+            $this->messageBus,
         );
     }
 
-    public function testResolveFixtureUsesSimulatorWhenBothTeamsEligible(): void
+    public function testResolveFixtureInitializesSimulatingBattle(): void
     {
         [$fixture, $homeStanding, $awayStanding] = $this->createFixtureContext();
-
         $this->teamRosterService->method('countCombatReadyHeroes')->willReturn(6);
-        $this->standingRepository->method('findOneBy')->willReturnMap([
-            [['group' => $fixture->getGroup(), 'team' => $fixture->getHomeTeam()], $homeStanding],
-            [['group' => $fixture->getGroup(), 'team' => $fixture->getAwayTeam()], $awayStanding],
-        ]);
-        $this->matchSimulator->method('simulate')->willReturn(new MatchOutcome(2, 1, false, [
-            'version' => 1,
-            'simulator' => 'combat_engine',
+
+        $formation = new \App\Entity\Formation\Formation();
+        $this->formationRepository->method('findOneBy')->willReturn($formation);
+
+        $sideA = new \App\ValueObject\Combat\CombatSide(1, 101, \App\Enum\FormationApproach::Balanced, $this->buildCombatants(100));
+        $sideB = new \App\ValueObject\Combat\CombatSide(2, 102, \App\Enum\FormationApproach::Balanced, $this->buildCombatants(200));
+        $realRequest = new \App\ValueObject\Combat\CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
+        $this->requestBuilder->method('fromFormations')->willReturn($realRequest);
+        
+        $this->combatEngine->method('initializeRunState')->willReturn([
+            'seed' => 42,
+            'status' => 'simulating',
             'events' => [],
-            'result' => ['score_a' => 2, 'score_b' => 1],
-        ], 42));
+        ]);
+
+        $mockQuery = $this->createMock(\Doctrine\ORM\Query::class);
+        $mockQuery->method('getSingleScalarResult')->willReturn(1);
+        
+        $mockQb = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $mockQb->method('select')->willReturnSelf();
+        $mockQb->method('from')->willReturnSelf();
+        $mockQb->method('join')->willReturnSelf();
+        $mockQb->method('where')->willReturnSelf();
+        $mockQb->method('andWhere')->willReturnSelf();
+        $mockQb->method('setParameter')->willReturnSelf();
+        $mockQb->method('getQuery')->willReturn($mockQuery);
+
+        $this->em->method('createQueryBuilder')->willReturn($mockQb);
 
         $calledBattle = null;
         $this->em->expects($this->once())->method('persist')->willReturnCallback(function ($battle) use (&$calledBattle) {
             $calledBattle = $battle;
         });
 
-        $this->fixtureCompletionService->expects($this->once())->method('complete');
+        $this->messageBus->expects($this->once())
+            ->method('dispatch')
+            ->willReturn(new \Symfony\Component\Messenger\Envelope(new \stdClass()));
+
+        $result = $this->service->resolveFixture($fixture, new \DateTimeImmutable('2026-06-17 18:00:00'));
+
+        $this->assertInstanceOf(Battle::class, $calledBattle);
+        $this->assertSame(\App\Enum\BattleStatus::Simulating, $calledBattle->getStatus());
+        $this->assertSame(0, $calledBattle->getScoreA());
+        $this->assertSame(0, $calledBattle->getScoreB());
+        
+        $this->assertSame(0, $result['home_score']);
+        $this->assertSame(0, $result['away_score']);
+        $this->assertFalse($result['is_forfeit']);
+        $this->assertSame($calledBattle->getId(), $result['battle_id']);
+    }
+
+    public function testCompleteBattleRunsPostMatchSideEffects(): void
+    {
+        [$fixture, $homeStanding, $awayStanding] = $this->createFixtureContext();
+        $battle = new Battle();
+        $battle->setKingdom($fixture->getHomeTeam()->getKingdom());
+        $battle->setMatchType(MatchType::League);
+        $battle->setTeamA($fixture->getHomeTeam());
+        $battle->setTeamB($fixture->getAwayTeam());
+        $battle->setScoreA(2);
+        $battle->setScoreB(1);
+        $battle->setResult(BattleResult::WinA);
+        $battle->setCombatLog([
+            'seed' => 42,
+            'events' => [],
+        ]);
+
+        $mockRepo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        $mockRepo->method('findOneBy')->willReturn($fixture);
+        $this->em->method('getRepository')->willReturnMap([
+            [LeagueFixture::class, $mockRepo],
+        ]);
+
+        $this->standingRepository->method('findOneBy')->willReturnMap([
+            [['group' => $fixture->getGroup(), 'team' => $fixture->getHomeTeam()], $homeStanding],
+            [['group' => $fixture->getGroup(), 'team' => $fixture->getAwayTeam()], $awayStanding],
+        ]);
 
         $calledParams = null;
         $this->fanClubService->expects($this->once())
@@ -113,14 +188,9 @@ class LeagueMatchResolutionServiceTest extends TestCase
                 $calledParams = [$home, $away, $scoreHome, $scoreAway];
             });
 
-        $result = $this->service->resolveFixture($fixture, new \DateTimeImmutable('2026-06-17 18:00:00'));
+        $this->fixtureCompletionService->expects($this->once())->method('complete')->with($fixture, $battle);
 
-        $this->assertInstanceOf(Battle::class, $calledBattle);
-        $this->assertSame(2, $calledBattle->getScoreA());
-        $this->assertSame(1, $calledBattle->getScoreB());
-        $this->assertSame(BattleResult::WinA, $calledBattle->getResult());
-        $this->assertSame(MatchType::League, $calledBattle->getMatchType());
-        $this->assertSame('combat_engine', $calledBattle->getCombatLog()['simulator']);
+        $this->service->completeBattle($battle);
 
         $this->assertNotNull($calledParams);
         $this->assertSame($fixture->getHomeTeam(), $calledParams[0]);
@@ -128,9 +198,6 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->assertSame(2, $calledParams[2]);
         $this->assertSame(1, $calledParams[3]);
 
-        $this->assertSame(2, $result['home_score']);
-        $this->assertSame(1, $result['away_score']);
-        $this->assertFalse($result['is_forfeit']);
         $this->assertSame(1, $homeStanding->getWins());
         $this->assertSame(3, $homeStanding->getPoints());
         $this->assertSame(1, $awayStanding->getLosses());
@@ -148,7 +215,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             [['group' => $fixture->getGroup(), 'team' => $fixture->getHomeTeam()], $homeStanding],
             [['group' => $fixture->getGroup(), 'team' => $fixture->getAwayTeam()], $awayStanding],
         ]);
-        $this->matchSimulator->expects($this->never())->method('simulate');
+        // No simulator call expected as it is handled by the forfeit resolution
 
         $calledBattle = null;
         $this->em->expects($this->once())->method('persist')->willReturnCallback(function ($battle) use (&$calledBattle) {
@@ -209,7 +276,6 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->fixtureRepository,
             $this->standingRepository,
             $this->teamRosterService,
-            $this->matchSimulator,
             new LeagueStandingService(),
             $this->fixtureCompletionService,
             $this->fanClubService,
@@ -219,6 +285,10 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             $this->formationRepository,
             $this->em,
+            $this->requestBuilder,
+            $this->seedGenerator,
+            $this->combatEngine,
+            $this->messageBus,
         );
         $partial->expects($this->once())
             ->method('resolveFixture')
@@ -245,7 +315,13 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $awayTeam = new Team();
         $awayTeam->setKingdom($kingdom);
 
+        $season = new \App\Entity\League\LeagueSeason();
+        $tier = new \App\Entity\League\LeagueTier();
+        $tier->setSeason($season);
+
         $group = new LeagueGroup();
+        $group->setTier($tier);
+
         $fixture = new LeagueFixture();
         $fixture->setGroup($group);
         $fixture->setHomeTeam($homeTeam);
@@ -262,5 +338,30 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $awayStanding->setTeam($awayTeam);
 
         return [$fixture, $homeStanding, $awayStanding];
+    }
+
+    /**
+     * @return array<int, \App\ValueObject\Combat\CombatantSnapshot>
+     */
+    private function buildCombatants(int $heroIdBase): array
+    {
+        $combatants = [];
+        $derived = new \App\ValueObject\Combat\DerivedCombatStats(
+            100, 100, 10, 10, 10, 0.1, 10, 0.1, 10, 80.0, 10.0, 5.0
+        );
+        foreach (\App\Enum\FormationPosition::cases() as $i => $position) {
+            $combatants[] = new \App\ValueObject\Combat\CombatantSnapshot(
+                $heroIdBase + $i,
+                'Hero ' . ($heroIdBase + $i),
+                $position,
+                \App\Enum\Race::Human,
+                5,
+                100,
+                0,
+                50,
+                $derived,
+            );
+        }
+        return $combatants;
     }
 }

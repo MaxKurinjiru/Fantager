@@ -91,8 +91,8 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Headquarters** | Fully Implemented | Implemented | Implemented | 7 facilities (no Forge); HQ hub with facility panels; upgrades/downgrades, arena adaptation, passive bonuses. Arena & Summoning panels via `?facility=`. |
 | **Items** | Fully Implemented | Implemented | Implemented | Inventory, equip/unequip, dismantle. |
 | **Spells** | Fully Implemented | Implemented | Implemented | Spell library, learning, slot equipping. |
-| **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, and `LeagueService` implemented; league match tick resolves fixtures via stub random simulator and updates standings. |
-| **Combat** | Partially Implemented | Not Implemented | Not Implemented | Thin `CombatEngine` + league adapter (placeholder scores). Target: cohort **wave Messenger** lockstep rounds (max 200, `stalled` isolation, no live UI) — [combat-system.md](systems/combat-system.md#wave-based-messenger-orchestration). |
+| **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, and `LeagueService` implemented; league match tick initiates lockstep wave cohort simulation. |
+| **Combat** | Fully Implemented | Not Implemented | Not Implemented | Persisted cohort **wave Messenger** lockstep rounds (max 200, `stalled` isolation, resume catch-up) via deterministic turn engine loop — [combat-system.md](systems/combat-system.md#wave-based-messenger-orchestration). |
 | **World Events** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/world-events-system.md](future/world-events-system.md). |
 | **Dungeons** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/dungeon-system.md](future/dungeon-system.md). Backend removed from codebase. |
 | **Marketplace** | Fully Implemented | Implemented | Implemented | Listings with hero ratings and **trait** on hero cards; browse filter/sort by value and OVR (cached DB columns). |

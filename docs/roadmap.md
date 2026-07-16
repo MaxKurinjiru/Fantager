@@ -175,7 +175,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Verification**:
   - Unit tests for combat math, seed + RNG-state reproducibility across wave messages, barrier ignoring `stalled`, hard stop at round 200.
   - Forfeit: <6 combat-ready → 3–0 / 0–0 without enqueueing waves.
-- **Status**: 🔄 In progress — 6.1a-0 done; wave orchestration + turn loop pending.
+- **Status**: 🔄 In progress — 6.1a fully implemented; 6.1b-d pending.
 
 ### Step 6.2: Calendar & Server Ticks System
 - **Database & Entities**: `KingdomTickLog` (implemented).
@@ -186,7 +186,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
   - `bin/console app:ticks:run` — Command triggered by cron to advance game time.
   - `GET /api/v1/kingdom/{id}/calendar` — Kingdom schedule feed.
 - **Verification**: Trigger a calendar tick and check if queues (training, items, leagues) update.
-- **Status**: ✅ Complete (`ProcessTicksCommand`, `TickScheduleCalculator`, `CalendarService`, `ProcessKingdomTicksHandler`, Web Calendar page, kingdom calendar API). League match ticks currently process arena revenue only; combat execution remains pending under Step 6.1.
+- **Status**: ✅ Complete (`ProcessTicksCommand`, `TickScheduleCalculator`, `CalendarService`, `ProcessKingdomTicksHandler`, Web Calendar page, kingdom calendar API). League match ticks process both arena revenue and start wave combat simulation.
 
 ### Step 6.3: League Matchmaking & Season Transition
 - **Design Prerequisites (Phase 0)**: Resolve [known-issues.md](known-issues.md) #7 (Friendly match rules) and #8 (Arena Match mechanics).
@@ -202,7 +202,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - **[NEW]** League Dashboard: Group standings table, fixture timeline, match summaries, and promotion/relegation threshold lines.
 - **Verification**: Run complete 11-week season simulation using CLI commands and verify standings and reward distributions.
-- **Status**: 🔄 Partially Complete (`LeagueFixtureScheduler`, `SeasonTransitionService`, and Web League Dashboard fully complete; API endpoints and combat simulation matching are pending implementation under the remaining Phase 6 simulation tasks).
+- **Status**: 🔄 Partially Complete (`LeagueFixtureScheduler`, `SeasonTransitionService`, and Web League Dashboard fully complete; API endpoints pending; combat wave cohort simulation fully implemented).
 
 ### Step 6.4: Hero Mortality & Graveyard
 - **Database & Entities**: `GraveyardMemorial` entity (`graveyard` table).
@@ -300,8 +300,8 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 6 (Combat & Leagues)** | 🔄 | 🔄 | 🔄 | 🔄 | *In Progress* — League/Calendar/Graveyard UI ✅; derived stats calculator ✅; combat engine + replay UI ⏳ |
+| **Milestone 6 (Combat & Leagues)** | ✅ | ✅ | 🔄 | 🔄 | *In Progress* — Database schema, wave handlers, and deterministic engine loop complete ✅; replay UI and API endpoints pending ⏳ |
 | **Milestone 7 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | *Not Started* |
 | **Milestone 8 (Endgame & Crafting)** | ⏳ | 🔄 | ⏳ | 🔄 | *Partially Complete* (arena revenue done; dungeons/crafting/quests deferred) |
 
-*Last updated: July 15, 2026 — Docs synced with separate marketplace/finance screens, hero chronicle, hero rating cache, combat formulas*
+*Last updated: July 16, 2026 — Docs synced with completed 6.1a combat wave orchestration and deterministic engine*

@@ -12,11 +12,15 @@ use App\Entity\League\LeagueGroup;
 use App\Entity\League\LeagueStanding;
 use App\Entity\Team\Team;
 use App\Enum\BattleResult;
+use App\Enum\BattleStatus;
+use App\Enum\LeagueFixtureStatus;
 use App\Enum\MatchType;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueStandingRepository;
-use App\Service\Combat\MatchSimulatorInterface;
+use App\Service\Combat\CombatEngine;
+use App\Service\Combat\CombatMatchRequestBuilder;
+use App\Service\Combat\CombatSeedGenerator;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Team\FanClubService;
 use App\Service\Team\TeamMoraleReputationService;
@@ -24,6 +28,7 @@ use App\Service\Team\TeamRosterService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class LeagueMatchResolutionService
 {
@@ -31,7 +36,6 @@ class LeagueMatchResolutionService
         private readonly LeagueFixtureRepository $fixtureRepository,
         private readonly LeagueStandingRepository $standingRepository,
         private readonly TeamRosterService $teamRosterService,
-        private readonly MatchSimulatorInterface $matchSimulator,
         private readonly LeagueStandingService $standingService,
         private readonly LeagueFixtureCompletionService $fixtureCompletionService,
         private readonly FanClubService $fanClubService,
@@ -41,6 +45,10 @@ class LeagueMatchResolutionService
         private readonly HeroChronicleService $heroChronicleService,
         private readonly FormationRepository $formationRepository,
         private readonly EntityManagerInterface $em,
+        private readonly CombatMatchRequestBuilder $requestBuilder,
+        private readonly CombatSeedGenerator $seedGenerator,
+        private readonly CombatEngine $combatEngine,
+        private readonly MessageBusInterface $messageBus,
     ) {
     }
 
@@ -82,12 +90,74 @@ class LeagueMatchResolutionService
      */
     public function resolveFixture(LeagueFixture $fixture, \DateTimeImmutable $processedAt): array
     {
-        $outcome = $this->resolveOutcome($fixture);
+        $forfeitOutcome = $this->resolveForfeitOutcome($fixture);
+
+        if (null !== $forfeitOutcome) {
+            $homeTeam = $fixture->getHomeTeam();
+            $awayTeam = $fixture->getAwayTeam();
+            $battle = $this->createBattle($fixture, $forfeitOutcome, $processedAt);
+            $battle->setStatus(BattleStatus::Completed);
+            $this->em->persist($battle);
+
+            $this->teamChronicleService->recordBattleOutcome(
+                $homeTeam,
+                $awayTeam,
+                $forfeitOutcome->getHomeScore(),
+                $forfeitOutcome->getAwayScore(),
+                $battle
+            );
+            $this->teamChronicleService->recordBattleOutcome(
+                $awayTeam,
+                $homeTeam,
+                $forfeitOutcome->getAwayScore(),
+                $forfeitOutcome->getHomeScore(),
+                $battle
+            );
+
+            $homeStanding = $this->requireStanding($fixture->getGroup(), $homeTeam);
+            $awayStanding = $this->requireStanding($fixture->getGroup(), $awayTeam);
+
+            $this->standingService->applyMatchResult(
+                $homeStanding,
+                $awayStanding,
+                $forfeitOutcome->getHomeScore(),
+                $forfeitOutcome->getAwayScore(),
+            );
+
+            $this->fanClubService->applyFixtureResult(
+                $homeTeam,
+                $awayTeam,
+                $forfeitOutcome->getHomeScore(),
+                $forfeitOutcome->getAwayScore(),
+            );
+
+            $this->teamMoraleReputationService->applyMatchResult(
+                $homeTeam,
+                $awayTeam,
+                $forfeitOutcome,
+                null,
+                null,
+            );
+
+            $this->fixtureCompletionService->complete($fixture, $battle);
+
+            return [
+                'fixture_id' => $fixture->getId(),
+                'home_team_id' => $homeTeam->getId(),
+                'away_team_id' => $awayTeam->getId(),
+                'home_score' => $forfeitOutcome->getHomeScore(),
+                'away_score' => $forfeitOutcome->getAwayScore(),
+                'is_forfeit' => true,
+                'battle_id' => $battle->getId(),
+            ];
+        }
+
+        // Both teams eligible -> start simulation wave orchestration
         $homeTeam = $fixture->getHomeTeam();
         $awayTeam = $fixture->getAwayTeam();
 
         $homeFormation = $fixture->getHomeFormation();
-        if (null === $homeFormation && !$outcome->isForfeit()) {
+        if (null === $homeFormation) {
             $homeFormation = $this->formationRepository->findOneBy([
                 'team' => $homeTeam,
                 'isDefault' => true,
@@ -96,7 +166,7 @@ class LeagueMatchResolutionService
         }
 
         $awayFormation = $fixture->getAwayFormation();
-        if (null === $awayFormation && !$outcome->isForfeit()) {
+        if (null === $awayFormation) {
             $awayFormation = $this->formationRepository->findOneBy([
                 'team' => $awayTeam,
                 'isDefault' => true,
@@ -104,12 +174,98 @@ class LeagueMatchResolutionService
             ]);
         }
 
-        $battle = $this->createBattle($fixture, $outcome, $processedAt, $homeFormation, $awayFormation);
+        if (!$homeFormation instanceof Formation) {
+            throw new \RuntimeException(sprintf('Home team %d is missing a formation.', $homeTeam->getId()));
+        }
+
+        if (!$awayFormation instanceof Formation) {
+            throw new \RuntimeException(sprintf('Away team %d is missing a formation.', $awayTeam->getId()));
+        }
+
+        $seed = $this->seedGenerator->forLeagueFixture($fixture);
+        $request = $this->requestBuilder->fromFormations(
+            $homeFormation,
+            $awayFormation,
+            MatchType::League,
+            $seed,
+        );
+
+        $runState = $this->combatEngine->initializeRunState($request);
+
+        $battle = new Battle();
+        $battle->setKingdom($homeTeam->getKingdom());
+        $battle->setMatchType(MatchType::League);
+        $battle->setTeamA($homeTeam);
+        $battle->setTeamB($awayTeam);
+        $battle->setFormationA($homeFormation);
+        $battle->setFormationB($awayFormation);
+        $battle->setScoreA(0);
+        $battle->setScoreB(0);
+        $battle->setStatus(BattleStatus::Simulating);
+        $battle->setCurrentRound(0);
+        $battle->setRunState($runState);
+        $battle->setScheduledAt($processedAt);
+
         $this->em->persist($battle);
 
+        $fixture->setBattle($battle);
+        $fixture->setStatus(LeagueFixtureStatus::InProgress);
+
+        $this->em->flush();
+
+        // Check if cohort initialization is complete
+        $totalScheduledFixtures = (int) $this->em->createQueryBuilder()
+            ->select('COUNT(f.id)')
+            ->from(LeagueFixture::class, 'f')
+            ->join('f.group', 'g')
+            ->join('g.tier', 't')
+            ->join('t.season', 's')
+            ->where('s.kingdom = :kingdom')
+            ->andWhere('f.scheduledAt = :scheduledAt')
+            ->setParameter('kingdom', $homeTeam->getKingdom())
+            ->setParameter('scheduledAt', $processedAt)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $initializedBattles = (int) $this->em->createQueryBuilder()
+            ->select('COUNT(b.id)')
+            ->from(Battle::class, 'b')
+            ->where('b.kingdom = :kingdom')
+            ->andWhere('b.scheduledAt = :scheduledAt')
+            ->setParameter('kingdom', $homeTeam->getKingdom())
+            ->setParameter('scheduledAt', $processedAt)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        if ($totalScheduledFixtures === $initializedBattles) {
+            $this->messageBus->dispatch(new \App\Message\CombatWave((int) $homeTeam->getKingdom()->getId(), $processedAt, 1));
+        }
+
+        return [
+            'fixture_id' => $fixture->getId(),
+            'home_team_id' => $homeTeam->getId(),
+            'away_team_id' => $awayTeam->getId(),
+            'home_score' => 0,
+            'away_score' => 0,
+            'is_forfeit' => false,
+            'battle_id' => $battle->getId(),
+        ];
+    }
+
+    public function completeBattle(Battle $battle): void
+    {
+        $fixture = $this->em->getRepository(LeagueFixture::class)->findOneBy(['battle' => $battle]);
+        if (null === $fixture) {
+            throw new \RuntimeException(sprintf('Fixture not found for battle ID %d.', $battle->getId()));
+        }
+
+        $homeTeam = $fixture->getHomeTeam();
+        $awayTeam = $fixture->getAwayTeam();
+        $homeFormation = $battle->getFormationA();
+        $awayFormation = $battle->getFormationB();
         $battleResult = $battle->getResult();
 
-        // Process Hero Mastery participation for active heroes in both formations
+        // 1. Process Hero Mastery participation
         if (null !== $homeFormation) {
             foreach ($homeFormation->getSlots() as $slot) {
                 $hero = $slot->getHero();
@@ -145,38 +301,49 @@ class LeagueMatchResolutionService
             }
         }
 
+        // 2. Team Chronicle
         $this->teamChronicleService->recordBattleOutcome(
             $homeTeam,
             $awayTeam,
-            $outcome->getHomeScore(),
-            $outcome->getAwayScore(),
+            $battle->getScoreA(),
+            $battle->getScoreB(),
             $battle
         );
         $this->teamChronicleService->recordBattleOutcome(
             $awayTeam,
             $homeTeam,
-            $outcome->getAwayScore(),
-            $outcome->getHomeScore(),
+            $battle->getScoreB(),
+            $battle->getScoreA(),
             $battle
         );
 
+        // 3. Standing
         $homeStanding = $this->requireStanding($fixture->getGroup(), $homeTeam);
         $awayStanding = $this->requireStanding($fixture->getGroup(), $awayTeam);
 
         $this->standingService->applyMatchResult(
             $homeStanding,
             $awayStanding,
-            $outcome->getHomeScore(),
-            $outcome->getAwayScore(),
+            $battle->getScoreA(),
+            $battle->getScoreB(),
         );
 
+        // 4. Fan club
         $this->fanClubService->applyFixtureResult(
             $homeTeam,
             $awayTeam,
-            $outcome->getHomeScore(),
-            $outcome->getAwayScore(),
+            $battle->getScoreA(),
+            $battle->getScoreB(),
         );
 
+        // 5. Morale
+        $outcome = new MatchOutcome(
+            $battle->getScoreA(),
+            $battle->getScoreB(),
+            false,
+            $battle->getCombatLog(),
+            $battle->getCombatLog()['seed'] ?? null
+        );
         $this->teamMoraleReputationService->applyMatchResult(
             $homeTeam,
             $awayTeam,
@@ -185,27 +352,8 @@ class LeagueMatchResolutionService
             $awayFormation,
         );
 
+        // 6. Complete fixture status
         $this->fixtureCompletionService->complete($fixture, $battle);
-
-        return [
-            'fixture_id' => $fixture->getId(),
-            'home_team_id' => $homeTeam->getId(),
-            'away_team_id' => $awayTeam->getId(),
-            'home_score' => $outcome->getHomeScore(),
-            'away_score' => $outcome->getAwayScore(),
-            'is_forfeit' => $outcome->isForfeit(),
-            'battle_id' => $battle->getId(),
-        ];
-    }
-
-    private function resolveOutcome(LeagueFixture $fixture): MatchOutcome
-    {
-        $forfeitOutcome = $this->resolveForfeitOutcome($fixture);
-        if (null !== $forfeitOutcome) {
-            return $forfeitOutcome;
-        }
-
-        return $this->matchSimulator->simulate($fixture);
     }
 
     private function resolveForfeitOutcome(LeagueFixture $fixture): ?MatchOutcome

@@ -19,16 +19,16 @@ There is **no** mid-battle player input (no turn submission, target picking, Aut
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Match eligibility & forfeit rules | ✅ Implemented | `LeagueMatchResolutionService::resolveForfeitOutcome()` |
-| Kill-based scoring & standings | 🔄 Placeholder | Seeded 0–6 scores via thin `CombatEngine` (`placeholder_scores`); turn loop pending |
-| `Battle` entity persistence | ✅ Implemented | Scores, formations, result enum; `combat_log` from `MatchOutcome` |
+| Kill-based scoring & standings | ✅ Implemented | Fully resolved via deterministic turn engine loop |
+| `Battle` entity persistence | ✅ Implemented | Scores, formations, result enum; `combat_log` from simulation |
 | Post-match side effects | ✅ Implemented | Standings, fan club, morale, hero/team chronicle, mastery XP |
 | `CombatStatCalculator` + `DerivedCombatStats` | ✅ Implemented | Profile-aware (`Equipped`, `HumanNeutral`, `FullIntrinsic`) |
-| Simulation contract (VO / API layers) | ✅ Implemented (transitional) | One-shot thin engine wired; **target** is wave Messenger — see [orchestration](#wave-based-messenger-orchestration) |
-| Wave / round Messenger orchestration | ⏳ Pending | Cohort lockstep rounds; `MAX_ROUNDS=200`; no wave timeout; `stalled` isolation |
-| Deterministic turn engine | ⏳ Pending | Per-round resolution inside `ProcessCombatRound` |
-| `combat_log` JSON + replay UI | 🔄 Partial | Envelope + placeholder `match_start`/`match_end`; full events + post-match replay UI pending |
-| Combat death → graveyard | ⏳ Pending | Blocked on full engine |
-| Formation AI (L0–L2) | ⏳ Pending | Phased — see [Formation AI](#formation-ai-phased) |
+| Simulation contract (VO / API layers) | ✅ Implemented | Formations resolved to snapshots, pure round resolution |
+| Wave / round Messenger orchestration | ✅ Implemented | Cohort lockstep rounds; `MAX_ROUNDS=200`; no wave timeout; `stalled` isolation |
+| Deterministic turn engine | ✅ Implemented | Per-round resolution inside `ProcessCombatRound` via `CombatEngine` |
+| `combat_log` JSON + replay UI | 🔄 Partial | Replay UI pending, `combat_log` has full event stream |
+| Combat death → graveyard | ⏳ Pending | Blocked on milestone 6.1d |
+| Formation AI (L0–L2) | 🔄 Partial | L0 approach targeting rules implemented; L1+ pending |
 
 Status effect reference config: [config/game/status_effects.yaml](../../config/game/status_effects.yaml)
 
@@ -70,7 +70,7 @@ A team needs 6 combat-ready heroes to **enter** a match, independent of formatio
 5. On each battle completion: apply post-match updates (XP, form, fatigue, morale, aging when 6.1d ships)
 6. Persist final result on `Battle`; product UI is post-match replay only
 
-*(Transitional today: thin one-shot `LeagueMatchSimulator` still completes fixtures synchronously with placeholder scores.)*
+*(Implemented: Messenger waves simulate rounds in lockstep; post-match effects are applied upon final round completion.)*
 
 ---
 
@@ -546,7 +546,7 @@ L0 may use a simpler approach→heuristic path without a full scorer; replace wi
 | Phase | Deliverable | Replaces / unlocks |
 |-------|-------------|-------------------|
 | **6.1a-0** | ✅ Contract VO + thin one-shot engine + `LeagueMatchSimulator` (placeholder scores) | Stub DI binding |
-| **6.1a** | Persisted run state + **wave Messenger** (cohort lockstep, `MAX_ROUNDS=200`, `stalled`/`ResumeCombat`) + real per-round turn loop + L0 AI + full events | Transitional one-shot league path |
+| **6.1a** | ✅ Implemented: Persisted run state + **wave Messenger** (cohort lockstep, `MAX_ROUNDS=200`, `stalled`/`ResumeCombat`) + real per-round turn loop + L0 AI + full events | Transitional one-shot league path |
 | **6.1b** | L1 targeting via `strategy.target_order`; freeze JSON schema even if UI still defaults | Real “who hits whom” control |
 | **6.1c** | L2 spell conditions; **post-match** replay viewer MVP (no live UI) | [screen 12](../screens/12-combat-battle.md) |
 | **6.1d** | Combat deaths → aging → permanent death → graveyard; durability loss formula | [known-issues](../known-issues.md) #1 remainder |

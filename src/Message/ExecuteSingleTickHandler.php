@@ -104,14 +104,32 @@ class ExecuteSingleTickHandler
         try {
             $this->executeTick($kingdom, $log);
 
-            $log->setStatus('completed');
-            $log->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
-            $log->setErrorMessage(null);
+            $isSimulatingLeagueMatch = false;
+            if (TickType::LeagueMatch === $log->getTickType() && null !== $log->getFixture()) {
+                $battle = $log->getFixture()->getBattle();
+                if (null !== $battle && \App\Enum\BattleStatus::Simulating === $battle->getStatus()) {
+                    $isSimulatingLeagueMatch = true;
+                }
+            }
+
+            if (!$isSimulatingLeagueMatch) {
+                $log->setStatus('completed');
+                $log->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                $log->setErrorMessage(null);
+            } else {
+                $log->setStatus('processing');
+                $log->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                $log->setErrorMessage(null);
+            }
 
             $this->em->flush();
             $this->em->commit();
 
-            $this->logger->info(sprintf('Tick %s completed successfully for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
+            if (!$isSimulatingLeagueMatch) {
+                $this->logger->info(sprintf('Tick %s completed successfully for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
+            } else {
+                $this->logger->info(sprintf('Tick %s initiated asynchronous battle simulation for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
+            }
         } catch (\Throwable $e) {
             $this->em->rollback();
 

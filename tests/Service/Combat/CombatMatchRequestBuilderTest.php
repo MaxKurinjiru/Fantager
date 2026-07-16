@@ -100,7 +100,6 @@ class CombatMatchRequestBuilderTest extends TestCase
     private function setId(object $entity, int $id): void
     {
         $ref = new \ReflectionProperty($entity, 'id');
-        $ref->setAccessible(true);
         $ref->setValue($entity, $id);
     }
 }
