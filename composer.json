@@ -45,9 +45,9 @@
         "php-cs": "vendor/bin/php-cs-fixer check --diff",
         "php-cs-fix": "vendor/bin/php-cs-fixer fix --diff",
         "test": "vendor/bin/phpunit",
-        "kingdom": "php bin/console app:kingdom:initialize \"Main Kingdom\" --test --start-offset-days=-90",
+        "kingdom": "php bin/console app:kingdom:initialize \"Main Kingdom\" --test --start-offset-days=-20",
         "ticks": "php bin/console app:ticks:run",
-        "messenger": "php bin/console messenger:consume async_high async_medium async_low --limit=500000 -vv",
+        "messenger": "php bin/console messenger:consume async_high async_medium async_low --limit=5000 -vv",
         "users": "php bin/console app:user:create-test \"Main Kingdom\" --default",
         "new-kingdom": [
             "@migrate",

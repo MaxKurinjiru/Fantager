@@ -1,0 +1,248 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'battle.report_title'|trans }} - Fantager{% endblock %}
+
+{% block body %}
+<div class="page-shell">
+    <div class="layout-stack --lg">
+        {# Toolbar #}
+        <div class="layout-toolbar">
+            <h1 class="page-title">{{ 'battle.report_title'|trans }}</h1>
+            <a href="{{ path('app_league') }}" class="btn btn-outline">
+                {{ 'battle.return_to_league'|trans }}
+            </a>
+        </div>
+
+        {# Block 1: Match HUD #}
+        <div class="battle-hud-panel">
+            <div class="battle-team battle-team--home">
+                <span class="battle-team__name">{{ battle.teamA.name }}</span>
+            </div>
+            <div class="battle-score-wrapper">
+                <span class="battle-score">{{ battle.scoreA }} : {{ battle.scoreB }}</span>
+                {% if battle.result.value == 'win_a' %}
+                    <span class="battle-badge battle-badge--win">{{ 'battle.winner'|trans }}</span>
+                {% elseif battle.result.value == 'win_b' %}
+                    <span class="battle-badge battle-badge--loss">{{ 'battle.loser'|trans }}</span>
+                {% else %}
+                    <span class="battle-badge battle-badge--draw">{{ 'battle.draw'|trans }}</span>
+                {% endif %}
+            </div>
+            <div class="battle-team battle-team--away">
+                <span class="battle-team__name">{{ battle.teamB.name }}</span>
+            </div>
+        </div>
+
+        {% if battle.runState is not null %}
+            {# Block 2: Formations Grid #}
+            <div class="game-panel">
+                <h2 class="game-panel__title">{{ 'battle.formations_state'|trans }}</h2>
+                <div class="battle-formations-container">
+                    {# Team A Grid #}
+                    <div class="battle-formation-side">
+                        <h3 class="battle-formation-side__title">{{ battle.teamA.name }}</h3>
+                        <div class="battle-grid">
+                            {# Row 1: Back line slots #}
+                            {% for pos in ['back_1', 'back_2', 'back_3'] %}
+                                {{ _self.render_slot(battle.runState.sideA.combatants, pos) }}
+                            {% endfor %}
+                            {# Row 2: Front line slots #}
+                            {% for pos in ['front_1', 'front_2', 'front_3'] %}
+                                {{ _self.render_slot(battle.runState.sideA.combatants, pos) }}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="battle-formations-separator">{{ 'battle.vs'|trans }}</div>
+
+                    {# Team B Grid #}
+                    <div class="battle-formation-side">
+                        <h3 class="battle-formation-side__title">{{ battle.teamB.name }}</h3>
+                        <div class="battle-grid">
+                            {# Row 1: Front line slots #}
+                            {% for pos in ['front_1', 'front_2', 'front_3'] %}
+                                {{ _self.render_slot(battle.runState.sideB.combatants, pos) }}
+                            {% endfor %}
+                            {# Row 2: Back line slots #}
+                            {% for pos in ['back_1', 'back_2', 'back_3'] %}
+                                {{ _self.render_slot(battle.runState.sideB.combatants, pos) }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Block 3: Round-by-Round Log #}
+            <div class="game-panel" data-controller="battle-report">
+                <h2 class="game-panel__title">{{ 'battle.round_log'|trans }}</h2>
+                <div class="battle-rounds-accordion">
+                    {% set is_round_open = false %}
+                    {% for event in battle.combatLog.events %}
+                        {% if event.type == 'round_start' %}
+                            {% if is_round_open %}
+                                </div></div>
+                            {% endif %}
+                            {% set is_round_open = true %}
+                            <div class="battle-round-card">
+                                <button class="battle-round-header" data-action="click->battle-report#toggleRound">
+                                    <span class="battle-round-title">{{ 'battle.round'|trans({'%round%': event.round}) }}</span>
+                                    <span class="battle-round-toggle-icon">▼</span>
+                                </button>
+                                <div class="battle-round-content hidden">
+                        {% elseif event.type == 'match_start' or event.type == 'match_end' %}
+                            {# ignore #}
+                        {% else %}
+                            {{ _self.render_event(event, battle.combatLog.lineup) }}
+                        {% endif %}
+                    {% endfor %}
+                    {% if is_round_open %}
+                        </div></div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            {# Forfeit View #}
+            <div class="game-panel">
+                <div class="forfeit-message">
+                    <p class="copy-secondary">{{ 'league.forfeit_desc'|trans }}</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{# Macro to render individual slot in the formation grid #}
+{% macro render_slot(combatants, position_name) %}
+    {% set combatant = null %}
+    {% for c in combatants %}
+        {% if c.slot == position_name %}
+            {% set combatant = c %}
+        {% endif %}
+    {% endfor %}
+
+    {% if combatant is not null %}
+        {% set is_ko = combatant.currentHp <= 0 %}
+        {% set max_hp = combatant.derived.maxHp %}
+        {% set current_hp = combatant.currentHp %}
+        {% set hp_pct = max_hp > 0 ? (current_hp / max_hp * 100)|round : 0 %}
+        
+        <div class="combatant-slot {{ is_ko ? 'combatant-slot--ko' : 'combatant-slot--alive' }}">
+            <div class="combatant-avatar">{{ combatant.name|slice(0, 2)|upper }}</div>
+            <div class="combatant-info">
+                <span class="combatant-name">{{ combatant.name }}</span>
+                <span class="combatant-details">{{ ('race.' ~ combatant.race)|trans }} · {{ 'heroes.level'|trans }} {{ combatant.level }}</span>
+                
+                <div class="hp-bar" style="--hp-pct: {{ hp_pct }}%;">
+                    <div class="hp-bar__fill"></div>
+                    <span class="hp-bar__text">{{ current_hp }} / {{ max_hp }}</span>
+                </div>
+                
+                {% if combatant.statusEffects|length > 0 %}
+                    <div class="combatant-effects">
+                        {% for eff in combatant.statusEffects %}
+                            <span class="status-chip status-chip--purple" title="{{ eff.effect }}">{{ eff.effect|slice(0, 3)|upper }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="combatant-slot combatant-slot--empty">
+            <span class="copy-muted">-</span>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# Macro to render event logs #}
+{% macro render_event(event, lineup) %}
+    <div class="battle-event-row battle-event-row--{{ event.type }}">
+        {% if event.type == 'physical_attack' or event.type == 'attack' %}
+            {% set attacker_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+            {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text">
+                {{ 'battle.physical_attack'|trans({'%attacker%': attacker_name, '%target%': target_name}) }}
+            </span>
+        {% elseif event.type == 'hit' %}
+            <span class="battle-event-badge battle-event-badge--hit">{{ 'battle.hit'|trans }}</span>
+        {% elseif event.type == 'miss' %}
+            <span class="battle-event-badge battle-event-badge--miss">{{ 'battle.miss'|trans }}</span>
+        {% elseif event.type == 'crit' %}
+            <span class="battle-event-badge battle-event-badge--crit">{{ 'battle.crit'|trans }}</span>
+        {% elseif event.type == 'damage' %}
+            {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text">
+                {{ 'battle.damage_dealt'|trans({
+                    '%target%': target_name,
+                    '%amount%': event.amount,
+                    '%source%': event.source|trans,
+                    '%hp%': event.hp_after
+                }) }}
+            </span>
+        {% elseif event.type == 'ko' %}
+            {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-badge battle-event-badge--ko">
+                {{ 'battle.ko'|trans({'%hero%': hero_name}) }}
+            </span>
+        {% elseif event.type == 'spell_cast' %}
+            {% set caster_name = (event.caster_side is defined and event.caster_slot is defined and lineup[event.caster_side] is defined and lineup[event.caster_side][event.caster_slot] is defined) ? lineup[event.caster_side][event.caster_slot].name : 'battle.unknown_actor'|trans %}
+            {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text">
+                {{ 'battle.spell_cast'|trans({
+                    '%caster%': caster_name,
+                    '%spell%': event.spell_name,
+                    '%target%': target_name
+                }) }}
+            </span>
+        {% elseif event.type == 'heal_applied' %}
+            {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text">
+                {{ 'battle.heal_applied'|trans({
+                    '%target%': target_name,
+                    '%amount%': event.amount,
+                    '%hp%': event.hp_after
+                }) }}
+            </span>
+        {% elseif event.type == 'heal_blocked' %}
+            {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text text-danger">
+                {{ 'battle.heal_blocked'|trans({
+                    '%target%': target_name,
+                    '%reason%': event.reason|trans
+                }) }}
+            </span>
+        {% elseif event.type == 'status_applied' %}
+            {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text">
+                {{ 'battle.status_applied'|trans({
+                    '%target%': target_name,
+                    '%effect%': event.effect|trans,
+                    '%duration%': event.duration
+                }) }}
+            </span>
+        {% elseif event.type == 'status_tick' %}
+            {% set target_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text font-italic">
+                {{ 'battle.status_tick'|trans({
+                    '%target%': target_name,
+                    '%effect%': event.effect|trans,
+                    '%amount%': event.amount,
+                    '%hp%': event.hp_after
+                }) }}
+            </span>
+        {% elseif event.type == 'status_expired' %}
+            {% set target_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text text-muted">
+                {{ 'battle.status_expired'|trans({
+                    '%target%': target_name,
+                    '%effect%': event.effect|trans
+                }) }}
+            </span>
+        {% elseif event.type == 'skip_turn' %}
+            {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text text-warning">
+                {{ 'battle.skip_turn'|trans({'%hero%': hero_name}) }}
+            </span>
+        {% endif %}
+    </div>
+{% endmacro %}

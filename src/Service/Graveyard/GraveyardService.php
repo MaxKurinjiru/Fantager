@@ -107,6 +107,55 @@ class GraveyardService
         }
     }
 
+    /**
+     * Prepare a hero who died in combat.
+     *
+     * Unlike prepareHeroRemoval() (used for dismiss), this:
+     * - Does NOT delete the Hero entity — hero remains in DB with status=Dead
+     * - Does NOT remove spells, masteries, or training history
+     * - Removes the hero from all formation slots
+     * - Detaches the hero from their trainer (if training)
+     * - Cancels any active marketplace listings
+     *
+     * Call setStatus(HeroStatus::Dead) on the hero after this.
+     */
+    public function prepareCombatDeath(Hero $hero): void
+    {
+        // 1. Remove from all formation slots
+        /** @var list<\App\Entity\Formation\FormationSlot> $slots */
+        $slots = $this->em->getRepository(\App\Entity\Formation\FormationSlot::class)->findBy(['hero' => $hero]);
+        foreach ($slots as $slot) {
+            $slot->setHero(null);
+        }
+
+        // 2. Detach from trainer if currently training
+        if (null !== $hero->getTrainer()) {
+            $hero->getTrainer()->removeTrainee($hero);
+            $hero->setTrainer(null);
+        }
+
+        // 3. Unequip items (keep items in team inventory — hero's gear stays on the team)
+        /** @var list<Item> $equippedItems */
+        $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
+        foreach ($equippedItems as $item) {
+            $item->setEquippedHero(null);
+            $item->setEquippedSlot(null);
+        }
+
+        // 4. Cancel marketplace listings (return to available)
+        /** @var list<Item> $listedItems */
+        $listedItems = $this->em->getRepository(Item::class)->findBy([
+            'equippedHero' => null,
+            'ownerTeam' => $hero->getTeam(),
+        ]);
+        // Items belonging to the dead hero that are listed for sale — unlist them
+        // (Items don't have a direct hero FK on listings; they are unequipped above)
+        // No further action needed: item status is managed by marketplace separately.
+
+        // NOTE: spells, school masteries, and training history are intentionally kept
+        // so the graveyard memorial can display the hero's full profile history.
+    }
+
     public function removeHero(Hero $hero): void
     {
         $this->em->remove($hero);

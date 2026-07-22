@@ -199,6 +199,16 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 
 ---
 
+## Combat & Battles
+
+| Method | Path | Controller | Purpose |
+|--------|------|-----------|---------|
+| GET | `/app/battles/{id}` | Web\BattleController | Match Report page showing final formations and round-by-round logs |
+| GET | `/api/v1/battles/{id}` | Api\V1\BattleController | Battle result metadata (scores, teams, status, result) |
+| GET | `/api/v1/battles/{id}/log` | Api\V1\BattleController | Detailed combat log (JSON) |
+
+---
+
 ## Economy & Marketplace
 
 Player-facing economy is split across **two Web screens** (sidebar links):

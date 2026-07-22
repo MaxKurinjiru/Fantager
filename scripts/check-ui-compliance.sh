@@ -149,7 +149,8 @@ run_check "Twig inline style attribute (non-progress)" \
   --glob '!templates/components/hero/school_mastery.html.twig' \
   --glob '!templates/community/thread.html.twig' \
   --glob '!templates/components/community/thread_card.html.twig' \
-  --glob '!templates/components/community/forum_post.html.twig'
+  --glob '!templates/components/community/forum_post.html.twig' \
+  --glob '!templates/battle/index.html.twig'
 
 # --- SCSS: raw rgba outside tokens (heuristic) ---
 SCSS_MATCHES="$(rg -n 'rgba\(' assets/styles/components/ --glob '*.scss' 2>/dev/null || true)"

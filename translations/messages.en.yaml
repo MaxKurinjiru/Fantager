@@ -128,6 +128,8 @@ error:
   hero_not_found: Hero not found.
   trainer_not_found: Trainer not found.
   spell_not_found: Spell not found.
+  battle_not_found: Battle not found.
+  unauthorized_battle_view: You are not authorized to view this battle.
   hero_spell_not_found: Hero spell not found.
   item_not_found: Item not found.
   formation_not_found: Formation not found.
@@ -1349,6 +1351,7 @@ league:
   formation_status_default: Default formation
   formation_status_saved: 'Saved: %name%'
   formation_status_custom: Custom for match
+  forfeit_desc: "This match ended as a forfeit. One or both teams did not have at least 6 combat-ready heroes available, so no combat simulation took place."
 
 calendar:
   title: Calendar & Events
@@ -1795,6 +1798,35 @@ weapon_style:
   light_armor: Light Armor
   medium_armor: Medium Armor
   heavy_armor: Heavy Armor
+
+battle:
+  report_title: Match Report
+  vs: VS
+  round: "Round %round%"
+  winner: Winner
+  draw: Draw
+  loser: Loser
+  final_scores: Final Scores
+  formations_state: Final Formations State
+  round_log: Round-by-Round Log
+  physical_attack: "%attacker% performs physical attack on %target%"
+  hit: "Hit!"
+  miss: "Miss!"
+  crit: "Critical Hit!"
+  damage_dealt: "%target% takes %amount% %source% damage (%hp% HP left)"
+  ko: "%hero% has been knocked out (KO)!"
+  spell_cast: "%caster% casts %spell% on %target%"
+  heal_applied: "%target% is healed for %amount% HP (%hp% HP left)"
+  heal_blocked: "%target%'s healing was blocked (%reason%)"
+  status_applied: "%target% is affected by %effect% (%duration% turns remaining)"
+  status_tick: "%effect% tick deals %amount% damage to %target% (%hp% HP left)"
+  status_expired: "%effect% on %target% has expired"
+  skip_turn: "%hero% skips turn due to freeze or stun"
+  no_team: No Team
+  unknown_actor: Unknown
+  return_to_league: Return to League
+  error_not_found: Battle not found.
+  error_unauthorized: You are not authorized to view this battle.
 
 
 

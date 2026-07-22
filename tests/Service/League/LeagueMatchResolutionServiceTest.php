@@ -29,6 +29,7 @@ use App\Service\Combat\CombatMatchRequestBuilder;
 use App\Service\Combat\CombatSeedGenerator;
 use App\Service\Combat\CombatEngine;
 use Symfony\Component\Messenger\MessageBusInterface;
+use App\Service\Config\RaceConfig;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
@@ -55,7 +56,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
     private $formationRepository;
     /** @var \PHPUnit\Framework\MockObject\MockObject&CombatMatchRequestBuilder */
     private $requestBuilder;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&CombatSeedGenerator */
+    /** @var CombatSeedGenerator */
     private $seedGenerator;
     /** @var \PHPUnit\Framework\MockObject\MockObject&CombatEngine */
     private $combatEngine;
@@ -96,6 +97,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->seedGenerator,
             $this->combatEngine,
             $this->messageBus,
+            $this->createMock(\App\Service\Graveyard\GraveyardService::class),
+            $this->createMock(RaceConfig::class),
         );
     }
 
@@ -289,6 +292,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->seedGenerator,
             $this->combatEngine,
             $this->messageBus,
+            $this->createMock(\App\Service\Graveyard\GraveyardService::class),
+            $this->createMock(RaceConfig::class),
         );
         $partial->expects($this->once())
             ->method('resolveFixture')
@@ -341,7 +346,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
     }
 
     /**
-     * @return array<int, \App\ValueObject\Combat\CombatantSnapshot>
+     * @return list<\App\ValueObject\Combat\CombatantSnapshot>
      */
     private function buildCombatants(int $heroIdBase): array
     {

@@ -293,7 +293,13 @@
 
                                             <div class="fixture-row__score">
                                                 {% if f.status.value == 'completed' and f.battle %}
-                                                    {{ f.battle.scoreA }}-{{ f.battle.scoreB }}
+                                                    {% if f.homeTeam.id == team.id or f.awayTeam.id == team.id %}
+                                                        <a href="{{ path('app_battle_report', {id: f.battle.id}) }}" class="fixture-row__score-link">
+                                                            {{ f.battle.scoreA }}-{{ f.battle.scoreB }}
+                                                        </a>
+                                                    {% else %}
+                                                        {{ f.battle.scoreA }}-{{ f.battle.scoreB }}
+                                                    {% endif %}
                                                 {% else %}
                                                     VS
                                                 {% endif %}
@@ -347,7 +353,13 @@
 
                                             <span class="fixture-card__score">
                                                 {% if is_completed and f.battle %}
-                                                    {{ f.battle.scoreA }} — {{ f.battle.scoreB }}
+                                                    {% if f.homeTeam.id == team.id or f.awayTeam.id == team.id %}
+                                                        <a href="{{ path('app_battle_report', {id: f.battle.id}) }}" class="fixture-card__score-link">
+                                                            {{ f.battle.scoreA }} — {{ f.battle.scoreB }}
+                                                        </a>
+                                                    {% else %}
+                                                        {{ f.battle.scoreA }} — {{ f.battle.scoreB }}
+                                                    {% endif %}
                                                 {% else %}
                                                     VS
                                                 {% endif %}

@@ -128,6 +128,8 @@ error:
   hero_not_found: Hrdina nenalezen.
   trainer_not_found: Trenér nenalezen.
   spell_not_found: Kouzlo nenalezeno.
+  battle_not_found: Zápas nebyl nalezen.
+  unauthorized_battle_view: Nemáte oprávnění k prohlížení tohoto zápasu.
   hero_spell_not_found: Kouzlo hrdiny nenalezeno.
   item_not_found: Předmět nenalezen.
   formation_not_found: Formace nenalezena.
@@ -1348,6 +1350,7 @@ league:
   formation_status_default: Výchozí formace
   formation_status_saved: 'Uložená: %name%'
   formation_status_custom: Vlastní pro zápas
+  forfeit_desc: "Tento zápas skončil kontumací (forfeit). Jeden nebo oba týmy neměly k dispozici minimálně 6 živých a bojeschopných hrdinů, a proto k simulaci boje nedošlo."
 
 calendar:
   title: Kalendář a události
@@ -1794,6 +1797,35 @@ weapon_style:
   light_armor: Lehká zbroj
   medium_armor: Střední zbroj
   heavy_armor: Těžká zbroj
+
+battle:
+  report_title: Zpráva ze zápasu
+  vs: VS
+  round: "Kolo %round%"
+  winner: Vítěz
+  draw: Remíza
+  loser: Poražený
+  final_scores: Konečné skóre
+  formations_state: Konečný stav formací
+  round_log: Průběh zápasu (kolo po kole)
+  physical_attack: "%attacker% provádí fyzický útok na %target%"
+  hit: "Zásah!"
+  miss: "Minutí!"
+  crit: "Kritický zásah!"
+  damage_dealt: "%target% utrpěl %amount% %source% poškození (zbývá %hp% HP)"
+  ko: "%hero% byl vyřazen z boje (KO)!"
+  spell_cast: "%caster% sesílá kouzlo %spell% na %target%"
+  heal_applied: "%target% je vyléčen o %amount% HP (nyní %hp% HP)"
+  heal_blocked: "Léčení cíle %target% bylo zablokováno (%reason%)"
+  status_applied: "%target% je pod vlivem efektu %effect% (zbývá %duration% kol)"
+  status_tick: "Efekt %effect% způsobil %amount% poškození cíli %target% (zbývá %hp% HP)"
+  status_expired: "Efekt %effect% na cíl %target% vypršel"
+  skip_turn: "%hero% vynechává tah kvůli zmrazení nebo omráčení"
+  no_team: Bez týmu
+  unknown_actor: Neznámý
+  return_to_league: Zpět do ligy
+  error_not_found: Zápas nebyl nalezen.
+  error_unauthorized: Nemáte oprávnění k prohlížení tohoto zápasu.
 
 
 

@@ -1,0 +1,266 @@
+@reference "tailwindcss";
+
+// =============================================================================
+//  BATTLE REPORT — Match HUD, Formations Grid, and Round Log
+// =============================================================================
+
+@layer components {
+  .battle-hud-panel {
+    @apply flex items-center justify-between p-6 rounded-xl text-center;
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .battle-team {
+    @apply flex-1 font-semibold text-lg;
+    color: var(--color-text-primary);
+  }
+
+  .battle-team--home {
+    @apply text-right pr-4;
+  }
+
+  .battle-team--away {
+    @apply text-left pl-4;
+  }
+
+  .battle-team__name {
+    @apply text-xl font-bold;
+  }
+
+  .battle-score-wrapper {
+    @apply flex flex-col items-center gap-1 px-6;
+  }
+
+  .battle-score {
+    @apply text-4xl font-extrabold tracking-wider;
+    color: var(--color-brand-400);
+    text-shadow: 0 0 10px rgba(52, 211, 153, 0.2);
+  }
+
+  .battle-badge {
+    @apply px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider;
+  }
+
+  .battle-badge--win {
+    background-color: var(--color-success-bg);
+    border: 1px solid var(--color-success-border);
+    color: var(--color-success-text);
+  }
+
+  .battle-badge--loss {
+    background-color: var(--color-error-bg);
+    border: 1px solid var(--color-error-border);
+    color: var(--color-error-text);
+  }
+
+  .battle-badge--draw {
+    background-color: var(--color-warning-bg);
+    border: 1px solid var(--color-warning-border);
+    color: var(--color-warning-text);
+  }
+
+  .battle-formations-container {
+    @apply grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] items-center gap-6 p-4;
+  }
+
+  .battle-formation-side {
+    @apply flex flex-col gap-4;
+  }
+
+  .battle-formation-side__title {
+    @apply text-center text-sm font-semibold uppercase tracking-wider;
+    color: var(--color-text-secondary);
+  }
+
+  .battle-grid {
+    @apply grid grid-cols-3 gap-3;
+  }
+
+  .battle-formations-separator {
+    @apply text-center font-extrabold text-xl opacity-30 select-none hidden lg:block;
+    color: var(--color-text-muted);
+  }
+
+  // --- Combatant Slot ---
+  .combatant-slot {
+    @apply p-3 rounded-lg flex flex-col gap-2 transition-all duration-150 relative overflow-hidden;
+    background-color: var(--color-surface-base);
+    border: 1px solid var(--color-border);
+  }
+
+  .combatant-slot--alive {
+    &:hover {
+      border-color: var(--color-border-strong);
+    }
+  }
+
+  .combatant-slot--ko {
+    @apply opacity-40;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-style: dashed;
+
+    .combatant-avatar {
+      background-color: var(--color-error-bg);
+      color: var(--color-error-text);
+      text-decoration: line-through;
+    }
+  }
+
+  .combatant-slot--empty {
+    @apply flex items-center justify-center min-h-[90px];
+    background-color: rgba(255, 255, 255, 0.01);
+    border: 1px dashed var(--color-border);
+  }
+
+  .combatant-avatar {
+    @apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mx-auto;
+    background-color: var(--color-surface-raised);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-strong);
+  }
+
+  .combatant-info {
+    @apply flex flex-col text-center gap-1;
+  }
+
+  .combatant-name {
+    @apply font-bold text-xs truncate;
+    color: var(--color-text-primary);
+  }
+
+  .combatant-details {
+    @apply text-[10px];
+    color: var(--color-text-muted);
+  }
+
+  // --- HP Bar ---
+  .hp-bar {
+    @apply w-full h-4 rounded bg-black/40 relative overflow-hidden flex items-center justify-center mt-1;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .hp-bar__fill {
+    @apply absolute top-0 left-0 bottom-0 transition-all duration-300;
+    width: var(--hp-pct, 0%);
+    background: linear-gradient(to right, #047857, #10b981);
+    
+    .combatant-slot--ko & {
+      background: none;
+    }
+  }
+
+  .hp-bar__text {
+    @apply text-[9px] font-bold z-10 select-none;
+    color: var(--color-white);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
+  }
+
+  .combatant-effects {
+    @apply flex items-center justify-center gap-1 mt-1 flex-wrap;
+  }
+
+  // --- Accordion Log ---
+  .battle-rounds-accordion {
+    @apply flex flex-col gap-2;
+  }
+
+  .battle-round-card {
+    @apply rounded-lg overflow-hidden border;
+    background-color: var(--color-surface-base);
+    border-color: var(--color-border);
+  }
+
+  .battle-round-header {
+    @apply w-full px-4 py-3 flex items-center justify-between font-bold text-left cursor-pointer transition-all duration-150;
+    background-color: var(--color-surface-raised);
+    color: var(--color-text-primary);
+
+    &:hover {
+      background-color: var(--color-surface-overlay);
+    }
+  }
+
+  .battle-round-title {
+    @apply text-sm tracking-wide;
+  }
+
+  .battle-round-toggle-icon {
+    @apply text-xs opacity-60;
+  }
+
+  .battle-round-content {
+    @apply p-4 flex flex-col gap-2 border-t;
+    border-color: var(--color-border);
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+
+  // --- Event Rows ---
+  .battle-event-row {
+    @apply px-3 py-2 rounded text-xs leading-relaxed border-l-4 flex items-center justify-between gap-4;
+    background-color: var(--color-surface-base);
+    border-left-color: var(--color-border);
+  }
+
+  .battle-event-row--attack,
+  .battle-event-row--physical_attack {
+    border-left-color: var(--color-info-border);
+    background-color: color-mix(in srgb, var(--color-info-bg) 15%, transparent);
+  }
+
+  .battle-event-row--spell_cast {
+    border-left-color: var(--color-purple-400);
+    background-color: color-mix(in srgb, var(--color-purple-400) 10%, transparent);
+  }
+
+  .battle-event-row--damage {
+    border-left-color: var(--color-text-secondary);
+  }
+
+  .battle-event-row--heal_applied {
+    border-left-color: var(--color-success-border);
+    background-color: color-mix(in srgb, var(--color-success-bg) 15%, transparent);
+  }
+
+  .battle-event-row--ko {
+    border-left-color: var(--color-error-border);
+    background-color: color-mix(in srgb, var(--color-error-bg) 20%, transparent);
+    @apply font-semibold;
+    color: var(--color-error-text);
+  }
+
+  .battle-event-row--status_applied {
+    border-left-color: var(--color-indigo-400);
+    background-color: color-mix(in srgb, var(--color-indigo-400) 10%, transparent);
+  }
+
+  .battle-event-badge {
+    @apply px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0;
+  }
+
+  .battle-event-badge--hit {
+    background-color: var(--color-success-bg);
+    color: var(--color-success-text);
+  }
+
+  .battle-event-badge--miss {
+    background-color: var(--color-warning-bg);
+    color: var(--color-warning-text);
+  }
+
+  .battle-event-badge--crit {
+    background-color: var(--color-error-bg);
+    color: var(--color-error-text);
+    box-shadow: 0 0 8px rgba(185, 28, 28, 0.4);
+  }
+
+  .battle-event-text {
+    @apply flex-1;
+    color: var(--color-text-primary);
+  }
+
+  .forfeit-message {
+    @apply text-center py-8;
+  }
+}

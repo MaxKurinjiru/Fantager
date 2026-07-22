@@ -6,6 +6,8 @@ namespace App\Service\League;
 
 use App\Entity\Combat\Battle;
 use App\Entity\Formation\Formation;
+use App\Entity\Hero\Hero;
+use App\Entity\Item\Item;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\League\LeagueFixture;
 use App\Entity\League\LeagueGroup;
@@ -13,14 +15,18 @@ use App\Entity\League\LeagueStanding;
 use App\Entity\Team\Team;
 use App\Enum\BattleResult;
 use App\Enum\BattleStatus;
+use App\Enum\HeroStatus;
 use App\Enum\LeagueFixtureStatus;
 use App\Enum\MatchType;
+use App\Enum\MemorialCause;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueStandingRepository;
 use App\Service\Combat\CombatEngine;
 use App\Service\Combat\CombatMatchRequestBuilder;
 use App\Service\Combat\CombatSeedGenerator;
+use App\Service\Config\RaceConfig;
+use App\Service\Graveyard\GraveyardService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Team\FanClubService;
 use App\Service\Team\TeamMoraleReputationService;
@@ -49,6 +55,8 @@ class LeagueMatchResolutionService
         private readonly CombatSeedGenerator $seedGenerator,
         private readonly CombatEngine $combatEngine,
         private readonly MessageBusInterface $messageBus,
+        private readonly GraveyardService $graveyardService,
+        private readonly RaceConfig $raceConfig,
     ) {
     }
 
@@ -352,6 +360,89 @@ class LeagueMatchResolutionService
             $awayFormation,
         );
 
+        // Collect participating heroes
+        $participatingHeroes = [];
+        if (null !== $homeFormation) {
+            foreach ($homeFormation->getSlots() as $slot) {
+                if (null !== $slot->getHero()) {
+                    $participatingHeroes[] = $slot->getHero();
+                }
+            }
+        }
+        if (null !== $awayFormation) {
+            foreach ($awayFormation->getSlots() as $slot) {
+                if (null !== $slot->getHero()) {
+                    $participatingHeroes[] = $slot->getHero();
+                }
+            }
+        }
+
+        $rounds = $battle->getCurrentRound();
+        $combatLog = $battle->getCombatLog();
+        $resultData = $combatLog['result'] ?? [];
+        $killedHeroIds = $resultData['killed_hero_ids'] ?? [];
+        $itemHitCounts = $resultData['item_hit_counts'] ?? [];
+
+        // 7. Durability loss (run before combat deaths so dead heroes' items are still equipped and can be updated)
+        foreach ($participatingHeroes as $hero) {
+            $heroId = $hero->getId();
+            if (null === $heroId) {
+                continue;
+            }
+            $hitsReceived = (int) ($itemHitCounts[(string) $heroId] ?? 0);
+            $loss = (int) (floor($rounds / 10) + floor($hitsReceived / 3));
+            $loss = max(1, min(20, $loss));
+
+            $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
+            foreach ($equippedItems as $item) {
+                $newDurability = max(0, $item->getDurability() - $loss);
+                $item->setDurability($newDurability);
+            }
+        }
+
+        // 8. Process combat deaths and aging
+        if (!empty($killedHeroIds)) {
+            $deathCounts = array_count_values(array_map('intval', $killedHeroIds));
+            foreach ($deathCounts as $heroId => $deathsInMatch) {
+                $hero = $this->em->find(Hero::class, $heroId);
+                if (!$hero instanceof Hero) {
+                    continue;
+                }
+
+                // Escalating age penalty: 1st death = +1 year, 2nd = +2 years, etc.
+                // Sum of 1 to D = D * (D + 1) / 2
+                $yearsToAdd = (int) ($deathsInMatch * ($deathsInMatch + 1) / 2);
+                $hero->setAgeRaw($hero->getAgeRaw() + ($yearsToAdd * 10));
+
+                $isElder = $this->raceConfig->isAtOrAboveMortalityThreshold($hero->getRace(), $hero->getAge());
+                $diedPermanently = false;
+
+                if ($isElder) {
+                    $threshold = $this->raceConfig->getMortalityThreshold($hero->getRace());
+                    $yearsAboveThreshold = $hero->getAge() - $threshold;
+
+                    // Base 5% chance + 4% per year above the mortality threshold
+                    $deathChance = 0.05 + (0.04 * max(0, $yearsAboveThreshold));
+                    $deathChance = min(1.0, $deathChance);
+
+                    // Multiple deaths in one match each trigger a separate mortality check
+                    for ($i = 0; $i < $deathsInMatch; ++$i) {
+                        $roll = random_int(0, 99);
+                        if ($roll < (int) ($deathChance * 100)) {
+                            $diedPermanently = true;
+                            break;
+                        }
+                    }
+                }
+
+                if ($diedPermanently) {
+                    $this->graveyardService->prepareCombatDeath($hero);
+                    $this->graveyardService->recordMemorial($hero, $hero->getTeam(), MemorialCause::CombatDeath);
+                    $hero->setStatus(HeroStatus::Dead);
+                }
+            }
+        }
+
         // 6. Complete fixture status
         $this->fixtureCompletionService->complete($fixture, $battle);
     }
@@ -403,6 +494,7 @@ class LeagueMatchResolutionService
         $battle->setResult($outcome->toBattleResult());
         $battle->setCombatLog($outcome->getCombatLog());
         $battle->setProcessedAt($processedAt);
+        $battle->setScheduledAt($processedAt);
 
         return $battle;
     }

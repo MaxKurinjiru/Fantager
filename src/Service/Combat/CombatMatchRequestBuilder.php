@@ -97,6 +97,7 @@ class CombatMatchRequestBuilder
                 'type' => $spell->getType()->value,
                 'mana_cost' => $spell->getManaCost(),
                 'cooldown' => $spell->getCooldown(),
+                'effects' => $spell->getEffects(),
             ];
         }
 

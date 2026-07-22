@@ -41,7 +41,7 @@ Quick reference: which files implement each game screen.
 | [09-summoning-chamber.md](screens/09-summoning-chamber.md) | `/app/summon`, `/app/summon/history` | `Web\SummoningController` | `Api\V1\SummoningController` | `templates/summoning/` | `summoning` |
 | [10-item-equipment.md](screens/10-item-equipment.md) | `/app/inventory` | `Web\ItemController` | `Api\V1\ItemController` | `templates/item/` | `equipment` |
 | [11-spell-management.md](screens/11-spell-management.md) | `/app/spells` | `Web\SpellController` | `Api\V1\SpellController` | `templates/spell/` | `spellbook` |
-| [12-combat-battle.md](screens/12-combat-battle.md) | — | — *(not implemented)* | — *(planned)* | — | — |
+| [12-combat-battle.md](screens/12-combat-battle.md) | `/app/battles/{id}` | `Web\BattleController` | `Api\V1\BattleController` | `templates/battle/` | `battle_report` |
 | [13-league.md](screens/13-league.md) | `/app/league` | `Web\LeagueController` | — (fixtures/standings server-rendered) | `templates/league/`, `templates/components/league/` | `formation` (match prep) |
 | [14-calendar.md](screens/14-calendar.md) | `/app/calendar` | `Web\CalendarController` | `Api\V1\CalendarController` | `templates/calendar/` | `calendar` |
 | [15-marketplace.md](screens/15-marketplace.md) | `/app/marketplace` | `Web\MarketplaceController` | `Api\V1\MarketplaceController` | `templates/marketplace/` | `marketplace` |
@@ -102,7 +102,6 @@ Quick reference: which files implement each game screen.
 
 | Screen / feature | Status |
 |------------------|--------|
-| Combat replay ([12-combat-battle.md](screens/12-combat-battle.md)) | Blocked — [known-issues.md](known-issues.md) #1 |
 | Public wiki (`/wiki`) | Planned — [route-map.md](route-map.md) |
 | Alliances (Milestone 7) | Not started — [roadmap.md](roadmap.md) |
 | Dungeons, quests, crafting | Deferred — [future/](future/) |

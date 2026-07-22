@@ -76,11 +76,11 @@ class KingdomTickRunnerService
     }
 
     /**
-     * Recovers stale ticks for the kingdom (e.g. processing or dispatched for more than 30 seconds).
+     * Recovers stale ticks for the kingdom (e.g. processing or dispatched for more than 5 minutes).
      */
     public function recoverStaleTicks(Kingdom $kingdom): int
     {
-        $threshold = new \DateTimeImmutable('-30 seconds', new \DateTimeZone('UTC'));
+        $threshold = new \DateTimeImmutable('-5 minutes', new \DateTimeZone('UTC'));
 
         return $this->tickLogRepository->recoverStaleTicks($kingdom, $threshold);
     }

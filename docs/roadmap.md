@@ -162,20 +162,20 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Design Prerequisites (Phase 0)**: Locked in [combat-system.md](systems/combat-system.md#simulation-contract) — VOs, event-stream `combat_log`, seed, **wave Messenger orchestration** (cohort lockstep, `MAX_ROUNDS=200`, no wave timeout, `stalled` isolation, no live UI), L0→L2 AI. NPC teams use the same combat path.
 - **Service/Business Logic** (phased — see combat-system § Implementation phases):
   - **6.1a-0** — ✅ Contract VO + thin one-shot `CombatEngine` / `LeagueMatchSimulator` (placeholder scores + envelope).
-  - **6.1a** — Persisted run state; `CombatWave` / `ProcessCombatRound` / `CompleteBattle`; barrier without timeout; `stalled` + `ResumeCombat`; real per-round turn loop + L0; replace one-shot league binding.
-  - **6.1b** — L1 targeting (`strategy.target_order`); freeze slot JSON schema ([formation-system.md](systems/formation-system.md#strategy-json-schema-phased)).
-  - **6.1c** — L2 spell conditions; **post-match** replay viewer MVP (not live).
-  - **6.1d** — Combat deaths → aging → graveyard; item durability loss after battle.
-  - Status effects per tick (speed order); post-match XP / form / fatigue / morale on completion (aging in 6.1d).
+  - **6.1a** — ✅ Persisted run state; `CombatWave` / `ProcessCombatRound` / `CompleteBattle`; barrier without timeout; `stalled` + `ResumeCombat`; real per-round turn loop + L0; replace one-shot league binding.
+  - **6.1b** — ✅ L1 targeting (`strategy.target_order`); freeze slot JSON schema ([formation-system.md](systems/formation-system.md#strategy-json-schema-phased)).
+  - **6.1c** — ✅ L2 spell conditions; **post-match** replay viewer MVP (not live).
+  - **6.1d** — ✅ Combat deaths → aging → graveyard; item durability loss after battle.
+  - ✅ Status effects per tick (speed order); post-match XP / form / fatigue / morale on completion (aging in 6.1d).
 - **API Contracts**:
-  - `POST /api/v1/combat/simulate` — Practice/sandbox match (requires 6 combat-ready heroes per team); optional `seed`.
-  - `GET /api/v1/battles/{id}` / `GET /api/v1/battles/{id}/log` — Result + replay log after completion.
+  - `POST /api/v1/combat/simulate` — Practice/sandbox match (requires 6 combat-ready heroes per team); optional `seed` (planned).
+  - `GET /api/v1/battles/{id}` / `GET /api/v1/battles/{id}/log` — ✅ Result + replay log after completion.
 - **Frontend Views**:
-  - **[NEW]** Combat Replay Viewer UI (post-match only): Reads event-stream `combat_log`. Playback: play/pause, speed, skip to end. No in-progress / live match UI in this milestone.
+  - **[NEW]** ✅ Combat Replay Viewer UI (post-match only): Reads event-stream `combat_log`. Static match report showing final states and accordion round-by-round log.
 - **Verification**:
-  - Unit tests for combat math, seed + RNG-state reproducibility across wave messages, barrier ignoring `stalled`, hard stop at round 200.
-  - Forfeit: <6 combat-ready → 3–0 / 0–0 without enqueueing waves.
-- **Status**: 🔄 In progress — 6.1a fully implemented; 6.1b-d pending.
+  - ✅ Unit tests for combat math, seed + RNG-state reproducibility across wave messages, barrier ignoring `stalled`, hard stop at round 200.
+  - ✅ Forfeit: <6 combat-ready → 3–0 / 0–0 without enqueueing waves.
+- **Status**: ✅ Complete — 6.1a-d fully implemented.
 
 ### Step 6.2: Calendar & Server Ticks System
 - **Database & Entities**: `KingdomTickLog` (implemented).
@@ -300,8 +300,8 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 6 (Combat & Leagues)** | ✅ | ✅ | 🔄 | 🔄 | *In Progress* — Database schema, wave handlers, and deterministic engine loop complete ✅; replay UI and API endpoints pending ⏳ |
+| **Milestone 6 (Combat & Leagues)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 7 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | *Not Started* |
 | **Milestone 8 (Endgame & Crafting)** | ⏳ | 🔄 | ⏳ | 🔄 | *Partially Complete* (arena revenue done; dungeons/crafting/quests deferred) |
 
-*Last updated: July 16, 2026 — Docs synced with completed 6.1a combat wave orchestration and deterministic engine*
+*Last updated: July 16, 2026 — Docs synced with completed Milestone 6 combat simulation, targeting strategy, spelly, and match report UI*
