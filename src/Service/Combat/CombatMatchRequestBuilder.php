@@ -8,7 +8,9 @@ use App\Entity\Formation\Formation;
 use App\Entity\Formation\FormationSlot;
 use App\Entity\Hero\Hero;
 use App\Enum\FormationPosition;
+use App\Enum\ItemSubType;
 use App\Enum\MatchType;
+use App\Repository\Item\ItemRepository;
 use App\ValueObject\Combat\CombatantSnapshot;
 use App\ValueObject\Combat\CombatMatchRequest;
 use App\ValueObject\Combat\CombatSide;
@@ -20,6 +22,7 @@ class CombatMatchRequestBuilder
 {
     public function __construct(
         private readonly CombatStatCalculator $combatStatCalculator,
+        private readonly ItemRepository $itemRepository,
     ) {
     }
 
@@ -98,11 +101,35 @@ class CombatMatchRequestBuilder
                 'mana_cost' => $spell->getManaCost(),
                 'cooldown' => $spell->getCooldown(),
                 'effects' => $spell->getEffects(),
+                'tier' => $spell->getTier(),
+                'requires_magical_weapon' => $spell->requiresMagicalWeapon(),
             ];
         }
 
         /** @var list<mixed> $spellPriorities */
         $spellPriorities = $slot->getSpellPriorities();
+
+        $equippedItems = $this->itemRepository->findBy(['equippedHero' => $hero]);
+        $weaponSubType = null;
+        foreach ($equippedItems as $item) {
+            $subType = $item->getSubType();
+            if (in_array($subType, [
+                ItemSubType::OneHandedSword,
+                ItemSubType::TwoHandedSword,
+                ItemSubType::OneHandedAxe,
+                ItemSubType::TwoHandedAxe,
+                ItemSubType::OneHandedMace,
+                ItemSubType::TwoHandedMace,
+                ItemSubType::Dagger,
+                ItemSubType::Bow,
+                ItemSubType::Crossbow,
+                ItemSubType::Wand,
+                ItemSubType::Staff,
+            ], true)) {
+                $weaponSubType = $subType;
+                break;
+            }
+        }
 
         return new CombatantSnapshot(
             $heroId,
@@ -117,6 +144,7 @@ class CombatMatchRequestBuilder
             $slot->getStrategy(),
             $spellPriorities,
             $spells,
+            $weaponSubType,
         );
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ValueObject\Combat;
 
 use App\Enum\FormationPosition;
+use App\Enum\ItemSubType;
 use App\Enum\Race;
 
 /**
@@ -30,6 +31,7 @@ final class CombatantSnapshot
         private array $strategy = [],
         private array $spellPriorities = [],
         private array $spells = [],
+        private ?ItemSubType $weaponSubType = null,
     ) {
     }
 
@@ -96,5 +98,10 @@ final class CombatantSnapshot
     public function getSpells(): array
     {
         return $this->spells;
+    }
+
+    public function getWeaponSubType(): ?ItemSubType
+    {
+        return $this->weaponSubType;
     }
 }

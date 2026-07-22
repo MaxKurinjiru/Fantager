@@ -6,6 +6,7 @@ namespace App\Tests\Service\Combat;
 
 use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
+use App\Enum\ItemSubType;
 use App\Enum\MatchType;
 use App\Enum\Race;
 use App\Service\Combat\CombatEngine;
@@ -92,6 +93,130 @@ class CombatEngineTest extends TestCase
         }
 
         return new CombatSide($teamId, $teamId + 1000, $approach, $combatants);
+    }
+
+    public function testActionPlanningAndExecutionWithWeaponDrawAndSpellCastingAndStunAndFumble(): void
+    {
+        $engine = new CombatEngine();
+
+        // 1. Bow Draw Time (Duration = 2)
+        $sideA = $this->buildSideWithWeapon(1, 100, ItemSubType::Bow);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced);
+        $request = new CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
+        $runState = $engine->initializeRunState($request);
+
+        // Round 1: Plan Bow Attack
+        $eventsRound1 = $engine->simulateRound($runState, 1);
+        $planEvent = $this->findEventByType($eventsRound1, 'plan_action');
+        $this->assertNotNull($planEvent);
+        $this->assertSame('attack', $planEvent['action_type']);
+        $this->assertSame('bow', $planEvent['weapon_type']);
+        $this->assertSame(2, $planEvent['duration']);
+
+        // Round 2: Prepare/Draw Bow
+        $eventsRound2 = $engine->simulateRound($runState, 2);
+        $tickEvent = $this->findEventByType($eventsRound2, 'preparing_action_tick');
+        $this->assertNotNull($tickEvent);
+        $this->assertSame('attack', $tickEvent['action_type']);
+        $this->assertSame(1, $tickEvent['rounds_remaining']);
+
+        // Round 3: Execute Bow Attack
+        $eventsRound3 = $engine->simulateRound($runState, 3);
+        $attackEvent = $this->findEventByType($eventsRound3, 'attack');
+        $this->assertNotNull($attackEvent);
+
+        // 2. Crossbow Draw Time (Duration = 3)
+        $sideA = $this->buildSideWithWeapon(1, 100, ItemSubType::Crossbow);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced);
+        $request = new CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
+        $runState = $engine->initializeRunState($request);
+
+        // Round 1: Plan Crossbow Attack
+        $eventsRound1 = $engine->simulateRound($runState, 1);
+        $planEvent = $this->findEventByType($eventsRound1, 'plan_action');
+        $this->assertNotNull($planEvent);
+        $this->assertSame(3, $planEvent['duration']);
+
+        // Round 2: Prepare 1st tick
+        $eventsRound2 = $engine->simulateRound($runState, 2);
+        $tickEvent1 = $this->findEventByType($eventsRound2, 'preparing_action_tick');
+        $this->assertNotNull($tickEvent1);
+        $this->assertSame(2, $tickEvent1['rounds_remaining']);
+
+        // Round 3: Prepare 2nd tick
+        $eventsRound3 = $engine->simulateRound($runState, 3);
+        $tickEvent2 = $this->findEventByType($eventsRound3, 'preparing_action_tick');
+        $this->assertNotNull($tickEvent2);
+        $this->assertSame(1, $tickEvent2['rounds_remaining']);
+
+        // Round 4: Execute
+        $eventsRound4 = $engine->simulateRound($runState, 4);
+        $attackEvent = $this->findEventByType($eventsRound4, 'attack');
+        $this->assertNotNull($attackEvent);
+
+        // 3. Option B (Fumble): If target is KO'd, the action fumbles
+        $sideA = $this->buildSideWithWeapon(1, 100, ItemSubType::Bow);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced);
+        $request = new CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
+        $runState = $engine->initializeRunState($request);
+
+        // Round 1: Plan Bow Attack on B's Front1
+        $engine->simulateRound($runState, 1);
+        // Manually KO the target (Front1 of side B)
+        foreach ($runState['sideB']['combatants'] as &$c) {
+            if ('front_1' === $c['slot']) {
+                $c['currentHp'] = 0;
+            }
+        }
+        unset($c);
+
+        // Round 2: Preparing tick
+        $engine->simulateRound($runState, 2);
+
+        // Round 3: Execute, target is dead -> Fumble
+        $eventsRound3 = $engine->simulateRound($runState, 3);
+        $fumbleEvent = $this->findEventByType($eventsRound3, 'action_fumble');
+        $this->assertNotNull($fumbleEvent);
+        $this->assertSame('front_1', $fumbleEvent['target_slot']);
+    }
+
+    private function buildSideWithWeapon(int $teamId, int $heroIdBase, ItemSubType $weaponSubType): CombatSide
+    {
+        $combatants = [];
+        foreach (FormationPosition::cases() as $i => $position) {
+            $combatants[] = new CombatantSnapshot(
+                $heroIdBase + $i,
+                'Hero '.($heroIdBase + $i),
+                $position,
+                Race::Human,
+                5,
+                100,
+                0,
+                50,
+                $this->emptyDerived(),
+                [],
+                [],
+                [],
+                $weaponSubType
+            );
+        }
+
+        return new CombatSide($teamId, $teamId + 1000, FormationApproach::Balanced, $combatants);
+    }
+
+    /**
+     * @param array<array<string, mixed>> $events
+     * @return array<string, mixed>|null
+     */
+    private function findEventByType(array $events, string $type): ?array
+    {
+        foreach ($events as $event) {
+            if ($type === ($event['type'] ?? '')) {
+                return $event;
+            }
+        }
+
+        return null;
     }
 
     private function emptyDerived(): DerivedCombatStats

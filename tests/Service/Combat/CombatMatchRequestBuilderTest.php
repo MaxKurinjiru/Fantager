@@ -12,6 +12,7 @@ use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
 use App\Enum\MatchType;
 use App\Enum\Race;
+use App\Repository\Item\ItemRepository;
 use App\Service\Combat\CombatMatchRequestBuilder;
 use App\Service\Combat\CombatStatCalculator;
 use App\ValueObject\Combat\DerivedCombatStats;
@@ -26,8 +27,11 @@ class CombatMatchRequestBuilderTest extends TestCase
         $stats = new DerivedCombatStats(100, 100, 10, 10, 10, 0.1, 10, 0.1, 10, 80.0, 10.0, 5.0);
         $calculator = $this->createMock(CombatStatCalculator::class);
         $calculator->method('calculate')->willReturn($stats);
+        
+        $itemRepository = $this->createMock(ItemRepository::class);
+        $itemRepository->method('findBy')->willReturn([]);
 
-        $builder = new CombatMatchRequestBuilder($calculator);
+        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository);
         $request = $builder->fromFormations(
             $this->createFullFormation(1, 10),
             $this->createFullFormation(2, 20),
@@ -49,7 +53,11 @@ class CombatMatchRequestBuilderTest extends TestCase
         $stats = new DerivedCombatStats(100, 100, 10, 10, 10, 0.1, 10, 0.1, 10, 80.0, 10.0, 5.0);
         $calculator = $this->createMock(CombatStatCalculator::class);
         $calculator->method('calculate')->willReturn($stats);
-        $builder = new CombatMatchRequestBuilder($calculator);
+
+        $itemRepository = $this->createMock(ItemRepository::class);
+        $itemRepository->method('findBy')->willReturn([]);
+
+        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository);
 
         $formationA = $this->createFullFormation(1, 10);
         $formationB = new Formation();

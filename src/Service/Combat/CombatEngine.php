@@ -168,7 +168,7 @@ class CombatEngine
             }
             $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
 
-            // 2. Check for freeze/stun (skip turn)
+            // 2. Check for freeze/stun (skip turn & interrupt)
             $hasSkipTurnEffect = false;
             foreach ($actor['statusEffects'] as $eff) {
                 if ('freeze' === $eff['effect'] || 'stun' === $eff['effect']) {
@@ -177,6 +177,19 @@ class CombatEngine
                 }
             }
             if ($hasSkipTurnEffect) {
+                if (null !== ($actor['queuedAction'] ?? null)) {
+                    $roundEvents[] = [
+                        't' => count($runState['events']) + count($roundEvents),
+                        'type' => 'action_interrupted',
+                        'side' => $actorSide,
+                        'slot' => $actorSlot,
+                        'hero_id' => $actor['heroId'],
+                        'reason' => 'stun_or_freeze',
+                    ];
+                    $actor['queuedAction'] = null;
+                    $actor['preparationRemaining'] = 0;
+                    $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
+                }
                 $roundEvents[] = [
                     't' => count($runState['events']) + count($roundEvents),
                     'type' => 'skip_turn',
@@ -187,7 +200,91 @@ class CombatEngine
                 continue;
             }
 
-            // Target selection — L1 (strategy.target_order) with L0 fallback
+            // Check for silence (interrupts queued spells)
+            $isSilenced = false;
+            foreach ($actor['statusEffects'] as $eff) {
+                if ('silence' === $eff['effect']) {
+                    $isSilenced = true;
+                    break;
+                }
+            }
+            if ($isSilenced && null !== ($actor['queuedAction'] ?? null) && 'spell' === $actor['queuedAction']['type']) {
+                $roundEvents[] = [
+                    't' => count($runState['events']) + count($roundEvents),
+                    'type' => 'action_interrupted',
+                    'side' => $actorSide,
+                    'slot' => $actorSlot,
+                    'hero_id' => $actor['heroId'],
+                    'reason' => 'silence',
+                ];
+                $actor['queuedAction'] = null;
+                $actor['preparationRemaining'] = 0;
+                $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
+            }
+
+            // 3. Process Queued Actions (Execution Phase)
+            if (null !== ($actor['queuedAction'] ?? null)) {
+                --$actor['preparationRemaining'];
+
+                if ($actor['preparationRemaining'] > 0) {
+                    $roundEvents[] = [
+                        't' => count($runState['events']) + count($roundEvents),
+                        'type' => 'preparing_action_tick',
+                        'side' => $actorSide,
+                        'slot' => $actorSlot,
+                        'hero_id' => $actor['heroId'],
+                        'action_type' => $actor['queuedAction']['type'],
+                        'rounds_remaining' => $actor['preparationRemaining'],
+                    ];
+                    $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
+                    continue;
+                }
+
+                $queuedAction = $actor['queuedAction'];
+                $actor['queuedAction'] = null;
+                $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
+
+                $targetSide = $queuedAction['target_side'];
+                $targetSlot = $queuedAction['target_slot'];
+                $target = $this->getCombatant($runState, $targetSide, $targetSlot);
+
+                // Option B: Fumble if target is dead/KO'd!
+                if (null === $target || $target['currentHp'] <= 0) {
+                    $roundEvents[] = [
+                        't' => count($runState['events']) + count($roundEvents),
+                        'type' => 'action_fumble',
+                        'side' => $actorSide,
+                        'slot' => $actorSlot,
+                        'hero_id' => $actor['heroId'],
+                        'target_side' => $targetSide,
+                        'target_slot' => $targetSlot,
+                    ];
+                    continue;
+                }
+
+                if ('spell' === $queuedAction['type']) {
+                    $spell = null;
+                    foreach ($actor['spells'] as $s) {
+                        if ($s['id'] === $queuedAction['spell_id']) {
+                            $spell = $s;
+                            break;
+                        }
+                    }
+
+                    if (null !== $spell) {
+                        $this->executeSpell($runState, $actorSide, $actorSlot, $actor, $targetSlot, $target, $spell, $roundEvents);
+                        $cdKey = (string) $spell['id'];
+                        $actor = $this->getCombatant($runState, $actorSide, $actorSlot);
+                        $actor['cooldowns'][$cdKey] = $spell['cooldown'];
+                        $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
+                    }
+                } else {
+                    $this->executePhysicalAttack($runState, $actorSide, $actorSlot, $actor, $targetSide, $targetSlot, $target, $roundEvents, $rngState);
+                }
+                continue;
+            }
+
+            // 4. Plan New Actions (Planning Phase)
             $approachVal = 'a' === $actorSide ? $runState['sideA']['approach'] : $runState['sideB']['approach'];
             $approach = FormationApproach::from($approachVal);
 
@@ -197,17 +294,8 @@ class CombatEngine
                 continue;
             }
 
-            // 3. Spell priority check (L2 Spells)
             $castSpell = null;
             $spellPriorityTarget = 'enemy';
-
-            $isSilenced = false;
-            foreach ($actor['statusEffects'] as $eff) {
-                if ('silence' === $eff['effect']) {
-                    $isSilenced = true;
-                    break;
-                }
-            }
 
             if (!$isSilenced && !empty($actor['spellPriorities']) && !empty($actor['spells'])) {
                 foreach ($actor['spellPriorities'] as $priority) {
@@ -222,6 +310,15 @@ class CombatEngine
 
                     if (null === $spell) {
                         continue;
+                    }
+
+                    // Magical weapon requirement check
+                    if (!empty($spell['requires_magical_weapon'])) {
+                        $weaponType = $actor['weaponSubType'] ?? null;
+                        $isEnt = isset($actor['race']) && 'ent' === $actor['race'];
+                        if (!$isEnt && 'wand' !== $weaponType && 'staff' !== $weaponType) {
+                            continue;
+                        }
                     }
 
                     $cdKey = (string) $spellId;
@@ -292,181 +389,66 @@ class CombatEngine
                     $spellTargetSlot = $targetSlot;
                 }
 
-                $this->executeSpell($runState, $actorSide, $actorSlot, $actor, $spellTargetSlot, $spellTarget, $castSpell, $roundEvents);
+                $duration = 1 + ($castSpell['tier'] ?? 1);
+                $targetSide = ('lowest_hp_ally' === $spellPriorityTarget || 'self' === $spellPriorityTarget) ? $actorSide : $opposingSideKey;
 
-                // Set cooldown
-                $cdKey = (string) $castSpell['id'];
-                $actor['cooldowns'][$cdKey] = $castSpell['cooldown'];
-                $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
+                $actor['queuedAction'] = [
+                    'type' => 'spell',
+                    'spell_id' => $castSpell['id'],
+                    'spell_name' => $castSpell['name'],
+                    'target_side' => $targetSide,
+                    'target_slot' => $spellTargetSlot,
+                ];
+                $actor['preparationRemaining'] = $duration;
 
-                continue; // Spell cast, end turn
-            }
-
-            // Perform basic physical attack
-            $roundEvents[] = [
-                't' => count($runState['events']) + count($roundEvents),
-                'type' => 'attack',
-                'side' => $actorSide,
-                'slot' => $actorSlot,
-                'target_side' => $opposingSideKey,
-                'target_slot' => $targetSlot,
-            ];
-
-            // 1. Accuracy and dodge check
-            $acc = (float) $actor['derived']['accuracyPercent'];
-            $dodge = (float) $target['derived']['dodgePercent'];
-
-            // Apply status effects to acc and dodge
-            foreach ($actor['statusEffects'] as $eff) {
-                if ('blind' === $eff['effect']) {
-                    $acc -= 40.0;
-                }
-                if ('bless' === $eff['effect']) {
-                    $acc += 10.0;
-                }
-            }
-            foreach ($target['statusEffects'] as $eff) {
-                if ('shadow_cloak' === $eff['effect']) {
-                    $dodge += 40.0;
-                }
-            }
-
-            // Clutch accuracy bonus
-            $actorMaxHp = max(1, (int) ($actor['derived']['maxHp'] ?? 1));
-            if (($actor['currentHp'] / $actorMaxHp) <= 0.30 && null !== $actor['derived']['clutchHpThreshold']) {
-                $acc += (float) ($actor['derived']['clutchAccuracyBonus'] ?? 0.0);
-            }
-
-            // Dodge cap (50%)
-            $dodge = min(50.0, $dodge);
-
-            $hitChance = $acc - $dodge;
-            $hitRoll = $this->nextInt($rngState, 1, 100);
-
-            if ($hitRoll > $hitChance) {
                 $roundEvents[] = [
                     't' => count($runState['events']) + count($roundEvents),
-                    'type' => 'miss',
+                    'type' => 'plan_action',
+                    'side' => $actorSide,
+                    'slot' => $actorSlot,
+                    'hero_id' => $actor['heroId'],
+                    'action_type' => 'spell',
+                    'spell_name' => $castSpell['name'],
+                    'target_side' => $targetSide,
+                    'target_slot' => $spellTargetSlot,
+                    'duration' => $duration,
                 ];
+
+                $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
                 continue;
             }
 
-            // 2. Critical hit check
-            $critChance = (float) $actor['derived']['critPercent'];
-            $critChance = min(50.0, $critChance);
-
-            $critRoll = $this->nextInt($rngState, 1, 100);
-            $isCrit = $critRoll <= $critChance;
-
-            // 3. Damage calculation
-            $baseAtk = (float) $actor['derived']['physicalAttack'];
-            $variance = $actor['derived']['isConsistentDamage'] ? 0 : $this->nextInt($rngState, -10, 10);
-            $damage = $baseAtk * (1.0 + $variance / 100.0);
-
-            // Apply status effects to damage
-            $dmgMult = 1.0;
-            foreach ($actor['statusEffects'] as $eff) {
-                if ('fury' === $eff['effect']) {
-                    $dmgMult += 0.30;
-                }
-                if ('bless' === $eff['effect']) {
-                    $dmgMult += 0.10;
-                }
-            }
-            $damage *= $dmgMult;
-
-            if ($isCrit) {
-                $critMult = (float) ($actor['derived']['critDamageMultiplier'] ?? 1.5);
-                $damage *= $critMult;
-                $roundEvents[] = [
-                    't' => count($runState['events']) + count($roundEvents),
-                    'type' => 'crit',
-                ];
+            $weaponType = $actor['weaponSubType'] ?? null;
+            if ('bow' === $weaponType) {
+                $duration = 2;
+            } elseif ('crossbow' === $weaponType) {
+                $duration = 3;
             } else {
-                $roundEvents[] = [
-                    't' => count($runState['events']) + count($roundEvents),
-                    'type' => 'hit',
-                ];
+                $duration = 1;
             }
 
-            // 4. Target armor reduction
-            $armorVal = (float) $target['derived']['armorValue'];
-
-            // Apply status effects to armor
-            foreach ($target['statusEffects'] as $eff) {
-                if ('petrify' === $eff['effect']) {
-                    $armorVal *= 0.80; // 20% reduction
-                }
-                if ('fury' === $eff['effect']) {
-                    $armorVal *= 0.85; // 15% reduction
-                }
-            }
-
-            $targetMaxHp = max(1, (int) ($target['derived']['maxHp'] ?? 1));
-            if (($target['currentHp'] / $targetMaxHp) <= 0.30 && null !== $target['derived']['clutchHpThreshold']) {
-                $armorVal *= (float) ($target['derived']['clutchArmorMultiplier'] ?? 1.0);
-            }
-
-            $armorReduction = $armorVal / ($armorVal + 100.0);
-
-            // Glass Jaw
-            $incomingMult = 1.0;
-            if (($target['currentHp'] / $targetMaxHp) <= 0.50 && null !== $target['derived']['glassJawHpThreshold']) {
-                $incomingMult = (float) ($target['derived']['incomingDamageMultiplier'] ?? 1.10);
-            }
-
-            // Apply shield damage reduction
-            foreach ($target['statusEffects'] as $eff) {
-                if ('shield' === $eff['effect']) {
-                    $incomingMult *= 0.75; // 25% reduction
-                }
-            }
-
-            $netDamage = (int) round($damage * (1.0 - $armorReduction) * $incomingMult);
-            $netDamage = max(1, $netDamage);
-
-            // 5. Apply damage
-            $target['currentHp'] = max(0, $target['currentHp'] - $netDamage);
-            $this->updateCombatant($runState, $opposingSideKey, $targetSlot, $target);
-
-            $roundEvents[] = [
+            $actor['queuedAction'] = [
+                'type' => 'attack',
                 'target_side' => $opposingSideKey,
                 'target_slot' => $targetSlot,
-                'amount' => $netDamage,
-                'hp_after' => $target['currentHp'],
-                'source' => 'physical',
-            ] + ['t' => count($runState['events']) + count($roundEvents), 'type' => 'damage'];
+            ];
+            $actor['preparationRemaining'] = $duration;
 
-            // Track hits received per hero for item durability loss
-            $hitKey = (string) $target['heroId'];
-            $runState['itemHitCounts'][$hitKey] = ($runState['itemHitCounts'][$hitKey] ?? 0) + 1;
+            $roundEvents[] = [
+                't' => count($runState['events']) + count($roundEvents),
+                'type' => 'plan_action',
+                'side' => $actorSide,
+                'slot' => $actorSlot,
+                'hero_id' => $actor['heroId'],
+                'action_type' => 'attack',
+                'target_side' => $opposingSideKey,
+                'target_slot' => $targetSlot,
+                'duration' => $duration,
+                'weapon_type' => $weaponType,
+            ];
 
-            // 6. Handle KO
-            if ($target['currentHp'] <= 0) {
-                if ('a' === $opposingSideKey) {
-                    ++$runState['scoreB'];
-                } else {
-                    ++$runState['scoreA'];
-                }
-
-                $roundEvents[] = [
-                    't' => count($runState['events']) + count($roundEvents),
-                    'type' => 'ko',
-                    'side' => $opposingSideKey,
-                    'slot' => $targetSlot,
-                    'hero_id' => $target['heroId'],
-                ];
-
-                // Track killed heroes for combat death pipeline
-                $runState['killedHeroIds'][] = $target['heroId'];
-
-                $roundEvents[] = [
-                    't' => count($runState['events']) + count($roundEvents),
-                    'type' => 'kill_score',
-                    'score_a' => $runState['scoreA'],
-                    'score_b' => $runState['scoreB'],
-                ];
-            }
+            $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
+            continue;
         }
 
         $runState['events'] = array_merge($runState['events'], $roundEvents);
@@ -712,6 +694,9 @@ class CombatEngine
             'currentHp' => $c->getDerived()->getCurrentHp(),
             'cooldowns' => [],
             'statusEffects' => [],
+            'weaponSubType' => $c->getWeaponSubType()?->value,
+            'queuedAction' => null,
+            'preparationRemaining' => 0,
         ];
     }
 
@@ -898,6 +883,190 @@ class CombatEngine
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * @param array<string, mixed>        $runState
+     * @param array<string, mixed>        $actor
+     * @param array<string, mixed>        $target
+     * @param array<array<string, mixed>> $roundEvents
+     */
+    private function executePhysicalAttack(
+        array &$runState,
+        string $actorSide,
+        string $actorSlot,
+        array $actor,
+        string $opposingSideKey,
+        string $targetSlot,
+        array $target,
+        array &$roundEvents,
+        int &$rngState,
+    ): void {
+        $roundEvents[] = [
+            't' => count($runState['events']) + count($roundEvents),
+            'type' => 'attack',
+            'side' => $actorSide,
+            'slot' => $actorSlot,
+            'target_side' => $opposingSideKey,
+            'target_slot' => $targetSlot,
+        ];
+
+        // 1. Accuracy and dodge check
+        $acc = (float) $actor['derived']['accuracyPercent'];
+        $dodge = (float) $target['derived']['dodgePercent'];
+
+        // Apply status effects to acc and dodge
+        foreach ($actor['statusEffects'] as $eff) {
+            if ('blind' === $eff['effect']) {
+                $acc -= 40.0;
+            }
+            if ('bless' === $eff['effect']) {
+                $acc += 10.0;
+            }
+        }
+        foreach ($target['statusEffects'] as $eff) {
+            if ('shadow_cloak' === $eff['effect']) {
+                $dodge += 40.0;
+            }
+        }
+
+        // Clutch accuracy bonus
+        $actorMaxHp = max(1, (int) ($actor['derived']['maxHp'] ?? 1));
+        if (($actor['currentHp'] / $actorMaxHp) <= 0.30 && null !== $actor['derived']['clutchHpThreshold']) {
+            $acc += (float) ($actor['derived']['clutchAccuracyBonus'] ?? 0.0);
+        }
+
+        // Dodge cap (50%)
+        $dodge = min(50.0, $dodge);
+
+        $hitChance = $acc - $dodge;
+        $hitRoll = $this->nextInt($rngState, 1, 100);
+
+        if ($hitRoll > $hitChance) {
+            $roundEvents[] = [
+                't' => count($runState['events']) + count($roundEvents),
+                'type' => 'miss',
+            ];
+
+            return;
+        }
+
+        // 2. Critical hit check
+        $critChance = (float) $actor['derived']['critPercent'];
+        $critChance = min(50.0, $critChance);
+
+        $critRoll = $this->nextInt($rngState, 1, 100);
+        $isCrit = $critRoll <= $critChance;
+
+        // 3. Damage calculation
+        $baseAtk = (float) $actor['derived']['physicalAttack'];
+        $variance = $actor['derived']['isConsistentDamage'] ? 0 : $this->nextInt($rngState, -10, 10);
+        $damage = $baseAtk * (1.0 + $variance / 100.0);
+
+        // Apply status effects to damage
+        $dmgMult = 1.0;
+        foreach ($actor['statusEffects'] as $eff) {
+            if ('fury' === $eff['effect']) {
+                $dmgMult += 0.30;
+            }
+            if ('bless' === $eff['effect']) {
+                $dmgMult += 0.10;
+            }
+        }
+        $damage *= $dmgMult;
+
+        if ($isCrit) {
+            $critMult = (float) ($actor['derived']['critDamageMultiplier'] ?? 1.5);
+            $damage *= $critMult;
+            $roundEvents[] = [
+                't' => count($runState['events']) + count($roundEvents),
+                'type' => 'crit',
+            ];
+        } else {
+            $roundEvents[] = [
+                't' => count($runState['events']) + count($roundEvents),
+                'type' => 'hit',
+            ];
+        }
+
+        // 4. Target armor reduction
+        $armorVal = (float) $target['derived']['armorValue'];
+
+        // Apply status effects to armor
+        foreach ($target['statusEffects'] as $eff) {
+            if ('petrify' === $eff['effect']) {
+                $armorVal *= 0.80; // 20% reduction
+            }
+            if ('fury' === $eff['effect']) {
+                $armorVal *= 0.85; // 15% reduction
+            }
+        }
+
+        $targetMaxHp = max(1, (int) ($target['derived']['maxHp'] ?? 1));
+        if (($target['currentHp'] / $targetMaxHp) <= 0.30 && null !== $target['derived']['clutchHpThreshold']) {
+            $armorVal *= (float) ($target['derived']['clutchArmorMultiplier'] ?? 1.0);
+        }
+
+        $armorReduction = $armorVal / ($armorVal + 100.0);
+
+        // Glass Jaw
+        $incomingMult = 1.0;
+        if (($target['currentHp'] / $targetMaxHp) <= 0.50 && null !== $target['derived']['glassJawHpThreshold']) {
+            $incomingMult = (float) ($target['derived']['incomingDamageMultiplier'] ?? 1.10);
+        }
+
+        // Apply shield damage reduction
+        foreach ($target['statusEffects'] as $eff) {
+            if ('shield' === $eff['effect']) {
+                $incomingMult *= 0.75; // 25% reduction
+            }
+        }
+
+        $netDamage = (int) round($damage * (1.0 - $armorReduction) * $incomingMult);
+        $netDamage = max(1, $netDamage);
+
+        // 5. Apply damage
+        $target['currentHp'] = max(0, $target['currentHp'] - $netDamage);
+        $this->updateCombatant($runState, $opposingSideKey, $targetSlot, $target);
+
+        $roundEvents[] = [
+            'target_side' => $opposingSideKey,
+            'target_slot' => $targetSlot,
+            'amount' => $netDamage,
+            'hp_after' => $target['currentHp'],
+            'source' => 'physical',
+        ] + ['t' => count($runState['events']) + count($roundEvents), 'type' => 'damage'];
+
+        // Track hits received per hero for item durability loss
+        $hitKey = (string) $target['heroId'];
+        $runState['itemHitCounts'][$hitKey] = ($runState['itemHitCounts'][$hitKey] ?? 0) + 1;
+
+        // 6. Handle KO
+        if ($target['currentHp'] <= 0) {
+            if ('a' === $opposingSideKey) {
+                ++$runState['scoreB'];
+            } else {
+                ++$runState['scoreA'];
+            }
+
+            $roundEvents[] = [
+                't' => count($runState['events']) + count($roundEvents),
+                'type' => 'ko',
+                'side' => $opposingSideKey,
+                'slot' => $targetSlot,
+                'hero_id' => $target['heroId'],
+            ];
+
+            // Track killed heroes for combat death pipeline
+            $runState['killedHeroIds'][] = $target['heroId'];
+
+            $roundEvents[] = [
+                't' => count($runState['events']) + count($roundEvents),
+                'type' => 'kill_score',
+                'score_a' => $runState['scoreA'],
+                'score_b' => $runState['scoreB'],
+            ];
         }
     }
 

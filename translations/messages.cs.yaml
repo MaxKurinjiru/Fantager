@@ -1821,6 +1821,13 @@ battle:
   status_tick: "Efekt %effect% způsobil %amount% poškození cíli %target% (zbývá %hp% HP)"
   status_expired: "Efekt %effect% na cíl %target% vypršel"
   skip_turn: "%hero% vynechává tah kvůli zmrazení nebo omráčení"
+  plan_action_attack: "%attacker% se připravuje k útoku na %target% (příprava %duration% kol)"
+  plan_action_spell: "%caster% začíná sesílat kouzlo %spell% na %target% (příprava %duration% kol)"
+  preparing_action_tick: "%hero% pokračuje v přípravě akce (zbývá %rounds% kol)"
+  action_interrupted: "Příprava akce hrdiny %hero% byla přerušena (%reason%)"
+  action_fumble: "Akce hrdiny %hero% selhala, protože cíl %target% byl již vyřazen"
+  reason_stun_or_freeze: "omráčení nebo zmrazení"
+  reason_silence: "umlčení"
   no_team: Bez týmu
   unknown_actor: Neznámý
   return_to_league: Zpět do ligy

@@ -34,6 +34,8 @@ use App\Service\Config\RaceConfig;
 use App\Service\Hero\HeroRatingCalculator;
 use App\Entity\Item\Item;
 use App\Entity\Marketplace\MarketplaceListing;
+use App\Entity\Spell\Spell;
+use App\Entity\Hero\HeroSpell;
 use App\Enum\ItemSubType;
 use App\Enum\ListingType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -65,6 +67,12 @@ class NpcSimulationServiceTest extends TestCase
     private $raceConfig;
     /** @var TeamChronicleService&MockObject */
     private $teamChronicleService;
+    /** @var \App\Service\Spell\SpellService&MockObject */
+    private $spellService;
+    /** @var list<Spell> */
+    private array $spellLibraryList = [];
+    /** @var list<HeroSpell> */
+    private array $knownSpellsList = [];
     private NpcSimulationService $service;
 
     protected function setUp(): void
@@ -79,10 +87,17 @@ class NpcSimulationServiceTest extends TestCase
         $this->heroRatingCalculator = $this->createMock(HeroRatingCalculator::class);
         $this->raceConfig = $this->createMock(RaceConfig::class);
         $this->teamChronicleService = $this->createMock(TeamChronicleService::class);
+        $this->spellService = $this->createMock(\App\Service\Spell\SpellService::class);
+
+        $this->spellLibraryList = [];
+        $this->knownSpellsList = [];
+        $this->spellService->method('listLibrary')->willReturnCallback(fn () => $this->spellLibraryList);
+        $this->spellService->method('listForHero')->willReturnCallback(fn () => $this->knownSpellsList);
 
         $tacticsSimulator = new \App\Service\Team\NpcTacticsSimulator(
             $this->em,
-            $this->itemService
+            $this->itemService,
+            $this->spellService
         );
 
         $trainingSimulator = new \App\Service\Team\NpcTrainingSimulator(
@@ -1400,6 +1415,144 @@ class NpcSimulationServiceTest extends TestCase
         // Should NOT buy listing 1 because it's a Bow (not preferred subtype)
         $this->assertContains(102, $boughtListingIds);
         $this->assertNotContains(101, $boughtListingIds);
+    }
+
+    public function testSimulateTacticsNPCSpellManagement(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 2); // royal_collector
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        // Active lineup has 6 heroes, let's focus on hero 1 who has magicCapacity = 2
+        $heroes = [];
+        for ($i = 1; $i <= 6; $i++) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            $hero->setStr(10);
+            $hero->setKon(10);
+            $hero->setDex(10);
+            $hero->setIntel(10);
+            $hero->setSpd(10);
+            if ($i === 1) {
+                $hero->setMagicCapacity(2);
+            } else {
+                $hero->setMagicCapacity(0);
+            }
+            $heroes[] = $hero;
+        }
+
+        // Default formation
+        $formation = new Formation();
+        $formation->setTeam($team);
+        $formation->setIsDefault(true);
+        $this->setEntityId($formation, 100);
+
+        $slots = [];
+        foreach (FormationPosition::cases() as $idx => $pos) {
+            $slot = new FormationSlot();
+            $slot->setFormation($formation);
+            $slot->setPosition($pos);
+            $slot->setHero($heroes[$idx] ?? null);
+            $formation->addSlot($slot);
+            $slots[] = $slot;
+        }
+
+        // Mock spell library
+        $spell1 = new Spell();
+        $this->setEntityId($spell1, 10);
+        $spell1->setName('Jiskra');
+        $spell1->setSchool(\App\Enum\School::Fire);
+        $spell1->setType(\App\Enum\SpellType::Offensive);
+        $spell1->setRequiredMasteryTier(1);
+        $spell1->setLearningCostGold(100);
+        $spell1->setLearningCostEssence(0);
+        $spell1->setRequiresMagicalWeapon(true);
+
+        $spell2 = new Spell();
+        $this->setEntityId($spell2, 11);
+        $spell2->setName('Laskavý dotek');
+        $spell2->setSchool(\App\Enum\School::Water);
+        $spell2->setType(\App\Enum\SpellType::Defensive);
+        $spell2->setRequiredMasteryTier(1);
+        $spell2->setLearningCostGold(150);
+        $spell2->setLearningCostEssence(0);
+        $spell2->setRequiresMagicalWeapon(false);
+
+        $this->spellLibraryList = [$spell1, $spell2];
+        $this->knownSpellsList = [];
+
+        // Mock learn method: adds a HeroSpell to known
+        $this->spellService->method('learn')->willReturnCallback(function ($h, $spell, $t) {
+            $hs = new HeroSpell();
+            $hs->setHero($h);
+            $hs->setSpell($spell);
+            $this->knownSpellsList[] = $hs;
+            return $hs;
+        });
+
+        // Mock equip method
+        $this->spellService->method('equip')->willReturnCallback(function ($hs, $slotNum) {
+            $hs->setIsEquipped(true);
+            $hs->setSlotNumber($slotNum);
+        });
+
+        // Hero 1 has a Staff equipped (is a mage)
+        $staff = new Item();
+        $staff->setSlotType(ItemSlotType::MainHand);
+        $staff->setSubType(ItemSubType::Staff);
+        $staff->setRarity(ItemRarity::Common);
+        $staff->setEquippedHero($heroes[0]);
+
+        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo->method('findBy')->willReturnCallback(function ($criteria) use ($heroes, $staff) {
+            if (isset($criteria['equippedHero']) && $criteria['equippedHero'] === $heroes[0]) {
+                return [$staff];
+            }
+            return [];
+        });
+
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findOneBy')->willReturn($formation);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findBy')->willReturn($heroes);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $formationRepo, $heroRepo, $itemRepo) {
+            if (Team::class === $class) return $teamRepo;
+            if (Formation::class === $class) return $formationRepo;
+            if (Hero::class === $class) return $heroRepo;
+            if (Item::class === $class) return $itemRepo;
+            return $this->createMock(EntityRepository::class);
+        });
+
+        // Run simulation
+        $this->service->simulateTactics($kingdom, new \DateTimeImmutable(), $team);
+
+        // Verify Hero 1 learned both spells (since it is a mage and can afford both)
+        // @phpstan-ignore-next-line
+        $this->assertCount(2, $this->knownSpellsList);
+        $this->assertEquals(10, $this->knownSpellsList[0]->getSpell()->getId()); // Jiskra
+        $this->assertEquals(11, $this->knownSpellsList[1]->getSpell()->getId()); // Laskavý dotek
+
+        // Verify priorities generated on the slot of Hero 1
+        // Hero 1 is in Front1 slot (first slot)
+        $slot1 = $slots[0];
+        $priorities = $slot1->getSpellPriorities();
+        $this->assertCount(2, $priorities);
+        $this->assertEquals(10, $priorities[0]['spell_id']);
+        $this->assertEquals('always', $priorities[0]['when']); // Offensive
+        $this->assertEquals(11, $priorities[1]['spell_id']);
+        $this->assertEquals('ally_hp_below', $priorities[1]['when']); // Defensive
+        $this->assertEquals(50, $priorities[1]['threshold']); // royal_collector has 50 threshold
     }
 }
 

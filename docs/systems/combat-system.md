@@ -377,6 +377,20 @@ CompleteBattle(battleId)
 
 Turn order, actions, damage, and status ticks follow the combat formulas and AI layers. A “round” is one full pass of the turn engine as defined when the turn loop lands (SPD order); the wave coordinator only counts **round index 1…200**.
 
+To expand combat duration and add tactical depth, each active combatant's turn is divided into two phases:
+1. **Planning Phase**: If a hero has no active action queued, they select a target and action (basic attack or spell) using AI rules. The action is queued, and the `preparationRemaining` count is initialized based on the action type.
+2. **Execution Phase**: If a hero has a queued action, `preparationRemaining` is decremented. If it reaches `0`, the action executes. If the target has been KO'd in the meantime, the action fumbles (fails) with no effect.
+
+##### Preparation & Casting Durations
+- **Physical Melee / Unarmed**: 1 round (plan in round N, execute in N+1).
+- **Ranged Bow**: 2 rounds (plan in N, draw/aim in N+1, execute in N+2).
+- **Ranged Crossbow**: 3 rounds (plan in N, draw/load in N+1 & N+2, execute in N+3).
+- **Spells**: Dynamic casting duration based on the spell's tier: `1 + spell.tier` rounds (e.g. Tier 1 = 2 rounds, Tier 2 = 3 rounds).
+
+##### Interruption Mechanics
+- **Stun / Freeze**: If a hero is stunned or frozen, their current queued action is immediately cancelled.
+- **Silence**: If a hero is silenced and their queued action is a spell, it is immediately cancelled.
+
 ### `combat_log` envelope (v1)
 
 ```json
@@ -423,6 +437,10 @@ Common fields: `t` (monotonic index), `type`; commonly also `round`, `side` (`a`
 | `match_start` | — |
 | `round_start` | `round` |
 | `turn_start` | `side`, `slot`, `hero_id`, `initiative` |
+| `plan_action` | `side`, `slot`, `hero_id`, `action_type`, `target_side`, `target_slot`, `duration`, optional `spell_name`, optional `weapon_type` |
+| `preparing_action_tick` | `side`, `slot`, `hero_id`, `action_type`, `rounds_remaining` |
+| `action_interrupted` | `side`, `slot`, `hero_id`, `reason` |
+| `action_fumble` | `side`, `slot`, `hero_id`, `target_side`, `target_slot` |
 | `attack` | `target_side`, `target_slot` |
 | `spell` | `spell_id`, `target_side`, `target_slot` or `targets[]` |
 | `defend` | — |

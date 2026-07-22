@@ -243,6 +243,55 @@
             <span class="battle-event-text text-warning">
                 {{ 'battle.skip_turn'|trans({'%hero%': hero_name}) }}
             </span>
+        {% elseif event.type == 'plan_action' %}
+            {% if event.action_type == 'spell' %}
+                {% set caster_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+                {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
+                <span class="battle-event-text text-info font-weight-bold">
+                    {{ 'battle.plan_action_spell'|trans({
+                        '%caster%': caster_name,
+                        '%spell%': event.spell_name,
+                        '%target%': target_name,
+                        '%duration%': event.duration
+                    }) }}
+                </span>
+            {% else %}
+                {% set attacker_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+                {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
+                <span class="battle-event-text text-info font-weight-bold">
+                    {{ 'battle.plan_action_attack'|trans({
+                        '%attacker%': attacker_name,
+                        '%target%': target_name,
+                        '%duration%': event.duration
+                    }) }}
+                </span>
+            {% endif %}
+        {% elseif event.type == 'preparing_action_tick' %}
+            {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text text-muted font-italic">
+                {{ 'battle.preparing_action_tick'|trans({
+                    '%hero%': hero_name,
+                    '%rounds%': event.rounds_remaining
+                }) }}
+            </span>
+        {% elseif event.type == 'action_interrupted' %}
+            {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+            {% set reason_trans = ('battle.reason_' ~ event.reason)|trans %}
+            <span class="battle-event-text text-danger font-weight-bold">
+                {{ 'battle.action_interrupted'|trans({
+                    '%hero%': hero_name,
+                    '%reason%': reason_trans
+                }) }}
+            </span>
+        {% elseif event.type == 'action_fumble' %}
+            {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+            {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text text-warning font-weight-bold">
+                {{ 'battle.action_fumble'|trans({
+                    '%hero%': hero_name,
+                    '%target%': target_name
+                }) }}
+            </span>
         {% endif %}
     </div>
 {% endmacro %}
