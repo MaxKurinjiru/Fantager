@@ -154,6 +154,25 @@ class HeroChronicleService
         );
     }
 
+    public function recordSpellLearned(Hero $hero, \App\Entity\Spell\Spell $spell): HeroChronicle
+    {
+        return $this->create(
+            $hero,
+            $hero->getTeam(),
+            HeroChronicleEventType::SpellLearned,
+            'hero_activity.spell_learned',
+            [
+                'spell' => $spell->getName(),
+                'school' => $spell->getSchool()->value,
+            ],
+            [
+                'spell_id' => $spell->getId(),
+                'spell_name' => $spell->getName(),
+                'school' => $spell->getSchool()->value,
+            ]
+        );
+    }
+
     public function recordDied(Hero $hero, string $cause): HeroChronicle
     {
         return $this->create(

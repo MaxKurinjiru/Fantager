@@ -120,6 +120,7 @@ class HeroChroniclePresenter
             HeroChronicleEventType::LevelUp => '⬆️',
             HeroChronicleEventType::MasteryGained => '🎓',
             HeroChronicleEventType::TrainingCompleted => '💪',
+            HeroChronicleEventType::SpellLearned => '📜',
             HeroChronicleEventType::Injured => '🩹',
             HeroChronicleEventType::Recovered => '❤️',
             HeroChronicleEventType::Retired => '🌅',

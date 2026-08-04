@@ -233,6 +233,7 @@ class TeamChroniclePresenter
             ChronicleEventType::FacilityDowngraded => '📉',
             ChronicleEventType::RaceOptimizationChanged => '🏟️',
             ChronicleEventType::StartingRoster => '🛡️',
+            ChronicleEventType::SpellLearned => '📜',
         };
     }
 }

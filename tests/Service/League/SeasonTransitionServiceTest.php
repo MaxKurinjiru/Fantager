@@ -42,8 +42,10 @@ class SeasonTransitionServiceTest extends TestCase
             $this->fixtureSchedulerMock,
             $this->economyServiceMock,
             $this->createMock(TeamChronicleService::class),
+            $this->createMock(\App\Service\Notification\NotificationHelper::class),
         );
     }
+
 
     public function testPrepareUpcomingSeasonForFirstTime(): void
     {

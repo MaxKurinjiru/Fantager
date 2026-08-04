@@ -290,6 +290,24 @@ notification:
   marketplace_auction_won_seller_body: 'Your auction #%listing% sold to "%buyer%" for %amount% gold.'
   marketplace_auction_won_buyer_title: Auction Won
   marketplace_auction_won_buyer_body: 'You won the auction #%listing% for %amount% gold.'
+  match_result_title: Match Result
+  match_result_body: 'Match %home_team% vs %away_team% ended with score %home_score%:%away_score%.'
+  hero_combat_death_title: Hero Fallen in Combat
+  hero_combat_death_body: 'Your hero "%hero_name%" permanently fell in combat against "%opponent%".'
+  hq_upgrade_title: HQ Upgrade Completed
+  hq_upgrade_body: 'Upgrade of facility "%facility%" to level %level% was completed successfully.'
+  hq_downgrade_title: HQ Downgrade Completed
+  hq_downgrade_body: 'Downgrade of facility "%facility%" to level %level% completed. Refunded %refund% gold.'
+  hq_arena_adaptation_title: Arena Adaptation Changed
+  hq_arena_adaptation_body: 'Arena adaptation to race %race% is now in effect.'
+  season_ended_title: Season %season% Ended
+  season_ended_body: 'Season %season% has ended! You finished in %position% place (%status_text%). You earned %reward% gold.'
+  financial_warning_title: Financial Warning
+  financial_warning_body: 'Your team has unpaid debt of %debt% gold. Reduce expenses or sell assets.'
+  financial_restricted_title: Financial Restrictions
+  financial_restricted_body: 'Your team has been in crisis for %weeks% weeks! HQ passive bonuses are suspended.'
+  training_completed_title: Weekly Training Completed
+  training_completed_body: 'Weekly training cycle completed successfully. Trainers passed on experience to heroes.'
 
 dashboard:
   history_title: Team History
@@ -470,6 +488,7 @@ activity:
     facility_upgraded: Facility upgraded
     facility_downgraded: Facility downgraded
     race_optimization_changed: Arena adaptation changed
+    spell_learned: Spell learned
 
 hero_activity:
   summoned: 'Summoned into team %team% (cost %gold% gold).'
@@ -485,12 +504,14 @@ hero_activity:
     attribute: 'Completed training under trainer %trainer% (attribute %attribute%, %gain% to base).'
     magic: 'Completed training under trainer %trainer% (magic capacity, %gain% slots).'
     form: 'Completed training under trainer %trainer% (recovery, %gain% to form).'
+  spell_learned: 'Learned spell "%spell%" (%school% school).'
   died:
     dismissed: 'Dismissed from the team.'
     combat_death: 'Fallen in combat.'
     age: 'Passed away due to old age.'
     retired: 'Retired from active roster.'
     death: 'Passed away.'
+
 
 financial_crisis:
   title_warning: Financial Warning

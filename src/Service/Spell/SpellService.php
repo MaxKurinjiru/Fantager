@@ -28,6 +28,8 @@ class SpellService
         private readonly SchoolMasteryRepository $masteryRepository,
         private readonly EntityManagerInterface $em,
         private readonly EconomyService $economyService,
+        private readonly \App\Service\Hero\HeroChronicleService $heroChronicleService,
+        private readonly \App\Service\TeamChronicle\TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -109,6 +111,9 @@ class SpellService
         $heroSpell->setSpell($spell);
 
         $this->em->persist($heroSpell);
+        $this->heroChronicleService->recordSpellLearned($hero, $spell);
+        $this->teamChronicleService->recordSpellLearned($team, $hero, $spell);
+
         $this->em->flush();
 
         return $heroSpell;

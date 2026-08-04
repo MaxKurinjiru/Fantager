@@ -47,8 +47,10 @@ class TrainingTraitSpeedTest extends TestCase
             $raceConfigMock,
             $teamChronicleServiceMock,
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
-            $entityManagerMock
+            $entityManagerMock,
+            $this->createMock(\App\Service\Notification\NotificationHelper::class)
         );
+
 
         $kingdom = $this->createMock(\App\Entity\Kingdom\Kingdom::class);
         $kingdom->method('getGameSpeed')->willReturn('1.00');

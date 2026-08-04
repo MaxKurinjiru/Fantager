@@ -51,9 +51,11 @@ class HeadquartersServiceTest extends TestCase
             $this->financialCrisisServiceMock,
             $this->royalTreasuryServiceMock,
             $this->teamChronicleServiceMock,
-            $this->entityManagerMock
+            $this->entityManagerMock,
+            $this->createMock(\App\Service\Notification\NotificationHelper::class)
         );
     }
+
 
     public function testUpdateRaceOptimizationThrowsExceptionWhenLocked(): void
     {

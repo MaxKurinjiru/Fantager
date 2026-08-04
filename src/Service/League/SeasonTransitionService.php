@@ -37,6 +37,7 @@ class SeasonTransitionService
         private readonly LeagueFixtureScheduler $fixtureScheduler,
         private readonly EconomyService $economyService,
         private readonly TeamChronicleService $teamChronicleService,
+        private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
     ) {
     }
 
@@ -285,6 +286,29 @@ class SeasonTransitionService
                 $status,
                 $goldGranted,
             );
+
+            // 3. Send Notification to Manager
+            if (null !== $team->getUser()) {
+                $statusText = match ($status) {
+                    'promoted' => 'postup',
+                    'relegated' => 'sestup',
+                    default => 'udržení pozice',
+                };
+
+                $this->notificationHelper->sendTranslatedNotification(
+                    $team->getUser(),
+                    \App\Enum\NotificationType::SeasonEnded,
+                    'notification.season_ended_title',
+                    'notification.season_ended_body',
+                    ['%season%' => $currentSeasonNumber],
+                    [
+                        '%season%' => $currentSeasonNumber,
+                        '%position%' => $position,
+                        '%status_text%' => $statusText,
+                        '%reward%' => $goldGranted,
+                    ]
+                );
+            }
         }
 
         // Shuffle teams and seed them into groups of their new tiers for the upcoming season

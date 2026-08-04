@@ -201,8 +201,32 @@ class FinancialCrisisService
             $this->applyGoldToDebt($team);
             $this->evaluateCrisisProgress($team, $weeklyReferenceExpenses);
 
+            $level = $this->resolveCrisisLevel($team, $weeklyReferenceExpenses);
+            $user = $team->getUser();
+
+            if ($user instanceof User) {
+                if (FinancialCrisisLevel::Warning === $level) {
+                    $this->notificationHelper->sendTranslatedNotification(
+                        $user,
+                        NotificationType::FinancialCrisis,
+                        'notification.financial_warning_title',
+                        'notification.financial_warning_body',
+                        [],
+                        ['%debt%' => $team->getUnpaidDebt()]
+                    );
+                } elseif (FinancialCrisisLevel::Restricted === $level) {
+                    $this->notificationHelper->sendTranslatedNotification(
+                        $user,
+                        NotificationType::FinancialCrisis,
+                        'notification.financial_restricted_title',
+                        'notification.financial_restricted_body',
+                        [],
+                        ['%weeks%' => $team->getCrisisWeeks()]
+                    );
+                }
+            }
+
             if ($this->isBankruptcyPending($team, $weeklyReferenceExpenses)) {
-                $user = $team->getUser();
                 if ($user instanceof User) {
                     $this->executeBankruptcy($team, $user);
                 }

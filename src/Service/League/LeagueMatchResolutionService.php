@@ -57,6 +57,7 @@ class LeagueMatchResolutionService
         private readonly MessageBusInterface $messageBus,
         private readonly GraveyardService $graveyardService,
         private readonly RaceConfig $raceConfig,
+        private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
     ) {
     }
 
@@ -439,8 +440,53 @@ class LeagueMatchResolutionService
                     $this->graveyardService->prepareCombatDeath($hero);
                     $this->graveyardService->recordMemorial($hero, $hero->getTeam(), MemorialCause::CombatDeath);
                     $hero->setStatus(HeroStatus::Dead);
+
+                    if (null !== $hero->getTeam()->getUser()) {
+                        $opponent = $hero->getTeam()->getId() === $homeTeam->getId() ? $awayTeam : $homeTeam;
+                        $this->notificationHelper->sendTranslatedNotification(
+                            $hero->getTeam()->getUser(),
+                            \App\Enum\NotificationType::HeroDied,
+                            'notification.hero_combat_death_title',
+                            'notification.hero_combat_death_body',
+                            [],
+                            ['%hero_name%' => $hero->getName(), '%opponent%' => $opponent->getName()]
+                        );
+                    }
                 }
             }
+        }
+
+        // Send match result notifications to managers
+        if (null !== $homeTeam->getUser()) {
+            $this->notificationHelper->sendTranslatedNotification(
+                $homeTeam->getUser(),
+                \App\Enum\NotificationType::BattleResult,
+                'notification.match_result_title',
+                'notification.match_result_body',
+                [],
+                [
+                    '%home_team%' => $homeTeam->getName(),
+                    '%away_team%' => $awayTeam->getName(),
+                    '%home_score%' => $battle->getScoreA(),
+                    '%away_score%' => $battle->getScoreB(),
+                ]
+            );
+        }
+
+        if (null !== $awayTeam->getUser()) {
+            $this->notificationHelper->sendTranslatedNotification(
+                $awayTeam->getUser(),
+                \App\Enum\NotificationType::BattleResult,
+                'notification.match_result_title',
+                'notification.match_result_body',
+                [],
+                [
+                    '%home_team%' => $homeTeam->getName(),
+                    '%away_team%' => $awayTeam->getName(),
+                    '%home_score%' => $battle->getScoreA(),
+                    '%away_score%' => $battle->getScoreB(),
+                ]
+            );
         }
 
         // 6. Complete fixture status

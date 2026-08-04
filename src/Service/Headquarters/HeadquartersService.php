@@ -51,6 +51,7 @@ class HeadquartersService
         private readonly RoyalTreasuryService $royalTreasuryService,
         private readonly TeamChronicleService $teamChronicleService,
         private readonly EntityManagerInterface $em,
+        private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
     ) {
     }
 
@@ -494,6 +495,17 @@ class HeadquartersService
                 $hq->setRaceOptimizationLockCycle(true);
 
                 $this->teamChronicleService->recordRaceOptimizationChanged($team, $targetRace);
+
+                if (null !== $team->getUser()) {
+                    $this->notificationHelper->sendTranslatedNotification(
+                        $team->getUser(),
+                        \App\Enum\NotificationType::System,
+                        'notification.hq_arena_adaptation_title',
+                        'notification.hq_arena_adaptation_body',
+                        [],
+                        ['%race%' => $targetRace ?? '—']
+                    );
+                }
             } elseif ($hq->isRaceOptimizationLockCycle()) {
                 $hq->setRaceOptimizationLockCycle(false);
             }
@@ -547,11 +559,33 @@ class HeadquartersService
                 $hq->setFacilityDowngradeLockCycle(true);
 
                 $this->teamChronicleService->recordFacilityDowngraded($team, $type->value, $newLevel);
+
+                if (null !== $team->getUser()) {
+                    $this->notificationHelper->sendTranslatedNotification(
+                        $team->getUser(),
+                        \App\Enum\NotificationType::HqUpgrade,
+                        'notification.hq_downgrade_title',
+                        'notification.hq_downgrade_body',
+                        [],
+                        ['%facility%' => $type->value, '%level%' => $newLevel, '%refund%' => $refund]
+                    );
+                }
             } else {
                 $newLevel = $changing->getLevel() + 1;
                 $changing->setLevel($newLevel);
 
                 $this->teamChronicleService->recordFacilityUpgraded($team, $type->value, $newLevel);
+
+                if (null !== $team->getUser()) {
+                    $this->notificationHelper->sendTranslatedNotification(
+                        $team->getUser(),
+                        \App\Enum\NotificationType::HqUpgrade,
+                        'notification.hq_upgrade_title',
+                        'notification.hq_upgrade_body',
+                        [],
+                        ['%facility%' => $type->value, '%level%' => $newLevel]
+                    );
+                }
             }
 
             $hq->setUpgradingFacility(null);

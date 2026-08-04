@@ -99,8 +99,10 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->messageBus,
             $this->createMock(\App\Service\Graveyard\GraveyardService::class),
             $this->createMock(RaceConfig::class),
+            $this->createMock(\App\Service\Notification\NotificationHelper::class),
         );
     }
+
 
     public function testResolveFixtureInitializesSimulatingBattle(): void
     {
@@ -294,7 +296,9 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->messageBus,
             $this->createMock(\App\Service\Graveyard\GraveyardService::class),
             $this->createMock(RaceConfig::class),
+            $this->createMock(\App\Service\Notification\NotificationHelper::class),
         );
+
         $partial->expects($this->once())
             ->method('resolveFixture')
             ->willReturnCallback(function (LeagueFixture $f, \DateTimeImmutable $dt) use ($fixture, $scheduledAt) {

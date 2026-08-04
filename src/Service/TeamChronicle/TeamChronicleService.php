@@ -419,6 +419,25 @@ class TeamChronicleService
         );
     }
 
+    public function recordSpellLearned(Team $team, Hero $hero, \App\Entity\Spell\Spell $spell): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::SpellLearned,
+            'activity.spell_learned',
+            [
+                'hero' => $hero->getName(),
+                'spell' => $spell->getName(),
+                'school' => $spell->getSchool()->value,
+            ],
+            [
+                'hero_id' => $hero->getId(),
+                'spell_id' => $spell->getId(),
+                'school' => $spell->getSchool()->value,
+            ],
+        );
+    }
+
     /**
      * @param array<string, string> $subjectParams
      * @param array<string, mixed>  $data

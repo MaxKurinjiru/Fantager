@@ -32,6 +32,7 @@ class TrainingService
         private readonly TeamChronicleService $teamChronicleService,
         private readonly HeroChronicleService $heroChronicleService,
         private readonly EntityManagerInterface $em,
+        private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
     ) {
     }
 
@@ -339,8 +340,26 @@ class TrainingService
         /** @var list<Hero> $trainers */
         $trainers = $qb->getQuery()->getResult();
 
+        $notifiedTeamIds = [];
+
         foreach ($trainers as $trainer) {
+            $team = $trainer->getTeam();
+            $teamId = $team->getId();
+
+            if (null !== $teamId && !in_array($teamId, $notifiedTeamIds, true)) {
+                $notifiedTeamIds[] = $teamId;
+                if (null !== $team->getUser()) {
+                    $this->notificationHelper->sendTranslatedNotification(
+                        $team->getUser(),
+                        \App\Enum\NotificationType::TrainingComplete,
+                        'notification.training_completed_title',
+                        'notification.training_completed_body'
+                    );
+                }
+            }
+
             // Active trainers age by a stronger jump during the training tick (combat death equivalent)
+
             $speed = (float) $trainer->getTeam()->getKingdom()->getGameSpeed();
             if ($speed <= 0.0) {
                 $speed = 1.0;

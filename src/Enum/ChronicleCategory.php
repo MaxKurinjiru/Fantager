@@ -40,7 +40,9 @@ enum ChronicleCategory: string
                 ChronicleEventType::SummonCompleted,
                 ChronicleEventType::HeroDismissed,
                 ChronicleEventType::TrainerDismissed,
+                ChronicleEventType::SpellLearned,
             ],
+
             self::Economy => [
                 ChronicleEventType::ItemPurchased,
                 ChronicleEventType::ItemSold,

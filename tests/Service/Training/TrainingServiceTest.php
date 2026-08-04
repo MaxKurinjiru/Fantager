@@ -56,9 +56,11 @@ class TrainingServiceTest extends TestCase
             $this->raceConfigMock,
             $this->teamChronicleServiceMock,
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
-            $this->entityManagerMock
+            $this->entityManagerMock,
+            $this->createMock(\App\Service\Notification\NotificationHelper::class)
         );
     }
+
 
     public function testGetNextTrainingTimeBeforeThursday(): void
     {

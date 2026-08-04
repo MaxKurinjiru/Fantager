@@ -9,12 +9,12 @@ use App\Repository\Kingdom\KingdomRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Console\Helper\Table;
 
 #[AsCommand(
     name: 'app:kingdom:diagnose',
@@ -48,25 +48,32 @@ class DiagnoseKingdomCommand extends Command
             $kingdom = $this->kingdomRepository->find((int) $kingdomId);
             if (null === $kingdom) {
                 $io->error(sprintf('Kingdom with ID %s not found.', $kingdomId));
+
                 return Command::FAILURE;
             }
             $kingdoms = [$kingdom];
         } else {
-            $kingdoms = $this->kingdomRepository->findAll();
-            if (empty($kingdoms)) {
+            $allKingdoms = $this->kingdomRepository->findAll();
+            if (empty($allKingdoms)) {
                 $io->warning('No kingdoms exist in the database.');
+
                 return Command::SUCCESS;
             }
 
-            if (\count($kingdoms) > 1) {
+            if (\count($allKingdoms) > 1) {
                 $choices = [];
-                foreach ($kingdoms as $k) {
-                    $choices[$k->getId()] = sprintf('%s (ID: %d)', $k->getName(), $k->getId());
+                foreach ($allKingdoms as $k) {
+                    $kId = $k->getId();
+                    if (null !== $kId) {
+                        $choices[$kId] = sprintf('%s (ID: %d)', $k->getName(), $kId);
+                    }
                 }
                 $selected = $io->choice('Select a kingdom to diagnose:', $choices);
                 $selectedId = array_search($selected, $choices, true);
-                $kingdom = $this->kingdomRepository->find($selectedId);
-                $kingdoms = [$kingdom];
+                $selectedKingdom = false !== $selectedId ? $this->kingdomRepository->find((int) $selectedId) : null;
+                $kingdoms = null !== $selectedKingdom ? [$selectedKingdom] : $allKingdoms;
+            } else {
+                $kingdoms = $allKingdoms;
             }
         }
 
@@ -85,8 +92,8 @@ class DiagnoseKingdomCommand extends Command
             ['Timezone' => $kingdom->getTimezone()],
             ['Game Speed' => $kingdom->getGameSpeed()],
             ['Language' => $kingdom->getLanguage()],
-            ['Royal Treasury Gold' => $kingdom->getRoyalTreasuryGold() . ' gold'],
-            ['Season Length' => $kingdom->getSeasonLength() . ' days']
+            ['Royal Treasury Gold' => $kingdom->getRoyalTreasuryGold().' gold'],
+            ['Season Length' => $kingdom->getSeasonLength().' days']
         );
 
         $this->diagnoseTicks($kingdom, $io);
@@ -116,6 +123,7 @@ class DiagnoseKingdomCommand extends Command
 
         if (empty($rows)) {
             $io->note('No ticks have been scheduled/executed in this kingdom.');
+
             return;
         }
 
@@ -197,15 +205,16 @@ class DiagnoseKingdomCommand extends Command
 
         if (empty($row) || 0 === (int) $row['total_teams']) {
             $io->warning('No teams found in this kingdom.');
+
             return;
         }
 
         $table = new Table($io);
         $table->setHeaders(['Metric', 'Value']);
-        $table->addRow(['Total Teams', $row['total_teams'] . ' (' . $row['npc_teams'] . ' NPCs / ' . $row['player_teams'] . ' Players)']);
-        $table->addRow(['Total Gold in Circulation', $row['total_circulating_gold'] . ' gold']);
+        $table->addRow(['Total Teams', $row['total_teams'].' ('.$row['npc_teams'].' NPCs / '.$row['player_teams'].' Players)']);
+        $table->addRow(['Total Gold in Circulation', $row['total_circulating_gold'].' gold']);
         $table->addRow(['Average / Min / Max Gold per Team', sprintf('%.2f / %d / %d gold', $row['avg_gold'], $row['min_gold'], $row['max_gold'])]);
-        $table->addRow(['Total Outstanding Debt', $row['total_debt'] . ' gold']);
+        $table->addRow(['Total Outstanding Debt', $row['total_debt'].' gold']);
         $table->addRow(['Average / Max Debt per Team', sprintf('%.2f / %d gold', $row['avg_debt'], $row['max_debt'])]);
         $table->addRow(['Teams in Financial Crisis', $row['teams_in_crisis']]);
         $table->render();
@@ -226,8 +235,8 @@ class DiagnoseKingdomCommand extends Command
             $txTable = new Table($io);
             $txTable->setHeaders(['Transaction Type', 'Net Gold Flow', 'Count']);
             foreach ($txRows as $txRow) {
-                $flowStr = $txRow['total_gold_flow'] > 0 ? ('+' . $txRow['total_gold_flow']) : $txRow['total_gold_flow'];
-                $txTable->addRow([$txRow['type'], $flowStr . ' gold', $txRow['tx_count']]);
+                $flowStr = $txRow['total_gold_flow'] > 0 ? ('+'.$txRow['total_gold_flow']) : $txRow['total_gold_flow'];
+                $txTable->addRow([$txRow['type'], $flowStr.' gold', $txRow['tx_count']]);
             }
             $txTable->render();
         }
@@ -257,6 +266,7 @@ class DiagnoseKingdomCommand extends Command
 
         if (empty($rows)) {
             $io->warning('No team rosters detected.');
+
             return;
         }
 
@@ -265,13 +275,13 @@ class DiagnoseKingdomCommand extends Command
 
         $understaffedTeams = [];
         foreach ($rows as $row) {
-            $isNpc = (int) $row['is_npc'] === 1 ? 'NPC' : 'Player';
+            $isNpc = 1 === (int) $row['is_npc'] ? 'NPC' : 'Player';
             $combatants = (int) $row['combatants_count'];
             $combatantsStr = $combatants;
 
             if ($combatants < 6) {
                 $combatantsStr = sprintf('<fg=red;options=bold>%d</>', $combatants);
-                $understaffedTeams[] = $row['team_name'] . ' (ID: ' . $row['team_id'] . ', Combatants: ' . $combatants . ')';
+                $understaffedTeams[] = $row['team_name'].' (ID: '.$row['team_id'].', Combatants: '.$combatants.')';
             }
 
             $table->addRow([
@@ -291,7 +301,7 @@ class DiagnoseKingdomCommand extends Command
                 \count($understaffedTeams)
             ));
             foreach ($understaffedTeams as $ut) {
-                $io->writeln('  - ' . $ut);
+                $io->writeln('  - '.$ut);
             }
         } else {
             $io->success('All active teams have at least 6 combat-ready heroes.');
@@ -354,6 +364,7 @@ class DiagnoseKingdomCommand extends Command
 
         if (empty($rows)) {
             $io->note('No marketplace listings detected.');
+
             return;
         }
 
@@ -385,6 +396,7 @@ class DiagnoseKingdomCommand extends Command
 
         if (empty($rows)) {
             $io->note('No battles have been recorded in this kingdom.');
+
             return;
         }
 

@@ -125,8 +125,10 @@ class CombatDeathAndDurabilityTest extends TestCase
             $combatEngine,
             $messageBus,
             $graveyardService,
-            $raceConfig
+            $raceConfig,
+            $this->createMock(\App\Service\Notification\NotificationHelper::class)
         );
+
 
         // Mock setup
         $fixture = $this->createMock(LeagueFixture::class);

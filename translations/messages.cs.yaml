@@ -290,6 +290,24 @@ notification:
   marketplace_auction_won_seller_body: 'Vaše aukce #%listing% byla prodána hráči "%buyer%" za %amount% zlata.'
   marketplace_auction_won_buyer_title: Aukce vyhrána
   marketplace_auction_won_buyer_body: 'Vyhráli jste aukci #%listing% za %amount% zlata.'
+  match_result_title: Výsledek zápasu
+  match_result_body: 'Zápas %home_team% vs %away_team% skončil výsledkem %home_score%:%away_score%.'
+  hero_combat_death_title: Hrdina padl v boji
+  hero_combat_death_body: 'Váš hrdina "%hero_name%" trvale padl v zápasu s týmem "%opponent%".'
+  hq_upgrade_title: Vylepšení základny
+  hq_upgrade_body: 'Vylepšení budovy "%facility%" na úroveň %level% bylo úspěšně dokončeno.'
+  hq_downgrade_title: Ponížení základny
+  hq_downgrade_body: 'Ponížení budovy "%facility%" na úroveň %level% bylo dokončeno. Vráceno %refund% zlata.'
+  hq_arena_adaptation_title: Adaptace arény
+  hq_arena_adaptation_body: 'Změna adaptace arény na rasu %race% vstoupila v platnost.'
+  season_ended_title: Konec sezóny %season%
+  season_ended_body: 'Sezóna %season% skončila! Umístění: %position%. místo (%status_text%). Získali jste %reward% zlata.'
+  financial_warning_title: Finanční varování
+  financial_warning_body: 'Tým má neuhrazený dluh %debt% zlata. Snižte náklady nebo prodejte aktiva.'
+  financial_restricted_title: Finanční restrikce
+  financial_restricted_body: 'Tým je %weeks% týdnů v krizi! Pasivní bonusy základny jsou pozastaveny.'
+  training_completed_title: Trénink dokončen
+  training_completed_body: 'Týdenní tréninkový cyklus proběhl úspěšně. Trenéři předali zkušenosti hrdinům.'
 
 dashboard:
   history_title: Historie týmu
@@ -470,6 +488,7 @@ activity:
     facility_upgraded: Vylepšení budovy
     facility_downgraded: Snížení budovy
     race_optimization_changed: Uzpůsobení arény
+    spell_learned: Naučení kouzla
 
 hero_activity:
   summoned: 'Vyvolán do týmu %team% (cena %gold% zlata).'
@@ -485,12 +504,14 @@ hero_activity:
     attribute: 'Dokončen trénink pod vedením trenéra %trainer% (vlastnost %attribute%, %gain% k základu).'
     magic: 'Dokončen trénink pod vedením trenéra %trainer% (kapacita magie, %gain% slotů).'
     form: 'Dokončen trénink pod vedením trenéra %trainer% (zotavení, %gain% k formě).'
+  spell_learned: 'Naučil se nové kouzlo "%spell%" (škola %school%).'
   died:
     dismissed: 'Propuštěn z týmu.'
     combat_death: 'Padl v boji.'
     age: 'Zemřel stářím.'
     retired: 'Odešel na odpočinek.'
     death: 'Zemřel.'
+
 
 financial_crisis:
   title_warning: Finanční varování
