@@ -27,6 +27,7 @@ use App\Service\Item\ItemService;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Summoning\SummoningService;
 use App\Service\TeamChronicle\TeamChronicleService;
+use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class NpcEconomySimulator
@@ -44,6 +45,7 @@ class NpcEconomySimulator
         private readonly TeamChronicleService $teamChronicleService,
         private readonly NpcTacticsSimulator $tacticsSimulator,
         private readonly ItemService $itemService,
+        private readonly TrainingService $trainingService,
     ) {
     }
 
@@ -167,37 +169,17 @@ class NpcEconomySimulator
                         }
                     }
 
-                    $hq = $this->hqService->getForTeam($team);
-                    $trainingLevel = 1;
-                    foreach ($hq->getFacilities() as $facility) {
-                        if (FacilityType::Training === $facility->getType()) {
-                            $trainingLevel = $facility->getLevel();
-                            break;
-                        }
-                    }
-                    $trainerLimit = 2 + (int) floor(($trainingLevel - 1) / 2);
+                    $trainerLimit = $this->trainingService->getTrainerLimit($team);
 
                     if ($trainersCount < $trainerLimit) {
                         try {
-                            $hero->setRole(HeroRole::Trainer);
-                            $hero->setTrainingType(null);
-                            $hero->setTargetAttribute(null);
-
-                            // Unequip all items
-                            $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
-                            foreach ($equippedItems as $item) {
-                                $item->setEquippedHero(null);
-                                $item->setEquippedSlot(null);
-                            }
-
-                            // Remove hero from active formations
-                            $slots = $this->em->getRepository(\App\Entity\Formation\FormationSlot::class)->findBy(['hero' => $hero]);
-                            foreach ($slots as $slot) {
-                                $slot->setHero(null);
-                            }
+                            // Use shared applyTrainerPromotion() to ensure chronicle entry (trainer_promoted)
+                            // is recorded identically to the player-facing promotion path.
+                            // No flush here — the caller flushes after the full simulation loop.
+                            $this->trainingService->applyTrainerPromotion($hero, $team);
 
                             --$combatantCount;
-                            // Add to list of trainers for this tick so count is accurate
+                            // Refresh in-memory hero list so trainer count stays accurate within the loop
                             $aliveHeroes = array_map(function (Hero $h) use ($heroId) {
                                 if ($h->getId() === $heroId) {
                                     $h->setRole(HeroRole::Trainer);

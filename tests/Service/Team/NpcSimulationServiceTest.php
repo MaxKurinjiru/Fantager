@@ -94,6 +94,31 @@ class NpcSimulationServiceTest extends TestCase
         $this->spellService->method('listLibrary')->willReturnCallback(fn () => $this->spellLibraryList);
         $this->spellService->method('listForHero')->willReturnCallback(fn () => $this->knownSpellsList);
 
+        // applyTrainerPromotion() is a shared internal method; simulate its side-effects
+        // (setting role, clearing training config, unequipping items, removing from formations)
+        // so that NPC simulator tests can assert on hero/item state.
+        // The canonical logic is tested in TrainingServiceTest.
+        $this->trainingService->method('applyTrainerPromotion')->willReturnCallback(
+            function (Hero $hero): void {
+                $hero->setRole(\App\Enum\HeroRole::Trainer);
+                $hero->setTrainingType(null);
+                $hero->setTargetAttribute(null);
+
+                $items = $this->em->getRepository(\App\Entity\Item\Item::class)->findBy(['equippedHero' => $hero]);
+                foreach ($items as $item) {
+                    $item->setEquippedHero(null);
+                    $item->setEquippedSlot(null);
+                }
+
+                $slots = $this->em->getRepository(\App\Entity\Formation\FormationSlot::class)->findBy(['hero' => $hero]);
+                foreach ($slots as $slot) {
+                    $slot->setHero(null);
+                }
+            }
+        );
+
+
+
         $tacticsSimulator = new \App\Service\Team\NpcTacticsSimulator(
             $this->em,
             $this->itemService,
@@ -115,7 +140,8 @@ class NpcSimulationServiceTest extends TestCase
             $this->raceConfig,
             $this->teamChronicleService,
             $tacticsSimulator,
-            $this->itemService
+            $this->itemService,
+            $this->trainingService
         );
 
         $this->service = new NpcSimulationService(
@@ -633,6 +659,9 @@ class NpcSimulationServiceTest extends TestCase
         // Expect dismiss NOT to be called
         $this->dismissalService->expects($this->never())->method('dismiss');
 
+        // Trainer limit must allow promotion (NpcEconomySimulator calls trainingService->getTrainerLimit)
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+
         // Run
         $this->service->simulateDailyManagementAndEconomy($kingdom, new \DateTimeImmutable());
 
@@ -904,7 +933,7 @@ class NpcSimulationServiceTest extends TestCase
         $heroRepo->method('findBy')->willReturn([$hero, $hero2]);
 
         $itemRepo = $this->createMock(EntityRepository::class);
-        $itemRepo->expects($this->once())->method('findBy')
+        $itemRepo->expects($this->atLeastOnce())->method('findBy')
             ->with(['equippedHero' => $hero])
             ->willReturn([$item]);
 

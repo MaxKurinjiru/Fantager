@@ -41,22 +41,45 @@ Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter`
 
 ## Event Types
 
-### Implemented (written today)
+### Implemented
 
-| `ChronicleEventType` | Trigger | Service |
-|----------------------|---------|---------|
+| `ChronicleEventType` | Trigger | Service / Method |
+|----------------------|---------|-----------------|
 | `team_established` | NPC team created during kingdom init | `KingdomInitializationService` |
 | `player_joined` | Player assigned to NPC team (registration or test user) | `RegistrationService`, `TestUserService` |
 | `player_released` | Team returned to NPC pool | See release reasons below |
+| `team_renamed` | Team name changed in settings | `TeamService` |
 | `season_ended` | League season transition rewards applied | `SeasonTransitionService` |
+| `battle_win` | League match won | `TeamChronicleService::recordBattleOutcome()` |
+| `battle_loss` | League match lost | `TeamChronicleService::recordBattleOutcome()` |
+| `battle_draw` | League match drawn | `TeamChronicleService::recordBattleOutcome()` |
+| `starting_roster` | Hero summoned to initial kingdom roster | `KingdomInitializationService` |
 | `summon_completed` | Hero successfully summoned | `SummoningService` |
+| `hero_levelup` | Hero reached a new level | `TeamChronicleService::recordHeroLevelup()` |
+| `hero_dismissed` | Hero dismissed from roster | `HeroDismissalService` |
+| `trainer_dismissed` | Trainer dismissed from roster | `TrainerDismissalService` |
+| `trainer_promoted` | Hero promoted to trainer role — **player and NPC path** | `TrainingService::applyTrainerPromotion()` |
+| `hero_died` | Hero died in combat | `TeamChronicleService::recordHeroDied()` |
+| `training_completed` | Weekly training tick processed | `TrainingService` (tick handler) |
+| `spell_learned` | Hero learned a spell | `SpellService` |
 | `item_purchased` | Item bought on marketplace or from merchant | `TeamChronicleService::recordItemPurchased()` |
 | `item_sold` | Item sold on marketplace | `TeamChronicleService::recordItemSold()` |
+| `item_dismantled` | Item dismantled for essences | `ItemService` |
+| `hero_purchased` | Hero bought on marketplace | `TeamChronicleService::recordHeroPurchased()` |
+| `hero_sold` | Hero sold on marketplace | `TeamChronicleService::recordHeroSold()` |
+| `trainer_purchased` | Trainer bought on marketplace | `TeamChronicleService::recordTrainerPurchased()` |
+| `trainer_sold` | Trainer sold on marketplace | `TeamChronicleService::recordTrainerSold()` |
+| `facility_upgraded` | HQ facility upgrade completed | `HeadquartersService` |
+| `facility_downgraded` | HQ facility downgrade completed | `HeadquartersService` |
+| `facility_upgrade_cancelled` | HQ facility upgrade cancelled | `HeadquartersService` |
+| `race_optimization_changed` | Arena race adaptation changed — player or NPC | `HeadquartersService`, `NpcEconomySimulator` |
+| `financial_crisis_state` | Financial crisis level changed | `FinancialCrisisService` |
+| `kingdom_reward_granted` | Royal Treasury distribution received | `RoyalTreasuryService` |
 
 ### `player_released` reasons (`ChronicleReleaseReason`)
 
 | Reason | Trigger |
-|--------|---------|
+|--------|---------| 
 | `inactivity` | 28-day inactivity release | `PlayerInactivityService::executeInactivityRelease()` |
 | `bankruptcy` | Financial bankruptcy | `FinancialCrisisService::executeBankruptcy()` |
 | `unverified_registration` | Unverified account deleted after 24 h | `ProcessKingdomTicksHandler::cleanupInactiveRegistrations()` |
@@ -80,10 +103,6 @@ Translation keys: `activity.player_released.{reason}` with `%player%` param.
 
 Subject params: `%item%`, `%buyer%`, `%price%`.
 
-### Reserved (enum exists; write hooks pending)
-
-`battle_win`, `battle_loss`, `battle_draw`, `hero_levelup`, `hero_died`, `hero_retired`, `training_completed` — to be wired when combat, XP, etc. are implemented.
-
 ---
 
 ## Categories (UI filters)
@@ -92,10 +111,10 @@ Subject params: `%item%`, `%buyer%`, `%price%`.
 
 | Category | Types |
 |----------|-------|
-| `ownership` | `team_established`, `player_joined`, `player_released` |
-| `competition` | `battle_*`, `season_ended` |
-| `roster` | hero lifecycle, `training_completed`, `summon_completed` |
-| `economy` | `item_purchased`, `item_sold` |
+| `ownership` | `team_established`, `player_joined`, `player_released`, `team_renamed` |
+| `competition` | `battle_win`, `battle_loss`, `battle_draw`, `season_ended` |
+| `roster` | `starting_roster`, `hero_levelup`, `hero_died`, `hero_retired`, `training_completed`, `summon_completed`, `hero_dismissed`, `trainer_dismissed`, `spell_learned`, `trainer_promoted` |
+| `economy` | `item_purchased`, `item_sold`, `hero_purchased`, `hero_sold`, `trainer_purchased`, `trainer_sold`, `facility_upgraded`, `facility_downgraded`, `facility_upgrade_cancelled`, `race_optimization_changed`, `item_dismantled`, `financial_crisis_state`, `kingdom_reward_granted` |
 | `all` | no type restriction |
 
 ---
@@ -145,14 +164,19 @@ Styles: `assets/styles/components/_chronicle.scss`.
 
 ## Related Systems
 
-- [Auth System](auth-system.md) — `player_joined` at registration (before email verification)
-- [Kingdom System](kingdom-system.md) — `team_established` for every NPC slot at init
+- [Auth System](auth-system.md) — `player_joined` at registration; `player_released` / account_deleted
+- [Kingdom System](kingdom-system.md) — `team_established` and `starting_roster` for every NPC slot at init
 - [Player Inactivity System](player-inactivity-system.md) — `player_released` / inactivity
-- [Financial Crisis System](financial-crisis-system.md) — `player_released` / bankruptcy
-- [League System](league-system.md) — `season_ended`
+- [Financial Crisis System](financial-crisis-system.md) — `player_released` / bankruptcy; `financial_crisis_state` on crisis level change; `kingdom_reward_granted` on treasury distribution
+- [League System](league-system.md) — `season_ended`; `battle_win` / `battle_loss` / `battle_draw` on match resolution
 - [Summoning System](summoning-system.md) — `summon_completed` (parallel detail in `TeamSummonHistory` per hero)
-- [Marketplace System](marketplace-system.md) — `item_purchased` / `item_sold` on buy-now and auction settlement
-- [Item System](item-system.md) — `item_purchased` on merchant purchase
+- [Training System](training-system.md) — `trainer_promoted` via `TrainingService::applyTrainerPromotion()` (player and NPC path); `training_completed` on weekly tick
+- [Headquarters System](headquarters-system.md) — `facility_upgraded`, `facility_downgraded`, `facility_upgrade_cancelled`, `race_optimization_changed`
+- [Marketplace System](marketplace-system.md) — `item_purchased` / `item_sold` / `hero_purchased` / `hero_sold` / `trainer_purchased` / `trainer_sold` on buy-now and auction settlement
+- [Item System](item-system.md) — `item_purchased` on merchant purchase; `item_dismantled` on dismantle
+- [Spell System](spell-system.md) — `spell_learned` on hero learning a spell
+- [Hero System](hero-system.md) — `hero_dismissed`, `trainer_dismissed`, `hero_levelup`, `hero_died`
+- [Team System](team-system.md) — `team_renamed`
 
 ---
 

@@ -6,10 +6,8 @@ namespace App\Service\Team;
 
 use App\Entity\Formation\Formation;
 use App\Entity\Hero\Hero;
-use App\Entity\Item\Item;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
-use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use App\Enum\TrainingType;
 use App\Service\Training\TrainingService;
@@ -118,15 +116,11 @@ class NpcTrainingSimulator
             $needed = $trainerLimit - \count($trainers);
             for ($i = 0; $i < $needed && $i < \count($promotionCandidates); ++$i) {
                 $candidate = $promotionCandidates[$i];
-                $candidate->setRole(HeroRole::Trainer);
+                // Use shared applyTrainerPromotion() to ensure chronicle entry (trainer_promoted)
+                // is recorded identically to the player-facing promotion path.
+                // No flush here — the caller flushes after the full simulation loop.
+                $this->trainingService->applyTrainerPromotion($candidate, $team);
                 $trainers[] = $candidate;
-
-                // Unequip all items from the NPC candidate being promoted to trainer
-                $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $candidate]);
-                foreach ($equippedItems as $item) {
-                    $item->setEquippedHero(null);
-                    $item->setEquippedSlot(null);
-                }
 
                 // Remove from trainees list
                 $idx = array_search($candidate, $trainees, true);

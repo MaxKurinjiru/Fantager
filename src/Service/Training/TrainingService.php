@@ -162,6 +162,22 @@ class TrainingService
             throw new UserFacingException('error.training_trainer_limit_reached');
         }
 
+        $this->applyTrainerPromotion($hero, $team);
+        $this->em->flush();
+    }
+
+    /**
+     * Shared logic for promoting a hero to trainer role.
+     * Sets the role, clears training config, unequips items, removes from formations, and writes the team chronicle.
+     *
+     * Does NOT perform any validation guards and does NOT call em->flush().
+     * The caller is responsible for flushing after this method returns.
+     *
+     * Used by both the player-facing promoteToTrainer() (which adds validation guards + flush)
+     * and NPC simulation paths (NpcTrainingSimulator, NpcEconomySimulator).
+     */
+    public function applyTrainerPromotion(Hero $hero, Team $team): void
+    {
         $hero->setRole(HeroRole::Trainer);
         $hero->setTrainingType(null);
         $hero->setTargetAttribute(null);
@@ -181,7 +197,6 @@ class TrainingService
         }
 
         $this->teamChronicleService->recordTrainerPromoted($team, $hero);
-        $this->em->flush();
     }
 
     public function configureTrainer(Hero $trainer, ?TrainingType $type, ?string $attribute, Team $team, \DateTimeImmutable $now): void
