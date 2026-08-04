@@ -296,6 +296,8 @@ notification:
   hero_combat_death_body: 'Your hero "%hero_name%" permanently fell in combat against "%opponent%".'
   hq_upgrade_title: HQ Upgrade Completed
   hq_upgrade_body: 'Upgrade of facility "%facility%" to level %level% was completed successfully.'
+  hq_cancel_title: HQ Upgrade Cancelled
+  hq_cancel_body: 'Upgrade of facility "%facility%" was cancelled. Refunded %refund% gold.'
   hq_downgrade_title: HQ Downgrade Completed
   hq_downgrade_body: 'Downgrade of facility "%facility%" to level %level% completed. Refunded %refund% gold.'
   hq_arena_adaptation_title: Arena Adaptation Changed
@@ -445,6 +447,17 @@ activity:
   item_purchased: 'Item %item% was purchased on the marketplace from %seller% for %price% gold.'
   item_sold: 'Item %item% was sold on the marketplace to %buyer% for %price% gold.'
   team_renamed: 'Team was renamed from %old_name% to %new_name%.'
+  hero_levelup: 'Hero %hero% reached level %new_level%.'
+  hero_died:
+    combat_death: 'Hero %hero% died in combat.'
+    dismissed: 'Hero %hero% was dismissed.'
+  item_dismantled: 'Item %item% was dismantled into %essence% %rarity% essence.'
+  trainer_promoted: 'Hero %hero% was promoted to Trainer.'
+  financial_crisis:
+    warning: 'Financial warning: unpaid debt %debt% gold.'
+    restricted: 'Financial restriction active due to debt.'
+    bankruptcy_pending: 'Team is facing bankruptcy.'
+  kingdom_reward_granted: 'Granted %gold% gold from the Royal Treasury pool.'
   battle_win: 'Won %score% against %opponent%.'
   battle_loss: 'Lost %score% against %opponent%.'
   battle_draw: 'Drew %score% against %opponent%.'
@@ -454,6 +467,7 @@ activity:
     form: 'Hero %hero% completed training under trainer %trainer% (recovery, %gain% to form).'
   facility_upgraded: 'Facility %facility% was upgraded to level %level%.'
   facility_downgraded: 'Facility %facility% was downgraded to level %level%.'
+  facility_upgrade_cancelled: 'Upgrade of facility %facility% to level %level% was cancelled.'
   race_optimization_changed: 'Home arena adaptation was changed to: %race%.'
   battle_win_chip: Win
   battle_loss_chip: Loss
@@ -487,13 +501,19 @@ activity:
     team_renamed: Team renamed
     facility_upgraded: Facility upgraded
     facility_downgraded: Facility downgraded
+    facility_upgrade_cancelled: Upgrade cancelled
     race_optimization_changed: Arena adaptation changed
     spell_learned: Spell learned
+    item_dismantled: Item dismantled
+    trainer_promoted: Trainer promoted
+    financial_crisis_state: Financial crisis
+    kingdom_reward_granted: Royal Treasury distribution
 
 hero_activity:
   summoned: 'Summoned into team %team% (cost %gold% gold).'
   starting_roster: 'Started career as a founding member of team %team%.'
   transferred: 'Transferred from %from_team% to %to_team% for %price% gold.'
+  renamed: 'Renamed from %old_name% to %new_name%.'
   match_played:
     win: 'Won against %opponent%.'
     loss: 'Lost against %opponent%.'

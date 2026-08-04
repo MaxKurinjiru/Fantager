@@ -50,6 +50,9 @@ class TrainingServiceTest extends TestCase
         $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
 
+        $financialCrisisServiceMock = $this->createMock(\App\Service\Economy\FinancialCrisisService::class);
+        $financialCrisisServiceMock->method('areHqBonusesActive')->willReturn(true);
+
         $this->trainingService = new TrainingService(
             $this->heroRepositoryMock,
             $this->hqRepositoryMock,
@@ -57,7 +60,8 @@ class TrainingServiceTest extends TestCase
             $this->teamChronicleServiceMock,
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             $this->entityManagerMock,
-            $this->createMock(\App\Service\Notification\NotificationHelper::class)
+            $this->createMock(\App\Service\Notification\NotificationHelper::class),
+            $financialCrisisServiceMock
         );
     }
 

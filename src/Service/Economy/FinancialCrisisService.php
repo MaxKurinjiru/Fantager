@@ -202,6 +202,9 @@ class FinancialCrisisService
             $this->evaluateCrisisProgress($team, $weeklyReferenceExpenses);
 
             $level = $this->resolveCrisisLevel($team, $weeklyReferenceExpenses);
+            if (FinancialCrisisLevel::None !== $level) {
+                $this->teamChronicleService->recordFinancialCrisisState($team, $level->value);
+            }
             $user = $team->getUser();
 
             if ($user instanceof User) {

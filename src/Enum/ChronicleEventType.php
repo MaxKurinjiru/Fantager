@@ -29,7 +29,12 @@ enum ChronicleEventType: string
     case TeamRenamed = 'team_renamed';
     case FacilityUpgraded = 'facility_upgraded';
     case FacilityDowngraded = 'facility_downgraded';
+    case FacilityUpgradeCancelled = 'facility_upgrade_cancelled';
     case RaceOptimizationChanged = 'race_optimization_changed';
     case StartingRoster = 'starting_roster';
     case SpellLearned = 'spell_learned';
+    case ItemDismantled = 'item_dismantled';
+    case TrainerPromoted = 'trainer_promoted';
+    case FinancialCrisisState = 'financial_crisis_state';
+    case KingdomRewardGranted = 'kingdom_reward_granted';
 }

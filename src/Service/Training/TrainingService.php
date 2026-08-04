@@ -16,6 +16,7 @@ use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
+use App\Service\Economy\FinancialCrisisService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +34,7 @@ class TrainingService
         private readonly HeroChronicleService $heroChronicleService,
         private readonly EntityManagerInterface $em,
         private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
+        private readonly FinancialCrisisService $financialCrisisService,
     ) {
     }
 
@@ -178,6 +180,7 @@ class TrainingService
             $slot->setHero(null);
         }
 
+        $this->teamChronicleService->recordTrainerPromoted($team, $hero);
         $this->em->flush();
     }
 
@@ -399,7 +402,7 @@ class TrainingService
                         /** @var \App\Entity\Headquarters\Headquarters|null $hq */
                         $hq = $this->hqRepository->findOneBy(['team' => $hero->getTeam()]);
                         $facilityEfficiency = 0.0;
-                        if (null !== $hq) {
+                        if (null !== $hq && $this->financialCrisisService->areHqBonusesActive($hero->getTeam())) {
                             foreach ($hq->getFacilities() as $fac) {
                                 if (\App\Enum\FacilityType::Training === $fac->getType()) {
                                     $bonuses = $fac->getPassiveBonuses();

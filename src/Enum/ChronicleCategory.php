@@ -41,6 +41,7 @@ enum ChronicleCategory: string
                 ChronicleEventType::HeroDismissed,
                 ChronicleEventType::TrainerDismissed,
                 ChronicleEventType::SpellLearned,
+                ChronicleEventType::TrainerPromoted,
             ],
 
             self::Economy => [
@@ -52,7 +53,11 @@ enum ChronicleCategory: string
                 ChronicleEventType::TrainerSold,
                 ChronicleEventType::FacilityUpgraded,
                 ChronicleEventType::FacilityDowngraded,
+                ChronicleEventType::FacilityUpgradeCancelled,
                 ChronicleEventType::RaceOptimizationChanged,
+                ChronicleEventType::ItemDismantled,
+                ChronicleEventType::FinancialCrisisState,
+                ChronicleEventType::KingdomRewardGranted,
             ],
         };
     }

@@ -364,6 +364,23 @@ class TeamChronicleService
         );
     }
 
+    public function recordFacilityUpgradeCancelled(Team $team, string $facilityType, int $targetLevel): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::FacilityUpgradeCancelled,
+            'activity.facility_upgrade_cancelled',
+            [
+                'facility' => $facilityType,
+                'level' => (string) $targetLevel,
+            ],
+            [
+                'facility' => $facilityType,
+                'target_level' => $targetLevel,
+            ]
+        );
+    }
+
     public function recordRaceOptimizationChanged(Team $team, ?string $race): TeamChronicle
     {
         return $this->create(
@@ -434,6 +451,105 @@ class TeamChronicleService
                 'hero_id' => $hero->getId(),
                 'spell_id' => $spell->getId(),
                 'school' => $spell->getSchool()->value,
+            ],
+        );
+    }
+
+    public function recordHeroLevelup(Team $team, Hero $hero, int $oldLevel, int $newLevel): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::HeroLevelup,
+            'activity.hero_levelup',
+            [
+                'hero' => $hero->getName(),
+                'old_level' => (string) $oldLevel,
+                'new_level' => (string) $newLevel,
+            ],
+            [
+                'hero_id' => $hero->getId(),
+                'old_level' => $oldLevel,
+                'new_level' => $newLevel,
+            ],
+        );
+    }
+
+    public function recordHeroDied(Team $team, Hero $hero, string $cause): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::HeroDied,
+            'activity.hero_died.'.$cause,
+            [
+                'hero' => $hero->getName(),
+            ],
+            [
+                'hero_id' => $hero->getId(),
+                'cause' => $cause,
+            ],
+        );
+    }
+
+    public function recordItemDismantled(Team $team, Item $item, int $essenceAmount, string $rarity): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::ItemDismantled,
+            'activity.item_dismantled',
+            [
+                'item' => $item->getName(),
+                'essence' => (string) $essenceAmount,
+                'rarity' => $rarity,
+            ],
+            [
+                'item_id' => $item->getId(),
+                'essence' => $essenceAmount,
+                'rarity' => $rarity,
+            ],
+        );
+    }
+
+    public function recordTrainerPromoted(Team $team, Hero $hero): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::TrainerPromoted,
+            'activity.trainer_promoted',
+            [
+                'hero' => $hero->getName(),
+            ],
+            [
+                'hero_id' => $hero->getId(),
+            ],
+        );
+    }
+
+    public function recordFinancialCrisisState(Team $team, string $level): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::FinancialCrisisState,
+            'activity.financial_crisis.'.$level,
+            [
+                'level' => $level,
+            ],
+            [
+                'level' => $level,
+            ],
+        );
+    }
+
+    public function recordKingdomRewardReceived(Team $team, int $goldAmount): TeamChronicle
+    {
+        return $this->create(
+            $team,
+            ChronicleEventType::KingdomRewardGranted,
+            'activity.kingdom_reward_granted',
+            [
+                'gold' => (string) $goldAmount,
+            ],
+            [
+                'gold' => $goldAmount,
             ],
         );
     }

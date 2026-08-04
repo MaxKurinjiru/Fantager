@@ -26,6 +26,7 @@ class RoyalTreasuryService
         private readonly TeamRepository $teamRepository,
         private readonly LeagueStandingRepository $leagueStandingRepository,
         private readonly EconomyService $economyService,
+        private readonly \App\Service\TeamChronicle\TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -108,6 +109,7 @@ class RoyalTreasuryService
                 FinancialRecordType::KingdomReward,
                 FinancialRecordActor::System,
             );
+            $this->teamChronicleService->recordKingdomRewardReceived($teamsById[$teamId], $amount);
             $distributed += $amount;
             ++$teamsPaid;
         }

@@ -28,8 +28,8 @@ class RoyalTreasuryServiceTest extends TestCase
     private $teamRepositoryMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&LeagueStandingRepository */
     private $leagueStandingRepositoryMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&EconomyService */
-    private $economyServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\TeamChronicle\TeamChronicleService */
+    private $teamChronicleServiceMock;
     private RoyalTreasuryService $service;
 
     protected function setUp(): void
@@ -37,11 +37,13 @@ class RoyalTreasuryServiceTest extends TestCase
         $this->teamRepositoryMock = $this->createMock(TeamRepository::class);
         $this->leagueStandingRepositoryMock = $this->createMock(LeagueStandingRepository::class);
         $this->economyServiceMock = $this->createMock(EconomyService::class);
+        $this->teamChronicleServiceMock = $this->createMock(\App\Service\TeamChronicle\TeamChronicleService::class);
 
         $this->service = new RoyalTreasuryService(
             $this->teamRepositoryMock,
             $this->leagueStandingRepositoryMock,
             $this->economyServiceMock,
+            $this->teamChronicleServiceMock,
         );
     }
 

@@ -296,7 +296,9 @@ notification:
   hero_combat_death_body: 'Váš hrdina "%hero_name%" trvale padl v zápasu s týmem "%opponent%".'
   hq_upgrade_title: Vylepšení základny
   hq_upgrade_body: 'Vylepšení budovy "%facility%" na úroveň %level% bylo úspěšně dokončeno.'
-  hq_downgrade_title: Ponížení základny
+  hq_cancel_title: Zrušení vylepšení budovy
+  hq_cancel_body: 'Vylepšení budovy "%facility%" bylo zrušeno. Vráceno %refund% dukátů.'
+  hq_downgrade_title: Snížení úrovně budovy
   hq_downgrade_body: 'Ponížení budovy "%facility%" na úroveň %level% bylo dokončeno. Vráceno %refund% zlata.'
   hq_arena_adaptation_title: Adaptace arény
   hq_arena_adaptation_body: 'Změna adaptace arény na rasu %race% vstoupila v platnost.'
@@ -445,6 +447,17 @@ activity:
   item_purchased: 'Předmět %item% byl zakoupen na tržišti od týmu %seller% za %price% zlata.'
   item_sold: 'Předmět %item% byl prodán na tržišti týmu %buyer% za %price% zlata.'
   team_renamed: 'Tým byl přejmenován z %old_name% na %new_name%.'
+  hero_levelup: 'Hrdina %hero% dosáhl úrovně %new_level%.'
+  hero_died:
+    combat_death: 'Hrdina %hero% padl v boji.'
+    dismissed: 'Hrdina %hero% byl propuštěn.'
+  item_dismantled: 'Předmět %item% byl rozebrán na %essence% %rarity% esencí.'
+  trainer_promoted: 'Hrdina %hero% byl povýšen na Trenéra.'
+  financial_crisis:
+    warning: 'Finanční varování: nezaplacený dluh %debt% zlata.'
+    restricted: 'Finanční omezení aktivní z důvodu dluhu.'
+    bankruptcy_pending: 'Týmu hrozí bankrot.'
+  kingdom_reward_granted: 'Získlána odměna %gold% zlata z Královské pokladny.'
   battle_win: 'Výhra %score% proti týmu %opponent%.'
   battle_loss: 'Prohra %score% proti týmu %opponent%.'
   battle_draw: 'Remíza %score% proti týmu %opponent%.'
@@ -454,6 +467,7 @@ activity:
     form: 'Hrdina %hero% dokončil trénink pod vedením trenéra %trainer% (kondice a zotavení, %gain% k formě).'
   facility_upgraded: 'Budova %facility% byla vylepšena na úroveň %level%.'
   facility_downgraded: 'Budova %facility% byla snížena na úroveň %level%.'
+  facility_upgrade_cancelled: 'Vylepšení budovy %facility% na úroveň %level% bylo zrušeno.'
   race_optimization_changed: 'Uzpůsobení domácí arény bylo změněno na: %race%.'
   battle_win_chip: Výhra
   battle_loss_chip: Prohra
@@ -487,13 +501,19 @@ activity:
     team_renamed: Přejmenování týmu
     facility_upgraded: Vylepšení budovy
     facility_downgraded: Snížení budovy
+    facility_upgrade_cancelled: Zrušení vylepšení
     race_optimization_changed: Uzpůsobení arény
     spell_learned: Naučení kouzla
+    item_dismantled: Rozebrání předmětu
+    trainer_promoted: Povýšení na trenéra
+    financial_crisis_state: Finanční krize
+    kingdom_reward_granted: Podpora z Královské pokladny
 
 hero_activity:
   summoned: 'Vyvolán do týmu %team% (cena %gold% zlata).'
   starting_roster: 'Začal svou kariéru jako zakládající člen týmu %team%.'
   transferred: 'Přestoupil z týmu %from_team% do týmu %to_team% za %price% zlata.'
+  renamed: 'Přejmenován z %old_name% na %new_name%.'
   match_played:
     win: 'Výhra proti týmu %opponent%.'
     loss: 'Prohra proti týmu %opponent%.'

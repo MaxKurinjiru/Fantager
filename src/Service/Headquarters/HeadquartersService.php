@@ -217,6 +217,19 @@ class HeadquartersService
         $hq->setUpgradeCompletedAt(null);
         $hq->setFacilityOperation(null);
 
+        $this->teamChronicleService->recordFacilityUpgradeCancelled($team, $facility->getType()->value, $targetLevel);
+
+        if (null !== $team->getUser()) {
+            $this->notificationHelper->sendTranslatedNotification(
+                $team->getUser(),
+                \App\Enum\NotificationType::HqUpgrade,
+                'notification.hq_cancel_title',
+                'notification.hq_cancel_body',
+                [],
+                ['%facility%' => $facility->getType()->value, '%level%' => $targetLevel, '%refund%' => $cost]
+            );
+        }
+
         $this->em->flush();
     }
 

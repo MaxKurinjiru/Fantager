@@ -128,7 +128,7 @@ class TeamChroniclePresenter
             }
         }
 
-        if (in_array($type, [ChronicleEventType::FacilityUpgraded, ChronicleEventType::FacilityDowngraded], true) && isset($params['facility'])) {
+        if (in_array($type, [ChronicleEventType::FacilityUpgraded, ChronicleEventType::FacilityDowngraded, ChronicleEventType::FacilityUpgradeCancelled], true) && isset($params['facility'])) {
             $params['facility'] = $this->translator->trans(
                 'hq.facilities_list.'.$params['facility'].'.name',
                 [],
@@ -231,9 +231,14 @@ class TeamChroniclePresenter
             ChronicleEventType::TeamRenamed => '🏷️',
             ChronicleEventType::FacilityUpgraded => '🏗️',
             ChronicleEventType::FacilityDowngraded => '📉',
+            ChronicleEventType::FacilityUpgradeCancelled => '🚫',
             ChronicleEventType::RaceOptimizationChanged => '🏟️',
             ChronicleEventType::StartingRoster => '🛡️',
             ChronicleEventType::SpellLearned => '📜',
+            ChronicleEventType::ItemDismantled => '🔨',
+            ChronicleEventType::TrainerPromoted => '🎓',
+            ChronicleEventType::FinancialCrisisState => '⚠️',
+            ChronicleEventType::KingdomRewardGranted => '👑',
         };
     }
 }

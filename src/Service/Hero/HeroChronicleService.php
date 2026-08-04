@@ -189,6 +189,24 @@ class HeroChronicleService
         );
     }
 
+    public function recordRenamed(Hero $hero, string $oldName, string $newName): HeroChronicle
+    {
+        return $this->create(
+            $hero,
+            $hero->getTeam(),
+            HeroChronicleEventType::Transferred,
+            'hero_activity.renamed',
+            [
+                'old_name' => $oldName,
+                'new_name' => $newName,
+            ],
+            [
+                'old_name' => $oldName,
+                'new_name' => $newName,
+            ]
+        );
+    }
+
     /**
      * @param array<string, string> $subjectParams
      * @param array<string, mixed>  $data

@@ -41,6 +41,9 @@ class TrainingTraitSpeedTest extends TestCase
         $teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
         $entityManagerMock = $this->createMock(EntityManagerInterface::class);
 
+        $financialCrisisServiceMock = $this->createMock(\App\Service\Economy\FinancialCrisisService::class);
+        $financialCrisisServiceMock->method('areHqBonusesActive')->willReturn(true);
+
         $trainingService = new TrainingService(
             $heroRepositoryMock,
             $hqRepositoryMock,
@@ -48,7 +51,8 @@ class TrainingTraitSpeedTest extends TestCase
             $teamChronicleServiceMock,
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             $entityManagerMock,
-            $this->createMock(\App\Service\Notification\NotificationHelper::class)
+            $this->createMock(\App\Service\Notification\NotificationHelper::class),
+            $financialCrisisServiceMock
         );
 
 

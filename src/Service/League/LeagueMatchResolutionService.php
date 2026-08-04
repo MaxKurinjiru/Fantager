@@ -439,6 +439,7 @@ class LeagueMatchResolutionService
                 if ($diedPermanently) {
                     $this->graveyardService->prepareCombatDeath($hero);
                     $this->graveyardService->recordMemorial($hero, $hero->getTeam(), MemorialCause::CombatDeath);
+                    $this->teamChronicleService->recordHeroDied($hero->getTeam(), $hero, MemorialCause::CombatDeath->value);
                     $hero->setStatus(HeroStatus::Dead);
 
                     if (null !== $hero->getTeam()->getUser()) {
