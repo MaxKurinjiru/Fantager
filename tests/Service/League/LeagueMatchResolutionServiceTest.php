@@ -62,6 +62,10 @@ class LeagueMatchResolutionServiceTest extends TestCase
     private $combatEngine;
     /** @var \PHPUnit\Framework\MockObject\MockObject&MessageBusInterface */
     private $messageBus;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Graveyard\GraveyardService */
+    private $graveyardService;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&RaceConfig */
+    private $raceConfig;
     private LeagueMatchResolutionService $service;
 
     protected function setUp(): void
@@ -79,6 +83,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->seedGenerator = new CombatSeedGenerator();
         $this->combatEngine = $this->createMock(CombatEngine::class);
         $this->messageBus = $this->createMock(MessageBusInterface::class);
+        $this->graveyardService = $this->createMock(\App\Service\Graveyard\GraveyardService::class);
+        $this->raceConfig = $this->createMock(RaceConfig::class);
 
         $this->service = new LeagueMatchResolutionService(
             $this->fixtureRepository,
@@ -97,8 +103,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->seedGenerator,
             $this->combatEngine,
             $this->messageBus,
-            $this->createMock(\App\Service\Graveyard\GraveyardService::class),
-            $this->createMock(RaceConfig::class),
+            $this->graveyardService,
+            $this->raceConfig,
             $this->createMock(\App\Service\Notification\NotificationHelper::class),
         );
     }
@@ -372,5 +378,59 @@ class LeagueMatchResolutionServiceTest extends TestCase
             );
         }
         return $combatants;
+    }
+
+    public function testCompleteBattleProcessesCombatDeathAndGraveyard(): void
+    {
+        [$fixture, $homeStanding, $awayStanding] = $this->createFixtureContext();
+
+        $hero = new \App\Entity\Hero\Hero();
+        $hero->setTeam($fixture->getHomeTeam());
+        $hero->setRace(\App\Enum\Race::Human);
+        $hero->setAgeRaw(3000); // 300 years old (100% death chance)
+
+        $battle = new Battle();
+        $battle->setKingdom($fixture->getHomeTeam()->getKingdom());
+        $battle->setMatchType(MatchType::League);
+        $battle->setTeamA($fixture->getHomeTeam());
+        $battle->setTeamB($fixture->getAwayTeam());
+        $battle->setResult(BattleResult::WinA);
+        $battle->setScoreA(2);
+        $battle->setScoreB(1);
+        $battle->setCurrentRound(10);
+        $battle->setCombatLog([
+            'result' => [
+                'killed_hero_ids' => [77],
+                'item_hit_counts' => [],
+            ],
+        ]);
+
+        $fixtureRepo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        $fixtureRepo->expects($this->once())->method('findOneBy')->with(['battle' => $battle])->willReturn($fixture);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($fixtureRepo) {
+            if (LeagueFixture::class === $class) {
+                return $fixtureRepo;
+            }
+            return $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        });
+
+        $this->standingRepository->method('findOneBy')->willReturnMap([
+            [['group' => $fixture->getGroup(), 'team' => $fixture->getHomeTeam()], $homeStanding],
+            [['group' => $fixture->getGroup(), 'team' => $fixture->getAwayTeam()], $awayStanding],
+        ]);
+
+        $this->em->expects($this->once())->method('find')->with(\App\Entity\Hero\Hero::class, 77)->willReturn($hero);
+        $this->raceConfig->method('isAtOrAboveMortalityThreshold')->willReturn(true);
+        $this->raceConfig->method('getMortalityThreshold')->willReturn(50);
+
+        $this->graveyardService->expects($this->once())->method('prepareCombatDeath')->with($hero);
+        $this->graveyardService->expects($this->once())
+            ->method('recordMemorial')
+            ->with($hero, $fixture->getHomeTeam(), \App\Enum\MemorialCause::CombatDeath);
+
+        $this->service->completeBattle($battle);
+
+        $this->assertSame(\App\Enum\HeroStatus::Dead, $hero->getStatus());
     }
 }

@@ -28,6 +28,8 @@ class RoyalTreasuryServiceTest extends TestCase
     private $teamRepositoryMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&LeagueStandingRepository */
     private $leagueStandingRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&EconomyService */
+    private $economyServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\TeamChronicle\TeamChronicleService */
     private $teamChronicleServiceMock;
     private RoyalTreasuryService $service;

@@ -195,23 +195,24 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
   - Enforce home/away balance (1 home, 1 away match per week of play).
   - Standings updates: calculate played, wins, draws, losses, points, goal difference.
   - Season transition: process promotions, relegations, compound rewards (using global comparison tie-breakers). Shuffle groups for next season.
-- **API Contracts** (Planned/Deferred - Currently optional as the Web dashboard renders standings/fixtures server-side via Twig):
-  - `GET /api/v1/league/standings` — standings list (planned).
-  - `GET /api/v1/league/fixtures` — matches list (planned).
-  - `POST /api/v1/league/process-season` — manual admin season trigger (planned).
+- **API Contracts**:
+  - `GET /api/v1/league/standings` — standings list.
+  - `GET /api/v1/league/fixtures` — matches list.
+  - `GET /api/v1/league/seasons` — season history.
+  - `POST /api/v1/league/process-season` — manual admin season trigger.
 - **Frontend Views**:
   - **[NEW]** League Dashboard: Group standings table, fixture timeline, match summaries, and promotion/relegation threshold lines.
 - **Verification**: Run complete 11-week season simulation using CLI commands and verify standings and reward distributions.
-- **Status**: 🔄 Partially Complete (`LeagueFixtureScheduler`, `SeasonTransitionService`, and Web League Dashboard fully complete; API endpoints pending; combat wave cohort simulation fully implemented).
+- **Status**: ✅ Complete (`LeagueFixtureScheduler`, `SeasonTransitionService`, `Api\V1\LeagueController`, and Web League Dashboard fully complete).
 
 ### Step 6.4: Hero Mortality & Graveyard
 - **Database & Entities**: `GraveyardMemorial` entity (`graveyard` table).
-- **Service Layer**: `GraveyardService` records memorial snapshots on hero/trainer dismissal. Combat death triggers reserved for Step 6.1.
+- **Service Layer**: `GraveyardService` records memorial snapshots on hero/trainer dismissal and combat deaths.
 - **API Contracts**: `GET /api/v1/graveyard`, `GET /api/v1/graveyard/{id}`.
 - **Frontend Views**:
   - **[NEW]** Memorial Graveyard: Cemetery listing with filters (role, cause, race), summary stats, and memorial detail.
-- **Verification**: Dismiss a hero or trainer and verify memorial appears on `/app/graveyard` and via read API.
-- **Status**: 🔄 Partially Complete (`GraveyardService`, dismissal flows, Web UI, and read API implemented; combat death memorials pending combat engine).
+- **Verification**: Dismiss a hero/trainer or trigger combat death and verify memorial appears on `/app/graveyard` and via read API.
+- **Status**: ✅ Complete (`GraveyardService`, dismissal flows, combat death memorial snapshots, Web UI, and read API fully implemented).
 
 ---
 

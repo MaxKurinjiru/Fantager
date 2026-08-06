@@ -41,9 +41,11 @@ use App\ValueObject\Combat\CombatSide;
 use App\ValueObject\Combat\DerivedCombatStats;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\MessageBusInterface;
 
+#[AllowMockObjectsWithoutExpectations]
 class CombatDeathAndDurabilityTest extends TestCase
 {
     public function testCombatEngineTracksKilledHeroesAndHitCounts(): void
@@ -87,23 +89,23 @@ class CombatDeathAndDurabilityTest extends TestCase
 
     public function testLeagueMatchResolutionAppliesDeathsAndDurability(): void
     {
-        $fixtureRepository = $this->createMock(LeagueFixtureRepository::class);
-        $standingRepository = $this->createMock(LeagueStandingRepository::class);
-        $teamRosterService = $this->createMock(TeamRosterService::class);
-        $fixtureCompletionService = $this->createMock(LeagueFixtureCompletionService::class);
-        $fanClubService = $this->createMock(FanClubService::class);
-        $teamMoraleReputationService = $this->createMock(TeamMoraleReputationService::class);
-        $teamChronicleService = $this->createMock(TeamChronicleService::class);
-        $heroMasteryService = $this->createMock(HeroMasteryService::class);
-        $heroChronicleService = $this->createMock(HeroChronicleService::class);
-        $formationRepository = $this->createMock(\App\Repository\Formation\FormationRepository::class);
-        $em = $this->createMock(EntityManagerInterface::class);
-        $requestBuilder = $this->createMock(CombatMatchRequestBuilder::class);
+        $fixtureRepository = $this->createStub(LeagueFixtureRepository::class);
+        $standingRepository = $this->createStub(LeagueStandingRepository::class);
+        $teamRosterService = $this->createStub(TeamRosterService::class);
+        $fixtureCompletionService = $this->createStub(LeagueFixtureCompletionService::class);
+        $fanClubService = $this->createStub(FanClubService::class);
+        $teamMoraleReputationService = $this->createStub(TeamMoraleReputationService::class);
+        $teamChronicleService = $this->createStub(TeamChronicleService::class);
+        $heroMasteryService = $this->createStub(HeroMasteryService::class);
+        $heroChronicleService = $this->createStub(HeroChronicleService::class);
+        $formationRepository = $this->createStub(\App\Repository\Formation\FormationRepository::class);
+        $em = $this->createStub(EntityManagerInterface::class);
+        $requestBuilder = $this->createStub(CombatMatchRequestBuilder::class);
         $seedGenerator = new CombatSeedGenerator();
-        $combatEngine = $this->createMock(CombatEngine::class);
-        $messageBus = $this->createMock(MessageBusInterface::class);
+        $combatEngine = $this->createStub(CombatEngine::class);
+        $messageBus = $this->createStub(MessageBusInterface::class);
         $graveyardService = $this->createMock(GraveyardService::class);
-        $raceConfig = $this->createMock(RaceConfig::class);
+        $raceConfig = $this->createStub(RaceConfig::class);
         $raceConfig->method('isAtOrAboveMortalityThreshold')->willReturn(true);
         $raceConfig->method('getMortalityThreshold')->willReturn(80);
 
@@ -126,29 +128,29 @@ class CombatDeathAndDurabilityTest extends TestCase
             $messageBus,
             $graveyardService,
             $raceConfig,
-            $this->createMock(\App\Service\Notification\NotificationHelper::class)
+            $this->createStub(\App\Service\Notification\NotificationHelper::class)
         );
 
 
         // Mock setup
-        $fixture = $this->createMock(LeagueFixture::class);
-        $group = $this->createMock(LeagueGroup::class);
+        $fixture = $this->createStub(LeagueFixture::class);
+        $group = $this->createStub(LeagueGroup::class);
         $fixture->method('getGroup')->willReturn($group);
 
-        $homeTeam = $this->createMock(Team::class);
-        $awayTeam = $this->createMock(Team::class);
+        $homeTeam = $this->createStub(Team::class);
+        $awayTeam = $this->createStub(Team::class);
         $fixture->method('getHomeTeam')->willReturn($homeTeam);
         $fixture->method('getAwayTeam')->willReturn($awayTeam);
 
-        $standing = $this->createMock(LeagueStanding::class);
+        $standing = $this->createStub(LeagueStanding::class);
         $standingRepository->method('findOneBy')->willReturn($standing);
 
-        $fixtureRepo = $this->createMock(EntityRepository::class);
+        $fixtureRepo = $this->createStub(EntityRepository::class);
         $fixtureRepo->method('findOneBy')->willReturn($fixture);
 
 
         // Create a battle with mock outcomes
-        $battle = $this->createMock(Battle::class);
+        $battle = $this->createStub(Battle::class);
         $battle->method('getResult')->willReturn(BattleResult::WinA);
         $battle->method('getScoreA')->willReturn(1);
         $battle->method('getScoreB')->willReturn(0);
@@ -166,25 +168,24 @@ class CombatDeathAndDurabilityTest extends TestCase
         ]);
 
         // Setup formations and slots
-        $homeFormation = $this->createMock(Formation::class);
-        $awayFormation = $this->createMock(Formation::class);
+        $homeFormation = $this->createStub(Formation::class);
+        $awayFormation = $this->createStub(Formation::class);
         $battle->method('getFormationA')->willReturn($homeFormation);
         $battle->method('getFormationB')->willReturn($awayFormation);
 
-        $slotA = $this->createMock(FormationSlot::class);
-        $heroA = $this->createMock(Hero::class);
+        $slotA = $this->createStub(FormationSlot::class);
+        $heroA = $this->createStub(Hero::class);
         $heroA->method('getId')->willReturn(11);
         $slotA->method('getHero')->willReturn($heroA);
         $homeFormation->method('getSlots')->willReturn(new \Doctrine\Common\Collections\ArrayCollection([$slotA]));
 
-        $slotB = $this->createMock(FormationSlot::class);
-        $heroB = $this->createMock(Hero::class);
+        $slotB = $this->createStub(FormationSlot::class);
+        $heroB = $this->createStub(Hero::class);
         $heroB->method('getId')->willReturn(21);
         $heroB->method('getTeam')->willReturn($awayTeam);
         $heroB->method('getRace')->willReturn(Race::Human);
         $heroB->method('getAge')->willReturn(150);
         $heroB->method('getAgeRaw')->willReturn(1500);
-        $heroB->method('setAgeRaw')->willReturnSelf();
         $slotB->method('getHero')->willReturn($heroB);
         $awayFormation->method('getSlots')->willReturn(new \Doctrine\Common\Collections\ArrayCollection([$slotB]));
 
@@ -197,7 +198,7 @@ class CombatDeathAndDurabilityTest extends TestCase
         });
 
         // Mock items repository to return some items
-        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo = $this->createStub(EntityRepository::class);
         $item1 = new Item();
         $item1->setDurability(100);
         $item2 = new Item();
@@ -220,7 +221,7 @@ class CombatDeathAndDurabilityTest extends TestCase
             if ($class === LeagueFixture::class) {
                 return $fixtureRepo;
             }
-            return $this->createMock(EntityRepository::class);
+            return $this->createStub(EntityRepository::class);
         });
 
         // Setup expectations
@@ -232,12 +233,16 @@ class CombatDeathAndDurabilityTest extends TestCase
             ->method('recordMemorial')
             ->with($heroB, $awayTeam, MemorialCause::CombatDeath);
 
-        $heroB->expects($this->once())
-            ->method('setStatus')
-            ->with(HeroStatus::Dead);
-
         // Execute
         $service->completeBattle($battle);
+
+        // Check durability calculations:
+        // Rounds = 25 → floor(25/10) = 2
+        // Hero 11: hits = 3 → floor(3/3) = 1. Total loss = 2 + 1 = 3. New durability: 100 - 3 = 97.
+        $this->assertEquals(97, $item1->getDurability());
+
+        // Hero 21: hits = 9 → floor(9/3) = 3. Total loss = 2 + 3 = 5. New durability: 95 - 5 = 90.
+        $this->assertEquals(90, $item2->getDurability());
 
         // Check durability calculations:
         // Rounds = 25 → floor(25/10) = 2

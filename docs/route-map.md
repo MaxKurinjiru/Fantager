@@ -187,15 +187,15 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 ## League
 
 > [!NOTE]
-> The Web dashboard (`/app/league`) is fully complete. The `/api/v1/league/*` API endpoints are planned/deferred as the Web dashboard renders all standings and fixtures server-side via Twig, and match combat simulation is currently a stub.
+> Both the Web dashboard (`/app/league`) and the REST API endpoints (`/api/v1/league/*`) are fully implemented.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/league` | Web\LeagueController | League page showing group standings, fixtures, and global leaderboard |
-| GET | `/api/v1/league/standings` | Api\V1\LeagueController | Current standings (planned) |
-| GET | `/api/v1/league/fixtures` | Api\V1\LeagueController | Fixture schedule (planned) |
-| GET | `/api/v1/league/seasons` | Api\V1\LeagueController | Season history (planned) |
-| POST | `/api/v1/league/rewards/claim` | Api\V1\LeagueController | Claim rewards (planned) |
+| GET | `/api/v1/league/standings` | Api\V1\LeagueController | Current group standings and kingdom-wide leaderboard |
+| GET | `/api/v1/league/fixtures` | Api\V1\LeagueController | Fixture schedule for group or team |
+| GET | `/api/v1/league/seasons` | Api\V1\LeagueController | Kingdom season history |
+| POST | `/api/v1/league/process-season` | Api\V1\LeagueController | Season transition trigger (Admin only) |
 
 ---
 
