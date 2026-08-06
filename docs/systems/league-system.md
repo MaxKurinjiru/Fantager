@@ -200,6 +200,14 @@ $$\text{Gold Granted} = \text{Base\_Gold}(T_{old}) \times M_{pos}(P) \times M_{s
 
 ## API Endpoints
 
-League data is rendered server-side on `GET /app/league`. JSON API endpoints are **planned/deferred** — see [route-map.md](../route-map.md#league).
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/app/league` | League dashboard (server-rendered Twig) |
+| GET | `/api/v1/league/standings` | Current group standings and kingdom-wide leaderboard |
+| GET | `/api/v1/league/fixtures` | Fixture schedule for group or team |
+| GET | `/api/v1/league/seasons` | Kingdom season history |
+| POST | `/api/v1/league/process-season` | Season transition trigger (Admin only) |
 
-Season transition runs as a **`season_transition` server tick**, not a player-facing API.
+See [route-map.md](../route-map.md#league).
+
+Season transition also runs as a **`season_transition` server tick** (not only via the admin API).

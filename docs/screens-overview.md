@@ -746,7 +746,7 @@ Combat is **fully automated**. Pre-match tactics come from the Formation Setup s
 ## 18. Arena Management Screen (Optional/Extended Feature)
 **When:** Managing home arena for home matches
 
-> **Implemented** as an HQ facility panel (`/app/hq?facility=arena`). Fixed ticket price; revenue on league match tick. See [18-arena-management.md](screens/18-arena-management.md).
+> **Implemented** as an HQ facility panel (`/app/hq?facility=arena`). Configurable ticket price via API; revenue on league match tick. See [18-arena-management.md](screens/18-arena-management.md).
 
 ### Displayed Information:
 - **Arena Status:**

@@ -125,7 +125,7 @@ For each active Kingdom:
    - **Team-scoped** (`WeeklyTraining`, `WeeklyReset`, `RaceOptimization`, `FatigueRecovery`, `InactivePlayerCleanup`, `DailyReset`): Schedules a separate log entry for each active team.
    - **Match-scoped** (`LeagueMatch`): Queries all scheduled fixtures in the kingdom at that time, and schedules a separate log entry for each fixture.
    - **Kingdom-scoped** (`SeasonTransition`, `InactiveRegistrationCleanup`, and the Royal Treasury distribution part of `WeeklyReset`): Schedules a single log entry.
-4. If new ticks are scheduled or existing pending ticks are found, it dispatches a single `ProcessKingdomTicksMessage(kingdomId)` to Symfony Messenger.
+4. Pending ticks are advanced by `KingdomTickOrchestrator` (invoked from `app:ticks:run`), which dispatches `ExecuteSingleTickMessage` per tick to Symfony Messenger.
 
 ### 3. Chronological, Parallel & Guided Orchestration Flow
 
@@ -172,7 +172,7 @@ This architecture guarantees:
 
 We configure three priority transports in `config/packages/messenger.yaml`:
 - **`async_high`**: Immediate interactions (real-time friendly match combat simulation, immediate player action processing).
-- **`async_medium`**: Scheduled tick processing (e.g. `ProcessKingdomTicksMessage`).
+- **`async_medium`**: Scheduled tick processing (e.g. `ExecuteSingleTickMessage`).
 - **`async_low`**: Analytics, history logs, and non-blocking notifications.
 
 ---

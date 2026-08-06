@@ -265,7 +265,7 @@ Each race has natural affinities and conflicts with other races, affecting **tea
 | **Hostile (0–20)** | Severe chemistry penalties, significant morale loss, refusal of cooperative actions, reduced combat effectiveness |
 
 **Additional Relationship Mechanics:**
-- **Arena Adaptation** *(planned)* — Applied bonuses benefit the adapted race and all races with *Positive* relationships (70+)
+- **Arena Adaptation** — Applied bonuses benefit the adapted race and all races with *Positive* relationships (70+)
 - **Relationship Impact** — Values affect hero interactions, group training efficiency, and formation effectiveness
 
 ### Primary Attributes
@@ -581,7 +581,7 @@ To train heroes, a player configures a trainer:
 | Modifier | Effect |
 |:---|:---|
 | **Training Facilities** (HQ) | +5–25% efficiency (scales with upgrade level) |
-| **Arena Adaptation** *(planned)* | Heroes of the adapted race and positive relationship races gain +10–20% training efficiency |
+| **Arena Adaptation** | Heroes of the adapted race and positive relationship races gain +10–20% training efficiency |
 | **High Morale** | +5–15% training effectiveness |
 | **Team Chemistry** | Training with compatible heroes (positive race relationships) grants efficiency bonus |
 | **Kingdom Modifiers** | Server-specific training speed multipliers |

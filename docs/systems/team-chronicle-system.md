@@ -84,7 +84,7 @@ Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter`
 |--------|---------| 
 | `inactivity` | 28-day inactivity release | `PlayerInactivityService::executeInactivityRelease()` |
 | `bankruptcy` | Financial bankruptcy | `FinancialCrisisService::executeBankruptcy()` |
-| `unverified_registration` | Unverified account deleted after 24 h | `ProcessKingdomTicksHandler::cleanupInactiveRegistrations()` |
+| `unverified_registration` | Unverified account deleted after 24 h | `ExecuteSingleTickHandler::cleanupInactiveRegistrations()` |
 | `account_deleted` | Player confirms account deletion | `SettingsController::confirmCancelAccount()` |
 
 Translation keys: `activity.player_released.{reason}` with `%player%` param.

@@ -81,8 +81,8 @@ Higher-rarity items yield fewer units because each unit is proportionally more v
 
 ### Durability
 - Range: `0` to `100` (stored as integer).
-- Decreases after combat (exact per-battle reduction defined by the combat engine — Phase 5).
-- An item with `durability = 0` may be penalised in combat (combat formulas TBD).
+- Decreases after combat (`LeagueMatchResolutionService` applies loss from hits received).
+- An item with `durability = 0` contributes no combat bonuses (`CombatStatCalculator` scales by durability / 100).
 
 ### Repair
 Repair restores durability to `100`. The Gold cost scales with **rarity** and the **number of missing durability points**.
@@ -151,5 +151,5 @@ See [Marketplace System](marketplace-system.md) for listing, bidding, and transa
 ## Open Issues
 
 - Item generation (loot drops, crafted results) — defined via `CraftingRecipe` entities; actual item generation on crafting completion is deferred (Milestone 8 / future).
-- Durability degradation per battle — formula pending combat engine implementation (Phase 5).
+- Durability degradation per battle — ✅ applied in `LeagueMatchResolutionService` after matches (loss from hits received); further formula tuning may continue.
 - Enchanting mechanics referenced in Essence spending (2.3) — not yet designed. Tracked in [known-issues.md](../known-issues.md#2).

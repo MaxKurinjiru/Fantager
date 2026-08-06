@@ -61,9 +61,9 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Database & Entities**: `Hero` and `TeamSummonHistory` entities.
 - **Service Layer**: `HeroGenerator` with race name pools (first and surname definitions per race in `HeroGenerator`). `SummoningService` to handle race compatibilities and cooldowns.
 - **API Contracts**: `POST /api/v1/summoning` (initiates summon), `GET /api/v1/summoning/status`.
-- **Frontend Views**: Summoning Chamber UI (`templates/summoning/index.html.twig`) with cooldown timers, race select, and Reveal AJAX animation.
+- **Frontend Views**: Summoning Chamber HQ panel (`templates/components/hq/facility_panel/_summoning.html.twig`, `templates/components/summoning/`) with cooldown timers and Reveal AJAX animation. `GET /app/summon` redirects to `/app/hq?facility=summoning_chamber`.
 - **Verification**: Summon heroes, verify cooldown timings, and check names are correctly chosen from the race configuration pools.
-- **Status**: ✅ Complete (`SummoningService`, `HeroGenerator`, `templates/summoning/index.html.twig`, Stimulus: `summoning_controller.js`).
+- **Status**: ✅ Complete (`SummoningService`, `HeroGenerator`, HQ summoning panel, Stimulus: `summoning_controller.js`).
 
 ### Step 2.3: Hero Roster & Profile Management
 - **Service Layer**: Hero CRUD operations, renaming validator, and stat calculations based on race.
@@ -95,11 +95,11 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ### Step 3.2: Hero Training Loop
 - **Database & Entities**: `HeroTrainingHistory`; trainers are heroes with `role = trainer`.
-- **Service Layer**: Training rate calculations. Weekly training tick (`TickType::WeeklyTraining`) processed by `ProcessKingdomTicksHandler`.
+- **Service Layer**: Training rate calculations. Weekly training tick (`TickType::WeeklyTraining`) processed by `ExecuteSingleTickHandler`.
 - **API Contracts**: `POST /api/v1/training/trainers/{id}/assign` (assign hero to trainer), `POST /api/v1/training/trainers/{id}/unassign`, `POST /api/v1/training/trainers/{id}/configure`.
 - **Frontend Views**: Trainers dashboard panel, trainers selection list, and assigned trainees list.
 - **Verification**: Assign a hero to a trainer, configure trainer focus, run `bin/console app:ticks:run --time="YYYY-MM-DD 10:00:00"` after the scheduled Thursday training tick, and verify hero stats increase correctly.
-- **Status**: ✅ Complete (`TrainingService`, `ProcessKingdomTicksHandler` weekly training tick, `Web\TrainingController`, `Api\V1\TrainingController`, Stimulus: `training_controller.js`).
+- **Status**: ✅ Complete (`TrainingService`, `ExecuteSingleTickHandler` weekly training tick, `Web\TrainingController`, `Api\V1\TrainingController`, Stimulus: `training_controller.js`).
 
 ---
 
@@ -186,7 +186,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
   - `bin/console app:ticks:run` — Command triggered by cron to advance game time.
   - `GET /api/v1/kingdom/{id}/calendar` — Kingdom schedule feed.
 - **Verification**: Trigger a calendar tick and check if queues (training, items, leagues) update.
-- **Status**: ✅ Complete (`ProcessTicksCommand`, `TickScheduleCalculator`, `CalendarService`, `ProcessKingdomTicksHandler`, Web Calendar page, kingdom calendar API). League match ticks process both arena revenue and start wave combat simulation.
+- **Status**: ✅ Complete (`ProcessTicksCommand`, `TickScheduleCalculator`, `CalendarService`, `ExecuteSingleTickHandler`, Web Calendar page, kingdom calendar API). League match ticks process both arena revenue and start wave combat simulation.
 
 ### Step 6.3: League Matchmaking & Season Transition
 - **Design Prerequisites (Phase 0)**: Resolve [known-issues.md](known-issues.md) #7 (Friendly match rules) and #8 (Arena Match mechanics).
@@ -226,7 +226,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - HQ Arena facility panel (`/app/hq?facility=arena`), seating upgrade charts, ticket price sliders, and weekly attendance graphs.
 - **Verification**: Modify ticket price, trigger weekly ticket revenue command, and confirm revenue scales with formulas.
-- **Status**: 🔄 Partially Complete (`ArenaRevenueService`, league-match tick payout, HQ arena panel at `/app/hq?facility=arena` implemented; ticket price API and extended analytics UI pending).
+- **Status**: 🔄 Partially Complete (`ArenaRevenueService`, league-match tick payout, HQ arena panel at `/app/hq?facility=arena`, ticket price API `POST /api/v1/hq/arena/tickets/price` implemented; extended analytics UI and friendly scheduling pending).
 
 ---
 
@@ -318,7 +318,7 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 6 (Combat & Leagues)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 7 (Arena Management)** | ✅ | 🔄 | 🔄 | 🔄 | **Active / Partially Complete** (arena revenue done; ticket price API & extended analytics pending) |
+| **Milestone 7 (Arena Management)** | ✅ | 🔄 | ✅ | 🔄 | **Active / Partially Complete** (arena revenue + ticket price API done; extended analytics UI & friendly scheduling pending) |
 | **Milestone 8 (Endgame & Crafting)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (dungeons, crafting, quests in `future/`) |
 | **Milestone 9 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (alliance & guild systems deferred) |
 

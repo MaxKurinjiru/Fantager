@@ -37,6 +37,8 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 - [Graveyard System](systems/graveyard-system.md)
 - [Community System](systems/community-system.md)
 - [Notification System](systems/notification-system.md) — In-app alerts (write + read API, navbar modal with unread badge)
+- [Player Inactivity System](systems/player-inactivity-system.md) — Warning / release of inactive player accounts
+- [NPC Simulation System](systems/npc-simulation-system.md) — Autonomous NPC tactics, training, and economy
 
 **Screens**
 - [00 Public Pages (Homepage, Wiki, News)](screens/00-public-pages.md)
@@ -101,7 +103,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Quests** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 8) — see [future/quest-system.md](future/quest-system.md). |
 | **Crafting** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 8) — see [future/crafting-system.md](future/crafting-system.md). Backend and UI removed from codebase. |
 | **Alliances & Guilds** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 9) — see [roadmap.md](roadmap.md). |
-| **Arena Management** | Partially Implemented | Implemented (HQ panel) | Partial | **Active Milestone 7** — Home-match revenue model; arena panel in HQ (`/app/hq?facility=arena`); `/app/arena` is a redirect. Ticket price API & extended analytics pending. |
+| **Arena Management** | Partially Implemented | Implemented (HQ panel) | Implemented (status + ticket price) | **Active Milestone 7** — Home-match revenue model; arena panel in HQ (`/app/hq?facility=arena`); `/app/arena` is a redirect; `POST /api/v1/hq/arena/tickets/price` implemented. Extended analytics UI & friendly scheduling pending. |
 | **Economy / Finance** | Fully Implemented | Implemented | Implemented | Royal Treasury weekly distribution, financial crisis, marketplace at `/app/marketplace`, ledger at `/app/finance`; `GET /api/v1/finance/*` implemented. |
 | **Notifications** | Fully Implemented | Implemented | Implemented | Write + read API, navbar modal with unread badge. See [notification-system.md](systems/notification-system.md). |
 

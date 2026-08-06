@@ -1,6 +1,6 @@
 # NPC Simulation System
 
-Reference: [NpcSimulationService.php](../../src/Service/Team/NpcSimulationService.php), [calendar-system.md](calendar-system.md), [team-system.md](team-system.md)
+Reference: [NpcSimulationService.php](../../src/Service/Team/NpcSimulationService.php) (facade), [NpcTacticsSimulator](../../src/Service/Team/NpcTacticsSimulator.php), [NpcTrainingSimulator](../../src/Service/Team/NpcTrainingSimulator.php), [NpcEconomySimulator](../../src/Service/Team/NpcEconomySimulator.php), [calendar-system.md](calendar-system.md), [team-system.md](team-system.md)
 
 Purpose: Document autonomous behaviors of NPC teams including tactics, training, economy, and scheduler integration.
 
@@ -54,7 +54,7 @@ To mimic realistic player progression and preserve a stable NPC budget, non-tact
 - **Summoning:** Summons a new hero via `SummoningService::getStatus($team)` if combatant count <= rosterLimit - 1, the weekly cycle limit is not reached (`summons_used < summons_max`), and gold permits (summoning cost + 150 gold safety buffer).
 
 ### Twice-Weekly Marketplace Actions (Tuesday & Friday - 00:00:00)
-(`simulateMarketplaceActions` — called from `ProcessKingdomTicksHandler` on Tuesday and Friday at 00:00)
+(`simulateMarketplaceActions` — called from `ExecuteSingleTickHandler` on Tuesday and Friday at 00:00)
 
 **Selling:** Lists a random number of unequipped items (`0` to `3`), surplus combatant heroes up to the role's sell limit, and redundant trainers up to the role's sell limit separately per tick.
 - Hero/trainer candidates are sorted by descending sell priority: heroes with negative traits and/or low race compatibility with the team's arena theme are listed first.
@@ -101,7 +101,7 @@ Score table (score `0` = not interested; higher score wins):
 *`mercenary_academy` preferred races: Orc, Dwarf, Human. Heroes of incompatible race (outside team's race pool) always score 0.
 
 ### Weekly Actions (Weekly Reset - Sunday 23:59:00)
-(`simulateWeeklyManagementAndEconomy` — called from `ProcessKingdomTicksHandler` at Sunday 23:59)
+(`simulateWeeklyManagementAndEconomy` — called from `ExecuteSingleTickHandler` at Sunday 23:59)
 
 - **Arena Theme Optimization:** Automatically changes the team's arena race optimization (in HQ) to match the current roster distribution if not locked:
   - `mercenary_academy`: Chooses the most common race in the team among Orc, Dwarf, and Human (falls back to Orc if none are present).

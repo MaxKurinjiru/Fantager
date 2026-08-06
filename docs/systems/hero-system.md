@@ -177,7 +177,7 @@ Traits are **visible to players** wherever hero identity is shown. Heroes with `
 |---------|----------|------------------|
 | Hero roster | Card under level/race line | `templates/components/hero/trait_badge.html.twig` (compact) in `card.html.twig` |
 | Hero detail — header | Meta row next to ratings | Same badge in `header_card.html.twig` |
-| Hero detail — overview | Sidebar panel with full description | `trait_panel.html.twig` (overview tab, before attributes) |
+| Hero detail — overview | Trait badge with name (description via tooltip / i18n) | `trait_badge.html.twig` (overview tab) |
 | Summoning reveal | Below level on recruit card | `summoning_controller.js` + `portal_chamber.html.twig` |
 | Marketplace browse | Listing detail row | `marketplace_controller.js` + `js_templates.html.twig` |
 | Marketplace sell | Sell picker card | `trait_badge.html.twig` in `sell_tab.html.twig` |

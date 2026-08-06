@@ -326,7 +326,7 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 | GET | `/app/arena` | Web\ArenaController | Redirect → `/app/hq?facility=arena` (legacy alias; panel shows capacity, fan appeal, revenue projection) |
 | GET | `/api/v1/arena` | Api\V1\ArenaController | Arena status (read-only) |
 | POST | `/api/v1/hq/arena/tickets/price`, `/api/v1/arena/tickets/price` | Api\V1\ArenaController | Update team ticket price (1–50 gold) with demand elasticity calculations |
-| POST | `/api/v1/arena/schedule-match` | Api\V1\ArenaController | Schedule friendly match — **planned** (requires combat engine) |
+| POST | `/api/v1/arena/schedule-match` | Api\V1\ArenaController | Schedule friendly match — **planned** |
 
 > Arena facility upgrades use `/app/hq`. Match-day ticket revenue is paid to the **home team** on the League Match tick via `ArenaRevenueService::processLeagueMatchTick()`.
 

@@ -50,17 +50,16 @@ Entries are **append-only**. Rendering uses the viewer's locale via `HeroChronic
 | `match_played` | Hero fielded in a resolved league fixture | `LeagueMatchResolutionService` |
 | `mastery_gained` | Weapon or school mastery tier increased | `HeroMasteryService` |
 | `training_completed` | Weekly training tick completed | `TrainingService` |
-| `died` | Hero dismissed or memorialized | `GraveyardService` |
+| `died` | Hero dismissed or memorialized (incl. permanent combat death) | `GraveyardService` |
+| `spell_learned` | Hero learned a spell | `SpellService` |
 
-### Reserved (enum exists; writers pending)
+### Reserved / dormant (enum + service methods exist)
 
-| Type | Planned trigger |
-|------|-----------------|
-| `levelup` | Hero level increase |
+| Type | Notes |
+|------|-------|
+| `levelup` | `HeroChronicleService::recordLevelUp` / `HeroService::levelUp` exist, but no production XP→level path currently calls them |
 | `injured` / `recovered` | Injury system (future) |
 | `retired` | Voluntary retirement (future) |
-
-Combat death memorials will call `recordDied` with combat cause when the full combat engine ships.
 
 ---
 

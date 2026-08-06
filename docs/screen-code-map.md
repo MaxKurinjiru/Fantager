@@ -33,12 +33,12 @@ Quick reference: which files implement each game screen.
 | [02-team-dashboard.md](screens/02-team-dashboard.md) | `/app/dashboard` | `Web\DashboardController` | `Api\V1\TeamController` (`/dashboard`, `/settings`) | `templates/dashboard/` | `dashboard_banner`, `modal` (team profile) |
 | [02a-team-chronicle.md](screens/02a-team-chronicle.md) | `/app/chronicle` | `Web\TeamChronicleController` | — (server-rendered) | `templates/team_chronicle/` | — |
 | [03-hero-roster.md](screens/03-hero-roster.md) | `/app/heroes` | `Web\HeroController` | `Api\V1\HeroController` | `templates/hero/roster.html.twig`, `components/hero/trait_badge.html.twig` | `roster_filter` |
-| [04-hero-detail.md](screens/04-hero-detail.md) | `/app/heroes/{id}` | `Web\HeroController` | `Api\V1\HeroController`, `Api\V1\ItemController`, `Api\V1\SpellController` | `templates/hero/detail.html.twig`, `components/hero/` (`trait_badge`, `trait_panel`, `combat_stats`, `recent_activity`, …) | `hero_rename`, `hero_dismiss`, `hero_sell`, `equipment`, `spellbook` |
+| [04-hero-detail.md](screens/04-hero-detail.md) | `/app/heroes/{id}` | `Web\HeroController` | `Api\V1\HeroController`, `Api\V1\ItemController`, `Api\V1\SpellController` | `templates/hero/detail.html.twig`, `components/hero/` (`trait_badge`, `combat_stats`, `recent_activity`, …) | `hero_rename`, `hero_dismiss`, `hero_sell`, `equipment`, `spellbook` |
 | [05-training.md](screens/05-training.md) | `/app/training` | `Web\TrainingController` | `Api\V1\TrainingController` | `templates/training/` | `training` |
 | [06-trainer-management.md](screens/06-trainer-management.md) | `/app/training` (same page) | `Web\TrainingController` | `Api\V1\TrainingController` | `templates/components/training/` | `training` |
 | [07-formation-setup.md](screens/07-formation-setup.md) | `/app/formation` | `Web\FormationController` | `Api\V1\FormationController`, `Api\V1\FixtureFormationController` | `templates/formation/`, `templates/components/formation/` | `formation` |
 | [08-headquarters.md](screens/08-headquarters.md) | `/app/hq` | `Web\HeadquartersController` | `Api\V1\HeadquartersController` | `templates/hq/`, `templates/components/hq/` | `hq` |
-| [09-summoning-chamber.md](screens/09-summoning-chamber.md) | `/app/summon`, `/app/summon/history` | `Web\SummoningController` | `Api\V1\SummoningController` | `templates/summoning/` | `summoning` |
+| [09-summoning-chamber.md](screens/09-summoning-chamber.md) | `/app/summon` → HQ panel, `/app/summon/history` | `Web\SummoningController` (redirect), `Web\HeadquartersController` | `Api\V1\SummoningController` | `templates/components/hq/facility_panel/_summoning.html.twig`, `templates/components/summoning/` | `summoning` |
 | [10-item-equipment.md](screens/10-item-equipment.md) | `/app/inventory` (redirects → `/app/heroes/{id}?tab=equipment`) | `Web\ItemController` | `Api\V1\ItemController` | `templates/hero/detail.html.twig` | `equipment` |
 | [11-spell-management.md](screens/11-spell-management.md) | `/app/spells` (redirects → `/app/heroes/{id}?tab=spells`), `/app/academy` | `Web\SpellController` | `Api\V1\SpellController` | `templates/spell/academy.html.twig`, `templates/hero/detail.html.twig` | `spellbook` |
 | [12-combat-battle.md](screens/12-combat-battle.md) | `/app/battles/{id}` | `Web\BattleController` | `Api\V1\BattleController` | `templates/battle/` | `battle_report` |
@@ -47,7 +47,7 @@ Quick reference: which files implement each game screen.
 | [15-marketplace.md](screens/15-marketplace.md) | `/app/marketplace` | `Web\MarketplaceController` | `Api\V1\MarketplaceController` | `templates/marketplace/` | `marketplace` |
 | [16-graveyard.md](screens/16-graveyard.md) | `/app/graveyard` | `Web\GraveyardController` | `Api\V1\GraveyardController` | `templates/graveyard/` | — |
 | [17-community.md](screens/17-community.md) | `/app/community`, `/app/community/threads/{id}` | `Web\CommunityController` | `Api\V1\ForumController`, `Api\V1\MessageController`, `Api\V1\CommunityController` | `templates/community/` | `community_forum`, `community_thread`, `mail`, `player-profile` |
-| [18-arena-management.md](screens/18-arena-management.md) | `/app/arena`, `/app/hq?facility=arena` | `Web\ArenaController`, `Web\HeadquartersController` | `Api\V1\ArenaController` | `templates/arena/`, `templates/components/hq/facility_panel/_arena.html.twig` | `hq` |
+| [18-arena-management.md](screens/18-arena-management.md) | `/app/arena` → `/app/hq?facility=arena` | `Web\ArenaController` (redirect), `Web\HeadquartersController` | `Api\V1\ArenaController` | `templates/components/hq/facility_panel/_arena.html.twig` | `hq` |
 | [19-player-profile-settings.md](screens/19-player-profile-settings.md) | `/app/settings`, account modal | `Web\SettingsController` | `POST /app/settings/*` (JSON from modal) | `templates/components/layout/_account_settings_modal.html.twig` | `account_settings`, `profile_settings`, `modal` |
 
 ---
@@ -79,7 +79,7 @@ Quick reference: which files implement each game screen.
 | Marketplace | `MarketplaceService` | `tests/Service/Marketplace/` |
 | Community | `CommunityService`, `ForumThreadHelper`, `PlayerProfileService` | `tests/Service/Community/` |
 | Graveyard | `GraveyardService`, `GraveyardPresenter` | `tests/Service/Graveyard/` |
-| Calendar / ticks | `CalendarService`, `KingdomTickRunnerService`, `ProcessKingdomTicksHandler` | `tests/Service/Calendar/` |
+| Calendar / ticks | `CalendarService`, `KingdomTickRunnerService`, `KingdomTickOrchestrator`, `ExecuteSingleTickHandler` | `tests/Service/Calendar/` |
 | League | `LeagueService`, `LeagueFixtureScheduler`, `SeasonTransitionService` | `tests/Service/League/` |
 | Economy | `EconomyService`, `FinancialCrisisService`, `ArenaRevenueService` | `tests/Service/Economy/` |
 | Auth | `RegistrationService`, `UserSettingsService` | `tests/Service/Auth/` |
@@ -92,7 +92,7 @@ Quick reference: which files implement each game screen.
 |---------|-------|
 | Game layout | `templates/layouts/game.html.twig`, `templates/base.html.twig` |
 | Navbar / sidebar | `templates/components/layout/navbar.html.twig`, `sidebar.html.twig`, `resource_bar.html.twig` |
-| Hero trait UI | `trait_badge.html.twig`, `trait_panel.html.twig`, `GameExtension::hero_trait_js_labels()` |
+| Hero trait UI | `trait_badge.html.twig`, `GameExtension::hero_trait_js_labels()` |
 | Modals | `templates/components/layout/*_modal.html.twig`, `assets/controllers/modal_controller.js` |
 | SCSS domains | See [fantager-ui/reference.md](../.cursor/skills/fantager-ui/reference.md) |
 

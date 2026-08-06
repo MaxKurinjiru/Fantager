@@ -43,7 +43,7 @@ Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction r
 
 1. Same **roster / trainer limit checks** as buy-now (at bid time, not at settlement).
 2. Bidder must have sufficient gold (amount is reserved/locked).
-3. Settlement runs during the `marketplace_resolution` tick when the listing expires.
+3. Settlement runs during the `daily_reset` tick when the listing has expired (`MarketplaceService::processExpiredListingsForKingdom`).
 4. For items: `recordItemPurchased` and `recordItemSold` are called on auction settlement.
 
 ---
@@ -92,9 +92,10 @@ Tax rates are kingdom-specific and configured in `kingdom.marketplace_tax_rate`.
 | GET | `/api/v1/marketplace` | Search active listings (filterable) |
 | POST | `/api/v1/marketplace/listings` | Create listing (hero / trainer / item) |
 | DELETE | `/api/v1/marketplace/listings/{id}` | Cancel own listing |
-| POST | `/api/v1/marketplace/listings/{id}/buy` | Buy-now purchase |
-| POST | `/api/v1/marketplace/listings/{id}/bid` | Place auction bid |
-| GET | `/api/v1/marketplace/transactions` | Transaction history for the active team |
+| GET | `/api/v1/marketplace/my-listings` | Current team's active listings |
+| POST | `/api/v1/marketplace/purchase` | Buy-now purchase (`listing_id` in body) |
+| POST | `/api/v1/marketplace/bid` | Place auction bid (`listing_id`, amount in body) |
+| GET | `/api/v1/marketplace/history` | Transaction history for the active team |
 
 ---
 

@@ -4,7 +4,7 @@ Reference: [screens-overview.md](../screens-overview.md#16-graveyard-screen), [g
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 
-> **Status: Implemented.** Memorial records are written on hero/trainer dismissal; the graveyard page and read API are available.
+> **Status: Implemented.** Memorial records are written on hero/trainer dismissal and permanent combat death; the graveyard page and read API are available.
 
 Displayed Information:
 - Graveyard List:
@@ -28,4 +28,4 @@ Backend (implemented):
 
 Implementation notes:
 - Dismiss actions complete in-place on Hero detail / Training page; players can review memorials on `/app/graveyard`
-- Combat death memorials will appear automatically once the combat engine is implemented
+- Permanent combat deaths write `MemorialCause::CombatDeath` via `LeagueMatchResolutionService` → `GraveyardService`

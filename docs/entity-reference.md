@@ -49,13 +49,13 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Concept | Entity / data | Service namespace | Responsibility |
 | ------- | ------------- | ----------------- | -------------- |
-| **Combat** | `App\Entity\Combat\Battle` (`combat_battle`) | `App\Service\Combat` | Derived stats ✅; thin envelope engine ✅; wave Messenger + turn loop ⏳ |
-| **Arena facility** | `Headquarters` + `Facility` (`FacilityType::Arena`) | `App\Service\Headquarters\ArenaService` | Arena level, seating capacity, fan appeal, next-home-match projection |
+| **Combat** | `App\Entity\Combat\Battle` (`combat_battle`) | `App\Service\Combat` | Derived stats ✅; wave Messenger + turn loop ✅; post-match resolution ✅ |
+| **Arena facility** | `Headquarters` + `Facility` (`FacilityType::Arena`) | `App\Service\Headquarters\ArenaService` | Arena level, seating capacity, fan appeal, ticket price, next-home-match projection |
 | **Arena revenue** | `FinancialRecord` (`arena_revenue`) | `App\Service\Economy\ArenaRevenueService` | Ticket payout on league match tick, attendance calculation |
 
 - `ArenaController` stays under `Controller` — it is the player-facing screen name; Web route redirects to `/app/hq?facility=arena`.
 - `MatchType::Arena` is a match category consumed by the combat engine, not by `ArenaService`.
-- When the combat engine ships (Milestone 6), add `App\Service\Combat\BattleSimulationService` etc.; do not fold it into `ArenaService`.
+- Keep combat simulation under `App\Service\Combat` (`CombatEngine`, wave handlers, resume); do not fold it into `ArenaService`.
 
 ---
 
@@ -66,9 +66,9 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity                | Key Fields                                                                                                      | Relationships         |
 | --------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------- |
-| **User**              | id, email, password_hash, is_verified, roles[], kingdom_id, locale, display_name, display_name_slug, created_at | N:1 Kingdom, 1:1 Team, 1:1 UserSettings |
+| **User**              | id, email, password_hash, is_verified, roles[], kingdom_id, locale, display_name, display_name_slug, created_at, last_activity_at, inactive_warning_sent_at, team_reassignment_available_at | N:1 Kingdom, 1:1 Team, 1:1 UserSettings |
 | **UserSettings**      | id, user_id, close_modal_on_backdrop, updated_at                                                                | 1:1 User (CASCADE DELETE) |
-| **VerificationToken** | id, user_id, token, type (email_verify / password_reset / …), expires_at, used_at                             | → User                |
+| **VerificationToken** | id, user_id, token, type (email_verify / password_reset / …), expires_at, used_at, data (JSON, nullable)                             | → User                |
 
 
 ### 2. Kingdom Domain
@@ -76,8 +76,8 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity      | Key Fields                                                                                                                                        | Relationships        |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| **Kingdom** | id, name, language, timezone, game_speed, marketplace_tax_rate, season_length, league_tiers_config (JSON), level_cap, xp_modifier, crafting_boost, **royal_treasury_gold** | 1:N Users, 1:N Teams |
-| **KingdomTickLog** | id, kingdom_id, team_id (nullable), fixture_id (nullable), tickType (enum), scheduledAt, status, errorMessage, executedAt | → Kingdom (N:1), → Team (N:1, nullable), → LeagueFixture (N:1, nullable) |
+| **Kingdom** | id, name, language, timezone, game_speed, marketplace_tax_rate, season_length, league_tiers_config (JSON), level_cap, xp_modifier, **royal_treasury_gold** | 1:N Users, 1:N Teams |
+| **KingdomTickLog** | id, kingdom_id, team_id (nullable), fixture_id (nullable), tickType (enum), scheduledAt, status, errorMessage, executedAt, retry_count | → Kingdom (N:1), → Team (N:1, nullable), → LeagueFixture (N:1, nullable) |
 
 
 ### 3. Team Domain
@@ -86,7 +86,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | Entity   | Key Fields                                                                                                                                                                                                                                           | Relationships                                                |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | **Team**            | id, user_id (nullable), kingdom_id, name, emblem, colors, morale, reputation, chemistry, fan_base, **last_fan_base_delta**, gold, essence_common–mythic, is_npc, last_summon_at, summons_this_cycle, **unpaid_debt**, **crisis_weeks**, **last_recovery_action_at**, **ticket_price** | → User (N:1, nullable — NULL for NPC teams), → Kingdom (N:1) |
-| **FinancialRecord** | id, team_id, type (enum), actor (enum), gold_change, essence_common_change, essence_uncommon_change, essence_rare_change, essence_epic_change, essence_legendary_change, essence_mythic_change, context (JSON), created_at | → Team (N:1)                                                 |
+| **FinancialRecord** | id, team_id, type (enum), actor (enum), gold_change, essence_common_change, essence_uncommon_change, essence_rare_change, essence_epic_change, essence_legendary_change, essence_mythic_change, context (JSON), created_at, processed_at (nullable) | → Team (N:1)                                                 |
 | **TeamChronicle**   | id, team_id, type (`ChronicleEventType` enum), subject_key, subject_params (JSON), data (JSON), created_at | → Team (N:1)                                                 |
 | **TeamSummonHistory** | id, team_id, race_selected, hero_id, gold_cost, summoned_at | → Team (N:1), → Hero (N:1)                                   |
 | **TeamDailySnapshot** | id, team_id, recorded_at (date), morale, reputation, chemistry, fan_base | → Team (N:1); table `team_daily_snapshot`; unique on (team_id, recorded_at); used to power the team history chart (last 30 days of morale/reputation/chemistry/fan_base trends) |
@@ -97,7 +97,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity            | Key Fields                                                                                                                                     | Relationships                              |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| **Hero**          | id, team_id, name, race (enum), level, xp, age, form, fatigue, morale, magic_capacity, str, dex, kon, spd, intel, wil, cha, lck, **base_ovr**, **complex_rating** (cached), **matches_played**, **matches_won**, status (enum), **trait** (nullable `HeroTrait` enum) | → Team, has many HeroSpell, HeroChronicle, equipped Items |
+| **Hero**          | id, team_id, name, race (enum), role (`HeroRole`), level, xp, age, form, fatigue, morale, magic_capacity, str, dex, kon, spd, intel, wil, cha, lck, **base_ovr**, **complex_rating** (cached), **matches_played**, **matches_won**, **combats_fallen**, status (enum), **trait** (nullable `HeroTrait` enum), training_type / target_attribute / trainer_id (trainer role) | → Team, has many HeroSpell, HeroChronicle, equipped Items; optional trainer → trainees |
 | **SchoolMastery** | id, hero_id, school (enum), mastery_tier, xp                                                                                                  | → Hero                                     |
 | **WeaponMastery** | id, hero_id, style (`ItemSubType` enum), mastery_tier, xp, attunement_progress (0–100)                                                         | → Hero                                     |
 | **HeroSpell**     | id, hero_id, spell_id, is_equipped, slot_number                                                                                                | → Hero, → Spell                            |
@@ -127,7 +127,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity           | Key Fields                                                      | Relationships  |
 | ---------------- | --------------------------------------------------------------- | -------------- |
-| **Headquarters** | id, team_id, total_level, race_optimization, pending_race_optimization (nullable string), has_pending_race_optimization_change (bool), race_optimization_lock_cycle (bool), upgrading_facility_id (nullable FK), upgrade_completed_at (nullable datetime) | → Team (1:1)   |
+| **Headquarters** | id, team_id, total_level, race_optimization, pending_race_optimization (nullable string), has_pending_race_optimization_change (bool), race_optimization_lock_cycle (bool), upgrading_facility_id (nullable FK), upgrade_completed_at (nullable datetime), facility_operation (`FacilityOperation`, nullable), facility_downgrade_lock_cycle (bool) | → Team (1:1)   |
 | **Facility**     | id, headquarters_id, type (enum), level, metadata (JSON) | → Headquarters |
 
 
@@ -136,7 +136,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity   | Key Fields                                                                                                                                                     | Relationships                |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **Item** | id, owner_team_id, equipped_hero_id, equipped_slot, name, slot_type (enum), category (enum), rarity (enum), durability, status (enum), bonuses (JSON), special_effects (JSON) | → Team, → Hero (if equipped) |
+| **Item** | id, owner_team_id, equipped_hero_id, equipped_slot, name, slot_type (enum), sub_type (nullable `ItemSubType`), category (enum), rarity (enum), durability, status (enum), bonuses (JSON), special_effects (JSON) | → Team, → Hero (if equipped) |
 
 
 ### 9. Spell Domain
@@ -144,7 +144,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity    | Key Fields                                                                                                                                        | Relationships           |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| **Spell** | id, name, school (enum), tier, type (enum), effects (JSON), mana_cost, cooldown, required_mastery_tier, learning_cost_gold, learning_cost_essence | referenced by HeroSpell |
+| **Spell** | id, name, school (enum), tier, type (enum), effects (JSON), mana_cost, cooldown, required_mastery_tier, learning_cost_gold, learning_cost_essence, requires_magical_weapon (bool) | referenced by HeroSpell |
 
 
 ### 10. Combat Domain
@@ -152,7 +152,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity     | Key Fields                                                                                                                                                                                  | Relationships                    |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| **Battle** | id, kingdom_id, match_type (enum), team_a_id, team_b_id, formation_a_id, formation_b_id, result (enum), score_a, score_b (kill score 0–6 each), combat_log (JSON), xp_awarded, processed_at; **planned:** run status (`simulating`/`stalled`/`completed`), current_round, rng_state / run snapshot for wave Messenger | → Kingdom, → Teams, → Formations |
+| **Battle** | id, kingdom_id, match_type (enum), team_a_id, team_b_id, formation_a_id (nullable), formation_b_id (nullable), result (enum), score_a, score_b (kill score 0–6 each), combat_log (JSON), xp_awarded, processed_at, scheduled_at, status (`BattleStatus`: simulating/stalled/completed), current_round, run_state (JSON snapshot for wave Messenger) | → Kingdom, → Teams, → Formations |
 
 
 ### 11. League Domain
@@ -174,7 +174,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
 | **MarketplaceListing** | id, kingdom_id, seller_team_id, listing_type (enum), hero_id (nullable), item_id (nullable), price_gold, buyout_price_gold (nullable int), listing_mode (enum), expires_at, status (enum) | → Kingdom, → Team. **Trainer listings** reuse the `hero_id` FK (trainer is a `Hero` with `role = trainer`); there is no separate `trainer_id` column. |
 | **MarketplaceBid**     | id, listing_id, bidder_team_id, bid_amount, bid_time                                                                                                                           | → Listing, → Team  |
-| **MarketplaceTransaction** | id, buyer_team_id, seller_team_id, listing_id, amount, fee_amount, type (enum), created_at                                                                                 | → Teams, → Listing |
+| **MarketplaceTransaction** | id, buyer_team_id, seller_team_id (nullable), listing_id (nullable), entity_name (nullable snapshot), amount, fee_amount, type (enum), created_at                                                                                 | → Teams, → Listing |
 
 
 ### 16. Crafting Domain (deferred — not in codebase)
@@ -202,7 +202,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 | Entity              | Key Fields                                                                                                                                                | Relationships |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| **GraveyardMemorial** | id, team_id, name, race, role_at_departure, cause, age, final_level, final_stats (JSON), departed_at, original_hero_id (table: `graveyard`) | → Team        |
+| **GraveyardMemorial** | id, team_id, name, race, role_at_departure, cause, age, final_level, final_stats (JSON), trait, matches_played, matches_won, combats_fallen, departed_at, original_hero_id (table: `graveyard`) | → Team        |
 
 
 ### 19. Notification Domain
@@ -229,7 +229,7 @@ Table: `team_chronicle` — entity `App\Entity\Team\TeamChronicle`.
 - Entries are **append-only**; never updated or deleted individually (bulk retention pruning planned, not implemented).
 - **Write path:** `TeamChronicleService` only (do not persist `TeamChronicle` directly from feature services).
 - **Read path:** `TeamChronicleRepository` + `TeamChroniclePresenter`; dashboard shows last 5 entries; full history at `GET /app/chronicle`.
-- **Implemented types today:** `team_established`, `player_joined`, `player_released`, `season_ended`, `summon_completed`. Other enum values are reserved for upcoming features (combat, marketplace, etc.).
+- **Implemented types today:** see the full writer map in [team-chronicle-system.md](systems/team-chronicle-system.md) (ownership, battles, roster, marketplace, HQ, crisis, rewards, etc.). Enum-only without a writer: `hero_retired`.
 
 See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behaviour.
 
@@ -242,9 +242,10 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | ----------------------- | ------------------------------------------------------- | --------------------------------------------------------- |
 | **Race definitions**    | PHP enum (`Race`) + `config/game/races.yaml`            | 8 races (human, elf, dwarf, orc, undead, giant, ent, genie), stat bonuses, age thresholds, training modifiers |
 | **Race relationships**  | `config/game/race_relations.yaml`                       | 8×8 matrix (28 unique pairs)                              |
-| **Status effects**      | PHP enum + value objects                                | Burn, Stun, Heal, Buff types — used by combat engine      |
-| **Dungeon definitions** | `config/game/dungeons/*.yaml`                           | Enemy stats, abilities, loot tables, scaling              |
-| **Season rewards**      | JSON on LeagueTier or `config/game/season_rewards.yaml` | Per-tier position rewards                                 |
+| **Status effects**      | PHP enum + value objects + `config/game/status_effects.yaml` | Burn, Stun, Heal, Buff types — used by combat engine |
+| **Hero rating**         | `config/game/hero-rating.yaml`                          | Base OVR / complex rating weights                         |
+| **Dungeon definitions** | `config/game/dungeons/*.yaml` *(deferred)*              | Enemy stats, abilities, loot tables, scaling — not in tree |
+| **Season rewards**      | JSON on LeagueTier                                      | Per-tier position rewards                                 |
 
 
 ---

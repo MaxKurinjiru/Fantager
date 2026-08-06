@@ -8,11 +8,11 @@ Single source of truth for documentation gaps, design questions, and known incon
 
 | ID | Area | Issue | Severity | Blocks | Status |
 |----|------|-------|----------|--------|--------|
-| 1 | Combat | Contract VO + thin engine done. Wave Messenger (lockstep rounds, max 200, no wave timeout, `stalled` isolation), turn loop, and post-match effects (XP, morale, form, fatigue) implemented. **Pending (6.1d):** combat death → graveyard — a hero may appear as killed in `combat_log` but their `status` remains `Available` and they do **not** appear in the graveyard until milestone 6.1d ships. Also pending: L1–L2 AI, post-match replay UI. See [combat-system.md](systems/combat-system.md) | High | Graveyard combat death triggers, L1+ AI, replay UI | Partially resolved |
+| 1 | Combat | Wave Messenger (lockstep rounds, max 200, no wave timeout, `stalled` isolation), turn loop, post-match effects (XP, morale, form, fatigue), and **6.1d** combat death → aging → permanent death → graveyard (+ durability loss) are implemented. A KO in `combat_log` / `killed_hero_ids` is not always permanent death (non-elder or failed mortality roll) — that is by design. Still pending: L1–L2 AI, post-match replay UI. See [combat-system.md](systems/combat-system.md) | High | L1+ AI, replay UI | Partially resolved |
 | 2 | Item System | Durability & enchanting mechanics referenced in economy docs but undefined in item system | High | Phase 6 enchanting | Open |
-| 3 | Friendly Matches | Rules documented in `calendar-system.md`; scheduling UI/API pending combat engine | Low | Phase 5 friendly match scheduling | Partially resolved |
-| 4 | Arena Matches | Home-match revenue implemented; friendly match scheduling pending combat | Low | Phase 5 | Partially resolved |
-| 5 | Graveyard UI | Memorial snapshots on dismiss implemented; combat death memorials pending combat engine | Low | Phase 6 combat deaths | Resolved (read UI/API implemented) |
+| 3 | Friendly Matches | Rules documented in `calendar-system.md`; combat engine exists — scheduling UI/API (`POST /api/v1/arena/schedule-match`) still pending | Low | Friendly match scheduling | Partially resolved |
+| 4 | Arena Matches | Home-match revenue and ticket price API implemented; friendly match scheduling and extended analytics UI still pending | Low | Friendly scheduling / analytics UI | Partially resolved |
+| 5 | Graveyard | Memorial snapshots on dismiss and permanent combat death implemented; read UI/API at `/app/graveyard` and `GET /api/v1/graveyard/*` | Low | — | Resolved |
 
 Deferred features beyond Milestone 7 (Milestone 8 dungeons/quests/crafting, Milestone 9 alliances/guilds, world events, public wiki/news) are documented under [`future/`](future/) and explicitly marked as **Deferred / Out of Scope** in [roadmap.md](roadmap.md) — they are parked and not tracked as active issues.
 
