@@ -1199,7 +1199,7 @@ Supports **player interaction**, strategy discussion, and **community building**
 ## 2.15 Dungeon System
 
 > [!NOTE]
-> **Future Feature**: The Dungeon System is a future feature (Phase 7 of the implementation roadmap). It is not currently implemented; the `dungeon_run` entity was removed from the codebase. Design is preserved in [future/dungeon-system.md](future/dungeon-system.md).
+> **Future Feature**: The Dungeon System is a future feature (Milestone 8 of the implementation roadmap). It is not currently implemented; the `dungeon_run` entity was removed from the codebase. Design is preserved in [future/dungeon-system.md](future/dungeon-system.md).
 
 ### Concept
 

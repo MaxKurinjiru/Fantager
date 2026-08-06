@@ -14,6 +14,6 @@ Single source of truth for documentation gaps, design questions, and known incon
 | 4 | Arena Matches | Home-match revenue implemented; friendly match scheduling pending combat | Low | Phase 5 | Partially resolved |
 | 5 | Graveyard UI | Memorial snapshots on dismiss implemented; combat death memorials pending combat engine | Low | Phase 6 combat deaths | Resolved (read UI/API implemented) |
 
-Deferred features (dungeons, world events, quests, crafting, public wiki/news) are documented under [`future/`](future/) — not tracked here.
+Deferred features beyond Milestone 7 (Milestone 8 dungeons/quests/crafting, Milestone 9 alliances/guilds, world events, public wiki/news) are documented under [`future/`](future/) and explicitly marked as **Deferred / Out of Scope** in [roadmap.md](roadmap.md) — they are parked and not tracked as active issues.
 
 Remove rows from **Open** when fixed;

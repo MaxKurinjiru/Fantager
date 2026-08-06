@@ -1460,9 +1460,21 @@ arena:
   no_revenue_yet: Zatím žádné příjmy z domácích zápasů. Výplata proběhne po odehrání ligového zápasu.
   view_full_ledger: Zobrazit finanční deník
   how_it_works: Jak funguje příjem z arény
-  rule_fixed_price: "Pevná cena vstupenky: 🪙 %price% za místo."
+  rule_fixed_price: "Nastavitelná cena vstupenky s elastickou poptávkou (1–50 zlata)."
   rule_capacity: Kapacita hlediště roste s vylepšením arény v základně.
-  rule_attendance: Tribuny se plní podle velikosti fanklubů obou týmů a jejich aktuální nálady (reputace, morálka, chemie). Na zápas nemusí nikdo dorazit.
+  rule_attendance: Návštěvnost závisí na velikosti fanklubu, morálce, reputaci a ceně vstupenky. Vyšší cena snižuje zájem; nižší cena zvyšuje obsazenost hlediště až do jeho kapacity.
+  pricing_title: Nastavení ceny vstupenky a elastika
+  ticket_price_label: Cena vstupenky
+  ticket_price_help: "Zadejte cenu vstupenky (1–50 zlata). Vyšší cena snižuje účast fanoušků; nižší cena zvyšuje zájem o lístky."
+  elasticity_label: Elastika poptávky
+  save_price_btn: Uložit cenu vstupenky
+  projections_title: Projekce příjmů a návštěvnosti
+  col_price: Cena
+  col_occupancy: Obsazenost
+  col_projected_gold: Očekávané zlato
+  ticket_price_updated: Cena vstupenky byla úspěšně aktualizována.
+  error_invalid_price: Zadána neplatná cena vstupenky.
+  error_price_out_of_bounds: Cena vstupenky musí být v rozmezí 1 až 50 zlata.
   rule_home_only: Příjem z vstupenek dostává výhradně domácí tým.
   upgrade_hint: Vylepšete arénu v základně pro vyšší kapacitu a bonusy k příjmům.
 

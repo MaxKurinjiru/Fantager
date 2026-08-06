@@ -232,4 +232,66 @@ class ArenaRevenueServiceTest extends TestCase
 
         $this->assertCount(1, $results);
     }
+
+    public function testCalculatePriceElasticityMultiplier(): void
+    {
+        $base = $this->arenaRevenueService->calculatePriceElasticityMultiplier(5);
+        $this->assertEqualsWithDelta(1.0, $base, 0.001);
+
+        $cheaper = $this->arenaRevenueService->calculatePriceElasticityMultiplier(2);
+        $this->assertGreaterThan(1.0, $cheaper);
+
+        $expensive = $this->arenaRevenueService->calculatePriceElasticityMultiplier(15);
+        $this->assertLessThan(1.0, $expensive);
+
+        $extremelyExpensive = $this->arenaRevenueService->calculatePriceElasticityMultiplier(100);
+        $this->assertGreaterThanOrEqual(0.10, $extremelyExpensive);
+
+        $superCheap = $this->arenaRevenueService->calculatePriceElasticityMultiplier(1);
+        $this->assertLessThanOrEqual(2.00, $superCheap);
+    }
+
+    public function testCalculateMatchRevenueUsesDynamicTeamTicketPrice(): void
+    {
+        $home = new Team();
+        $home->setName('Home FC');
+        $home->setFanBase(500);
+        $home->setReputation(100);
+        $home->setMorale(80);
+        $home->setChemistry(25);
+        $home->setTicketPrice(10);
+
+        $away = new Team();
+        $away->setName('Away FC');
+        $away->setFanBase(200);
+
+        $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
+
+        $report = $this->arenaRevenueService->calculateMatchRevenue($home, $away);
+
+        $this->assertSame(10, $report['ticket_price']);
+        $this->assertLessThan(1.0, $report['elasticity_multiplier']);
+        $this->assertGreaterThan(0, $report['gold_earned']);
+    }
+
+    public function testGeneratePriceRevenueProjectionsReturnsPriceScaleArray(): void
+    {
+        $home = new Team();
+        $home->setFanBase(400);
+        $home->setReputation(50);
+        $home->setMorale(70);
+
+        $away = new Team();
+        $away->setFanBase(150);
+
+        $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
+
+        $projections = $this->arenaRevenueService->generatePriceRevenueProjections($home, $away);
+
+        $this->assertNotEmpty($projections);
+        $this->assertArrayHasKey('ticket_price', $projections[0]);
+        $this->assertArrayHasKey('attendance', $projections[0]);
+        $this->assertArrayHasKey('gold_earned', $projections[0]);
+        $this->assertArrayHasKey('elasticity', $projections[0]);
+    }
 }

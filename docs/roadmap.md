@@ -216,31 +216,26 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ---
 
-## Milestone 7: Alliances & Guild System
-*Establish alliances, team cooperation, and guild chat communication.*
+## Milestone 7: Arena Management & Operations
+*Extend HQ stadium operations, ticket pricing, seating capacity upgrades, and financial attendance analytics.*
 
-### Step 7.1: Alliance Foundation & Management
-- **Database & Entities**: `Alliance`, `AllianceMember` entities.
-- **Service/Business Logic**: Alliance creation, invitations, membership application, roles/ranks, alliance leaderboards.
-- **API Contracts**: `GET /api/v1/alliances`, `POST /api/v1/alliances/create`, `POST /api/v1/alliances/{id}/invite`, `POST /api/v1/alliances/{id}/join`.
+### Step 7.1: Arena Facility Management & Ticket Pricing
+- **Database & Entities**: Link stadium upgrades directly to HQ Arena levels.
+- **Service Layer**: Weekly seating capacity calculations, ticket price elasticity calculations, passive revenue distribution service (`ArenaRevenueService`, `FanClubService`).
+- **API Contracts**: `GET /api/v1/arena`, `POST /api/v1/hq/arena/tickets/price`.
 - **Frontend Views**:
-  - **[NEW]** Alliance Hub: Roster lists, application portals, alliance rank leaderboards, and settings page.
-- **Verification**: Create an alliance, invite another team, accept the invitation, verify permissions and ranking.
-- **Status**: ⏳ Not Started.
-
-### Step 7.2: Alliance Communication
-- **Database & Entities**: Uses existing communication entities (`Message` etc. scoped to Alliance).
-- **Service/Business Logic**: Alliance-only chat persistence and filtering.
-- **API Contracts**: `POST /api/v1/alliances/chat`, `GET /api/v1/alliances/chat/history`.
-- **Frontend Views**:
-  - **[NEW]** Alliance Chat Pane: Embedded live alliance chat feed within the Alliance Hub.
-- **Verification**: Send chat messages within an alliance, confirm they are only visible to alliance members.
-- **Status**: ⏳ Not Started.
+  - HQ Arena facility panel (`/app/hq?facility=arena`), seating upgrade charts, ticket price sliders, and weekly attendance graphs.
+- **Verification**: Modify ticket price, trigger weekly ticket revenue command, and confirm revenue scales with formulas.
+- **Status**: 🔄 Partially Complete (`ArenaRevenueService`, league-match tick payout, HQ arena panel at `/app/hq?facility=arena` implemented; ticket price API and extended analytics UI pending).
 
 ---
 
-## Milestone 8: Endgame & Advanced Content
-*Extend the sandbox with PvE dungeon instances, item crafting, and stadium business operations.*
+## Milestone 8: Endgame & Advanced Content (Deferred / Out of Scope)
+> [!NOTE]
+> **Status: DEFERRED / FUTURE FEATURE (Parked)**  
+> All features in Milestone 8 are deferred and outside the active development scope. Detailed design specifications are preserved in the [`docs/future/`](future/) directory.
+
+*Extend the sandbox with PvE dungeon encounters, quest systems, and item crafting.*
 
 ### Step 8.1: PvE Dungeon Encounters
 - **Database & Entities**: `DungeonRun` table (depends on Combat). Design preserved in [future/dungeon-system.md](future/dungeon-system.md); no code in codebase yet.
@@ -249,7 +244,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - **[NEW]** Dungeon Map UI: Floor progression map, encounter cards, reward reveals.
 - **Verification**: Complete dungeon floors, confirm health persistence across fights and reward logs.
-- **Status**: ⏳ Not Started (design only; no code or DB schema — see [future/dungeon-system.md](future/dungeon-system.md)).
+- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/dungeon-system.md](future/dungeon-system.md)).
 
 ### Step 8.2: Daily & Weekly Quest Systems
 - **Design Reference**: [future/quest-system.md](future/quest-system.md)
@@ -259,7 +254,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - **[NEW]** Quest log: list of daily/weekly challenges, progress indicators, claim buttons.
 - **Verification**: Perform quest conditions, verify progress bar fills, claim rewards.
-- **Status**: ⏳ Not Started (design only; no code or DB schema).
+- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/quest-system.md](future/quest-system.md)).
 
 ### Step 8.3: Material Gathering & Crafting
 - **Design Reference**: [future/crafting-system.md](future/crafting-system.md)
@@ -269,16 +264,34 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - **[NEW]** Crafting Workshop: Recipe catalog, required ingredients checklist, active crafting progress bars.
 - **Verification**: Check material requirement validation, verify crafted items appear in the team inventory.
-- **Status**: ⏳ Not Started (design only; backend and UI removed from codebase — see [future/crafting-system.md](future/crafting-system.md)).
+- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/crafting-system.md](future/crafting-system.md)).
 
-### Step 8.4: Arena Facility Management
-- **Database & Entities**: Link stadium upgrades directly to HQ Arena levels.
-- **Service Layer**: Weekly seating capacity calculations, ticket price elasticity calculations, passive revenue distribution service.
-- **API Contracts**: `POST /api/v1/hq/arena/tickets/price`.
+---
+
+## Milestone 9: Alliances & Guild System (Deferred / Out of Scope)
+> [!NOTE]
+> **Status: DEFERRED / FUTURE FEATURE (Parked)**  
+> Alliance and Guild systems are deferred and outside the active development scope.
+
+*Establish alliances, team cooperation, and guild chat communication.*
+
+### Step 9.1: Alliance Foundation & Management
+- **Database & Entities**: `Alliance`, `AllianceMember` entities.
+- **Service/Business Logic**: Alliance creation, invitations, membership application, roles/ranks, alliance leaderboards.
+- **API Contracts**: `GET /api/v1/alliances`, `POST /api/v1/alliances/create`, `POST /api/v1/alliances/{id}/invite`, `POST /api/v1/alliances/{id}/join`.
 - **Frontend Views**:
-  - **[NEW]** Arena Hub: Seating upgrade charts, weekly attendance graphs, ticket price sliders.
-- **Verification**: Modify ticket price, trigger weekly ticket revenue command, and confirm revenue scales with formulas.
-- **Status**: 🔄 Partially Complete (`ArenaRevenueService`, league-match tick payout, HQ arena panel at `/app/hq?facility=arena`; ticket price API and extended analytics UI pending).
+  - **[NEW]** Alliance Hub: Roster lists, application portals, alliance rank leaderboards, and settings page.
+- **Verification**: Create an alliance, invite another team, accept the invitation, verify permissions and ranking.
+- **Status**: ⏸️ Deferred / Out of Active Scope.
+
+### Step 9.2: Alliance Communication
+- **Database & Entities**: Uses existing communication entities (`Message` etc. scoped to Alliance).
+- **Service/Business Logic**: Alliance-only chat persistence and filtering.
+- **API Contracts**: `POST /api/v1/alliances/chat`, `GET /api/v1/alliances/chat/history`.
+- **Frontend Views**:
+  - **[NEW]** Alliance Chat Pane: Embedded live alliance chat feed within the Alliance Hub.
+- **Verification**: Send chat messages within an alliance, confirm they are only visible to alliance members.
+- **Status**: ⏸️ Deferred / Out of Active Scope.
 
 ---
 
@@ -292,6 +305,9 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ## Project Chronological Progression Status
 
+> [!IMPORTANT]
+> **Active Scope Guardrail:** Milestones 1–6 are fully complete. Milestone 7 (Arena Management) is the final active milestone. Everything after Milestone 7 (Milestones 8 and 9) is explicitly **deferred / parked**. Do not implement or plan work for items beyond Milestone 7.
+
 The following matrix displays what has been completed in the codebase relative to the newly defined chronological steps:
 
 | Milestone / Slice | Database / Entities | Service Layer / CLI | API Endpoints | Frontend UI Views | Current Status |
@@ -302,7 +318,8 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 6 (Combat & Leagues)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 7 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | *Not Started* |
-| **Milestone 8 (Endgame & Crafting)** | ⏳ | 🔄 | ⏳ | 🔄 | *Partially Complete* (arena revenue done; dungeons/crafting/quests deferred) |
+| **Milestone 7 (Arena Management)** | ✅ | 🔄 | 🔄 | 🔄 | **Active / Partially Complete** (arena revenue done; ticket price API & extended analytics pending) |
+| **Milestone 8 (Endgame & Crafting)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (dungeons, crafting, quests in `future/`) |
+| **Milestone 9 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (alliance & guild systems deferred) |
 
-*Last updated: July 16, 2026 — Docs synced with completed Milestone 6 combat simulation, targeting strategy, spelly, and match report UI*
+*Last updated: August 6, 2026 — Milestones 8 and 9 explicitly marked as Deferred / Out of Active Scope; Milestone 7 is the final active scope milestone.*

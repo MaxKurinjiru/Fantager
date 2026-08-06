@@ -118,6 +118,106 @@
       color: var(--color-amber-400);
     }
   }
+
+  .arena-pricing-card {
+    @apply rounded-xl p-4 flex flex-col gap-4 mt-3;
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 45%, transparent);
+    border: 1px solid var(--color-border);
+
+    &__header {
+      @apply flex items-center justify-between;
+    }
+
+    &__label {
+      @apply text-sm font-semibold;
+      color: var(--color-text-primary);
+    }
+  }
+
+  .arena-pricing-input-icon {
+    @apply text-sm select-none;
+  }
+
+  .arena-pricing-controls {
+    @apply flex items-center gap-4 flex-wrap mt-2;
+  }
+
+  .arena-pricing-slider {
+    @apply flex-1 h-2 rounded-lg cursor-pointer accent-amber-400;
+    background-color: var(--color-surface-base);
+  }
+
+  .arena-pricing-input-wrap {
+    @apply flex items-center gap-2;
+  }
+
+  .arena-pricing-input {
+    @apply w-20 px-3 py-1.5 rounded-lg border text-center font-bold text-base;
+    background-color: var(--color-surface-base);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+  }
+
+  .arena-elasticity-badge {
+    @apply px-2.5 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1;
+    background-color: color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+    color: var(--color-brand-400);
+    border: 1px solid color-mix(in srgb, var(--color-brand-500) 30%, transparent);
+
+    &--high {
+      background-color: color-mix(in srgb, var(--color-success-text) 15%, transparent);
+      color: var(--color-success-text);
+      border-color: color-mix(in srgb, var(--color-success-text) 30%, transparent);
+    }
+    &--low {
+      background-color: color-mix(in srgb, var(--color-error-text) 15%, transparent);
+      color: var(--color-error-text);
+      border-color: color-mix(in srgb, var(--color-error-text) 30%, transparent);
+    }
+  }
+
+  .arena-projections-table {
+    @apply w-full text-left text-xs;
+
+    thead tr {
+      @apply uppercase text-[10px] tracking-wider;
+      color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+      transition: background-color var(--transition-fast);
+
+      &:hover {
+        background-color: var(--overlay-white-03);
+      }
+
+      &.arena-projections-table__tr--active {
+        background-color: color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+        font-weight: 700;
+        td { color: var(--color-text-primary); }
+      }
+    }
+
+    th, td {
+      @apply py-2 pr-3;
+    }
+  }
+
+  .arena-pricing-status {
+    @apply p-3 rounded-lg text-xs font-semibold mt-2;
+    &--success {
+      background-color: color-mix(in srgb, var(--color-success-text) 15%, transparent);
+      color: var(--color-success-text);
+      border: 1px solid color-mix(in srgb, var(--color-success-text) 30%, transparent);
+    }
+    &--error {
+      background-color: color-mix(in srgb, var(--color-error-text) 15%, transparent);
+      color: var(--color-error-text);
+      border: 1px solid color-mix(in srgb, var(--color-error-text) 30%, transparent);
+    }
+  }
 }
 
 .arena-panel__title { @apply text-xl font-bold mb-4; color: var(--color-text-primary); }

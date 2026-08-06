@@ -1461,9 +1461,21 @@ arena:
   no_revenue_yet: No home match revenue recorded yet. Payouts occur when league matches are played.
   view_full_ledger: View full financial ledger
   how_it_works: How Arena Revenue Works
-  rule_fixed_price: "Fixed ticket price: 🪙 %price% per seat."
+  rule_fixed_price: "Configurable ticket price with demand elasticity (1–50 gold)."
   rule_capacity: Seating capacity grows with Arena facility upgrades.
-  rule_attendance: Stands fill from both teams' fan club size and current mood (reputation, morale, chemistry). A match can draw zero spectators.
+  rule_attendance: Turnout depends on fan clubs, morale, reputation, and ticket price elasticity. High prices reduce attendance; low prices increase fill rate up to stadium capacity.
+  pricing_title: Ticket Pricing & Elasticity
+  ticket_price_label: Ticket Price
+  ticket_price_help: "Set custom ticket price (1–50 gold). Higher prices reduce fan turnout; lower prices boost demand."
+  elasticity_label: Demand Elasticity
+  save_price_btn: Save Ticket Price
+  projections_title: Revenue & Attendance Projections
+  col_price: Price
+  col_occupancy: Occupancy
+  col_projected_gold: Projected Gold
+  ticket_price_updated: Ticket price successfully updated.
+  error_invalid_price: Invalid ticket price specified.
+  error_price_out_of_bounds: Ticket price must be between 1 and 50 gold.
   rule_home_only: Only the home team receives match-day ticket income.
   upgrade_hint: Upgrade the Arena in Headquarters to increase seating capacity and revenue bonuses.
 

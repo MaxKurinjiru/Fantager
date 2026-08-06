@@ -150,6 +150,6 @@ See [Marketplace System](marketplace-system.md) for listing, bidding, and transa
 
 ## Open Issues
 
-- Item generation (loot drops, crafted results) — defined via `CraftingRecipe` entities; actual item generation on crafting completion is pending (Phase 7).
+- Item generation (loot drops, crafted results) — defined via `CraftingRecipe` entities; actual item generation on crafting completion is deferred (Milestone 8 / future).
 - Durability degradation per battle — formula pending combat engine implementation (Phase 5).
 - Enchanting mechanics referenced in Essence spending (2.3) — not yet designed. Tracked in [known-issues.md](../known-issues.md#2).

@@ -103,8 +103,8 @@ Quick reference: which files implement each game screen.
 | Screen / feature | Status |
 |------------------|--------|
 | Public wiki (`/wiki`) | Planned — [route-map.md](route-map.md) |
-| Alliances (Milestone 7) | Not started — [roadmap.md](roadmap.md) |
-| Dungeons, quests, crafting | Deferred — [future/](future/) |
+| Alliances & Guilds (Milestone 9) | ⏸️ **Deferred / Out of Scope** — [roadmap.md](roadmap.md) |
+| Dungeons, Quests, Crafting (Milestone 8) | ⏸️ **Deferred / Out of Scope** — [future/](future/) |
 
 ---
 

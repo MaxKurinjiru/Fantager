@@ -61,22 +61,24 @@ class FanClubService
         return max(self::MIN_FAN_BASE, min(self::MAX_FAN_BASE, $target));
     }
 
-    public function calculateHomeAttendance(Team $team): int
+    public function calculateHomeAttendance(Team $team, float $elasticityMultiplier = 1.0): int
     {
-        return (int) round($team->getFanBase() * $this->calculateShowUpRate($team));
+        $clampedElasticity = max(0.10, min(2.00, $elasticityMultiplier));
+
+        return (int) round($team->getFanBase() * $this->calculateShowUpRate($team) * $clampedElasticity);
     }
 
-    public function calculateAwayAttendance(Team $team): int
+    public function calculateAwayAttendance(Team $team, float $elasticityMultiplier = 1.0): int
     {
-        return (int) round($this->calculateHomeAttendance($team) * self::AWAY_TRAVEL_RATE);
+        return (int) round($this->calculateHomeAttendance($team, $elasticityMultiplier) * self::AWAY_TRAVEL_RATE);
     }
 
     /**
      * @return array{home_attendees: int, away_attendees: int, attendance: int, home_show_up_rate: float, away_show_up_rate: float}
      */
-    public function calculateMatchAttendance(Team $homeTeam, Team $awayTeam, int $capacity): array
+    public function calculateMatchAttendance(Team $homeTeam, Team $awayTeam, int $capacity, float $elasticityMultiplier = 1.0): array
     {
-        $homeAttendees = $this->calculateHomeAttendance($homeTeam);
+        $homeAttendees = $this->calculateHomeAttendance($homeTeam, $elasticityMultiplier);
         $awayAttendees = $this->calculateAwayAttendance($awayTeam);
         $attendance = min($capacity, $homeAttendees + $awayAttendees);
 
@@ -90,7 +92,7 @@ class FanClubService
             'home_attendees' => $homeAttendees,
             'away_attendees' => $awayAttendees,
             'attendance' => $attendance,
-            'home_show_up_rate' => round($this->calculateShowUpRate($homeTeam), 3),
+            'home_show_up_rate' => round($this->calculateShowUpRate($homeTeam) * max(0.10, min(2.00, $elasticityMultiplier)), 3),
             'away_show_up_rate' => round($this->calculateShowUpRate($awayTeam), 3),
         ];
     }

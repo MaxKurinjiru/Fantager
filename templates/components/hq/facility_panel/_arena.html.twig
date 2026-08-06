@@ -1,6 +1,11 @@
 {# templates/components/hq/facility_panel/_arena.html.twig #}
 {% set status = arena_status %}
-<div class="hq-facility-panel">
+<div class="hq-facility-panel"
+     data-controller="arena"
+     data-arena-update-url-value="{{ path('api_arena_update_ticket_price') }}"
+     data-arena-current-price-value="{{ status.ticket_price }}"
+     data-arena-updated-message-value="{{ 'arena.ticket_price_updated'|trans }}"
+     data-arena-error-message-value="{{ 'arena.error_invalid_price'|trans }}">
     <div class="hq-facility-panel__header">
         <h2 class="hq-facility-panel__title">🏟️ {{ 'hq.facilities_list.arena.name'|trans }}</h2>
     </div>
@@ -29,7 +34,7 @@
                             <span class="arena-stat-card__icon" aria-hidden="true">🪙</span>
                         </div>
                         <span class="arena-stat-card__label">{{ 'arena.ticket_price'|trans }}</span>
-                        <span class="arena-stat-card__value">{{ status.ticket_price }}</span>
+                        <span class="arena-stat-card__value">🪙 {{ status.ticket_price }}</span>
                     </div>
                     <div class="arena-stat-card">
                         <div class="arena-stat-card__icon-wrapper">
@@ -43,7 +48,7 @@
                             <span class="arena-stat-card__icon" aria-hidden="true">📊</span>
                         </div>
                         <span class="arena-stat-card__label">{{ 'arena.show_up_rate'|trans }}</span>
-                        <span class="arena-stat-card__value">{{ (status.show_up_rate * 100)|number_format(0) }}%</span>
+                        <span class="arena-stat-card__value">{{ (status.effective_show_up_rate * 100)|number_format(0) }}%</span>
                     </div>
                 </div>
                 <p class="arena-hint">{{ 'arena.fan_club_hint'|trans({
@@ -54,6 +59,77 @@
                     '%chemistry%': status.chemistry
                 }) }}</p>
             </div>
+
+            <div class="game-panel arena-pricing-panel">
+                <h3 class="arena-panel__title">{{ 'arena.pricing_title'|trans }}</h3>
+                <p class="arena-hint">{{ 'arena.ticket_price_help'|trans }}</p>
+                <div class="arena-pricing-card">
+                    <div class="arena-pricing-card__header">
+                        <label for="arena-ticket-price-input" class="arena-pricing-card__label">{{ 'arena.ticket_price_label'|trans }}</label>
+                        <span class="arena-elasticity-badge" data-arena-target="elasticityBadge">100% (1.00x)</span>
+                    </div>
+                    <div class="arena-pricing-controls">
+                        <input id="arena-ticket-price-slider"
+                               type="range"
+                               min="1"
+                               max="50"
+                               value="{{ status.ticket_price }}"
+                               class="arena-pricing-slider"
+                               data-arena-target="slider"
+                               data-action="input->arena#onSliderChange change->arena#onSliderChange" />
+                        <div class="arena-pricing-input-wrap">
+                            <span class="arena-pricing-input-icon">🪙</span>
+                            <input id="arena-ticket-price-input"
+                                   type="number"
+                                   min="1"
+                                   max="50"
+                                   value="{{ status.ticket_price }}"
+                                   class="arena-pricing-input"
+                                   data-arena-target="input"
+                                   data-action="input->arena#onInputChange change->arena#onInputChange" />
+                        </div>
+                        <button type="button"
+                                class="btn btn--primary"
+                                data-arena-target="saveBtn"
+                                data-action="click->arena#saveTicketPrice">
+                            {{ 'arena.save_price_btn'|trans }}
+                        </button>
+                    </div>
+                    <div data-arena-target="statusMessage" class="arena-pricing-status hidden" role="alert"></div>
+                </div>
+            </div>
+
+            {% if status.projections|length > 0 %}
+            <div class="game-panel arena-projections-panel">
+                <h3 class="arena-panel__title">{{ 'arena.projections_title'|trans }}</h3>
+                <div class="data-table-wrap">
+                    <table class="arena-projections-table">
+                        <thead>
+                            <tr>
+                                <th>{{ 'arena.col_price'|trans }}</th>
+                                <th>{{ 'arena.col_attendance'|trans }}</th>
+                                <th>{{ 'arena.col_occupancy'|trans }}</th>
+                                <th>{{ 'arena.elasticity_label'|trans }}</th>
+                                <th>{{ 'arena.col_projected_gold'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for proj in status.projections %}
+                            <tr data-arena-target="projectionsRow"
+                                data-price="{{ proj.ticket_price }}"
+                                class="{% if proj.ticket_price == status.ticket_price %}arena-projections-table__tr--active{% endif %}">
+                                <td>🪙 {{ proj.ticket_price }}</td>
+                                <td>{{ proj.attendance }}</td>
+                                <td>{{ proj.capacity_pct }}%</td>
+                                <td>{{ (proj.elasticity * 100)|number_format(0) }}%</td>
+                                <td>+🪙 {{ proj.gold_earned|number_format(0, '.', ' ') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
 
             {% if status.next_home_match %}
             <div class="game-panel arena-match-panel">
@@ -89,6 +165,7 @@
                                 <tr>
                                     <th class="arena-revenue-table__th">{{ 'finance.col_date'|trans }}</th>
                                     <th class="arena-revenue-table__th">{{ 'arena.col_opponent'|trans }}</th>
+                                    <th class="arena-revenue-table__th">{{ 'arena.ticket_price'|trans }}</th>
                                     <th class="arena-revenue-table__th">{{ 'finance.col_amount'|trans }}</th>
                                 </tr>
                             </thead>
@@ -97,6 +174,7 @@
                                 <tr>
                                     <td class="arena-revenue-table__cell-date">{{ row.created_at|date('d.m.Y H:i') }}</td>
                                     <td>{{ row.opponent_name ?? '—' }}</td>
+                                    <td>{% if row.ticket_price %}🪙 {{ row.ticket_price }}{% else %}—{% endif %}</td>
                                     <td class="arena-revenue-table__cell-amount">+🪙 {{ row.amount }}</td>
                                 </tr>
                                 {% endfor %}
@@ -114,7 +192,7 @@
             <div class="game-panel">
                 <h3 class="hero-panel__title hero-panel__title--tight">{{ 'arena.how_it_works'|trans }}</h3>
                 <ul class="arena-rules-list">
-                    <li>{{ 'arena.rule_fixed_price'|trans({'%price%': status.ticket_price}) }}</li>
+                    <li>{{ 'arena.rule_fixed_price'|trans }}</li>
                     <li>{{ 'arena.rule_capacity'|trans }}</li>
                     <li>{{ 'arena.rule_attendance'|trans }}</li>
                     <li>{{ 'arena.rule_home_only'|trans }}</li>
