@@ -76,6 +76,8 @@ Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter`
 | `financial_crisis_state` | Financial crisis level changed | `FinancialCrisisService` |
 | `kingdom_reward_granted` | Royal Treasury distribution received | `RoyalTreasuryService` |
 
+> Note: `hero_retired` is present in `ChronicleEventType` enum and UI category filters for potential future hero retirement mechanics, but is not currently triggered by active services.
+
 ### `player_released` reasons (`ChronicleReleaseReason`)
 
 | Reason | Trigger |

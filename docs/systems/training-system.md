@@ -58,18 +58,22 @@ Every Thursday at 10:00, the server processes the training tick for all trainers
 ### 1. Attribute Training
 Trains a primary attribute (STR, DEX, KON, SPD, INT, WIL, CHA, LCK).
 - **Gain Calculation**:
-  `Raw Gain (external scale) = ((Base Gain + Trainer Bonus + Difference Bonus) / Difficulty Factor) * (1 + Facility Efficiency) * Race Modifier`
+  `Raw Gain (external scale) = ((Base Gain + Trainer Bonus + Difference Bonus) / Difficulty Factor) * (1 + Facility Efficiency) * Race Modifier * Arena Bonus * Group Modifier * Game Speed * Trait Modifier`
   Where:
   - **Base Gain**: `1.0`
-  - **Trainer Bonus**: `max(0, (TrainerStatExternal - 10) * 0.05)`
-  - **Difference Bonus**: `max(0, (TrainerStatExternal - HeroStatExternal) * 0.05)`
+  - **Trainer Bonus**: `max(0.0, (TrainerStatExternal - 10) * 0.05)`
+  - **Difference Bonus**: `max(0.0, (TrainerStatExternal - HeroStatExternal) * 0.05)`
   - **Difficulty Factor**: `1.0 + (HeroStatExternal / 5)^1.5`
-  - **Facility Efficiency**: `FacilityLevel * 0.05` (from training facility)
+  - **Facility Efficiency**: `training_efficiency_pct / 100` (passive bonus from Training facility, defaults to 0.03)
   - **Race Modifier**: `training_speed_modifier` from `races.yaml`
-  
-  The final raw gain is:
-  `Raw Gain (internal scale) = min(9, round(Raw Gain (external scale) * 10))`
-  At least `1` raw point is gained if under the trainer's cap.
+  - **Arena Bonus**: `1.10` (+10%) if hero race matches HQ arena optimization race; `1.05` (+5%) if race relationship >= 70; else `1.0`
+  - **Group Modifier**: `1.0` base; `+0.05` (+5%) if trainer has a trainee with compatible race (relationship >= 70); `-0.15` (-15%) if hostile race (relationship <= 20)
+  - **Game Speed**: `game_speed` multiplier from Kingdom settings
+  - **Trait Modifier**: `1.20` for QuickLearner (+20%), `0.85` for Slacker (-15%), `0.90` for Perfectionist (-10%)
+
+  The final raw gain (internal scale x10) is:
+  `Raw Gain (internal scale) = max(1, min(9 * Game Speed, round(Raw Gain (external scale) * 10)))`
+  Capped so raw stat does not exceed trainer's raw stat cap.
 - **Fatigue Impact**: Adds **+20 fatigue** (capped at 100).
 
 ### 2. Magic Training

@@ -173,14 +173,14 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 ## Combat
 
 > [!NOTE]
-> Not yet implemented — planned for Phase 5.
+> Implemented: `Web\BattleController` (`/app/battles/{id}`) and `Api\V1\BattleController` (`/api/v1/battles/{id}`, `/api/v1/battles/{id}/log`). Sandbox/practice route (`POST /api/v1/combat/simulate`) is planned.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/battles/{id}` | Web\CombatController | Battle viewer page |
-| GET | `/api/v1/battles/{id}` | Api\V1\CombatController | Battle result |
-| GET | `/api/v1/battles/{id}/log` | Api\V1\CombatController | Combat log/replay |
-| POST | `/api/v1/combat/simulate` | Api\V1\CombatController | Combat simulation |
+| GET | `/app/battles/{id}` | Web\BattleController | Battle viewer page |
+| GET | `/api/v1/battles/{id}` | Api\V1\BattleController | Battle result |
+| GET | `/api/v1/battles/{id}/log` | Api\V1\BattleController | Combat log/replay |
+| POST | `/api/v1/combat/simulate` | Api\V1\CombatController | Sandbox combat simulation (planned) |
 
 ---
 
@@ -313,7 +313,7 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/graveyard` | Web\GraveyardController | Graveyard memorial page |
+| GET | `/app/graveyard` | Web\GraveyardController | Graveyard memorial page (supports `?id=` for memorial detail modal view) |
 | GET | `/api/v1/graveyard` | Api\V1\GraveyardController | List memorial records (filterable by role, cause, race, search) |
 | GET | `/api/v1/graveyard/{id}` | Api\V1\GraveyardController | Memorial detail |
 
@@ -377,6 +377,6 @@ In-game UI: navbar dropdown → **Notifications** modal (`notifications_controll
 | Routes (implemented) | 26 | 66 | **92** |
 | Routes (planned) | 7 | 32+ | — |
 | Controllers (Web, implemented) | 24 | — | — |
-| Controllers (API, implemented) | — | 18 | — |
+| Controllers (API, implemented) | — | 20 | — |
 
 > Routes marked **planned** have no controller implementation yet. Route counts reflect the state of the codebase; the original total of 116 includes all planned future routes.

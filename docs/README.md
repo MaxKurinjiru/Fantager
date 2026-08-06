@@ -92,7 +92,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Items** | Fully Implemented | Implemented | Implemented | Inventory, equip/unequip, dismantle. |
 | **Spells** | Fully Implemented | Implemented | Implemented | Spell library, learning, slot equipping. |
 | **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, and `LeagueService` implemented; league match tick initiates lockstep wave cohort simulation. |
-| **Combat** | Fully Implemented | Not Implemented | Not Implemented | Persisted cohort **wave Messenger** lockstep rounds (max 200, `stalled` isolation, resume catch-up) via deterministic turn engine loop — [combat-system.md](systems/combat-system.md#wave-based-messenger-orchestration). |
+| **Combat** | Fully Implemented | Implemented | Implemented | Persisted cohort **wave Messenger** lockstep rounds (max 200, `stalled` isolation, resume catch-up) via deterministic turn engine loop; battle viewer at `/app/battles/{id}` and API at `/api/v1/battles/{id}` — see [combat-system.md](systems/combat-system.md). |
 | **World Events** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/world-events-system.md](future/world-events-system.md). |
 | **Dungeons** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/dungeon-system.md](future/dungeon-system.md). Backend removed from codebase. |
 | **Marketplace** | Fully Implemented | Implemented | Implemented | Listings with hero ratings and **trait** on hero cards; browse filter/sort by value and OVR (cached DB columns). |
@@ -101,7 +101,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Quests** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/quest-system.md](future/quest-system.md). |
 | **Crafting** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/crafting-system.md](future/crafting-system.md). Backend and UI removed from codebase. |
 | **Arena Management** | Partially Implemented | Implemented (HQ panel) | Partial | Home-match revenue model; arena panel in HQ (`/app/hq?facility=arena`); `/app/arena` is a redirect. Payout on league match tick. Friendly matches pending combat. |
-| **Economy / Finance** | Fully Implemented | Implemented | Partial | Royal Treasury weekly distribution, financial crisis, marketplace at `/app/marketplace`, ledger at `/app/finance`; `GET /api/v1/finance/*` implemented. |
+| **Economy / Finance** | Fully Implemented | Implemented | Implemented | Royal Treasury weekly distribution, financial crisis, marketplace at `/app/marketplace`, ledger at `/app/finance`; `GET /api/v1/finance/*` implemented. |
 | **Notifications** | Fully Implemented | Implemented | Implemented | Write + read API, navbar modal with unread badge. See [notification-system.md](systems/notification-system.md). |
 
 ---

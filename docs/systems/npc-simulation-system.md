@@ -37,7 +37,7 @@ Tactics simulation runs automatically for both teams during the `league_match` t
 ## 3. Training Simulation
 
 Training setups for NPC teams are simulated on **Tuesday 00:00:00 (during Daily Reset)**, exactly 12 hours before the training lock begins (Tuesday 12:00:00).
-- **Trainer Promotion:** Promotes the oldest and highest-level eligible combatants to fill empty trainer slots (excluding purely negative-trait heroes unless desperate).
+- **Trainer Promotion:** Promotes the oldest and highest-level eligible combatants to fill empty trainer slots (excluding purely negative-trait heroes unless desperate). Uses shared `TrainingService::applyTrainerPromotion()` to unequip items, remove from active formations, and record `trainer_promoted` in the team chronicle.
 - **Trainer Focus Config:** Configures trainer specializations (training type and target attributes) matching the team's economic role.
 - **Trainee Allocation:** Assigns combatants to trainers up to their slot limits, prioritizing those with the `QuickLearner` trait first.
 - **Fairness Guarantee:** Because this runs before the lock starts, a player taking over an NPC team mid-week inherits a fully configured and active training setup instead of an empty or outdated queue.
@@ -49,9 +49,9 @@ Training setups for NPC teams are simulated on **Tuesday 00:00:00 (during Daily 
 To mimic realistic player progression and preserve a stable NPC budget, non-tactical decisions are split between daily resets, twice-weekly marketplace ticks, and weekly resets.
 
 ### Daily Actions (Daily Reset - 00:00:00)
-- **Proactive Dismissal:** Finds and dismisses non-trainer, low-level heroes carrying purely negative traits (`Slacker`, `Volatile`, `Fragile`, `GlassJaw`) to prevent them from degrading team performance.
+- **Proactive Dismissal & Trainer Promotion:** Evaluates non-trainer available heroes carrying purely negative traits (`Slacker`, `Volatile`, `Fragile`, `GlassJaw`). If a negative-trait hero has a raw attribute stat >= 75% of the team's highest combatant stat (min 5.0), they are promoted to a **Trainer** first (using `TrainingService::applyTrainerPromotion()`), provided trainer slots are available. Otherwise, they are dismissed to prevent degrading team performance.
 - **Roster Recycling:** If the roster is full and at least one hero is listed for sale, dismisses the worst available combatant to make room for a new summon.
-- **Summoning:** Summons a new hero if the weekly cycle limit is not reached and gold permits (cooldown cost + 150 safety buffer).
+- **Summoning:** Summons a new hero via `SummoningService::getStatus($team)` if combatant count <= rosterLimit - 1, the weekly cycle limit is not reached (`summons_used < summons_max`), and gold permits (summoning cost + 150 gold safety buffer).
 
 ### Twice-Weekly Marketplace Actions (Tuesday & Friday - 00:00:00)
 (`simulateMarketplaceActions` — called from `ProcessKingdomTicksHandler` on Tuesday and Friday at 00:00)

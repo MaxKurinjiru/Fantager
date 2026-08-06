@@ -260,8 +260,8 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | `School`            | fire, water, air, earth, light, dark                                                                                                                                                                                                              |
 | `SpellType`         | offensive, defensive, utility                                                                                                                                                                                                                     |
 | `ItemSlotType`      | main_hand, off_hand, head, body, hands, feet, amulet, ring                                                                                                                                                                                          |
-| `ChronicleEventType`   | team_established, player_joined, player_released, battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_purchased, item_sold, summon_completed, season_ended, starting_roster |
-| `HeroChronicleEventType` | summoned, transferred, match_played, levelup, mastery_gained, training_completed, injured, recovered, retired, died |
+| `ChronicleEventType`   | team_established, player_joined, player_released, battle_win, battle_loss, battle_draw, hero_levelup, hero_died, hero_retired, training_completed, item_purchased, item_sold, summon_completed, season_ended, hero_dismissed, trainer_dismissed, hero_purchased, hero_sold, trainer_purchased, trainer_sold, team_renamed, facility_upgraded, facility_downgraded, facility_upgrade_cancelled, race_optimization_changed, starting_roster, spell_learned, item_dismantled, trainer_promoted, financial_crisis_state, kingdom_reward_granted |
+| `HeroChronicleEventType` | summoned, transferred, match_played, levelup, mastery_gained, training_completed, spell_learned, injured, recovered, retired, died |
 | `ChronicleReleaseReason` | inactivity, bankruptcy, unverified_registration, account_deleted (stored in `data.reason`; used with `player_released`) |
 | `ChronicleCategory` | all, ownership, competition, roster, economy (UI filter groups; not stored on rows) |
 | `ItemCategory`      | weapon, shield, spell_accelerator, armor, accessory, material                                                                                                                                                                                      |
@@ -289,10 +289,10 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | `RoyalTreasuryContributionSource` | marketplace_tax, hq_upgrade_cost, hq_maintenance_fee, summon_fee                                                                                                                                                                      |
 | `HeroRole`          | combatant, trainer                                                                                                                                                                                                                                |
 | `DungeonResult`     | win, loss, abandoned *(deferred — not in codebase)*                                                                                                                                                                                              |
-| `CraftingStatus`    | pending, in_progress, completed, failed, cancelled                                                                                                                                                                                                |
+| `CraftingStatus`    | pending, in_progress, completed, failed, cancelled *(deferred — not in codebase)*                                                                                                                                                                |
 | `TransactionType`   | buy_now, auction_win                                                                                                                                                                                                                              |
-| `NotificationType`  | battle_result, training_complete, league_update, marketplace_bid, marketplace_sold, event_started, hero_died, season_ended, **system**                                                                                   |
-| `FinancialRecordType` | league_reward, arena_revenue, summon_fee, marketplace_sale, marketplace_purchase, marketplace_fee, dismantle_gain, item_repair, spell_learning_cost, spell_slot_cost, hq_upgrade_cost, **hq_maintenance_fee**, morale_restoration, **debt_repayment**, **hero_dismissal_compensation**, **trainer_dismissal_compensation**, **hq_downgrade_refund**, **kingdom_reward**, **hero_salary**, **trainer_salary** |
+| `NotificationType`  | battle_result, training_complete, league_update, marketplace_bid, marketplace_sold, event_started, hero_died, season_ended, **system**, **hq_upgrade**, **financial_crisis**, **spell_learned** |
+| `FinancialRecordType` | league_reward, arena_revenue, summon_fee, marketplace_sale, marketplace_purchase, marketplace_fee, dismantle_gain, item_repair, spell_learning_cost, spell_slot_cost, hq_upgrade_cost, **hq_maintenance_fee**, morale_restoration, **debt_repayment**, **hero_dismissal_compensation**, **trainer_dismissal_compensation**, **hq_downgrade_refund**, **hq_upgrade_refund**, **kingdom_reward**, **hero_salary**, **trainer_salary** |
 | `FinancialCrisisLevel` | **none**, **warning**, **restricted**, **bankruptcy_pending** |
 | `FacilityOperation` | **upgrade**, **downgrade** |
 | `FinancialRecordActor` | system, active, passive                                                                                                                                                                                                                        |
@@ -306,8 +306,8 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 | -------------------------- | ------ |
 | DB entities (implemented) | 37     |
 | Config-based (not DB)      | 5      |
-| PHP enums                  | 35     |
-| **Total modeled concepts** | **76** |
+| PHP enums                  | 40     |
+| **Total modeled concepts** | **82** |
 
 
 ---

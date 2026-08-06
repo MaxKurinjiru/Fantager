@@ -39,8 +39,8 @@ Quick reference: which files implement each game screen.
 | [07-formation-setup.md](screens/07-formation-setup.md) | `/app/formation` | `Web\FormationController` | `Api\V1\FormationController`, `Api\V1\FixtureFormationController` | `templates/formation/`, `templates/components/formation/` | `formation` |
 | [08-headquarters.md](screens/08-headquarters.md) | `/app/hq` | `Web\HeadquartersController` | `Api\V1\HeadquartersController` | `templates/hq/`, `templates/components/hq/` | `hq` |
 | [09-summoning-chamber.md](screens/09-summoning-chamber.md) | `/app/summon`, `/app/summon/history` | `Web\SummoningController` | `Api\V1\SummoningController` | `templates/summoning/` | `summoning` |
-| [10-item-equipment.md](screens/10-item-equipment.md) | `/app/inventory` | `Web\ItemController` | `Api\V1\ItemController` | `templates/item/` | `equipment` |
-| [11-spell-management.md](screens/11-spell-management.md) | `/app/spells` | `Web\SpellController` | `Api\V1\SpellController` | `templates/spell/` | `spellbook` |
+| [10-item-equipment.md](screens/10-item-equipment.md) | `/app/inventory` (redirects → `/app/heroes/{id}?tab=equipment`) | `Web\ItemController` | `Api\V1\ItemController` | `templates/hero/detail.html.twig` | `equipment` |
+| [11-spell-management.md](screens/11-spell-management.md) | `/app/spells` (redirects → `/app/heroes/{id}?tab=spells`), `/app/academy` | `Web\SpellController` | `Api\V1\SpellController` | `templates/spell/academy.html.twig`, `templates/hero/detail.html.twig` | `spellbook` |
 | [12-combat-battle.md](screens/12-combat-battle.md) | `/app/battles/{id}` | `Web\BattleController` | `Api\V1\BattleController` | `templates/battle/` | `battle_report` |
 | [13-league.md](screens/13-league.md) | `/app/league` | `Web\LeagueController` | — (fixtures/standings server-rendered) | `templates/league/`, `templates/components/league/` | `formation` (match prep) |
 | [14-calendar.md](screens/14-calendar.md) | `/app/calendar` | `Web\CalendarController` | `Api\V1\CalendarController` | `templates/calendar/` | `calendar` |
