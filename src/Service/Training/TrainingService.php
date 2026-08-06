@@ -54,7 +54,7 @@ class TrainingService
         $nowLocal = $now->setTimezone($tz);
 
         $nextTickLocal = $this->getNextTrainingTime($nowLocal);
-        $lockStartLocal = $nextTickLocal->modify('-46 hours'); // Tuesday 12:00:00
+        $lockStartLocal = $nextTickLocal->modify('-2 hours'); // Thursday 08:00:00
 
         return $nowLocal >= $lockStartLocal && $nowLocal < $nextTickLocal;
     }

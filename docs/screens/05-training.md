@@ -14,7 +14,7 @@ Purpose: Per-screen API, events, UI data requirements, and implementation notes.
     - Slots occupied vs. slots limit
     - List of assigned heroes currently training under this Trainer
 - **Active Team Status:**
-  - Whether training assignments and focus changes are currently **locked** (from Tuesday 12:00 to Thursday 10:00)
+  - Whether training assignments and focus changes are currently **locked** (from Thursday 08:00 to Thursday 10:00)
   - Next training tick execution time (weekly Thursday at 10:00)
 
 ## Possible Actions/Buttons

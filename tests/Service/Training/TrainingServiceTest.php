@@ -97,7 +97,7 @@ class TrainingServiceTest extends TestCase
         $kingdom->method('getTimezone')->willReturn('UTC');
         $team->method('getKingdom')->willReturn($kingdom);
 
-        $now = new \DateTimeImmutable('2026-06-03 15:00:00');
+        $now = new \DateTimeImmutable('2026-06-04 09:00:00', new \DateTimeZone('UTC'));
         $this->assertTrue($this->trainingService->isTrainingLockedForTeam($team, $now));
     }
 
@@ -108,7 +108,7 @@ class TrainingServiceTest extends TestCase
         $kingdom->method('getTimezone')->willReturn('UTC');
         $team->method('getKingdom')->willReturn($kingdom);
 
-        $now = new \DateTimeImmutable('2026-06-01 10:00:00');
+        $now = new \DateTimeImmutable('2026-06-03 15:00:00', new \DateTimeZone('UTC'));
         $this->assertFalse($this->trainingService->isTrainingLockedForTeam($team, $now));
     }
 
@@ -124,7 +124,7 @@ class TrainingServiceTest extends TestCase
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setTeam($team);
 
-        $now = new \DateTimeImmutable('2026-06-01 10:00:00');
+        $now = new \DateTimeImmutable('2026-06-01 10:00:00', new \DateTimeZone('UTC'));
 
         $this->trainingService->configureTrainer($trainer, TrainingType::Attribute, 'str', $team, $now);
 
@@ -144,7 +144,7 @@ class TrainingServiceTest extends TestCase
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setTeam($team);
 
-        $now = new \DateTimeImmutable('2026-06-04 10:00:00');
+        $now = new \DateTimeImmutable('2026-06-04 09:00:00', new \DateTimeZone('UTC'));
 
         $this->expectException(UserFacingException::class);
         $this->expectExceptionMessage('error.trainer_config_locked');

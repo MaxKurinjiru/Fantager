@@ -25,7 +25,7 @@ Training is configured directly on the **Trainer** instead of individual trainin
 ### Lock Period
 
 To prevent last-minute manipulation before weekly ticks, training configurations and assignments are **locked** during the following period:
-- **Lock Start**: Tuesday at 12:00:00 (server local time)
+- **Lock Start**: Thursday at 08:00:00 (server local time)
 - **Lock End**: Thursday at 10:00:00 (when the weekly tick processes)
 
 During the lock period, players cannot configure trainers, assign heroes, or unassign heroes.

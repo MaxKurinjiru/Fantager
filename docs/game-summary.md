@@ -354,11 +354,11 @@ Each race has specific age milestones that determine hero performance and lifesp
 | **Auto-Resurrection** | Heroes who die in combat are **automatically resurrected** after the match ends, but suffer an age penalty |
 | **Age Accumulation** | Each combat death adds years to the hero's age, *including Undead*. **Multiple deaths in the same match stack** — each subsequent death applies an escalating age penalty *(e.g., 1st death: +1 year, 2nd death: +2 years, 3rd death: +3 years)* |
 | **Mid-Combat Revival** | A hero KO'd during combat can be revived mid-battle by a Light **Resurrection** spell, restoring them to partial HP so they can continue fighting. *This does not prevent the post-match age penalty — each KO still counts as a death for aging purposes* |
-| **Revival Constraints** | **Once per match** — only one Resurrection can be cast per combat. Requires **Light School Mastery Tier 8+** and high INT. The **caster suffers –50% stats** for the remainder of the match (exhaustion). The **revived hero returns at 30% HP and 50% reduced form**, severely limiting their effectiveness for the rest of the battle and subsequent matches |
+| **Revival Constraints** | **Once per match** — only one Resurrection can be cast per combat. Requires **Light School Mastery Tier 8+** and high INT. The **caster suffers –15% stats** for the remainder of the match (exhaustion). The **revived hero returns at 50% HP**, giving them a fighting chance for the rest of the battle |
 | **Mortality Threshold** | Heroes at or beyond Mortality Threshold face escalating permanent death chance per combat death. Multiple deaths in one match each trigger a separate mortality check |
 | **Permanent Death** | Final removal — hero is placed in the Graveyard and cannot return |
 
-> *Example: A Human hero (age 78, Mortality Threshold 80) dies in combat. Your Light mage (Mastery Tier 8) casts Resurrection — the hero revives at 30% HP with halved form, and the caster loses 50% of their stats for the rest of the match. The revived hero dies again later. No second Resurrection is possible (once per match). Post-match: the hero ages +1 year (1st death) and +2 years (2nd death) = total +3 years, pushing them to age 81 — past Mortality Threshold and at permanent death risk. The Light mage also carries fatigue into the next match from the casting exhaustion.*
+> *Example: A Human hero (age 78, Mortality Threshold 80) dies in combat. Your Light mage (Mastery Tier 8) casts Resurrection — the hero revives at 50% HP, and the caster loses 15% of their stats for the rest of the match. The revived hero dies again later. No second Resurrection is possible (once per match). Post-match: the hero ages +1 year (1st death) and +2 years (2nd death) = total +3 years, pushing them to age 81 — past Mortality Threshold and at permanent death risk. The Light mage also carries fatigue into the next match from the casting exhaustion.*
 
 ### Morale System
 
@@ -554,7 +554,7 @@ Training is the primary method for improving hero attributes, expanding magic ca
 - **Hero slot limits** — Each trainer has a dynamic number of hero slots: `3 + floor((trainingFacilityLevel - 1) / 2)`.
 - **Single Active Training** — A hero can be assigned to at most one Trainer. While assigned, the hero status is set to `Training`.
 - **Trainer Aging** — Trainers age during each **training tick** (weekly cycle) by the same amount a hero would age from a combat death. This applies universally to **all races, including Undead** *(overrides the Undead race exception of aging only through combat deaths)*.
-- **Lock Period** — Training configurations and assignments are locked starting on **Tuesday at 12:00:00** (server local time) and ending when the weekly tick processes on **Thursday at 10:00:00**. During this time, players cannot configure trainers or change hero assignments.
+- **Lock Period** — Training configurations and assignments are locked starting on **Thursday at 08:00:00** (server local time) and ending when the weekly tick processes on **Thursday at 10:00:00**. During this time, players cannot configure trainers or change hero assignments.
 
 #### Training Setup
 
@@ -605,7 +605,7 @@ To train heroes, a player configures a trainer:
 
 #### Time Investment
 - **Weekly Cycle**: Training runs in a weekly cycle, processed during the server tick every Thursday at 10:00.
-- **Pre-tick Lock**: Setting changes and assignments are locked from Tuesday 12:00:00 to Thursday 10:00:00 local time.
+- **Pre-tick Lock**: Setting changes and assignments are locked from Thursday 08:00:00 to Thursday 10:00:00 local time.
 
 ---
 
@@ -633,7 +633,7 @@ To train heroes, a player configures a trainer:
 
 | Limitation | Details |
 |:---|:---|
-| **Lock Period** | No trainer configuration or hero assignment changes can be made between Tuesday 12:00:00 and Thursday 10:00:00. |
+| **Lock Period** | No trainer configuration or hero assignment changes can be made between Thursday 08:00:00 and Thursday 10:00:00. |
 | **Trainer Limits** | Maximum `2 + floor((trainingFacilityLevel - 1) / 2)` trainers per team. |
 | **Slot Limits** | Maximum `3 + floor((trainingFacilityLevel - 1) / 2)` heroes assigned per trainer. |
 | **Fatigue Constraints** | Standard training adds fatigue (+20). High fatigue (100) blocks further training gains until fatigue is reduced (e.g., via Form recovery focus or rest). |
@@ -1022,7 +1022,7 @@ Spells provide tactical options based on hero **magic proficiency**.
 | **Water** | Defensive/Control | Healing, cleansing, ice-based control and damage |
 | **Air** | Offensive/Speed | Speed buffs, lightning damage, evasion enhancement |
 | **Earth** | Defensive/Control | Defense buffs, physical damage, stuns and slows |
-| **Light** | Healing/Holy | Healing, mid-combat resurrection *(once per match; requires Mastery Tier 8+; revives KO'd hero at 30% HP with reduced form; caster suffers –50% stats for remainder of match; does not prevent post-match age penalty)*, holy damage *(bonus against Undead)* |
+| **Light** | Healing/Holy | Healing, mid-combat resurrection *(once per match; requires Mastery Tier 8+; revives KO'd hero at 50% HP; caster suffers –15% stats for remainder of match; does not prevent post-match age penalty)*, holy damage *(bonus against Undead)* |
 | **Dark** | Cursing/Drain | Curses, life drain *(Undead are immune to enemy life drain but can use it themselves — life drain is the primary healing method for Undead, who cannot benefit from external healing spells)*, debuffs, summoning |
 
 > *Note: Some races (Genie, Elf) gain bonuses from Intelligence for spell effectiveness. Heroes can learn spells from multiple schools but may specialize for efficiency.*

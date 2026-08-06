@@ -50,7 +50,7 @@ class TrainingController extends AbstractController
         $tz = new \DateTimeZone($team->getKingdom()->getTimezone());
         $nowLocal = new \DateTimeImmutable('now', $tz);
         $nextTick = $this->trainingService->getNextTrainingTime($nowLocal);
-        $nextLock = $nextTick->modify('-46 hours');
+        $nextLock = $nextTick->modify('-2 hours');
         $isLocked = $this->trainingService->isTrainingLockedForTeam($team, $nowLocal);
 
         return $this->render('training/index.html.twig', [

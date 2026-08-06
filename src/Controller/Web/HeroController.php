@@ -122,7 +122,7 @@ class HeroController extends AbstractController
         $nowLocal = new \DateTimeImmutable('now', $tz);
         $isTrainingLocked = $this->trainingService->isTrainingLockedForTeam($team, $nowLocal);
         $nextTick = $this->trainingService->getNextTrainingTime($nowLocal);
-        $nextLock = $nextTick->modify('-46 hours');
+        $nextLock = $nextTick->modify('-2 hours');
 
         $heroHistory = $this->heroChroniclePresenter->presentRecentForHero($hero, 15);
 

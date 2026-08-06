@@ -36,7 +36,7 @@ Tactics simulation runs automatically for both teams during the `league_match` t
 
 ## 3. Training Simulation
 
-Training setups for NPC teams are simulated on **Tuesday 00:00:00 (during Daily Reset)**, exactly 12 hours before the training lock begins (Tuesday 12:00:00).
+Training setups for NPC teams are simulated on **Tuesday 00:00:00 (during Daily Reset)**, well before the training lock begins (Thursday 08:00:00).
 - **Trainer Promotion:** Promotes the oldest and highest-level eligible combatants to fill empty trainer slots (excluding purely negative-trait heroes unless desperate). Uses shared `TrainingService::applyTrainerPromotion()` to unequip items, remove from active formations, and record `trainer_promoted` in the team chronicle.
 - **Trainer Focus Config:** Configures trainer specializations (training type and target attributes) matching the team's economic role.
 - **Trainee Allocation:** Assigns combatants to trainers up to their slot limits, prioritizing those with the `QuickLearner` trait first.
