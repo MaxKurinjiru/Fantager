@@ -289,9 +289,9 @@ class ArenaRevenueServiceTest extends TestCase
         $projections = $this->arenaRevenueService->generatePriceRevenueProjections($home, $away);
 
         $this->assertNotEmpty($projections);
-        $this->assertArrayHasKey('ticket_price', $projections[0]);
-        $this->assertArrayHasKey('attendance', $projections[0]);
-        $this->assertArrayHasKey('gold_earned', $projections[0]);
-        $this->assertArrayHasKey('elasticity', $projections[0]);
+        $this->assertGreaterThan(0, $projections[0]['ticket_price']);
+        $this->assertGreaterThanOrEqual(0, $projections[0]['attendance']);
+        $this->assertGreaterThanOrEqual(0, $projections[0]['gold_earned']);
+        $this->assertGreaterThanOrEqual(0.0, $projections[0]['elasticity']);
     }
 }

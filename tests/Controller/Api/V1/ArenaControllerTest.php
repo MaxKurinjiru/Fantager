@@ -18,10 +18,13 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+use PHPUnit\Framework\MockObject\MockObject;
+
 #[AllowMockObjectsWithoutExpectations]
 class ArenaControllerTest extends TestCase
 {
-    private ArenaService $arenaService;
+    /** @var ArenaService&MockObject */
+    private $arenaService;
     private UserMessageTranslator $userMessages;
     private ArenaController $controller;
     private User $user;
@@ -77,7 +80,8 @@ class ArenaControllerTest extends TestCase
 
     public function testUpdateTicketPriceValidatesOutOfBounds(): void
     {
-        $request = new Request([], [], [], [], [], [], json_encode(['ticket_price' => 100]));
+        $content = json_encode(['ticket_price' => 100]);
+        $request = new Request([], [], [], [], [], [], false !== $content ? $content : null);
 
         $response = $this->controller->updateTicketPrice($request);
         $this->assertSame(400, $response->getStatusCode());
@@ -88,7 +92,8 @@ class ArenaControllerTest extends TestCase
 
     public function testUpdateTicketPriceSuccess(): void
     {
-        $request = new Request([], [], [], [], [], [], json_encode(['ticket_price' => 12]));
+        $content = json_encode(['ticket_price' => 12]);
+        $request = new Request([], [], [], [], [], [], false !== $content ? $content : null);
 
         $this->arenaService
             ->expects($this->once())

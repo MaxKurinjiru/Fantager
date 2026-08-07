@@ -67,6 +67,8 @@ class NpcSimulationServiceTest extends TestCase
     private $raceConfig;
     /** @var TeamChronicleService&MockObject */
     private $teamChronicleService;
+    /** @var \App\Repository\League\LeagueStandingRepository&MockObject */
+    private $standingRepository;
     /** @var \App\Service\Spell\SpellService&MockObject */
     private $spellService;
     /** @var list<Spell> */
@@ -88,6 +90,7 @@ class NpcSimulationServiceTest extends TestCase
         $this->raceConfig = $this->createMock(RaceConfig::class);
         $this->teamChronicleService = $this->createMock(TeamChronicleService::class);
         $this->spellService = $this->createMock(\App\Service\Spell\SpellService::class);
+        $this->standingRepository = $this->createMock(\App\Repository\League\LeagueStandingRepository::class);
 
         $this->spellLibraryList = [];
         $this->knownSpellsList = [];
@@ -141,7 +144,8 @@ class NpcSimulationServiceTest extends TestCase
             $this->teamChronicleService,
             $tacticsSimulator,
             $this->itemService,
-            $this->trainingService
+            $this->trainingService,
+            $this->standingRepository
         );
 
         $this->service = new NpcSimulationService(

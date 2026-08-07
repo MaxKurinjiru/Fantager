@@ -19,6 +19,7 @@ use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,19 +30,23 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AllowMockObjectsWithoutExpectations]
 class LeagueControllerTest extends TestCase
 {
-    private LeagueService $leagueService;
-    private SeasonTransitionService $seasonTransitionService;
-    private KingdomRepository $kingdomRepository;
-    private EntityManagerInterface $em;
+    /** @var LeagueService&MockObject */
+    private $leagueService;
+    /** @var SeasonTransitionService&MockObject */
+    private $seasonTransitionService;
+    /** @var KingdomRepository&MockObject */
+    private $kingdomRepository;
+    /** @var EntityManagerInterface&MockObject */
+    private $em;
     private UserMessageTranslator $userMessages;
     private LeagueController $controller;
 
     protected function setUp(): void
     {
-        $this->leagueService = $this->createStub(LeagueService::class);
+        $this->leagueService = $this->createMock(LeagueService::class);
         $this->seasonTransitionService = $this->createMock(SeasonTransitionService::class);
-        $this->kingdomRepository = $this->createStub(KingdomRepository::class);
-        $this->em = $this->createStub(EntityManagerInterface::class);
+        $this->kingdomRepository = $this->createMock(KingdomRepository::class);
+        $this->em = $this->createMock(EntityManagerInterface::class);
 
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(static fn (string $id): string => $id);
@@ -168,7 +173,8 @@ class LeagueControllerTest extends TestCase
 
         $this->seasonTransitionService->expects($this->once())->method('executeTransition')->with($kingdom);
 
-        $request = new Request([], [], [], [], [], [], json_encode(['kingdomId' => 1]));
+        $content = json_encode(['kingdomId' => 1]);
+        $request = new Request([], [], [], [], [], [], false !== $content ? $content : null);
         $response = $this->controller->processSeason($request);
 
         $this->assertSame(200, $response->getStatusCode());

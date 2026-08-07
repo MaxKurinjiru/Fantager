@@ -76,10 +76,13 @@ To mimic realistic player progression and preserve a stable NPC budget, non-tact
   - Sell limit: 1-2 heroes, 1 trainer
 
 **Buying:** Evaluates all active listings in the same Kingdom and buys them separately:
-1. **Items:** Uncapped item purchases. NPC teams will buy any listings scored > 0 that represent a useful upgrade (empty slot or higher rarity) for a hero in their active lineup (default formation), matching weapon/armor masteries. Tracks virtual equipment updates in-memory after each purchase.
+1. **Items:** Capped by Tier (T1: max 4/tick, T2: max 2/tick, T3: max 1/tick). NPC teams buy listings scored > 0 representing a useful upgrade for a hero in their active lineup, matching masteries. For T3 teams, single item price is capped at 1 500 gold.
 2. **Heroes:** Buys combatant heroes scored > 0 up to the role's buy limit.
 3. **Trainers:** Buys trainers scored > 0 up to the role's buy limit.
-*(For all purchases, gold reserve of 2x weekly maintenance must be maintained).*
+
+**Tier-aware Budget Controls:**
+- **Gold Safety Reserve:** T1 requires `2.0x weekly maintenance`, T2 requires `3.5x weekly maintenance`, T3 requires `5.0x weekly maintenance + 2 000 gold base floor`.
+- **Per-Tick Spend Cap:** Maximum gold spent on marketplace per tick is capped by Tier percentage of current gold (T1: 50%, T2: 35%, T3: 20%).
 
 Score table (score `0` = not interested; higher score wins):
 
