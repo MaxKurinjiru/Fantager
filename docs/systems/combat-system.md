@@ -74,31 +74,39 @@ A team needs 6 combat-ready heroes to **enter** a match, independent of formatio
 
 ---
 
-## Hexagonal Grid Combat Engine (11×8 Landscape)
+## Hexagonal Grid Combat Engine (17×11 Landscape)
 
-Combat takes place on an **11×8 2D Hexagonal Grid** (11 columns wide, q = 0..10; 8 rows tall, r = 0..7) using **Flat-Topped Axial Coordinates `(q, r)`**.
+Combat takes place on a **17×11 2D Hexagonal Grid** (17 columns wide, q = 0..16; 11 rows tall, r = 0..10) using **Flat-Topped Axial Coordinates `(q, r)`**. `CombatEngine::ENGINE_VERSION` is **2** for this layout.
 
-Canonical starting positions are defined in `HexGridService::getInitialHexForSlot()` and mirrored by the battle replay UI.
+Canonical starting positions are defined in `HexGridService::getInitialHexForSlot()` and mirrored by the battle replay UI. Lane centres are **at least 3 hexes apart** so 7-hex flowers do not overlap. The front row is staggered +1 r vs the back row so a backliner does not share a LoS corridor with its own frontliner.
 
 ### Starting Positions
 - **Team A (Home / Left):**
-  - `front_1` → `(2, 2)`, `front_2` → `(2, 4)`, `front_3` → `(2, 6)`
-  - `back_1` → `(1, 1)`, `back_2` → `(1, 3)`, `back_3` → `(1, 5)`
+  - `front_1` → `(4, 3)`, `front_2` → `(4, 6)`, `front_3` → `(4, 9)`
+  - `back_1` → `(1, 2)`, `back_2` → `(1, 5)`, `back_3` → `(1, 8)`
 - **Team B (Away / Right):**
-  - `front_1` → `(8, 2)`, `front_2` → `(8, 4)`, `front_3` → `(8, 6)`
-  - `back_1` → `(9, 1)`, `back_2` → `(9, 3)`, `back_3` → `(9, 5)`
+  - `front_1` → `(12, 3)`, `front_2` → `(12, 6)`, `front_3` → `(12, 9)`
+  - `back_1` → `(15, 2)`, `back_2` → `(15, 5)`, `back_3` → `(15, 8)`
+
+### Unit Footprint (size)
+Most races occupy **1 hex** (the centre). **Ent** and **Giant** occupy a **7-hex flower**: the centre plus its 6 neighbours (`Race::hexFootprintRadius() = 1`).
+
+- **Occupancy / pathfinding / LoS:** the full footprint blocks other units and ranged lines.
+- **Engagement distance:** edge-to-edge between footprints: `max(0, centreDistance - radiusA - radiusB)`. Melee reach 1 means bodies are adjacent (a 1-hex unit vs a flower is in melee at centre distance 2).
+- **Movement:** the centre moves 1 hex per step (still **2 AP**); the whole flower must stay on the map and must not overlap another living footprint.
+- All six slots on a side can be Ents/Giants at once — the 17×11 layout is packed for that.
 
 ### Action Points (AP) & Movement
 - **Action Points per Turn:** `AP = 4 + floor(Effective_SPD / 5)` (Effective_SPD currently uses `baseInitiative`).
 - **Movement Cost:** Moving 1 hex costs **2 AP**.
 - **Armor Fatigue:** `heavy_armor` adds **+2 Fatigue** for each hex moved.
-- **Pathfinding:** Hexagonal A* routes units around occupied hexes (living combatants).
+- **Pathfinding:** Hexagonal A* routes unit centres around occupied hexes (living combatant footprints). Closing to melee stops at weapon reach rather than walking onto the target body.
 
 ### Weapon Reach & Line of Sight (LoS)
-- **Melee Weapons:** 1 hex reach (`distance == 1`).
+- **Melee Weapons:** 1 hex engagement reach (footprints adjacent).
 - **Polearms & Spears (`spear`, `polearm`):** 2 hex reach (reserved subtypes; current item set is melee/ranged/magic).
-- **Ranged Weapons (bows, crossbows) & Spells (staff/wand):** 2 to 5 hex reach + **Line of Sight**.
-  - **Line of Sight (LoS):** Cube-rounded hex line interpolation. Intermediate standing units block LoS.
+- **Ranged Weapons (bows, crossbows) & Spells (staff/wand):** 2 to 5 hex engagement reach + **Line of Sight**.
+  - **Line of Sight (LoS):** Cube-rounded hex line interpolation from centre to centre. Intermediate standing units (full footprints) block LoS; the shooter and target bodies do not.
 
 ### Directional Shield Defense & Flanking
 - **Frontal Shield Block:** Shield status reduction applies to non-flanking attacks.
@@ -309,7 +317,7 @@ CombatMatchRequest
   sideA, sideB: CombatSide
   matchType: MatchType
   seed: int                         // required
-  engineVersion: int = 1
+  engineVersion: int = 2
 
 CombatSide
   teamId: int
@@ -435,6 +443,7 @@ To expand combat duration and add tactical depth, each active combatant's turn i
   "simulator": "combat_engine",
   "seed": 987654321,
   "match_type": "league",
+  "grid": { "width": 17, "height": 11 },
   "teams": {
     "a": { "team_id": 1, "formation_id": 10, "approach": "balanced" },
     "b": { "team_id": 2, "formation_id": 11, "approach": "aggressive" }
@@ -460,6 +469,8 @@ To expand combat duration and add tactical depth, each active combatant's turn i
 | `version` | Schema version; replay client must understand or refuse |
 | `simulator` | `combat_engine` \| `forfeit` \| `stub_random` |
 | `seed` | PRNG seed used for this run |
+| `engine_version` | Combat engine version (2 = 17×11 grid + flower footprints) |
+| `grid` | `{ width, height }` battlefield size for replay |
 | `lineup` | Slot → hero labels for replay UI |
 | `events` | Ordered combat events (appended across waves) |
 | `result` | Final kill scores (also mirrored on `Battle.score_a/b`) |

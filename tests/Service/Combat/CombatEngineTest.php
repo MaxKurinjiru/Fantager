@@ -33,6 +33,8 @@ class CombatEngineTest extends TestCase
         $log = $first->getCombatLog();
         $this->assertSame(1, $log['version']);
         $this->assertSame('combat_engine', $log['simulator']);
+        $this->assertSame(2, $log['engine_version']);
+        $this->assertSame(['width' => 17, 'height' => 11], $log['grid']);
         $this->assertSame('match_start', $log['events'][0]['type']);
         $lastEvent = end($log['events']);
         $this->assertSame('match_end', $lastEvent['type']);
@@ -104,6 +106,7 @@ class CombatEngineTest extends TestCase
         $sideB = $this->buildSide(2, 200, FormationApproach::Balanced);
         $request = new CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
         $runState = $engine->initializeRunState($request);
+        $this->placeWithinRangedReach($runState);
 
         // Round 1: Plan Bow Attack
         $eventsRound1 = $engine->simulateRound($runState, 1);
@@ -130,6 +133,7 @@ class CombatEngineTest extends TestCase
         $sideB = $this->buildSide(2, 200, FormationApproach::Balanced);
         $request = new CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
         $runState = $engine->initializeRunState($request);
+        $this->placeWithinRangedReach($runState);
 
         // Round 1: Plan Crossbow Attack
         $eventsRound1 = $engine->simulateRound($runState, 1);
@@ -159,6 +163,7 @@ class CombatEngineTest extends TestCase
         $sideB = $this->buildSide(2, 200, FormationApproach::Balanced);
         $request = new CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
         $runState = $engine->initializeRunState($request);
+        $this->placeWithinRangedReach($runState);
 
         // Round 1: Plan Bow Attack on B's Front1
         $engine->simulateRound($runState, 1);
@@ -202,6 +207,23 @@ class CombatEngineTest extends TestCase
         }
 
         return new CombatSide($teamId, $teamId + 1000, FormationApproach::Balanced, $combatants);
+    }
+
+    /**
+     * Keep round-scripted weapon tests on the wider 17×11 map: fronts already in bow reach (5).
+     *
+     * @param array<string, mixed> $runState
+     */
+    private function placeWithinRangedReach(array &$runState): void
+    {
+        foreach (['sideA' => 7, 'sideB' => 12] as $sideKey => $q) {
+            foreach ($runState[$sideKey]['combatants'] as $i => $combatant) {
+                $slot = (string) ($combatant['slot'] ?? '');
+                if (str_starts_with($slot, 'front_')) {
+                    $runState[$sideKey]['combatants'][$i]['q'] = $q;
+                }
+            }
+        }
     }
 
     /**

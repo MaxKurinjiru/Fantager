@@ -1866,7 +1866,7 @@ battle:
   final_scores: Konečné skóre
   formations_state: Konečný stav formací
   round_log: Průběh zápasu (kolo po kole)
-  hex_replay_title: Interaktivní hexové bojiště (11×8 Landscape)
+  hex_replay_title: Interaktivní hexové bojiště (17×11 Landscape)
   scrubber: Posuvník kola
   speed: Rychlost přehrávání
   play: Přehrát

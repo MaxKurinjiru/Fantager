@@ -1,32 +1,41 @@
 import { Controller } from '@hotwired/stimulus';
 
 /**
- * Slot-to-Hex axial coordinate mapping for 11×8 Battlefield (q = 0..10, r = 0..7).
+ * Slot-to-Hex axial coordinate mapping for 17×11 Battlefield (q = 0..16, r = 0..10).
  * Must match HexGridService::getInitialHexForSlot().
- * Team A (Home / Left): front (2,2/4/6), back (1,1/3/5).
- * Team B (Away / Right): front (8,2/4/6), back (9,1/3/5).
+ * Team A (Home / Left): front (4, 3/6/9), back (1, 2/5/8).
+ * Team B (Away / Right): front (12, 3/6/9), back (15, 2/5/8).
  */
 const SLOT_HEX_MAP = {
     a: {
-        back_1: { q: 1, r: 1 },
-        front_1: { q: 2, r: 2 },
-        back_2: { q: 1, r: 3 },
-        front_2: { q: 2, r: 4 },
-        back_3: { q: 1, r: 5 },
-        front_3: { q: 2, r: 6 }
+        back_1: { q: 1, r: 2 },
+        front_1: { q: 4, r: 3 },
+        back_2: { q: 1, r: 5 },
+        front_2: { q: 4, r: 6 },
+        back_3: { q: 1, r: 8 },
+        front_3: { q: 4, r: 9 }
     },
     b: {
-        back_1: { q: 9, r: 1 },
-        front_1: { q: 8, r: 2 },
-        back_2: { q: 9, r: 3 },
-        front_2: { q: 8, r: 4 },
-        back_3: { q: 9, r: 5 },
-        front_3: { q: 8, r: 6 }
+        back_1: { q: 15, r: 2 },
+        front_1: { q: 12, r: 3 },
+        back_2: { q: 15, r: 5 },
+        front_2: { q: 12, r: 6 },
+        back_3: { q: 15, r: 8 },
+        front_3: { q: 12, r: 9 }
     }
 };
 
+const AXIAL_NEIGHBORS = [
+    [1, 0], [1, -1], [0, -1],
+    [-1, 0], [-1, 1], [0, 1]
+];
+
+const CANVAS_WIDTH = 960;
+const CANVAS_HEIGHT = 640;
+const LARGE_RACES = new Set(['ent', 'giant']);
+
 /**
- * Stimulus controller for rendering and animating 11×8 Hexagonal Grid combat replays on HTML5 Canvas.
+ * Stimulus controller for rendering and animating 17×11 Hexagonal Grid combat replays on HTML5 Canvas.
  */
 export default class extends Controller {
     static targets = [
@@ -52,9 +61,17 @@ export default class extends Controller {
         this.playbackSpeed = 1000; // ms per round
         this.animationTimer = null;
 
-        this.gridWidth = 11;
-        this.gridHeight = 8;
-        this.hexRadius = 26;
+        const grid = (this.hasRunStateValue && this.runStateValue.grid)
+            ? this.runStateValue.grid
+            : (this.hasCombatLogValue && this.combatLogValue.grid)
+                ? this.combatLogValue.grid
+                : {};
+
+        this.gridWidth = grid.width || 17;
+        this.gridHeight = grid.height || 11;
+        this.hexRadius = 28;
+        this.canvasWidth = CANVAS_WIDTH;
+        this.canvasHeight = CANVAS_HEIGHT;
 
         this.initCanvas();
         this.extractRoundEvents();
@@ -70,8 +87,8 @@ export default class extends Controller {
         this.ctx = this.canvas.getContext('2d');
 
         const dpr = window.devicePixelRatio || 1;
-        this.canvas.width = 760 * dpr;
-        this.canvas.height = 520 * dpr;
+        this.canvas.width = this.canvasWidth * dpr;
+        this.canvas.height = this.canvasHeight * dpr;
         this.ctx.scale(dpr, dpr);
     }
 
@@ -178,6 +195,21 @@ export default class extends Controller {
         }
     }
 
+    isLargeRace(race) {
+        return LARGE_RACES.has(race);
+    }
+
+    footprintHexes(q, r, race) {
+        if (!this.isLargeRace(race)) {
+            return [{ q, r }];
+        }
+
+        return [
+            { q, r },
+            ...AXIAL_NEIGHBORS.map(([dq, dr]) => ({ q: q + dq, r: r + dr }))
+        ];
+    }
+
     /**
      * Reconstruct combatant states (HP, KO, status) up to currentRound by folding log events.
      */
@@ -239,20 +271,20 @@ export default class extends Controller {
 
     render() {
         const ctx = this.ctx;
-        ctx.clearRect(0, 0, 760, 520);
+        ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
         ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, 760, 520);
+        ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
         for (let q = 0; q < this.gridWidth; q++) {
             for (let r = 0; r < this.gridHeight; r++) {
                 let fillColor = '#1e293b';
                 let strokeColor = '#334155';
 
-                if (q < 3) {
+                if (q < 6) {
                     fillColor = '#1e1b2e';
                     strokeColor = '#451a2b';
-                } else if (q > 7) {
+                } else if (q > 10) {
                     fillColor = '#172554';
                     strokeColor = '#1e3a8a';
                 }
@@ -264,8 +296,10 @@ export default class extends Controller {
         const combatantsA = this.getCombatantStatesForRound('a');
         const combatantsB = this.getCombatantStatesForRound('b');
 
-        this.renderCombatantSide(combatantsA, '#ef4444', 'A');
-        this.renderCombatantSide(combatantsB, '#3b82f6', 'B');
+        this.renderFootprints(combatantsA, 'A');
+        this.renderFootprints(combatantsB, 'B');
+        this.renderCombatantSide(combatantsA, 'A');
+        this.renderCombatantSide(combatantsB, 'B');
     }
 
     hexToPixel(q, r) {
@@ -278,8 +312,8 @@ export default class extends Controller {
         const totalGridWidth = (this.gridWidth - 1) * xSpacing + (2 * size);
         const totalGridHeight = (this.gridHeight - 1) * ySpacing + (ySpacing) + (ySpacing / 2);
 
-        const offsetX = (760 - totalGridWidth) / 2 + size;
-        const offsetY = (520 - totalGridHeight) / 2 + (ySpacing / 2);
+        const offsetX = (this.canvasWidth - totalGridWidth) / 2 + size;
+        const offsetY = (this.canvasHeight - totalGridHeight) / 2 + (ySpacing / 2);
 
         const x = offsetX + q * xSpacing;
         const y = offsetY + r * ySpacing + (q % 2 === 1 ? (ySpacing / 2) : 0);
@@ -315,20 +349,48 @@ export default class extends Controller {
         this.ctx.fillText(`${q},${r}`, x, y + size * 0.65);
     }
 
-    renderCombatantSide(combatants, color, sideCode) {
+    renderFootprints(combatants, sideCode) {
+        if (!combatants || !combatants.length) return;
+
+        combatants.forEach(hero => {
+            if (!this.isLargeRace(hero.race)) {
+                return;
+            }
+
+            const isKo = hero.isKo || hero.currentHp <= 0;
+            const fill = isKo
+                ? 'rgba(100, 116, 139, 0.35)'
+                : (sideCode === 'A' ? 'rgba(220, 38, 38, 0.28)' : 'rgba(37, 99, 235, 0.28)');
+            const stroke = isKo
+                ? 'rgba(148, 163, 184, 0.8)'
+                : (sideCode === 'A' ? 'rgba(248, 113, 113, 0.9)' : 'rgba(96, 165, 250, 0.9)');
+
+            this.footprintHexes(hero.q, hero.r, hero.race).forEach(hex => {
+                if (hex.q < 0 || hex.r < 0 || hex.q >= this.gridWidth || hex.r >= this.gridHeight) {
+                    return;
+                }
+                this.drawHex(hex.q, hex.r, fill, stroke);
+            });
+        });
+    }
+
+    renderCombatantSide(combatants, sideCode) {
         if (!combatants || !combatants.length) return;
 
         combatants.forEach(hero => {
             const { x, y } = this.hexToPixel(hero.q, hero.r);
             const isKo = hero.isKo || hero.currentHp <= 0;
+            const isLarge = this.isLargeRace(hero.race);
+            const tokenRadius = isLarge ? 18 : 14;
+            const shadowRadius = tokenRadius + 2;
 
             this.ctx.beginPath();
-            this.ctx.arc(x, y - 1, 16, 0, Math.PI * 2);
+            this.ctx.arc(x, y - 1, shadowRadius, 0, Math.PI * 2);
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
             this.ctx.fill();
 
             this.ctx.beginPath();
-            this.ctx.arc(x, y - 2, 14, 0, Math.PI * 2);
+            this.ctx.arc(x, y - 2, tokenRadius, 0, Math.PI * 2);
             this.ctx.fillStyle = isKo ? '#334155' : (sideCode === 'A' ? '#dc2626' : '#2563eb');
             this.ctx.fill();
             this.ctx.strokeStyle = isKo ? '#64748b' : '#ffffff';
@@ -345,7 +407,7 @@ export default class extends Controller {
                 }
             }
             this.ctx.fillStyle = isKo ? '#94a3b8' : '#ffffff';
-            this.ctx.font = 'bold 10px sans-serif';
+            this.ctx.font = isLarge ? 'bold 12px sans-serif' : 'bold 10px sans-serif';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(initial, x, y - 2);
@@ -353,23 +415,26 @@ export default class extends Controller {
             const slotShort = hero.slot ? hero.slot.replace('front_', 'F').replace('back_', 'B') : '';
             this.ctx.fillStyle = sideCode === 'A' ? '#f87171' : '#60a5fa';
             this.ctx.font = 'bold 8px monospace';
-            this.ctx.fillText(slotShort, x, y - 17);
+            this.ctx.fillText(slotShort, x, y - tokenRadius - 3);
 
             const maxHp = hero.maxHp || 100;
             const currentHp = Math.max(0, hero.currentHp);
             const hpPct = Math.max(0, Math.min(1, currentHp / maxHp));
+            const barWidth = isLarge ? 40 : 32;
+            const barX = x - barWidth / 2;
+            const barY = y + tokenRadius + 1;
 
             this.ctx.fillStyle = '#0f172a';
-            this.ctx.fillRect(x - 16, y + 13, 32, 5);
+            this.ctx.fillRect(barX, barY, barWidth, 5);
 
             if (!isKo && hpPct > 0) {
                 this.ctx.fillStyle = hpPct > 0.5 ? '#22c55e' : (hpPct > 0.2 ? '#eab308' : '#ef4444');
-                this.ctx.fillRect(x - 16, y + 13, 32 * hpPct, 5);
+                this.ctx.fillRect(barX, barY, barWidth * hpPct, 5);
             }
 
             this.ctx.fillStyle = isKo ? '#ef4444' : '#cbd5e1';
             this.ctx.font = 'bold 8px monospace';
-            this.ctx.fillText(isKo ? 'KO' : `${currentHp}/${maxHp}`, x, y + 24);
+            this.ctx.fillText(isKo ? 'KO' : `${currentHp}/${maxHp}`, x, barY + 11);
         });
     }
 }

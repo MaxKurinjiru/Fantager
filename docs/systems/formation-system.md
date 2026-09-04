@@ -25,9 +25,10 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 ## Match Lineup vs Roster
 
 - **Lineup:** 6 heroes in formation (`front_1`–`front_3`, `back_1`–`back_3`)
-- **Hex Grid Mapping (11×8 Battlefield):** Canonical positions from `HexGridService::getInitialHexForSlot()`:
-  - **Team A (Home / Left):** `front_1` (2,2), `front_2` (2,4), `front_3` (2,6), `back_1` (1,1), `back_2` (1,3), `back_3` (1,5).
-  - **Team B (Away / Right):** `front_1` (8,2), `front_2` (8,4), `front_3` (8,6), `back_1` (9,1), `back_2` (9,3), `back_3` (9,5).
+- **Hex Grid Mapping (17×11 Battlefield):** Canonical positions from `HexGridService::getInitialHexForSlot()`:
+  - **Team A (Home / Left):** `front_1` (4,3), `front_2` (4,6), `front_3` (4,9), `back_1` (1,2), `back_2` (1,5), `back_3` (1,8).
+  - **Team B (Away / Right):** `front_1` (12,3), `front_2` (12,6), `front_3` (12,9), `back_1` (15,2), `back_2` (15,5), `back_3` (15,8).
+  - Lane centres are at least 3 hexes apart so Ent/Giant **7-hex flowers** do not overlap at kickoff. Front row is staggered +1 r vs back so a lane's backliner does not share LoS with its frontliner. See [combat-system.md](combat-system.md#unit-footprint-size).
 - **Movement strategy:** Formation-wide `strategy.movement_goal` (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`) stored on each slot.
 - **Roster minimum:** 10 heroes at team start; 6 combat-ready required to avoid automatic forfeit
 

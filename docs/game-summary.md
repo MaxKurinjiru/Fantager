@@ -459,8 +459,8 @@ Beyond equipment and training, races have tactical advantages in combat:
 | Dwarf | +15% armor effectiveness and critical resistance (natural durability) |
 | Orc | +20% melee damage against non-Orc enemies; –10% against Orc allies (bloodlust) |
 | Undead | Immune to poison and disease; 50% reduced healing effectiveness (unliving) |
-| Giant | +10% damage with main-hand weapons; cannot use off-hand (size limitation) |
-| Ent | +20% Constitution defensive calculations; –20% speed-based actions (rooted nature) |
+| Giant | +10% damage with main-hand weapons; cannot use off-hand (size limitation); **7-hex flower** on the combat map (centre + 6 neighbours) |
+| Ent | +20% Constitution defensive calculations; –20% speed-based actions (rooted nature); **7-hex flower** on the combat map (centre + 6 neighbours) |
 | Genie | +15% spell effectiveness and spell critical hit chance (magical essence) |
 
 #### Race-Specific Restrictions Summary

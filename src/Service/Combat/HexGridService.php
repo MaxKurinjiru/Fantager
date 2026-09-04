@@ -9,17 +9,20 @@ use App\ValueObject\Combat\HexCoordinate;
 /**
  * Service providing hexagonal grid math, pathfinding, Line of Sight (LoS), and tactical calculations.
  *
- * Canonical starting positions (11×8 flat-topped axial, q=0..10, r=0..7):
- * - Team A (Home / Left): front (2,2/4/6), back (1,1/3/5)
- * - Team B (Away / Right): front (8,2/4/6), back (9,1/3/5)
+ * Canonical starting positions (17×11 flat-topped axial, q=0..16, r=0..10).
+ * Lane centres are at least 3 hexes apart so 7-hex flowers (Ent / Giant) do not overlap.
+ * Front row is staggered +1 r vs back so a lane's backliner does not share LoS with its frontliner:
+ * - Team A (Home / Left): front (4, 3/6/9), back (1, 2/5/8)
+ * - Team B (Away / Right): front (12, 3/6/9), back (15, 2/5/8)
  */
 class HexGridService
 {
-    public const GRID_WIDTH = 11;
-    public const GRID_HEIGHT = 8;
+    public const GRID_WIDTH = 17;
+    public const GRID_HEIGHT = 11;
 
     /**
      * Determine weapon reach in hexes based on weapon sub-type (ItemSubType values).
+     * Reach is measured as engagement distance (edge-to-edge between footprints).
      */
     public function getWeaponReach(?string $weaponSubType): int
     {
@@ -36,11 +39,56 @@ class HexGridService
     }
 
     /**
-     * Check if a coordinate is within the valid 11×8 battlefield grid.
+     * Check if a coordinate is within the valid 17×11 battlefield grid.
      */
     public function isWithinGrid(HexCoordinate $coord): bool
     {
         return $coord->q >= 0 && $coord->q < self::GRID_WIDTH && $coord->r >= 0 && $coord->r < self::GRID_HEIGHT;
+    }
+
+    /**
+     * Hexes occupied by a unit centred on $origin. Radius 0 = single hex; radius 1 = 7-hex flower.
+     *
+     * @return list<HexCoordinate>
+     */
+    public function getFootprint(HexCoordinate $origin, int $radius = 0): array
+    {
+        if ($radius <= 0) {
+            return [$origin];
+        }
+
+        $hexes = [$origin];
+        foreach ($origin->getNeighbors() as $neighbor) {
+            $hexes[] = $neighbor;
+        }
+
+        return $hexes;
+    }
+
+    /**
+     * True when every hex of the footprint lies on the battlefield.
+     */
+    public function footprintFits(HexCoordinate $origin, int $radius = 0): bool
+    {
+        foreach ($this->getFootprint($origin, $radius) as $hex) {
+            if (!$this->isWithinGrid($hex)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Edge-to-edge distance between two footprints (0 = overlapping or concentric).
+     */
+    public function engagementDistance(
+        HexCoordinate $originA,
+        int $radiusA,
+        HexCoordinate $originB,
+        int $radiusB,
+    ): int {
+        return max(0, $originA->distance($originB) - max(0, $radiusA) - max(0, $radiusB));
     }
 
     /**
@@ -52,49 +100,67 @@ class HexGridService
     {
         if ('a' === $sideKey) {
             return match ($slot) {
-                'front_1' => ['q' => 2, 'r' => 2],
-                'front_2' => ['q' => 2, 'r' => 4],
-                'front_3' => ['q' => 2, 'r' => 6],
-                'back_1' => ['q' => 1, 'r' => 1],
-                'back_2' => ['q' => 1, 'r' => 3],
-                'back_3' => ['q' => 1, 'r' => 5],
-                default => ['q' => 1, 'r' => 1],
+                'front_1' => ['q' => 4, 'r' => 3],
+                'front_2' => ['q' => 4, 'r' => 6],
+                'front_3' => ['q' => 4, 'r' => 9],
+                'back_1' => ['q' => 1, 'r' => 2],
+                'back_2' => ['q' => 1, 'r' => 5],
+                'back_3' => ['q' => 1, 'r' => 8],
+                default => ['q' => 1, 'r' => 2],
             };
         }
 
         return match ($slot) {
-            'front_1' => ['q' => 8, 'r' => 2],
-            'front_2' => ['q' => 8, 'r' => 4],
-            'front_3' => ['q' => 8, 'r' => 6],
-            'back_1' => ['q' => 9, 'r' => 1],
-            'back_2' => ['q' => 9, 'r' => 3],
-            'back_3' => ['q' => 9, 'r' => 5],
-            default => ['q' => 9, 'r' => 1],
+            'front_1' => ['q' => 12, 'r' => 3],
+            'front_2' => ['q' => 12, 'r' => 6],
+            'front_3' => ['q' => 12, 'r' => 9],
+            'back_1' => ['q' => 15, 'r' => 2],
+            'back_2' => ['q' => 15, 'r' => 5],
+            'back_3' => ['q' => 15, 'r' => 8],
+            default => ['q' => 15, 'r' => 2],
         };
     }
 
     /**
-     * Hexagonal A* Pathfinding from start to goal, avoiding occupied or impassable hexes.
+     * Hexagonal A* Pathfinding from start toward goal, avoiding occupied or impassable hexes.
+     *
+     * $moverRadius / $goalRadius describe hex-ball footprints. When $stopAtDistance > 0 the search
+     * ends at the first centre whose engagement distance to the goal is within that threshold
+     * (used to close to weapon reach without walking onto the target body).
      *
      * @param list<HexCoordinate> $occupiedHexes
      *
      * @return list<HexCoordinate> Path excluding start position
      */
-    public function findPath(HexCoordinate $start, HexCoordinate $goal, array $occupiedHexes = []): array
-    {
-        if ($start->equals($goal)) {
+    public function findPath(
+        HexCoordinate $start,
+        HexCoordinate $goal,
+        array $occupiedHexes = [],
+        int $moverRadius = 0,
+        int $goalRadius = 0,
+        int $stopAtDistance = 0,
+    ): array {
+        if ($this->engagementDistance($start, $moverRadius, $goal, $goalRadius) <= $stopAtDistance) {
             return [];
         }
 
-        if (!$this->isWithinGrid($goal)) {
+        if (0 === $stopAtDistance && !$this->isWithinGrid($goal)) {
+            return [];
+        }
+
+        if (!$this->footprintFits($start, $moverRadius)) {
             return [];
         }
 
         $occupiedMap = [];
         foreach ($occupiedHexes as $hex) {
-            if (!$hex->equals($start) && !$hex->equals($goal)) {
-                $occupiedMap[$hex->key()] = true;
+            if ($hex->equals($start)) {
+                continue;
             }
+            if (0 === $stopAtDistance && $hex->equals($goal)) {
+                continue;
+            }
+            $occupiedMap[$hex->key()] = true;
         }
 
         /** @var array<string, HexCoordinate> $openSet */
@@ -109,7 +175,7 @@ class HexGridService
         $gScore = [$startKey => 0];
 
         /** @var array<string, int> $fScore */
-        $fScore = [$startKey => $start->distance($goal)];
+        $fScore = [$startKey => $this->pathHeuristic($start, $goal, $moverRadius, $goalRadius, $stopAtDistance)];
 
         while (!empty($openSet)) {
             $currentKey = null;
@@ -128,7 +194,7 @@ class HexGridService
             }
 
             $current = $openSet[$currentKey];
-            if ($current->equals($goal)) {
+            if ($this->engagementDistance($current, $moverRadius, $goal, $goalRadius) <= $stopAtDistance) {
                 $path = [];
                 $curr = $current;
                 $currKey = $currentKey;
@@ -144,20 +210,20 @@ class HexGridService
             unset($openSet[$currentKey]);
 
             foreach ($current->getNeighbors() as $neighbor) {
-                if (!$this->isWithinGrid($neighbor)) {
+                if (!$this->footprintFits($neighbor, $moverRadius)) {
+                    continue;
+                }
+
+                if ($this->footprintHitsOccupied($neighbor, $moverRadius, $occupiedMap, $start, $goal, $stopAtDistance)) {
                     continue;
                 }
 
                 $neighborKey = $neighbor->key();
-                if (isset($occupiedMap[$neighborKey])) {
-                    continue;
-                }
-
                 $tentativeG = ($gScore[$currentKey] ?? \PHP_INT_MAX) + 1;
                 if ($tentativeG < ($gScore[$neighborKey] ?? \PHP_INT_MAX)) {
                     $cameFrom[$neighborKey] = $current;
                     $gScore[$neighborKey] = $tentativeG;
-                    $fScore[$neighborKey] = $tentativeG + $neighbor->distance($goal);
+                    $fScore[$neighborKey] = $tentativeG + $this->pathHeuristic($neighbor, $goal, $moverRadius, $goalRadius, $stopAtDistance);
 
                     if (!isset($openSet[$neighborKey])) {
                         $openSet[$neighborKey] = $neighbor;
@@ -242,6 +308,44 @@ class HexGridService
     public function calculateActionPoints(int $effectiveSpd): int
     {
         return 4 + intdiv(max(0, $effectiveSpd), 5);
+    }
+
+    /**
+     * @param array<string, true> $occupiedMap
+     */
+    private function footprintHitsOccupied(
+        HexCoordinate $origin,
+        int $radius,
+        array $occupiedMap,
+        HexCoordinate $start,
+        HexCoordinate $goal,
+        int $stopAtDistance,
+    ): bool {
+        foreach ($this->getFootprint($origin, $radius) as $hex) {
+            if (!isset($occupiedMap[$hex->key()])) {
+                continue;
+            }
+            if (0 === $stopAtDistance && $hex->equals($goal)) {
+                continue;
+            }
+            if ($hex->equals($start)) {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function pathHeuristic(
+        HexCoordinate $from,
+        HexCoordinate $goal,
+        int $moverRadius,
+        int $goalRadius,
+        int $stopAtDistance,
+    ): int {
+        return max(0, $this->engagementDistance($from, $moverRadius, $goal, $goalRadius) - $stopAtDistance);
     }
 
     private function hexLerpRound(HexCoordinate $a, HexCoordinate $b, float $t): HexCoordinate

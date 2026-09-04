@@ -1867,7 +1867,7 @@ battle:
   final_scores: Final Scores
   formations_state: Final Formations State
   round_log: Round-by-Round Log
-  hex_replay_title: 11×8 Landscape Hexagonal Grid Battlefield Replay
+  hex_replay_title: 17×11 Landscape Hexagonal Grid Battlefield Replay
   scrubber: Scrubber
   speed: Speed
   play: Play

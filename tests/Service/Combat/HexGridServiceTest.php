@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\Combat;
 
+use App\Enum\Race;
 use App\Service\Combat\HexGridService;
 use App\ValueObject\Combat\HexCoordinate;
 use PHPUnit\Framework\TestCase;
@@ -38,10 +39,71 @@ class HexGridServiceTest extends TestCase
 
     public function testInitialHexPositionsAreCanonical(): void
     {
-        $this->assertSame(['q' => 2, 'r' => 2], $this->hexGridService->getInitialHexForSlot('front_1', 'a'));
-        $this->assertSame(['q' => 1, 'r' => 1], $this->hexGridService->getInitialHexForSlot('back_1', 'a'));
-        $this->assertSame(['q' => 8, 'r' => 4], $this->hexGridService->getInitialHexForSlot('front_2', 'b'));
-        $this->assertSame(['q' => 9, 'r' => 5], $this->hexGridService->getInitialHexForSlot('back_3', 'b'));
+        $this->assertSame(['q' => 4, 'r' => 3], $this->hexGridService->getInitialHexForSlot('front_1', 'a'));
+        $this->assertSame(['q' => 1, 'r' => 2], $this->hexGridService->getInitialHexForSlot('back_1', 'a'));
+        $this->assertSame(['q' => 12, 'r' => 6], $this->hexGridService->getInitialHexForSlot('front_2', 'b'));
+        $this->assertSame(['q' => 15, 'r' => 8], $this->hexGridService->getInitialHexForSlot('back_3', 'b'));
+    }
+
+    public function testFlowerFootprintHasSevenHexesAndFitsAtSpawn(): void
+    {
+        $origin = new HexCoordinate(4, 5);
+        $footprint = $this->hexGridService->getFootprint($origin, 1);
+
+        $this->assertCount(7, $footprint);
+        $this->assertTrue($this->hexGridService->footprintFits($origin, 1));
+        $this->assertFalse($this->hexGridService->footprintFits(new HexCoordinate(0, 0), 1));
+    }
+
+    public function testEngagementDistanceAccountsForFlowerRadius(): void
+    {
+        $giant = new HexCoordinate(4, 2);
+        $human = new HexCoordinate(6, 2);
+
+        $this->assertSame(2, $giant->distance($human));
+        $this->assertSame(1, $this->hexGridService->engagementDistance($giant, 1, $human, 0));
+        $this->assertSame(0, $this->hexGridService->engagementDistance($giant, 1, $human, 1));
+    }
+
+    public function testStartingLanesKeepFlowerCentresThreeApart(): void
+    {
+        $slots = ['front_1', 'front_2', 'front_3', 'back_1', 'back_2', 'back_3'];
+        $origins = [];
+        foreach ($slots as $slot) {
+            $pos = $this->hexGridService->getInitialHexForSlot($slot, 'a');
+            $origins[$slot] = new HexCoordinate($pos['q'], $pos['r']);
+            $this->assertTrue($this->hexGridService->footprintFits($origins[$slot], 1), $slot.' flower must fit');
+        }
+
+        $names = array_keys($origins);
+        for ($i = 0; $i < count($names); ++$i) {
+            for ($j = $i + 1; $j < count($names); ++$j) {
+                $dist = $origins[$names[$i]]->distance($origins[$names[$j]]);
+                $this->assertGreaterThanOrEqual(3, $dist, $names[$i].' vs '.$names[$j]);
+            }
+        }
+    }
+
+    public function testFindPathStopsAtMeleeReachAgainstFlower(): void
+    {
+        $human = new HexCoordinate(8, 2);
+        $giant = new HexCoordinate(12, 2);
+        $flower = $this->hexGridService->getFootprint($giant, 1);
+
+        $path = $this->hexGridService->findPath($human, $giant, $flower, 0, 1, 1);
+        $this->assertNotEmpty($path);
+        $stand = $path[array_key_last($path)];
+        $this->assertSame(1, $this->hexGridService->engagementDistance($stand, 0, $giant, 1));
+        foreach ($flower as $hex) {
+            $this->assertFalse($stand->equals($hex), 'melee close must not step onto the flower');
+        }
+    }
+
+    public function testEntAndGiantUseFlowerRadius(): void
+    {
+        $this->assertSame(1, Race::Ent->hexFootprintRadius());
+        $this->assertSame(1, Race::Giant->hexFootprintRadius());
+        $this->assertSame(0, Race::Human->hexFootprintRadius());
     }
 
     public function testFindPath(): void
