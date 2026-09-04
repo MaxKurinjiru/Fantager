@@ -1212,6 +1212,11 @@ formation:
   tactics_balanced_desc: Equal distribution of defense and attack bonuses.
   tactics_defensive: Defensive Fort
   tactics_defensive_desc: Increase back line recovery speed and block rating.
+  movement_strategy: Hex Grid Movement Strategy
+  movement_advance_to_melee: "Advance to Melee (Default: Direct push towards target)"
+  movement_seek_cover_ranged: "Seek Cover & Maintain Range (Ranged: Keep 3 hex distance)"
+  movement_protect_backline: "Protect Backline (Bodyguard: Cover lowest HP ally)"
+  movement_flank_rear: "Flank to Rear (Flank: Target rear 3 hexes for +20% damage)"
   match_prep_title: Match Formation Prep
   match_prep_subtitle: Customize your lineup for a specific fixture or use the team default.
   match_prep_desc: 'Fixture vs %opponent% (%date%). NULL assignment uses the team default formation.'
@@ -1862,6 +1867,14 @@ battle:
   final_scores: Final Scores
   formations_state: Final Formations State
   round_log: Round-by-Round Log
+  hex_replay_title: 11×8 Landscape Hexagonal Grid Battlefield Replay
+  scrubber: Scrubber
+  speed: Speed
+  play: Play
+  pause: Pause
+  prev: Prev
+  next: Next
+  round_progress: "Round %current% / %max%"
   physical_attack: "%attacker% performs physical attack on %target%"
   hit: "Hit!"
   miss: "Miss!"

@@ -9,6 +9,7 @@ export default class extends Controller {
         'nameInput',
         'approachRadio',
         'defaultCheckbox',
+        'movementGoalSelect',
         'gridSlot',
         'poolHero',
         'rosterDropZone',
@@ -447,11 +448,14 @@ export default class extends Controller {
 
         const approachRadio = this.approachRadioTargets.find(r => r.checked);
         const approach = approachRadio ? approachRadio.value : 'balanced';
+        const movementGoal = this.hasMovementGoalSelectTarget
+            ? this.movementGoalSelectTarget.value
+            : 'advance_to_melee';
 
         const slots = Object.entries(this.slotsState).map(([pos, heroId]) => ({
             position: pos,
             hero_id: heroId,
-            strategy: {},
+            strategy: { movement_goal: movementGoal },
             spell_priorities: []
         }));
 

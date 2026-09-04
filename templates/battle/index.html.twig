@@ -34,40 +34,43 @@
         </div>
 
         {% if battle.runState is not null %}
-            {# Block 2: Formations Grid #}
-            <div class="game-panel">
-                <h2 class="game-panel__title">{{ 'battle.formations_state'|trans }}</h2>
-                <div class="battle-formations-container">
-                    {# Team A Grid #}
-                    <div class="battle-formation-side">
-                        <h3 class="battle-formation-side__title">{{ battle.teamA.name }}</h3>
-                        <div class="battle-grid">
-                            {# Row 1: Back line slots #}
-                            {% for pos in ['back_1', 'back_2', 'back_3'] %}
-                                {{ _self.render_slot(battle.runState.sideA.combatants, pos) }}
-                            {% endfor %}
-                            {# Row 2: Front line slots #}
-                            {% for pos in ['front_1', 'front_2', 'front_3'] %}
-                                {{ _self.render_slot(battle.runState.sideA.combatants, pos) }}
-                            {% endfor %}
-                        </div>
+            {# Primary Showcase: Interactive Hexagonal Grid Replay Arena #}
+            <div class="game-panel" 
+                 data-controller="hex-battle-replay"
+                 data-hex-battle-replay-run-state-value="{{ battle.runState|json_encode }}"
+                 data-hex-battle-replay-combat-log-value="{{ battle.combatLog|json_encode }}"
+                 data-hex-battle-replay-label-play-value="{{ 'battle.play'|trans }}"
+                 data-hex-battle-replay-label-pause-value="{{ 'battle.pause'|trans }}"
+                 data-hex-battle-replay-label-round-value="{{ 'battle.round_progress'|trans({'%current%': '__CURRENT__', '%max%': '__MAX__'}) }}">
+                <div class="game-panel__header">
+                    <h2 class="game-panel__title">{{ 'battle.hex_replay_title'|trans }}</h2>
+                    <span class="battle-round-label" data-hex-battle-replay-target="roundLabel">{{ 'battle.round_progress'|trans({'%current%': 1, '%max%': 1}) }}</span>
+                </div>
+
+                <div class="hex-replay-canvas-wrapper">
+                    <canvas data-hex-battle-replay-target="canvas" class="hex-replay-canvas"></canvas>
+                </div>
+
+                {# Playback Controls #}
+                <div class="hex-replay-controls">
+                    <div class="hex-replay-controls__group">
+                        <button type="button" class="btn btn-sm btn-primary" data-action="click->hex-battle-replay#togglePlay" data-hex-battle-replay-target="playBtn" aria-label="{{ 'battle.play'|trans }}">{{ 'battle.play'|trans }}</button>
+                        <button type="button" class="btn btn-sm btn-outline" data-action="click->hex-battle-replay#stepPrev" aria-label="{{ 'battle.prev'|trans }}">{{ 'battle.prev'|trans }}</button>
+                        <button type="button" class="btn btn-sm btn-outline" data-action="click->hex-battle-replay#stepNext" aria-label="{{ 'battle.next'|trans }}">{{ 'battle.next'|trans }}</button>
                     </div>
 
-                    <div class="battle-formations-separator">{{ 'battle.vs'|trans }}</div>
+                    <div class="hex-replay-controls__scrubber-wrapper">
+                        <span class="hex-replay-controls__label">{{ 'battle.scrubber'|trans }}:</span>
+                        <input type="range" class="hex-replay-controls__scrubber" min="1" max="1" value="1" data-action="input->hex-battle-replay#onScrub" data-hex-battle-replay-target="roundScrubber" aria-label="{{ 'battle.scrubber'|trans }}">
+                    </div>
 
-                    {# Team B Grid #}
-                    <div class="battle-formation-side">
-                        <h3 class="battle-formation-side__title">{{ battle.teamB.name }}</h3>
-                        <div class="battle-grid">
-                            {# Row 1: Front line slots #}
-                            {% for pos in ['front_1', 'front_2', 'front_3'] %}
-                                {{ _self.render_slot(battle.runState.sideB.combatants, pos) }}
-                            {% endfor %}
-                            {# Row 2: Back line slots #}
-                            {% for pos in ['back_1', 'back_2', 'back_3'] %}
-                                {{ _self.render_slot(battle.runState.sideB.combatants, pos) }}
-                            {% endfor %}
-                        </div>
+                    <div class="hex-replay-controls__speed-wrapper">
+                        <span class="hex-replay-controls__label">{{ 'battle.speed'|trans }}:</span>
+                        <select class="form-select form-select-sm hex-replay-controls__select" data-action="change->hex-battle-replay#onSpeedChange" data-hex-battle-replay-target="speedSelect" aria-label="{{ 'battle.speed'|trans }}">
+                            <option value="1">1x</option>
+                            <option value="2" selected>2x</option>
+                            <option value="4">4x</option>
+                        </select>
                     </div>
                 </div>
             </div>

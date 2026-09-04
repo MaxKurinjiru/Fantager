@@ -74,6 +74,43 @@ A team needs 6 combat-ready heroes to **enter** a match, independent of formatio
 
 ---
 
+## Hexagonal Grid Combat Engine (11×8 Landscape)
+
+Combat takes place on an **11×8 2D Hexagonal Grid** (11 columns wide, q = 0..10; 8 rows tall, r = 0..7) using **Flat-Topped Axial Coordinates `(q, r)`**.
+
+Canonical starting positions are defined in `HexGridService::getInitialHexForSlot()` and mirrored by the battle replay UI.
+
+### Starting Positions
+- **Team A (Home / Left):**
+  - `front_1` → `(2, 2)`, `front_2` → `(2, 4)`, `front_3` → `(2, 6)`
+  - `back_1` → `(1, 1)`, `back_2` → `(1, 3)`, `back_3` → `(1, 5)`
+- **Team B (Away / Right):**
+  - `front_1` → `(8, 2)`, `front_2` → `(8, 4)`, `front_3` → `(8, 6)`
+  - `back_1` → `(9, 1)`, `back_2` → `(9, 3)`, `back_3` → `(9, 5)`
+
+### Action Points (AP) & Movement
+- **Action Points per Turn:** `AP = 4 + floor(Effective_SPD / 5)` (Effective_SPD currently uses `baseInitiative`).
+- **Movement Cost:** Moving 1 hex costs **2 AP**.
+- **Armor Fatigue:** `heavy_armor` adds **+2 Fatigue** for each hex moved.
+- **Pathfinding:** Hexagonal A* routes units around occupied hexes (living combatants).
+
+### Weapon Reach & Line of Sight (LoS)
+- **Melee Weapons:** 1 hex reach (`distance == 1`).
+- **Polearms & Spears (`spear`, `polearm`):** 2 hex reach (reserved subtypes; current item set is melee/ranged/magic).
+- **Ranged Weapons (bows, crossbows) & Spells (staff/wand):** 2 to 5 hex reach + **Line of Sight**.
+  - **Line of Sight (LoS):** Cube-rounded hex line interpolation. Intermediate standing units block LoS.
+
+### Directional Shield Defense & Flanking
+- **Frontal Shield Block:** Shield status reduction applies to non-flanking attacks.
+- **Rear Flanking Damage:** Attacks from the target's rear arc deal **+20% Flanking Damage** and bypass shield cover.
+
+### Charging Synergy (`preparationRemaining`)
+- Units charging spells (`duration = 1 + tier`) or drawing bows/crossbows (`duration = 2` / `3`) are **stationary** (planning/movement skipped while preparing).
+- Moving to a new hex happens only in the planning phase when no queued action is active.
+- Melee attacks require being in reach after movement; otherwise the unit continues closing.
+
+---
+
 ## Item Influence on Combat Stats
 
 Equipped items affect combat calculations in two stages, scaled by **durability**:

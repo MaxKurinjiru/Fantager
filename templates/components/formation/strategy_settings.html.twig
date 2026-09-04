@@ -50,6 +50,24 @@
                 {% endfor %}
             </div>
         </div>
+
+        <div class="formation-strategy-panel__spatial">
+            <label for="movement-goal" class="section-label--xs">{{ 'formation.movement_strategy'|trans }}</label>
+            {% set slot_list = match_edit_source ? match_edit_source.slots : (selected_formation ? selected_formation.slots : []) %}
+            {% set movement_goal = slot_list
+                |filter(s => s.strategy.movement_goal is defined and s.strategy.movement_goal)
+                |map(s => s.strategy.movement_goal)
+                |first
+                |default('advance_to_melee') %}
+            <div class="formation-strategy-panel__spatial-control">
+                <select id="movement-goal" data-formation-target="movementGoalSelect" class="form-select formation-strategy-panel__movement-select">
+                    <option value="advance_to_melee"{% if movement_goal == 'advance_to_melee' %} selected{% endif %}>{{ 'formation.movement_advance_to_melee'|trans }}</option>
+                    <option value="seek_cover_ranged"{% if movement_goal == 'seek_cover_ranged' %} selected{% endif %}>{{ 'formation.movement_seek_cover_ranged'|trans }}</option>
+                    <option value="protect_backline"{% if movement_goal == 'protect_backline' %} selected{% endif %}>{{ 'formation.movement_protect_backline'|trans }}</option>
+                    <option value="flank_rear"{% if movement_goal == 'flank_rear' %} selected{% endif %}>{{ 'formation.movement_flank_rear'|trans }}</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <div class="formation-strategy__footer">

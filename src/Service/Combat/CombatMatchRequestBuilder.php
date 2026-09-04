@@ -111,9 +111,10 @@ class CombatMatchRequestBuilder
 
         $equippedItems = $this->itemRepository->findBy(['equippedHero' => $hero]);
         $weaponSubType = null;
+        $armorSubType = null;
         foreach ($equippedItems as $item) {
             $subType = $item->getSubType();
-            if (in_array($subType, [
+            if (null === $weaponSubType && in_array($subType, [
                 ItemSubType::OneHandedSword,
                 ItemSubType::TwoHandedSword,
                 ItemSubType::OneHandedAxe,
@@ -127,7 +128,13 @@ class CombatMatchRequestBuilder
                 ItemSubType::Staff,
             ], true)) {
                 $weaponSubType = $subType;
-                break;
+            }
+            if (null === $armorSubType && in_array($subType, [
+                ItemSubType::LightArmor,
+                ItemSubType::MediumArmor,
+                ItemSubType::HeavyArmor,
+            ], true)) {
+                $armorSubType = $subType;
             }
         }
 
@@ -145,6 +152,7 @@ class CombatMatchRequestBuilder
             $spellPriorities,
             $spells,
             $weaponSubType,
+            $armorSubType,
         );
     }
 }

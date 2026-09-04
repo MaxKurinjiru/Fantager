@@ -1211,6 +1211,11 @@ formation:
   tactics_balanced_desc: Rovnoměrné rozdělení bonusů pro obranu a útok.
   tactics_defensive: Obranná pevnost
   tactics_defensive_desc: Zvýšení rychlosti zotavení zadní řady a hodnocení blokování.
+  movement_strategy: Strategie pohybu na hexové mřížce
+  movement_advance_to_melee: "Postup do boje zblízka (výchozí: přímý tlak na cíl)"
+  movement_seek_cover_ranged: "Krytí a udržení vzdálenosti (střelba: cca 3 hexy)"
+  movement_protect_backline: "Ochrana zadní řady (bodyguard: krytí spojence s nejnižším HP)"
+  movement_flank_rear: "Obchvat zezadu (flank: zadní oblouk pro +20 % poškození)"
   match_prep_title: Příprava formace na zápas
   match_prep_subtitle: Upravte sestavu pro konkrétní zápas nebo použijte výchozí formaci.
   match_prep_desc: 'Zápas proti %opponent% (%date%). NULL přiřazení = výchozí formace týmu.'
@@ -1861,6 +1866,14 @@ battle:
   final_scores: Konečné skóre
   formations_state: Konečný stav formací
   round_log: Průběh zápasu (kolo po kole)
+  hex_replay_title: Interaktivní hexové bojiště (11×8 Landscape)
+  scrubber: Posuvník kola
+  speed: Rychlost přehrávání
+  play: Přehrát
+  pause: Pozastavit
+  prev: Předchozí
+  next: Další
+  round_progress: "Kolo %current% / %max%"
   physical_attack: "%attacker% provádí fyzický útok na %target%"
   hit: "Zásah!"
   miss: "Minutí!"

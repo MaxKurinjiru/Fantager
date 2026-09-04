@@ -32,6 +32,7 @@ final class CombatantSnapshot
         private array $spellPriorities = [],
         private array $spells = [],
         private ?ItemSubType $weaponSubType = null,
+        private ?ItemSubType $armorSubType = null,
     ) {
     }
 
@@ -103,5 +104,10 @@ final class CombatantSnapshot
     public function getWeaponSubType(): ?ItemSubType
     {
         return $this->weaponSubType;
+    }
+
+    public function getArmorSubType(): ?ItemSubType
+    {
+        return $this->armorSubType;
     }
 }
