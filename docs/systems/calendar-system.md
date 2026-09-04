@@ -170,10 +170,10 @@ This architecture guarantees:
 
 ### 4. Messenger Integration & Queues
 
-We configure three priority transports in `config/packages/messenger.yaml`:
-- **`async_high`**: Immediate interactions (real-time friendly match combat simulation, immediate player action processing).
-- **`async_medium`**: Scheduled tick processing (e.g. `ExecuteSingleTickMessage`).
-- **`async_low`**: Analytics, history logs, and non-blocking notifications.
+We configure a single asynchronous queue transport in `config/packages/messenger.yaml`:
+- **`async`**: All messages (`ExecuteSingleTickMessage`, `CombatWave`, `ProcessCombatRound`, email notifications, etc.) are routed to a single processing queue.
+- **Processing Order**: Processing is strictly governed by scheduled execution time (`available_at` ASC), ensuring older records and scheduled ticks are processed first.
+- **Queue Halting on Failure**: With `retry_strategy.max_retries = 0` and handlers re-throwing unhandled exceptions (after persisting the failure status/stack trace in DB), any message failure immediately halts the Messenger worker process. No subsequent messages in the queue will be processed until the failed state or record is repaired.
 
 ---
 

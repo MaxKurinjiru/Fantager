@@ -76,6 +76,15 @@ class ExecuteSingleTickHandler
 
         $kingdom = $log->getKingdom();
 
+        if ($this->tickLogRepository->hasFailedTicks($kingdom)) {
+            $this->logger->warning(sprintf(
+                'ExecuteSingleTickHandler: Kingdom ID %d has failed tick(s). Halting queue execution.',
+                $kingdom->getId()
+            ));
+
+            throw new \RuntimeException(sprintf('Kingdom ID %d has failed tick(s). Queue processing halted until state is repaired.', $kingdom->getId()));
+        }
+
         // 1. Try to atomically acquire the tick by updating its status to 'processing'
         $qb = $this->em->createQueryBuilder()
             ->update(KingdomTickLog::class, 'l')
@@ -151,8 +160,8 @@ class ExecuteSingleTickHandler
 
             $this->logger->error(sprintf('Tick %s failed for Kingdom %s: %s', $log->getTickType()->value, $kingdom->getName(), $e->getMessage()), ['exception' => $e]);
 
-            // Halt the pipeline by exiting without triggering the orchestrator
-            return;
+            // Halt the Messenger queue execution until repaired by re-throwing exception
+            throw $e;
         } finally {
             $this->tickClock->setCustomTime(null);
         }

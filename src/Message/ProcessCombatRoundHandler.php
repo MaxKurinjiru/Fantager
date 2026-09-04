@@ -35,6 +35,7 @@ class ProcessCombatRoundHandler
     {
         $battleId = $message->getBattleId();
         $round = $message->getRound();
+        $simulationFailure = null;
 
         $this->em->beginTransaction();
         try {
@@ -107,6 +108,9 @@ class ProcessCombatRoundHandler
                     $this->em->flush();
                 }
                 $this->em->commit();
+
+                // Defer rethrow so the outer lock catch does not treat this as a lock failure
+                $simulationFailure = $e;
             }
         } catch (\Throwable $e) {
             $this->logger->error(sprintf('ProcessCombatRoundHandler: Outer lock error for Battle ID %d: %s', $battleId, $e->getMessage()), ['exception' => $e]);
@@ -115,7 +119,11 @@ class ProcessCombatRoundHandler
             } catch (\Throwable) {
             }
 
-            return;
+            throw $e;
+        }
+
+        if (null !== $simulationFailure) {
+            throw $simulationFailure;
         }
 
         // Barrier Check: Check if all simulating battles in cohort have completed round $round

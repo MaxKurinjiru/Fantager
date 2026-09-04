@@ -84,15 +84,15 @@ docker exec -u apache fantager-web php bin/console app:ticks:run --kingdom-id=1
 When `app:ticks:run` schedules ticks, it dispatches them to Symfony Messenger to be processed asynchronously. To consume and process these tasks, you must run the consumer workers:
 
 ```bash
-# Run workers to consume all queues manually (ideal for local development)
-docker exec -u apache fantager-web php bin/console messenger:consume async_high async_medium async_low
+# Run worker to consume the queue manually (ideal for local development)
+docker exec -u apache fantager-web php bin/console messenger:consume async
 ```
 
 This command will block your terminal and process tasks as they arrive. To limit how long they run or how many messages they process (similar to the production cron worker):
 
 ```bash
 # Consume messages with message, time, and memory limits
-docker exec -u apache fantager-web php bin/console messenger:consume async_high async_medium async_low --limit=200 --time-limit=270 --memory-limit=128M
+docker exec -u apache fantager-web php bin/console messenger:consume async --limit=200 --time-limit=270 --memory-limit=128M
 ```
 
 ## Where to look
