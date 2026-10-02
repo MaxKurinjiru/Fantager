@@ -1571,7 +1571,6 @@ class NpcSimulationServiceTest extends TestCase
         $this->service->simulateTactics($kingdom, new \DateTimeImmutable(), $team);
 
         // Verify Hero 1 learned both spells (since it is a mage and can afford both)
-        // @phpstan-ignore-next-line
         $this->assertCount(2, $this->knownSpellsList);
         $this->assertEquals(10, $this->knownSpellsList[0]->getSpell()->getId()); // Jiskra
         $this->assertEquals(11, $this->knownSpellsList[1]->getSpell()->getId()); // Laskavý dotek
