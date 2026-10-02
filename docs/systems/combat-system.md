@@ -409,17 +409,17 @@ A **cohort** = all non-forfeit battles created for the same kingdom + `scheduled
 | Max rounds | **`MAX_ROUNDS = 200`**. If neither side has a decisive kill-score outcome by then, force `match_end` (draw on kill scores, or current scores as-is) after round 200 |
 | Live UI | **Not required** for now. Partial logs may exist on disk for ops/debug; product UI is post-match replay only |
 
-#### Battle / run statuses (planned)
+#### Battle / run statuses
 
 | Status | Meaning |
 |--------|---------|
 | `simulating` | Participates in waves; waiting for or processing the next round |
-| `stalled` | Failed a round handler (exception / poison). **Excluded from wave barrier** so other matches continue. Ops/fix resumes later |
+| `stalled` | Failed a round handler (exception / poison). **Excluded from wave barrier** so other matches continue. Ops resume via `ResumeCombatService` |
 | `completed` | `match_end` applied; post-match side effects done |
 
-Persisted **run state** (entity or JSON on `Battle` — TBD at implementation) must include at least: `current_round`, RNG state, combatant HP/status snapshots, accumulated `events` (or append-only log), cohort key (`scheduledAt` + kingdom), status.
+Persisted **run state** lives on `Battle.run_state` (JSON) plus columns `current_round`, `status`, and `scheduled_at`. The JSON must include at least: RNG state, combatant HP/status snapshots, accumulated events (also mirrored to `combat_log` on completion), scores, and engine status. Cohort key is `scheduledAt` + kingdom on the entity.
 
-#### Message flow (planned)
+#### Message flow
 
 ```text
 LeagueMatchTick(kingdom, scheduledAt)
@@ -446,8 +446,8 @@ CompleteBattle(battleId)
 #### Isolation and resume (no timeout)
 
 - **Failure isolation:** a battle that throws in `ProcessCombatRound` becomes `stalled` and drops out of the barrier. Other matches keep advancing waves.
-- **Hung / lost messages without an error:** there is no wave timeout by design. Operational recovery is: inspect stuck `simulating` battles, mark `stalled` or re-dispatch the missing round, then resume. Document runbooks when implementing.
-- **Resume after fix:** `ResumeCombat(battleId)` runs remaining rounds **solo** (sequential messages or sync loop) until `completed`, without re-joining the original cohort wave. This avoids barrier edge cases when the cohort has already moved on.
+- **Hung / lost messages without an error:** there is no wave timeout by design. Operational recovery is: inspect stuck `simulating` battles, mark `stalled` or re-dispatch the missing round, then call `ResumeCombatService::resume(battleId)`.
+- **Resume after fix:** `ResumeCombatService::resume(battleId)` runs remaining rounds **solo** (sync loop) until `completed`, without re-joining the original cohort wave. This avoids barrier edge cases when the cohort has already moved on.
 
 #### Within a round
 

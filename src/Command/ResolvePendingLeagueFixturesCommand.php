@@ -16,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:league:resolve-pending-fixtures',
-    description: 'Resolve scheduled league fixtures whose kickoff is in the past (stub simulator + standings update)',
+    description: 'Resolve past-due league fixtures (forfeit or wave combat simulation) and apply standings updates',
 )]
 class ResolvePendingLeagueFixturesCommand extends Command
 {
