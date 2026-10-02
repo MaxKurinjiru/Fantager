@@ -90,6 +90,9 @@ class Team
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastRecoveryActionAt = null;
 
+    #[ORM\Column(options: ['default' => 5])]
+    private int $ticketPrice = 5;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -369,6 +372,18 @@ class Team
     public function setLastRecoveryActionAt(?\DateTimeImmutable $lastRecoveryActionAt): static
     {
         $this->lastRecoveryActionAt = $lastRecoveryActionAt;
+
+        return $this;
+    }
+
+    public function getTicketPrice(): int
+    {
+        return $this->ticketPrice;
+    }
+
+    public function setTicketPrice(int $ticketPrice): static
+    {
+        $this->ticketPrice = max(1, min(50, $ticketPrice));
 
         return $this;
     }

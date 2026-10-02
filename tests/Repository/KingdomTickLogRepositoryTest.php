@@ -61,8 +61,8 @@ class KingdomTickLogRepositoryTest extends KernelTestCase
         $this->repository = null;
         $this->kingdom = null;
 
-        parent::tearDown();
         restore_exception_handler();
+        parent::tearDown();
     }
 
     public function testRecoverStaleTicks(): void

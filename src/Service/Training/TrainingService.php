@@ -16,6 +16,7 @@ use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
+use App\Service\Economy\FinancialCrisisService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,6 +33,8 @@ class TrainingService
         private readonly TeamChronicleService $teamChronicleService,
         private readonly HeroChronicleService $heroChronicleService,
         private readonly EntityManagerInterface $em,
+        private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
+        private readonly FinancialCrisisService $financialCrisisService,
     ) {
     }
 
@@ -51,7 +54,7 @@ class TrainingService
         $nowLocal = $now->setTimezone($tz);
 
         $nextTickLocal = $this->getNextTrainingTime($nowLocal);
-        $lockStartLocal = $nextTickLocal->modify('-46 hours'); // Tuesday 12:00:00
+        $lockStartLocal = $nextTickLocal->modify('-2 hours'); // Thursday 08:00:00
 
         return $nowLocal >= $lockStartLocal && $nowLocal < $nextTickLocal;
     }
@@ -159,6 +162,22 @@ class TrainingService
             throw new UserFacingException('error.training_trainer_limit_reached');
         }
 
+        $this->applyTrainerPromotion($hero, $team);
+        $this->em->flush();
+    }
+
+    /**
+     * Shared logic for promoting a hero to trainer role.
+     * Sets the role, clears training config, unequips items, removes from formations, and writes the team chronicle.
+     *
+     * Does NOT perform any validation guards and does NOT call em->flush().
+     * The caller is responsible for flushing after this method returns.
+     *
+     * Used by both the player-facing promoteToTrainer() (which adds validation guards + flush)
+     * and NPC simulation paths (NpcTrainingSimulator, NpcEconomySimulator).
+     */
+    public function applyTrainerPromotion(Hero $hero, Team $team): void
+    {
         $hero->setRole(HeroRole::Trainer);
         $hero->setTrainingType(null);
         $hero->setTargetAttribute(null);
@@ -177,7 +196,7 @@ class TrainingService
             $slot->setHero(null);
         }
 
-        $this->em->flush();
+        $this->teamChronicleService->recordTrainerPromoted($team, $hero);
     }
 
     public function configureTrainer(Hero $trainer, ?TrainingType $type, ?string $attribute, Team $team, \DateTimeImmutable $now): void
@@ -339,8 +358,26 @@ class TrainingService
         /** @var list<Hero> $trainers */
         $trainers = $qb->getQuery()->getResult();
 
+        $notifiedTeamIds = [];
+
         foreach ($trainers as $trainer) {
+            $team = $trainer->getTeam();
+            $teamId = $team->getId();
+
+            if (null !== $teamId && !in_array($teamId, $notifiedTeamIds, true)) {
+                $notifiedTeamIds[] = $teamId;
+                if (null !== $team->getUser()) {
+                    $this->notificationHelper->sendTranslatedNotification(
+                        $team->getUser(),
+                        \App\Enum\NotificationType::TrainingComplete,
+                        'notification.training_completed_title',
+                        'notification.training_completed_body'
+                    );
+                }
+            }
+
             // Active trainers age by a stronger jump during the training tick (combat death equivalent)
+
             $speed = (float) $trainer->getTeam()->getKingdom()->getGameSpeed();
             if ($speed <= 0.0) {
                 $speed = 1.0;
@@ -380,7 +417,7 @@ class TrainingService
                         /** @var \App\Entity\Headquarters\Headquarters|null $hq */
                         $hq = $this->hqRepository->findOneBy(['team' => $hero->getTeam()]);
                         $facilityEfficiency = 0.0;
-                        if (null !== $hq) {
+                        if (null !== $hq && $this->financialCrisisService->areHqBonusesActive($hero->getTeam())) {
                             foreach ($hq->getFacilities() as $fac) {
                                 if (\App\Enum\FacilityType::Training === $fac->getType()) {
                                     $bonuses = $fac->getPassiveBonuses();

@@ -128,6 +128,8 @@ error:
   hero_not_found: Hrdina nenalezen.
   trainer_not_found: Trenér nenalezen.
   spell_not_found: Kouzlo nenalezeno.
+  battle_not_found: Zápas nebyl nalezen.
+  unauthorized_battle_view: Nemáte oprávnění k prohlížení tohoto zápasu.
   hero_spell_not_found: Kouzlo hrdiny nenalezeno.
   item_not_found: Předmět nenalezen.
   formation_not_found: Formace nenalezena.
@@ -288,6 +290,26 @@ notification:
   marketplace_auction_won_seller_body: 'Vaše aukce #%listing% byla prodána hráči "%buyer%" za %amount% zlata.'
   marketplace_auction_won_buyer_title: Aukce vyhrána
   marketplace_auction_won_buyer_body: 'Vyhráli jste aukci #%listing% za %amount% zlata.'
+  match_result_title: Výsledek zápasu
+  match_result_body: 'Zápas %home_team% vs %away_team% skončil výsledkem %home_score%:%away_score%.'
+  hero_combat_death_title: Hrdina padl v boji
+  hero_combat_death_body: 'Váš hrdina "%hero_name%" trvale padl v zápasu s týmem "%opponent%".'
+  hq_upgrade_title: Vylepšení základny
+  hq_upgrade_body: 'Vylepšení budovy "%facility%" na úroveň %level% bylo úspěšně dokončeno.'
+  hq_cancel_title: Zrušení vylepšení budovy
+  hq_cancel_body: 'Vylepšení budovy "%facility%" bylo zrušeno. Vráceno %refund% dukátů.'
+  hq_downgrade_title: Snížení úrovně budovy
+  hq_downgrade_body: 'Ponížení budovy "%facility%" na úroveň %level% bylo dokončeno. Vráceno %refund% zlata.'
+  hq_arena_adaptation_title: Adaptace arény
+  hq_arena_adaptation_body: 'Změna adaptace arény na rasu %race% vstoupila v platnost.'
+  season_ended_title: Konec sezóny %season%
+  season_ended_body: 'Sezóna %season% skončila! Umístění: %position%. místo (%status_text%). Získali jste %reward% zlata.'
+  financial_warning_title: Finanční varování
+  financial_warning_body: 'Tým má neuhrazený dluh %debt% zlata. Snižte náklady nebo prodejte aktiva.'
+  financial_restricted_title: Finanční restrikce
+  financial_restricted_body: 'Tým je %weeks% týdnů v krizi! Pasivní bonusy základny jsou pozastaveny.'
+  training_completed_title: Trénink dokončen
+  training_completed_body: 'Týdenní tréninkový cyklus proběhl úspěšně. Trenéři předali zkušenosti hrdinům.'
 
 dashboard:
   history_title: Historie týmu
@@ -425,6 +447,17 @@ activity:
   item_purchased: 'Předmět %item% byl zakoupen na tržišti od týmu %seller% za %price% zlata.'
   item_sold: 'Předmět %item% byl prodán na tržišti týmu %buyer% za %price% zlata.'
   team_renamed: 'Tým byl přejmenován z %old_name% na %new_name%.'
+  hero_levelup: 'Hrdina %hero% dosáhl úrovně %new_level%.'
+  hero_died:
+    combat_death: 'Hrdina %hero% padl v boji.'
+    dismissed: 'Hrdina %hero% byl propuštěn.'
+  item_dismantled: 'Předmět %item% byl rozebrán na %essence% %rarity% esencí.'
+  trainer_promoted: 'Hrdina %hero% byl povýšen na Trenéra.'
+  financial_crisis:
+    warning: 'Finanční varování: nezaplacený dluh %debt% zlata.'
+    restricted: 'Finanční omezení aktivní z důvodu dluhu.'
+    bankruptcy_pending: 'Týmu hrozí bankrot.'
+  kingdom_reward_granted: 'Získlána odměna %gold% zlata z Královské pokladny.'
   battle_win: 'Výhra %score% proti týmu %opponent%.'
   battle_loss: 'Prohra %score% proti týmu %opponent%.'
   battle_draw: 'Remíza %score% proti týmu %opponent%.'
@@ -434,6 +467,7 @@ activity:
     form: 'Hrdina %hero% dokončil trénink pod vedením trenéra %trainer% (kondice a zotavení, %gain% k formě).'
   facility_upgraded: 'Budova %facility% byla vylepšena na úroveň %level%.'
   facility_downgraded: 'Budova %facility% byla snížena na úroveň %level%.'
+  facility_upgrade_cancelled: 'Vylepšení budovy %facility% na úroveň %level% bylo zrušeno.'
   race_optimization_changed: 'Uzpůsobení domácí arény bylo změněno na: %race%.'
   battle_win_chip: Výhra
   battle_loss_chip: Prohra
@@ -467,12 +501,19 @@ activity:
     team_renamed: Přejmenování týmu
     facility_upgraded: Vylepšení budovy
     facility_downgraded: Snížení budovy
+    facility_upgrade_cancelled: Zrušení vylepšení
     race_optimization_changed: Uzpůsobení arény
+    spell_learned: Naučení kouzla
+    item_dismantled: Rozebrání předmětu
+    trainer_promoted: Povýšení na trenéra
+    financial_crisis_state: Finanční krize
+    kingdom_reward_granted: Podpora z Královské pokladny
 
 hero_activity:
   summoned: 'Vyvolán do týmu %team% (cena %gold% zlata).'
   starting_roster: 'Začal svou kariéru jako zakládající člen týmu %team%.'
   transferred: 'Přestoupil z týmu %from_team% do týmu %to_team% za %price% zlata.'
+  renamed: 'Přejmenován z %old_name% na %new_name%.'
   match_played:
     win: 'Výhra proti týmu %opponent%.'
     loss: 'Prohra proti týmu %opponent%.'
@@ -483,12 +524,14 @@ hero_activity:
     attribute: 'Dokončen trénink pod vedením trenéra %trainer% (vlastnost %attribute%, %gain% k základu).'
     magic: 'Dokončen trénink pod vedením trenéra %trainer% (kapacita magie, %gain% slotů).'
     form: 'Dokončen trénink pod vedením trenéra %trainer% (zotavení, %gain% k formě).'
+  spell_learned: 'Naučil se nové kouzlo "%spell%" (škola %school%).'
   died:
     dismissed: 'Propuštěn z týmu.'
     combat_death: 'Padl v boji.'
     age: 'Zemřel stářím.'
     retired: 'Odešel na odpočinek.'
     death: 'Zemřel.'
+
 
 financial_crisis:
   title_warning: Finanční varování
@@ -1044,7 +1087,7 @@ training:
   no_trainers_desc: "Váš tým momentálně nevlastní žádné trenéry."
   forecast: "Předpověď"
   average: "Průměr"
-  lock_desc: "Od úterý 12:00 do čtvrtku 10:00 jsou tréninky uzamčeny a nelze měnit konfiguraci ani přiřazovat hrdiny."
+  lock_desc: "Od čtvrtka 08:00 do čtvrtku 10:00 jsou tréninky uzamčeny a nelze měnit konfiguraci ani přiřazovat hrdiny."
   dismiss_desc: Propustíte trenéra z týmu. Svěřenci budou automaticky odebráni a obdržíte odstupné (30 % odhadované hodnoty).
   dismiss_selling_desc: Trenér je momentálně nabízen na tržišti. Pro propuštění nejprve zrušte nabídku na tržišti.
   dismiss_btn: Propustit trenéra
@@ -1168,6 +1211,11 @@ formation:
   tactics_balanced_desc: Rovnoměrné rozdělení bonusů pro obranu a útok.
   tactics_defensive: Obranná pevnost
   tactics_defensive_desc: Zvýšení rychlosti zotavení zadní řady a hodnocení blokování.
+  movement_strategy: Strategie pohybu na hexové mřížce
+  movement_advance_to_melee: "Postup do boje zblízka (výchozí: přímý tlak na cíl)"
+  movement_seek_cover_ranged: "Krytí a udržení vzdálenosti (střelba: na maximální dostřel zbraně)"
+  movement_protect_backline: "Ochrana zadní řady (bodyguard: krytí spojence s nejnižším HP)"
+  movement_flank_rear: "Obchvat zezadu (flank: zadní oblouk pro +20 % poškození)"
   match_prep_title: Příprava formace na zápas
   match_prep_subtitle: Upravte sestavu pro konkrétní zápas nebo použijte výchozí formaci.
   match_prep_desc: 'Zápas proti %opponent% (%date%). NULL přiřazení = výchozí formace týmu.'
@@ -1348,6 +1396,7 @@ league:
   formation_status_default: Výchozí formace
   formation_status_saved: 'Uložená: %name%'
   formation_status_custom: Vlastní pro zápas
+  forfeit_desc: "Tento zápas skončil kontumací (forfeit). Jeden nebo oba týmy neměly k dispozici minimálně 6 živých a bojeschopných hrdinů, a proto k simulaci boje nedošlo."
 
 calendar:
   title: Kalendář a události
@@ -1416,9 +1465,21 @@ arena:
   no_revenue_yet: Zatím žádné příjmy z domácích zápasů. Výplata proběhne po odehrání ligového zápasu.
   view_full_ledger: Zobrazit finanční deník
   how_it_works: Jak funguje příjem z arény
-  rule_fixed_price: "Pevná cena vstupenky: 🪙 %price% za místo."
+  rule_fixed_price: "Nastavitelná cena vstupenky s elastickou poptávkou (1–50 zlata)."
   rule_capacity: Kapacita hlediště roste s vylepšením arény v základně.
-  rule_attendance: Tribuny se plní podle velikosti fanklubů obou týmů a jejich aktuální nálady (reputace, morálka, chemie). Na zápas nemusí nikdo dorazit.
+  rule_attendance: Návštěvnost závisí na velikosti fanklubu, morálce, reputaci a ceně vstupenky. Vyšší cena snižuje zájem; nižší cena zvyšuje obsazenost hlediště až do jeho kapacity.
+  pricing_title: Nastavení ceny vstupenky a elastika
+  ticket_price_label: Cena vstupenky
+  ticket_price_help: "Zadejte cenu vstupenky (1–50 zlata). Vyšší cena snižuje účast fanoušků; nižší cena zvyšuje zájem o lístky."
+  elasticity_label: Elastika poptávky
+  save_price_btn: Uložit cenu vstupenky
+  projections_title: Projekce příjmů a návštěvnosti
+  col_price: Cena
+  col_occupancy: Obsazenost
+  col_projected_gold: Očekávané zlato
+  ticket_price_updated: Cena vstupenky byla úspěšně aktualizována.
+  error_invalid_price: Zadána neplatná cena vstupenky.
+  error_price_out_of_bounds: Cena vstupenky musí být v rozmezí 1 až 50 zlata.
   rule_home_only: Příjem z vstupenek dostává výhradně domácí tým.
   upgrade_hint: Vylepšete arénu v základně pro vyšší kapacitu a bonusy k příjmům.
 
@@ -1794,6 +1855,50 @@ weapon_style:
   light_armor: Lehká zbroj
   medium_armor: Střední zbroj
   heavy_armor: Těžká zbroj
+
+battle:
+  report_title: Zpráva ze zápasu
+  vs: VS
+  round: "Kolo %round%"
+  winner: Vítěz
+  draw: Remíza
+  loser: Poražený
+  final_scores: Konečné skóre
+  formations_state: Konečný stav formací
+  round_log: Průběh zápasu (kolo po kole)
+  hex_replay_title: Interaktivní hexové bojiště (17×11 Landscape)
+  scrubber: Posuvník kola
+  speed: Rychlost přehrávání
+  play: Přehrát
+  pause: Pozastavit
+  prev: Předchozí
+  next: Další
+  round_progress: "Kolo %current% / %max%"
+  physical_attack: "%attacker% provádí fyzický útok na %target%"
+  hit: "Zásah!"
+  miss: "Minutí!"
+  crit: "Kritický zásah!"
+  damage_dealt: "%target% utrpěl %amount% %source% poškození (zbývá %hp% HP)"
+  ko: "%hero% byl vyřazen z boje (KO)!"
+  spell_cast: "%caster% sesílá kouzlo %spell% na %target%"
+  heal_applied: "%target% je vyléčen o %amount% HP (nyní %hp% HP)"
+  heal_blocked: "Léčení cíle %target% bylo zablokováno (%reason%)"
+  status_applied: "%target% je pod vlivem efektu %effect% (zbývá %duration% kol)"
+  status_tick: "Efekt %effect% způsobil %amount% poškození cíli %target% (zbývá %hp% HP)"
+  status_expired: "Efekt %effect% na cíl %target% vypršel"
+  skip_turn: "%hero% vynechává tah kvůli zmrazení nebo omráčení"
+  plan_action_attack: "%attacker% se připravuje k útoku na %target% (příprava %duration% kol)"
+  plan_action_spell: "%caster% začíná sesílat kouzlo %spell% na %target% (příprava %duration% kol)"
+  preparing_action_tick: "%hero% pokračuje v přípravě akce (zbývá %rounds% kol)"
+  action_interrupted: "Příprava akce hrdiny %hero% byla přerušena (%reason%)"
+  action_fumble: "Akce hrdiny %hero% selhala, protože cíl %target% byl již vyřazen"
+  reason_stun_or_freeze: "omráčení nebo zmrazení"
+  reason_silence: "umlčení"
+  no_team: Bez týmu
+  unknown_actor: Neznámý
+  return_to_league: Zpět do ligy
+  error_not_found: Zápas nebyl nalezen.
+  error_unauthorized: Nemáte oprávnění k prohlížení tohoto zápasu.
 
 
 

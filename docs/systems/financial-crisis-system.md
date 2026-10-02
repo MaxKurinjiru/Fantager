@@ -150,4 +150,4 @@ Twig helpers: `team_financial_crisis(team)`, `hq_downgrade_refund(type, level, t
 - **Hero dismissal:** `App\Service\Hero\HeroDismissalService`
 - **Roster minimum:** `App\Service\Team\TeamRosterService` (6 combat-ready heroes)
 - **Maintenance calc:** `App\Service\Headquarters\HqMaintenanceCalculator`
-- **Tick handler:** `ProcessKingdomTicksHandler` (`weekly_reset` case)
+- **Tick handler:** `ExecuteSingleTickHandler` (`weekly_reset` case)

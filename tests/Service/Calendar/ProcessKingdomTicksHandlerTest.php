@@ -181,13 +181,18 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             ->expects($this->never())
             ->method('orchestrate');
 
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Database connection lost');
+
         // Run the handler
         $message = new ExecuteSingleTickMessage(1);
-        $this->handler->__invoke($message);
-
-        // Assert log is set to failed
-        $this->assertSame('failed', $log->getStatus());
-        $this->assertStringContainsString('Database connection lost', (string) $log->getErrorMessage());
+        try {
+            $this->handler->__invoke($message);
+        } finally {
+            // Assert log is set to failed before re-throwing
+            $this->assertSame('failed', $log->getStatus());
+            $this->assertStringContainsString('Database connection lost', (string) $log->getErrorMessage());
+        }
     }
 
     public function testHandlerProcessesSingleTickAndTriggersOrchestrator(): void

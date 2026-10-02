@@ -16,9 +16,9 @@ The game world operates on automated server ticks executed at scheduled times. T
 | **Daily** | 03:30 | **Inactive Registration Cleanup** | Remove team assignments and delete unverified player accounts older than 1 day. |
 | **Daily** | 03:45 | **Inactive Player Cleanup** | Release teams from verified players inactive for 28+ days. |
 | **Daily** | 04:00 | **Fatigue & Form Recovery** | Recovery tick for hero fatigue and form (passive restoration). |
-| **Tuesday** | 18:00 | **League Match (Mid-Week)** | Process scheduled mid-week league fixtures. **Currently implemented:** home-team arena ticket revenue. **Planned (Phase 5):** combat resolution, match XP, post-match fatigue/form/morale/aging. |
+| **Tuesday** | 18:00 | **League Match (Mid-Week)** | Process scheduled mid-week league fixtures. **Implemented:** tactics simulation, home-team arena ticket revenue, deterministic round-by-round combat resolution, mastery XP, hero XP, form, fatigue, team morale, aging. |
 | **Thursday** | 10:00 | **Weekly Training** | Process active trainer assignments. Calculate stat gains (non-linear formulas, raw x10 scaling) and apply to heroes. |
-| **Friday** | 18:00 | **League Match (End-Week)** | Process scheduled end-week league fixtures. **Currently implemented:** home-team arena ticket revenue. **Planned (Phase 5):** combat resolution, match XP, post-match fatigue/form/morale/aging. |
+| **Friday** | 18:00 | **League Match (End-Week)** | Process scheduled end-week league fixtures. **Implemented:** tactics simulation, home-team arena ticket revenue, deterministic round-by-round combat resolution, mastery XP, hero XP, form, fatigue, team morale, aging. |
 | **Friday** | 19:00 | **Season Transition** *(Week 11 only)* | Run season resolution service: finalize standings, distribute tier promotion/relegation rewards, execute team transfers (promotions/relegations), initialize the next season. |
 | **Sunday** | 09:30 | **Arena Adaptation** | Apply pending headquarters arena adaptation changes and manage weekly adaptation lock cycles. |
 | **Weekly** | Sun 23:59 | **Weekly Reset** | Reset summoning chamber cooldowns, process HQ maintenance fees, **hero/trainer payroll**, **Royal Treasury distribution**, facility downgrade lock expiry, and weekly financial-crisis checks. **NPC Simulation:** runs weekly HQ upgrades. |
@@ -125,7 +125,7 @@ For each active Kingdom:
    - **Team-scoped** (`WeeklyTraining`, `WeeklyReset`, `RaceOptimization`, `FatigueRecovery`, `InactivePlayerCleanup`, `DailyReset`): Schedules a separate log entry for each active team.
    - **Match-scoped** (`LeagueMatch`): Queries all scheduled fixtures in the kingdom at that time, and schedules a separate log entry for each fixture.
    - **Kingdom-scoped** (`SeasonTransition`, `InactiveRegistrationCleanup`, and the Royal Treasury distribution part of `WeeklyReset`): Schedules a single log entry.
-4. If new ticks are scheduled or existing pending ticks are found, it dispatches a single `ProcessKingdomTicksMessage(kingdomId)` to Symfony Messenger.
+4. Pending ticks are advanced by `KingdomTickOrchestrator` (invoked from `app:ticks:run`), which dispatches `ExecuteSingleTickMessage` per tick to Symfony Messenger.
 
 ### 3. Chronological, Parallel & Guided Orchestration Flow
 
@@ -170,10 +170,10 @@ This architecture guarantees:
 
 ### 4. Messenger Integration & Queues
 
-We configure three priority transports in `config/packages/messenger.yaml`:
-- **`async_high`**: Immediate interactions (real-time friendly match combat simulation, immediate player action processing).
-- **`async_medium`**: Scheduled tick processing (e.g. `ProcessKingdomTicksMessage`).
-- **`async_low`**: Analytics, history logs, and non-blocking notifications.
+We configure a single asynchronous queue transport in `config/packages/messenger.yaml`:
+- **`async`**: All messages (`ExecuteSingleTickMessage`, `CombatWave`, `ProcessCombatRound`, email notifications, etc.) are routed to a single processing queue.
+- **Processing Order**: Processing is strictly governed by scheduled execution time (`available_at` ASC), ensuring older records and scheduled ticks are processed first.
+- **Queue Halting on Failure**: With `retry_strategy.max_retries = 0` and handlers re-throwing unhandled exceptions (after persisting the failure status/stack trace in DB), any message failure immediately halts the Messenger worker process. No subsequent messages in the queue will be processed until the failed state or record is repaired.
 
 ---
 
@@ -186,9 +186,9 @@ Friendly matches are **non-competitive practice battles** scheduled by players o
 | **When** | Any time during Week 1 (preparation gap) or between league rounds; typically scheduled from the Arena screen (UI planned) |
 | **Cost** | No league points at stake; optional gold fee may apply when hosting (future) |
 | **Rewards** | Reduced XP and no league standing impact; useful for testing formations |
-| **Combat** | Uses the same combat engine as league matches once Phase 5 combat simulation is implemented |
+| **Combat** | Uses the same combat engine (`CombatEngine`) as league matches |
 | **Calendar** | Appear in the kingdom calendar feed with `type: friendly_match` when scheduling is implemented |
-| **Scheduling API** | `POST /api/v1/arena/schedule-match` — planned; requires combat engine |
+| **Scheduling API** | `POST /api/v1/arena/schedule-match` — planned UI / endpoint |
 
-Until the combat engine exists, friendly matches are documented only — no match resolution runs during ticks.
+Practice battles use `CombatEngine` and `ResumeCombatService` for simulation; player-facing friendly match scheduling UI and API endpoint are planned.
 

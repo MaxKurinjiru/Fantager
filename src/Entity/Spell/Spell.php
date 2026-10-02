@@ -49,6 +49,9 @@ class Spell
     #[ORM\Column]
     private int $learningCostEssence;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $requiresMagicalWeapon = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -172,6 +175,18 @@ class Spell
     public function setLearningCostEssence(int $v): static
     {
         $this->learningCostEssence = $v;
+
+        return $this;
+    }
+
+    public function requiresMagicalWeapon(): bool
+    {
+        return $this->requiresMagicalWeapon;
+    }
+
+    public function setRequiresMagicalWeapon(bool $requiresMagicalWeapon): static
+    {
+        $this->requiresMagicalWeapon = $requiresMagicalWeapon;
 
         return $this;
     }

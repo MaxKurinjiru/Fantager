@@ -18,6 +18,7 @@ class ArenaRevenueService
 {
     public const BASE_SEATING_CAPACITY = 500;
     public const TICKET_PRICE = 5;
+    public const DEFAULT_TICKET_PRICE = 5;
 
     public function __construct(
         private readonly HeadquartersRepository $hqRepository,
@@ -26,6 +27,18 @@ class ArenaRevenueService
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly FanClubService $fanClubService,
     ) {
+    }
+
+    /**
+     * Calculate demand elasticity multiplier based on ticket price relative to default base price (5 gold).
+     * Elasticity formula: (Default Price / Ticket Price)^0.75 clamped to range [0.10, 2.00].
+     */
+    public function calculatePriceElasticityMultiplier(int $ticketPrice): float
+    {
+        $price = max(1, $ticketPrice);
+        $multiplier = (self::DEFAULT_TICKET_PRICE / $price) ** 0.75;
+
+        return max(0.10, min(2.00, $multiplier));
     }
 
     /**
@@ -74,7 +87,8 @@ class ArenaRevenueService
                     'attendance' => $report['attendance'],
                     'home_attendees' => $report['home_attendees'],
                     'away_attendees' => $report['away_attendees'],
-                    'ticket_price' => self::TICKET_PRICE,
+                    'ticket_price' => $report['ticket_price'],
+                    'elasticity_multiplier' => $report['elasticity_multiplier'],
                 ]
             );
         }
@@ -106,6 +120,7 @@ class ArenaRevenueService
      *     home_attendees: int,
      *     away_attendees: int,
      *     ticket_price: int,
+     *     elasticity_multiplier: float,
      *     gold_earned: int,
      *     home_fan_base: int,
      *     away_fan_base: int,
@@ -115,13 +130,19 @@ class ArenaRevenueService
      *     away_fan_appeal: float
      * }
      */
-    public function calculateMatchRevenue(Team $homeTeam, Team $awayTeam): array
+    public function calculateMatchRevenue(Team $homeTeam, Team $awayTeam, ?int $overrideTicketPrice = null): array
     {
+        $ticketPrice = $overrideTicketPrice ?? $homeTeam->getTicketPrice();
+        if ($ticketPrice < 1) {
+            $ticketPrice = self::DEFAULT_TICKET_PRICE;
+        }
+
+        $elasticity = $this->calculatePriceElasticityMultiplier($ticketPrice);
         $capacity = $this->getArenaCapacity($homeTeam);
-        $attendanceData = $this->fanClubService->calculateMatchAttendance($homeTeam, $awayTeam, $capacity);
+        $attendanceData = $this->fanClubService->calculateMatchAttendance($homeTeam, $awayTeam, $capacity, $elasticity);
 
         $bonuses = $this->getFacilityBonuses($homeTeam);
-        $baseRevenue = $attendanceData['attendance'] * self::TICKET_PRICE;
+        $baseRevenue = $attendanceData['attendance'] * $ticketPrice;
         $speed = 1.0;
         try {
             $kingdom = $homeTeam->getKingdom();
@@ -147,7 +168,8 @@ class ArenaRevenueService
             'attendance' => $attendanceData['attendance'],
             'home_attendees' => $attendanceData['home_attendees'],
             'away_attendees' => $attendanceData['away_attendees'],
-            'ticket_price' => self::TICKET_PRICE,
+            'ticket_price' => $ticketPrice,
+            'elasticity_multiplier' => round($elasticity, 3),
             'gold_earned' => $goldEarned,
             'home_fan_base' => $homeTeam->getFanBase(),
             'away_fan_base' => $awayTeam->getFanBase(),
@@ -156,6 +178,33 @@ class ArenaRevenueService
             'home_fan_appeal' => $attendanceData['home_show_up_rate'],
             'away_fan_appeal' => $attendanceData['away_show_up_rate'],
         ];
+    }
+
+    /**
+     * Generate revenue and attendance projections across a scale of ticket prices.
+     *
+     * @return list<array{ticket_price: int, attendance: int, capacity_pct: float, gold_earned: int, elasticity: float}>
+     */
+    public function generatePriceRevenueProjections(Team $homeTeam, Team $awayTeam): array
+    {
+        $testPrices = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50];
+        $projections = [];
+
+        foreach ($testPrices as $price) {
+            $report = $this->calculateMatchRevenue($homeTeam, $awayTeam, $price);
+            $capacity = max(1, $report['capacity']);
+            $capacityPct = round(($report['attendance'] / $capacity) * 100.0, 1);
+
+            $projections[] = [
+                'ticket_price' => $price,
+                'attendance' => $report['attendance'],
+                'capacity_pct' => $capacityPct,
+                'gold_earned' => $report['gold_earned'],
+                'elasticity' => $report['elasticity_multiplier'],
+            ];
+        }
+
+        return $projections;
     }
 
     /**

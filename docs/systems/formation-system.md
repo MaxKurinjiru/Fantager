@@ -24,7 +24,12 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 
 ## Match Lineup vs Roster
 
-- **Lineup:** 6 heroes in formation (3 front, 3 back)
+- **Lineup:** 6 heroes in formation (`front_1`–`front_3`, `back_1`–`back_3`)
+- **Hex Grid Mapping (17×11 Battlefield):** Canonical positions from `HexGridService::getInitialHexForSlot()`:
+  - **Team A (Home / Left):** `front_1` (4,3), `front_2` (4,6), `front_3` (4,9), `back_1` (1,2), `back_2` (1,5), `back_3` (1,8).
+  - **Team B (Away / Right):** `front_1` (12,3), `front_2` (12,6), `front_3` (12,9), `back_1` (15,2), `back_2` (15,5), `back_3` (15,8).
+  - Lane centres are at least 3 hexes apart so Ent/Giant **7-hex flowers** do not overlap at kickoff. Front row is staggered +1 r vs back so a lane's backliner does not share LoS with its frontliner. See [combat-system.md](combat-system.md#unit-footprint-size).
+- **Movement strategy:** Formation-wide `strategy.movement_goal` (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`) stored on each slot. `seek_cover_ranged` holds the weapon's maximum range.
 - **Roster minimum:** 10 heroes at team start; 6 combat-ready required to avoid automatic forfeit
 
 ## Fixture Formation Assignment
@@ -35,9 +40,72 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 | Saved formation | FK to saved formation | That formation |
 | Custom for fixture | FK to temporary formation | Temporary copy (deleted after completion) |
 
+## Strategy JSON Schema (Phased)
+
+Per-slot `strategy` and `spell_priorities` are stored as JSON. The Formation UI saves formation-level `approach` (`aggressive` | `balanced` | `defensive`) and copies one `strategy.movement_goal` onto every slot. It always writes `spell_priorities: []` (no per-slot target or spell editor). Combat AI phases: [combat-system.md — Formation AI](combat-system.md#formation-ai-phased).
+
+### Empty / missing → engine defaults
+
+If `target_order` is missing, the engine uses the approach (`aggressive`: back row then front; `balanced`: front row then back; `defensive`: living front row, then the survivor with the highest physical attack). If `spell_priorities` is `[]`, the engine picks one ready equipped spell (heal under the approach threshold, otherwise the highest-tier offensive spell). NPC tactics may still fill `spell_priorities` before kickoff, and that list wins over the L0 pick. No client-side required fields for match resolution.
+
+### L1 — targeting (`strategy`)
+
+```json
+{
+  "target_order": ["back_2", "back_1", "back_3", "front_1", "front_2", "front_3"],
+  "fallback": "lowest_hp"
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `target_order` | Preferred enemy **slots** (same position enum as formation) in focus order; skip dead/absent |
+| `fallback` | When no entry in `target_order` is valid — e.g. `lowest_hp`, `highest_threat` (engine-defined) |
+
+### L2 — spell priorities (`spell_priorities`)
+
+Ordered list; first matching ready spell wins that evaluation pass (exact precedence documented with the engine):
+
+```json
+[
+  {
+    "spell_id": 12,
+    "when": "ally_hp_below",
+    "threshold": 40,
+    "target": "lowest_hp_ally"
+  },
+  {
+    "spell_id": 8,
+    "when": "always",
+    "target": "priority"
+  }
+]
+```
+
+| `when` | Trigger | Engine |
+|---------|---------|--------|
+| `always` | Eligible whenever the spell is ready | Read |
+| `ally_hp_below` | Any living ally under `threshold` % HP | Read |
+| `self_hp_below` | Caster under `threshold` % HP | Read |
+| `enemy_status` | Enemy has a listed status | Not implemented (not in steps 2–7) — engine **skips** the entry (condition never met); later priorities can still match |
+
+| `target` | Resolve to | Engine |
+|----------|------------|--------|
+| `priority` | Current targeting pick from `strategy` | Read (default when `target` is omitted) |
+| `lowest_hp_ally` / `self` | That ally, or the caster | Read |
+| `lowest_hp_enemy` | Lowest-HP living enemy | Not implemented (not in steps 2–7) — if used as `target`, engine falls back to the current approach/priority pick |
+
+Formation-level spell overrides vs hero-equipped fallback follow [game-summary.md](../game-summary.md#combat-strategy-settings) (formation config wins when present).
+
+### L3 — deferred
+
+Explicit action sequences and advanced conditional tactics (substitution, mid-match formation switch) stay design-only. Do not invent L3 field names in production code until this section is extended.
+
 ## Summary
 
 Formations are 6-slot layouts (3 front, 3 back) with per-hero action priority and spell/targeting settings. Synergy calculations (planned) consider race relationships and role balance.
+
+**Combat integration:** Combat is fully automated — the engine reads `approach` and (phased) strategy / spell priorities and runs the match without mid-battle player input. Snapshot building and match request shape: [combat-system.md — Simulation Contract](combat-system.md#simulation-contract). The battle UI is a replay of `combat_log` only; see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
 ## APIs
 

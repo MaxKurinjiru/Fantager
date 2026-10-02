@@ -61,9 +61,9 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Database & Entities**: `Hero` and `TeamSummonHistory` entities.
 - **Service Layer**: `HeroGenerator` with race name pools (first and surname definitions per race in `HeroGenerator`). `SummoningService` to handle race compatibilities and cooldowns.
 - **API Contracts**: `POST /api/v1/summoning` (initiates summon), `GET /api/v1/summoning/status`.
-- **Frontend Views**: Summoning Chamber UI (`templates/summoning/index.html.twig`) with cooldown timers, race select, and Reveal AJAX animation.
+- **Frontend Views**: Summoning Chamber HQ panel (`templates/components/hq/facility_panel/_summoning.html.twig`, `templates/components/summoning/`) with cooldown timers and Reveal AJAX animation. `GET /app/summon` redirects to `/app/hq?facility=summoning_chamber`.
 - **Verification**: Summon heroes, verify cooldown timings, and check names are correctly chosen from the race configuration pools.
-- **Status**: ✅ Complete (`SummoningService`, `HeroGenerator`, `templates/summoning/index.html.twig`, Stimulus: `summoning_controller.js`).
+- **Status**: ✅ Complete (`SummoningService`, `HeroGenerator`, HQ summoning panel, Stimulus: `summoning_controller.js`).
 
 ### Step 2.3: Hero Roster & Profile Management
 - **Service Layer**: Hero CRUD operations, renaming validator, and stat calculations based on race.
@@ -95,11 +95,11 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ### Step 3.2: Hero Training Loop
 - **Database & Entities**: `HeroTrainingHistory`; trainers are heroes with `role = trainer`.
-- **Service Layer**: Training rate calculations. Weekly training tick (`TickType::WeeklyTraining`) processed by `ProcessKingdomTicksHandler`.
+- **Service Layer**: Training rate calculations. Weekly training tick (`TickType::WeeklyTraining`) processed by `ExecuteSingleTickHandler`.
 - **API Contracts**: `POST /api/v1/training/trainers/{id}/assign` (assign hero to trainer), `POST /api/v1/training/trainers/{id}/unassign`, `POST /api/v1/training/trainers/{id}/configure`.
 - **Frontend Views**: Trainers dashboard panel, trainers selection list, and assigned trainees list.
 - **Verification**: Assign a hero to a trainer, configure trainer focus, run `bin/console app:ticks:run --time="YYYY-MM-DD 10:00:00"` after the scheduled Thursday training tick, and verify hero stats increase correctly.
-- **Status**: ✅ Complete (`TrainingService`, `ProcessKingdomTicksHandler` weekly training tick, `Web\TrainingController`, `Api\V1\TrainingController`, Stimulus: `training_controller.js`).
+- **Status**: ✅ Complete (`TrainingService`, `ExecuteSingleTickHandler` weekly training tick, `Web\TrainingController`, `Api\V1\TrainingController`, Stimulus: `training_controller.js`).
 
 ---
 
@@ -159,21 +159,23 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 *Implement the core combat engine, chronological event tick scheduler, the weekly league competition, and hero mortality.*
 
 ### Step 6.1: Combat Simulation Engine (Core Block)
-- **Design Prerequisites (Phase 0)**: Combat formulas are documented in [combat-system.md](systems/combat-system.md). `CombatStatCalculator` and `DerivedCombatStats` are implemented; the turn-resolution engine and replay UI remain pending.
-- **Service/Business Logic**:
-  - Implement a deterministic turn-resolution engine resolving combat round-by-round.
-  - Apply status effects (poison, stun, buffs) per tick based on speed order.
-  - Calculate post-match updates: XP gains, form adjustments, fatigue accumulation, morale impact, and hero aging.
-  - Generate a detailed `combat_log` JSON structure containing step-by-step actions.
+- **Design Prerequisites (Phase 0)**: Locked in [combat-system.md](systems/combat-system.md#simulation-contract) — VOs, event-stream `combat_log`, seed, **wave Messenger orchestration** (cohort lockstep, `MAX_ROUNDS=200`, no wave timeout, `stalled` isolation, no live UI), L0→L2 AI. NPC teams use the same combat path.
+- **Service/Business Logic** (phased — see combat-system § Implementation phases):
+  - **6.1a-0** — ✅ Contract VO + thin one-shot `CombatEngine` / `LeagueMatchSimulator` (placeholder scores + envelope).
+  - **6.1a** — ✅ Persisted run state; `CombatWave` / `ProcessCombatRound` / `CompleteBattle`; barrier without timeout; `stalled` + `ResumeCombat`; real per-round turn loop + L0; replace one-shot league binding.
+  - **6.1b** — ✅ L1 targeting (`strategy.target_order`); freeze slot JSON schema ([formation-system.md](systems/formation-system.md#strategy-json-schema-phased)).
+  - **6.1c** — ✅ L2 spell conditions; **post-match** replay viewer MVP (not live).
+  - **6.1d** — ✅ Combat deaths → aging → graveyard; item durability loss after battle.
+  - ✅ Status effects per tick (speed order). Post-match team morale, mastery XP, hero XP, form, fatigue, durability, and aging ship with completion.
 - **API Contracts**:
-  - `POST /api/v1/combat/simulate` — Practice/sandbox match between two rosters (requires 6 combat-ready heroes per team).
-  - `GET /api/v1/combat/{matchId}/log` — Retrieve replay log.
+  - `POST /api/v1/combat/simulate` — Practice/sandbox match (requires 6 combat-ready heroes per team); optional `seed` (planned).
+  - `GET /api/v1/battles/{id}` / `GET /api/v1/battles/{id}/log` — ✅ Result + replay log after completion.
 - **Frontend Views**:
-  - **[NEW]** Combat Replay Viewer UI: A visually compelling page that reads a combat log JSON and steps through the battle with animations, hit point bars, and logs.
+  - **[NEW]** ✅ Combat Replay Viewer UI (post-match only): Reads event-stream `combat_log`. Static match report showing final states and accordion round-by-round log.
 - **Verification**:
-  - Write extensive unit tests for combat calculations (accuracy, dodge, crit multipliers).
-  - Test forfeit validation: if one team has <6 combat-ready heroes, ensure immediate 3-0 forfeit without simulator trigger.
-- **Status**: ⏳ Not Started (Battle entity scaffolded; combat engine pending).
+  - ✅ Unit tests for combat math, seed + RNG-state reproducibility across wave messages, barrier ignoring `stalled`, hard stop at round 200.
+  - ✅ Forfeit: <6 combat-ready → 3–0 / 0–0 without enqueueing waves.
+- **Status**: ✅ Core 6.1a–d is in the tree, and follow-up steps 2–7 are in (L0 spell pick, defensive targeting, stat formulas, hero XP/form/fatigue, replay fidelity, full AP movement). Preparation length and fumble-without-retarget stay as designed. Logos, match type, morale, and the initiative queue stay on the battle-screen design list.
 
 ### Step 6.2: Calendar & Server Ticks System
 - **Database & Entities**: `KingdomTickLog` (implemented).
@@ -184,7 +186,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
   - `bin/console app:ticks:run` — Command triggered by cron to advance game time.
   - `GET /api/v1/kingdom/{id}/calendar` — Kingdom schedule feed.
 - **Verification**: Trigger a calendar tick and check if queues (training, items, leagues) update.
-- **Status**: ✅ Complete (`ProcessTicksCommand`, `TickScheduleCalculator`, `CalendarService`, `ProcessKingdomTicksHandler`, Web Calendar page, kingdom calendar API). League match ticks currently process arena revenue only; combat execution remains pending under Step 6.1.
+- **Status**: ✅ Complete (`ProcessTicksCommand`, `TickScheduleCalculator`, `CalendarService`, `ExecuteSingleTickHandler`, Web Calendar page, kingdom calendar API). League match ticks process both arena revenue and start wave combat simulation.
 
 ### Step 6.3: League Matchmaking & Season Transition
 - **Design Prerequisites (Phase 0)**: Resolve [known-issues.md](known-issues.md) #7 (Friendly match rules) and #8 (Arena Match mechanics).
@@ -193,51 +195,47 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
   - Enforce home/away balance (1 home, 1 away match per week of play).
   - Standings updates: calculate played, wins, draws, losses, points, goal difference.
   - Season transition: process promotions, relegations, compound rewards (using global comparison tie-breakers). Shuffle groups for next season.
-- **API Contracts** (Planned/Deferred - Currently optional as the Web dashboard renders standings/fixtures server-side via Twig):
-  - `GET /api/v1/league/standings` — standings list (planned).
-  - `GET /api/v1/league/fixtures` — matches list (planned).
-  - `POST /api/v1/league/process-season` — manual admin season trigger (planned).
+- **API Contracts**:
+  - `GET /api/v1/league/standings` — standings list.
+  - `GET /api/v1/league/fixtures` — matches list.
+  - `GET /api/v1/league/seasons` — season history.
+  - `POST /api/v1/league/process-season` — manual admin season trigger.
 - **Frontend Views**:
   - **[NEW]** League Dashboard: Group standings table, fixture timeline, match summaries, and promotion/relegation threshold lines.
 - **Verification**: Run complete 11-week season simulation using CLI commands and verify standings and reward distributions.
-- **Status**: 🔄 Partially Complete (`LeagueFixtureScheduler`, `SeasonTransitionService`, and Web League Dashboard fully complete; API endpoints and combat simulation matching are pending implementation under the remaining Phase 6 simulation tasks).
+- **Status**: ✅ Complete (`LeagueFixtureScheduler`, `SeasonTransitionService`, `Api\V1\LeagueController`, and Web League Dashboard fully complete).
 
 ### Step 6.4: Hero Mortality & Graveyard
 - **Database & Entities**: `GraveyardMemorial` entity (`graveyard` table).
-- **Service Layer**: `GraveyardService` records memorial snapshots on hero/trainer dismissal. Combat death triggers reserved for Step 6.1.
+- **Service Layer**: `GraveyardService` records memorial snapshots on hero/trainer dismissal and combat deaths.
 - **API Contracts**: `GET /api/v1/graveyard`, `GET /api/v1/graveyard/{id}`.
 - **Frontend Views**:
   - **[NEW]** Memorial Graveyard: Cemetery listing with filters (role, cause, race), summary stats, and memorial detail.
-- **Verification**: Dismiss a hero or trainer and verify memorial appears on `/app/graveyard` and via read API.
-- **Status**: 🔄 Partially Complete (`GraveyardService`, dismissal flows, Web UI, and read API implemented; combat death memorials pending combat engine).
+- **Verification**: Dismiss a hero/trainer or trigger combat death and verify memorial appears on `/app/graveyard` and via read API.
+- **Status**: ✅ Complete (`GraveyardService`, dismissal flows, combat death memorial snapshots, Web UI, and read API fully implemented).
 
 ---
 
-## Milestone 7: Alliances & Guild System
-*Establish alliances, team cooperation, and guild chat communication.*
+## Milestone 7: Arena Management & Operations
+*Extend HQ stadium operations, ticket pricing, seating capacity upgrades, and financial attendance analytics.*
 
-### Step 7.1: Alliance Foundation & Management
-- **Database & Entities**: `Alliance`, `AllianceMember` entities.
-- **Service/Business Logic**: Alliance creation, invitations, membership application, roles/ranks, alliance leaderboards.
-- **API Contracts**: `GET /api/v1/alliances`, `POST /api/v1/alliances/create`, `POST /api/v1/alliances/{id}/invite`, `POST /api/v1/alliances/{id}/join`.
+### Step 7.1: Arena Facility Management & Ticket Pricing
+- **Database & Entities**: Link stadium upgrades directly to HQ Arena levels.
+- **Service Layer**: Weekly seating capacity calculations, ticket price elasticity calculations, passive revenue distribution service (`ArenaRevenueService`, `FanClubService`).
+- **API Contracts**: `GET /api/v1/arena`, `POST /api/v1/hq/arena/tickets/price`.
 - **Frontend Views**:
-  - **[NEW]** Alliance Hub: Roster lists, application portals, alliance rank leaderboards, and settings page.
-- **Verification**: Create an alliance, invite another team, accept the invitation, verify permissions and ranking.
-- **Status**: ⏳ Not Started.
-
-### Step 7.2: Alliance Communication
-- **Database & Entities**: Uses existing communication entities (`Message` etc. scoped to Alliance).
-- **Service/Business Logic**: Alliance-only chat persistence and filtering.
-- **API Contracts**: `POST /api/v1/alliances/chat`, `GET /api/v1/alliances/chat/history`.
-- **Frontend Views**:
-  - **[NEW]** Alliance Chat Pane: Embedded live alliance chat feed within the Alliance Hub.
-- **Verification**: Send chat messages within an alliance, confirm they are only visible to alliance members.
-- **Status**: ⏳ Not Started.
+  - HQ Arena facility panel (`/app/hq?facility=arena`), seating upgrade charts, ticket price sliders, and weekly attendance graphs.
+- **Verification**: Modify ticket price, trigger weekly ticket revenue command, and confirm revenue scales with formulas.
+- **Status**: 🔄 Partially Complete (`ArenaRevenueService`, league-match tick payout, HQ arena panel at `/app/hq?facility=arena`, ticket price API `POST /api/v1/hq/arena/tickets/price` implemented; extended analytics UI and friendly scheduling pending).
 
 ---
 
-## Milestone 8: Endgame & Advanced Content
-*Extend the sandbox with PvE dungeon instances, item crafting, and stadium business operations.*
+## Milestone 8: Endgame & Advanced Content (Deferred / Out of Scope)
+> [!NOTE]
+> **Status: DEFERRED / FUTURE FEATURE (Parked)**  
+> All features in Milestone 8 are deferred and outside the active development scope. Detailed design specifications are preserved in the [`docs/future/`](future/) directory.
+
+*Extend the sandbox with PvE dungeon encounters, quest systems, and item crafting.*
 
 ### Step 8.1: PvE Dungeon Encounters
 - **Database & Entities**: `DungeonRun` table (depends on Combat). Design preserved in [future/dungeon-system.md](future/dungeon-system.md); no code in codebase yet.
@@ -246,7 +244,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - **[NEW]** Dungeon Map UI: Floor progression map, encounter cards, reward reveals.
 - **Verification**: Complete dungeon floors, confirm health persistence across fights and reward logs.
-- **Status**: ⏳ Not Started (design only; no code or DB schema — see [future/dungeon-system.md](future/dungeon-system.md)).
+- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/dungeon-system.md](future/dungeon-system.md)).
 
 ### Step 8.2: Daily & Weekly Quest Systems
 - **Design Reference**: [future/quest-system.md](future/quest-system.md)
@@ -256,7 +254,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - **[NEW]** Quest log: list of daily/weekly challenges, progress indicators, claim buttons.
 - **Verification**: Perform quest conditions, verify progress bar fills, claim rewards.
-- **Status**: ⏳ Not Started (design only; no code or DB schema).
+- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/quest-system.md](future/quest-system.md)).
 
 ### Step 8.3: Material Gathering & Crafting
 - **Design Reference**: [future/crafting-system.md](future/crafting-system.md)
@@ -266,16 +264,34 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - **[NEW]** Crafting Workshop: Recipe catalog, required ingredients checklist, active crafting progress bars.
 - **Verification**: Check material requirement validation, verify crafted items appear in the team inventory.
-- **Status**: ⏳ Not Started (design only; backend and UI removed from codebase — see [future/crafting-system.md](future/crafting-system.md)).
+- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/crafting-system.md](future/crafting-system.md)).
 
-### Step 8.4: Arena Facility Management
-- **Database & Entities**: Link stadium upgrades directly to HQ Arena levels.
-- **Service Layer**: Weekly seating capacity calculations, ticket price elasticity calculations, passive revenue distribution service.
-- **API Contracts**: `POST /api/v1/hq/arena/tickets/price`.
+---
+
+## Milestone 9: Alliances & Guild System (Deferred / Out of Scope)
+> [!NOTE]
+> **Status: DEFERRED / FUTURE FEATURE (Parked)**  
+> Alliance and Guild systems are deferred and outside the active development scope.
+
+*Establish alliances, team cooperation, and guild chat communication.*
+
+### Step 9.1: Alliance Foundation & Management
+- **Database & Entities**: `Alliance`, `AllianceMember` entities.
+- **Service/Business Logic**: Alliance creation, invitations, membership application, roles/ranks, alliance leaderboards.
+- **API Contracts**: `GET /api/v1/alliances`, `POST /api/v1/alliances/create`, `POST /api/v1/alliances/{id}/invite`, `POST /api/v1/alliances/{id}/join`.
 - **Frontend Views**:
-  - **[NEW]** Arena Hub: Seating upgrade charts, weekly attendance graphs, ticket price sliders.
-- **Verification**: Modify ticket price, trigger weekly ticket revenue command, and confirm revenue scales with formulas.
-- **Status**: 🔄 Partially Complete (`ArenaRevenueService`, league-match tick payout, HQ arena panel at `/app/hq?facility=arena`; ticket price API and extended analytics UI pending).
+  - **[NEW]** Alliance Hub: Roster lists, application portals, alliance rank leaderboards, and settings page.
+- **Verification**: Create an alliance, invite another team, accept the invitation, verify permissions and ranking.
+- **Status**: ⏸️ Deferred / Out of Active Scope.
+
+### Step 9.2: Alliance Communication
+- **Database & Entities**: Uses existing communication entities (`Message` etc. scoped to Alliance).
+- **Service/Business Logic**: Alliance-only chat persistence and filtering.
+- **API Contracts**: `POST /api/v1/alliances/chat`, `GET /api/v1/alliances/chat/history`.
+- **Frontend Views**:
+  - **[NEW]** Alliance Chat Pane: Embedded live alliance chat feed within the Alliance Hub.
+- **Verification**: Send chat messages within an alliance, confirm they are only visible to alliance members.
+- **Status**: ⏸️ Deferred / Out of Active Scope.
 
 ---
 
@@ -289,6 +305,9 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ## Project Chronological Progression Status
 
+> [!IMPORTANT]
+> **Active Scope Guardrail:** Milestones 1–6 are fully complete. Milestone 7 (Arena Management) is the final active milestone. Everything after Milestone 7 (Milestones 8 and 9) is explicitly **deferred / parked**. Do not implement or plan work for items beyond Milestone 7.
+
 The following matrix displays what has been completed in the codebase relative to the newly defined chronological steps:
 
 | Milestone / Slice | Database / Entities | Service Layer / CLI | API Endpoints | Frontend UI Views | Current Status |
@@ -298,8 +317,9 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 6 (Combat & Leagues)** | 🔄 | 🔄 | 🔄 | 🔄 | *In Progress* — League/Calendar/Graveyard UI ✅; derived stats calculator ✅; combat engine + replay UI ⏳ |
-| **Milestone 7 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | *Not Started* |
-| **Milestone 8 (Endgame & Crafting)** | ⏳ | 🔄 | ⏳ | 🔄 | *Partially Complete* (arena revenue done; dungeons/crafting/quests deferred) |
+| **Milestone 6 (Combat & Leagues)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
+| **Milestone 7 (Arena Management)** | ✅ | 🔄 | ✅ | 🔄 | **Active / Partially Complete** (arena revenue + ticket price API done; extended analytics UI & friendly scheduling pending) |
+| **Milestone 8 (Endgame & Crafting)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (dungeons, crafting, quests in `future/`) |
+| **Milestone 9 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (alliance & guild systems deferred) |
 
-*Last updated: July 15, 2026 — Docs synced with separate marketplace/finance screens, hero chronicle, hero rating cache, combat formulas*
+*Last updated: August 6, 2026 — Milestones 8 and 9 explicitly marked as Deferred / Out of Active Scope; Milestone 7 is the final active scope milestone.*

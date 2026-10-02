@@ -1,0 +1,485 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Service\Combat;
+
+use App\Entity\Combat\Battle;
+use App\Entity\Formation\Formation;
+use App\Entity\Formation\FormationSlot;
+use App\Entity\Hero\Hero;
+use App\Entity\Item\Item;
+use App\Entity\League\LeagueFixture;
+use App\Entity\League\LeagueGroup;
+use App\Entity\League\LeagueStanding;
+use App\Entity\Team\Team;
+use App\Enum\BattleResult;
+use App\Enum\HeroStatus;
+use App\Enum\LeagueFixtureStatus;
+use App\Enum\MatchType;
+use App\Enum\MemorialCause;
+use App\Enum\Race;
+use App\Repository\League\LeagueFixtureRepository;
+use App\Repository\League\LeagueStandingRepository;
+use App\Service\Combat\CombatEngine;
+use App\Service\Combat\CombatMatchRequestBuilder;
+use App\Service\Combat\CombatSeedGenerator;
+use App\Service\Config\RaceConfig;
+use App\Service\Graveyard\GraveyardService;
+use App\Service\Hero\HeroChronicleService;
+use App\Service\Hero\HeroMasteryService;
+use App\Service\League\LeagueFixtureCompletionService;
+use App\Service\League\LeagueMatchResolutionService;
+use App\Service\League\LeagueStandingService;
+use App\Service\Team\FanClubService;
+use App\Service\Team\TeamMoraleReputationService;
+use App\Service\Team\TeamRosterService;
+use App\Service\TeamChronicle\TeamChronicleService;
+use App\ValueObject\Combat\CombatantSnapshot;
+use App\ValueObject\Combat\CombatMatchRequest;
+use App\ValueObject\Combat\CombatSide;
+use App\ValueObject\Combat\DerivedCombatStats;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Messenger\MessageBusInterface;
+
+#[AllowMockObjectsWithoutExpectations]
+class CombatDeathAndDurabilityTest extends TestCase
+{
+    public function testCombatEngineTracksKilledHeroesAndHitCounts(): void
+    {
+        $engine = new CombatEngine();
+
+        // Create a match where side A is extremely strong (attack = 9999) to guarantee immediate KO
+        $sideA = new CombatSide(1, 101, \App\Enum\FormationApproach::Balanced, [
+            new CombatantSnapshot(11, 'Attacker', \App\Enum\FormationPosition::Front1, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 9999)),
+            new CombatantSnapshot(12, 'Dummy A2', \App\Enum\FormationPosition::Front2, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 1)),
+            new CombatantSnapshot(13, 'Dummy A3', \App\Enum\FormationPosition::Front3, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 1)),
+            new CombatantSnapshot(14, 'Dummy A4', \App\Enum\FormationPosition::Back1, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 1)),
+            new CombatantSnapshot(15, 'Dummy A5', \App\Enum\FormationPosition::Back2, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 1)),
+            new CombatantSnapshot(16, 'Dummy A6', \App\Enum\FormationPosition::Back3, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 1)),
+        ]);
+
+        $sideB = new CombatSide(2, 102, \App\Enum\FormationApproach::Balanced, [
+            new CombatantSnapshot(21, 'Victim', \App\Enum\FormationPosition::Front1, Race::Human, 1, 1, 0, 50, $this->buildStats(1, 1)), // 1 HP
+            new CombatantSnapshot(22, 'Dummy B2', \App\Enum\FormationPosition::Front2, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 1)),
+            new CombatantSnapshot(23, 'Dummy B3', \App\Enum\FormationPosition::Front3, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 1)),
+            new CombatantSnapshot(24, 'Dummy B4', \App\Enum\FormationPosition::Back1, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 1)),
+            new CombatantSnapshot(25, 'Dummy B5', \App\Enum\FormationPosition::Back2, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 1)),
+            new CombatantSnapshot(26, 'Dummy B6', \App\Enum\FormationPosition::Back3, Race::Human, 1, 100, 0, 50, $this->buildStats(100, 1)),
+        ]);
+
+        $request = new CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
+        $result = $engine->simulate($request);
+        $log = $result->getCombatLog();
+
+        $this->assertArrayHasKey('result', $log);
+        $this->assertArrayHasKey('killed_hero_ids', $log['result']);
+        $this->assertArrayHasKey('item_hit_counts', $log['result']);
+
+        // Victim (hero 21) should be in killed_hero_ids
+        $this->assertContains(21, $log['result']['killed_hero_ids']);
+        $this->assertGreaterThanOrEqual(1, array_sum($log['result']['kills_by_hero_id']));
+        $this->assertArrayHasKey('rng_state', $log['result']);
+
+        // Item hit counts should have registered hits on hero 21
+        $this->assertArrayHasKey('21', $log['result']['item_hit_counts']);
+        $this->assertGreaterThanOrEqual(1, $log['result']['item_hit_counts']['21']);
+    }
+
+    public function testLeagueMatchResolutionAppliesDeathsAndDurability(): void
+    {
+        $fixtureRepository = $this->createStub(LeagueFixtureRepository::class);
+        $standingRepository = $this->createStub(LeagueStandingRepository::class);
+        $teamRosterService = $this->createStub(TeamRosterService::class);
+        $fixtureCompletionService = $this->createStub(LeagueFixtureCompletionService::class);
+        $fanClubService = $this->createStub(FanClubService::class);
+        $teamMoraleReputationService = $this->createStub(TeamMoraleReputationService::class);
+        $teamChronicleService = $this->createStub(TeamChronicleService::class);
+        $heroMasteryService = $this->createStub(HeroMasteryService::class);
+        $heroChronicleService = $this->createStub(HeroChronicleService::class);
+        $formationRepository = $this->createStub(\App\Repository\Formation\FormationRepository::class);
+        $em = $this->createStub(EntityManagerInterface::class);
+        $requestBuilder = $this->createStub(CombatMatchRequestBuilder::class);
+        $seedGenerator = new CombatSeedGenerator();
+        $combatEngine = $this->createStub(CombatEngine::class);
+        $messageBus = $this->createStub(MessageBusInterface::class);
+        $graveyardService = $this->createMock(GraveyardService::class);
+        $raceConfig = $this->createStub(RaceConfig::class);
+        $raceConfig->method('isAtOrAboveMortalityThreshold')->willReturn(true);
+        $raceConfig->method('getMortalityThreshold')->willReturn(80);
+
+        $service = new LeagueMatchResolutionService(
+            $fixtureRepository,
+            $standingRepository,
+            $teamRosterService,
+            new LeagueStandingService(),
+            $fixtureCompletionService,
+            $fanClubService,
+            $teamMoraleReputationService,
+            $teamChronicleService,
+            $heroMasteryService,
+            $heroChronicleService,
+            $formationRepository,
+            $em,
+            $requestBuilder,
+            $seedGenerator,
+            $combatEngine,
+            $messageBus,
+            $graveyardService,
+            $raceConfig,
+            $this->createStub(\App\Service\Notification\NotificationHelper::class),
+            $this->createStub(\App\Repository\Headquarters\HeadquartersRepository::class),
+            $this->createStub(\App\Service\Economy\FinancialCrisisService::class),
+        );
+
+
+        // Mock setup
+        $fixture = $this->createStub(LeagueFixture::class);
+        $group = $this->createStub(LeagueGroup::class);
+        $fixture->method('getGroup')->willReturn($group);
+
+        $homeTeam = $this->createStub(Team::class);
+        $awayTeam = $this->createStub(Team::class);
+        $fixture->method('getHomeTeam')->willReturn($homeTeam);
+        $fixture->method('getAwayTeam')->willReturn($awayTeam);
+
+        $standing = $this->createStub(LeagueStanding::class);
+        $standingRepository->method('findOneBy')->willReturn($standing);
+
+        $fixtureRepo = $this->createStub(EntityRepository::class);
+        $fixtureRepo->method('findOneBy')->willReturn($fixture);
+
+
+        // Create a battle with mock outcomes
+        $battle = $this->createStub(Battle::class);
+        $battle->method('getResult')->willReturn(BattleResult::WinA);
+        $battle->method('getScoreA')->willReturn(1);
+        $battle->method('getScoreB')->willReturn(0);
+        $battle->method('getCurrentRound')->willReturn(25); // 25 rounds
+        $battle->method('getCombatLog')->willReturn([
+            'result' => [
+                'score_a' => 1,
+                'score_b' => 0,
+                'killed_hero_ids' => [21],
+                'item_hit_counts' => [
+                    '21' => 9,  // victim hit 9 times
+                    '11' => 3,  // hero 11 hit 3 times
+                ]
+            ]
+        ]);
+
+        // Setup formations and slots
+        $homeFormation = $this->createStub(Formation::class);
+        $awayFormation = $this->createStub(Formation::class);
+        $battle->method('getFormationA')->willReturn($homeFormation);
+        $battle->method('getFormationB')->willReturn($awayFormation);
+
+        $slotA = $this->createStub(FormationSlot::class);
+        $heroA = $this->createStub(Hero::class);
+        $heroA->method('getId')->willReturn(11);
+        $slotA->method('getHero')->willReturn($heroA);
+        $homeFormation->method('getSlots')->willReturn(new \Doctrine\Common\Collections\ArrayCollection([$slotA]));
+
+        $slotB = $this->createStub(FormationSlot::class);
+        $heroB = $this->createStub(Hero::class);
+        $heroB->method('getId')->willReturn(21);
+        $heroB->method('getTeam')->willReturn($awayTeam);
+        $heroB->method('getRace')->willReturn(Race::Human);
+        $heroB->method('getAge')->willReturn(150);
+        $heroB->method('getAgeRaw')->willReturn(1500);
+        $slotB->method('getHero')->willReturn($heroB);
+        $awayFormation->method('getSlots')->willReturn(new \Doctrine\Common\Collections\ArrayCollection([$slotB]));
+
+        // Mock entity manager find for the killed hero
+        $em->method('find')->willReturnCallback(function ($class, $id) use ($heroB) {
+            if ($class === Hero::class && $id === 21) {
+                return $heroB;
+            }
+            return null;
+        });
+
+        // Mock items repository to return some items
+        $itemRepo = $this->createStub(EntityRepository::class);
+        $item1 = new Item();
+        $item1->setDurability(100);
+        $item2 = new Item();
+        $item2->setDurability(95);
+
+        $itemRepo->method('findBy')->willReturnCallback(function (array $criteria) use ($heroA, $heroB, $item1, $item2) {
+            if (($criteria['equippedHero'] ?? null) === $heroA) {
+                return [$item1];
+            }
+            if (($criteria['equippedHero'] ?? null) === $heroB) {
+                return [$item2];
+            }
+            return [];
+        });
+
+        $em->method('getRepository')->willReturnCallback(function ($class) use ($itemRepo, $fixtureRepo) {
+            if ($class === Item::class) {
+                return $itemRepo;
+            }
+            if ($class === LeagueFixture::class) {
+                return $fixtureRepo;
+            }
+            return $this->createStub(EntityRepository::class);
+        });
+
+        // Setup expectations
+        $graveyardService->expects($this->once())
+            ->method('prepareCombatDeath')
+            ->with($heroB);
+
+        $graveyardService->expects($this->once())
+            ->method('recordMemorial')
+            ->with($heroB, $awayTeam, MemorialCause::CombatDeath);
+
+        // Execute
+        $service->completeBattle($battle);
+
+        // Check durability calculations:
+        // Rounds = 25 → floor(25/10) = 2
+        // Hero 11: hits = 3 → floor(3/3) = 1. Total loss = 2 + 1 = 3. New durability: 100 - 3 = 97.
+        $this->assertEquals(97, $item1->getDurability());
+
+        // Hero 21: hits = 9 → floor(9/3) = 3. Total loss = 2 + 3 = 5. New durability: 95 - 5 = 90.
+        $this->assertEquals(90, $item2->getDurability());
+
+        // Check durability calculations:
+        // Rounds = 25 → floor(25/10) = 2
+        // Hero 11: hits = 3 → floor(3/3) = 1. Total loss = 2 + 1 = 3. New durability: 100 - 3 = 97.
+        $this->assertEquals(97, $item1->getDurability());
+
+        // Hero 21: hits = 9 → floor(9/3) = 3. Total loss = 2 + 3 = 5. New durability: 95 - 5 = 90.
+        $this->assertEquals(90, $item2->getDurability());
+    }
+
+    public function testCompleteBattleAwardsXpFormAndFatigueFromLibrary(): void
+    {
+        $homeTeam = $this->createStub(Team::class);
+        $awayTeam = $this->createStub(Team::class);
+
+        $hq = new \App\Entity\Headquarters\Headquarters();
+        $hq->setTeam($homeTeam);
+        $library = new \App\Entity\Headquarters\Facility();
+        $library->setType(\App\Enum\FacilityType::Library);
+        $library->setLevel(1);
+        $hq->addFacility($library);
+
+        $headquartersRepository = $this->createStub(\App\Repository\Headquarters\HeadquartersRepository::class);
+        $headquartersRepository->method('findOneBy')->willReturnCallback(
+            static fn (array $criteria) => ($criteria['team'] ?? null) === $homeTeam ? $hq : null
+        );
+        $crisis = $this->createStub(\App\Service\Economy\FinancialCrisisService::class);
+        $crisis->method('areHqBonusesActive')->willReturn(true);
+
+        $raceConfig = $this->createStub(RaceConfig::class);
+        $raceConfig->method('isAtOrAboveMortalityThreshold')->willReturn(false);
+
+        $winner = $this->persistentHero(11);
+        $ko = $this->persistentHero(21);
+
+        $setup = $this->battleForRewards($homeTeam, $awayTeam, $winner, $ko, [
+            'result' => [
+                'killed_hero_ids' => [21],
+                'kills_by_hero_id' => ['11' => 1],
+                'item_hit_counts' => [],
+                'rng_state' => 1,
+            ],
+        ]);
+        $service = $this->resolutionService(
+            $raceConfig,
+            $headquartersRepository,
+            $crisis,
+            $this->createStub(GraveyardService::class),
+            $setup['fixture'],
+        );
+        $service->completeBattle($setup['battle']);
+
+        // Library level 1 is +3%. Win + one KO: round((20 + 15 + 10) * 1.03) = 46.
+        $this->assertSame(46, $winner->getXp());
+        $this->assertSame(92, $winner->getForm());
+        $this->assertSame(15, $winner->getFatigue());
+
+        // Loss, no kills, no library, knocked out: 20 XP, form −15, fatigue 25.
+        $this->assertSame(20, $ko->getXp());
+        $this->assertSame(85, $ko->getForm());
+        $this->assertSame(25, $ko->getFatigue());
+    }
+
+    public function testMortalityRollContinuesTheMatchRng(): void
+    {
+        $homeTeam = $this->createStub(Team::class);
+        $awayTeam = $this->createStub(Team::class);
+        $elder = $this->persistentHero(21, 910);
+        $elder->setTeam($awayTeam);
+
+        $state = 42;
+        $probe = $state;
+        $roll = CombatEngine::drawInt($probe, 0, 99);
+        // One KO adds one year before the roll: age 91 → 92, threshold 80.
+        $ageAfter = intdiv(910, 10) + 1;
+        $chance = min(1.0, 0.05 + (0.04 * max(0, $ageAfter - 80)));
+        $dies = $roll < (int) ($chance * 100);
+
+        $graveyard = $this->createMock(GraveyardService::class);
+        $graveyard->expects($dies ? $this->once() : $this->never())->method('prepareCombatDeath');
+        $graveyard->expects($dies ? $this->once() : $this->never())->method('recordMemorial');
+
+        $raceConfig = $this->createStub(RaceConfig::class);
+        $raceConfig->method('isAtOrAboveMortalityThreshold')->willReturn(true);
+        $raceConfig->method('getMortalityThreshold')->willReturn(80);
+
+        $setup = $this->battleForRewards($homeTeam, $awayTeam, $this->persistentHero(11), $elder, [
+            'result' => [
+                'killed_hero_ids' => [21],
+                'kills_by_hero_id' => [],
+                'item_hit_counts' => [],
+                'rng_state' => $state,
+            ],
+        ]);
+        $service = $this->resolutionService(
+            $raceConfig,
+            $this->createStub(\App\Repository\Headquarters\HeadquartersRepository::class),
+            $this->createStub(\App\Service\Economy\FinancialCrisisService::class),
+            $graveyard,
+            $setup['fixture'],
+            $elder,
+        );
+
+        $service->completeBattle($setup['battle']);
+    }
+
+    private function persistentHero(int $id, int $ageRaw = 200): Hero
+    {
+        $hero = new Hero();
+        $hero->setName('Hero '.$id);
+        $hero->setRace(Race::Human);
+        $hero->setAgeRaw($ageRaw);
+        $hero->setForm(100);
+        $hero->setFatigue(0);
+        $hero->setXp(0);
+
+        $idProperty = new \ReflectionProperty(Hero::class, 'id');
+        $idProperty->setValue($hero, $id);
+
+        return $hero;
+    }
+
+    /**
+     * @param array<string, mixed> $combatLog
+     *
+     * @return array{battle: Battle, fixture: LeagueFixture}
+     */
+    private function battleForRewards(Team $homeTeam, Team $awayTeam, Hero $homeHero, Hero $awayHero, array $combatLog): array
+    {
+        $fixture = $this->createStub(LeagueFixture::class);
+        $fixture->method('getGroup')->willReturn($this->createStub(LeagueGroup::class));
+        $fixture->method('getHomeTeam')->willReturn($homeTeam);
+        $fixture->method('getAwayTeam')->willReturn($awayTeam);
+
+        $battle = $this->createStub(Battle::class);
+        $battle->method('getId')->willReturn(1);
+        $battle->method('getResult')->willReturn(BattleResult::WinA);
+        $battle->method('getScoreA')->willReturn(1);
+        $battle->method('getScoreB')->willReturn(0);
+        $battle->method('getCurrentRound')->willReturn(1);
+        $battle->method('getCombatLog')->willReturn($combatLog);
+
+        $homeSlot = $this->createStub(FormationSlot::class);
+        $homeSlot->method('getHero')->willReturn($homeHero);
+        $homeFormation = $this->createStub(Formation::class);
+        $homeFormation->method('getSlots')->willReturn(new \Doctrine\Common\Collections\ArrayCollection([$homeSlot]));
+
+        $awaySlot = $this->createStub(FormationSlot::class);
+        $awaySlot->method('getHero')->willReturn($awayHero);
+        $awayFormation = $this->createStub(Formation::class);
+        $awayFormation->method('getSlots')->willReturn(new \Doctrine\Common\Collections\ArrayCollection([$awaySlot]));
+
+        $battle->method('getFormationA')->willReturn($homeFormation);
+        $battle->method('getFormationB')->willReturn($awayFormation);
+
+        return ['battle' => $battle, 'fixture' => $fixture];
+    }
+
+    private function resolutionService(
+        RaceConfig $raceConfig,
+        \App\Repository\Headquarters\HeadquartersRepository $headquartersRepository,
+        \App\Service\Economy\FinancialCrisisService $financialCrisisService,
+        GraveyardService $graveyardService,
+        LeagueFixture $fixture,
+        ?Hero $killedHero = null,
+    ): LeagueMatchResolutionService {
+        $standingRepository = $this->createStub(LeagueStandingRepository::class);
+        $standingRepository->method('findOneBy')->willReturn($this->createStub(LeagueStanding::class));
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $fixtureRepository = $this->createStub(EntityRepository::class);
+        $fixtureRepository->method('findOneBy')->willReturn($fixture);
+        $itemRepository = $this->createStub(EntityRepository::class);
+        $itemRepository->method('findBy')->willReturn([]);
+
+        $em->method('getRepository')->willReturnCallback(function (string $class) use ($fixtureRepository, $itemRepository) {
+            if (LeagueFixture::class === $class) {
+                return $fixtureRepository;
+            }
+            if (Item::class === $class) {
+                return $itemRepository;
+            }
+
+            return $this->createStub(EntityRepository::class);
+        });
+        $em->method('find')->willReturnCallback(static function (string $class, int $id) use ($killedHero) {
+            if (Hero::class === $class && null !== $killedHero && $killedHero->getId() === $id) {
+                return $killedHero;
+            }
+
+            return null;
+        });
+
+        return new LeagueMatchResolutionService(
+            $this->createStub(LeagueFixtureRepository::class),
+            $standingRepository,
+            $this->createStub(TeamRosterService::class),
+            new LeagueStandingService(),
+            $this->createStub(LeagueFixtureCompletionService::class),
+            $this->createStub(FanClubService::class),
+            $this->createStub(TeamMoraleReputationService::class),
+            $this->createStub(TeamChronicleService::class),
+            $this->createStub(HeroMasteryService::class),
+            $this->createStub(HeroChronicleService::class),
+            $this->createStub(\App\Repository\Formation\FormationRepository::class),
+            $em,
+            $this->createStub(CombatMatchRequestBuilder::class),
+            new CombatSeedGenerator(),
+            $this->createStub(CombatEngine::class),
+            $this->createStub(MessageBusInterface::class),
+            $graveyardService,
+            $raceConfig,
+            $this->createStub(\App\Service\Notification\NotificationHelper::class),
+            $headquartersRepository,
+            $financialCrisisService,
+        );
+    }
+
+    private function buildStats(int $hp, int $atk): DerivedCombatStats
+    {
+        return new DerivedCombatStats(
+            maxHp: $hp,
+            currentHp: $hp,
+            physicalAttack: $atk,
+            spellPower: 10,
+            armorValue: 10,
+            physicalDamageReduction: 0.1,
+            magicResistance: 10,
+            magicDamageReduction: 0.1,
+            baseInitiative: 10,
+            accuracyPercent: 100.0,
+            dodgePercent: 0.0,
+            critPercent: 0.0
+        );
+    }
+}

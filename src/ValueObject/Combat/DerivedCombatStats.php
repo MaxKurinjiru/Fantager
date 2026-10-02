@@ -51,6 +51,8 @@ final class DerivedCombatStats
          * Pokud true, hrdina ignoruje race relationship synergy bonusy i postihy (Loner).
          */
         private bool $ignoresRaceSynergy = false,
+        /** Equipped-profile morale band. 1.0 at morale 40–59. Applied to physical and offensive-spell damage. */
+        private float $outgoingDamageMultiplier = 1.0,
     ) {
     }
 
@@ -162,5 +164,10 @@ final class DerivedCombatStats
     public function ignoresRaceSynergy(): bool
     {
         return $this->ignoresRaceSynergy;
+    }
+
+    public function getOutgoingDamageMultiplier(): float
+    {
+        return $this->outgoingDamageMultiplier;
     }
 }

@@ -7,8 +7,11 @@ namespace App\Service\Team;
 use App\Entity\Formation\Formation;
 use App\Entity\Formation\FormationSlot;
 use App\Entity\Hero\Hero;
+use App\Entity\Hero\HeroSpell;
+use App\Entity\Hero\SchoolMastery;
 use App\Entity\Item\Item;
 use App\Entity\Kingdom\Kingdom;
+use App\Entity\Spell\Spell;
 use App\Entity\Team\Team;
 use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
@@ -18,7 +21,9 @@ use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemStatus;
 use App\Enum\ItemSubType;
+use App\Enum\SpellType;
 use App\Service\Item\ItemService;
+use App\Service\Spell\SpellService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class NpcTacticsSimulator
@@ -65,6 +70,7 @@ class NpcTacticsSimulator
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly ItemService $itemService,
+        private readonly SpellService $spellService,
     ) {
     }
 
@@ -256,6 +262,9 @@ class NpcTacticsSimulator
             // 4. Auto-equip items to active lineup
             $activeLineup = array_merge($selectedFront, $selectedBack);
             $this->autoEquipItems($team, $activeLineup);
+
+            // 5. Manage spells (learning, equipping, priorities) for active lineup
+            $this->manageSpellsForLineup($team, $formation, $activeLineup);
         }
 
         $this->em->flush();
@@ -648,5 +657,256 @@ class NpcTacticsSimulator
         }
 
         return null;
+    }
+
+    /**
+     * Manage spells (learning, equipping) and generate combat priorities for the active lineup.
+     *
+     * @param array<Hero> $activeLineup
+     */
+    private function manageSpellsForLineup(Team $team, Formation $formation, array $activeLineup): void
+    {
+        // 1. Get global spell library
+        $allSpells = $this->spellService->listLibrary();
+
+        // Build a lookup map of slot to hero to easily update slot spell priorities later
+        $heroToSlot = [];
+        foreach ($formation->getSlots() as $slot) {
+            $hero = $slot->getHero();
+            if (null !== $hero && null !== $hero->getId()) {
+                $heroToSlot[$hero->getId()] = $slot;
+            }
+        }
+
+        foreach ($activeLineup as $hero) {
+            $heroId = $hero->getId();
+            if (null === $heroId || !isset($heroToSlot[$heroId])) {
+                continue;
+            }
+            $slot = $heroToSlot[$heroId];
+
+            $magicCapacity = $hero->getMagicCapacity();
+            if ($magicCapacity <= 0) {
+                // If they have no magic capacity, clear priorities and skip
+                $slot->setSpellPriorities([]);
+                continue;
+            }
+
+            // A. Learn Spells if there's empty slot capacity
+            $knownHeroSpells = $this->spellService->listForHero($hero);
+            $knownSpellIds = array_map(fn ($hs) => $hs->getSpell()->getId(), $knownHeroSpells);
+
+            // Calculate equipped spells
+            $equippedSpells = array_filter($knownHeroSpells, fn ($hs) => $hs->isEquipped());
+            $emptyCapacity = $magicCapacity - \count($equippedSpells);
+
+            if ($emptyCapacity > 0) {
+                // Determine hero's combat style based on equipped weapon and position
+                $equippedWeapon = null;
+                $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
+                foreach ($equippedItems as $item) {
+                    if (ItemSlotType::MainHand === $item->getSlotType() && null !== $item->getSubType()) {
+                        $equippedWeapon = $item->getSubType();
+                        break;
+                    }
+                }
+
+                $isMage = (ItemSubType::Wand === $equippedWeapon || ItemSubType::Staff === $equippedWeapon || 'ent' === $hero->getRace()->value);
+                $isFrontRow = \in_array($slot->getPosition(), [FormationPosition::Front1, FormationPosition::Front2, FormationPosition::Front3], true);
+                // Find eligible spells
+                $eligibleSpells = [];
+                foreach ($allSpells as $spell) {
+                    // Check if already known
+                    if (\in_array($spell->getId(), $knownSpellIds, true)) {
+                        continue;
+                    }
+
+                    // Check school mastery tier prerequisite
+                    $mastery = $this->em->getRepository(SchoolMastery::class)->findOneBy([
+                        'hero' => $hero,
+                        'school' => $spell->getSchool(),
+                    ]);
+                    $currentTier = $mastery?->getMasteryTier() ?? 1; // Default fallback is 1
+                    if ($currentTier < $spell->getRequiredMasteryTier()) {
+                        continue;
+                    }
+
+                    // Check team gold affordability (respect 150 gold safety reserve)
+                    $costGold = $spell->getLearningCostGold();
+                    if ($team->getGold() - $costGold < 150) {
+                        continue;
+                    }
+
+                    // Check magical weapon restriction: Offensive spells require Wand/Staff/Ent
+                    if ($spell->requiresMagicalWeapon() && !$isMage) {
+                        continue;
+                    }
+
+                    $eligibleSpells[] = $spell;
+                }
+
+                // Sort eligible spells by preference
+                // Prefer Offensive for Front row/Mages, Defensive/Utility for Back row/Support
+                usort($eligibleSpells, function (Spell $a, Spell $b) use ($isMage, $isFrontRow): int {
+                    $scoreA = 0;
+                    $scoreB = 0;
+
+                    // Front row or Mage prefers Offensive
+                    if ($isFrontRow || $isMage) {
+                        if (SpellType::Offensive === $a->getType()) {
+                            $scoreA += 10;
+                        }
+                        if (SpellType::Offensive === $b->getType()) {
+                            $scoreB += 10;
+                        }
+                    } else {
+                        // Back row physical / support hybrid prefers Defensive or Utility
+                        if (\in_array($a->getType(), [SpellType::Defensive, SpellType::Utility], true)) {
+                            $scoreA += 10;
+                        }
+                        if (\in_array($b->getType(), [SpellType::Defensive, SpellType::Utility], true)) {
+                            $scoreB += 10;
+                        }
+                    }
+
+                    // Tie-breaker: higher tier first
+                    if ($scoreA === $scoreB) {
+                        return $b->getTier() <=> $a->getTier();
+                    }
+
+                    return $scoreB <=> $scoreA;
+                });
+
+                // Learn top eligible spells up to emptyCapacity
+                $learnedCount = 0;
+                foreach ($eligibleSpells as $spell) {
+                    if ($learnedCount >= $emptyCapacity) {
+                        break;
+                    }
+
+                    try {
+                        $this->spellService->learn($hero, $spell, $team);
+                        ++$learnedCount;
+                    } catch (\Throwable) {
+                        // Ignore errors and try next
+                    }
+                }
+
+                // Refresh known spells after learning
+                if ($learnedCount > 0) {
+                    $knownHeroSpells = $this->spellService->listForHero($hero);
+                }
+            }
+
+            // B. Equip Spells
+            // Determine which spells to equip. Filter out spells that require magical weapon if hero doesn't have one anymore
+            $equippedWeapon = null;
+            $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
+            foreach ($equippedItems as $item) {
+                if (ItemSlotType::MainHand === $item->getSlotType() && null !== $item->getSubType()) {
+                    $equippedWeapon = $item->getSubType();
+                    break;
+                }
+            }
+            $isMage = (ItemSubType::Wand === $equippedWeapon || ItemSubType::Staff === $equippedWeapon || 'ent' === $hero->getRace()->value);
+            $isFrontRow = \in_array($slot->getPosition(), [FormationPosition::Front1, FormationPosition::Front2, FormationPosition::Front3], true);
+
+            $equipCandidates = [];
+            foreach ($knownHeroSpells as $hs) {
+                if ($hs->getSpell()->requiresMagicalWeapon() && !$isMage) {
+                    // Cannot equip this spell without magical weapon
+                    if ($hs->isEquipped()) {
+                        try {
+                            $this->spellService->unequip($hs);
+                        } catch (\Throwable) {
+                        }
+                    }
+                    continue;
+                }
+                $equipCandidates[] = $hs;
+            }
+
+            // Sort candidates to equip the best ones
+            usort($equipCandidates, function (HeroSpell $a, HeroSpell $b) use ($isMage, $isFrontRow): int {
+                $spellA = $a->getSpell();
+                $spellB = $b->getSpell();
+
+                $scoreA = 0;
+                $scoreB = 0;
+
+                if ($isFrontRow || $isMage) {
+                    if (SpellType::Offensive === $spellA->getType()) {
+                        $scoreA += 10;
+                    }
+                    if (SpellType::Offensive === $spellB->getType()) {
+                        $scoreB += 10;
+                    }
+                } else {
+                    if (\in_array($spellA->getType(), [SpellType::Defensive, SpellType::Utility], true)) {
+                        $scoreA += 10;
+                    }
+                    if (\in_array($spellB->getType(), [SpellType::Defensive, SpellType::Utility], true)) {
+                        $scoreB += 10;
+                    }
+                }
+
+                if ($scoreA === $scoreB) {
+                    return $spellB->getTier() <=> $spellA->getTier();
+                }
+
+                return $scoreB <=> $scoreA;
+            });
+
+            // Unequip currently equipped spells first so we can cleanly slot the best ones
+            foreach ($knownHeroSpells as $hs) {
+                if ($hs->isEquipped()) {
+                    try {
+                        $this->spellService->unequip($hs);
+                    } catch (\Throwable) {
+                    }
+                }
+            }
+
+            // Equip candidates up to magicCapacity
+            $toEquip = array_slice($equipCandidates, 0, $magicCapacity);
+            foreach ($toEquip as $idx => $hs) {
+                try {
+                    $this->spellService->equip($hs, $idx + 1);
+                } catch (\Throwable) {
+                }
+            }
+
+            // C. Generate Spell Priorities
+            $role = $this->getHelperEconomicRole($team);
+            $healThreshold = (NpcSimulationService::ROLE_ROYAL_COLLECTOR === $role) ? 50 : 30;
+
+            $priorities = [];
+            foreach ($toEquip as $hs) {
+                $spell = $hs->getSpell();
+                $spellId = $spell->getId();
+                if (null === $spellId) {
+                    continue;
+                }
+
+                if (SpellType::Defensive === $spell->getType()) {
+                    // Defensive spell (heal/bless/shield)
+                    $priorities[] = [
+                        'spell_id' => $spellId,
+                        'when' => 'ally_hp_below',
+                        'threshold' => $healThreshold,
+                        'target' => 'lowest_hp_ally',
+                    ];
+                } else {
+                    // Offensive / Utility spell (cast when ready)
+                    $priorities[] = [
+                        'spell_id' => $spellId,
+                        'when' => 'always',
+                        'target' => 'priority',
+                    ];
+                }
+            }
+
+            $slot->setSpellPriorities($priorities);
+        }
     }
 }

@@ -1,6 +1,6 @@
 # NPC Simulation System
 
-Reference: [NpcSimulationService.php](../../src/Service/Team/NpcSimulationService.php), [calendar-system.md](calendar-system.md), [team-system.md](team-system.md)
+Reference: [NpcSimulationService.php](../../src/Service/Team/NpcSimulationService.php) (facade), [NpcTacticsSimulator](../../src/Service/Team/NpcTacticsSimulator.php), [NpcTrainingSimulator](../../src/Service/Team/NpcTrainingSimulator.php), [NpcEconomySimulator](../../src/Service/Team/NpcEconomySimulator.php), [calendar-system.md](calendar-system.md), [team-system.md](team-system.md)
 
 Purpose: Document autonomous behaviors of NPC teams including tactics, training, economy, and scheduler integration.
 
@@ -36,8 +36,8 @@ Tactics simulation runs automatically for both teams during the `league_match` t
 
 ## 3. Training Simulation
 
-Training setups for NPC teams are simulated on **Tuesday 00:00:00 (during Daily Reset)**, exactly 12 hours before the training lock begins (Tuesday 12:00:00).
-- **Trainer Promotion:** Promotes the oldest and highest-level eligible combatants to fill empty trainer slots (excluding purely negative-trait heroes unless desperate).
+Training setups for NPC teams are simulated on **Tuesday 00:00:00 (during Daily Reset)**, well before the training lock begins (Thursday 08:00:00).
+- **Trainer Promotion:** Promotes the oldest and highest-level eligible combatants to fill empty trainer slots (excluding purely negative-trait heroes unless desperate). Uses shared `TrainingService::applyTrainerPromotion()` to unequip items, remove from active formations, and record `trainer_promoted` in the team chronicle.
 - **Trainer Focus Config:** Configures trainer specializations (training type and target attributes) matching the team's economic role.
 - **Trainee Allocation:** Assigns combatants to trainers up to their slot limits, prioritizing those with the `QuickLearner` trait first.
 - **Fairness Guarantee:** Because this runs before the lock starts, a player taking over an NPC team mid-week inherits a fully configured and active training setup instead of an empty or outdated queue.
@@ -49,12 +49,12 @@ Training setups for NPC teams are simulated on **Tuesday 00:00:00 (during Daily 
 To mimic realistic player progression and preserve a stable NPC budget, non-tactical decisions are split between daily resets, twice-weekly marketplace ticks, and weekly resets.
 
 ### Daily Actions (Daily Reset - 00:00:00)
-- **Proactive Dismissal:** Finds and dismisses non-trainer, low-level heroes carrying purely negative traits (`Slacker`, `Volatile`, `Fragile`, `GlassJaw`) to prevent them from degrading team performance.
+- **Proactive Dismissal & Trainer Promotion:** Evaluates non-trainer available heroes carrying purely negative traits (`Slacker`, `Volatile`, `Fragile`, `GlassJaw`). If a negative-trait hero has a raw attribute stat >= 75% of the team's highest combatant stat (min 5.0), they are promoted to a **Trainer** first (using `TrainingService::applyTrainerPromotion()`), provided trainer slots are available. Otherwise, they are dismissed to prevent degrading team performance.
 - **Roster Recycling:** If the roster is full and at least one hero is listed for sale, dismisses the worst available combatant to make room for a new summon.
-- **Summoning:** Summons a new hero if the weekly cycle limit is not reached and gold permits (cooldown cost + 150 safety buffer).
+- **Summoning:** Summons a new hero via `SummoningService::getStatus($team)` if combatant count <= rosterLimit - 1, the weekly cycle limit is not reached (`summons_used < summons_max`), and gold permits (summoning cost + 150 gold safety buffer).
 
 ### Twice-Weekly Marketplace Actions (Tuesday & Friday - 00:00:00)
-(`simulateMarketplaceActions` — called from `ProcessKingdomTicksHandler` on Tuesday and Friday at 00:00)
+(`simulateMarketplaceActions` — called from `ExecuteSingleTickHandler` on Tuesday and Friday at 00:00)
 
 **Selling:** Lists a random number of unequipped items (`0` to `3`), surplus combatant heroes up to the role's sell limit, and redundant trainers up to the role's sell limit separately per tick.
 - Hero/trainer candidates are sorted by descending sell priority: heroes with negative traits and/or low race compatibility with the team's arena theme are listed first.
@@ -76,10 +76,13 @@ To mimic realistic player progression and preserve a stable NPC budget, non-tact
   - Sell limit: 1-2 heroes, 1 trainer
 
 **Buying:** Evaluates all active listings in the same Kingdom and buys them separately:
-1. **Items:** Uncapped item purchases. NPC teams will buy any listings scored > 0 that represent a useful upgrade (empty slot or higher rarity) for a hero in their active lineup (default formation), matching weapon/armor masteries. Tracks virtual equipment updates in-memory after each purchase.
+1. **Items:** Capped by Tier (T1: max 4/tick, T2: max 2/tick, T3: max 1/tick). NPC teams buy listings scored > 0 representing a useful upgrade for a hero in their active lineup, matching masteries. For T3 teams, single item price is capped at 1 500 gold.
 2. **Heroes:** Buys combatant heroes scored > 0 up to the role's buy limit.
 3. **Trainers:** Buys trainers scored > 0 up to the role's buy limit.
-*(For all purchases, gold reserve of 2x weekly maintenance must be maintained).*
+
+**Tier-aware Budget Controls:**
+- **Gold Safety Reserve:** T1 requires `2.0x weekly maintenance`, T2 requires `3.5x weekly maintenance`, T3 requires `5.0x weekly maintenance + 2 000 gold base floor`.
+- **Per-Tick Spend Cap:** Maximum gold spent on marketplace per tick is capped by Tier percentage of current gold (T1: 50%, T2: 35%, T3: 20%).
 
 Score table (score `0` = not interested; higher score wins):
 
@@ -101,7 +104,7 @@ Score table (score `0` = not interested; higher score wins):
 *`mercenary_academy` preferred races: Orc, Dwarf, Human. Heroes of incompatible race (outside team's race pool) always score 0.
 
 ### Weekly Actions (Weekly Reset - Sunday 23:59:00)
-(`simulateWeeklyManagementAndEconomy` — called from `ProcessKingdomTicksHandler` at Sunday 23:59)
+(`simulateWeeklyManagementAndEconomy` — called from `ExecuteSingleTickHandler` at Sunday 23:59)
 
 - **Arena Theme Optimization:** Automatically changes the team's arena race optimization (in HQ) to match the current roster distribution if not locked:
   - `mercenary_academy`: Chooses the most common race in the team among Orc, Dwarf, and Human (falls back to Orc if none are present).

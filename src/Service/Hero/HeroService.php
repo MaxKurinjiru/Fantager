@@ -18,6 +18,8 @@ class HeroService
         private readonly \App\Service\Combat\CombatStatCalculator $combatStatCalculator,
         private readonly HeroMasteryService $heroMasteryService,
         private readonly HeroRatingCalculator $heroRatingCalculator,
+        private readonly HeroChronicleService $heroChronicleService,
+        private readonly \App\Service\TeamChronicle\TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -43,7 +45,27 @@ class HeroService
             throw new UserFacingException('error.hero_name_too_long');
         }
 
-        $hero->setName($name);
+        $oldName = $hero->getName();
+        if ($oldName !== $name) {
+            $hero->setName($name);
+            $this->heroChronicleService->recordRenamed($hero, $oldName, $name);
+            $this->em->flush();
+        }
+    }
+
+    public function levelUp(Hero $hero, int $levels = 1): void
+    {
+        if ($levels <= 0) {
+            return;
+        }
+
+        $oldLevel = $hero->getLevel();
+        $newLevel = $oldLevel + $levels;
+        $hero->setLevel($newLevel);
+
+        $this->heroChronicleService->recordLevelUp($hero, $oldLevel, $newLevel);
+        $this->teamChronicleService->recordHeroLevelup($hero->getTeam(), $hero, $oldLevel, $newLevel);
+
         $this->em->flush();
     }
 

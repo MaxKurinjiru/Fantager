@@ -24,5 +24,17 @@ class MatchOutcomeTest extends TestCase
         $this->assertTrue($outcome->isForfeit());
         $this->assertSame(3, $outcome->getHomeScore());
         $this->assertSame(0, $outcome->getAwayScore());
+        $this->assertSame('forfeit', $outcome->getCombatLog()['simulator']);
+        $this->assertSame(['score_a' => 3, 'score_b' => 0], $outcome->getCombatLog()['result']);
+        $this->assertNull($outcome->getSeed());
+    }
+
+    public function testCombatLogAndSeedAreStored(): void
+    {
+        $log = ['version' => 1, 'simulator' => 'combat_engine', 'events' => []];
+        $outcome = new MatchOutcome(4, 2, false, $log, 99);
+
+        $this->assertSame($log, $outcome->getCombatLog());
+        $this->assertSame(99, $outcome->getSeed());
     }
 }

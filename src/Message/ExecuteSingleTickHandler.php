@@ -76,6 +76,15 @@ class ExecuteSingleTickHandler
 
         $kingdom = $log->getKingdom();
 
+        if ($this->tickLogRepository->hasFailedTicks($kingdom)) {
+            $this->logger->warning(sprintf(
+                'ExecuteSingleTickHandler: Kingdom ID %d has failed tick(s). Halting queue execution.',
+                $kingdom->getId()
+            ));
+
+            throw new \RuntimeException(sprintf('Kingdom ID %d has failed tick(s). Queue processing halted until state is repaired.', $kingdom->getId()));
+        }
+
         // 1. Try to atomically acquire the tick by updating its status to 'processing'
         $qb = $this->em->createQueryBuilder()
             ->update(KingdomTickLog::class, 'l')
@@ -104,14 +113,32 @@ class ExecuteSingleTickHandler
         try {
             $this->executeTick($kingdom, $log);
 
-            $log->setStatus('completed');
-            $log->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
-            $log->setErrorMessage(null);
+            $isSimulatingLeagueMatch = false;
+            if (TickType::LeagueMatch === $log->getTickType() && null !== $log->getFixture()) {
+                $battle = $log->getFixture()->getBattle();
+                if (null !== $battle && \App\Enum\BattleStatus::Simulating === $battle->getStatus()) {
+                    $isSimulatingLeagueMatch = true;
+                }
+            }
+
+            if (!$isSimulatingLeagueMatch) {
+                $log->setStatus('completed');
+                $log->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                $log->setErrorMessage(null);
+            } else {
+                $log->setStatus('processing');
+                $log->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                $log->setErrorMessage(null);
+            }
 
             $this->em->flush();
             $this->em->commit();
 
-            $this->logger->info(sprintf('Tick %s completed successfully for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
+            if (!$isSimulatingLeagueMatch) {
+                $this->logger->info(sprintf('Tick %s completed successfully for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
+            } else {
+                $this->logger->info(sprintf('Tick %s initiated asynchronous battle simulation for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
+            }
         } catch (\Throwable $e) {
             $this->em->rollback();
 
@@ -133,8 +160,8 @@ class ExecuteSingleTickHandler
 
             $this->logger->error(sprintf('Tick %s failed for Kingdom %s: %s', $log->getTickType()->value, $kingdom->getName(), $e->getMessage()), ['exception' => $e]);
 
-            // Halt the pipeline by exiting without triggering the orchestrator
-            return;
+            // Halt the Messenger queue execution until repaired by re-throwing exception
+            throw $e;
         } finally {
             $this->tickClock->setCustomTime(null);
         }

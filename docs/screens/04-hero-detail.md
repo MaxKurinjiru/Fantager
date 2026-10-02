@@ -34,7 +34,7 @@ Backend Requirements:
 Implementation:
 - **Route:** `GET /app/heroes/{id}` — `HeroController::detail()`; tabs: `overview`, `equipment`, `spells`, `training`, `history`
 - **Header:** `templates/components/hero/header_card.html.twig` — trait badge in meta row
-- **Overview:** `templates/components/hero/combat_stats.html.twig`, `trait_panel.html.twig`
+- **Overview:** `templates/components/hero/combat_stats.html.twig`, `trait_badge.html.twig`
 - **History:** `templates/components/hero/recent_activity.html.twig` with `heroHistory` from presenter
 - **API:** `GET /api/v1/heroes/{id}` includes `trait`, `ratings` via `HeroService::serialize()`
 - **Domain docs:** [hero-system.md](../systems/hero-system.md), [hero-chronicle-system.md](../systems/hero-chronicle-system.md)

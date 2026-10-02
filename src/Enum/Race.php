@@ -14,4 +14,15 @@ enum Race: string
     case Giant = 'giant';
     case Ent = 'ent';
     case Genie = 'genie';
+
+    /**
+     * Combat hex-ball radius. Ents and Giants occupy the origin plus its 6 neighbours (a 7-hex flower).
+     */
+    public function hexFootprintRadius(): int
+    {
+        return match ($this) {
+            self::Ent, self::Giant => 1,
+            default => 0,
+        };
+    }
 }

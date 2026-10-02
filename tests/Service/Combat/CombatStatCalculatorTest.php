@@ -162,6 +162,9 @@ class CombatStatCalculatorTest extends TestCase
         // Ent gets +20% HP calculations: Max HP = (5 * 30) + (10 * 12 * 1.2) = 150 + 144 = 294
         $this->assertSame(294, $stats->getMaxHp());
 
+        // Ent armor uses the same KON factor: 10 * 1.5 * 1.2 = 18
+        $this->assertSame(18, $stats->getArmorValue());
+
         // Ent gets -20% speed-based actions (Initiative): SPD * 2 * 0.8 = 10 * 2 * 0.8 = 16
         $this->assertSame(16, $stats->getBaseInitiative());
     }
@@ -539,5 +542,72 @@ class CombatStatCalculatorTest extends TestCase
         $this->assertNull($stats->getGlassJawHpThreshold());
         $this->assertFalse($stats->isConsistentDamage());
         $this->assertFalse($stats->ignoresRaceSynergy());
+    }
+
+    public function testFatigueScalesConstitutionBeforeHpAndArmor(): void
+    {
+        $hero = $this->createHero(Race::Human);
+        $hero->setFatigue(50);
+        $this->itemRepositoryMock->method('findBy')->willReturn([]);
+
+        $stats = $this->calculator->calculate($hero);
+
+        // KON 10 × 0.5 = 5. HP = 150 + 5 × 12 = 210. Armor = 5 × 1.5 = 8.
+        $this->assertSame(210, $stats->getMaxHp());
+        $this->assertSame(8, $stats->getArmorValue());
+        $this->assertSame(20, $stats->getPhysicalAttack());
+    }
+
+    public function testFullFatigueRemovesConstitution(): void
+    {
+        $hero = $this->createHero(Race::Human);
+        $hero->setFatigue(100);
+        $this->itemRepositoryMock->method('findBy')->willReturn([]);
+
+        $stats = $this->calculator->calculate($hero);
+
+        $this->assertSame(150, $stats->getMaxHp());
+        $this->assertSame(0, $stats->getArmorValue());
+    }
+
+    public function testMoraleBandsScaleOutgoingDamageOnly(): void
+    {
+        $this->itemRepositoryMock->method('findBy')->willReturn([]);
+
+        $bands = [
+            85 => 1.20,
+            80 => 1.20,
+            79 => 1.10,
+            60 => 1.10,
+            59 => 1.0,
+            40 => 1.0,
+            39 => 0.90,
+            20 => 0.90,
+            19 => 0.80,
+            0 => 0.80,
+        ];
+
+        foreach ($bands as $morale => $expected) {
+            $hero = $this->createHero(Race::Human);
+            $hero->setMorale($morale);
+            $stats = $this->calculator->calculate($hero);
+
+            $this->assertSame($expected, $stats->getOutgoingDamageMultiplier(), 'morale '.$morale);
+            $this->assertSame(20, $stats->getPhysicalAttack());
+            $this->assertSame(30, $stats->getSpellPower());
+        }
+    }
+
+    public function testNeutralProfileIgnoresFatigueAndMorale(): void
+    {
+        $hero = $this->createHero(Race::Human);
+        $hero->setFatigue(100);
+        $hero->setMorale(0);
+
+        $stats = $this->calculator->calculateForProfile($hero, \App\Enum\CombatStatProfile::HumanNeutral);
+
+        $this->assertSame(270, $stats->getMaxHp());
+        $this->assertSame(15, $stats->getArmorValue());
+        $this->assertSame(1.0, $stats->getOutgoingDamageMultiplier());
     }
 }

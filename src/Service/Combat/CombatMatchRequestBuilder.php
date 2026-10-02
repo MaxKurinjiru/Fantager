@@ -1,0 +1,158 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Service\Combat;
+
+use App\Entity\Formation\Formation;
+use App\Entity\Formation\FormationSlot;
+use App\Entity\Hero\Hero;
+use App\Enum\FormationPosition;
+use App\Enum\ItemSubType;
+use App\Enum\MatchType;
+use App\Repository\Item\ItemRepository;
+use App\ValueObject\Combat\CombatantSnapshot;
+use App\ValueObject\Combat\CombatMatchRequest;
+use App\ValueObject\Combat\CombatSide;
+
+/**
+ * Builds a {@see CombatMatchRequest} from two fully slotted formations.
+ */
+class CombatMatchRequestBuilder
+{
+    public function __construct(
+        private readonly CombatStatCalculator $combatStatCalculator,
+        private readonly ItemRepository $itemRepository,
+    ) {
+    }
+
+    public function fromFormations(
+        Formation $formationA,
+        Formation $formationB,
+        MatchType $matchType,
+        int $seed,
+        int $engineVersion = CombatEngine::ENGINE_VERSION,
+    ): CombatMatchRequest {
+        return new CombatMatchRequest(
+            $this->buildSide($formationA),
+            $this->buildSide($formationB),
+            $matchType,
+            $seed,
+            $engineVersion,
+        );
+    }
+
+    private function buildSide(Formation $formation): CombatSide
+    {
+        $teamId = $formation->getTeam()->getId();
+        if (null === $teamId) {
+            throw new \InvalidArgumentException('Formation team must be persisted (have an id).');
+        }
+
+        $slotsByPosition = [];
+        foreach ($formation->getSlots() as $slot) {
+            $slotsByPosition[$slot->getPosition()->value] = $slot;
+        }
+
+        $combatants = [];
+        foreach (FormationPosition::cases() as $position) {
+            $slot = $slotsByPosition[$position->value] ?? null;
+            if (!$slot instanceof FormationSlot || null === $slot->getHero()) {
+                throw new \InvalidArgumentException(sprintf('Formation %d is missing a hero in slot %s.', $formation->getId() ?? 0, $position->value));
+            }
+
+            $combatants[] = $this->buildCombatant($slot);
+        }
+
+        return new CombatSide(
+            $teamId,
+            $formation->getId(),
+            $formation->getApproach(),
+            $combatants,
+        );
+    }
+
+    private function buildCombatant(FormationSlot $slot): CombatantSnapshot
+    {
+        /** @var Hero $hero */
+        $hero = $slot->getHero();
+        $heroId = $hero->getId();
+        if (null === $heroId) {
+            throw new \InvalidArgumentException('Hero must be persisted (have an id).');
+        }
+
+        $spells = [];
+        foreach ($hero->getHeroSpells() as $heroSpell) {
+            if (!$heroSpell->isEquipped()) {
+                continue;
+            }
+
+            $spell = $heroSpell->getSpell();
+            $spellId = $spell->getId();
+            if (null === $spellId) {
+                continue;
+            }
+
+            $spells[] = [
+                'id' => $spellId,
+                'name' => $spell->getName(),
+                'school' => $spell->getSchool()->value,
+                'type' => $spell->getType()->value,
+                'mana_cost' => $spell->getManaCost(),
+                'cooldown' => $spell->getCooldown(),
+                'effects' => $spell->getEffects(),
+                'tier' => $spell->getTier(),
+                'requires_magical_weapon' => $spell->requiresMagicalWeapon(),
+            ];
+        }
+
+        /** @var list<mixed> $spellPriorities */
+        $spellPriorities = $slot->getSpellPriorities();
+
+        $equippedItems = $this->itemRepository->findBy(['equippedHero' => $hero]);
+        $weaponSubType = null;
+        $armorSubType = null;
+        foreach ($equippedItems as $item) {
+            $subType = $item->getSubType();
+            if (null === $weaponSubType && in_array($subType, [
+                ItemSubType::OneHandedSword,
+                ItemSubType::TwoHandedSword,
+                ItemSubType::OneHandedAxe,
+                ItemSubType::TwoHandedAxe,
+                ItemSubType::OneHandedMace,
+                ItemSubType::TwoHandedMace,
+                ItemSubType::Dagger,
+                ItemSubType::Bow,
+                ItemSubType::Crossbow,
+                ItemSubType::Wand,
+                ItemSubType::Staff,
+            ], true)) {
+                $weaponSubType = $subType;
+            }
+            if (null === $armorSubType && in_array($subType, [
+                ItemSubType::LightArmor,
+                ItemSubType::MediumArmor,
+                ItemSubType::HeavyArmor,
+            ], true)) {
+                $armorSubType = $subType;
+            }
+        }
+
+        return new CombatantSnapshot(
+            $heroId,
+            $hero->getName(),
+            $slot->getPosition(),
+            $hero->getRace(),
+            $hero->getLevel(),
+            $hero->getForm(),
+            $hero->getFatigue(),
+            $hero->getMorale(),
+            $this->combatStatCalculator->calculate($hero),
+            $slot->getStrategy(),
+            $spellPriorities,
+            $spells,
+            $weaponSubType,
+            $armorSubType,
+        );
+    }
+}

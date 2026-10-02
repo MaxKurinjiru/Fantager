@@ -128,6 +128,8 @@ error:
   hero_not_found: Hero not found.
   trainer_not_found: Trainer not found.
   spell_not_found: Spell not found.
+  battle_not_found: Battle not found.
+  unauthorized_battle_view: You are not authorized to view this battle.
   hero_spell_not_found: Hero spell not found.
   item_not_found: Item not found.
   formation_not_found: Formation not found.
@@ -288,6 +290,26 @@ notification:
   marketplace_auction_won_seller_body: 'Your auction #%listing% sold to "%buyer%" for %amount% gold.'
   marketplace_auction_won_buyer_title: Auction Won
   marketplace_auction_won_buyer_body: 'You won the auction #%listing% for %amount% gold.'
+  match_result_title: Match Result
+  match_result_body: 'Match %home_team% vs %away_team% ended with score %home_score%:%away_score%.'
+  hero_combat_death_title: Hero Fallen in Combat
+  hero_combat_death_body: 'Your hero "%hero_name%" permanently fell in combat against "%opponent%".'
+  hq_upgrade_title: HQ Upgrade Completed
+  hq_upgrade_body: 'Upgrade of facility "%facility%" to level %level% was completed successfully.'
+  hq_cancel_title: HQ Upgrade Cancelled
+  hq_cancel_body: 'Upgrade of facility "%facility%" was cancelled. Refunded %refund% gold.'
+  hq_downgrade_title: HQ Downgrade Completed
+  hq_downgrade_body: 'Downgrade of facility "%facility%" to level %level% completed. Refunded %refund% gold.'
+  hq_arena_adaptation_title: Arena Adaptation Changed
+  hq_arena_adaptation_body: 'Arena adaptation to race %race% is now in effect.'
+  season_ended_title: Season %season% Ended
+  season_ended_body: 'Season %season% has ended! You finished in %position% place (%status_text%). You earned %reward% gold.'
+  financial_warning_title: Financial Warning
+  financial_warning_body: 'Your team has unpaid debt of %debt% gold. Reduce expenses or sell assets.'
+  financial_restricted_title: Financial Restrictions
+  financial_restricted_body: 'Your team has been in crisis for %weeks% weeks! HQ passive bonuses are suspended.'
+  training_completed_title: Weekly Training Completed
+  training_completed_body: 'Weekly training cycle completed successfully. Trainers passed on experience to heroes.'
 
 dashboard:
   history_title: Team History
@@ -425,6 +447,17 @@ activity:
   item_purchased: 'Item %item% was purchased on the marketplace from %seller% for %price% gold.'
   item_sold: 'Item %item% was sold on the marketplace to %buyer% for %price% gold.'
   team_renamed: 'Team was renamed from %old_name% to %new_name%.'
+  hero_levelup: 'Hero %hero% reached level %new_level%.'
+  hero_died:
+    combat_death: 'Hero %hero% died in combat.'
+    dismissed: 'Hero %hero% was dismissed.'
+  item_dismantled: 'Item %item% was dismantled into %essence% %rarity% essence.'
+  trainer_promoted: 'Hero %hero% was promoted to Trainer.'
+  financial_crisis:
+    warning: 'Financial warning: unpaid debt %debt% gold.'
+    restricted: 'Financial restriction active due to debt.'
+    bankruptcy_pending: 'Team is facing bankruptcy.'
+  kingdom_reward_granted: 'Granted %gold% gold from the Royal Treasury pool.'
   battle_win: 'Won %score% against %opponent%.'
   battle_loss: 'Lost %score% against %opponent%.'
   battle_draw: 'Drew %score% against %opponent%.'
@@ -434,6 +467,7 @@ activity:
     form: 'Hero %hero% completed training under trainer %trainer% (recovery, %gain% to form).'
   facility_upgraded: 'Facility %facility% was upgraded to level %level%.'
   facility_downgraded: 'Facility %facility% was downgraded to level %level%.'
+  facility_upgrade_cancelled: 'Upgrade of facility %facility% to level %level% was cancelled.'
   race_optimization_changed: 'Home arena adaptation was changed to: %race%.'
   battle_win_chip: Win
   battle_loss_chip: Loss
@@ -467,12 +501,19 @@ activity:
     team_renamed: Team renamed
     facility_upgraded: Facility upgraded
     facility_downgraded: Facility downgraded
+    facility_upgrade_cancelled: Upgrade cancelled
     race_optimization_changed: Arena adaptation changed
+    spell_learned: Spell learned
+    item_dismantled: Item dismantled
+    trainer_promoted: Trainer promoted
+    financial_crisis_state: Financial crisis
+    kingdom_reward_granted: Royal Treasury distribution
 
 hero_activity:
   summoned: 'Summoned into team %team% (cost %gold% gold).'
   starting_roster: 'Started career as a founding member of team %team%.'
   transferred: 'Transferred from %from_team% to %to_team% for %price% gold.'
+  renamed: 'Renamed from %old_name% to %new_name%.'
   match_played:
     win: 'Won against %opponent%.'
     loss: 'Lost against %opponent%.'
@@ -483,12 +524,14 @@ hero_activity:
     attribute: 'Completed training under trainer %trainer% (attribute %attribute%, %gain% to base).'
     magic: 'Completed training under trainer %trainer% (magic capacity, %gain% slots).'
     form: 'Completed training under trainer %trainer% (recovery, %gain% to form).'
+  spell_learned: 'Learned spell "%spell%" (%school% school).'
   died:
     dismissed: 'Dismissed from the team.'
     combat_death: 'Fallen in combat.'
     age: 'Passed away due to old age.'
     retired: 'Retired from active roster.'
     death: 'Passed away.'
+
 
 financial_crisis:
   title_warning: Financial Warning
@@ -1045,7 +1088,7 @@ training:
   no_trainers_desc: "Your team currently does not own any trainers."
   forecast: "Forecast"
   average: "Average"
-  lock_desc: "From Tuesday 12:00 to Thursday 10:00, training is locked and configurations or trainees cannot be changed."
+  lock_desc: "From Thursday 08:00 to Thursday 10:00, training is locked and configurations or trainees cannot be changed."
   dismiss_desc: Release the trainer from your team. Trainees are unassigned automatically and you receive compensation (30% of estimated value).
   dismiss_selling_desc: The trainer is currently listed on the marketplace. To dismiss them, first cancel the listing.
   dismiss_btn: Dismiss Trainer
@@ -1169,6 +1212,11 @@ formation:
   tactics_balanced_desc: Equal distribution of defense and attack bonuses.
   tactics_defensive: Defensive Fort
   tactics_defensive_desc: Increase back line recovery speed and block rating.
+  movement_strategy: Hex Grid Movement Strategy
+  movement_advance_to_melee: "Advance to Melee (Default: Direct push towards target)"
+  movement_seek_cover_ranged: "Seek Cover & Maintain Range (Ranged: hold the weapon's maximum range)"
+  movement_protect_backline: "Protect Backline (Bodyguard: Cover lowest HP ally)"
+  movement_flank_rear: "Flank to Rear (Flank: Target rear 3 hexes for +20% damage)"
   match_prep_title: Match Formation Prep
   match_prep_subtitle: Customize your lineup for a specific fixture or use the team default.
   match_prep_desc: 'Fixture vs %opponent% (%date%). NULL assignment uses the team default formation.'
@@ -1349,6 +1397,7 @@ league:
   formation_status_default: Default formation
   formation_status_saved: 'Saved: %name%'
   formation_status_custom: Custom for match
+  forfeit_desc: "This match ended as a forfeit. One or both teams did not have at least 6 combat-ready heroes available, so no combat simulation took place."
 
 calendar:
   title: Calendar & Events
@@ -1417,9 +1466,21 @@ arena:
   no_revenue_yet: No home match revenue recorded yet. Payouts occur when league matches are played.
   view_full_ledger: View full financial ledger
   how_it_works: How Arena Revenue Works
-  rule_fixed_price: "Fixed ticket price: 🪙 %price% per seat."
+  rule_fixed_price: "Configurable ticket price with demand elasticity (1–50 gold)."
   rule_capacity: Seating capacity grows with Arena facility upgrades.
-  rule_attendance: Stands fill from both teams' fan club size and current mood (reputation, morale, chemistry). A match can draw zero spectators.
+  rule_attendance: Turnout depends on fan clubs, morale, reputation, and ticket price elasticity. High prices reduce attendance; low prices increase fill rate up to stadium capacity.
+  pricing_title: Ticket Pricing & Elasticity
+  ticket_price_label: Ticket Price
+  ticket_price_help: "Set custom ticket price (1–50 gold). Higher prices reduce fan turnout; lower prices boost demand."
+  elasticity_label: Demand Elasticity
+  save_price_btn: Save Ticket Price
+  projections_title: Revenue & Attendance Projections
+  col_price: Price
+  col_occupancy: Occupancy
+  col_projected_gold: Projected Gold
+  ticket_price_updated: Ticket price successfully updated.
+  error_invalid_price: Invalid ticket price specified.
+  error_price_out_of_bounds: Ticket price must be between 1 and 50 gold.
   rule_home_only: Only the home team receives match-day ticket income.
   upgrade_hint: Upgrade the Arena in Headquarters to increase seating capacity and revenue bonuses.
 
@@ -1795,6 +1856,43 @@ weapon_style:
   light_armor: Light Armor
   medium_armor: Medium Armor
   heavy_armor: Heavy Armor
+
+battle:
+  report_title: Match Report
+  vs: VS
+  round: "Round %round%"
+  winner: Winner
+  draw: Draw
+  loser: Loser
+  final_scores: Final Scores
+  formations_state: Final Formations State
+  round_log: Round-by-Round Log
+  hex_replay_title: 17×11 Landscape Hexagonal Grid Battlefield Replay
+  scrubber: Scrubber
+  speed: Speed
+  play: Play
+  pause: Pause
+  prev: Prev
+  next: Next
+  round_progress: "Round %current% / %max%"
+  physical_attack: "%attacker% performs physical attack on %target%"
+  hit: "Hit!"
+  miss: "Miss!"
+  crit: "Critical Hit!"
+  damage_dealt: "%target% takes %amount% %source% damage (%hp% HP left)"
+  ko: "%hero% has been knocked out (KO)!"
+  spell_cast: "%caster% casts %spell% on %target%"
+  heal_applied: "%target% is healed for %amount% HP (%hp% HP left)"
+  heal_blocked: "%target%'s healing was blocked (%reason%)"
+  status_applied: "%target% is affected by %effect% (%duration% turns remaining)"
+  status_tick: "%effect% tick deals %amount% damage to %target% (%hp% HP left)"
+  status_expired: "%effect% on %target% has expired"
+  skip_turn: "%hero% skips turn due to freeze or stun"
+  no_team: No Team
+  unknown_actor: Unknown
+  return_to_league: Return to League
+  error_not_found: Battle not found.
+  error_unauthorized: You are not authorized to view this battle.
 
 
 

@@ -8,6 +8,7 @@ use App\Entity\Formation\Formation;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
 use App\Enum\BattleResult;
+use App\Enum\BattleStatus;
 use App\Enum\MatchType;
 use App\Repository\Combat\BattleRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -62,6 +63,19 @@ class Battle
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $processedAt = null;
+
+    #[ORM\Column(length: 15, enumType: BattleStatus::class, options: ['default' => 'completed'])]
+    private BattleStatus $status = BattleStatus::Completed;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $currentRound = 0;
+
+    /** @var array<string, mixed>|null */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $runState = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $scheduledAt = null;
 
     public function getId(): ?int
     {
@@ -210,6 +224,56 @@ class Battle
     public function setProcessedAt(?\DateTimeImmutable $processedAt): static
     {
         $this->processedAt = $processedAt;
+
+        return $this;
+    }
+
+    public function getStatus(): BattleStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(BattleStatus $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getCurrentRound(): int
+    {
+        return $this->currentRound;
+    }
+
+    public function setCurrentRound(int $currentRound): static
+    {
+        $this->currentRound = $currentRound;
+
+        return $this;
+    }
+
+    /** @return array<string, mixed>|null */
+    public function getRunState(): ?array
+    {
+        return $this->runState;
+    }
+
+    /** @param array<string, mixed>|null $runState */
+    public function setRunState(?array $runState): static
+    {
+        $this->runState = $runState;
+
+        return $this;
+    }
+
+    public function getScheduledAt(): ?\DateTimeImmutable
+    {
+        return $this->scheduledAt;
+    }
+
+    public function setScheduledAt(?\DateTimeImmutable $scheduledAt): static
+    {
+        $this->scheduledAt = $scheduledAt;
 
         return $this;
     }

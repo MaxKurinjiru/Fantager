@@ -38,8 +38,8 @@ class KingdomTickOrchestrator
             // Acquire an exclusive pessimistic write lock on the Kingdom to prevent race conditions during state transitions
             $this->em->find(Kingdom::class, $kingdomId, LockMode::PESSIMISTIC_WRITE);
 
-            // Recover stale ticks (e.g. processing or dispatched for more than 30 seconds)
-            $threshold = new \DateTimeImmutable('-30 seconds', new \DateTimeZone('UTC'));
+            // Recover stale ticks (e.g. processing or dispatched for more than 5 minutes)
+            $threshold = new \DateTimeImmutable('-5 minutes', new \DateTimeZone('UTC'));
             $recovered = $this->tickLogRepository->recoverStaleTicks($kingdom, $threshold);
             if ($recovered > 0) {
                 $this->logger->info(sprintf(

@@ -19,6 +19,7 @@ use App\Enum\ListingMode;
 use App\Enum\ListingStatus;
 use App\Enum\ListingType;
 use App\Enum\Race;
+use App\Repository\League\LeagueStandingRepository;
 use App\Service\Config\RaceConfig;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroDismissalService;
@@ -27,6 +28,7 @@ use App\Service\Item\ItemService;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Summoning\SummoningService;
 use App\Service\TeamChronicle\TeamChronicleService;
+use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class NpcEconomySimulator
@@ -44,6 +46,8 @@ class NpcEconomySimulator
         private readonly TeamChronicleService $teamChronicleService,
         private readonly NpcTacticsSimulator $tacticsSimulator,
         private readonly ItemService $itemService,
+        private readonly TrainingService $trainingService,
+        private readonly LeagueStandingRepository $standingRepository,
     ) {
     }
 
@@ -167,37 +171,17 @@ class NpcEconomySimulator
                         }
                     }
 
-                    $hq = $this->hqService->getForTeam($team);
-                    $trainingLevel = 1;
-                    foreach ($hq->getFacilities() as $facility) {
-                        if (FacilityType::Training === $facility->getType()) {
-                            $trainingLevel = $facility->getLevel();
-                            break;
-                        }
-                    }
-                    $trainerLimit = 2 + (int) floor(($trainingLevel - 1) / 2);
+                    $trainerLimit = $this->trainingService->getTrainerLimit($team);
 
                     if ($trainersCount < $trainerLimit) {
                         try {
-                            $hero->setRole(HeroRole::Trainer);
-                            $hero->setTrainingType(null);
-                            $hero->setTargetAttribute(null);
-
-                            // Unequip all items
-                            $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
-                            foreach ($equippedItems as $item) {
-                                $item->setEquippedHero(null);
-                                $item->setEquippedSlot(null);
-                            }
-
-                            // Remove hero from active formations
-                            $slots = $this->em->getRepository(\App\Entity\Formation\FormationSlot::class)->findBy(['hero' => $hero]);
-                            foreach ($slots as $slot) {
-                                $slot->setHero(null);
-                            }
+                            // Use shared applyTrainerPromotion() to ensure chronicle entry (trainer_promoted)
+                            // is recorded identically to the player-facing promotion path.
+                            // No flush here — the caller flushes after the full simulation loop.
+                            $this->trainingService->applyTrainerPromotion($hero, $team);
 
                             --$combatantCount;
-                            // Add to list of trainers for this tick so count is accurate
+                            // Refresh in-memory hero list so trainer count stays accurate within the loop
                             $aliveHeroes = array_map(function (Hero $h) use ($heroId) {
                                 if ($h->getId() === $heroId) {
                                     $h->setRole(HeroRole::Trainer);
@@ -325,8 +309,14 @@ class NpcEconomySimulator
             ]);
         }
 
+        $standingsByTeam = $this->standingRepository->findIndexedByTeamForActiveSeason($kingdom);
+
         foreach ($teams as $team) {
             $role = $this->getHelperEconomicRole($team);
+
+            $teamId = $team->getId();
+            $standing = null !== $teamId ? ($standingsByTeam[$teamId] ?? null) : null;
+            $tierName = $standing?->getGroup()?->getTier()?->getTierName() ?? 'T2';
 
             // Fetch alive heroes
             $aliveHeroes = $this->em->getRepository(Hero::class)->createQueryBuilder('h')
@@ -342,7 +332,9 @@ class NpcEconomySimulator
             // HQ reference for safety reserve
             $hq = $this->hqService->getForTeam($team);
             $weeklyMaintenance = $this->hqService->calculateWeeklyMaintenanceFee($hq);
-            $safetyReserve = 2 * $weeklyMaintenance;
+            $safetyReserve = $this->getSafetyReserveForTier($tierName, $weeklyMaintenance);
+            $perTickSpendCap = $this->getPerTickSpendCapForTier($tierName, $team->getGold());
+            $tickGoldSpent = 0;
 
             // 3. Marketplace - Selling (Item and Hero/Trainer)
             $unequippedItems = $this->em->getRepository(Item::class)->findBy([
@@ -684,8 +676,19 @@ class NpcEconomySimulator
             usort($heroCandidates, $sortCandidates);
             usort($trainerCandidates, $sortCandidates);
 
-            // 1. Buy items that are useful upgrades for active lineup
+            // 1. Buy items that are useful upgrades for active lineup (capped by tier and spend budget)
+            $itemBuyLimit = $this->getItemBuyLimitForTier($tierName);
+            $itemsBought = 0;
             foreach ($itemCandidates as $cand) {
+                if ($itemsBought >= $itemBuyLimit) {
+                    break;
+                }
+                if ($cand['price'] > $perTickSpendCap || ($tickGoldSpent + $cand['price']) > $perTickSpendCap) {
+                    continue;
+                }
+                if ('T3' === $tierName && $cand['price'] > 1500) {
+                    continue;
+                }
                 if ($team->getGold() < ($safetyReserve + $cand['price'])) {
                     continue;
                 }
@@ -697,6 +700,8 @@ class NpcEconomySimulator
                         if (null !== $listingId) {
                             try {
                                 $this->marketplaceService->buyListing($team, $listingId, $now);
+                                $tickGoldSpent += $cand['price'];
+                                ++$itemsBought;
                                 // Update in-memory gear tracking
                                 $heroId = $targetHero->getId();
                                 if (null !== $heroId) {
@@ -716,11 +721,15 @@ class NpcEconomySimulator
                 if ($heroesBought >= $heroBuyLimit) {
                     break;
                 }
+                if ($cand['price'] > $perTickSpendCap || ($tickGoldSpent + $cand['price']) > $perTickSpendCap) {
+                    continue;
+                }
                 if ($team->getGold() >= ($safetyReserve + $cand['price'])) {
                     $listingId = $cand['listing']->getId();
                     if (null !== $listingId) {
                         try {
                             $this->marketplaceService->buyListing($team, $listingId, $now);
+                            $tickGoldSpent += $cand['price'];
                             ++$heroesBought;
                         } catch (\Throwable) {
                         }
@@ -735,11 +744,15 @@ class NpcEconomySimulator
                 if ($trainersBought >= $trainerBuyLimit) {
                     break;
                 }
+                if ($cand['price'] > $perTickSpendCap || ($tickGoldSpent + $cand['price']) > $perTickSpendCap) {
+                    continue;
+                }
                 if ($team->getGold() >= ($safetyReserve + $cand['price'])) {
                     $listingId = $cand['listing']->getId();
                     if (null !== $listingId) {
                         try {
                             $this->marketplaceService->buyListing($team, $listingId, $now);
+                            $tickGoldSpent += $cand['price'];
                             ++$trainersBought;
                         } catch (\Throwable) {
                         }
@@ -1011,5 +1024,34 @@ class NpcEconomySimulator
                 FacilityType::Treasury,
             ],
         };
+    }
+
+    private function getItemBuyLimitForTier(string $tier): int
+    {
+        return match ($tier) {
+            'T1' => 4,
+            'T3' => 1,
+            default => 2, // T2
+        };
+    }
+
+    private function getSafetyReserveForTier(string $tier, int $weeklyMaintenance): int
+    {
+        return match ($tier) {
+            'T1' => (int) round($weeklyMaintenance * 2.0),
+            'T3' => (int) round($weeklyMaintenance * 5.0) + 2000,
+            default => (int) round($weeklyMaintenance * 3.5), // T2
+        };
+    }
+
+    private function getPerTickSpendCapForTier(string $tier, int $currentGold): int
+    {
+        $percentageCap = match ($tier) {
+            'T1' => 0.50,
+            'T3' => 0.20,
+            default => 0.35, // T2
+        };
+
+        return max(0, (int) round($currentGold * $percentageCap));
     }
 }

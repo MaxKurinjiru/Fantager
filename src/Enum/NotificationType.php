@@ -15,4 +15,7 @@ enum NotificationType: string
     case HeroDied = 'hero_died';
     case SeasonEnded = 'season_ended';
     case System = 'system';
+    case HqUpgrade = 'hq_upgrade';
+    case FinancialCrisis = 'financial_crisis';
+    case SpellLearned = 'spell_learned';
 }

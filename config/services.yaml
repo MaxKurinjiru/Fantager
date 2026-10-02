@@ -35,4 +35,8 @@ services:
       $projectDir: '%kernel.project_dir%'
     public: true
 
-  App\Service\Combat\MatchSimulatorInterface: '@App\Service\Combat\StubRandomMatchSimulator'
+  App\Service\Config\CombatAiL0Config:
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+
+  App\Service\Combat\MatchSimulatorInterface: '@App\Service\Combat\LeagueMatchSimulator'

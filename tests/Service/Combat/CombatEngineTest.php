@@ -1,0 +1,515 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Service\Combat;
+
+use App\Enum\FormationApproach;
+use App\Enum\FormationPosition;
+use App\Enum\ItemSubType;
+use App\Enum\MatchType;
+use App\Enum\Race;
+use App\Service\Combat\CombatEngine;
+use App\ValueObject\Combat\CombatantSnapshot;
+use App\ValueObject\Combat\CombatMatchRequest;
+use App\ValueObject\Combat\CombatSide;
+use App\ValueObject\Combat\DerivedCombatStats;
+use PHPUnit\Framework\TestCase;
+
+class CombatEngineTest extends TestCase
+{
+    public function testSimulateEmitsEnvelopeAndIsSeedDeterministic(): void
+    {
+        $engine = new CombatEngine();
+        $request = $this->buildRequest(42);
+
+        $first = $engine->simulate($request);
+        $second = $engine->simulate($request);
+
+        $this->assertSame($first->getScoreA(), $second->getScoreA());
+        $this->assertSame($first->getScoreB(), $second->getScoreB());
+        $this->assertSame(42, $first->getSeed());
+
+        $log = $first->getCombatLog();
+        $this->assertSame(1, $log['version']);
+        $this->assertSame('combat_engine', $log['simulator']);
+        $this->assertSame(CombatEngine::ENGINE_VERSION, $log['engine_version']);
+        $this->assertSame(['width' => 17, 'height' => 11], $log['grid']);
+        $this->assertSame('match_start', $log['events'][0]['type']);
+        $lastEvent = end($log['events']);
+        $this->assertSame('match_end', $lastEvent['type']);
+        $this->assertArrayHasKey('front_1', $log['lineup']['a']);
+        $this->assertIsArray($log['lineup']['a']);
+        $this->assertCount(6, $log['lineup']['a']);
+
+        $outcome = $first->toMatchOutcome();
+        $this->assertSame($first->getScoreA(), $outcome->getHomeScore());
+        $this->assertSame($first->getCombatLog(), $outcome->getCombatLog());
+        $this->assertFalse($outcome->isForfeit());
+    }
+
+    public function testDifferentSeedsCanProduceDifferentScores(): void
+    {
+        $engine = new CombatEngine();
+        $a = $engine->simulate($this->buildRequest(1));
+
+        $different = false;
+        for ($seed = 2; $seed <= 50; $seed++) {
+            $b = $engine->simulate($this->buildRequest($seed));
+            if ($a->getScoreA() !== $b->getScoreA() || $a->getScoreB() !== $b->getScoreB()) {
+                $different = true;
+                $this->assertSame($seed, $b->getSeed());
+                break;
+            }
+        }
+
+        $this->assertTrue($different, 'Different seeds should produce different scores');
+        $this->assertSame(1, $a->getSeed());
+    }
+
+    public function testOrcMeleeDealsExtraDamageToNonOrcs(): void
+    {
+        $engine = new CombatEngine();
+
+        $this->assertSame(100, $this->openingPhysicalDamage($engine, Race::Human, Race::Human));
+        $this->assertSame(120, $this->openingPhysicalDamage($engine, Race::Orc, Race::Human));
+        $this->assertSame(100, $this->openingPhysicalDamage($engine, Race::Orc, Race::Orc));
+    }
+
+    public function testPlanningTurnSpendsTheFullMovementBudget(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->isolatedFronts($engine, 1, 5, 16, 5);
+        $events = $engine->simulateRound($runState, 1);
+        $moves = $this->movesFor($events, 'a', 'front_1');
+
+        $this->assertCount(3, $moves);
+        $this->assertSame(2, $moves[0]['ap_cost']);
+        $this->assertSame(2, $moves[0]['to_q']);
+        $this->assertSame(4, $moves[2]['to_q']);
+    }
+
+    public function testSeekCoverRetreatsUntilWeaponRange(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->isolatedFronts($engine, 10, 5, 12, 5);
+        $this->tuneFront($runState, 'sideA', static function (array &$combatant): void {
+            $combatant['weaponSubType'] = ItemSubType::Bow->value;
+            $combatant['strategy'] = ['movement_goal' => 'seek_cover_ranged'];
+        });
+
+        $events = $engine->simulateRound($runState, 1);
+        $moves = $this->movesFor($events, 'a', 'front_1');
+
+        $this->assertCount(3, $moves);
+        $this->assertSame(7, $moves[2]['to_q']);
+        $this->assertLessThan($moves[0]['from_q'], $moves[2]['to_q']);
+    }
+
+    public function testSeekCoverClosesWhenBeyondWeaponRange(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->isolatedFronts($engine, 1, 5, 12, 5);
+        $this->tuneFront($runState, 'sideA', static function (array &$combatant): void {
+            $combatant['weaponSubType'] = ItemSubType::Bow->value;
+            $combatant['strategy'] = ['movement_goal' => 'seek_cover_ranged'];
+        });
+
+        $events = $engine->simulateRound($runState, 1);
+        $moves = $this->movesFor($events, 'a', 'front_1');
+
+        $this->assertCount(3, $moves);
+        $this->assertSame(2, $moves[0]['to_q']);
+        $this->assertSame(4, $moves[2]['to_q']);
+    }
+
+    public function testPreparingUnitDoesNotMove(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->isolatedFronts($engine, 1, 5, 12, 5);
+        $this->tuneFront($runState, 'sideA', static function (array &$combatant): void {
+            $combatant['queuedAction'] = [
+                'type' => 'attack',
+                'target_side' => 'b',
+                'target_slot' => 'front_1',
+            ];
+            $combatant['preparationRemaining'] = 3;
+        });
+
+        $events = $engine->simulateRound($runState, 1);
+
+        $this->assertSame([], $this->movesFor($events, 'a', 'front_1'));
+        $tick = $this->findEventByType($events, 'preparing_action_tick');
+        $this->assertNotNull($tick);
+        $this->assertSame('a', $tick['side']);
+        $this->assertSame(1, $this->front($runState, 'sideA')['q']);
+    }
+
+    public function testFlankRearMovesTowardHexBehindTarget(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->isolatedFronts($engine, 4, 5, 10, 5);
+        $this->tuneFront($runState, 'sideA', static function (array &$combatant): void {
+            $combatant['strategy'] = ['movement_goal' => 'flank_rear'];
+        });
+
+        $events = $engine->simulateRound($runState, 1);
+        $moves = $this->movesFor($events, 'a', 'front_1');
+
+        $this->assertNotEmpty($moves);
+        $this->assertSame(7, $moves[count($moves) - 1]['to_q']);
+        $this->assertGreaterThan(4, $this->front($runState, 'sideA')['q']);
+    }
+
+    public function testProtectBacklineMovesToGuardLowestHpAlly(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->isolatedFronts($engine, 8, 5, 14, 5);
+
+        foreach ($runState['sideA']['combatants'] as $i => $combatant) {
+            if ('back_1' === $combatant['slot']) {
+                $runState['sideA']['combatants'][$i]['currentHp'] = 20;
+                $runState['sideA']['combatants'][$i]['q'] = 1;
+                $runState['sideA']['combatants'][$i]['r'] = 5;
+            } elseif ('front_1' !== $combatant['slot']) {
+                $runState['sideA']['combatants'][$i]['currentHp'] = 0;
+            }
+        }
+
+        $this->tuneFront($runState, 'sideA', static function (array &$combatant): void {
+            $combatant['strategy'] = ['movement_goal' => 'protect_backline'];
+            $combatant['currentHp'] = 100;
+        });
+
+        $events = $engine->simulateRound($runState, 1);
+        $moves = $this->movesFor($events, 'a', 'front_1');
+
+        $this->assertNotEmpty($moves);
+        $this->assertLessThan(8, $this->front($runState, 'sideA')['q']);
+        $this->assertSame(5, $moves[count($moves) - 1]['to_q']);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function isolatedFronts(CombatEngine $engine, int $aq, int $ar, int $bq, int $br): array
+    {
+        $runState = $engine->initializeRunState(new CombatMatchRequest(
+            $this->buildSide(1, 100),
+            $this->buildSide(2, 200),
+            MatchType::League,
+            1,
+        ));
+
+        foreach (['sideA', 'sideB'] as $sideKey) {
+            foreach ($runState[$sideKey]['combatants'] as $i => $combatant) {
+                if ('front_1' !== $combatant['slot']) {
+                    $runState[$sideKey]['combatants'][$i]['currentHp'] = 0;
+                }
+            }
+        }
+
+        $this->tuneFront($runState, 'sideA', static function (array &$combatant) use ($aq, $ar): void {
+            $combatant['q'] = $aq;
+            $combatant['r'] = $ar;
+            $combatant['derived']['baseInitiative'] = 10;
+        });
+        $this->tuneFront($runState, 'sideB', static function (array &$combatant) use ($bq, $br): void {
+            $combatant['q'] = $bq;
+            $combatant['r'] = $br;
+            $combatant['derived']['baseInitiative'] = 1;
+        });
+
+        return $runState;
+    }
+
+    /**
+     * @param array<string, mixed> $runState
+     * @param callable(array<string, mixed>): void $tune
+     */
+    private function tuneFront(array &$runState, string $sideKey, callable $tune): void
+    {
+        foreach ($runState[$sideKey]['combatants'] as $i => $combatant) {
+            if ('front_1' !== $combatant['slot']) {
+                continue;
+            }
+            $tune($combatant);
+            $runState[$sideKey]['combatants'][$i] = $combatant;
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $runState
+     *
+     * @return array<string, mixed>
+     */
+    private function front(array $runState, string $sideKey): array
+    {
+        foreach ($runState[$sideKey]['combatants'] as $combatant) {
+            if ('front_1' === $combatant['slot']) {
+                return $combatant;
+            }
+        }
+
+        $this->fail('front_1 missing');
+    }
+
+    /**
+     * @param array<array<string, mixed>> $events
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function movesFor(array $events, string $side, string $slot): array
+    {
+        return array_values(array_filter(
+            $events,
+            static fn (array $event): bool => 'move' === ($event['type'] ?? '')
+                && $side === ($event['side'] ?? '')
+                && $slot === ($event['slot'] ?? ''),
+        ));
+    }
+
+    private function openingPhysicalDamage(CombatEngine $engine, Race $attacker, Race $defender): int
+    {
+        $request = new CombatMatchRequest(
+            $this->buildSide(10, 100, FormationApproach::Balanced),
+            $this->buildSide(20, 200, FormationApproach::Balanced),
+            MatchType::League,
+            7,
+        );
+        $runState = $engine->initializeRunState($request);
+
+        foreach ($runState['sideA']['combatants'] as &$combatant) {
+            if ('front_1' !== $combatant['slot']) {
+                continue;
+            }
+            $combatant['race'] = $attacker->value;
+            $combatant['q'] = 5;
+            $combatant['r'] = 5;
+            $combatant['derived']['physicalAttack'] = 100;
+            $combatant['derived']['accuracyPercent'] = 100.0;
+            $combatant['derived']['critPercent'] = 0.0;
+            $combatant['derived']['isConsistentDamage'] = true;
+            $combatant['derived']['outgoingDamageMultiplier'] = 1.0;
+            $combatant['derived']['baseInitiative'] = 99;
+        }
+        unset($combatant);
+
+        foreach ($runState['sideB']['combatants'] as &$combatant) {
+            if ('front_1' !== $combatant['slot']) {
+                continue;
+            }
+            $combatant['race'] = $defender->value;
+            $combatant['q'] = 6;
+            $combatant['r'] = 5;
+            $combatant['derived']['armorValue'] = 0;
+            $combatant['derived']['dodgePercent'] = 0.0;
+            $combatant['currentHp'] = 500;
+            $combatant['derived']['maxHp'] = 500;
+            $combatant['derived']['baseInitiative'] = 1;
+        }
+        unset($combatant);
+
+        $engine->simulateRound($runState, 1);
+        $events = $engine->simulateRound($runState, 2);
+        foreach ($events as $event) {
+            if ('damage' === ($event['type'] ?? '') && 'b' === ($event['target_side'] ?? '') && 'physical' === ($event['source'] ?? '')) {
+                return (int) $event['amount'];
+            }
+        }
+
+        $this->fail('Expected a physical damage event against side B');
+    }
+
+    private function buildRequest(int $seed): CombatMatchRequest
+    {
+        return new CombatMatchRequest(
+            $this->buildSide(10, 100, FormationApproach::Aggressive),
+            $this->buildSide(20, 200, FormationApproach::Balanced),
+            MatchType::League,
+            $seed,
+        );
+    }
+
+    private function buildSide(int $teamId, int $heroIdBase, FormationApproach $approach = FormationApproach::Balanced): CombatSide
+    {
+        $combatants = [];
+        foreach (FormationPosition::cases() as $i => $position) {
+            $combatants[] = new CombatantSnapshot(
+                $heroIdBase + $i,
+                'Hero '.($heroIdBase + $i),
+                $position,
+                Race::Human,
+                5,
+                100,
+                0,
+                50,
+                $this->emptyDerived(),
+            );
+        }
+
+        return new CombatSide($teamId, $teamId + 1000, $approach, $combatants);
+    }
+
+    public function testActionPlanningAndExecutionWithWeaponDrawAndSpellCastingAndStunAndFumble(): void
+    {
+        $engine = new CombatEngine();
+
+        // 1. Bow Draw Time (Duration = 2)
+        $sideA = $this->buildSideWithWeapon(1, 100, ItemSubType::Bow);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced);
+        $request = new CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
+        $runState = $engine->initializeRunState($request);
+        $this->placeWithinRangedReach($runState);
+
+        // Round 1: Plan Bow Attack
+        $eventsRound1 = $engine->simulateRound($runState, 1);
+        $planEvent = $this->findEventByType($eventsRound1, 'plan_action');
+        $this->assertNotNull($planEvent);
+        $this->assertSame('attack', $planEvent['action_type']);
+        $this->assertSame('bow', $planEvent['weapon_type']);
+        $this->assertSame(2, $planEvent['duration']);
+
+        // Round 2: Prepare/Draw Bow
+        $eventsRound2 = $engine->simulateRound($runState, 2);
+        $tickEvent = $this->findEventByType($eventsRound2, 'preparing_action_tick');
+        $this->assertNotNull($tickEvent);
+        $this->assertSame('attack', $tickEvent['action_type']);
+        $this->assertSame(1, $tickEvent['rounds_remaining']);
+
+        // Round 3: Execute Bow Attack
+        $eventsRound3 = $engine->simulateRound($runState, 3);
+        $attackEvent = $this->findEventByType($eventsRound3, 'attack');
+        $this->assertNotNull($attackEvent);
+
+        // 2. Crossbow Draw Time (Duration = 3)
+        $sideA = $this->buildSideWithWeapon(1, 100, ItemSubType::Crossbow);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced);
+        $request = new CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
+        $runState = $engine->initializeRunState($request);
+        $this->placeWithinRangedReach($runState);
+
+        // Round 1: Plan Crossbow Attack
+        $eventsRound1 = $engine->simulateRound($runState, 1);
+        $planEvent = $this->findEventByType($eventsRound1, 'plan_action');
+        $this->assertNotNull($planEvent);
+        $this->assertSame(3, $planEvent['duration']);
+
+        // Round 2: Prepare 1st tick
+        $eventsRound2 = $engine->simulateRound($runState, 2);
+        $tickEvent1 = $this->findEventByType($eventsRound2, 'preparing_action_tick');
+        $this->assertNotNull($tickEvent1);
+        $this->assertSame(2, $tickEvent1['rounds_remaining']);
+
+        // Round 3: Prepare 2nd tick
+        $eventsRound3 = $engine->simulateRound($runState, 3);
+        $tickEvent2 = $this->findEventByType($eventsRound3, 'preparing_action_tick');
+        $this->assertNotNull($tickEvent2);
+        $this->assertSame(1, $tickEvent2['rounds_remaining']);
+
+        // Round 4: Execute
+        $eventsRound4 = $engine->simulateRound($runState, 4);
+        $attackEvent = $this->findEventByType($eventsRound4, 'attack');
+        $this->assertNotNull($attackEvent);
+
+        // 3. Option B (Fumble): If target is KO'd, the action fumbles
+        $sideA = $this->buildSideWithWeapon(1, 100, ItemSubType::Bow);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced);
+        $request = new CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
+        $runState = $engine->initializeRunState($request);
+        $this->placeWithinRangedReach($runState);
+
+        // Round 1: Plan Bow Attack on B's Front1
+        $engine->simulateRound($runState, 1);
+        // Manually KO the target (Front1 of side B)
+        foreach ($runState['sideB']['combatants'] as &$c) {
+            if ('front_1' === $c['slot']) {
+                $c['currentHp'] = 0;
+            }
+        }
+        unset($c);
+
+        // Round 2: Preparing tick
+        $engine->simulateRound($runState, 2);
+
+        // Round 3: Execute, target is dead -> Fumble
+        $eventsRound3 = $engine->simulateRound($runState, 3);
+        $fumbleEvent = $this->findEventByType($eventsRound3, 'action_fumble');
+        $this->assertNotNull($fumbleEvent);
+        $this->assertSame('front_1', $fumbleEvent['target_slot']);
+    }
+
+    private function buildSideWithWeapon(int $teamId, int $heroIdBase, ItemSubType $weaponSubType): CombatSide
+    {
+        $combatants = [];
+        foreach (FormationPosition::cases() as $i => $position) {
+            $combatants[] = new CombatantSnapshot(
+                $heroIdBase + $i,
+                'Hero '.($heroIdBase + $i),
+                $position,
+                Race::Human,
+                5,
+                100,
+                0,
+                50,
+                $this->emptyDerived(),
+                [],
+                [],
+                [],
+                $weaponSubType
+            );
+        }
+
+        return new CombatSide($teamId, $teamId + 1000, FormationApproach::Balanced, $combatants);
+    }
+
+    /**
+     * Keep round-scripted weapon tests on the wider 17×11 map: fronts already in bow reach (5).
+     *
+     * @param array<string, mixed> $runState
+     */
+    private function placeWithinRangedReach(array &$runState): void
+    {
+        foreach (['sideA' => 7, 'sideB' => 12] as $sideKey => $q) {
+            foreach ($runState[$sideKey]['combatants'] as $i => $combatant) {
+                $slot = (string) ($combatant['slot'] ?? '');
+                if (str_starts_with($slot, 'front_')) {
+                    $runState[$sideKey]['combatants'][$i]['q'] = $q;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array<array<string, mixed>> $events
+     * @return array<string, mixed>|null
+     */
+    private function findEventByType(array $events, string $type): ?array
+    {
+        foreach ($events as $event) {
+            if ($type === ($event['type'] ?? '')) {
+                return $event;
+            }
+        }
+
+        return null;
+    }
+
+    private function emptyDerived(): DerivedCombatStats
+    {
+        return new DerivedCombatStats(
+            100,
+            100,
+            25,   // physicalAttack: higher to make KOs happen faster
+            10,
+            10,
+            0.1,
+            10,
+            0.1,
+            10,
+            75.0, // accuracyPercent: lower to increase miss frequency variance
+            30.0, // dodgePercent: higher to increase dodge variance
+            35.0, // critPercent: higher to increase critical strike variance
+        );
+    }
+}

@@ -206,5 +206,6 @@ Ticket payout on match day is handled by `App\Service\Economy\ArenaRevenueServic
 | GET | `/app/hq` | HQ hub (Twig-rendered; facility panels via `?facility=` query) |
 | GET | `/api/v1/hq` | Facility levels, passive bonuses, upgrade/downgrade status |
 | POST | `/api/v1/hq/upgrade` | Start a facility upgrade |
+| POST | `/api/v1/hq/cancel-upgrade` | Cancel an in-progress facility upgrade |
 | POST | `/api/v1/hq/downgrade` | Start a facility downgrade |
 | POST | `/api/v1/hq/optimize` | Request an arena adaptation change |

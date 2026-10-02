@@ -37,6 +37,8 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 - [Graveyard System](systems/graveyard-system.md)
 - [Community System](systems/community-system.md)
 - [Notification System](systems/notification-system.md) — In-app alerts (write + read API, navbar modal with unread badge)
+- [Player Inactivity System](systems/player-inactivity-system.md) — Warning / release of inactive player accounts
+- [NPC Simulation System](systems/npc-simulation-system.md) — Autonomous NPC tactics, training, and economy
 
 **Screens**
 - [00 Public Pages (Homepage, Wiki, News)](screens/00-public-pages.md)
@@ -91,17 +93,18 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Headquarters** | Fully Implemented | Implemented | Implemented | 7 facilities (no Forge); HQ hub with facility panels; upgrades/downgrades, arena adaptation, passive bonuses. Arena & Summoning panels via `?facility=`. |
 | **Items** | Fully Implemented | Implemented | Implemented | Inventory, equip/unequip, dismantle. |
 | **Spells** | Fully Implemented | Implemented | Implemented | Spell library, learning, slot equipping. |
-| **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, and `LeagueService` implemented; league match tick resolves fixtures via stub random simulator and updates standings. |
-| **Combat** | Partially Implemented | Not Implemented | Not Implemented | Data models and entity schemas defined; `StubRandomMatchSimulator` drives league results until the full combat engine ships (Phase 5). |
-| **World Events** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/world-events-system.md](future/world-events-system.md). |
-| **Dungeons** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/dungeon-system.md](future/dungeon-system.md). Backend removed from codebase. |
+| **Leagues** | Fully Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, `LeagueService`, and `Api\V1\LeagueController` implemented; league match tick initiates lockstep wave cohort simulation. |
+| **Combat** | Core implemented | Replay | Implemented | Wave Messenger lockstep (max 200, `stalled` isolation), L0 spell pick, defensive targeting, fatigue/morale/Orc/Ent formulas, post-match hero XP/form/fatigue, replay from snapshot HP, full AP movement (`seek_cover_ranged` holds weapon range), and `combat_log` contract aligned (`kill_score` + `spell`). See [combat-system.md](systems/combat-system.md#follow-up-contract-after-61). |
+| **World Events** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** — see [future/world-events-system.md](future/world-events-system.md). |
+| **Dungeons** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 8) — see [future/dungeon-system.md](future/dungeon-system.md). Backend removed from codebase. |
 | **Marketplace** | Fully Implemented | Implemented | Implemented | Listings with hero ratings and **trait** on hero cards; browse filter/sort by value and OVR (cached DB columns). |
 | **Community** | Fully Implemented | Implemented | Implemented | Messaging, forum threads/posts, and content filtering fully functional. |
-| **Graveyard** | Fully Implemented | Implemented | Implemented | `GraveyardService` + dismissal flows; memorial wall at `/app/graveyard`; `GET /api/v1/graveyard/*`. Combat death memorials pending combat engine. |
-| **Quests** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/quest-system.md](future/quest-system.md). |
-| **Crafting** | Not Implemented | Not Implemented | Not Implemented | Design only — see [future/crafting-system.md](future/crafting-system.md). Backend and UI removed from codebase. |
-| **Arena Management** | Partially Implemented | Implemented (HQ panel) | Partial | Home-match revenue model; arena panel in HQ (`/app/hq?facility=arena`); `/app/arena` is a redirect. Payout on league match tick. Friendly matches pending combat. |
-| **Economy / Finance** | Fully Implemented | Implemented | Partial | Royal Treasury weekly distribution, financial crisis, marketplace at `/app/marketplace`, ledger at `/app/finance`; `GET /api/v1/finance/*` implemented. |
+| **Graveyard** | Fully Implemented | Implemented | Implemented | `GraveyardService` + dismissal & combat death flows; memorial wall at `/app/graveyard`; `GET /api/v1/graveyard/*`. |
+| **Quests** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 8) — see [future/quest-system.md](future/quest-system.md). |
+| **Crafting** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 8) — see [future/crafting-system.md](future/crafting-system.md). Backend and UI removed from codebase. |
+| **Alliances & Guilds** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 9) — see [roadmap.md](roadmap.md). |
+| **Arena Management** | Partially Implemented | Implemented (HQ panel) | Implemented (status + ticket price) | **Active Milestone 7** — Home-match revenue model; arena panel in HQ (`/app/hq?facility=arena`); `/app/arena` is a redirect; `POST /api/v1/hq/arena/tickets/price` implemented. Extended analytics UI & friendly scheduling pending. |
+| **Economy / Finance** | Fully Implemented | Implemented | Implemented | Royal Treasury weekly distribution, financial crisis, marketplace at `/app/marketplace`, ledger at `/app/finance`; `GET /api/v1/finance/*` implemented. |
 | **Notifications** | Fully Implemented | Implemented | Implemented | Write + read API, navbar modal with unread badge. See [notification-system.md](systems/notification-system.md). |
 
 ---

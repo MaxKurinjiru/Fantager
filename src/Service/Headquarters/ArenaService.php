@@ -13,6 +13,7 @@ use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\Team\FinancialRecordRepository;
 use App\Service\Economy\ArenaRevenueService;
 use App\Service\Team\FanClubService;
+use Doctrine\ORM\EntityManagerInterface;
 
 class ArenaService
 {
@@ -22,6 +23,7 @@ class ArenaService
         private readonly FanClubService $fanClubService,
         private readonly FinancialRecordRepository $financialRecordRepository,
         private readonly LeagueFixtureRepository $fixtureRepository,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -34,6 +36,8 @@ class ArenaService
         $capacity = $this->arenaRevenueService->getArenaCapacity($team);
         $showUpRate = $this->fanClubService->calculateShowUpRate($team);
         $targetFanBase = $this->fanClubService->calculateTargetFanBase($team);
+        $ticketPrice = $team->getTicketPrice();
+        $elasticity = $this->arenaRevenueService->calculatePriceElasticityMultiplier($ticketPrice);
         $arenaLevel = 0;
 
         /** @var Headquarters|null $hq */
@@ -53,10 +57,12 @@ class ArenaService
         $projectedRevenue = null;
         $projectedHomeAttendees = null;
         $projectedAwayAttendees = null;
+        $projections = [];
 
         if (null !== $nextHomeFixture) {
             $awayTeam = $nextHomeFixture->getAwayTeam();
             $matchReport = $this->arenaRevenueService->calculateMatchRevenue($team, $awayTeam);
+            $projections = $this->arenaRevenueService->generatePriceRevenueProjections($team, $awayTeam);
 
             $nextHomeMatch = [
                 'id' => (int) $nextHomeFixture->getId(),
@@ -86,17 +92,20 @@ class ArenaService
                 'attendance' => isset($context['attendance']) ? (int) $context['attendance'] : null,
                 'capacity' => isset($context['capacity']) ? (int) $context['capacity'] : null,
                 'opponent_name' => $context['away_team_name'] ?? null,
+                'ticket_price' => isset($context['ticket_price']) ? (int) $context['ticket_price'] : null,
             ];
         }
 
         return [
             'arena_level' => $arenaLevel,
             'seating_capacity' => $capacity,
-            'ticket_price' => ArenaRevenueService::TICKET_PRICE,
+            'ticket_price' => $ticketPrice,
+            'elasticity_multiplier' => round($elasticity, 3),
             'fan_base' => $team->getFanBase(),
             'target_fan_base' => $targetFanBase,
             'show_up_rate' => round($showUpRate, 3),
             'fan_appeal' => round($showUpRate, 3),
+            'effective_show_up_rate' => round($showUpRate * $elasticity, 3),
             'reputation' => $team->getReputation(),
             'morale' => $team->getMorale(),
             'chemistry' => $team->getChemistry(),
@@ -107,7 +116,20 @@ class ArenaService
             'projected_home_attendees' => $projectedHomeAttendees,
             'projected_away_attendees' => $projectedAwayAttendees,
             'next_home_match' => $nextHomeMatch,
+            'projections' => $projections,
             'recent_revenue' => $recentRevenue,
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function updateTicketPrice(Team $team, int $price): array
+    {
+        $clampedPrice = max(1, min(50, $price));
+        $team->setTicketPrice($clampedPrice);
+        $this->entityManager->flush();
+
+        return $this->getArenaStatus($team);
     }
 }

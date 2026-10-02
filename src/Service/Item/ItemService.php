@@ -177,6 +177,7 @@ class ItemService
         $amount = self::DISMANTLE_ESSENCE[$rarity->value];
         $this->addEssenceByRarity($team, $rarity, $amount);
 
+        $this->teamChronicleService->recordItemDismantled($team, $item, $amount, $rarity->value);
         $this->em->remove($item);
         $this->em->flush();
 

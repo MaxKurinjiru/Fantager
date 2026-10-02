@@ -74,7 +74,7 @@ class ProcessTicksCommand extends Command
 
             $io->text(sprintf('Checking Kingdom: %s (ID: %d)', $kingdom->getName(), $kingdomId));
 
-            // Recover stale ticks (e.g. processing/dispatched for > 30 seconds) before checking if blocked
+            // Recover stale ticks (e.g. processing/dispatched for > 5 minutes) before checking if blocked
             $recovered = $this->tickRunnerService->recoverStaleTicks($kingdom);
             if ($recovered > 0) {
                 $io->note(sprintf('Recovered %d stale/timed out tick(s) for Kingdom %s.', $recovered, $kingdom->getName()));

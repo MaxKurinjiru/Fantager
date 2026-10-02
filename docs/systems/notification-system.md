@@ -20,10 +20,15 @@ Purpose: In-game alerts for the **logged-in player account** (distinct from team
 | Trigger | Service | `NotificationType` |
 |---------|---------|-------------------|
 | Inactivity warning / release | `PlayerInactivityService` | `system` |
-| Financial crisis escalation | `FinancialCrisisService` | `system` |
+| Financial crisis escalation | `FinancialCrisisService` | `financial_crisis` (bankruptcy release may use `system`) |
 | Marketplace bid / sale / auction | `MarketplaceService` | `marketplace_bid`, `marketplace_sold`, `system` |
+| HQ upgrade complete / related | `HeadquartersService` | `hq_upgrade`, `system` |
+| League battle result | `LeagueMatchResolutionService` | `battle_result` |
+| Permanent combat death | `LeagueMatchResolutionService` | `hero_died` |
+| Season ended | `SeasonTransitionService` | `season_ended` |
+| Weekly training complete | `TrainingService` | `training_complete` |
 
-Types reserved for future hooks: `battle_result`, `training_complete`, `league_update`, `event_started`, `hero_died`, `season_ended`.
+Types reserved for future hooks: `league_update`, `event_started`, `spell_learned` (notification enum; team/hero chronicle already records spell learning).
 
 ---
 
@@ -58,7 +63,7 @@ Index: `(user_id, is_read)` — already present.
 
 ---
 
-## API Endpoints (to implement)
+## API Endpoints
 
 | Method | Path | Purpose |
 |--------|------|---------|
@@ -66,7 +71,7 @@ Index: `(user_id, is_read)` — already present.
 | GET | `/api/v1/notifications/unread-count` | Badge count for navbar |
 | GET | `/api/v1/notifications/{id}` | Single notification detail |
 | PUT | `/api/v1/notifications/{id}/read` | Mark one as read |
-| PUT | `/api/v1/notifications/read-all` | Mark all as read (optional v1.1) |
+| PUT | `/api/v1/notifications/read-all` | Mark all as read |
 
 All routes require `ROLE_PLAYER`. Authorization: notification must belong to `getUser()`.
 
@@ -87,16 +92,12 @@ All routes require `ROLE_PLAYER`. Authorization: notification must belong to `ge
 
 ## Service Layer
 
-### Refactor (recommended)
-
-Extract read/query logic from the helper:
-
 | Class | Responsibility |
 |-------|----------------|
-| `NotificationHelper` | Keep as thin write facade (or rename method to `NotificationService::create()`) |
-| **`NotificationService`** *(new)* | `listForUser()`, `countUnread()`, `markRead()`, `markAllRead()`, `getForUser()` |
+| `NotificationHelper` | Thin write facade used by domain services |
+| `NotificationService` | `listForUser()`, `countUnread()`, `markRead()`, `markAllRead()`, `getForUser()` |
 
-Repository additions on `NotificationRepository`:
+Repository methods on `NotificationRepository`:
 
 - `findForUser(User $user, int $limit, bool $unreadOnly): array`
 - `countUnreadForUser(User $user): int`
@@ -107,11 +108,9 @@ Replace per-call `flush()` inside `NotificationHelper` with persist-only; let th
 
 ---
 
-## Frontend (mirror mail modal)
+## Frontend
 
 Follow the established pattern in `mail_controller.js` + `templates/components/mail/`.
-
-### Components to add
 
 | Asset | Purpose |
 |-------|---------|
@@ -120,57 +119,14 @@ Follow the established pattern in `mail_controller.js` + `templates/components/m
 | `templates/components/notifications/js_templates.html.twig` | Row template for Stimulus cloning |
 | `assets/styles/components/_notifications.scss` | Reuse mail modal layout tokens |
 
-### Layout integration (`templates/layouts/game.html.twig`)
-
-- Add `notifications` to root `data-controller` alongside `mail`
-- Bootstrap `data-notifications-unread-count-value` from Twig helper (like `unread_mail_count()`)
-- Include notification modal partials
-
-### Navbar (`templates/components/layout/navbar.html.twig`)
-
-- Add **bell icon** button next to mail (✉️ mail = player messages, 🔔 notifications = system alerts)
-- Badge target: `data-notifications-target="badge"` (hidden when count = 0)
-- `data-action="click->notifications#openModal"`
-
-### Twig helper
-
-Add to `GameExtension`:
-
-```php
-public function getUnreadNotificationCount(): int
-```
-
-Uses `NotificationRepository::countUnreadForUser()` for the authenticated user.
+Navbar bell + badge are wired in `templates/components/layout/navbar.html.twig`. Twig helper: `GameExtension::getUnreadNotificationCount()`.
 
 ---
 
-## Implementation Milestones
-
-### Milestone A — Read API (backend only)
-
-1. `NotificationRepository` query methods
-2. `NotificationService` with authorization checks
-3. `Api\V1\NotificationController` — list, unread-count, show, mark-read
-4. PHPUnit: list filtering, ownership, mark-read idempotency
-5. Update [route-map.md](../route-map.md) — remove **planned** markers
-
-**Estimate:** small vertical slice; no migration needed.
-
-### Milestone B — In-game UI
-
-1. Stimulus controller + modal templates
-2. Navbar bell + badge wired to unread-count endpoint
-3. Poll or refresh unread count after marketplace/crisis actions (same pattern as mail badge)
-4. Translation keys under `notifications.*` (cs/en)
-5. Manual QA: trigger marketplace sale → badge increments → modal shows → mark read clears badge
-
-**Estimate:** medium; mostly frontend following mail conventions.
-
-### Milestone C — Hardening (optional)
+## Optional Hardening
 
 - Retention policy: delete read notifications older than 90 days (daily tick or cron)
 - `action_url` deep links (e.g. open economy tab on marketplace sale)
-- Mark-all-read button
 - Notification preferences in `UserSettings` (per-type toggles) — deferred until email prefs are designed
 
 ---

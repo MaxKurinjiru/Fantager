@@ -173,29 +173,39 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 ## Combat
 
 > [!NOTE]
-> Not yet implemented — planned for Phase 5.
+> Implemented: `Web\BattleController` (`/app/battles/{id}`) and `Api\V1\BattleController` (`/api/v1/battles/{id}`, `/api/v1/battles/{id}/log`). Sandbox/practice route (`POST /api/v1/combat/simulate`) is planned.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/battles/{id}` | Web\CombatController | Battle viewer page |
-| GET | `/api/v1/battles/{id}` | Api\V1\CombatController | Battle result |
-| GET | `/api/v1/battles/{id}/log` | Api\V1\CombatController | Combat log/replay |
-| POST | `/api/v1/combat/simulate` | Api\V1\CombatController | Combat simulation |
+| GET | `/app/battles/{id}` | Web\BattleController | Battle viewer page |
+| GET | `/api/v1/battles/{id}` | Api\V1\BattleController | Battle result |
+| GET | `/api/v1/battles/{id}/log` | Api\V1\BattleController | Combat log/replay |
+| POST | `/api/v1/combat/simulate` | Api\V1\CombatController | Sandbox combat simulation (planned) |
 
 ---
 
 ## League
 
 > [!NOTE]
-> The Web dashboard (`/app/league`) is fully complete. The `/api/v1/league/*` API endpoints are planned/deferred as the Web dashboard renders all standings and fixtures server-side via Twig, and match combat simulation is currently a stub.
+> Both the Web dashboard (`/app/league`) and the REST API endpoints (`/api/v1/league/*`) are fully implemented.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/league` | Web\LeagueController | League page showing group standings, fixtures, and global leaderboard |
-| GET | `/api/v1/league/standings` | Api\V1\LeagueController | Current standings (planned) |
-| GET | `/api/v1/league/fixtures` | Api\V1\LeagueController | Fixture schedule (planned) |
-| GET | `/api/v1/league/seasons` | Api\V1\LeagueController | Season history (planned) |
-| POST | `/api/v1/league/rewards/claim` | Api\V1\LeagueController | Claim rewards (planned) |
+| GET | `/api/v1/league/standings` | Api\V1\LeagueController | Current group standings and kingdom-wide leaderboard |
+| GET | `/api/v1/league/fixtures` | Api\V1\LeagueController | Fixture schedule for group or team |
+| GET | `/api/v1/league/seasons` | Api\V1\LeagueController | Kingdom season history |
+| POST | `/api/v1/league/process-season` | Api\V1\LeagueController | Season transition trigger (Admin only) |
+
+---
+
+## Combat & Battles
+
+| Method | Path | Controller | Purpose |
+|--------|------|-----------|---------|
+| GET | `/app/battles/{id}` | Web\BattleController | Match Report page showing final formations and round-by-round logs |
+| GET | `/api/v1/battles/{id}` | Api\V1\BattleController | Battle result metadata (scores, teams, status, result) |
+| GET | `/api/v1/battles/{id}/log` | Api\V1\BattleController | Detailed combat log (JSON) |
 
 ---
 
@@ -303,7 +313,7 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/graveyard` | Web\GraveyardController | Graveyard memorial page |
+| GET | `/app/graveyard` | Web\GraveyardController | Graveyard memorial page (supports `?id=` for memorial detail modal view) |
 | GET | `/api/v1/graveyard` | Api\V1\GraveyardController | List memorial records (filterable by role, cause, race, search) |
 | GET | `/api/v1/graveyard/{id}` | Api\V1\GraveyardController | Memorial detail |
 
@@ -315,7 +325,8 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 |--------|------|-----------|---------|
 | GET | `/app/arena` | Web\ArenaController | Redirect → `/app/hq?facility=arena` (legacy alias; panel shows capacity, fan appeal, revenue projection) |
 | GET | `/api/v1/arena` | Api\V1\ArenaController | Arena status (read-only) |
-| POST | `/api/v1/arena/schedule-match` | Api\V1\ArenaController | Schedule friendly match — **planned** (requires combat engine) |
+| POST | `/api/v1/hq/arena/tickets/price`, `/api/v1/arena/tickets/price` | Api\V1\ArenaController | Update team ticket price (1–50 gold) with demand elasticity calculations |
+| POST | `/api/v1/arena/schedule-match` | Api\V1\ArenaController | Schedule friendly match — **planned** |
 
 > Arena facility upgrades use `/app/hq`. Match-day ticket revenue is paid to the **home team** on the League Match tick via `ArenaRevenueService::processLeagueMatchTick()`.
 
@@ -367,6 +378,6 @@ In-game UI: navbar dropdown → **Notifications** modal (`notifications_controll
 | Routes (implemented) | 26 | 66 | **92** |
 | Routes (planned) | 7 | 32+ | — |
 | Controllers (Web, implemented) | 24 | — | — |
-| Controllers (API, implemented) | — | 18 | — |
+| Controllers (API, implemented) | — | 20 | — |
 
 > Routes marked **planned** have no controller implementation yet. Route counts reflect the state of the codebase; the original total of 116 includes all planned future routes.

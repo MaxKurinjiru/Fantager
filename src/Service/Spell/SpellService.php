@@ -28,6 +28,8 @@ class SpellService
         private readonly SchoolMasteryRepository $masteryRepository,
         private readonly EntityManagerInterface $em,
         private readonly EconomyService $economyService,
+        private readonly \App\Service\Hero\HeroChronicleService $heroChronicleService,
+        private readonly \App\Service\TeamChronicle\TeamChronicleService $teamChronicleService,
     ) {
     }
 
@@ -75,7 +77,7 @@ class SpellService
 
         // Mastery check
         $mastery = $this->getMasteryForSchool($hero, $spell->getSchool());
-        $currentTier = $mastery?->getMasteryTier() ?? 0;
+        $currentTier = $mastery?->getMasteryTier() ?? 1;
         if ($currentTier < $spell->getRequiredMasteryTier()) {
             throw new UserFacingException('error.insufficient_school_mastery', ['%required%' => $spell->getRequiredMasteryTier(), '%current%' => $currentTier]);
         }
@@ -109,6 +111,9 @@ class SpellService
         $heroSpell->setSpell($spell);
 
         $this->em->persist($heroSpell);
+        $this->heroChronicleService->recordSpellLearned($hero, $spell);
+        $this->teamChronicleService->recordSpellLearned($team, $hero, $spell);
+
         $this->em->flush();
 
         return $heroSpell;
@@ -203,6 +208,7 @@ class SpellService
             'required_mastery_tier' => $spell->getRequiredMasteryTier(),
             'learning_cost_gold' => $spell->getLearningCostGold(),
             'learning_cost_essence' => $spell->getLearningCostEssence(),
+            'requires_magical_weapon' => $spell->requiresMagicalWeapon(),
         ];
     }
 
@@ -530,15 +536,15 @@ class SpellService
         $skippedCount = 0;
 
         foreach ($spellsData as $data) {
-            $existing = $this->spellRepository->findOneBy(['name' => $data['name'], 'school' => $data['school']]);
-            if (null !== $existing) {
-                ++$skippedCount;
-                continue;
+            $spell = $this->spellRepository->findOneBy(['name' => $data['name'], 'school' => $data['school']]);
+            $isNew = false;
+            if (null === $spell) {
+                $spell = new Spell();
+                $spell->setName($data['name']);
+                $spell->setSchool($data['school']);
+                $isNew = true;
             }
 
-            $spell = new Spell();
-            $spell->setName($data['name']);
-            $spell->setSchool($data['school']);
             $spell->setTier($data['tier']);
             $spell->setType($data['type']);
             $spell->setEffects($data['effects']);
@@ -547,14 +553,18 @@ class SpellService
             $spell->setRequiredMasteryTier($data['required_mastery_tier']);
             $spell->setLearningCostGold($data['learning_cost_gold']);
             $spell->setLearningCostEssence($data['learning_cost_essence']);
+            $spell->setRequiresMagicalWeapon(SpellType::Offensive === $data['type']);
 
-            $this->em->persist($spell);
-            ++$insertedCount;
+            if ($isNew) {
+                $this->em->persist($spell);
+                ++$insertedCount;
+            } else {
+                ++$skippedCount;
+            }
         }
 
-        if ($insertedCount > 0) {
-            $this->em->flush();
-        }
+        // Flush all changes (both new persists and updates)
+        $this->em->flush();
 
         return ['inserted' => $insertedCount, 'skipped' => $skippedCount];
     }

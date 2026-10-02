@@ -6,17 +6,30 @@ namespace App\Service\League;
 
 use App\Entity\Combat\Battle;
 use App\Entity\Formation\Formation;
+use App\Entity\Hero\Hero;
+use App\Entity\Item\Item;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\League\LeagueFixture;
 use App\Entity\League\LeagueGroup;
 use App\Entity\League\LeagueStanding;
 use App\Entity\Team\Team;
 use App\Enum\BattleResult;
+use App\Enum\BattleStatus;
+use App\Enum\FacilityType;
+use App\Enum\HeroStatus;
+use App\Enum\LeagueFixtureStatus;
 use App\Enum\MatchType;
+use App\Enum\MemorialCause;
 use App\Repository\Formation\FormationRepository;
+use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueStandingRepository;
-use App\Service\Combat\MatchSimulatorInterface;
+use App\Service\Combat\CombatEngine;
+use App\Service\Combat\CombatMatchRequestBuilder;
+use App\Service\Combat\CombatSeedGenerator;
+use App\Service\Config\RaceConfig;
+use App\Service\Economy\FinancialCrisisService;
+use App\Service\Graveyard\GraveyardService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Team\FanClubService;
 use App\Service\Team\TeamMoraleReputationService;
@@ -24,6 +37,7 @@ use App\Service\Team\TeamRosterService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class LeagueMatchResolutionService
 {
@@ -31,7 +45,6 @@ class LeagueMatchResolutionService
         private readonly LeagueFixtureRepository $fixtureRepository,
         private readonly LeagueStandingRepository $standingRepository,
         private readonly TeamRosterService $teamRosterService,
-        private readonly MatchSimulatorInterface $matchSimulator,
         private readonly LeagueStandingService $standingService,
         private readonly LeagueFixtureCompletionService $fixtureCompletionService,
         private readonly FanClubService $fanClubService,
@@ -41,6 +54,15 @@ class LeagueMatchResolutionService
         private readonly HeroChronicleService $heroChronicleService,
         private readonly FormationRepository $formationRepository,
         private readonly EntityManagerInterface $em,
+        private readonly CombatMatchRequestBuilder $requestBuilder,
+        private readonly CombatSeedGenerator $seedGenerator,
+        private readonly CombatEngine $combatEngine,
+        private readonly MessageBusInterface $messageBus,
+        private readonly GraveyardService $graveyardService,
+        private readonly RaceConfig $raceConfig,
+        private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
+        private readonly HeadquartersRepository $headquartersRepository,
+        private readonly FinancialCrisisService $financialCrisisService,
     ) {
     }
 
@@ -82,12 +104,74 @@ class LeagueMatchResolutionService
      */
     public function resolveFixture(LeagueFixture $fixture, \DateTimeImmutable $processedAt): array
     {
-        $outcome = $this->resolveOutcome($fixture);
+        $forfeitOutcome = $this->resolveForfeitOutcome($fixture);
+
+        if (null !== $forfeitOutcome) {
+            $homeTeam = $fixture->getHomeTeam();
+            $awayTeam = $fixture->getAwayTeam();
+            $battle = $this->createBattle($fixture, $forfeitOutcome, $processedAt);
+            $battle->setStatus(BattleStatus::Completed);
+            $this->em->persist($battle);
+
+            $this->teamChronicleService->recordBattleOutcome(
+                $homeTeam,
+                $awayTeam,
+                $forfeitOutcome->getHomeScore(),
+                $forfeitOutcome->getAwayScore(),
+                $battle
+            );
+            $this->teamChronicleService->recordBattleOutcome(
+                $awayTeam,
+                $homeTeam,
+                $forfeitOutcome->getAwayScore(),
+                $forfeitOutcome->getHomeScore(),
+                $battle
+            );
+
+            $homeStanding = $this->requireStanding($fixture->getGroup(), $homeTeam);
+            $awayStanding = $this->requireStanding($fixture->getGroup(), $awayTeam);
+
+            $this->standingService->applyMatchResult(
+                $homeStanding,
+                $awayStanding,
+                $forfeitOutcome->getHomeScore(),
+                $forfeitOutcome->getAwayScore(),
+            );
+
+            $this->fanClubService->applyFixtureResult(
+                $homeTeam,
+                $awayTeam,
+                $forfeitOutcome->getHomeScore(),
+                $forfeitOutcome->getAwayScore(),
+            );
+
+            $this->teamMoraleReputationService->applyMatchResult(
+                $homeTeam,
+                $awayTeam,
+                $forfeitOutcome,
+                null,
+                null,
+            );
+
+            $this->fixtureCompletionService->complete($fixture, $battle);
+
+            return [
+                'fixture_id' => $fixture->getId(),
+                'home_team_id' => $homeTeam->getId(),
+                'away_team_id' => $awayTeam->getId(),
+                'home_score' => $forfeitOutcome->getHomeScore(),
+                'away_score' => $forfeitOutcome->getAwayScore(),
+                'is_forfeit' => true,
+                'battle_id' => $battle->getId(),
+            ];
+        }
+
+        // Both teams eligible -> start simulation wave orchestration
         $homeTeam = $fixture->getHomeTeam();
         $awayTeam = $fixture->getAwayTeam();
 
         $homeFormation = $fixture->getHomeFormation();
-        if (null === $homeFormation && !$outcome->isForfeit()) {
+        if (null === $homeFormation) {
             $homeFormation = $this->formationRepository->findOneBy([
                 'team' => $homeTeam,
                 'isDefault' => true,
@@ -96,7 +180,7 @@ class LeagueMatchResolutionService
         }
 
         $awayFormation = $fixture->getAwayFormation();
-        if (null === $awayFormation && !$outcome->isForfeit()) {
+        if (null === $awayFormation) {
             $awayFormation = $this->formationRepository->findOneBy([
                 'team' => $awayTeam,
                 'isDefault' => true,
@@ -104,12 +188,98 @@ class LeagueMatchResolutionService
             ]);
         }
 
-        $battle = $this->createBattle($fixture, $outcome, $processedAt, $homeFormation, $awayFormation);
+        if (!$homeFormation instanceof Formation) {
+            throw new \RuntimeException(sprintf('Home team %d is missing a formation.', $homeTeam->getId()));
+        }
+
+        if (!$awayFormation instanceof Formation) {
+            throw new \RuntimeException(sprintf('Away team %d is missing a formation.', $awayTeam->getId()));
+        }
+
+        $seed = $this->seedGenerator->forLeagueFixture($fixture);
+        $request = $this->requestBuilder->fromFormations(
+            $homeFormation,
+            $awayFormation,
+            MatchType::League,
+            $seed,
+        );
+
+        $runState = $this->combatEngine->initializeRunState($request);
+
+        $battle = new Battle();
+        $battle->setKingdom($homeTeam->getKingdom());
+        $battle->setMatchType(MatchType::League);
+        $battle->setTeamA($homeTeam);
+        $battle->setTeamB($awayTeam);
+        $battle->setFormationA($homeFormation);
+        $battle->setFormationB($awayFormation);
+        $battle->setScoreA(0);
+        $battle->setScoreB(0);
+        $battle->setStatus(BattleStatus::Simulating);
+        $battle->setCurrentRound(0);
+        $battle->setRunState($runState);
+        $battle->setScheduledAt($processedAt);
+
         $this->em->persist($battle);
 
+        $fixture->setBattle($battle);
+        $fixture->setStatus(LeagueFixtureStatus::InProgress);
+
+        $this->em->flush();
+
+        // Check if cohort initialization is complete
+        $totalScheduledFixtures = (int) $this->em->createQueryBuilder()
+            ->select('COUNT(f.id)')
+            ->from(LeagueFixture::class, 'f')
+            ->join('f.group', 'g')
+            ->join('g.tier', 't')
+            ->join('t.season', 's')
+            ->where('s.kingdom = :kingdom')
+            ->andWhere('f.scheduledAt = :scheduledAt')
+            ->setParameter('kingdom', $homeTeam->getKingdom())
+            ->setParameter('scheduledAt', $processedAt)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $initializedBattles = (int) $this->em->createQueryBuilder()
+            ->select('COUNT(b.id)')
+            ->from(Battle::class, 'b')
+            ->where('b.kingdom = :kingdom')
+            ->andWhere('b.scheduledAt = :scheduledAt')
+            ->setParameter('kingdom', $homeTeam->getKingdom())
+            ->setParameter('scheduledAt', $processedAt)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        if ($totalScheduledFixtures === $initializedBattles) {
+            $this->messageBus->dispatch(new \App\Message\CombatWave((int) $homeTeam->getKingdom()->getId(), $processedAt, 1));
+        }
+
+        return [
+            'fixture_id' => $fixture->getId(),
+            'home_team_id' => $homeTeam->getId(),
+            'away_team_id' => $awayTeam->getId(),
+            'home_score' => 0,
+            'away_score' => 0,
+            'is_forfeit' => false,
+            'battle_id' => $battle->getId(),
+        ];
+    }
+
+    public function completeBattle(Battle $battle): void
+    {
+        $fixture = $this->em->getRepository(LeagueFixture::class)->findOneBy(['battle' => $battle]);
+        if (null === $fixture) {
+            throw new \RuntimeException(sprintf('Fixture not found for battle ID %d.', $battle->getId()));
+        }
+
+        $homeTeam = $fixture->getHomeTeam();
+        $awayTeam = $fixture->getAwayTeam();
+        $homeFormation = $battle->getFormationA();
+        $awayFormation = $battle->getFormationB();
         $battleResult = $battle->getResult();
 
-        // Process Hero Mastery participation for active heroes in both formations
+        // 1. Process Hero Mastery participation
         if (null !== $homeFormation) {
             foreach ($homeFormation->getSlots() as $slot) {
                 $hero = $slot->getHero();
@@ -145,38 +315,49 @@ class LeagueMatchResolutionService
             }
         }
 
+        // 2. Team Chronicle
         $this->teamChronicleService->recordBattleOutcome(
             $homeTeam,
             $awayTeam,
-            $outcome->getHomeScore(),
-            $outcome->getAwayScore(),
+            $battle->getScoreA(),
+            $battle->getScoreB(),
             $battle
         );
         $this->teamChronicleService->recordBattleOutcome(
             $awayTeam,
             $homeTeam,
-            $outcome->getAwayScore(),
-            $outcome->getHomeScore(),
+            $battle->getScoreB(),
+            $battle->getScoreA(),
             $battle
         );
 
+        // 3. Standing
         $homeStanding = $this->requireStanding($fixture->getGroup(), $homeTeam);
         $awayStanding = $this->requireStanding($fixture->getGroup(), $awayTeam);
 
         $this->standingService->applyMatchResult(
             $homeStanding,
             $awayStanding,
-            $outcome->getHomeScore(),
-            $outcome->getAwayScore(),
+            $battle->getScoreA(),
+            $battle->getScoreB(),
         );
 
+        // 4. Fan club
         $this->fanClubService->applyFixtureResult(
             $homeTeam,
             $awayTeam,
-            $outcome->getHomeScore(),
-            $outcome->getAwayScore(),
+            $battle->getScoreA(),
+            $battle->getScoreB(),
         );
 
+        // 5. Morale
+        $outcome = new MatchOutcome(
+            $battle->getScoreA(),
+            $battle->getScoreB(),
+            false,
+            $battle->getCombatLog(),
+            $battle->getCombatLog()['seed'] ?? null
+        );
         $this->teamMoraleReputationService->applyMatchResult(
             $homeTeam,
             $awayTeam,
@@ -185,27 +366,155 @@ class LeagueMatchResolutionService
             $awayFormation,
         );
 
-        $this->fixtureCompletionService->complete($fixture, $battle);
-
-        return [
-            'fixture_id' => $fixture->getId(),
-            'home_team_id' => $homeTeam->getId(),
-            'away_team_id' => $awayTeam->getId(),
-            'home_score' => $outcome->getHomeScore(),
-            'away_score' => $outcome->getAwayScore(),
-            'is_forfeit' => $outcome->isForfeit(),
-            'battle_id' => $battle->getId(),
-        ];
-    }
-
-    private function resolveOutcome(LeagueFixture $fixture): MatchOutcome
-    {
-        $forfeitOutcome = $this->resolveForfeitOutcome($fixture);
-        if (null !== $forfeitOutcome) {
-            return $forfeitOutcome;
+        // Collect participating heroes
+        $participatingHeroes = [];
+        if (null !== $homeFormation) {
+            foreach ($homeFormation->getSlots() as $slot) {
+                if (null !== $slot->getHero()) {
+                    $participatingHeroes[] = $slot->getHero();
+                }
+            }
+        }
+        if (null !== $awayFormation) {
+            foreach ($awayFormation->getSlots() as $slot) {
+                if (null !== $slot->getHero()) {
+                    $participatingHeroes[] = $slot->getHero();
+                }
+            }
         }
 
-        return $this->matchSimulator->simulate($fixture);
+        $rounds = $battle->getCurrentRound();
+        $combatLog = $battle->getCombatLog();
+        $resultData = $combatLog['result'] ?? [];
+        $killedHeroIds = $resultData['killed_hero_ids'] ?? [];
+        $itemHitCounts = $resultData['item_hit_counts'] ?? [];
+
+        // 7. Durability loss (run before combat deaths so dead heroes' items are still equipped and can be updated)
+        foreach ($participatingHeroes as $hero) {
+            $heroId = $hero->getId();
+            if (null === $heroId) {
+                continue;
+            }
+            $hitsReceived = (int) ($itemHitCounts[(string) $heroId] ?? 0);
+            $loss = (int) (floor($rounds / 10) + floor($hitsReceived / 3));
+            $loss = max(1, min(20, $loss));
+
+            $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
+            foreach ($equippedItems as $item) {
+                $newDurability = max(0, $item->getDurability() - $loss);
+                $item->setDurability($newDurability);
+            }
+        }
+
+        $killsByHeroId = $resultData['kills_by_hero_id'] ?? [];
+        $killedSet = array_fill_keys(array_map('intval', $killedHeroIds), true);
+        $xpTotal = 0;
+        $xpTotal += $this->applySideRewards($homeFormation, $homeTeam, BattleResult::WinA === $battleResult, $killedSet, $killsByHeroId);
+        $xpTotal += $this->applySideRewards($awayFormation, $awayTeam, BattleResult::WinB === $battleResult, $killedSet, $killsByHeroId);
+        $battle->setXpAwarded($xpTotal);
+
+        $rngState = (int) ($resultData['rng_state'] ?? $combatLog['seed'] ?? 1);
+        if ($rngState <= 0) {
+            $rngState = 1;
+        }
+
+        // 8. Process combat deaths and aging. Every KO consumes one mortality roll
+        // in killed_hero_ids order, including heroes who are not elders, so a later
+        // elder sees the same generator state for the same log.
+        if (!empty($killedHeroIds)) {
+            $rollsByHero = [];
+            foreach ($killedHeroIds as $rawId) {
+                $id = (int) $rawId;
+                $rollsByHero[$id][] = CombatEngine::drawInt($rngState, 0, 99);
+            }
+
+            $deathCounts = array_count_values(array_map('intval', $killedHeroIds));
+            foreach ($deathCounts as $heroId => $deathsInMatch) {
+                $hero = $this->em->find(Hero::class, $heroId);
+                if (!$hero instanceof Hero) {
+                    continue;
+                }
+
+                // Escalating age penalty: 1st death = +1 year, 2nd = +2 years, etc.
+                // Sum of 1 to D = D * (D + 1) / 2
+                $yearsToAdd = (int) ($deathsInMatch * ($deathsInMatch + 1) / 2);
+                $hero->setAgeRaw($hero->getAgeRaw() + ($yearsToAdd * 10));
+
+                $isElder = $this->raceConfig->isAtOrAboveMortalityThreshold($hero->getRace(), $hero->getAge());
+                $diedPermanently = false;
+
+                if ($isElder) {
+                    $threshold = $this->raceConfig->getMortalityThreshold($hero->getRace());
+                    $yearsAboveThreshold = $hero->getAge() - $threshold;
+
+                    // Base 5% chance + 4% per year above the mortality threshold
+                    $deathChance = 0.05 + (0.04 * max(0, $yearsAboveThreshold));
+                    $deathChance = min(1.0, $deathChance);
+
+                    foreach ($rollsByHero[$heroId] ?? [] as $roll) {
+                        if ($roll < (int) ($deathChance * 100)) {
+                            $diedPermanently = true;
+                            break;
+                        }
+                    }
+                }
+
+                if ($diedPermanently) {
+                    $this->graveyardService->prepareCombatDeath($hero);
+                    $this->graveyardService->recordMemorial($hero, $hero->getTeam(), MemorialCause::CombatDeath);
+                    $this->teamChronicleService->recordHeroDied($hero->getTeam(), $hero, MemorialCause::CombatDeath->value);
+                    $hero->setStatus(HeroStatus::Dead);
+
+                    if (null !== $hero->getTeam()->getUser()) {
+                        $opponent = $hero->getTeam()->getId() === $homeTeam->getId() ? $awayTeam : $homeTeam;
+                        $this->notificationHelper->sendTranslatedNotification(
+                            $hero->getTeam()->getUser(),
+                            \App\Enum\NotificationType::HeroDied,
+                            'notification.hero_combat_death_title',
+                            'notification.hero_combat_death_body',
+                            [],
+                            ['%hero_name%' => $hero->getName(), '%opponent%' => $opponent->getName()]
+                        );
+                    }
+                }
+            }
+        }
+
+        // Send match result notifications to managers
+        if (null !== $homeTeam->getUser()) {
+            $this->notificationHelper->sendTranslatedNotification(
+                $homeTeam->getUser(),
+                \App\Enum\NotificationType::BattleResult,
+                'notification.match_result_title',
+                'notification.match_result_body',
+                [],
+                [
+                    '%home_team%' => $homeTeam->getName(),
+                    '%away_team%' => $awayTeam->getName(),
+                    '%home_score%' => $battle->getScoreA(),
+                    '%away_score%' => $battle->getScoreB(),
+                ]
+            );
+        }
+
+        if (null !== $awayTeam->getUser()) {
+            $this->notificationHelper->sendTranslatedNotification(
+                $awayTeam->getUser(),
+                \App\Enum\NotificationType::BattleResult,
+                'notification.match_result_title',
+                'notification.match_result_body',
+                [],
+                [
+                    '%home_team%' => $homeTeam->getName(),
+                    '%away_team%' => $awayTeam->getName(),
+                    '%home_score%' => $battle->getScoreA(),
+                    '%away_score%' => $battle->getScoreB(),
+                ]
+            );
+        }
+
+        // 6. Complete fixture status
+        $this->fixtureCompletionService->complete($fixture, $battle);
     }
 
     private function resolveForfeitOutcome(LeagueFixture $fixture): ?MatchOutcome
@@ -253,10 +562,9 @@ class LeagueMatchResolutionService
         $battle->setScoreA($outcome->getHomeScore());
         $battle->setScoreB($outcome->getAwayScore());
         $battle->setResult($outcome->toBattleResult());
-        $battle->setCombatLog([
-            'simulator' => $outcome->isForfeit() ? 'forfeit' : 'stub_random',
-        ]);
+        $battle->setCombatLog($outcome->getCombatLog());
         $battle->setProcessedAt($processedAt);
+        $battle->setScheduledAt($processedAt);
 
         return $battle;
     }
@@ -273,5 +581,68 @@ class LeagueMatchResolutionService
         }
 
         return $standing;
+    }
+
+    /**
+     * @param array<int, true>             $killedSet
+     * @param array<string|int, int|mixed> $killsByHeroId
+     */
+    private function applySideRewards(
+        ?Formation $formation,
+        Team $team,
+        bool $won,
+        array $killedSet,
+        array $killsByHeroId,
+    ): int {
+        if (null === $formation) {
+            return 0;
+        }
+
+        $multiplier = $this->libraryXpMultiplier($team);
+        $awarded = 0;
+
+        foreach ($formation->getSlots() as $slot) {
+            $hero = $slot->getHero();
+            if (null === $hero) {
+                continue;
+            }
+            $heroId = $hero->getId();
+            if (null === $heroId) {
+                continue;
+            }
+
+            $wasKo = isset($killedSet[$heroId]);
+            $kills = (int) ($killsByHeroId[(string) $heroId] ?? $killsByHeroId[$heroId] ?? 0);
+
+            $fatigue = $hero->getFatigue() + 15 + ($wasKo ? 10 : 0);
+            $hero->setFatigue(min(100, $fatigue));
+
+            $formLoss = 8 + ($wasKo ? 7 : 0);
+            $hero->setForm(max(0, $hero->getForm() - $formLoss));
+
+            $xp = (int) round((20 + ($won ? 15 : 0) + (10 * $kills)) * $multiplier);
+            $hero->setXp($hero->getXp() + $xp);
+            $awarded += $xp;
+        }
+
+        return $awarded;
+    }
+
+    private function libraryXpMultiplier(Team $team): float
+    {
+        $hq = $this->headquartersRepository->findOneBy(['team' => $team]);
+        if (null === $hq || !$this->financialCrisisService->areHqBonusesActive($team)) {
+            return 1.0;
+        }
+
+        foreach ($hq->getFacilities() as $facility) {
+            if (FacilityType::Library === $facility->getType()) {
+                $pct = (float) ($facility->getPassiveBonuses()['xp_gain_pct'] ?? 0);
+
+                return 1.0 + ($pct / 100.0);
+            }
+        }
+
+        return 1.0;
     }
 }

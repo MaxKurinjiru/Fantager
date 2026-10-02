@@ -44,6 +44,18 @@
     }
   }
 
+  .formation-strategy-panel__spatial {
+    @apply flex flex-col gap-2;
+  }
+
+  .formation-strategy-panel__spatial-control {
+    @apply w-full;
+  }
+
+  .formation-strategy-panel__movement-select {
+    @apply w-full text-sm;
+  }
+
   .formation-match-prep-panel__actions {
     @apply flex flex-col gap-3;
 

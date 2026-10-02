@@ -47,8 +47,11 @@ class SpellServiceTest extends TestCase
             $this->masteryRepositoryMock,
             $this->entityManagerMock,
             $this->economyServiceMock,
+            $this->createMock(\App\Service\Hero\HeroChronicleService::class),
+            $this->createMock(\App\Service\TeamChronicle\TeamChronicleService::class),
         );
     }
+
 
     public function testLearnRejectsDuplicateSpell(): void
     {

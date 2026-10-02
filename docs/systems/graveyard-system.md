@@ -12,10 +12,9 @@ Purpose: Permanent memorial records for heroes and trainers who leave the team.
 |-------|--------|
 | **Entity & service** | Implemented — `GraveyardMemorial`, `GraveyardService` |
 | **Dismissal flows** | Implemented — hero and trainer dismiss write memorial snapshots before entity removal |
+| **Combat death flows** | Implemented — permanent combat deaths via `LeagueMatchResolutionService` → `prepareCombatDeath` + `recordMemorial(CombatDeath)` |
 | **Web UI** | Implemented — `Web\GraveyardController`, `/app/graveyard` |
 | **Read API** | Implemented — `Api\V1\GraveyardController`, `GET /api/v1/graveyard`, `GET /api/v1/graveyard/{id}` |
-
-Combat death memorials (`MemorialCause::CombatDeath`) remain reserved until the combat engine is implemented.
 
 ---
 
@@ -25,7 +24,7 @@ All departures (combatant heroes and trainers) use a single entity:
 
 | Entity | Table | Key fields |
 |--------|-------|------------|
-| **GraveyardMemorial** | `graveyard` | `team_id`, `name`, `race`, `role_at_departure` (`HeroRole`), `cause` (`MemorialCause`), `age`, `final_level`, `final_stats` (JSON), `departed_at`, `original_hero_id` |
+| **GraveyardMemorial** | `graveyard` | `team_id`, `name`, `race`, `role_at_departure` (`HeroRole`), `cause` (`MemorialCause`), `age`, `final_level`, `final_stats` (JSON), `trait`, `matches_played`, `matches_won`, `combats_fallen`, `departed_at`, `original_hero_id` |
 
 There is **no separate `StaffRecord` entity**. Trainers are `Hero` rows with `role = trainer`; their memorial uses the same table with `role_at_departure = trainer`.
 
@@ -34,7 +33,7 @@ There is **no separate `StaffRecord` entity**. Trainers are `Hero` rows with `ro
 | Value | Used today |
 |-------|------------|
 | `dismissed` | Hero or trainer dismissal |
-| `combat_death` | Reserved — combat engine (Phase 5) |
+| `combat_death` | Permanent combat death (elder mortality / resolution layer) |
 | `age` | Reserved |
 | `retired` | Reserved |
 | `death` | Reserved |
@@ -93,7 +92,7 @@ See [route-map.md](../route-map.md#graveyard).
 
 | Service | Responsibility |
 |---------|----------------|
-| `App\Service\Graveyard\GraveyardService` | `recordMemorial()`, `prepareHeroRemoval()`, `prepareTrainerRemoval()`, `removeHero()`, `serializeMemorial()` |
+| `App\Service\Graveyard\GraveyardService` | `recordMemorial()`, `prepareCombatDeath()`, `prepareHeroRemoval()`, `prepareTrainerRemoval()`, `removeHero()`, `serializeMemorial()` |
 | `App\Service\Graveyard\GraveyardPresenter` | Summary stats and list presentation for Web/API |
 | `App\Service\Hero\HeroDismissalService` | Hero dismissal validation + compensation |
 | `App\Service\Training\TrainerDismissalService` | Trainer dismissal validation + compensation |

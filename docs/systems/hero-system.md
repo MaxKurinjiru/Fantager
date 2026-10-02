@@ -177,7 +177,7 @@ Traits are **visible to players** wherever hero identity is shown. Heroes with `
 |---------|----------|------------------|
 | Hero roster | Card under level/race line | `templates/components/hero/trait_badge.html.twig` (compact) in `card.html.twig` |
 | Hero detail — header | Meta row next to ratings | Same badge in `header_card.html.twig` |
-| Hero detail — overview | Sidebar panel with full description | `trait_panel.html.twig` (overview tab, before attributes) |
+| Hero detail — overview | Trait badge with name (description via tooltip / i18n) | `trait_badge.html.twig` (overview tab) |
 | Summoning reveal | Below level on recruit card | `summoning_controller.js` + `portal_chamber.html.twig` |
 | Marketplace browse | Listing detail row | `marketplace_controller.js` + `js_templates.html.twig` |
 | Marketplace sell | Sell picker card | `trait_badge.html.twig` in `sell_tab.html.twig` |
@@ -204,4 +204,4 @@ Category comes from `HeroTrait::getCategory()`; icon from `HeroTrait::getIcon()`
 - Situational modifiers (clutch threshold, glass jaw threshold, consistent damage, morale decay, race synergy flag) are passed as metadata and applied by the combat engine at runtime.
 - Arena revenue bonus is consumed by `ArenaRevenueService` (not the combat engine).
 
-Per-hero match history: [hero-chronicle-system.md](hero-chronicle-system.md). League fixtures currently use `StubRandomMatchSimulator` until the turn engine ships.
+Per-hero match history: [hero-chronicle-system.md](hero-chronicle-system.md). League fixtures resolve through wave Messenger + `CombatEngine` (see [combat-system.md](combat-system.md)).
