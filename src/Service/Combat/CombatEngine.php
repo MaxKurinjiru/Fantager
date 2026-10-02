@@ -7,6 +7,7 @@ namespace App\Service\Combat;
 use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
 use App\Enum\Race;
+use App\Service\Config\CombatAiL0Config;
 use App\ValueObject\Combat\CombatantSnapshot;
 use App\ValueObject\Combat\CombatMatchRequest;
 use App\ValueObject\Combat\CombatSide;
@@ -22,13 +23,16 @@ use App\ValueObject\Combat\HexCoordinate;
  */
 class CombatEngine
 {
-    public const ENGINE_VERSION = 2;
+    public const ENGINE_VERSION = 6;
 
     private HexGridService $hexGridService;
 
-    public function __construct(?HexGridService $hexGridService = null)
+    private CombatAiL0Config $l0Config;
+
+    public function __construct(?HexGridService $hexGridService = null, ?CombatAiL0Config $l0Config = null)
     {
         $this->hexGridService = $hexGridService ?? new HexGridService();
+        $this->l0Config = $l0Config ?? new CombatAiL0Config(\dirname(__DIR__, 3));
     }
 
     public function simulate(CombatMatchRequest $request): CombatSimulationResult
@@ -86,6 +90,7 @@ class CombatEngine
             'currentRound' => 0,
             'combatLog' => [],
             'killedHeroIds' => [],
+            'killsByHeroId' => [],
             'itemHitCounts' => [],
             'grid' => [
                 'width' => HexGridService::GRID_WIDTH,
@@ -307,56 +312,9 @@ class CombatEngine
                 continue;
             }
 
-            // Evaluate movement AP & pathing on hex grid
-            $actorHex = new HexCoordinate((int) ($actor['q'] ?? 0), (int) ($actor['r'] ?? 0));
-            $targetHex = new HexCoordinate((int) ($target['q'] ?? 0), (int) ($target['r'] ?? 0));
-            $actorRadius = $this->combatantRadius($actor);
-            $targetRadius = $this->combatantRadius($target);
-            $movementGoal = (string) ($actor['strategy']['movement_goal'] ?? 'advance_to_melee');
-            $goalHex = $this->resolveMovementGoalHex($runState, $actorHex, $targetHex, $movementGoal, $actorSide, $actorSlot, $targetRadius);
-            $reach = $this->hexGridService->getWeaponReach($actor['weaponSubType'] ?? null);
-            $apBudget = $this->hexGridService->calculateActionPoints((int) ($actor['derived']['baseInitiative'] ?? 0));
-            $moveCost = $this->hexGridService->calculateMovementCost(1, $actor['armorSubType'] ?? null);
-            $isTacticalGoal = in_array($movementGoal, ['flank_rear', 'seek_cover_ranged', 'protect_backline'], true);
-            $distanceToGoal = $isTacticalGoal
-                ? $actorHex->distance($goalHex)
-                : $this->hexGridService->engagementDistance($actorHex, $actorRadius, $targetHex, $targetRadius);
-
-            if ($distanceToGoal > $reach && $apBudget >= $moveCost['apCost']) {
-                $occupied = $this->collectOccupiedHexes($runState, $actorSide, $actorSlot);
-                $path = $this->hexGridService->findPath(
-                    $actorHex,
-                    $goalHex,
-                    $occupied,
-                    $actorRadius,
-                    $isTacticalGoal ? 0 : $targetRadius,
-                    $isTacticalGoal ? 0 : $reach,
-                );
-                if (!empty($path)) {
-                    $nextHex = $path[0];
-                    if (!$actorHex->equals($nextHex)) {
-                        $roundEvents[] = [
-                            't' => count($runState['events']) + count($roundEvents),
-                            'type' => 'move',
-                            'side' => $actorSide,
-                            'slot' => $actorSlot,
-                            'hero_id' => $actor['heroId'],
-                            'from_q' => $actorHex->q,
-                            'from_r' => $actorHex->r,
-                            'to_q' => $nextHex->q,
-                            'to_r' => $nextHex->r,
-                            'q' => $nextHex->q,
-                            'r' => $nextHex->r,
-                            'ap_cost' => $moveCost['apCost'],
-                            'fatigue_generated' => $moveCost['fatigueGenerated'],
-                        ];
-                        $actor['q'] = $nextHex->q;
-                        $actor['r'] = $nextHex->r;
-                        $actor['fatigue'] = (int) ($actor['fatigue'] ?? 0) + $moveCost['fatigueGenerated'];
-                        $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
-                    }
-                }
-            }
+            // Movement only happens while planning. A queued action (preparationRemaining > 0)
+            // already continued above, so a charging unit stays still.
+            $this->spendMovementAp($runState, $actor, $actorSide, $actorSlot, $target, $roundEvents);
 
             $castSpell = null;
             $spellPriorityTarget = 'enemy';
@@ -422,6 +380,12 @@ class CombatEngine
                         $spellPriorityTarget = $priority['target'] ?? 'enemy';
                         break;
                     }
+                }
+            } elseif (!$isSilenced && [] === ($actor['spellPriorities'] ?? []) && !empty($actor['spells'])) {
+                $picked = $this->pickL0Spell($runState, $actorSide, $actor, $approach);
+                if (null !== $picked) {
+                    $castSpell = $picked['spell'];
+                    $spellPriorityTarget = $picked['target'];
                 }
             }
 
@@ -586,19 +550,195 @@ class CombatEngine
                 'score_a' => $runState['scoreA'],
                 'score_b' => $runState['scoreB'],
                 'killed_hero_ids' => $runState['killedHeroIds'],
+                'kills_by_hero_id' => $runState['killsByHeroId'] ?? [],
                 'item_hit_counts' => $runState['itemHitCounts'],
+                'rng_state' => $runState['rngState'],
             ],
         ];
     }
 
     /**
-     * Resolve target hex based on spatial movement goal (advance_to_melee, flank_rear, seek_cover_ranged, protect_backline).
+     * Spend the whole AP budget on movement, 2 AP per hex. Stops early when the goal is reached.
+     *
+     * @param array<string, mixed>        $runState
+     * @param array<string, mixed>        $actor
+     * @param array<string, mixed>        $target
+     * @param array<array<string, mixed>> $roundEvents
+     */
+    private function spendMovementAp(
+        array &$runState,
+        array &$actor,
+        string $actorSide,
+        string $actorSlot,
+        array $target,
+        array &$roundEvents,
+    ): void {
+        $movementGoal = (string) ($actor['strategy']['movement_goal'] ?? 'advance_to_melee');
+        $reach = $this->hexGridService->getWeaponReach($actor['weaponSubType'] ?? null);
+        $apLeft = $this->hexGridService->calculateActionPoints((int) ($actor['derived']['baseInitiative'] ?? 0));
+        $stepCost = $this->hexGridService->calculateMovementCost(1, $actor['armorSubType'] ?? null);
+
+        while ($apLeft >= $stepCost['apCost']) {
+            $actorHex = new HexCoordinate((int) ($actor['q'] ?? 0), (int) ($actor['r'] ?? 0));
+            $targetHex = new HexCoordinate((int) ($target['q'] ?? 0), (int) ($target['r'] ?? 0));
+            $nextHex = $this->chooseMoveHex(
+                $runState,
+                $actorHex,
+                $targetHex,
+                $movementGoal,
+                $actorSide,
+                $actorSlot,
+                $this->combatantRadius($actor),
+                $this->combatantRadius($target),
+                $reach,
+            );
+            if (null === $nextHex || $actorHex->equals($nextHex)) {
+                break;
+            }
+
+            $roundEvents[] = [
+                't' => count($runState['events']) + count($roundEvents),
+                'type' => 'move',
+                'side' => $actorSide,
+                'slot' => $actorSlot,
+                'hero_id' => $actor['heroId'],
+                'from_q' => $actorHex->q,
+                'from_r' => $actorHex->r,
+                'to_q' => $nextHex->q,
+                'to_r' => $nextHex->r,
+                'q' => $nextHex->q,
+                'r' => $nextHex->r,
+                'ap_cost' => $stepCost['apCost'],
+                'fatigue_generated' => $stepCost['fatigueGenerated'],
+            ];
+            $actor['q'] = $nextHex->q;
+            $actor['r'] = $nextHex->r;
+            $actor['fatigue'] = (int) ($actor['fatigue'] ?? 0) + $stepCost['fatigueGenerated'];
+            $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
+            $apLeft -= $stepCost['apCost'];
+        }
+    }
+
+    private function chooseMoveHex(
+        array $runState,
+        HexCoordinate $actorHex,
+        HexCoordinate $targetHex,
+        string $movementGoal,
+        string $actorSide,
+        string $actorSlot,
+        int $actorRadius,
+        int $targetRadius,
+        int $reach,
+    ): ?HexCoordinate {
+        if ('seek_cover_ranged' === $movementGoal) {
+            $engagement = $this->hexGridService->engagementDistance($actorHex, $actorRadius, $targetHex, $targetRadius);
+            if ($engagement < $reach) {
+                return $this->retreatHex($runState, $actorHex, $targetHex, $actorSide, $actorSlot, $actorRadius, $targetRadius, $reach);
+            }
+            if ($engagement > $reach) {
+                $path = $this->hexGridService->findPath(
+                    $actorHex,
+                    $targetHex,
+                    $this->collectOccupiedHexes($runState, $actorSide, $actorSlot),
+                    $actorRadius,
+                    $targetRadius,
+                    $reach,
+                );
+
+                return $path[0] ?? null;
+            }
+
+            return null;
+        }
+
+        $goalHex = $this->resolveMovementGoalHex($runState, $targetHex, $movementGoal, $actorSide, $actorSlot, $targetRadius);
+        $isTacticalGoal = in_array($movementGoal, ['flank_rear', 'protect_backline'], true);
+        $distanceToGoal = $isTacticalGoal
+            ? $actorHex->distance($goalHex)
+            : $this->hexGridService->engagementDistance($actorHex, $actorRadius, $targetHex, $targetRadius);
+        if ($distanceToGoal <= $reach) {
+            return null;
+        }
+
+        $path = $this->hexGridService->findPath(
+            $actorHex,
+            $goalHex,
+            $this->collectOccupiedHexes($runState, $actorSide, $actorSlot),
+            $actorRadius,
+            $isTacticalGoal ? 0 : $targetRadius,
+            $isTacticalGoal ? 0 : $reach,
+        );
+
+        return $path[0] ?? null;
+    }
+
+    /**
+     * One step that increases engagement, preferring a landing spot at weapon range.
+     */
+    private function retreatHex(
+        array $runState,
+        HexCoordinate $actorHex,
+        HexCoordinate $targetHex,
+        string $actorSide,
+        string $actorSlot,
+        int $actorRadius,
+        int $targetRadius,
+        int $reach,
+    ): ?HexCoordinate {
+        $occupiedMap = [];
+        foreach ($this->collectOccupiedHexes($runState, $actorSide, $actorSlot) as $hex) {
+            $occupiedMap[$hex->key()] = true;
+        }
+
+        $current = $this->hexGridService->engagementDistance($actorHex, $actorRadius, $targetHex, $targetRadius);
+        $best = null;
+        $bestScore = \PHP_INT_MAX;
+
+        foreach ($actorHex->getNeighbors() as $neighbor) {
+            if (!$this->footprintIsFree($neighbor, $actorRadius, $occupiedMap)) {
+                continue;
+            }
+            $next = $this->hexGridService->engagementDistance($neighbor, $actorRadius, $targetHex, $targetRadius);
+            if ($next <= $current) {
+                continue;
+            }
+            $overshoot = $next > $reach ? 1000 + ($next - $reach) : ($reach - $next);
+            $towardHome = 'a' === $actorSide ? $neighbor->q : -$neighbor->q;
+            $score = ($overshoot * 1000) + $towardHome;
+            if ($score < $bestScore) {
+                $bestScore = $score;
+                $best = $neighbor;
+            }
+        }
+
+        return $best;
+    }
+
+    /**
+     * @param array<string, true> $occupiedMap
+     */
+    private function footprintIsFree(HexCoordinate $origin, int $radius, array $occupiedMap): bool
+    {
+        if (!$this->hexGridService->footprintFits($origin, $radius)) {
+            return false;
+        }
+        foreach ($this->hexGridService->getFootprint($origin, $radius) as $hex) {
+            if (isset($occupiedMap[$hex->key()])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Resolve target hex based on spatial movement goal (advance_to_melee, flank_rear, protect_backline).
+     * seek_cover_ranged is handled in chooseMoveHex: it holds weapon range instead of a fixed hex.
      *
      * @param array<string, mixed> $runState
      */
     private function resolveMovementGoalHex(
         array $runState,
-        HexCoordinate $actorHex,
         HexCoordinate $targetHex,
         string $movementGoal,
         string $actorSide,
@@ -611,11 +751,6 @@ class CombatEngine
             $rearQ = 'a' === $actorSide ? $targetHex->q + 1 + $targetRadius : $targetHex->q - 1 - $targetRadius;
 
             return new HexCoordinate(max(0, min($maxQ, $rearQ)), $targetHex->r);
-        }
-        if ('seek_cover_ranged' === $movementGoal) {
-            $diffQ = 'a' === $actorSide ? -2 : 2;
-
-            return new HexCoordinate(max(0, min($maxQ, $actorHex->q + $diffQ)), $actorHex->r);
         }
         if ('protect_backline' === $movementGoal) {
             $ally = $this->findLowestHpAlly($runState, $actorSide, $actorSlot);
@@ -799,6 +934,115 @@ class CombatEngine
     }
 
     /**
+     * L0 spell when the slot has no spell_priorities.
+     *
+     * Heal with the strongest ready defensive spell when any living ally
+     * (including the caster) is under the approach HP threshold. Otherwise
+     * the highest-tier ready offensive spell. Utility spells are not auto-cast.
+     *
+     * @param array<string, mixed> $runState
+     * @param array<string, mixed> $actor
+     *
+     * @return array{spell: array<string, mixed>, target: string}|null
+     */
+    private function pickL0Spell(array $runState, string $actorSide, array $actor, FormationApproach $approach): ?array
+    {
+        $ready = [];
+        foreach ($actor['spells'] as $spell) {
+            if ($this->spellIsReady($actor, $spell)) {
+                $ready[] = $spell;
+            }
+        }
+
+        if ([] === $ready) {
+            return null;
+        }
+
+        $threshold = $this->l0Config->healThresholdPercent($approach);
+        if ($this->anyAllyBelowHpPercent($runState, $actorSide, $threshold)) {
+            $heal = $this->strongestReadySpell($ready, 'defensive');
+            if (null !== $heal) {
+                return ['spell' => $heal, 'target' => 'lowest_hp_ally'];
+            }
+        }
+
+        $offense = $this->strongestReadySpell($ready, 'offensive');
+        if (null !== $offense) {
+            return ['spell' => $offense, 'target' => 'enemy'];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<string, mixed> $actor
+     * @param array<string, mixed> $spell
+     */
+    private function spellIsReady(array $actor, array $spell): bool
+    {
+        if (!empty($spell['requires_magical_weapon'])) {
+            $weaponType = $actor['weaponSubType'] ?? null;
+            $isEnt = isset($actor['race']) && 'ent' === $actor['race'];
+            if (!$isEnt && 'wand' !== $weaponType && 'staff' !== $weaponType) {
+                return false;
+            }
+        }
+
+        $cdKey = (string) ($spell['id'] ?? '');
+        $currentCd = $actor['cooldowns'][$cdKey] ?? 0;
+
+        return $currentCd <= 0;
+    }
+
+    /**
+     * @param list<array<string, mixed>> $spells
+     *
+     * @return array<string, mixed>|null
+     */
+    private function strongestReadySpell(array $spells, string $type): ?array
+    {
+        $best = null;
+        foreach ($spells as $spell) {
+            if (($spell['type'] ?? '') !== $type) {
+                continue;
+            }
+            if (null === $best) {
+                $best = $spell;
+                continue;
+            }
+            $tierDiff = ((int) ($spell['tier'] ?? 1)) <=> ((int) ($best['tier'] ?? 1));
+            if ($tierDiff > 0 || (0 === $tierDiff && ((int) $spell['id']) < ((int) $best['id']))) {
+                $best = $spell;
+            }
+        }
+
+        return $best;
+    }
+
+    /**
+     * @param array<string, mixed> $runState
+     */
+    private function anyAllyBelowHpPercent(array $runState, string $actorSide, int $threshold): bool
+    {
+        $allies = 'a' === $actorSide ? $runState['sideA']['combatants'] : $runState['sideB']['combatants'];
+        foreach ($allies as $ally) {
+            if (($ally['currentHp'] ?? 0) <= 0) {
+                continue;
+            }
+            $maxHp = (int) ($ally['derived']['maxHp'] ?? 0);
+            if ($maxHp <= 0) {
+                continue;
+            }
+            $pct = ($ally['currentHp'] / $maxHp) * 100;
+            if ($pct < $threshold) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Resolve the target for the current actor.
      *
      * Priority:
@@ -831,15 +1075,7 @@ class CombatEngine
             return $this->resolveTargetByFallback($runState, $opposingSideKey, $fallback, $approach);
         }
 
-        // L0: approach-based slot order
-        foreach ($this->getTargetSlotsForApproach($approach) as $slotEnum) {
-            $candidate = $this->getCombatant($runState, $opposingSideKey, $slotEnum->value);
-            if (null !== $candidate && $candidate['currentHp'] > 0) {
-                return [$slotEnum->value, $candidate];
-            }
-        }
-
-        return [null, null];
+        return $this->resolveByApproach($runState, $opposingSideKey, $approach);
     }
 
     /**
@@ -865,12 +1101,38 @@ class CombatEngine
         }
 
         if ('highest_threat' === $fallback) {
-            usort($live, fn (array $a, array $b): int => (int) round($b['derived']['physicalAttack'] - $a['derived']['physicalAttack']));
-
-            return [$live[0]['slot'], $live[0]];
+            return $this->pickHighestPhysicalAttack($live);
         }
 
-        // Default: approach-based order
+        return $this->resolveByApproach($runState, $sideKey, $approach);
+    }
+
+    /**
+     * L0 target from formation approach.
+     *
+     * Aggressive: back row, then front. Balanced: front row, then back.
+     * Defensive: living front row; once it is gone, the survivor with the highest physical attack.
+     *
+     * @param array<string, mixed> $runState
+     *
+     * @return array{0: string|null, 1: array<string, mixed>|null}
+     */
+    private function resolveByApproach(array $runState, string $sideKey, FormationApproach $approach): array
+    {
+        if (FormationApproach::Defensive === $approach) {
+            foreach ([FormationPosition::Front1, FormationPosition::Front2, FormationPosition::Front3] as $slotEnum) {
+                $candidate = $this->getCombatant($runState, $sideKey, $slotEnum->value);
+                if (null !== $candidate && $candidate['currentHp'] > 0) {
+                    return [$slotEnum->value, $candidate];
+                }
+            }
+
+            $sideData = 'a' === $sideKey ? $runState['sideA'] : $runState['sideB'];
+            $live = array_values(array_filter($sideData['combatants'], fn (array $c): bool => $c['currentHp'] > 0));
+
+            return [] === $live ? [null, null] : $this->pickHighestPhysicalAttack($live);
+        }
+
         foreach ($this->getTargetSlotsForApproach($approach) as $slotEnum) {
             $candidate = $this->getCombatant($runState, $sideKey, $slotEnum->value);
             if (null !== $candidate && $candidate['currentHp'] > 0) {
@@ -882,6 +1144,27 @@ class CombatEngine
     }
 
     /**
+     * @param list<array<string, mixed>> $live
+     *
+     * @return array{0: string, 1: array<string, mixed>}
+     */
+    private function pickHighestPhysicalAttack(array $live): array
+    {
+        usort($live, function (array $a, array $b): int {
+            $byAttack = ((int) $b['derived']['physicalAttack']) <=> ((int) $a['derived']['physicalAttack']);
+            if (0 !== $byAttack) {
+                return $byAttack;
+            }
+
+            return strcmp((string) $a['slot'], (string) $b['slot']);
+        });
+
+        return [$live[0]['slot'], $live[0]];
+    }
+
+    /**
+     * Slot order for aggressive and balanced. Defensive is resolved in {@see resolveByApproach()}.
+     *
      * @return list<FormationPosition>
      */
     private function getTargetSlotsForApproach(FormationApproach $approach): array
@@ -981,6 +1264,7 @@ class CombatEngine
             'incomingDamageMultiplier' => $d->getIncomingDamageMultiplier(),
             'isConsistentDamage' => $d->isConsistentDamage(),
             'ignoresRaceSynergy' => $d->ignoresRaceSynergy(),
+            'outgoingDamageMultiplier' => $d->getOutgoingDamageMultiplier(),
         ];
     }
 
@@ -1014,9 +1298,28 @@ class CombatEngine
 
     private function nextInt(int &$state, int $min, int $max): int
     {
+        return self::drawInt($state, $min, $max);
+    }
+
+    /**
+     * Same LCG the turn engine uses. Post-match mortality continues from the saved state.
+     */
+    public static function drawInt(int &$state, int $min, int $max): int
+    {
         $state = (int) (($state * 1103515245 + 12345) & 0x7FFFFFFF);
 
         return $min + ($state % ($max - $min + 1));
+    }
+
+    /**
+     * @param array<string, mixed> $runState
+     */
+    private function recordKill(array &$runState, int $killerHeroId): void
+    {
+        $key = (string) $killerHeroId;
+        $counts = $runState['killsByHeroId'] ?? [];
+        $counts[$key] = ((int) ($counts[$key] ?? 0)) + 1;
+        $runState['killsByHeroId'] = $counts;
     }
 
     /**
@@ -1265,6 +1568,13 @@ class CombatEngine
         $baseAtk = (float) $actor['derived']['physicalAttack'];
         $variance = $actor['derived']['isConsistentDamage'] ? 0 : $this->nextInt($rngState, -10, 10);
         $damage = $baseAtk * (1.0 + $variance / 100.0);
+        $damage *= (float) ($actor['derived']['outgoingDamageMultiplier'] ?? 1.0);
+
+        $actorRace = (string) ($actor['race'] ?? '');
+        $targetRace = (string) ($target['race'] ?? '');
+        if ('orc' === $actorRace && 'orc' !== $targetRace && !$this->hexGridService->isRangedWeapon($weaponType)) {
+            $damage *= 1.20;
+        }
 
         // Apply status effects to damage
         $dmgMult = 1.0;
@@ -1364,7 +1674,10 @@ class CombatEngine
                 'side' => $opposingSideKey,
                 'slot' => $targetSlot,
                 'hero_id' => $target['heroId'],
+                'killer_hero_id' => $actor['heroId'],
             ];
+
+            $this->recordKill($runState, (int) $actor['heroId']);
 
             // Track killed heroes for combat death pipeline
             $runState['killedHeroIds'][] = $target['heroId'];
@@ -1425,6 +1738,7 @@ class CombatEngine
         if ('offensive' === $spellType) {
             $spellPower = (float) $caster['derived']['spellPower'];
             $baseDamage = $spellPower * (1.0 + $tier * 0.15);
+            $baseDamage *= (float) ($caster['derived']['outgoingDamageMultiplier'] ?? 1.0);
 
             $dmgMult = 1.0;
             foreach ($target['statusEffects'] as $eff) {
@@ -1467,7 +1781,9 @@ class CombatEngine
                     'side' => $targetSide,
                     'slot' => $targetSlot,
                     'hero_id' => $target['heroId'],
+                    'killer_hero_id' => $caster['heroId'],
                 ];
+                $this->recordKill($runState, (int) $caster['heroId']);
                 $runState['killedHeroIds'][] = $target['heroId'];
 
                 $roundEvents[] = [

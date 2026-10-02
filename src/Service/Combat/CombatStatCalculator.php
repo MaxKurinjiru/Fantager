@@ -151,6 +151,13 @@ class CombatStatCalculator
         $wil = max(1.0, $hero->getWil() + $bonusWil);
         $lck = max(1.0, $hero->getLck() + $bonusLck);
 
+        $outgoingDamageMultiplier = 1.0;
+        if (CombatStatProfile::Equipped === $profile) {
+            $fatigue = max(0, min(100, $hero->getFatigue()));
+            $kon *= (100 - $fatigue) / 100.0;
+            $outgoingDamageMultiplier = $this->moraleDamageMultiplier($hero->getMorale());
+        }
+
         return $this->computeDerivedStats(
             str: $str,
             dex: $dex,
@@ -176,6 +183,7 @@ class CombatStatCalculator
             critAdder: $critAdder,
             accAdder: $accAdder,
             dodgeAdder: $dodgeAdder,
+            outgoingDamageMultiplier: $outgoingDamageMultiplier,
         );
     }
 
@@ -204,6 +212,7 @@ class CombatStatCalculator
         float $critAdder,
         float $accAdder,
         float $dodgeAdder,
+        float $outgoingDamageMultiplier,
     ): DerivedCombatStats {
         $raceValue = $race->value;
         $isEnt = ('ent' === $raceValue);
@@ -239,7 +248,7 @@ class CombatStatCalculator
         $spellPower = (int) round($spellPowerVal);
 
         $armorFactor = $isDwarf ? 1.15 : 1.0;
-        $armorValueVal = ($itemArmor + ($kon * 1.5)) * $armorFactor * $armorMult;
+        $armorValueVal = ($itemArmor + ($kon * 1.5 * $konFactor)) * $armorFactor * $armorMult;
         $armorValue = (int) round($armorValueVal);
         $physDamageReduction = $armorValue / ($armorValue + 100.0);
 
@@ -306,6 +315,7 @@ class CombatStatCalculator
             incomingDamageMultiplier: $trait?->getIncomingDamageMultiplier() ?? 1.0,
             isConsistentDamage: $trait?->isConsistentDamage() ?? false,
             ignoresRaceSynergy: $trait?->ignoresRaceSynergy() ?? false,
+            outgoingDamageMultiplier: $outgoingDamageMultiplier,
         );
     }
 
@@ -385,5 +395,18 @@ class CombatStatCalculator
                 $magicResMult += $tierFactor * 0.01;
                 break;
         }
+    }
+
+    private function moraleDamageMultiplier(int $morale): float
+    {
+        $morale = max(0, min(100, $morale));
+
+        return match (true) {
+            $morale >= 80 => 1.20,
+            $morale >= 60 => 1.10,
+            $morale >= 40 => 1.0,
+            $morale >= 20 => 0.90,
+            default => 0.80,
+        };
     }
 }

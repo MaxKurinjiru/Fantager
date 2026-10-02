@@ -16,7 +16,7 @@ final class CombatMatchRequest
         private CombatSide $sideB,
         private MatchType $matchType,
         private int $seed,
-        private int $engineVersion = 2,
+        private int $engineVersion = 6,
     ) {
     }
 

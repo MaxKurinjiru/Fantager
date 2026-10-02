@@ -8,7 +8,7 @@ Single source of truth for documentation gaps, design questions, and known incon
 
 | ID | Area | Issue | Severity | Blocks | Status |
 |----|------|-------|----------|--------|--------|
-| 1 | Combat | Wave Messenger (lockstep rounds, max 200, no wave timeout, `stalled` isolation), turn loop, post-match effects (XP, morale, form, fatigue), and **6.1d** combat death → aging → permanent death → graveyard (+ durability loss) are implemented. A KO in `combat_log` / `killed_hero_ids` is not always permanent death (non-elder or failed mortality roll) — that is by design. Still pending: L1–L2 AI, post-match replay UI. See [combat-system.md](systems/combat-system.md) | High | L1+ AI, replay UI | Partially resolved |
+| 1 | Combat | Follow-up steps 2–7 are in: L0 spell pick, defensive targeting, stat formulas, post-match hero XP/form/fatigue, replay from snapshot HP, and full AP movement with ranged units holding weapon range. A KO is not always permanent death. Preparation length and fumble-without-retarget stay locked. Logos, match type, morale, and the initiative queue stay on the design list. | High | — | Resolved |
 | 2 | Item System | Durability & enchanting mechanics referenced in economy docs but undefined in item system | High | Phase 6 enchanting | Open |
 | 3 | Friendly Matches | Rules documented in `calendar-system.md`; combat engine exists — scheduling UI/API (`POST /api/v1/arena/schedule-match`) still pending | Low | Friendly match scheduling | Partially resolved |
 | 4 | Arena Matches | Home-match revenue and ticket price API implemented; friendly match scheduling and extended analytics UI still pending | Low | Friendly scheduling / analytics UI | Partially resolved |

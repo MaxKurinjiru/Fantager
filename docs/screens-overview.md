@@ -478,7 +478,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 12. Combat/Battle Screen (Replay Viewer)
 **When:** After a match has been simulated (or while watching a server-generated replay)
 
-Combat is **fully automated**. Pre-match tactics come from the Formation Setup screen; this screen only **replays** the stored `combat_log`. Players do not issue mid-battle actions. Detail: [screens/12-combat-battle.md](screens/12-combat-battle.md).
+Combat is **fully automated**. Pre-match tactics come from the Formation Setup screen; this screen only **replays** the stored `combat_log`. The replay at `/app/battles/{id}` starts from snapshot HP and folds status ticks. Players do not issue mid-battle actions. Detail: [screens/12-combat-battle.md](screens/12-combat-battle.md).
 
 ### Displayed Information:
 - **Battle Header:**

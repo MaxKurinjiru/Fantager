@@ -1213,7 +1213,7 @@ formation:
   tactics_defensive_desc: Zvýšení rychlosti zotavení zadní řady a hodnocení blokování.
   movement_strategy: Strategie pohybu na hexové mřížce
   movement_advance_to_melee: "Postup do boje zblízka (výchozí: přímý tlak na cíl)"
-  movement_seek_cover_ranged: "Krytí a udržení vzdálenosti (střelba: cca 3 hexy)"
+  movement_seek_cover_ranged: "Krytí a udržení vzdálenosti (střelba: na maximální dostřel zbraně)"
   movement_protect_backline: "Ochrana zadní řady (bodyguard: krytí spojence s nejnižším HP)"
   movement_flank_rear: "Obchvat zezadu (flank: zadní oblouk pro +20 % poškození)"
   match_prep_title: Příprava formace na zápas

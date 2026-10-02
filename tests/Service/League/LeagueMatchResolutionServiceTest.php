@@ -106,6 +106,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->graveyardService,
             $this->raceConfig,
             $this->createMock(\App\Service\Notification\NotificationHelper::class),
+            $this->createMock(\App\Repository\Headquarters\HeadquartersRepository::class),
+            $this->createMock(\App\Service\Economy\FinancialCrisisService::class),
         );
     }
 

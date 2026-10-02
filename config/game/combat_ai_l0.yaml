@@ -1,0 +1,8 @@
+# L0 combat AI thresholds. The engine reads this file via CombatAiL0Config.
+# Empty spell_priorities: heal when any living ally is under the approach
+# threshold; otherwise cast the highest-tier ready offensive spell.
+
+heal_hp_percent:
+  aggressive: 25
+  balanced: 40
+  defensive: 50

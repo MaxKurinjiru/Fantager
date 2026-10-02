@@ -271,6 +271,109 @@ class CombatEngineSpellTest extends TestCase
         $this->assertSame('front_1', $attackEvent['target_slot'], 'Taunt must force target to front_1');
     }
 
+    public function testEmptyPrioritiesCastsHighestTierOffensiveSpell(): void
+    {
+        $spells = [
+            $this->spell(1, 'Spark', 'offensive', 1),
+            $this->spell(2, 'Fireball', 'offensive', 3),
+        ];
+
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, [], $spells, init: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
+
+        $this->assertNotNull($plan);
+        $this->assertSame('Fireball', $plan['spell_name']);
+        $this->assertSame('b', $plan['target_side']);
+    }
+
+    public function testEmptyPrioritiesHealsAllyUnderBalancedThreshold(): void
+    {
+        $spells = [
+            $this->spell(3, 'Mend', 'defensive', 1),
+            $this->spell(4, 'Bolt', 'offensive', 2),
+        ];
+
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, [], $spells, init: 50, hpValues: ['front_2' => 30]);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
+
+        $this->assertNotNull($plan);
+        $this->assertSame('Mend', $plan['spell_name']);
+        $this->assertSame('a', $plan['target_side']);
+        $this->assertSame('front_2', $plan['target_slot']);
+    }
+
+    public function testEmptyPrioritiesSkipHealWhenAllyIsAboveAggressiveThreshold(): void
+    {
+        $spells = [
+            $this->spell(3, 'Mend', 'defensive', 1),
+            $this->spell(4, 'Bolt', 'offensive', 2),
+        ];
+
+        $sideA = $this->buildSide(1, 100, FormationApproach::Aggressive, [], $spells, init: 50, hpValues: ['front_2' => 30]);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
+
+        $this->assertNotNull($plan);
+        $this->assertSame('Bolt', $plan['spell_name']);
+    }
+
+    public function testExplicitSpellPriorityBeatsHigherTierSpell(): void
+    {
+        $spells = [
+            $this->spell(1, 'Spark', 'offensive', 1),
+            $this->spell(2, 'Fireball', 'offensive', 3),
+        ];
+        $priorities = [
+            ['spell_id' => 1, 'when' => 'always', 'target' => 'enemy'],
+        ];
+
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, $priorities, $spells, init: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
+
+        $this->assertNotNull($plan);
+        $this->assertSame('Spark', $plan['spell_name']);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $events
+     *
+     * @return array<string, mixed>|null
+     */
+    private function firstSpellPlan(array $events): ?array
+    {
+        foreach ($events as $event) {
+            if ('plan_action' === ($event['type'] ?? '') && 'spell' === ($event['action_type'] ?? '') && 'a' === ($event['side'] ?? '') && 'front_1' === ($event['slot'] ?? '')) {
+                return $event;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{id: int, name: string, school: string, type: string, mana_cost: int, cooldown: int, tier: int, effects: array<mixed>}
+     */
+    private function spell(int $id, string $name, string $type, int $tier): array
+    {
+        return [
+            'id' => $id,
+            'name' => $name,
+            'school' => 'defensive' === $type ? 'light' : 'fire',
+            'type' => $type,
+            'mana_cost' => 0,
+            'cooldown' => 1,
+            'tier' => $tier,
+            'effects' => [],
+        ];
+    }
+
     // --- Helpers ---
 
     /**

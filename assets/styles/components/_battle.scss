@@ -314,6 +314,30 @@
     color: var(--color-text-primary);
   }
 
+  .battle-event-text--danger {
+    color: var(--color-error-text);
+  }
+
+  .battle-event-text--warning {
+    color: var(--color-warning-text);
+  }
+
+  .battle-event-text--info {
+    color: var(--color-info-text);
+  }
+
+  .battle-event-text--muted {
+    color: var(--color-text-muted);
+  }
+
+  .battle-event-text--italic {
+    font-style: italic;
+  }
+
+  .battle-event-text--strong {
+    font-weight: 700;
+  }
+
   .forfeit-message {
     @apply text-center py-8;
   }

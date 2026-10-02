@@ -1214,7 +1214,7 @@ formation:
   tactics_defensive_desc: Increase back line recovery speed and block rating.
   movement_strategy: Hex Grid Movement Strategy
   movement_advance_to_melee: "Advance to Melee (Default: Direct push towards target)"
-  movement_seek_cover_ranged: "Seek Cover & Maintain Range (Ranged: Keep 3 hex distance)"
+  movement_seek_cover_ranged: "Seek Cover & Maintain Range (Ranged: hold the weapon's maximum range)"
   movement_protect_backline: "Protect Backline (Bodyguard: Cover lowest HP ally)"
   movement_flank_rear: "Flank to Rear (Flank: Target rear 3 hexes for +20% damage)"
   match_prep_title: Match Formation Prep

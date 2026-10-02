@@ -220,16 +220,20 @@ export default class extends Controller {
         if (!sideData || !sideData.combatants) return [];
 
         const combatants = sideData.combatants.map(hero => {
-            const maxHp = hero.derived ? hero.derived.maxHp : (hero.maxHp || 100);
+            const derived = hero.derived || {};
+            const maxHp = derived.maxHp ?? hero.maxHp ?? 100;
+            // derived.currentHp is the match-start snapshot (form). The top-level
+            // currentHp on a finished run state is the end-of-match value.
+            const startingHp = derived.currentHp ?? maxHp;
             const initialCoords = (SLOT_HEX_MAP[sideKey] && SLOT_HEX_MAP[sideKey][hero.slot])
                 ? SLOT_HEX_MAP[sideKey][hero.slot]
                 : { q: hero.q || 0, r: hero.r || 0 };
 
             return {
                 ...hero,
-                currentHp: maxHp,
+                currentHp: Math.max(0, startingHp),
                 maxHp: maxHp,
-                isKo: false,
+                isKo: startingHp <= 0,
                 q: initialCoords.q,
                 r: initialCoords.r
             };
@@ -250,6 +254,14 @@ export default class extends Controller {
                     }
                 } else if ((event.type === 'damage' || event.type === 'heal_applied') && event.target_side === sideKey) {
                     const hero = combatants.find(c => c.slot === event.target_slot || c.heroId === event.hero_id);
+                    if (hero && event.hp_after !== undefined) {
+                        hero.currentHp = Math.max(0, event.hp_after);
+                        if (hero.currentHp <= 0) {
+                            hero.isKo = true;
+                        }
+                    }
+                } else if (event.type === 'status_tick' && event.side === sideKey) {
+                    const hero = combatants.find(c => c.slot === event.slot || c.heroId === event.hero_id);
                     if (hero && event.hp_after !== undefined) {
                         hero.currentHp = Math.max(0, event.hp_after);
                         if (hero.currentHp <= 0) {

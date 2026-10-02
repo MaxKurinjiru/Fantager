@@ -4,7 +4,7 @@ Reference: [screens-overview.md](../screens-overview.md#12-combatbattle-screen),
 
 Purpose: Watch a **completed** (or freshly simulated) match. Combat itself is fully automated — players do **not** issue mid-battle actions. Pre-match behaviour is configured via the [Formation System](../systems/formation-system.md) (`approach` now; targeting / spell priorities in later phases).
 
-**Status:** Not implemented. Blocked on wave orchestration + turn-resolution engine and full `combat_log` events ([known-issues.md](../known-issues.md) #1). Product surface is **post-match replay only** (no live / in-progress match UI).
+**Status:** Implemented at `/app/battles/{id}` (`Web\BattleController`, `templates/battle/index.html.twig`, `hex_battle_replay_controller.js`). Post-match replay only (no live / in-progress match UI). The canvas folds `status_tick` and starts from snapshot `currentHp`. Logos, match type, morale, and the initiative queue stay on the design list below and are not part of steps 2–7.
 
 ---
 
@@ -68,7 +68,13 @@ Replay controls only — **no** Perform Action, target selection, Auto-Battle to
 
 Canonical `combat_log` format (event stream + seed, event payloads, wave orchestration): [combat-system.md — Simulation Contract](../systems/combat-system.md#simulation-contract).
 
-## Sections still to fill (implementation)
+## What the MVP already does
 
-- Replay client state machine (speed, seek via event fold, sync with log)
-- Web route / template mapping (`/app/battles/{id}` planned — see [route-map.md](../route-map.md#combat))
+- Route `/app/battles/{id}` (participant teams only) and `GET /api/v1/battles/{id}` plus `/log`
+- Hex canvas over `run_state` + `combat_log`: play / pause, step, scrubber, speed ×1 / ×2 / ×4. Playback starts from snapshot `currentHp` and folds `damage`, `heal_applied`, and `status_tick`
+- Round accordion fed from log events, with semantic event styles
+- Forfeit fixtures (no `run_state`) show the forfeit copy instead of the canvas
+
+## Still open
+
+- Design list, not in steps 2–7: team logos, match-type label, morale indicators, initiative queue, team-stats sidebar, skip-to-end button (the scrubber already seeks)

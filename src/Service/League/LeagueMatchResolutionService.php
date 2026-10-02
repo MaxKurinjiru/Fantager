@@ -15,6 +15,7 @@ use App\Entity\League\LeagueStanding;
 use App\Entity\Team\Team;
 use App\Enum\BattleResult;
 use App\Enum\BattleStatus;
+use App\Enum\FacilityType;
 use App\Enum\HeroStatus;
 use App\Enum\LeagueFixtureStatus;
 use App\Enum\MatchType;
@@ -22,7 +23,9 @@ use App\Enum\MemorialCause;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueStandingRepository;
+use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Combat\CombatEngine;
+use App\Service\Economy\FinancialCrisisService;
 use App\Service\Combat\CombatMatchRequestBuilder;
 use App\Service\Combat\CombatSeedGenerator;
 use App\Service\Config\RaceConfig;
@@ -58,6 +61,8 @@ class LeagueMatchResolutionService
         private readonly GraveyardService $graveyardService,
         private readonly RaceConfig $raceConfig,
         private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
+        private readonly HeadquartersRepository $headquartersRepository,
+        private readonly FinancialCrisisService $financialCrisisService,
     ) {
     }
 
@@ -401,8 +406,28 @@ class LeagueMatchResolutionService
             }
         }
 
-        // 8. Process combat deaths and aging
+        $killsByHeroId = $resultData['kills_by_hero_id'] ?? [];
+        $killedSet = array_fill_keys(array_map('intval', $killedHeroIds), true);
+        $xpTotal = 0;
+        $xpTotal += $this->applySideRewards($homeFormation, $homeTeam, BattleResult::WinA === $battleResult, $killedSet, $killsByHeroId);
+        $xpTotal += $this->applySideRewards($awayFormation, $awayTeam, BattleResult::WinB === $battleResult, $killedSet, $killsByHeroId);
+        $battle->setXpAwarded($xpTotal);
+
+        $rngState = (int) ($resultData['rng_state'] ?? $combatLog['seed'] ?? 1);
+        if ($rngState <= 0) {
+            $rngState = 1;
+        }
+
+        // 8. Process combat deaths and aging. Every KO consumes one mortality roll
+        // in killed_hero_ids order, including heroes who are not elders, so a later
+        // elder sees the same generator state for the same log.
         if (!empty($killedHeroIds)) {
+            $rollsByHero = [];
+            foreach ($killedHeroIds as $rawId) {
+                $id = (int) $rawId;
+                $rollsByHero[$id][] = CombatEngine::drawInt($rngState, 0, 99);
+            }
+
             $deathCounts = array_count_values(array_map('intval', $killedHeroIds));
             foreach ($deathCounts as $heroId => $deathsInMatch) {
                 $hero = $this->em->find(Hero::class, $heroId);
@@ -426,9 +451,7 @@ class LeagueMatchResolutionService
                     $deathChance = 0.05 + (0.04 * max(0, $yearsAboveThreshold));
                     $deathChance = min(1.0, $deathChance);
 
-                    // Multiple deaths in one match each trigger a separate mortality check
-                    for ($i = 0; $i < $deathsInMatch; ++$i) {
-                        $roll = random_int(0, 99);
+                    foreach ($rollsByHero[$heroId] ?? [] as $roll) {
                         if ($roll < (int) ($deathChance * 100)) {
                             $diedPermanently = true;
                             break;
@@ -558,5 +581,68 @@ class LeagueMatchResolutionService
         }
 
         return $standing;
+    }
+
+    /**
+     * @param array<int, true>             $killedSet
+     * @param array<string|int, int|mixed> $killsByHeroId
+     */
+    private function applySideRewards(
+        ?Formation $formation,
+        Team $team,
+        bool $won,
+        array $killedSet,
+        array $killsByHeroId,
+    ): int {
+        if (null === $formation) {
+            return 0;
+        }
+
+        $multiplier = $this->libraryXpMultiplier($team);
+        $awarded = 0;
+
+        foreach ($formation->getSlots() as $slot) {
+            $hero = $slot->getHero();
+            if (null === $hero) {
+                continue;
+            }
+            $heroId = $hero->getId();
+            if (null === $heroId) {
+                continue;
+            }
+
+            $wasKo = isset($killedSet[$heroId]);
+            $kills = (int) ($killsByHeroId[(string) $heroId] ?? $killsByHeroId[$heroId] ?? 0);
+
+            $fatigue = $hero->getFatigue() + 15 + ($wasKo ? 10 : 0);
+            $hero->setFatigue(min(100, $fatigue));
+
+            $formLoss = 8 + ($wasKo ? 7 : 0);
+            $hero->setForm(max(0, $hero->getForm() - $formLoss));
+
+            $xp = (int) round((20 + ($won ? 15 : 0) + (10 * $kills)) * $multiplier);
+            $hero->setXp($hero->getXp() + $xp);
+            $awarded += $xp;
+        }
+
+        return $awarded;
+    }
+
+    private function libraryXpMultiplier(Team $team): float
+    {
+        $hq = $this->headquartersRepository->findOneBy(['team' => $team]);
+        if (null === $hq || !$this->financialCrisisService->areHqBonusesActive($team)) {
+            return 1.0;
+        }
+
+        foreach ($hq->getFacilities() as $facility) {
+            if (FacilityType::Library === $facility->getType()) {
+                $pct = (float) ($facility->getPassiveBonuses()['xp_gain_pct'] ?? 0);
+
+                return 1.0 + ($pct / 100.0);
+            }
+        }
+
+        return 1.0;
     }
 }

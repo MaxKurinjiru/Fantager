@@ -66,7 +66,7 @@
 
                     <div class="hex-replay-controls__speed-wrapper">
                         <span class="hex-replay-controls__label">{{ 'battle.speed'|trans }}:</span>
-                        <select class="form-select form-select-sm hex-replay-controls__select" data-action="change->hex-battle-replay#onSpeedChange" data-hex-battle-replay-target="speedSelect" aria-label="{{ 'battle.speed'|trans }}">
+                        <select class="hex-replay-controls__select" data-action="change->hex-battle-replay#onSpeedChange" data-hex-battle-replay-target="speedSelect" aria-label="{{ 'battle.speed'|trans }}">
                             <option value="1">1x</option>
                             <option value="2" selected>2x</option>
                             <option value="4">4x</option>
@@ -208,7 +208,7 @@
             </span>
         {% elseif event.type == 'heal_blocked' %}
             {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
-            <span class="battle-event-text text-danger">
+            <span class="battle-event-text battle-event-text--danger">
                 {{ 'battle.heal_blocked'|trans({
                     '%target%': target_name,
                     '%reason%': event.reason|trans
@@ -225,7 +225,7 @@
             </span>
         {% elseif event.type == 'status_tick' %}
             {% set target_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
-            <span class="battle-event-text font-italic">
+            <span class="battle-event-text battle-event-text--italic">
                 {{ 'battle.status_tick'|trans({
                     '%target%': target_name,
                     '%effect%': event.effect|trans,
@@ -235,7 +235,7 @@
             </span>
         {% elseif event.type == 'status_expired' %}
             {% set target_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
-            <span class="battle-event-text text-muted">
+            <span class="battle-event-text battle-event-text--muted">
                 {{ 'battle.status_expired'|trans({
                     '%target%': target_name,
                     '%effect%': event.effect|trans
@@ -243,14 +243,14 @@
             </span>
         {% elseif event.type == 'skip_turn' %}
             {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
-            <span class="battle-event-text text-warning">
+            <span class="battle-event-text battle-event-text--warning">
                 {{ 'battle.skip_turn'|trans({'%hero%': hero_name}) }}
             </span>
         {% elseif event.type == 'plan_action' %}
             {% if event.action_type == 'spell' %}
                 {% set caster_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
                 {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
-                <span class="battle-event-text text-info font-weight-bold">
+                <span class="battle-event-text battle-event-text--info battle-event-text--strong">
                     {{ 'battle.plan_action_spell'|trans({
                         '%caster%': caster_name,
                         '%spell%': event.spell_name,
@@ -261,7 +261,7 @@
             {% else %}
                 {% set attacker_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
                 {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
-                <span class="battle-event-text text-info font-weight-bold">
+                <span class="battle-event-text battle-event-text--info battle-event-text--strong">
                     {{ 'battle.plan_action_attack'|trans({
                         '%attacker%': attacker_name,
                         '%target%': target_name,
@@ -271,7 +271,7 @@
             {% endif %}
         {% elseif event.type == 'preparing_action_tick' %}
             {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
-            <span class="battle-event-text text-muted font-italic">
+            <span class="battle-event-text battle-event-text--muted battle-event-text--italic">
                 {{ 'battle.preparing_action_tick'|trans({
                     '%hero%': hero_name,
                     '%rounds%': event.rounds_remaining
@@ -280,7 +280,7 @@
         {% elseif event.type == 'action_interrupted' %}
             {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
             {% set reason_trans = ('battle.reason_' ~ event.reason)|trans %}
-            <span class="battle-event-text text-danger font-weight-bold">
+            <span class="battle-event-text battle-event-text--danger battle-event-text--strong">
                 {{ 'battle.action_interrupted'|trans({
                     '%hero%': hero_name,
                     '%reason%': reason_trans
@@ -289,7 +289,7 @@
         {% elseif event.type == 'action_fumble' %}
             {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
             {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
-            <span class="battle-event-text text-warning font-weight-bold">
+            <span class="battle-event-text battle-event-text--warning battle-event-text--strong">
                 {{ 'battle.action_fumble'|trans({
                     '%hero%': hero_name,
                     '%target%': target_name

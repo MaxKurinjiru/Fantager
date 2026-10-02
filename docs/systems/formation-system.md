@@ -29,7 +29,7 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
   - **Team A (Home / Left):** `front_1` (4,3), `front_2` (4,6), `front_3` (4,9), `back_1` (1,2), `back_2` (1,5), `back_3` (1,8).
   - **Team B (Away / Right):** `front_1` (12,3), `front_2` (12,6), `front_3` (12,9), `back_1` (15,2), `back_2` (15,5), `back_3` (15,8).
   - Lane centres are at least 3 hexes apart so Ent/Giant **7-hex flowers** do not overlap at kickoff. Front row is staggered +1 r vs back so a lane's backliner does not share LoS with its frontliner. See [combat-system.md](combat-system.md#unit-footprint-size).
-- **Movement strategy:** Formation-wide `strategy.movement_goal` (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`) stored on each slot.
+- **Movement strategy:** Formation-wide `strategy.movement_goal` (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`) stored on each slot. `seek_cover_ranged` holds the weapon's maximum range.
 - **Roster minimum:** 10 heroes at team start; 6 combat-ready required to avoid automatic forfeit
 
 ## Fixture Formation Assignment
@@ -42,11 +42,11 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 
 ## Strategy JSON Schema (Phased)
 
-Per-slot `strategy` and `spell_priorities` are stored as JSON. Today the Formation UI persists empty values (`strategy: {}`, `spell_priorities: []`) and formation-level `approach` (`aggressive` | `balanced` | `defensive`). Combat AI phases: [combat-system.md — Formation AI](combat-system.md#formation-ai-phased).
+Per-slot `strategy` and `spell_priorities` are stored as JSON. The Formation UI saves formation-level `approach` (`aggressive` | `balanced` | `defensive`) and copies one `strategy.movement_goal` onto every slot. It always writes `spell_priorities: []` (no per-slot target or spell editor). Combat AI phases: [combat-system.md — Formation AI](combat-system.md#formation-ai-phased).
 
 ### Empty / missing → engine defaults
 
-If `strategy` is `{}` or `spell_priorities` is `[]`, the combat engine applies **L0 defaults** derived from `Formation.approach` and position (front vs back). No client-side required fields for match resolution.
+If `target_order` is missing, the engine uses the approach (`aggressive`: back row then front; `balanced`: front row then back; `defensive`: living front row, then the survivor with the highest physical attack). If `spell_priorities` is `[]`, the engine picks one ready equipped spell (heal under the approach threshold, otherwise the highest-tier offensive spell). NPC tactics may still fill `spell_priorities` before kickoff, and that list wins over the L0 pick. No client-side required fields for match resolution.
 
 ### L1 — targeting (`strategy`)
 
@@ -82,23 +82,24 @@ Ordered list; first matching ready spell wins that evaluation pass (exact preced
 ]
 ```
 
-| `when` (planned) | Trigger |
-|------------------|---------|
-| `always` | Eligible whenever the spell is ready |
-| `ally_hp_below` | Any / chosen ally under `threshold` % HP |
-| `self_hp_below` | Caster under `threshold` % HP |
-| `enemy_status` | Optional later — enemy has listed status |
+| `when` | Trigger | Engine |
+|---------|---------|--------|
+| `always` | Eligible whenever the spell is ready | Read |
+| `ally_hp_below` | Any living ally under `threshold` % HP | Read |
+| `self_hp_below` | Caster under `threshold` % HP | Read |
+| `enemy_status` | Enemy has a listed status | Not implemented (not in steps 2–7) |
 
-| `target` (planned) | Resolve to |
-|--------------------|------------|
-| `priority` | Current targeting pick from `strategy` |
-| `lowest_hp_ally` / `self` / `lowest_hp_enemy` | Fixed rules |
+| `target` | Resolve to | Engine |
+|----------|------------|--------|
+| `priority` | Current targeting pick from `strategy` | Read (default when `target` is omitted) |
+| `lowest_hp_ally` / `self` | That ally, or the caster | Read |
+| `lowest_hp_enemy` | Lowest-HP living enemy | Not implemented (not in steps 2–7) |
 
 Formation-level spell overrides vs hero-equipped fallback follow [game-summary.md](../game-summary.md#combat-strategy-settings) (formation config wins when present).
 
 ### L3 — deferred
 
-Explicit action sequences and advanced conditional tactics (substitution, mid-match formation switch) remain design-only until L0–L2 ship. Do not invent L3 field names in production code until this section is extended.
+Explicit action sequences and advanced conditional tactics (substitution, mid-match formation switch) stay design-only. Do not invent L3 field names in production code until this section is extended.
 
 ## Summary
 

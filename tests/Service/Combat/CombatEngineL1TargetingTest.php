@@ -165,6 +165,75 @@ class CombatEngineL1TargetingTest extends TestCase
         $this->assertSame('back_1', $attackAfterKo, 'highest_threat fallback must target back_1 (highest attack)');
     }
 
+    public function testDefensiveOpensOnTheFrontRow(): void
+    {
+        $request = new CombatMatchRequest(
+            $this->buildSide(teamId: 1, heroIdBase: 100, approach: FormationApproach::Defensive),
+            $this->buildSideWithVariableAttack(
+                teamId: 2,
+                heroIdBase: 200,
+                approach: FormationApproach::Balanced,
+                attackValues: ['back_2' => 999, 'front_1' => 1, 'front_2' => 1, 'front_3' => 1, 'back_1' => 1, 'back_3' => 1],
+            ),
+            MatchType::League,
+            seed: 1,
+        );
+
+        $firstAttack = $this->findFirstAttackEvent($this->engine->simulate($request)->getCombatLog()['events'], 'b');
+        $this->assertNotNull($firstAttack);
+        $this->assertStringStartsWith('front_', $firstAttack['target_slot'] ?? '');
+    }
+
+    public function testDefensiveSwitchesToHighestAttackAfterTheFrontRowFalls(): void
+    {
+        $sideB = $this->buildSideWithVariableAttack(
+            teamId: 2,
+            heroIdBase: 200,
+            approach: FormationApproach::Balanced,
+            attackValues: ['front_1' => 1, 'front_2' => 1, 'front_3' => 1, 'back_1' => 10, 'back_2' => 80, 'back_3' => 20],
+            hpValues: ['front_1' => 0, 'front_2' => 0, 'front_3' => 0],
+        );
+
+        $defensive = new CombatMatchRequest(
+            $this->buildSide(teamId: 1, heroIdBase: 100, approach: FormationApproach::Defensive),
+            $sideB,
+            MatchType::League,
+            seed: 1,
+        );
+        $defensiveAttack = $this->findFirstAttackEvent($this->engine->simulate($defensive)->getCombatLog()['events'], 'b');
+        $this->assertNotNull($defensiveAttack);
+        $this->assertSame('back_2', $defensiveAttack['target_slot']);
+
+        $balanced = new CombatMatchRequest(
+            $this->buildSide(teamId: 1, heroIdBase: 100, approach: FormationApproach::Balanced),
+            $sideB,
+            MatchType::League,
+            seed: 1,
+        );
+        $balancedAttack = $this->findFirstAttackEvent($this->engine->simulate($balanced)->getCombatLog()['events'], 'b');
+        $this->assertNotNull($balancedAttack);
+        $this->assertSame('back_1', $balancedAttack['target_slot']);
+    }
+
+    public function testTargetOrderOutranksDefensiveApproach(): void
+    {
+        $request = new CombatMatchRequest(
+            $this->buildSide(
+                teamId: 1,
+                heroIdBase: 100,
+                approach: FormationApproach::Defensive,
+                strategy: ['target_order' => ['back_2', 'front_1']],
+            ),
+            $this->buildSide(teamId: 2, heroIdBase: 200, approach: FormationApproach::Balanced),
+            MatchType::League,
+            seed: 1,
+        );
+
+        $firstAttack = $this->findFirstAttackEvent($this->engine->simulate($request)->getCombatLog()['events'], 'b');
+        $this->assertNotNull($firstAttack);
+        $this->assertSame('back_2', $firstAttack['target_slot']);
+    }
+
     // --- helpers ---
 
     /**
@@ -235,16 +304,19 @@ class CombatEngineL1TargetingTest extends TestCase
 
     /**
      * @param array<string, int> $attackValues
+     * @param array<string, int> $hpValues
      */
     private function buildSideWithVariableAttack(
         int $teamId,
         int $heroIdBase,
         FormationApproach $approach,
         array $attackValues,
+        array $hpValues = [],
     ): CombatSide {
         $combatants = [];
         foreach (FormationPosition::cases() as $position) {
             $atk = $attackValues[$position->value] ?? 25;
+            $hp = $hpValues[$position->value] ?? 100;
             $combatants[] = new CombatantSnapshot(
                 $heroIdBase + array_search($position, FormationPosition::cases(), true),
                 'Hero '.$position->value,
@@ -254,7 +326,7 @@ class CombatEngineL1TargetingTest extends TestCase
                 100,
                 0,
                 50,
-                $this->buildDerived(hp: 100, attack: $atk),
+                $this->buildDerived(hp: $hp, attack: $atk),
             );
         }
 

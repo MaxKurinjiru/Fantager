@@ -166,7 +166,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
   - **6.1b** — ✅ L1 targeting (`strategy.target_order`); freeze slot JSON schema ([formation-system.md](systems/formation-system.md#strategy-json-schema-phased)).
   - **6.1c** — ✅ L2 spell conditions; **post-match** replay viewer MVP (not live).
   - **6.1d** — ✅ Combat deaths → aging → graveyard; item durability loss after battle.
-  - ✅ Status effects per tick (speed order); post-match XP / form / fatigue / morale on completion (aging in 6.1d).
+  - ✅ Status effects per tick (speed order). Post-match team morale, mastery XP, hero XP, form, fatigue, durability, and aging ship with completion.
 - **API Contracts**:
   - `POST /api/v1/combat/simulate` — Practice/sandbox match (requires 6 combat-ready heroes per team); optional `seed` (planned).
   - `GET /api/v1/battles/{id}` / `GET /api/v1/battles/{id}/log` — ✅ Result + replay log after completion.
@@ -175,7 +175,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Verification**:
   - ✅ Unit tests for combat math, seed + RNG-state reproducibility across wave messages, barrier ignoring `stalled`, hard stop at round 200.
   - ✅ Forfeit: <6 combat-ready → 3–0 / 0–0 without enqueueing waves.
-- **Status**: ✅ Complete — 6.1a-d fully implemented.
+- **Status**: ✅ Core 6.1a–d is in the tree, and follow-up steps 2–7 are in (L0 spell pick, defensive targeting, stat formulas, hero XP/form/fatigue, replay fidelity, full AP movement). Preparation length and fumble-without-retarget stay as designed. Logos, match type, morale, and the initiative queue stay on the battle-screen design list.
 
 ### Step 6.2: Calendar & Server Ticks System
 - **Database & Entities**: `KingdomTickLog` (implemented).
