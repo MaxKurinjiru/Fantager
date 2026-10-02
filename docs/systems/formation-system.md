@@ -87,13 +87,13 @@ Ordered list; first matching ready spell wins that evaluation pass (exact preced
 | `always` | Eligible whenever the spell is ready | Read |
 | `ally_hp_below` | Any living ally under `threshold` % HP | Read |
 | `self_hp_below` | Caster under `threshold` % HP | Read |
-| `enemy_status` | Enemy has a listed status | Not implemented (not in steps 2–7) |
+| `enemy_status` | Enemy has a listed status | Not implemented (not in steps 2–7) — engine **skips** the entry (condition never met); later priorities can still match |
 
 | `target` | Resolve to | Engine |
 |----------|------------|--------|
 | `priority` | Current targeting pick from `strategy` | Read (default when `target` is omitted) |
 | `lowest_hp_ally` / `self` | That ally, or the caster | Read |
-| `lowest_hp_enemy` | Lowest-HP living enemy | Not implemented (not in steps 2–7) |
+| `lowest_hp_enemy` | Lowest-HP living enemy | Not implemented (not in steps 2–7) — if used as `target`, engine falls back to the current approach/priority pick |
 
 Formation-level spell overrides vs hero-equipped fallback follow [game-summary.md](../game-summary.md#combat-strategy-settings) (formation config wins when present).
 

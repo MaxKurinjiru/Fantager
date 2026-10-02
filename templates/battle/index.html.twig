@@ -187,7 +187,7 @@
             <span class="battle-event-badge battle-event-badge--ko">
                 {{ 'battle.ko'|trans({'%hero%': hero_name}) }}
             </span>
-        {% elseif event.type == 'spell_cast' %}
+        {% elseif event.type == 'spell' %}
             {% set caster_name = (event.caster_side is defined and event.caster_slot is defined and lineup[event.caster_side] is defined and lineup[event.caster_side][event.caster_slot] is defined) ? lineup[event.caster_side][event.caster_slot].name : 'battle.unknown_actor'|trans %}
             {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
             <span class="battle-event-text">

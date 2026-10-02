@@ -168,7 +168,7 @@ class CombatEngineTest extends TestCase
         $this->tuneFront($runState, 'sideA', static function (array &$combatant) use ($aq, $ar): void {
             $combatant['q'] = $aq;
             $combatant['r'] = $ar;
-            $combatant['derived']['baseInitiative'] = 40;
+            $combatant['derived']['baseInitiative'] = 10;
         });
         $this->tuneFront($runState, 'sideB', static function (array &$combatant) use ($bq, $br): void {
             $combatant['q'] = $bq;

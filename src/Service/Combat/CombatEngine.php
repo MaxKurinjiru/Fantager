@@ -374,6 +374,7 @@ class CombatEngine
                             }
                         }
                     }
+                    // Unknown when values (enemy_status, …) stay unmet — skip this priority entry.
 
                     if ($conditionMet) {
                         $castSpell = $spell;
@@ -619,6 +620,9 @@ class CombatEngine
         }
     }
 
+    /**
+     * @param array<string, mixed> $runState
+     */
     private function chooseMoveHex(
         array $runState,
         HexCoordinate $actorHex,
@@ -674,6 +678,8 @@ class CombatEngine
 
     /**
      * One step that increases engagement, preferring a landing spot at weapon range.
+     *
+     * @param array<string, mixed> $runState
      */
     private function retreatHex(
         array $runState,
@@ -1415,6 +1421,14 @@ class CombatEngine
 
                 // Check KO from status tick damage (e.g. burn, poison)
                 if ($combatant['currentHp'] <= 0) {
+                    // Give score to opponent (no killer — status-tick KO awards no kill XP)
+                    $opposingSideKey = 'a' === $sideKey ? 'b' : 'a';
+                    if ('a' === $opposingSideKey) {
+                        ++$runState['scoreA'];
+                    } else {
+                        ++$runState['scoreB'];
+                    }
+
                     $roundEvents[] = [
                         't' => count($runState['events']) + count($roundEvents),
                         'type' => 'ko',
@@ -1424,19 +1438,12 @@ class CombatEngine
                     ];
                     $runState['killedHeroIds'][] = $combatant['heroId'];
 
-                    // Give score to opponent
-                    $opposingSideKey = 'a' === $sideKey ? 'b' : 'a';
                     $roundEvents[] = [
                         't' => count($runState['events']) + count($roundEvents),
                         'type' => 'kill_score',
-                        'side' => $opposingSideKey,
+                        'score_a' => $runState['scoreA'],
+                        'score_b' => $runState['scoreB'],
                     ];
-
-                    if ('a' === $opposingSideKey) {
-                        ++$runState['scoreA'];
-                    } else {
-                        ++$runState['scoreB'];
-                    }
                 }
             }
         }
@@ -1726,7 +1733,10 @@ class CombatEngine
 
         $roundEvents[] = [
             't' => count($runState['events']) + count($roundEvents),
-            'type' => 'spell_cast',
+            'type' => 'spell',
+            'side' => $casterSide,
+            'slot' => $casterSlot,
+            'hero_id' => $caster['heroId'],
             'caster_side' => $casterSide,
             'caster_slot' => $casterSlot,
             'target_side' => $targetSide,
@@ -1775,6 +1785,12 @@ class CombatEngine
             }
 
             if ($target['currentHp'] <= 0) {
+                if ('a' === $casterSide) {
+                    ++$runState['scoreA'];
+                } else {
+                    ++$runState['scoreB'];
+                }
+
                 $roundEvents[] = [
                     't' => count($runState['events']) + count($roundEvents),
                     'type' => 'ko',
@@ -1789,14 +1805,9 @@ class CombatEngine
                 $roundEvents[] = [
                     't' => count($runState['events']) + count($roundEvents),
                     'type' => 'kill_score',
-                    'side' => $casterSide,
+                    'score_a' => $runState['scoreA'],
+                    'score_b' => $runState['scoreB'],
                 ];
-
-                if ('a' === $casterSide) {
-                    ++$runState['scoreA'];
-                } else {
-                    ++$runState['scoreB'];
-                }
             }
         } elseif ('defensive' === $spellType) {
             if ('undead' === $target['race'] && 'undead' !== $caster['race']) {

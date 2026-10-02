@@ -302,9 +302,11 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->seedGenerator,
             $this->combatEngine,
             $this->messageBus,
-            $this->createMock(\App\Service\Graveyard\GraveyardService::class),
-            $this->createMock(RaceConfig::class),
+            $this->graveyardService,
+            $this->raceConfig,
             $this->createMock(\App\Service\Notification\NotificationHelper::class),
+            $this->createMock(\App\Repository\Headquarters\HeadquartersRepository::class),
+            $this->createMock(\App\Service\Economy\FinancialCrisisService::class),
         );
 
         $partial->expects($this->once())

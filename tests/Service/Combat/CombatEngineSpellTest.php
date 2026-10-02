@@ -54,8 +54,8 @@ class CombatEngineSpellTest extends TestCase
         $result = $this->engine->simulate($request);
         $events = $result->getCombatLog()['events'];
 
-        // Should contain spell_cast fireball
-        $spellCastEvent = $this->findEvent($events, 'spell_cast');
+        // Should contain spell fireball
+        $spellCastEvent = $this->findEvent($events, 'spell');
         $this->assertNotNull($spellCastEvent);
         $this->assertSame(10, $spellCastEvent['spell_id']);
 
@@ -113,7 +113,7 @@ class CombatEngineSpellTest extends TestCase
         $events = $result->getCombatLog()['events'];
 
         // Should heal the low HP ally
-        $spellCastEvent = $this->findEvent($events, 'spell_cast');
+        $spellCastEvent = $this->findEvent($events, 'spell');
         $this->assertNotNull($spellCastEvent);
         $this->assertSame('front_2', $spellCastEvent['target_slot']);
 
@@ -339,6 +339,61 @@ class CombatEngineSpellTest extends TestCase
 
         $this->assertNotNull($plan);
         $this->assertSame('Spark', $plan['spell_name']);
+    }
+
+    public function testSpellKillScoreEmitsContractPayload(): void
+    {
+        $spell = [
+            'id' => 10,
+            'name' => 'Nuke',
+            'school' => 'fire',
+            'type' => 'offensive',
+            'mana_cost' => 0,
+            'cooldown' => 1,
+            'tier' => 5,
+            'effects' => [],
+        ];
+        $priorities = [
+            ['spell_id' => 10, 'when' => 'always', 'target' => 'enemy'],
+        ];
+
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, $priorities, [$spell], spellPower: 500, init: 99);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], hp: 1, init: 1);
+
+        $events = $this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events'];
+
+        $killScore = null;
+        foreach ($events as $event) {
+            if ('kill_score' === ($event['type'] ?? '') && isset($event['score_a'], $event['score_b'])) {
+                $killScore = $event;
+                break;
+            }
+        }
+
+        $this->assertNotNull($killScore, 'spell KO must emit kill_score with score_a/score_b');
+        $this->assertArrayNotHasKey('side', $killScore);
+        $this->assertGreaterThanOrEqual(1, $killScore['score_a']);
+        $this->assertSame(0, $killScore['score_b']);
+    }
+
+    public function testUnknownSpellWhenIsSkipped(): void
+    {
+        $spells = [
+            $this->spell(1, 'Spark', 'offensive', 1),
+            $this->spell(2, 'Fireball', 'offensive', 3),
+        ];
+        $priorities = [
+            ['spell_id' => 1, 'when' => 'enemy_status', 'target' => 'enemy'],
+            ['spell_id' => 2, 'when' => 'always', 'target' => 'enemy'],
+        ];
+
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, $priorities, $spells, init: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
+
+        $this->assertNotNull($plan);
+        $this->assertSame('Fireball', $plan['spell_name'], 'unimplemented when must not match; next priority wins');
     }
 
     /**

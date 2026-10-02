@@ -233,7 +233,7 @@ baseInitiative = round(Effective_SPD × 2)
 
 Ents apply ×0.80 to that product before rounding. Each round the turn sort uses `baseInitiative + random_int(-3, 3)`. Equal initiative breaks by ascending `heroId`.
 
-Haste +30% and Shock −30% are not applied to this roll.
+Haste and Shock may appear as `status_applied` in the combat log, but **Haste +30% / Shock −30% are not applied to this initiative roll** (design text only until a later engine version).
 
 ### Accuracy (ACC)
 
@@ -317,8 +317,8 @@ Each equipped spell's school: **Spell Power +5% per tier above 1** (stacks acros
 | Clutch | HP ≤ 30% → Accuracy +15%, Armor × 1.10 |
 | Glass Jaw | HP ≤ 50% → incoming physical × 1.10 |
 | Perfectionist | Consistent damage (no RNG variance) |
-| Loner | Ignores race synergy matrix |
-| Volatile / Battle Hardened | Morale decay × 2.0 / × 0.5 on ally death |
+| Loner | Intended: ignores race synergy matrix. **No in-engine effect yet** — synergy tables are deferred; `ignoresRaceSynergy` is serialized but unused |
+| Volatile / Battle Hardened | Intended: morale decay × 2.0 / × 0.5 on ally death. **No in-combat effect yet** — `morale_change` events are deferred; post-match team morale is separate |
 | Audience Favorite | +5% arena revenue when fielded (handled in `ArenaRevenueService`, not combat engine) |
 
 ---
@@ -525,14 +525,16 @@ Common fields: `t` (monotonic index), `type`; commonly also `round`, `side` (`a`
 | `action_interrupted` | `side`, `slot`, `hero_id`, `reason` |
 | `action_fumble` | `side`, `slot`, `hero_id`, `target_side`, `target_slot` |
 | `attack` | `target_side`, `target_slot` |
-| `spell` | `spell_id`, `target_side`, `target_slot` or `targets[]` |
+| `attack_out_of_range` | `side`, `slot`, `target_side`, `target_slot` — planned attack aborted (reach / min range); no replay highlight required |
+| `attack_blocked_los` | `side`, `slot`, `target_side`, `target_slot` — ranged attack blocked by LoS; no replay highlight required |
+| `spell` | `spell_id`, `spell_name`, `caster_side`, `caster_slot`, `target_side`, `target_slot` (also common fields `side`, `slot`, `hero_id`) |
 | `defend` | — |
 | `hit` / `miss` / `crit` | Follows the preceding action event in order |
 | `damage` | `target_side`, `target_slot`, `amount`, `hp_after`, `source` (`physical` \| `magical` \| `dot`) |
 | `heal_applied` | Same shape as `damage` where applicable |
 | `status_applied` / `status_tick` / `status_expired` | `effect`, optional `stacks` |
 | `ko` | `side`, `slot`, `hero_id` — awards +1 kill to the opposing side |
-| `kill_score` | `score_a`, `score_b` — emit **after each** `ko` |
+| `kill_score` | `score_a`, `score_b` — emit **after each** `ko`, with scores already incremented |
 | `match_end` | `score_a`, `score_b`, `rounds` |
 
 Deferred event types: `morale_change`, `revive`, hybrid `snapshot`. Live streaming of partial logs to clients is deferred (replay-only product UI).
@@ -549,7 +551,7 @@ Replay reconstructs HP/status by folding `events` — see [screens/12-combat-bat
 | `balanced` | Enemy front left→right, then back | Attack; heal if ally HP < 40% |
 | `defensive` | Enemy front; else highest threat | Defend/heal if HP < 50%; else attack |
 
-**Engine today:** `aggressive` uses back-then-front. `balanced` uses front-then-back. `defensive` uses the living front line and, once that line is gone, the survivor with the highest `physicalAttack`. A non-empty `spell_priorities` list is interpreted first (first matching `always` / `self_hp_below` / `ally_hp_below` wins; `enemy_status` and `lowest_hp_enemy` are not implemented). An empty list picks at most one ready spell: a defensive spell when any living ally is under the approach heal threshold, otherwise the highest-tier offensive spell. Utility spells are not auto-cast. `target_order` and `fallback` (`lowest_hp`, `highest_threat`, default approach order) are already read and outrank the approach.
+**Engine today:** `aggressive` uses back-then-front. `balanced` uses front-then-back. `defensive` uses the living front line and, once that line is gone, the survivor with the highest `physicalAttack`. A non-empty `spell_priorities` list is interpreted first (first matching `always` / `self_hp_below` / `ally_hp_below` wins; `enemy_status` and other unknown `when` values never match and are skipped). An empty list picks at most one ready spell: a defensive spell when any living ally is under the approach heal threshold, otherwise the highest-tier offensive spell. Utility spells are not auto-cast. `target_order` and `fallback` (`lowest_hp`, `highest_threat`, default approach order) are already read and outrank the approach.
 
 ### Engine vs post-match boundary
 

@@ -78,3 +78,5 @@ Canonical `combat_log` format (event stream + seed, event payloads, wave orchest
 ## Still open
 
 - Design list, not in steps 2–7: team logos, match-type label, morale indicators, initiative queue, team-stats sidebar, skip-to-end button (the scrubber already seeks)
+- Log accordion uses event type `spell` (i18n key remains `battle.spell_cast`)
+- Haste/Shock may show as status in the log without changing turn order (see [combat-system.md](../systems/combat-system.md#speed--initiative-init))
