@@ -229,8 +229,10 @@ class ProcessCombatRoundHandlerTest extends TestCase
         ?Kingdom $kingdom = null,
         ?\DateTimeImmutable $scheduledAt = null,
     ): Battle {
-        $kingdom ??= $this->createStub(Kingdom::class);
-        $kingdom->method('getId')->willReturn(7);
+        if (null === $kingdom) {
+            $kingdom = $this->createStub(Kingdom::class);
+            $kingdom->method('getId')->willReturn(7);
+        }
 
         $teamA = $this->createStub(Team::class);
         $teamB = $this->createStub(Team::class);
