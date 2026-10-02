@@ -204,4 +204,4 @@ Category comes from `HeroTrait::getCategory()`; icon from `HeroTrait::getIcon()`
 - Situational modifiers (clutch threshold, glass jaw threshold, consistent damage, morale decay, race synergy flag) are passed as metadata and applied by the combat engine at runtime.
 - Arena revenue bonus is consumed by `ArenaRevenueService` (not the combat engine).
 
-Per-hero match history: [hero-chronicle-system.md](hero-chronicle-system.md). League fixtures currently use `StubRandomMatchSimulator` until the turn engine ships.
+Per-hero match history: [hero-chronicle-system.md](hero-chronicle-system.md). League fixtures resolve through wave Messenger + `CombatEngine` (see [combat-system.md](combat-system.md)).

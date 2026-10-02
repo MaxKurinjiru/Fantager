@@ -379,7 +379,6 @@ MatchOutcome(homeScore, awayScore, isForfeit = false, combatLog = [], seed = nul
 | Producer | `combatLog` |
 |----------|-------------|
 | Forfeit | `{ "version": 1, "simulator": "forfeit", "events": [] }` |
-| Stub (unused in DI) | `{ "version": 1, "simulator": "stub_random", "events": [] }` |
 | Engine | Full envelope (`simulator`: `combat_engine`) |
 
 `LeagueMatchResolutionService::createBattle()` must persist `$outcome->getCombatLog()` when using the transitional one-shot path.
@@ -503,7 +502,7 @@ To expand combat duration and add tactical depth, each active combatant's turn i
 | Field | Role |
 |-------|------|
 | `version` | Schema version; replay client must understand or refuse |
-| `simulator` | `combat_engine` \| `forfeit` \| `stub_random` |
+| `simulator` | `combat_engine` \| `forfeit` |
 | `seed` | PRNG seed used for this run |
 | `engine_version` | `CombatEngine::ENGINE_VERSION` stamped on the match. 2 introduced the 17×11 grid |
 | `grid` | `{ width, height }` battlefield size for replay |
@@ -549,7 +548,7 @@ Replay reconstructs HP/status by folding `events` — see [screens/12-combat-bat
 |----------|-------------------------------------------|-------------|
 | `aggressive` | Enemy back row left→right, then front | Attack; heal only if self/ally HP < 25% |
 | `balanced` | Enemy front left→right, then back | Attack; heal if ally HP < 40% |
-| `defensive` | Enemy front; else highest threat | Defend/heal if HP < 50%; else attack |
+| `defensive` | Enemy front; else highest threat | Heal if ally HP < 50%; else attack *(defend stance deferred — not queued)* |
 
 **Engine today:** `aggressive` uses back-then-front. `balanced` uses front-then-back. `defensive` uses the living front line and, once that line is gone, the survivor with the highest `physicalAttack`. A non-empty `spell_priorities` list is interpreted first (first matching `always` / `self_hp_below` / `ally_hp_below` wins; `enemy_status` and other unknown `when` values never match and are skipped). An empty list picks at most one ready spell: a defensive spell when any living ally is under the approach heal threshold, otherwise the highest-tier offensive spell. Utility spells are not auto-cast. `target_order` and `fallback` (`lowest_hp`, `highest_threat`, default approach order) are already read and outrank the approach.
 

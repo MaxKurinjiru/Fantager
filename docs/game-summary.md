@@ -222,8 +222,8 @@ Each race has natural affinities and conflicts with other races, affecting **tea
 
 | Range | Tier | Description |
 |:---:|:---|:---|
-| **90–100** | Highly Positive | Strong chemistry, significant morale boost, enhanced combat synergy, mutual inspiration |
-| **70–89** | Positive | Bonus chemistry, improved morale when paired, combat synergy bonuses |
+| **90–100** | Highly Positive | Strong chemistry, significant morale boost, mutual inspiration *(in-combat race-synergy damage tables are deferred — see [combat-system.md](systems/combat-system.md#trait-modifiers-in-combat))* |
+| **70–89** | Positive | Bonus chemistry, improved morale when paired *(combat synergy tables deferred)* |
 | **50–69** | Neutral | No bonuses or penalties; heroes coexist without conflict |
 | **21–49** | Negative | Reduced chemistry, morale penalties, potential performance conflicts |
 | **0–20** | Hostile | Severe chemistry penalties, significant morale loss, refusal of cooperative actions |
@@ -258,8 +258,8 @@ Each race has natural affinities and conflicts with other races, affecting **tea
 
 | Tier | Effects |
 |:---|:---|
-| **Highly Positive (90–100)** | Strong team chemistry bonuses, significant morale boost, enhanced synergy in combat, mutual inspiration |
-| **Positive (70–89)** | Bonus team chemistry, improved morale when paired, synergy bonuses in combat |
+| **Highly Positive (90–100)** | Strong team chemistry bonuses, significant morale boost, mutual inspiration *(numeric in-combat synergy modifiers are deferred)* |
+| **Positive (70–89)** | Bonus team chemistry, improved morale when paired *(combat synergy tables deferred)* |
 | **Neutral (50–69)** | No bonuses or penalties; heroes coexist without conflict |
 | **Negative (21–49)** | Reduced team chemistry, morale penalties, potential performance conflicts |
 | **Hostile (0–20)** | Severe chemistry penalties, significant morale loss, refusal of cooperative actions, reduced combat effectiveness |
@@ -353,12 +353,11 @@ Each race has specific age milestones that determine hero performance and lifesp
 |:---|:---|
 | **Auto-Resurrection** | Heroes who die in combat are **automatically resurrected** after the match ends, but suffer an age penalty |
 | **Age Accumulation** | Each combat death adds years to the hero's age, *including Undead*. **Multiple deaths in the same match stack** — each subsequent death applies an escalating age penalty *(e.g., 1st death: +1 year, 2nd death: +2 years, 3rd death: +3 years)* |
-| **Mid-Combat Revival** | A hero KO'd during combat can be revived mid-battle by a Light **Resurrection** spell, restoring them to partial HP so they can continue fighting. *This does not prevent the post-match age penalty — each KO still counts as a death for aging purposes* |
-| **Revival Constraints** | **Once per match** — only one Resurrection can be cast per combat. Requires **Light School Mastery Tier 8+** and high INT. The **caster suffers –15% stats** for the remainder of the match (exhaustion). The **revived hero returns at 50% HP**, giving them a fighting chance for the rest of the battle |
+| **Mid-Combat Revival** | **Deferred** — design intent for a Light **Resurrection** spell (once per match, Mastery Tier 8+, revive at 50% HP, caster −15% stats). Not in the engine yet; see [combat-system.md](systems/combat-system.md#implementation-status) |
 | **Mortality Threshold** | Heroes at or beyond Mortality Threshold face escalating permanent death chance per combat death. Multiple deaths in one match each trigger a separate mortality check |
 | **Permanent Death** | Final removal — hero is placed in the Graveyard and cannot return |
 
-> *Example: A Human hero (age 78, Mortality Threshold 80) dies in combat. Your Light mage (Mastery Tier 8) casts Resurrection — the hero revives at 50% HP, and the caster loses 15% of their stats for the rest of the match. The revived hero dies again later. No second Resurrection is possible (once per match). Post-match: the hero ages +1 year (1st death) and +2 years (2nd death) = total +3 years, pushing them to age 81 — past Mortality Threshold and at permanent death risk. The Light mage also carries fatigue into the next match from the casting exhaustion.*
+> *Example: A Human hero (age 78, Mortality Threshold 80) is KO'd twice in one match. Post-match: the hero ages +1 year (1st death) and +2 years (2nd death) = total +3 years, pushing them to age 81 — past Mortality Threshold and at permanent death risk.*
 
 ### Morale System
 
@@ -687,7 +686,7 @@ Each player manages a **single team** (1:1 player-to-team relationship) that ser
 ### Hero Relations (Race Relationships Applied)
 
 - Hero interactions are determined by **race relationship values** *(90–100: Highly Positive, 70–89: Positive, 50–69: Neutral, 21–49: Negative, 0–20: Hostile)*
-- Compatible heroes (relationships **70+**) gain **synergy bonuses** when deployed together
+- Compatible heroes (relationships **70+**) gain **team chemistry / morale benefits** when deployed together *(numeric in-combat synergy damage tables are deferred — see [combat-system.md](systems/combat-system.md))*
 - Hostile race combinations (**0–20**) reduce team chemistry and morale significantly
 - **Charisma** attribute can partially offset negative race relationships and improve team cohesion
 
@@ -758,17 +757,17 @@ Determines which enemy hero each of your heroes attempts to target:
 
 Determine the order and type of actions each hero takes during their turn:
 
-| Action | Description |
-|:---|:---|
-| **Attack** | Standard physical or melee attack |
-| **Cast Spell** | Use equipped spell from designated school |
-| **Use Ability** | Activate hero-specific special ability |
-| **Defend** | Raise defensive stance (+armor, –damage) |
-| **Heal** | Use healing spell on lowest-health ally |
-| **Buff** | Apply morale/stat boost to team |
-| **Debuff** | Apply negative status to enemy |
-| **Flee** | Attempt to retreat *(low priority action)* |
-| **Auto-Suggest** | AI recommends action based on situation |
+| Action | Description | Status |
+|:---|:---|:---|
+| **Attack** | Standard physical or melee attack | Implemented |
+| **Cast Spell** | Use equipped spell from designated school | Implemented (L0/L2 pick) |
+| **Use Ability** | Activate hero-specific special ability | Deferred |
+| **Defend** | Raise defensive stance (+armor, –damage) | **Deferred** — listed in the combat log contract; L0 does not queue defend yet |
+| **Heal** | Use healing spell on lowest-health ally | Implemented via spell pick |
+| **Buff** | Apply morale/stat boost to team | Via status spells when configured |
+| **Debuff** | Apply negative status to enemy | Via offensive/status spells |
+| **Flee** | Attempt to retreat *(low priority action)* | Deferred |
+| **Auto-Suggest** | AI recommends action based on situation | N/A (fully automated simulation) |
 
 #### Spell Priority (Per Hero)
 
@@ -870,7 +869,7 @@ Players can save up to **4 named formations**. Each formation saves:
 #### Formation Editing
 
 - Edit saved formations **between matches**
-- Test formations in **practice/friendly matches**
+- Test formations in **practice/friendly matches** *(friendly scheduling and `POST /api/v1/combat/simulate` are planned — see [combat-system.md](systems/combat-system.md#api-endpoints))*
 - **Clone** existing formations to create new variants
 - **Delete** unused formations
 
@@ -940,7 +939,7 @@ Each team has its own **Headquarters** serving as their base of operations, prov
 | Bonus | Description |
 |:---|:---|
 | **Passive Buffs** | Continuous benefits to all heroes *(e.g., +5% XP gain, –10% fatigue rate)* |
-| **Home Advantage** | Enhanced performance when defending in certain combat modes *(scales with Arena seating capacity)* |
+| **Home Advantage** | **Deferred for combat** — design intent for enhanced performance when defending *(scales with Arena seating capacity)*. Arena ticket revenue is implemented; combat-side home buff is not |
 | **Efficiency Boosts** | Reduced costs and time for training, crafting, and recovery |
 | **Morale Boost** | Well-maintained headquarters improves team morale over time |
 | **Ticket Revenue** | Arena matches generate passive gold income based on audience capacity and team reputation |
@@ -1022,7 +1021,7 @@ Spells provide tactical options based on hero **magic proficiency**.
 | **Water** | Defensive/Control | Healing, cleansing, ice-based control and damage |
 | **Air** | Offensive/Speed | Speed buffs, lightning damage, evasion enhancement |
 | **Earth** | Defensive/Control | Defense buffs, physical damage, stuns and slows |
-| **Light** | Healing/Holy | Healing, mid-combat resurrection *(once per match; requires Mastery Tier 8+; revives KO'd hero at 50% HP; caster suffers –15% stats for remainder of match; does not prevent post-match age penalty)*, holy damage *(bonus against Undead)* |
+| **Light** | Healing/Holy | Healing, holy damage *(bonus against Undead)*. Mid-combat **Resurrection** is **deferred** (once per match; Mastery Tier 8+; revive at 50% HP; caster −15% stats) — see [combat-system.md](systems/combat-system.md#implementation-status) |
 | **Dark** | Cursing/Drain | Curses, life drain *(Undead are immune to enemy life drain but can use it themselves — life drain is the primary healing method for Undead, who cannot benefit from external healing spells)*, debuffs, summoning |
 
 > *Note: Some races (Genie, Elf) gain bonuses from Intelligence for spell effectiveness. Heroes can learn spells from multiple schools but may specialize for efficiency.*
@@ -1062,25 +1061,25 @@ Each **kill** (hero permanently removed from the opposing lineup during the matc
 
 ### Morale in Combat
 
-**Individual Hero Morale** — Affects damage output, accuracy, defense, and resistance to debuffs during battle.
+**Individual Hero Morale** — At match start, morale sets an **outgoing damage multiplier** on physical and offensive-spell damage (heals unchanged). Bands: 80–100 ×1.20, 60–79 ×1.10, 40–59 ×1.00, 20–39 ×0.90, 0–19 ×0.80. See [combat-system.md](systems/combat-system.md#physical-attack-atk).
 
-**Team Morale** — Influences formation synergy, cooperative abilities, and overall team cohesion.
+**Team Morale** — Updated **post-match** from the result. Mid-battle `morale_change` events (ally death decay, Critical-hit surges, Charisma rallies) are **deferred**; trait metadata `moraleDecayMultiplier` (Volatile / Battle Hardened) is serialized but unused until then.
 
-| Morale State | Effects |
+| Morale State | Effects (implemented) |
 |:---|:---|
-| **High Morale** | +10–20% damage and accuracy bonuses; increased resistance to fear, confusion, and morale-breaking effects; enhanced critical hit chance; better performance under pressure |
-| **Low Morale** | –10–20% damage and accuracy penalties; increased chance to flee, hesitate, or refuse risky actions; reduced resistance to debuffs; may break formation or ignore orders |
+| **High Morale** | Higher outgoing damage band at kickoff |
+| **Low Morale** | Lower outgoing damage band at kickoff |
 
-**Morale Changes During Combat:**
+**Deferred mid-combat morale triggers** (design only):
 
-| Trigger | Effect |
+| Trigger | Intended effect |
 |:---|:---|
-| **Ally death witnessed** | Decreases morale |
+| **Ally death witnessed** | Decreases morale *(Volatile ×2 / Battle Hardened ×0.5 when shipped)* |
 | **Critical hits and victories** | Boost morale |
 | **Outnumbered or severely wounded** | Reduces morale |
 | **High Charisma hero rally** | Restores morale mid-battle for nearby allies |
 
-> *Example: A team at high morale scoring a critical hit on turn 1 gets an additional morale surge, creating a snowball advantage. Conversely, losing their front-line tank on turn 2 could reverse the momentum entirely.*
+> *Canonical combat formulas and deferred list: [combat-system.md](systems/combat-system.md).*
 
 ---
 

@@ -145,6 +145,50 @@ class CombatEngineTest extends TestCase
         $this->assertSame(1, $this->front($runState, 'sideA')['q']);
     }
 
+    public function testFlankRearMovesTowardHexBehindTarget(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->isolatedFronts($engine, 4, 5, 10, 5);
+        $this->tuneFront($runState, 'sideA', static function (array &$combatant): void {
+            $combatant['strategy'] = ['movement_goal' => 'flank_rear'];
+        });
+
+        $events = $engine->simulateRound($runState, 1);
+        $moves = $this->movesFor($events, 'a', 'front_1');
+
+        $this->assertNotEmpty($moves);
+        $this->assertSame(7, $moves[count($moves) - 1]['to_q']);
+        $this->assertGreaterThan(4, $this->front($runState, 'sideA')['q']);
+    }
+
+    public function testProtectBacklineMovesToGuardLowestHpAlly(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->isolatedFronts($engine, 8, 5, 14, 5);
+
+        foreach ($runState['sideA']['combatants'] as $i => $combatant) {
+            if ('back_1' === $combatant['slot']) {
+                $runState['sideA']['combatants'][$i]['currentHp'] = 20;
+                $runState['sideA']['combatants'][$i]['q'] = 1;
+                $runState['sideA']['combatants'][$i]['r'] = 5;
+            } elseif ('front_1' !== $combatant['slot']) {
+                $runState['sideA']['combatants'][$i]['currentHp'] = 0;
+            }
+        }
+
+        $this->tuneFront($runState, 'sideA', static function (array &$combatant): void {
+            $combatant['strategy'] = ['movement_goal' => 'protect_backline'];
+            $combatant['currentHp'] = 100;
+        });
+
+        $events = $engine->simulateRound($runState, 1);
+        $moves = $this->movesFor($events, 'a', 'front_1');
+
+        $this->assertNotEmpty($moves);
+        $this->assertLessThan(8, $this->front($runState, 'sideA')['q']);
+        $this->assertSame(5, $moves[count($moves) - 1]['to_q']);
+    }
+
     /**
      * @return array<string, mixed>
      */

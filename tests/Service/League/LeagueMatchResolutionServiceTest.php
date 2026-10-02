@@ -167,6 +167,48 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->assertSame($calledBattle->getId(), $result['battle_id']);
     }
 
+    public function testResolveFixtureDoesNotDispatchWaveUntilCohortFullyInitialized(): void
+    {
+        [$fixture] = $this->createFixtureContext();
+        $this->teamRosterService->method('countCombatReadyHeroes')->willReturn(6);
+
+        $formation = new \App\Entity\Formation\Formation();
+        $this->formationRepository->method('findOneBy')->willReturn($formation);
+
+        $sideA = new \App\ValueObject\Combat\CombatSide(1, 101, \App\Enum\FormationApproach::Balanced, $this->buildCombatants(100));
+        $sideB = new \App\ValueObject\Combat\CombatSide(2, 102, \App\Enum\FormationApproach::Balanced, $this->buildCombatants(200));
+        $realRequest = new \App\ValueObject\Combat\CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
+        $this->requestBuilder->method('fromFormations')->willReturn($realRequest);
+
+        $this->combatEngine->method('initializeRunState')->willReturn([
+            'seed' => 42,
+            'status' => 'simulating',
+            'events' => [],
+        ]);
+
+        // Cohort has 2 fixtures; only 1 battle initialized so far → wait for the rest.
+        $mockQuery = $this->createMock(\Doctrine\ORM\Query::class);
+        $mockQuery->method('getSingleScalarResult')->willReturnOnConsecutiveCalls(2, 1);
+
+        $mockQb = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $mockQb->method('select')->willReturnSelf();
+        $mockQb->method('from')->willReturnSelf();
+        $mockQb->method('join')->willReturnSelf();
+        $mockQb->method('where')->willReturnSelf();
+        $mockQb->method('andWhere')->willReturnSelf();
+        $mockQb->method('setParameter')->willReturnSelf();
+        $mockQb->method('getQuery')->willReturn($mockQuery);
+        $this->em->method('createQueryBuilder')->willReturn($mockQb);
+
+        $this->em->expects($this->once())->method('persist');
+        $this->messageBus->expects($this->never())->method('dispatch');
+
+        $result = $this->service->resolveFixture($fixture, new \DateTimeImmutable('2026-06-17 18:00:00'));
+
+        $this->assertFalse($result['is_forfeit']);
+        $this->assertSame(0, $result['home_score']);
+    }
+
     public function testCompleteBattleRunsPostMatchSideEffects(): void
     {
         [$fixture, $homeStanding, $awayStanding] = $this->createFixtureContext();

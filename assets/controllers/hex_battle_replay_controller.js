@@ -353,12 +353,6 @@ export default class extends Controller {
         this.ctx.strokeStyle = strokeColor;
         this.ctx.lineWidth = 1;
         this.ctx.stroke();
-
-        this.ctx.fillStyle = '#475569';
-        this.ctx.font = '8px monospace';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText(`${q},${r}`, x, y + size * 0.65);
     }
 
     renderFootprints(combatants, sideCode) {
