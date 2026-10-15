@@ -65,7 +65,7 @@ Both results are rounded to the nearest integer.
 
 ## Race Selection
 
-The race of a summoned hero is **not freely chosen** by the player. It is drawn randomly from a pool of **compatible races** determined by the team's arena adaptation (the race set in HQ Barracks).
+The race of a summoned hero is **not freely chosen** by the player. It is drawn randomly from a pool of **compatible races** determined by the team's arena adaptation (`Headquarters.race_optimization`).
 
 ### Compatible Race Pool
 
@@ -158,10 +158,11 @@ The summon history is displayed in the **Summoning Chamber panel** on the HQ pag
 {
   "available": true,
   "reason": null,
+  "reason_parameters": {},
   "gold_cost": 500,
   "summons_used": 0,
   "summons_max": 1
 }
 ```
 
-When unavailable, `reason` contains a human-readable explanation (roster full, cycle limit reached, insufficient gold).
+When unavailable, `reason` is a translation key (roster full, cycle limit, insufficient gold, crisis spending block). `reason_parameters` holds placeholders for that key when the block comes from a `UserFacingException`.

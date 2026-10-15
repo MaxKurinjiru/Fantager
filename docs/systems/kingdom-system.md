@@ -37,12 +37,12 @@ Sections to fill:
 - Implementation notes (folders, candidate services)
 
 Summary (to extract from game-summary):
-- Kingdom-specific global settings: language, timezone, gameSpeed, startingResources, marketplaceTaxRate, seasonLength, **leagueTiersConfig** (tiers, groups per tier, teams per group — player capacity is derived from this), theme, levelCap, xpModifier, craftingBoost.
+- Kingdom-specific global settings: language, timezone, gameSpeed, marketplaceTaxRate, seasonLength, **leagueTiersConfig** (tiers, groups per tier, teams per group — player capacity is derived from this), levelCap, xpModifier. `craftingBoost` is deferred with the crafting system.
 - Server tick responsibilities: fatigue recovery, league match processing, training tick, marketplace auction processing, hero aging, Royal Treasury distribution, fan club evolution, inactive player cleanup. *(Dungeon and crafting ticks deferred.)*
 
-APIs (examples):
-- GET /api/kingdoms — list kingdoms (id, name, status, playerCount, **capacity** (computed from leagueTiersConfig), settings)
-- POST /api/players/{playerId}/kingdom — set kingdom at account creation (validation: capacity)
+APIs:
+- `GET /api/v1/kingdoms` — list kingdoms (id, name, language, timezone, game_speed, player_count, capacity from `league_tiers_config`, has_active_season). Implemented by `Api\V1\KingdomController`.
+- Kingdom is chosen **on the registration form**, not via a separate POST. Registration is blocked when the kingdom has no active season (`register.kingdom.no_active_season`) or is at capacity.
 
 Implementation notes:
 - Partition data by `kingdom_id` in DB queries and indexes.

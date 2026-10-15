@@ -73,6 +73,7 @@ class RegisterController extends AbstractController
             $result = $this->registrationService->register(
                 $formData['email'],
                 $request->request->getString('password'),
+                $request->request->getString('password_confirm'),
                 $formData['display_name'],
                 $formData['kingdom_id'],
             );

@@ -114,7 +114,7 @@ Most races occupy **1 hex** (the centre). **Ent** and **Giant** occupy a **7-hex
 - All six slots on a side can be Ents/Giants at once — the 17×11 layout is packed for that.
 
 ### Action Points (AP) & Movement
-- **Action Points per Turn:** `AP = 4 + floor(Effective_SPD / 5)` (Effective_SPD currently uses `baseInitiative`).
+- **Action Points per Turn:** `AP = 4 + floor(baseInitiative / 5)`, where `baseInitiative = round(Effective_SPD × 2)` (Ents apply ×0.80 before rounding). Equivalent to `4 + floor(round(SPD × 2) / 5)`, not `4 + floor(SPD / 5)`.
 - **Movement Cost:** Moving 1 hex costs **2 AP**.
 - **Budget:** On a planning turn the unit spends the whole budget, one hex at a time, and stops early when the movement goal is already met. A unit with `preparationRemaining > 0` does not move.
 - **Armor Fatigue:** `heavy_armor` adds **+2 Fatigue** for each hex moved.
@@ -259,8 +259,8 @@ Dodge_Chance_Percent = (Effective_DEX + Effective_SPD) × 0.75 + Effective_LCK �
 Crit_Chance_Percent = 5 + Effective_LCK × 1 + Effective_DEX × 0.25  (cap 50%)
 ```
 
-- **Race:** Genies +15% spell crit chance
-- Default crit damage multiplier: **1.5×** (Berserker trait overrides to 2.0×)
+- **Race:** Genies add **+15% spell crit chance** when an **offensive spell** resolves (`CombatEngine::executeSpell`). The shared `critPercent` on `DerivedCombatStats` is physical-only and does **not** include the Genie bonus.
+- Default crit damage multiplier: **1.5×** (Berserker trait overrides to 2.0×). Offensive spells use the same multiplier when the spell crit roll succeeds.
 
 ---
 
@@ -446,7 +446,7 @@ CompleteBattle(battleId)
 
 - **Failure isolation:** a battle that throws in `ProcessCombatRound` becomes `stalled` and drops out of the barrier. Other matches keep advancing waves.
 - **Hung / lost messages without an error:** there is no wave timeout by design. Operational recovery is: inspect stuck `simulating` battles, mark `stalled` or re-dispatch the missing round, then call `ResumeCombatService::resume(battleId)`.
-- **Resume after fix:** `ResumeCombatService::resume(battleId)` runs remaining rounds **solo** (sync loop) until `completed`, without re-joining the original cohort wave. This avoids barrier edge cases when the cohort has already moved on.
+- **Resume after fix:** `ResumeCombatService::resume(battleId)` runs remaining rounds **solo** (sync loop) until `completed`, without re-joining the original cohort wave. On completion it calls `LeagueMatchResolutionService::completeBattle` when a `LeagueFixture` exists, otherwise `FriendlyMatchResolutionService::completeBattle` for a `FriendlyMatch`. This avoids barrier edge cases when the cohort has already moved on.
 
 #### Within a round
 

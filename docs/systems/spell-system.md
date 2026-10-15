@@ -33,6 +33,8 @@ Purpose: Document spell schools, mastery, learning, equip slots, and academy UI.
 
 Ledger type for learn spend: `spell_learning_cost`. `spell_slot_cost` is unused (capacity via training).
 
+`SpellService::seedDefaultSpells()` sets `requires_magical_weapon` to true for every `SpellType::Offensive` spell (false for defensive/utility). The Library HQ facility does **not** reduce learning cost or school-mastery XP; it only multiplies post-match hero XP. Seeded catalog is Tier 1–2 only; mastery can still reach Tier 5 from combat XP.
+
 ---
 
 ## Chronicle

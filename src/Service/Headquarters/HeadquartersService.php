@@ -164,7 +164,7 @@ class HeadquartersService
 
     /**
      * Cancel an active upgrade if it was started less than 1 hour ago.
-     * Refunds the full gold cost to the team.
+     * Refunds the full gold cost to the team and removes the same amount from the Royal Treasury.
      *
      * @throws \DomainException
      */
@@ -211,6 +211,7 @@ class HeadquartersService
             FinancialRecordActor::Active,
             ['facility_type' => $facility->getType()->value, 'cancelled_level' => $targetLevel]
         );
+        $this->royalTreasuryService->refundFee($team->getKingdom(), $cost);
 
         // Reset upgrade state
         $hq->setUpgradingFacility(null);

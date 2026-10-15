@@ -67,9 +67,9 @@ Index: `(user_id, is_read)` — already present.
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/api/v1/notifications` | List notifications for current user (newest first; query: `?unread_only=1`, `?limit=50`) |
+| GET | `/api/v1/notifications` | List notifications for current user (newest first; query: `?unread_only=1`, `?limit=` default **10**, max 100, `?page=`) |
 | GET | `/api/v1/notifications/unread-count` | Badge count for navbar |
-| GET | `/api/v1/notifications/{id}` | Single notification detail |
+| GET | `/api/v1/notifications/{id}` | Single notification detail; **marks the notification as read** (navbar modal relies on this) |
 | PUT | `/api/v1/notifications/{id}/read` | Mark one as read |
 | PUT | `/api/v1/notifications/read-all` | Mark all as read |
 

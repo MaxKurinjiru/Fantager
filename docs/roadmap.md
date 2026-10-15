@@ -189,7 +189,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Status**: ✅ Complete (`ProcessTicksCommand`, `TickScheduleCalculator`, `CalendarService`, `ExecuteSingleTickHandler`, Web Calendar page, kingdom calendar API). League match ticks process both arena revenue and start wave combat simulation.
 
 ### Step 6.3: League Matchmaking & Season Transition
-- **Design Prerequisites (Phase 0)**: Resolve [known-issues.md](known-issues.md) #7 (Friendly match rules) and #8 (Arena Match mechanics).
+- **Design Prerequisites (Phase 0)**: Friendly-match rules and arena ticket revenue are specified in [friendly-match-system.md](systems/friendly-match-system.md) and [headquarters-system.md](systems/headquarters-system.md). Remaining arena gap is extended attendance analytics UI ([known-issues.md](known-issues.md) #4).
 - **Service Layer**:
   - Implement Berger’s Algorithm to generate 18 rounds of double round-robin fixtures.
   - Enforce home/away balance (1 home, 1 away match per week of play).
@@ -318,8 +318,8 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
 | **Milestone 6 (Combat & Leagues)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 7 (Arena Management)** | ✅ | 🔄 | ✅ | 🔄 | **Active / Partially Complete** (arena revenue + ticket price API done; extended analytics UI & friendly scheduling pending) |
+| **Milestone 7 (Arena Management)** | ✅ | 🔄 | ✅ | 🔄 | **Active / Partially Complete** (arena revenue, ticket price API, and friendly scheduling done; extended analytics UI pending) |
 | **Milestone 8 (Endgame & Crafting)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (dungeons, crafting, quests in `future/`) |
 | **Milestone 9 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (alliance & guild systems deferred) |
 
-*Last updated: August 6, 2026 — Milestones 8 and 9 explicitly marked as Deferred / Out of Active Scope; Milestone 7 is the final active scope milestone.*
+*Last updated: October 15, 2026 — Milestones 8 and 9 explicitly marked as Deferred / Out of Active Scope; Milestone 7 is the final active scope milestone (friendly scheduling complete; analytics UI pending).*

@@ -69,6 +69,26 @@ class RoyalTreasuryServiceTest extends TestCase
         $this->assertSame(100, $kingdom->getRoyalTreasuryGold());
     }
 
+    public function testRefundFeeDecreasesKingdomBalance(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setRoyalTreasuryGold(150);
+
+        $this->service->refundFee($kingdom, 50);
+
+        $this->assertSame(100, $kingdom->getRoyalTreasuryGold());
+    }
+
+    public function testRefundFeeFloorsAtZero(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setRoyalTreasuryGold(20);
+
+        $this->service->refundFee($kingdom, 50);
+
+        $this->assertSame(0, $kingdom->getRoyalTreasuryGold());
+    }
+
     public function testWeeklyDistributionCapsAtFiftyPercent(): void
     {
         $kingdom = new Kingdom();

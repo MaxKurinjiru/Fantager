@@ -105,7 +105,7 @@ assets/ (source)
 - **Unit Tests**: PHPUnit for Service and Repository layer testing
 - **Integration Tests**: PHPUnit with test database for API endpoint and workflow testing
 - **End-to-End Tests**: Playwright — planned for Phase 3; not yet installed (no `npm run test:e2e` script)
-- **Coverage Target**: Aspirational 70% on Services and Controllers; current focus is core economy, calendar, league, and newly added service tests (Marketplace, Community, Spell, Item, Crafting)
+- **Coverage Target**: Aspirational 70% on Services and Controllers; current focus is core economy, calendar, league, combat, and service tests under `tests/Service/`
 - **Commands**:
   - `composer test` — Run PHPUnit
   - `npm run test:e2e` — Reserved for future Playwright suite
@@ -226,7 +226,7 @@ docker exec -it fantager-web php bin/console doctrine:migrations:migrate
 - [x] Database accessible from the `fantager-web` container as `db`/`fantager-db` service
 
 ### CI/CD & Deployment
-- [x] GitHub Actions workflow (`.github/workflows/ci.yml`) — PHP-CS-Fixer, PHPStan, PHPUnit on push/PR
+- [x] GitHub Actions workflows under `.github/workflows/` — PHPStan (`phpstan.yml`), UI compliance, backend-docs checks, deploy. PHPUnit is **not** in CI; run `composer test` locally or in the web container.
 - [ ] Deployment process documented; images/tags and secret management described
 - [x] Database backup strategy documented in [Backups and Recovery](#backups-and-recovery)
 
@@ -309,14 +309,14 @@ Production backups should follow the retention and verification policy in the se
 - [x] Document security and deployment strategy
 - [x] Create technology stack checklist
 - [x] Set up local development environment (Docker + README)
-- [ ] Finalize CI/CD pipeline tools (GitHub Actions — not yet configured)
+- [x] GitHub Actions for PHPStan, UI compliance, and backend-docs (PHPUnit still local-only)
 
 ### Phase 2: Implementation ✅ Backend largely done
 - [x] Create Dockerfile and docker-compose.yml
 - [x] Set up Symfony project structure and routing
 - [x] Implement database schema (init migration covers full current schema)
 - [x] Create Service layer foundation (Auth, Kingdom, Team, Hero, Summoning, Training, HQ, Economy, Item, Spell, Formation)
-- [x] Set up PHPUnit testing framework (1 test passing; coverage expansion pending)
+- [x] Set up PHPUnit testing framework (`tests/` service and controller coverage; run via `composer test`)
 - [ ] Set up Playwright for E2E tests (not yet installed)
 
 ### Phase 3: Production Readiness (Future)

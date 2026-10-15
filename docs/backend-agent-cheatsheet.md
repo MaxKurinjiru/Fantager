@@ -125,8 +125,8 @@ Copy an existing feature in the same domain before inventing new patterns (e.g. 
 
 | Area | Agent note |
 |------|------------|
-| Combat engine | Formulas undefined — see [known-issues.md](known-issues.md) #1 |
-| Item enchanting | Mechanics undefined — #2 |
+| Combat engine | Formulas live in [combat-system.md](systems/combat-system.md) + `CombatStatCalculator`. Do not invent Haste/Shock initiative, in-combat morale events, or `POST /api/v1/combat/simulate`. |
+| Item enchanting | Mechanics undefined — [known-issues.md](known-issues.md) #2 |
 | `docs/future/`, `_deferred/` | Out of scope unless user explicitly requests |
 | Public wiki/news | Mostly planned — check implementation status first |
 

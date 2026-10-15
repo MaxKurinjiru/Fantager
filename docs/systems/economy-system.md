@@ -63,7 +63,7 @@ Kingdom-level gold pool that collects fees and redistributes a capped share to a
 ### Weekly distribution (`weekly_reset` tick)
 
 1. Compute distributable pool: `floor(royal_treasury_gold × 0.50)` (max 50% per week — tunable constant)
-2. Split among **all teams** in the kingdom (including NPC), weighted by league tier standing
+2. Split among **all teams** in the kingdom (including NPC). Weight per team is `tierWeight × reputationFactor × leagueFactor`, where `tierWeight` is 3 / 2 / 1 for T1 / T2 / T3, `reputationFactor = 1 + min(reputation, 500) / 500`, and `leagueFactor = 1 + leaguePoints / 100` (`RoyalTreasuryService::calculateTeamWeight`).
 3. Credit each team via `EconomyService`; ledger type **`kingdom_reward`**
 4. Deduct distributed amount from `royal_treasury_gold`
 

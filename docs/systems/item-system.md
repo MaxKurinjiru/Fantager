@@ -50,6 +50,7 @@ An item can only be equipped in the slot matching its `slot_type`. Equipping an 
 - An item must have `status = available` to be equipped.
 - The item's `owner_team_id` must match the hero's team.
 - The item's `slot_type` must match the target `slot`.
+- Race restrictions from `RaceConfig::getEquipmentRestrictions()` (e.g. Ents cannot wear armor) are enforced in `ItemService::equip()`.
 - Equipping a listed (escrow) item is blocked — cancel the marketplace listing first.
 
 ---

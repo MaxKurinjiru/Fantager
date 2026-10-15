@@ -37,37 +37,42 @@ For NPC teams (kingdom initialization), `KingdomInitializationService` extracts 
      - `effectiveBase` = `BASE_STAT_VALUE (1)` + round(`summon_base_stat_bonus`)
      - `effectiveRandomMax` = `STAT_RANDOM_MAX (2)` + round(`summon_stat_random_bonus`)
    - Each attribute is rolled three times, and one of the three rolls is randomly chosen to increase variance:
-     $$\text{roll} = \text{random\_int}(0, \text{effectiveRandomMax})$$
-     $$\text{base\_stat} = \text{effectiveBase} + \text{raceBonus} + \text{roll}$$
+     - `roll = random_int(0, effectiveRandomMax)`
+     - `base_stat = effectiveBase + raceBonus + roll`
 
 2. **Single-Stat Cap:**
    - A dynamic ceiling is applied to each individual attribute to prevent excessively high starting stats:
-     $$\text{level} = \text{round}(\text{summon\_stat\_random\_bonus})$$
-     $$\text{reduction} = 2 + \text{round}((\text{level} - 1) \times 0.11)$$
-     $$\text{naturalMax} = \text{effectiveBase} + \text{effectiveRandomMax} + \text{raceBonus}$$
-     $$\text{maxStatLimit} = \max(1, \text{naturalMax} - \text{reduction})$$
-     $$\text{final\_stat} = \min(\text{maxStatLimit}, \text{base\_stat})$$
+     - `level = (int) summon_stat_random_bonus` (integer truncation; fallback 1 when the key is missing)
+     - `reduction = 2 + round((level - 1) × 0.11)`
+     - `naturalMax = effectiveBase + effectiveRandomMax + raceBonus`
+     - `maxStatLimit = max(1, naturalMax - reduction)`
+     - `final_stat = min(maxStatLimit, base_stat)`
    - *Scaling targets (max race bonus = +3):*
      - Chamber level 1: max single stat **5** (with +3 race), total cap 12–14
      - Chamber level 5: max single stat **11**, total cap 36–43
      - Chamber level 10: max single stat **17**, total cap 68–72
    - *NPC teams (chamber level 1 bonuses from kingdom init):* roughly **1–3** per attribute before race bonuses (same chamber formula as player summons at level 1).
 
-3. **Dynamic Overall Cap ($maxTotal$):**
+3. **Dynamic Overall Cap (maxTotal):**
    - The total sum of all 8 attributes is dynamically limited to **60% of the sum of the individual max limits** for the selected race, with a safety floor of 8:
-     $$maxTotal = \max(8, \text{round}(\sum \text{maxStatLimit} \times 0.6))$$
+     - `maxTotal = max(8, round(sum(maxStatLimit) × 0.6))`
+   - `HeroGenerator` hardcodes the 0.6 factor; `summon_stat_total_cap` from chamber bonuses is reserved and not read.
    - This ensures that heroes are specialized: they can have one or two very high stats, but the other stats will be reduced to fit the budget.
 
 4. **Organic Random Trimming:**
-   - If the sum of the rolled stats exceeds $maxTotal$, the excess points are trimmed step-by-step.
+   - If the sum of the rolled stats exceeds maxTotal, the excess points are trimmed step-by-step.
    - In each step, an eligible stat (whose value is currently greater than its minimum limit) is decremented by 1 at random.
    - The minimum floor for each stat is protected using the race bonus:
-     $$\text{minLimit} = \max(1, \text{raceBonus})$$
+     - `minLimit = max(1, raceBonus)`
    - This prevents a hero's primary racial strengths from being wiped out during trimming (e.g., an Orc's Strength will never drop below 3).
 
 Starting roster:
 - Every new team receives **10 heroes** at creation (6 match lineup + 4 reserves). See [team-system.md](team-system.md#starting-roster).
 - Each hero starts at **level 1** with age random within **[Min Age, Max Junior Age]** for their race.
+
+### Hero level vs match XP
+
+League and friendly matches add to `Hero.xp` (Library facility `xp_gain_pct` multiplies that XP only). `HeroService::levelUp()` and chronicle event `levelup` exist but **no production path** converts accumulated XP into `Hero.level`. Displayed level stays at generation until an XP curve is designed. Tracked in [known-issues.md](../known-issues.md) #6.
 
 ## Age Milestones & Terminology
 

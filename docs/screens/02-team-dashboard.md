@@ -14,7 +14,7 @@ Displayed Information:
 	- **Fan club size** and most recent change (background stat; read-only badge in team banner)
 - **Quick Stats:**
 	- Number of heroes in roster
-	- Current Gold, Essence, **unpaid debt** (when > 0)
+	- Current Gold, **unpaid debt** (when > 0)
 	- **Financial crisis banner** with level, debt, recovery actions
 	- Next scheduled match (time, opponent)
 	- Current league tier & position

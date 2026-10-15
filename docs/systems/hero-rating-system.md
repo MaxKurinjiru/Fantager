@@ -71,8 +71,8 @@ Same calculator and value object; role-specific rules:
 ### Economy
 
 - **`gold_per_complex_point`** (config) drives dismiss compensation, suggested marketplace price, NPC buy/sell heuristics, and hero/trainer salaries.
-- Dismiss keeps **40% compensation ratio**; only the underlying estimated value changes.
-- Numeric calibration is **deferred** until simulation runs; YAML holds placeholder weights.
+- Combatant dismiss keeps **40%** (`dismiss_compensation_ratio`); trainer dismiss uses **30%** (`trainer_dismiss_compensation_ratio`).
+- Live economy constants are in `config/game/hero-rating.yaml` (`gold_per_complex_point: 0.5`, `hero_salary_factor: 0.02`, `trainer_salary_factor: 0.03`). Numeric calibration is still expected before production.
 
 ---
 
@@ -185,10 +185,11 @@ age_multiplier:
   elder: 0.95
 
 economy:
-  gold_per_complex_point: 1.0   # placeholder — calibrate via simulation
+  gold_per_complex_point: 0.5
   dismiss_compensation_ratio: 0.4
-  hero_salary_factor: 1.0
-  trainer_salary_factor: 1.2
+  trainer_dismiss_compensation_ratio: 0.3
+  hero_salary_factor: 0.02
+  trainer_salary_factor: 0.03
   trainer_market_multiplier: 1.5
 ```
 

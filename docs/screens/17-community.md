@@ -5,27 +5,22 @@ Reference: [screens-overview.md](../screens-overview.md#17-community-screen)
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 
 Displayed Information:
-- Community Tabs: Leaderboards, Player Profiles, Mail/Messages, News Feed, Forums
-- Leaderboards Panel: categories and top players with filters
-- Player Profile View: team info, notable heroes, recent matches
-- Mail Panel: inbox, sent, compose message, attachments
-- News Feed and Forums: posts, comments, moderation flags
+- Community hub at `/app/community`: kingdom forum threads (list + thread detail)
+- Player / team public profiles via modal (`GET /api/v1/players/{id}/profile`, `GET /api/v1/teams/{id}/profile`)
+- Private mail is the navbar mail modal (`/api/v1/messages*`), not a community tab
+- News is the public `/news` archive, not a community tab
+- Kingdom rankings live on `/app/league` (Kingdom Leaderboard). There is no `/api/v1/leaderboards` route.
 
 Possible Actions/Buttons:
-- View Profile
-- Send/Reply/Delete Message
-- Post New Thread / Reply
-- Refresh Feed
-- Filter Leaderboards / Export Snapshot
+- Open thread / create thread / reply
+- View player or team profile
+- Compose mail from a profile (opens the mail modal)
 
-Backend Requirements:
-- Leaderboards endpoint
-- Player profile endpoint
-- Mail system CRUD endpoints
-- News feed endpoint
-- Forum CRUD endpoints
-- Moderation tools and privacy controls
-- Email/push notification integration
+Backend Requirements (implemented):
+- Forum CRUD — `Api\V1\ForumController`
+- Player/team profile — `Api\V1\CommunityController`
+- Mail CRUD — `Api\V1\MessageController` (includes `GET /api/v1/messages/unread-count`)
+- News list — `Web\NewsController` (`/news`)
 
 ## Leaderboard and Profile Endpoints
 

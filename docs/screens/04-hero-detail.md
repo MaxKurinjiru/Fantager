@@ -10,7 +10,7 @@ Displayed Information:
 - Primary Attributes: STR, DEX, KON, SPD, INT, WIL, CHA, LCK (values + tooltips)
 - Secondary Attributes: Form %, Fatigue %, Morale, Magic Capacity
 - **Combat statistics** (overview): `matches_played`, `matches_won`, win rate — updated after league fixtures
-- Equipment Slots: visual slots (Main Hand, Off-Hand, Head, Body, Hands, Feet, Amulet, Ring1, Ring2)
+- Equipment Slots: visual slots (Main Hand, Off-Hand, Head, Body, Hands, Feet, Amulet, Ring) — eight slots; a single ring
 - Equipped Spells: spell icons + names
 - **History tab:** last 15 entries from `hero_chronicle` (summons, transfers, matches, training, mastery, death)
 - Training tab: recent `hero_training_history` rows + trainer assignment UI
@@ -29,7 +29,7 @@ Backend Requirements:
 - Hero update endpoint (rename)
 - Hero dismiss endpoint — `POST /api/v1/heroes/{id}/dismiss`
 - Hero chronicle read — server-rendered via `HeroChroniclePresenter` (no dedicated API yet)
-- Trainer conversion endpoint — **planned**
+- Trainer conversion endpoint — `POST /api/v1/training/trainers/promote`
 
 Implementation:
 - **Route:** `GET /app/heroes/{id}` — `HeroController::detail()`; tabs: `overview`, `equipment`, `spells`, `training`, `history`
