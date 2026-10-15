@@ -6,14 +6,12 @@ namespace App\Controller\Api\V1;
 
 use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
-use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\Team\Team;
 use App\Enum\FriendlyMatchStatus;
 use App\Repository\FriendlyMatch\FriendlyMatchRepository;
 use App\Repository\Team\TeamRepository;
 use App\Service\FriendlyMatch\FriendlyMatchService;
 use App\Service\Headquarters\ArenaService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -81,7 +79,7 @@ class ArenaController extends AbstractController
     // -------------------------------------------------------------------------
 
     /**
-     * GET /api/v1/arena/friendly/slots?opponent_team_id=123
+     * GET /api/v1/arena/friendly/slots?opponent_team_id=123.
      *
      * Returns available scheduledAt values for a new friendly invite.
      */
@@ -117,7 +115,7 @@ class ArenaController extends AbstractController
     }
 
     /**
-     * POST /api/v1/arena/schedule-match
+     * POST /api/v1/arena/schedule-match.
      *
      * Body: { "opponent_team_id": 123, "scheduled_at": "2026-10-21T16:00:00+00:00" }
      */
@@ -168,7 +166,7 @@ class ArenaController extends AbstractController
     }
 
     /**
-     * POST /api/v1/arena/friendly/{id}/accept
+     * POST /api/v1/arena/friendly/{id}/accept.
      */
     #[Route('/api/v1/arena/friendly/{id}/accept', name: 'api_arena_friendly_accept', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function acceptFriendly(int $id, Request $request): JsonResponse
@@ -197,7 +195,7 @@ class ArenaController extends AbstractController
     }
 
     /**
-     * POST /api/v1/arena/friendly/{id}/decline
+     * POST /api/v1/arena/friendly/{id}/decline.
      */
     #[Route('/api/v1/arena/friendly/{id}/decline', name: 'api_arena_friendly_decline', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function declineFriendly(int $id, Request $request): JsonResponse
@@ -226,7 +224,7 @@ class ArenaController extends AbstractController
     }
 
     /**
-     * POST /api/v1/arena/friendly/{id}/cancel
+     * POST /api/v1/arena/friendly/{id}/cancel.
      */
     #[Route('/api/v1/arena/friendly/{id}/cancel', name: 'api_arena_friendly_cancel', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function cancelFriendly(int $id, Request $request): JsonResponse
@@ -255,7 +253,7 @@ class ArenaController extends AbstractController
     }
 
     /**
-     * GET /api/v1/arena/friendly?status=pending
+     * GET /api/v1/arena/friendly?status=pending.
      *
      * List kingdom friendly matches with optional status filter.
      */
