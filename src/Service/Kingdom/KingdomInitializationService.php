@@ -279,12 +279,6 @@ class KingdomInitializationService
         $team->setChemistry((int) ($teamConfig['chemistry'] ?? 0));
         $team->setFanBase((int) ($teamConfig['fan_base'] ?? 350));
         $team->setGold((int) ($resources['gold'] ?? 0));
-        $team->setEssenceCommon((int) ($resources['essence_common'] ?? 0));
-        $team->setEssenceUncommon((int) ($resources['essence_uncommon'] ?? 0));
-        $team->setEssenceRare((int) ($resources['essence_rare'] ?? 0));
-        $team->setEssenceEpic((int) ($resources['essence_epic'] ?? 0));
-        $team->setEssenceLegendary((int) ($resources['essence_legendary'] ?? 0));
-        $team->setEssenceMythic((int) ($resources['essence_mythic'] ?? 0));
         $team->setIsNpc(true);
         $team->setUser(null);
 

@@ -34,7 +34,8 @@
 
         <div class="game-sidebar__section-label">{{ 'sidebar.section_competition'|trans }}</div>
         {% set competition_links = [
-            { route: 'app_league', emoji: '🏆', label: 'nav.league', active_check: 'starts_with' }
+            { route: 'app_league', emoji: '🏆', label: 'nav.league', active_check: 'starts_with' },
+            { route: 'app_friendly_matches', emoji: '⚔️', label: 'nav.friendly_matches', active_check: 'starts_with' }
         ] %}
         {% for link in competition_links %}
             {% set is_active = route starts with link.route %}

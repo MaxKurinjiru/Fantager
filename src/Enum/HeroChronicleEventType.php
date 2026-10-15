@@ -8,6 +8,7 @@ enum HeroChronicleEventType: string
 {
     case Summoned = 'summoned';
     case Transferred = 'transferred';
+    case Renamed = 'renamed';
     case MatchPlayed = 'match_played';
     case LevelUp = 'levelup';
     case MasteryGained = 'mastery_gained';

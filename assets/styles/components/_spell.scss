@@ -70,7 +70,6 @@
 .spell-card__desc { @apply text-[10px] leading-relaxed; color: var(--color-text-secondary); }
 .spell-card__fee-label { @apply block text-[8px] font-bold uppercase tracking-wider; color: var(--color-text-muted); }
 .spell-card__fee-value { @apply text-xs font-bold; color: var(--color-amber-400); }
-.spell-card__fee-essence { color: var(--color-purple-400); font-weight: 700; }
 .spell-card__title { @apply font-bold text-sm leading-tight m-0; color: var(--color-text-primary); }
 .spell-card__tier { @apply text-[9px] font-bold uppercase tracking-wider; color: var(--color-purple-400); }
 .spell-card__status-note { @apply text-[9px] font-bold; color: var(--color-error-text); }

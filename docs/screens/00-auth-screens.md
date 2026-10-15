@@ -20,7 +20,7 @@ Reference: [systems/auth-system.md](../systems/auth-system.md), [00-public-pages
 - **Switch to Login** — close Register modal, open Login modal
 
 ### Backend Requirements:
-- `POST /register` — validate input (including nickname and kingdom selection), create user (unverified, `kingdom_id` set), send verification email
+- `POST /register` — validate input (including nickname and kingdom selection), create user (unverified, `kingdom_id` set), assign a random available NPC team (`RegistrationService`), send verification email
 - Email uniqueness validation (reported openly: "This email is already registered")
 - **Nickname**: required; uniqueness checked against `display_name_slug` (webalized form); reported openly: "This nickname is already taken"; stored as entered in `display_name`, webalized form in `display_name_slug`; displayed everywhere as entered
 - Kingdom exists + has available capacity (returned as 422 with field error if full)
@@ -32,7 +32,8 @@ Reference: [systems/auth-system.md](../systems/auth-system.md), [00-public-pages
 
 ### Email Verification:
 - Verification email contains a signed, time-limited link (24h expiry)
-- `GET /verify-email?token=...` — validates token, activates account, assigns player a random NPC team in their Kingdom, logs in and redirects to **Team Dashboard**
+- `GET /verify-email?token=...` — validates token, activates account (`is_verified = true`), logs in and redirects to **Team Dashboard**
+- NPC team assignment happens at **registration** (`RegistrationService`), not on verify-email — see [auth-system.md](../systems/auth-system.md)
 - Resend verification link available (subject to same rate limiter)
 
 ---
@@ -55,7 +56,7 @@ Reference: [systems/auth-system.md](../systems/auth-system.md), [00-public-pages
 - CSRF token (intent: `authenticate`) — hidden `_csrf_token` field validated by Symfony Security; 403 on invalid/missing
 - Rate limiting: built-in `login_throttling` — 5 failed attempts per 15 minutes per IP+email; returns 429 with `Retry-After` header
 - Unverified user attempting login sees: "Please verify your email first."
-- Redirect to Team Dashboard on success (new players without a Kingdom are redirected to Kingdom Selection first)
+- Redirect to Team Dashboard on success (Kingdom and team are already set at registration; there is no post-login Kingdom Selection redirect)
 
 ---
 

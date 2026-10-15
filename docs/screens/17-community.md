@@ -33,7 +33,7 @@ Backend Requirements:
 Returns public details for a team and its owner user.
 - **Access Rule:** Only accessible if the viewing user is in the same kingdom as the target user.
 - **NPC Rule:** NPC teams do not have a public player profile (returns 404/not found).
-- **Sensitive Data:** Excludes financial status (gold, essence, debt), and tactical metrics (chemistry, morale) to prevent match exploitation.
+- **Sensitive Data:** Excludes financial status (gold, debt), and tactical metrics (chemistry, morale) to prevent match exploitation.
 - **Response Format:**
   ```json
   {

@@ -103,26 +103,6 @@
         border: 1px solid var(--overlay-error-border-40);
     }
 
-    // Custom essence rarities colors styling for visual touch (matching standard inventory rarities)
-    .finance-changes__item--essence-common {
-        border-color: color-mix(in srgb, var(--color-text-secondary) 40%, transparent); // gray-400
-    }
-    .finance-changes__item--essence-uncommon {
-        border-color: var(--overlay-brand-35); // brand-500
-    }
-    .finance-changes__item--essence-rare {
-        border-color: color-mix(in srgb, var(--color-blue-400) 40%, transparent); // blue-500
-    }
-    .finance-changes__item--essence-epic {
-        border-color: color-mix(in srgb, var(--color-purple-400) 40%, transparent); // purple-500
-    }
-    .finance-changes__item--essence-legendary {
-        border-color: color-mix(in srgb, var(--color-amber-400) 40%, transparent); // amber-500
-    }
-    .finance-changes__item--essence-mythic {
-        border-color: color-mix(in srgb, var(--color-error-border) 40%, transparent); // red-500
-    }
-
     .finance-context-tag {
         display: inline-block;
         max-width: 150px;

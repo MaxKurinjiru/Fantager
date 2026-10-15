@@ -10,8 +10,7 @@ Purpose: Document currencies, sinks/sources, anti-exploit measures and economic 
 
 | Currency | Role |
 |----------|------|
-| **Gold** | Primary currency — earned from arena revenue, marketplace sales, league rewards, kingdom treasury distribution; spent on HQ upgrades, summoning, marketplace purchases, spell learning, maintenance |
-| **Essence** (common → mythic tiers) | Obtained from dismantling items and events; used for spell learning and (future) crafting/enchanting |
+| **Gold** | Sole currency — earned from arena revenue, marketplace sales, league rewards, kingdom treasury distribution, item dismantle scrap; spent on HQ upgrades, summoning, marketplace purchases, spell learning, maintenance, repairs |
 
 ---
 
@@ -26,19 +25,21 @@ Purpose: Document currencies, sinks/sources, anti-exploit measures and economic 
 
 ## Audit & Financial Ledger
 
-Every currency modification (gold and essence tiers) is recorded in the `FinancialRecord` entity.
+Every gold modification is recorded in the `FinancialRecord` entity.
 
 ### Ledger properties
 
 - **Team**: Owner team whose wallet changed
 - **Type**: `FinancialRecordType` enum (e.g. `marketplace_sale`, `hq_maintenance_fee`, `kingdom_reward`)
 - **Actor**: `system`, `active`, or `passive`
-- **Currency changes**: Signed integer deltas per currency column
+- **Currency changes**: Signed integer `gold_change`
 - **Context**: JSON with foreign keys for traceability (e.g. `listing_id`, `fixture_id`)
 
 ### Implemented `FinancialRecordType` values
 
-`league_reward`, `arena_revenue`, `summon_fee`, `marketplace_sale`, `marketplace_purchase`, `marketplace_fee`, `dismantle_gain`, `item_repair`, `spell_learning_cost`, `spell_slot_cost`, `hq_upgrade_cost`, `hq_maintenance_fee`, `morale_restoration`, `debt_repayment`, `hero_dismissal_compensation`, `trainer_dismissal_compensation`, `hq_downgrade_refund`, `kingdom_reward`, **`hero_salary`**, **`trainer_salary`**
+`league_reward`, `arena_revenue`, `summon_fee`, `marketplace_sale`, `marketplace_purchase`, `marketplace_fee`, `dismantle_gain`, `item_repair`, `spell_learning_cost`, `hq_upgrade_cost`, `hq_maintenance_fee`, `morale_restoration`, `debt_repayment`, `hero_dismissal_compensation`, `trainer_dismissal_compensation`, `hq_downgrade_refund`, `hq_upgrade_refund`, `kingdom_reward`, **`hero_salary`**, **`trainer_salary`**
+
+`spell_slot_cost` remains in the enum for legacy/history only — magic capacity expands via training; the ledger type is never written.
 
 ---
 
@@ -62,11 +63,13 @@ Kingdom-level gold pool that collects fees and redistributes a capped share to a
 ### Weekly distribution (`weekly_reset` tick)
 
 1. Compute distributable pool: `floor(royal_treasury_gold × 0.50)` (max 50% per week — tunable constant)
-2. Split among all non-NPC teams in the kingdom, weighted by league tier standing
+2. Split among **all teams** in the kingdom (including NPC), weighted by league tier standing
 3. Credit each team via `EconomyService`; ledger type **`kingdom_reward`**
 4. Deduct distributed amount from `royal_treasury_gold`
 
-See [calendar-system.md](calendar-system.md) for tick schedule.
+Runs as the **kingdom-scoped** WeeklyReset log **after** all team-scoped WeeklyReset ticks (maintenance, payroll, crisis) at the same timestamp finish — see [calendar-system.md](calendar-system.md).
+
+**Arena ticket revenue** also applies home-lineup **Audience Favorite** bonuses (`+5%` per fielded hero with the trait) in `ArenaRevenueService`.
 
 ---
 
@@ -80,7 +83,7 @@ Each team has a **`fan_base`** (default 350, range 0–10 000) that drives arena
 
 | Mechanism | Tick | Effect |
 |-----------|------|--------|
-| **Daily evolution** | `daily_reset` | `fan_base` drifts 3% per day toward a target derived from reputation, morale, chemistry |
+| **Daily evolution** | `daily_reset` | `fan_base` drifts toward a target from reputation, morale, chemistry; drift magnitude scales with kingdom `game_speed` |
 | **Match result delta** | League match | Win +12, loss −10, draw +2 — applied in `LeagueMatchResolutionService` |
 | **Show-up rate** | On demand | Short-term multiplier from reputation, morale, chemistry — used by `ArenaRevenueService` |
 

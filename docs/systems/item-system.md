@@ -56,24 +56,22 @@ An item can only be equipped in the slot matching its `slot_type`. Equipping an 
 
 ## Dismantling
 
-Dismantling permanently destroys an item and returns **rarity-specific Essence** to the team's wallet.
+Dismantling permanently destroys an item and returns **gold scrap** to the team's wallet (`FinancialRecordType::DismantleGain`).
 
 ### Dismantle Requirements
 - Item must have `status = available`.
 - Item must not be equipped (`equipped_hero_id` must be `null`).
 
-### Dismantle Essence Yields
+### Dismantle Gold Yields
 
-| Rarity | Essence Gained (same tier) |
-|--------|---------------------------|
-| Common | 5 |
-| Uncommon | 5 |
-| Rare | 4 |
-| Epic | 3 |
-| Legendary | 2 |
-| Mythic | 1 |
-
-Higher-rarity items yield fewer units because each unit is proportionally more valuable.
+| Rarity | Gold Gained |
+|--------|-------------|
+| Common | 25 |
+| Uncommon | 50 |
+| Rare | 100 |
+| Epic | 250 |
+| Legendary | 500 |
+| Mythic | 1000 |
 
 ---
 
@@ -81,8 +79,16 @@ Higher-rarity items yield fewer units because each unit is proportionally more v
 
 ### Durability
 - Range: `0` to `100` (stored as integer).
-- Decreases after combat (`LeagueMatchResolutionService` applies loss from hits received).
+- Decreases after combat in `LeagueMatchResolutionService` for every equipped item on participating heroes.
 - An item with `durability = 0` contributes no combat bonuses (`CombatStatCalculator` scales by durability / 100).
+
+**Loss per battle (same value applied to each equipped item on the hero):**
+```
+loss = max(1, min(20, floor(rounds / 10) + floor(hits_received / 3)))
+new_durability = max(0, current_durability - loss)
+```
+- `rounds` — battle round count at resolution (`Battle::getCurrentRound()`)
+- `hits_received` — that hero’s total from combat result `item_hit_counts`
 
 ### Repair
 Repair restores durability to `100`. The Gold cost scales with **rarity** and the **number of missing durability points**.
@@ -142,7 +148,7 @@ See [Marketplace System](marketplace-system.md) for listing, bidding, and transa
 |--------|------|---------|
 | GET | `/api/v1/items` | Inventory list (optionally filtered by hero) |
 | PUT | `/api/v1/heroes/{heroId}/equipment` | Equip or unequip an item |
-| POST | `/api/v1/items/dismantle` | Dismantle item for Essence |
+| POST | `/api/v1/items/dismantle` | Dismantle item for gold scrap |
 | POST | `/api/v1/items/{id}/repair` | Repair durability (costs Gold) |
 | POST | `/app/marketplace/buy-basic` | Purchase basic item from the merchant (Web route, redirects back) |
 
@@ -151,5 +157,5 @@ See [Marketplace System](marketplace-system.md) for listing, bidding, and transa
 ## Open Issues
 
 - Item generation (loot drops, crafted results) — defined via `CraftingRecipe` entities; actual item generation on crafting completion is deferred (Milestone 8 / future).
-- Durability degradation per battle — ✅ applied in `LeagueMatchResolutionService` after matches (loss from hits received); further formula tuning may continue.
-- Enchanting mechanics referenced in Essence spending (2.3) — not yet designed. Tracked in [known-issues.md](../known-issues.md#2).
+- Durability degradation per battle — ✅ formula above in `LeagueMatchResolutionService`.
+- Enchanting mechanics — not yet designed. Tracked in [known-issues.md](../known-issues.md#2). Essence currency was removed from the live economy.

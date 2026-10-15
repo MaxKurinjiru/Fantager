@@ -72,12 +72,6 @@ class TeamService
             ],
             'resources' => [
                 'gold' => $team->getGold(),
-                'essence_common' => $team->getEssenceCommon(),
-                'essence_uncommon' => $team->getEssenceUncommon(),
-                'essence_rare' => $team->getEssenceRare(),
-                'essence_epic' => $team->getEssenceEpic(),
-                'essence_legendary' => $team->getEssenceLegendary(),
-                'essence_mythic' => $team->getEssenceMythic(),
             ],
             'heroes' => [
                 'total' => $heroCount,

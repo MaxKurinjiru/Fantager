@@ -22,7 +22,7 @@ class PlayerProfileService
 
     /**
      * Returns a public player/team profile visible to other players in the same kingdom.
-     * Sensitive data (gold, essence, debt, crisis) is never included.
+     * Sensitive data (gold, debt, crisis) is never included.
      *
      * @return array<string, mixed>
      *

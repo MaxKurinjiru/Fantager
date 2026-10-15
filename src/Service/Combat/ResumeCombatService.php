@@ -71,16 +71,17 @@ class ResumeCombatService
                 }
 
                 $round = $battle->getCurrentRound() + 1;
-                if ($round > 200) {
-                    $runState = $battle->getRunState() ?? [];
-                    $runState['status'] = 'completed';
-                    $battle->setRunState($runState);
+                $runState = $battle->getRunState() ?? [];
+                if ($round > CombatEngine::MAX_ROUNDS) {
+                    $this->combatEngine->forceCompleteAtRoundCap($runState);
                 } else {
-                    $runState = $battle->getRunState() ?? [];
                     $this->combatEngine->simulateRound($runState, $round);
                     $battle->setCurrentRound($round);
-                    $battle->setRunState($runState);
+                    if ($round >= CombatEngine::MAX_ROUNDS) {
+                        $this->combatEngine->forceCompleteAtRoundCap($runState);
+                    }
                 }
+                $battle->setRunState($runState);
 
                 if ('completed' === $runState['status']) {
                     $battle->setStatus(BattleStatus::Completed);

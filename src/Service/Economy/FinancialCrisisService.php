@@ -263,15 +263,16 @@ class FinancialCrisisService
                 ->modify(sprintf('+%d days', self::REASSIGNMENT_COOLDOWN_DAYS))
         );
 
-        $this->notificationHelper->sendNotification(
+        $this->notificationHelper->sendTranslatedNotification(
             $user,
             NotificationType::System,
-            'Team bankruptcy',
-            sprintf(
-                'Your team "%s" was released due to prolonged financial insolvency. You may claim a new team after %d days.',
-                $team->getName(),
-                self::REASSIGNMENT_COOLDOWN_DAYS
-            )
+            'notification.financial_bankruptcy_title',
+            'notification.financial_bankruptcy_body',
+            [],
+            [
+                '%team%' => $team->getName(),
+                '%days%' => self::REASSIGNMENT_COOLDOWN_DAYS,
+            ]
         );
     }
 

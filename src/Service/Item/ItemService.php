@@ -27,16 +27,16 @@ use Doctrine\ORM\EntityManagerInterface;
 class ItemService
 {
     /**
-     * Essence granted per rarity tier on dismantle.
-     * Keys match ItemRarity values; values are amounts of same-tier essence.
+     * Gold scrap granted per rarity tier on dismantle.
+     * Keys match ItemRarity values.
      */
-    private const DISMANTLE_ESSENCE = [
-        'common' => 5,
-        'uncommon' => 5,
-        'rare' => 4,
-        'epic' => 3,
-        'legendary' => 2,
-        'mythic' => 1,
+    private const DISMANTLE_GOLD = [
+        'common' => 25,
+        'uncommon' => 50,
+        'rare' => 100,
+        'epic' => 250,
+        'legendary' => 500,
+        'mythic' => 1000,
     ];
 
     /** Gold cost per missing durability point by rarity. */
@@ -153,9 +153,9 @@ class ItemService
     }
 
     /**
-     * Dismantle an item: delete it and return essence to the team.
+     * Dismantle an item: delete it and return gold scrap to the team.
      *
-     * @return array{rarity: string, essence_amount: int}
+     * @return array{rarity: string, gold_gained: int}
      *
      * @throws \DomainException when item is currently equipped
      */
@@ -174,14 +174,20 @@ class ItemService
         }
 
         $rarity = $item->getRarity();
-        $amount = self::DISMANTLE_ESSENCE[$rarity->value];
-        $this->addEssenceByRarity($team, $rarity, $amount);
+        $amount = self::DISMANTLE_GOLD[$rarity->value];
+        $this->economyService->addGold(
+            $team,
+            $amount,
+            FinancialRecordType::DismantleGain,
+            FinancialRecordActor::Active,
+            ['item_id' => $item->getId(), 'rarity' => $rarity->value]
+        );
 
         $this->teamChronicleService->recordItemDismantled($team, $item, $amount, $rarity->value);
         $this->em->remove($item);
         $this->em->flush();
 
-        return ['rarity' => $rarity->value, 'essence_amount' => $amount];
+        return ['rarity' => $rarity->value, 'gold_gained' => $amount];
     }
 
     /**
@@ -250,18 +256,6 @@ class ItemService
             'equipped_slot' => $item->getEquippedSlot()?->value,
             'sub_type' => $item->getSubType()?->value,
         ];
-    }
-
-    private function addEssenceByRarity(Team $team, ItemRarity $rarity, int $amount): void
-    {
-        match ($rarity) {
-            ItemRarity::Common => $team->setEssenceCommon($team->getEssenceCommon() + $amount),
-            ItemRarity::Uncommon => $team->setEssenceUncommon($team->getEssenceUncommon() + $amount),
-            ItemRarity::Rare => $team->setEssenceRare($team->getEssenceRare() + $amount),
-            ItemRarity::Epic => $team->setEssenceEpic($team->getEssenceEpic() + $amount),
-            ItemRarity::Legendary => $team->setEssenceLegendary($team->getEssenceLegendary() + $amount),
-            ItemRarity::Mythic => $team->setEssenceMythic($team->getEssenceMythic() + $amount),
-        };
     }
 
     /**

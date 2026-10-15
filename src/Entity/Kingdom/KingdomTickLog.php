@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity\Kingdom;
 
+use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\TickType;
@@ -12,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: KingdomTickLogRepository::class)]
 #[ORM\Table(name: 'kingdom_tick_log')]
-#[ORM\UniqueConstraint(name: 'uniq_kingdom_tick_type_scheduled_team_fixture', columns: ['kingdom_id', 'tick_type', 'scheduled_at', 'team_id', 'fixture_id'])]
+#[ORM\UniqueConstraint(name: 'uniq_kingdom_tick_type_scheduled_team_fixture', columns: ['kingdom_id', 'tick_type', 'scheduled_at', 'team_id', 'fixture_id', 'friendly_match_id'])]
 class KingdomTickLog
 {
     #[ORM\Id]
@@ -31,6 +32,10 @@ class KingdomTickLog
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?LeagueFixture $fixture = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'friendly_match_id', nullable: true, onDelete: 'CASCADE')]
+    private ?FriendlyMatch $friendlyMatch = null;
 
     #[ORM\Column(name: 'tick_type', length: 30, enumType: TickType::class)]
     private TickType $tickType;
@@ -152,6 +157,18 @@ class KingdomTickLog
     public function setFixture(?LeagueFixture $fixture): static
     {
         $this->fixture = $fixture;
+
+        return $this;
+    }
+
+    public function getFriendlyMatch(): ?FriendlyMatch
+    {
+        return $this->friendlyMatch;
+    }
+
+    public function setFriendlyMatch(?FriendlyMatch $friendlyMatch): static
+    {
+        $this->friendlyMatch = $friendlyMatch;
 
         return $this;
     }

@@ -116,6 +116,7 @@ class HeroChroniclePresenter
         return match ($type) {
             HeroChronicleEventType::Summoned => '🌀',
             HeroChronicleEventType::Transferred => '🤝',
+            HeroChronicleEventType::Renamed => '🏷️',
             HeroChronicleEventType::MatchPlayed => '⚔️',
             HeroChronicleEventType::LevelUp => '⬆️',
             HeroChronicleEventType::MasteryGained => '🎓',

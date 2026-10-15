@@ -34,7 +34,7 @@ The calendar screen retrieves all entries via a unified JSON endpoint:
 - **Query Parameters**:
   - `start`: ISO-8601 start date (e.g. `2026-06-08T00:00:00Z`)
   - `end`: ISO-8601 end date (e.g. `2026-06-15T00:00:00Z`)
-  - `teamId`: Optional team ID to scope player-specific entries (training queue, own league matches)
+  - `teamId`: Optional team ID to scope player-specific entries (own league matches) and **team-scoped tick status** (without it, team-only ticks stay `scheduled` rather than picking another team’s log; kingdom-scoped companions like WeeklyReset treasury still resolve)
 - **Response Format**:
   ```json
   [

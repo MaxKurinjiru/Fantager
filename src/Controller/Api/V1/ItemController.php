@@ -107,7 +107,7 @@ class ItemController extends AbstractController
         return $this->json($this->itemService->serialize($item));
     }
 
-    /** Dismantle an item and receive essence. Body: { "item_id": 5 } */
+    /** Dismantle an item and receive gold scrap. Body: { "item_id": 5 } */
     #[Route('/api/v1/items/dismantle', name: 'api_items_dismantle', methods: ['POST'])]
     public function dismantle(Request $request): JsonResponse
     {

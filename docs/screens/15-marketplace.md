@@ -16,7 +16,7 @@ Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 | `/app/marketplace?tab=mylistings` | mylistings | Manage own active listings |
 | `/app/marketplace?tab=history` | history | Purchase/sale transaction history |
 
-**Related screen:** full gold/essence audit log → `/app/finance` (not a marketplace tab).
+**Related screen:** full gold audit log → `/app/finance` (not a marketplace tab).
 
 Displayed Information:
 - Marketplace Tabs: Heroes, Items, Trainers

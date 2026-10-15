@@ -19,6 +19,7 @@ Reference: [screens-overview.md](../screens-overview.md#18-arena-management-scre
 - **API**: `GET /api/v1/arena` — status and projections; `POST /api/v1/hq/arena/tickets/price` (+ `/api/v1/arena/tickets/price` alias)
 - **Services**: `ArenaService`, `ArenaRevenueService`, `FanClubService`
 - **CLI**: `app:economy:distribute-arena-revenue --time="YYYY-MM-DD HH:MM:SS"` for manual fixture payout
+- **Audience Favorite**: home lineup heroes with the trait each add `+5%` to ticket gold (`ArenaRevenueService`; uses fixture assignment or team default formation)
 - **HQ upgrades**: Arena level/capacity via `/app/hq`
 
-Friendly match scheduling remains planned (`POST /api/v1/arena/schedule-match`). Extended attendance analytics UI is still pending.
+Friendly matches: see [friendly-match-system.md](../systems/friendly-match-system.md) and `/app/friendly-matches`. Arena panel links to the friendly list. Extended attendance analytics UI is still pending.

@@ -1,13 +1,7 @@
 {
   "_comment": "Starting state for each NPC team created during kingdom init.",
   "starting_resources": {
-    "gold": 20000,
-    "essence_common": 0,
-    "essence_uncommon": 0,
-    "essence_rare": 0,
-    "essence_epic": 0,
-    "essence_legendary": 0,
-    "essence_mythic": 0
+    "gold": 20000
   },
   "morale": 50,
   "reputation": 0,

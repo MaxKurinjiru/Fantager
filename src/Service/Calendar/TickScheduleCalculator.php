@@ -96,6 +96,17 @@ class TickScheduleCalculator
                 }
             }
 
+            // 4b. Friendly Match (Wednesday and Sunday 18:00)
+            if (3 === $dayOfWeek || 7 === $dayOfWeek) {
+                $tFriendly = new \DateTimeImmutable($dateStr.' 18:00:00', $tz);
+                if ($tFriendly > $fromLocal && $tFriendly <= $toLocal) {
+                    $occurrences[] = [
+                        'type' => TickType::FriendlyMatch,
+                        'time' => $tFriendly->setTimezone(new \DateTimeZone('UTC')),
+                    ];
+                }
+            }
+
             // 5. Season Transition (Friday 19:00)
             if (5 === (int) $current->format('N')) {
                 $tTransition = new \DateTimeImmutable($dateStr.' 19:00:00', $tz);

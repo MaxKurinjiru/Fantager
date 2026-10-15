@@ -100,5 +100,5 @@ races:
       max_junior: 150
       prime_limit: 500
       mortality_threshold: 2000
-    combat_bonus: "+15% spell effectiveness and spell critical hit chance (magical essence)"
+    combat_bonus: "+15% spell effectiveness and spell critical hit chance"
     equipment_restrictions: []

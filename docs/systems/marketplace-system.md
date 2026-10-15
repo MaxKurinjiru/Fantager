@@ -28,13 +28,13 @@ Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction r
    - If listing type is `Hero`: `countActiveCombatantsByTeam(buyer) >= rosterLimit` → throws `error.marketplace_buy_roster_full`.
    - If listing type is `Trainer`: `countActiveTrainersByTeam(buyer) >= trainerLimit` → throws `error.marketplace_buy_trainer_limit_reached`.
 3. **Price check:** listing must have a `buyout_price_gold` set.
-4. **Gold check:** buyer must have sufficient gold (including the kingdom tax).
-5. **Atomic settlement:**
-   - Gold deducted from buyer via `EconomyService::deductGold` (`MarketplacePurchase`).
-   - Tax paid to kingdom treasury.
-   - Gold credited to seller via `EconomyService::addGold` (`MarketplaceSale`).
+4. **Gold check:** buyer must have sufficient gold for the **buyout price only** (kingdom tax is not charged to the buyer).
+5. **Atomic settlement** (`MarketplaceService::buyListing`):
+   - Gold deducted from buyer via `EconomyService::deductGold` (`MarketplacePurchase`) for `buyout_price` only.
+   - Seller credited the full buyout via `EconomyService::addGold` (`MarketplaceSale`).
+   - Tax = `floor(buyout × kingdom.marketplace_tax_rate / 100)` is then deducted from the **seller** (`MarketplaceFee`) and paid to the kingdom treasury.
    - Ownership transferred (`hero.team` or `item.owner_team_id` updated).
-   - `MarketplaceTransaction` persisted with `entity_name` snapshot.
+   - `MarketplaceTransaction` persisted with `entity_name` snapshot (`amount` = buyout, `fee_amount` = tax).
    - For items: `TeamChronicleService::recordItemPurchased` (buyer) and `recordItemSold` (seller).
 
 ---
@@ -69,9 +69,9 @@ Table: `marketplace_transaction` — entity `App\Entity\Marketplace\MarketplaceT
 
 ---
 
-## Merchant Purchases (`ItemService::buyFromMerchant`)
+## Merchant Purchases (`ItemService::purchaseBasicItem`)
 
-When a team buys an item from the in-game merchant (not from another player):
+When a team buys a fixed-price basic item from the in-game merchant (not from another player) — UI: Marketplace **basic_equipment** tab / `POST /app/marketplace/buy-basic`:
 
 - Gold is deducted via `EconomyService::deductGold` (`MarketplacePurchase`, actor `Active`).
 - A `MarketplaceTransaction` is created with `seller_team_id = null`, `listing_id = null`, `fee_amount = 0`.
@@ -81,7 +81,7 @@ When a team buys an item from the in-game merchant (not from another player):
 
 ## Fee / Tax Calculation
 
-Tax rates are kingdom-specific and configured in `kingdom.marketplace_tax_rate`. The fee is deducted from the settlement amount before crediting the seller.
+Tax rates are kingdom-specific and configured in `kingdom.marketplace_tax_rate`. The buyer pays the listed buyout; the fee is taken from the **seller’s** settlement (seller is credited the buyout, then taxed).
 
 ---
 

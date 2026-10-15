@@ -1,0 +1,152 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ 'friendly.title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="friendly-page page-shell"
+     data-controller="friendly-matches"
+     data-friendly-matches-team-id-value="{{ team.id }}"
+     data-friendly-matches-slots-url-value="{{ path('api_arena_friendly_slots') }}"
+     data-friendly-matches-schedule-url-value="{{ path('api_arena_schedule_friendly') }}"
+     data-friendly-matches-accept-url-template-value="{{ path('api_arena_friendly_accept', {id: 0}) }}"
+     data-friendly-matches-decline-url-template-value="{{ path('api_arena_friendly_decline', {id: 0}) }}"
+     data-friendly-matches-cancel-url-template-value="{{ path('api_arena_friendly_cancel', {id: 0}) }}"
+     data-friendly-matches-translations-value="{{ {
+         'select_opponent': 'friendly.select_opponent'|trans,
+         'no_slots': 'friendly.no_slots'|trans,
+         'loading_slots': 'friendly.loading_slots'|trans,
+         'challenge_sent': 'friendly.challenge_sent'|trans,
+         'action_failed': 'friendly.action_failed'|trans,
+         'confirm_cancel': 'friendly.confirm_cancel'|trans
+     }|json_encode|e('html_attr') }}">
+
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'friendly.title',
+        subtitle: 'friendly.subtitle'
+    } %}
+
+    {% include 'components/ui/alert_box.html.twig' with {
+        target: 'friendly-matches',
+        message_target: 'alertMessage',
+        close_action: 'friendly-matches#hideAlert'
+    } %}
+
+    <div class="layout-stack layout-stack--lg">
+        <section class="game-panel" aria-labelledby="friendly-challenge-heading">
+            <h2 id="friendly-challenge-heading" class="game-panel__title">{{ 'friendly.challenge_title'|trans }}</h2>
+            <p class="copy-muted">{{ 'friendly.challenge_help'|trans }}</p>
+
+            <form class="friendly-challenge-form layout-stack layout-stack--form" data-action="submit->friendly-matches#challenge">
+                <div class="form-field-group">
+                    <label for="friendly-opponent" class="form-label">{{ 'friendly.opponent'|trans }}</label>
+                    <select id="friendly-opponent"
+                            class="form-input"
+                            data-friendly-matches-target="opponent"
+                            data-action="change->friendly-matches#loadSlots"
+                            required>
+                        <option value="">{{ 'friendly.select_opponent'|trans }}</option>
+                        {% for opponent in opponents %}
+                            <option value="{{ opponent.id }}">{{ opponent.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <fieldset class="form-field-group">
+                    <legend class="form-label">{{ 'friendly.slot'|trans }}</legend>
+                    <p class="copy-muted" data-friendly-matches-target="slotsHint">{{ 'friendly.slot_hint'|trans }}</p>
+                    <div class="friendly-slot-list" data-friendly-matches-target="slots" role="radiogroup" aria-label="{{ 'friendly.slot'|trans }}"></div>
+                </fieldset>
+
+                <button type="submit" class="btn btn-primary" data-friendly-matches-target="submitBtn" disabled>
+                    {{ 'friendly.send_challenge'|trans }}
+                </button>
+            </form>
+        </section>
+
+        <nav class="tab-nav-bar" aria-label="{{ 'friendly.tabs_label'|trans }}">
+            <a href="{{ path('app_friendly_matches', {tab: 'upcoming'}) }}"
+               class="tab-btn {{ tab == 'upcoming' ? 'tab-btn--active' : '' }}">
+                {{ 'friendly.tab_upcoming'|trans }} ({{ upcoming_count }})
+            </a>
+            <a href="{{ path('app_friendly_matches', {tab: 'pending'}) }}"
+               class="tab-btn {{ tab == 'pending' ? 'tab-btn--active' : '' }}">
+                {{ 'friendly.tab_pending'|trans }} ({{ pending_count }})
+            </a>
+            <a href="{{ path('app_friendly_matches', {tab: 'history'}) }}"
+               class="tab-btn {{ tab == 'history' ? 'tab-btn--active' : '' }}">
+                {{ 'friendly.tab_history'|trans }}
+            </a>
+        </nav>
+
+        {% if matches is empty %}
+            <div class="friendly-empty game-panel">
+                <p class="friendly-empty__emoji" aria-hidden="true">⚔️</p>
+                <h2 class="friendly-empty__title">{{ 'friendly.empty_title'|trans }}</h2>
+                <p class="copy-muted">{{ ('friendly.empty_' ~ tab)|trans }}</p>
+            </div>
+        {% else %}
+            <ul class="friendly-list layout-stack">
+                {% for match in matches %}
+                    {% set is_home = match.homeTeam.id == team.id %}
+                    {% set is_away = match.awayTeam.id == team.id %}
+                    {% set is_mine = is_home or is_away %}
+                    <li class="friendly-card game-panel">
+                        <div class="layout-toolbar">
+                            <div class="layout-stack layout-stack--sm">
+                                <h3 class="friendly-card__title">
+                                    {{ match.homeTeam.name }}
+                                    <span class="copy-muted">vs</span>
+                                    {{ match.awayTeam.name }}
+                                </h3>
+                                <p class="copy-secondary">
+                                    {{ match.scheduledAt|date('d. m. Y H:i') }}
+                                    · {{ ('friendly.status_' ~ match.status.value)|trans }}
+                                    {% if is_home %}
+                                        · {{ 'friendly.you_home'|trans }}
+                                    {% elseif is_away %}
+                                        · {{ 'friendly.you_away'|trans }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="layout-cluster layout-cluster--sm layout-cluster--wrap">
+                                {% if match.status.value == 'pending' and is_away %}
+                                    <button type="button"
+                                            class="btn btn-primary btn--sm"
+                                            data-action="click->friendly-matches#accept"
+                                            data-friendly-matches-id-param="{{ match.id }}">
+                                        {{ 'friendly.accept'|trans }}
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-outline btn--sm"
+                                            data-action="click->friendly-matches#decline"
+                                            data-friendly-matches-id-param="{{ match.id }}">
+                                        {{ 'friendly.decline'|trans }}
+                                    </button>
+                                {% endif %}
+                                {% if match.status.value in ['pending', 'scheduled'] and is_mine %}
+                                    <button type="button"
+                                            class="btn btn-ghost btn--sm"
+                                            data-action="click->friendly-matches#cancel"
+                                            data-friendly-matches-id-param="{{ match.id }}">
+                                        {{ 'friendly.cancel'|trans }}
+                                    </button>
+                                {% endif %}
+                                {% if match.status.value == 'scheduled' and is_mine %}
+                                    <a href="{{ path('app_formation') }}" class="btn btn-outline btn--sm">
+                                        {{ 'friendly.formations'|trans }}
+                                    </a>
+                                {% endif %}
+                                {% if match.battle and match.status.value == 'completed' %}
+                                    <a href="{{ path('app_battle_report', {id: match.battle.id}) }}" class="btn btn-outline btn--sm">
+                                        {{ 'friendly.view_battle'|trans }}
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

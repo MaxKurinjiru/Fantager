@@ -31,24 +31,6 @@ class FinancialRecord
     #[ORM\Column(options: ['default' => 0])]
     private int $goldChange = 0;
 
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceCommonChange = 0;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceUncommonChange = 0;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceRareChange = 0;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceEpicChange = 0;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceLegendaryChange = 0;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceMythicChange = 0;
-
     /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $context = [];
@@ -113,78 +95,6 @@ class FinancialRecord
     public function setGoldChange(int $goldChange): static
     {
         $this->goldChange = $goldChange;
-
-        return $this;
-    }
-
-    public function getEssenceCommonChange(): int
-    {
-        return $this->essenceCommonChange;
-    }
-
-    public function setEssenceCommonChange(int $essenceCommonChange): static
-    {
-        $this->essenceCommonChange = $essenceCommonChange;
-
-        return $this;
-    }
-
-    public function getEssenceUncommonChange(): int
-    {
-        return $this->essenceUncommonChange;
-    }
-
-    public function setEssenceUncommonChange(int $essenceUncommonChange): static
-    {
-        $this->essenceUncommonChange = $essenceUncommonChange;
-
-        return $this;
-    }
-
-    public function getEssenceRareChange(): int
-    {
-        return $this->essenceRareChange;
-    }
-
-    public function setEssenceRareChange(int $essenceRareChange): static
-    {
-        $this->essenceRareChange = $essenceRareChange;
-
-        return $this;
-    }
-
-    public function getEssenceEpicChange(): int
-    {
-        return $this->essenceEpicChange;
-    }
-
-    public function setEssenceEpicChange(int $essenceEpicChange): static
-    {
-        $this->essenceEpicChange = $essenceEpicChange;
-
-        return $this;
-    }
-
-    public function getEssenceLegendaryChange(): int
-    {
-        return $this->essenceLegendaryChange;
-    }
-
-    public function setEssenceLegendaryChange(int $essenceLegendaryChange): static
-    {
-        $this->essenceLegendaryChange = $essenceLegendaryChange;
-
-        return $this;
-    }
-
-    public function getEssenceMythicChange(): int
-    {
-        return $this->essenceMythicChange;
-    }
-
-    public function setEssenceMythicChange(int $essenceMythicChange): static
-    {
-        $this->essenceMythicChange = $essenceMythicChange;
 
         return $this;
     }

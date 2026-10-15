@@ -10,7 +10,7 @@ Purpose: Document formation representation, validation rules, synergy calculatio
 - **`FormationSlot`**: 6 positions (`front_1`–`front_3`, `back_1`–`back_3`), hero assignment, `strategy` JSON, `spell_priorities` JSON
 - **`LeagueFixture`**: nullable `home_formation_id` / `away_formation_id` — `NULL` means *use team default at match resolution*
 
-Temporary match-specific formations (`is_temporary=true`) are created when a player customizes a lineup for a single fixture. They are excluded from the player's saved formation list and are **automatically deleted by kingdom ticks** once the source fixture is completed (`DailyReset` and `LeagueMatch` ticks call `FixtureFormationService::cleanupStaleTemporaryFormationsForKingdom()`).
+Temporary match-specific formations (`is_temporary=true`) are created when a player customizes a lineup for a single fixture. They are excluded from the player's saved formation list and are **deleted when the fixture is marked completed** via `LeagueFixtureCompletionService::complete()` (after forfeit resolution or after async combat `completeBattle`). `DailyReset` still sweeps orphans with `FixtureFormationService::cleanupStaleTemporaryFormationsForTeam()`.
 
 ## Saved Formation Limit
 
@@ -117,5 +117,5 @@ Formations are 6-slot layouts (3 front, 3 back) with per-hero action priority an
 ## Implementation Notes
 
 - Combat engine should resolve lineups via `FixtureFormationService::resolveFormation()` and finalize fixtures via `LeagueFixtureCompletionService::complete()`.
-- Temporary formation cleanup is **not** synchronous on completion; kingdom ticks remove stale temps for completed fixtures.
-- Deleting a temporary formation clears fixture FKs; battle/dungeon formation FKs use `ON DELETE SET NULL`.
+- Temporary formation cleanup runs in `LeagueFixtureCompletionService::complete()` **after** the fixture is `Completed` (and after post-match rewards have used Battle formation FKs). Do **not** clean up on `LeagueMatch` kickoff while combat is still simulating. `DailyReset` is an orphan safety net.
+- Deleting a temporary formation clears fixture FKs; battle formation FKs use `ON DELETE SET NULL`.

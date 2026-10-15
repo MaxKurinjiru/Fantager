@@ -14,7 +14,7 @@ The chronicle answers: **“What happened to this team over time?”** — not �
 |---------|---------|--------|
 | **Team chronicle** | `team_chronicle` | Per **team** (`team_id`); persists across managers and NPC periods |
 | **Player notifications** | `notification` | Per **user**; unread state, immediate alerts |
-| **Financial ledger** | `team_financial_record` | Per **team**; gold/essence audit trail |
+| **Financial ledger** | `team_financial_record` | Per **team**; gold audit trail |
 
 A single `Team` row can be owned by many players over its lifetime (`user_id` set/cleared, `is_npc` toggled). Chronicle entries from previous managers remain visible to the next manager unless filtered in UI (no ownership-period filter yet).
 
@@ -64,7 +64,7 @@ Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter`
 | `spell_learned` | Hero learned a spell | `SpellService` |
 | `item_purchased` | Item bought on marketplace or from merchant | `TeamChronicleService::recordItemPurchased()` |
 | `item_sold` | Item sold on marketplace | `TeamChronicleService::recordItemSold()` |
-| `item_dismantled` | Item dismantled for essences | `ItemService` |
+| `item_dismantled` | Item dismantled for gold scrap | `ItemService` |
 | `hero_purchased` | Hero bought on marketplace | `TeamChronicleService::recordHeroPurchased()` |
 | `hero_sold` | Hero sold on marketplace | `TeamChronicleService::recordHeroSold()` |
 | `trainer_purchased` | Trainer bought on marketplace | `TeamChronicleService::recordTrainerPurchased()` |

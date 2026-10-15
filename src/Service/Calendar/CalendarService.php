@@ -6,6 +6,7 @@ namespace App\Service\Calendar;
 
 use App\Entity\Kingdom\Kingdom;
 use App\Enum\TickType;
+use App\Repository\FriendlyMatch\FriendlyMatchRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
@@ -19,6 +20,7 @@ class CalendarService
         private readonly LeagueFixtureRepository $leagueFixtureRepository,
         private readonly LeagueSeasonRepository $seasonRepository,
         private readonly UserMessageTranslator $userMessages,
+        private readonly FriendlyMatchRepository $friendlyMatchRepository,
     ) {
     }
 
@@ -64,22 +66,15 @@ class CalendarService
         );
         foreach ($occurrences as $occurrence) {
             $type = $occurrence['type'];
-            if (TickType::LeagueMatch === $type) {
+            if (TickType::LeagueMatch === $type || TickType::FriendlyMatch === $type) {
+                // League matches and friendly matches are added separately from their repositories
                 continue;
             }
 
             $time = $occurrence['time'];
             $timeStr = $time->format(\DateTimeInterface::ATOM);
 
-            // Fetch actual execution state if any log exists
-            /** @var \App\Entity\Kingdom\KingdomTickLog|null $log */
-            $log = $this->tickLogRepository->findOneBy([
-                'kingdom' => $kingdom,
-                'tickType' => $type,
-                'scheduledAt' => $time,
-            ]);
-
-            $status = $log ? $log->getStatus() : 'scheduled';
+            $status = $this->resolveTickStatus($kingdom, $type, $time, $teamId);
 
             // Determine visibility & labels
             $visibility = 'public';
@@ -178,11 +173,78 @@ class CalendarService
             ];
         }
 
+        // 3. Friendly Matches — only for participating teams (team_only visibility)
+        if (null !== $teamId) {
+            $friendlyMatches = $this->friendlyMatchRepository->findForTeamInPeriod($teamId, $start, $end);
+            foreach ($friendlyMatches as $match) {
+                $homeId = $match->getHomeTeam()->getId();
+                $awayId = $match->getAwayTeam()->getId();
+
+                $feed[] = [
+                    'id' => sprintf('friendly_match_%d', $match->getId()),
+                    'type' => 'friendly_match',
+                    'title' => sprintf('%s vs %s', $match->getHomeTeam()->getName(), $match->getAwayTeam()->getName()),
+                    'description' => $this->userMessages->trans('calendar.friendly_match_desc', [], $locale),
+                    'scheduledAt' => $match->getScheduledAt()->format(\DateTimeInterface::ATOM),
+                    'visibility' => 'team_only',
+                    'status' => $match->getStatus()->value,
+                    'metadata' => [
+                        'friendlyMatchId' => $match->getId(),
+                        'homeTeam' => [
+                            'id' => $homeId,
+                            'name' => $match->getHomeTeam()->getName(),
+                        ],
+                        'awayTeam' => [
+                            'id' => $awayId,
+                            'name' => $match->getAwayTeam()->getName(),
+                        ],
+                    ],
+                ];
+            }
+        }
+
         // Sort entire feed chronologically
         usort($feed, static function (array $a, array $b): int {
             return strcmp($a['scheduledAt'], $b['scheduledAt']);
         });
 
         return $feed;
+    }
+
+    /**
+     * Resolve tick status without picking an arbitrary team's log.
+     * Team-scoped ticks use the viewer's team when teamId is set; otherwise prefer
+     * the kingdom-scoped companion row (e.g. WeeklyReset treasury) or stay scheduled.
+     */
+    private function resolveTickStatus(
+        Kingdom $kingdom,
+        TickType $type,
+        \DateTimeImmutable $time,
+        ?int $teamId,
+    ): string {
+        $criteria = [
+            'kingdom' => $kingdom,
+            'tickType' => $type,
+            'scheduledAt' => $time,
+        ];
+
+        if ($type->createsTeamScopedLogs() && null !== $teamId) {
+            $criteria['team'] = $teamId;
+            /** @var \App\Entity\Kingdom\KingdomTickLog|null $log */
+            $log = $this->tickLogRepository->findOneBy($criteria);
+
+            return $log ? $log->getStatus() : 'scheduled';
+        }
+
+        if ($type->createsKingdomScopedLogs() || !$type->createsTeamScopedLogs()) {
+            $criteria['team'] = null;
+            /** @var \App\Entity\Kingdom\KingdomTickLog|null $log */
+            $log = $this->tickLogRepository->findOneBy($criteria);
+
+            return $log ? $log->getStatus() : 'scheduled';
+        }
+
+        // Team-scoped only, no teamId: do not guess from another team's log
+        return 'scheduled';
     }
 }

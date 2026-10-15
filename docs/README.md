@@ -19,6 +19,7 @@ This folder contains specifications derived from [game-summary.md](game-summary.
 - [Kingdom System](systems/kingdom-system.md)
 - [Summoning System](systems/summoning-system.md)
 - [Calendar System](systems/calendar-system.md) — Weekly ticks, schedule, and season timeline
+- [Friendly Match System](systems/friendly-match-system.md) — PvP practice matches (Wed/Sun windows)
 - [Economy System](systems/economy-system.md)
 - [Financial Crisis System](systems/financial-crisis-system.md)
 - [Hero System](systems/hero-system.md)
@@ -103,7 +104,7 @@ This table provides a snapshot of implemented features versus placeholders:
 | **Quests** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 8) — see [future/quest-system.md](future/quest-system.md). |
 | **Crafting** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 8) — see [future/crafting-system.md](future/crafting-system.md). Backend and UI removed from codebase. |
 | **Alliances & Guilds** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 9) — see [roadmap.md](roadmap.md). |
-| **Arena Management** | Partially Implemented | Implemented (HQ panel) | Implemented (status + ticket price) | **Active Milestone 7** — Home-match revenue model; arena panel in HQ (`/app/hq?facility=arena`); `/app/arena` is a redirect; `POST /api/v1/hq/arena/tickets/price` implemented. Extended analytics UI & friendly scheduling pending. |
+| **Arena Management** | Partially Implemented | Implemented (HQ panel) | Implemented (status + ticket price + friendlies) | **Active Milestone 7** — Home-match revenue; friendly PvP scheduling (`/app/friendly-matches`, Wed/Sun 18:00). Extended analytics UI still pending. |
 | **Economy / Finance** | Fully Implemented | Implemented | Implemented | Royal Treasury weekly distribution, financial crisis, marketplace at `/app/marketplace`, ledger at `/app/finance`; `GET /api/v1/finance/*` implemented. |
 | **Notifications** | Fully Implemented | Implemented | Implemented | Write + read API, navbar modal with unread badge. See [notification-system.md](systems/notification-system.md). |
 

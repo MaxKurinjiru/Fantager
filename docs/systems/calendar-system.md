@@ -12,15 +12,17 @@ The game world operates on automated server ticks executed at scheduled times. T
 
 | Day | Time | Event / Tick | Action Details |
 |:---|:---|:---|:---|
-| **Daily** | 00:00 | **Daily Reset & Maintenance** | Cleanup stale match formations, fan club evolution, expired marketplace listings, completed HQ facility upgrades, hero/trainer aging, and season pre-creation on Monday of Week 11. **NPC Simulation:** runs daily roster maintenance (dismissal of negative-trait heroes, roster recycling, summoning). On Tuesday and Friday, runs NPC marketplace actions (buying/selling). On Tuesday, runs NPC training queue configuration. |
+| **Daily** | 00:00 | **Daily Reset & Maintenance** | Cleanup stale match formations, fan club evolution, expired marketplace listings, completed HQ facility upgrades, **hero and trainer aging** (non-Undead; age increment scales with `game_speed`), mastery decay, and season pre-creation on Monday of Week 11. **NPC Simulation:** runs daily roster maintenance (dismissal of negative-trait heroes, roster recycling, summoning). On Tuesday and Friday, runs NPC marketplace actions (buying/selling). On Tuesday, runs NPC training queue configuration. |
 | **Daily** | 03:30 | **Inactive Registration Cleanup** | Remove team assignments and delete unverified player accounts older than 1 day. |
 | **Daily** | 03:45 | **Inactive Player Cleanup** | Release teams from verified players inactive for 28+ days. |
 | **Daily** | 04:00 | **Fatigue & Form Recovery** | Recovery tick for hero fatigue and form (passive restoration). |
 | **Tuesday** | 18:00 | **League Match (Mid-Week)** | Process scheduled mid-week league fixtures. **Implemented:** tactics simulation, home-team arena ticket revenue, deterministic round-by-round combat resolution, mastery XP, hero XP, form, fatigue, team morale, aging. |
+| **Wednesday** | 18:00 | **Friendly Match** | Process accepted PvP friendly matches at this window. Same combat engine as league; no standings/ticket revenue. See [friendly-match-system.md](friendly-match-system.md). |
 | **Thursday** | 10:00 | **Weekly Training** | Process active trainer assignments. Calculate stat gains (non-linear formulas, raw x10 scaling) and apply to heroes. |
 | **Friday** | 18:00 | **League Match (End-Week)** | Process scheduled end-week league fixtures. **Implemented:** tactics simulation, home-team arena ticket revenue, deterministic round-by-round combat resolution, mastery XP, hero XP, form, fatigue, team morale, aging. |
 | **Friday** | 19:00 | **Season Transition** *(Week 11 only)* | Run season resolution service: finalize standings, distribute tier promotion/relegation rewards, execute team transfers (promotions/relegations), initialize the next season. |
 | **Sunday** | 09:30 | **Arena Adaptation** | Apply pending headquarters arena adaptation changes and manage weekly adaptation lock cycles. |
+| **Sunday** | 18:00 | **Friendly Match** | Second weekly friendly kickoff window (same rules as Wednesday). |
 | **Weekly** | Sun 23:59 | **Weekly Reset** | Reset summoning chamber cooldowns, process HQ maintenance fees, **hero/trainer payroll**, **Royal Treasury distribution**, facility downgrade lock expiry, and weekly financial-crisis checks. **NPC Simulation:** runs weekly HQ upgrades. |
 
 ---
@@ -145,12 +147,13 @@ Within the message handler (`ExecuteSingleTickHandler`) and the orchestrator (`K
      4. **Priority 5**: `FatigueRecovery`
      5. **Priority 6**: Resets/Cleanups (`DailyReset`, `WeeklyReset`, `RaceOptimization`, `InactiveRegistrationCleanup`, `InactivePlayerCleanup`)
    - It fetches all pending ticks belonging to this specific `[scheduledAt, priority]` group (e.g., all team training ticks or all fixtures in a match round) and dispatches them as separate `ExecuteSingleTickMessage` messages. These run concurrently across all available Messenger workers.
+   - **WeeklyReset exception:** team-scoped logs (maintenance, payroll, crisis) always dispatch before the kingdom-scoped Royal Treasury distribution. The orchestrator holds the treasury tick until every team WeeklyReset at that timestamp has finished, so gold races cannot interleave.
 
 3. **Atomic Acquisition & Execution**:
    - When a worker consumes `ExecuteSingleTickMessage($tickLogId)`, it runs an atomic database update to change the tick status from `'pending'` to `'processing'`. If 0 rows are affected, another worker claimed it first, and it exits safely.
    - It executes the specific scoped tick within a transaction:
      - **Team-scoped**: Runs NPC simulation, training, resets, or fatigue recovery only for that team.
-     - **Match-scoped**: Simulates tactics for both teams, pays arena ticket revenue, resolves the match, and cleans up temporary formations only for that fixture.
+     - **Match-scoped**: Simulates tactics for both teams, pays arena ticket revenue, and resolves the match (starts async combat or forfeit). Temporary formations are cleaned when the fixture completes, not at kickoff.
      - **Kingdom-scoped**: Resolves shared systems (e.g. treasury distribution or season transition).
    - If execution succeeds, the tick is marked `'completed'` and the transaction commits.
    - If execution fails, the transaction is rolled back, the tick is marked `'failed'` (with the error message and trace saved in a separate transaction), and the handler exits. The orchestrator is **not** called, halting the pipeline.
@@ -179,16 +182,15 @@ We configure a single asynchronous queue transport in `config/packages/messenger
 
 ## Friendly Matches (Practice)
 
-Friendly matches are **non-competitive practice battles** scheduled by players outside the league fixture list. They serve these purposes:
+Full rules: [friendly-match-system.md](friendly-match-system.md).
+
+Friendly matches are **PvP practice battles** outside the league fixture list. Kickoff windows are **Wednesday 18:00** and **Sunday 18:00** (kingdom TZ). Challenger is home; max one home friendly per ISO week; slot chosen from windows both teams have free (max 14 days ahead). Invite cutoff T−6h; cancel until T−1h.
 
 | Aspect | Rule |
 |--------|------|
-| **When** | Any time during Week 1 (preparation gap) or between league rounds; typically scheduled from the Arena screen (UI planned) |
-| **Cost** | No league points at stake; optional gold fee may apply when hosting (future) |
-| **Rewards** | Reduced XP and no league standing impact; useful for testing formations |
-| **Combat** | Uses the same combat engine (`CombatEngine`) as league matches |
-| **Calendar** | Appear in the kingdom calendar feed with `type: friendly_match` when scheduling is implemented |
-| **Scheduling API** | `POST /api/v1/arena/schedule-match` — planned UI / endpoint |
-
-Practice battles use `CombatEngine` and `ResumeCombatService` for simulation; player-facing friendly match scheduling UI and API endpoint are planned.
+| **Combat** | Same engine as league (`MatchType::Friendly`); permanent death / aging on KO apply |
+| **Economy / standings** | No league points, no ticket revenue, no fan-base deltas |
+| **Calendar** | `type: friendly_match` entries only for participating teams (`team_only`) |
+| **Public list** | `/app/friendly-matches` (all kingdom friendlies) |
+| **Tick** | `TickType::FriendlyMatch` — fixture-scoped logs on `friendly_match_id` |
 

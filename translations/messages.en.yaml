@@ -32,6 +32,7 @@ nav:
   notifications: Notifications
   calendar: Calendar
   arena: Arena
+  friendly_matches: Friendly Matches
   graveyard: Graveyard
 
 modal:
@@ -216,14 +217,8 @@ error:
   marketplace_buy_roster_full: Purchase or bid would exceed the roster limit.
   marketplace_buy_trainer_limit_reached: Purchase or bid would exceed the trainer limit.
   insufficient_gold: 'Insufficient gold. Required: %required%, available: %available%.'
-  insufficient_essence: 'Insufficient essence. Required: %required%, available: %available%.'
+  email_not_verified: Please verify your email first.
   insufficient_school_mastery: 'Insufficient school mastery. Required: %required%, current: %current%.'
-  insufficient_common_essence: Insufficient common essence.
-  insufficient_uncommon_essence: Insufficient uncommon essence.
-  insufficient_rare_essence: Insufficient rare essence.
-  insufficient_epic_essence: Insufficient epic essence.
-  insufficient_legendary_essence: Insufficient legendary essence.
-  insufficient_mythic_essence: Insufficient mythic essence.
   summoning_roster_full: Roster is full.
   summoning_limit_reached: Summoning limit reached for this cycle.
   summoning_no_compatible_races: No compatible races found for summoning.
@@ -274,6 +269,17 @@ error:
   training_success_assign: Hero assigned to trainer successfully.
   training_success_unassign: Hero unassigned from trainer successfully.
   player_profile_not_found: Player profile not found.
+  friendly_opponent_npc: Friendly matches can only be played against teams with a human manager.
+  friendly_same_team: A team cannot challenge itself to a friendly match.
+  friendly_different_kingdom: Only teams within the same kingdom can play friendly matches.
+  friendly_slot_invalid: The selected time slot is not valid for a friendly match.
+  friendly_invite_cutoff: The invite window has closed (must accept at least 6 hours before kick-off).
+  friendly_cancel_cutoff: The cancel window has closed (must cancel at least 1 hour before kick-off).
+  friendly_not_pending: This friendly match is not pending.
+  friendly_not_participant: You are not a participant in this friendly match.
+  friendly_home_cap: Your team already has a home friendly match scheduled this week.
+  friendly_already_scheduled: One of the teams already has an active friendly at that time.
+  friendly_not_found: Friendly match not found.
 
 notification:
   marketplace_outbid_title: Outbid / Refunded
@@ -308,6 +314,12 @@ notification:
   financial_warning_body: 'Your team has unpaid debt of %debt% gold. Reduce expenses or sell assets.'
   financial_restricted_title: Financial Restrictions
   financial_restricted_body: 'Your team has been in crisis for %weeks% weeks! HQ passive bonuses are suspended.'
+  financial_bankruptcy_title: Team bankruptcy
+  financial_bankruptcy_body: 'Your team "%team%" was released due to prolonged financial insolvency. You may claim a new team after %days% days.'
+  inactivity_warning_title: Inactivity warning
+  inactivity_warning_body: 'Your team "%team%" will be released in %days% days if you do not log in and play. Log in to keep your team.'
+  inactivity_release_title: Team released due to inactivity
+  inactivity_release_body: 'Your team "%team%" was released because you have been inactive for %inactive_days% days. You may claim a new team after %days% days.'
   training_completed_title: Weekly Training Completed
   training_completed_body: 'Weekly training cycle completed successfully. Trainers passed on experience to heroes.'
 
@@ -317,7 +329,6 @@ dashboard:
   history_axis_fan_base: Fan Club
   treasury: Treasury
   gold: Gold
-  total_essence: Total Essence
   edit_profile: Edit Profile
   morale: Team Morale
   morale_desc: Affects hero training efficiency and combat persistence.
@@ -451,7 +462,7 @@ activity:
   hero_died:
     combat_death: 'Hero %hero% died in combat.'
     dismissed: 'Hero %hero% was dismissed.'
-  item_dismantled: 'Item %item% was dismantled into %essence% %rarity% essence.'
+  item_dismantled: 'Item %item% was dismantled for %gold% gold (%rarity%).'
   trainer_promoted: 'Hero %hero% was promoted to Trainer.'
   financial_crisis:
     warning: 'Financial warning: unpaid debt %debt% gold.'
@@ -1102,7 +1113,7 @@ training:
 
 inventory:
   title: Armory & Rucksack
-  subtitle: Equip gear onto your heroes, dismantle old items into essence, or repair durability.
+  subtitle: Equip gear onto your heroes, dismantle old items for gold scrap, or repair durability.
   equip_manager: Equip Manager
   select_hero_opt: "-- Select Hero to Equip --"
   paperdoll: Hero Equipment Paperdoll
@@ -1308,7 +1319,7 @@ js_flash:
     confirm_dismantle: Are you sure you want to dismantle this item? It will be permanently destroyed.
     dismantling: Dismantling...
     failed_dismantle: Failed to dismantle item.
-    success_dismantle: "Item dismantled! Gained %essence% essence."
+    success_dismantle: "Item dismantled! Gained %gold% gold."
     repairing: Repairing...
     failed_repair: Failed to repair item.
     success_repair: "Item repaired! Cost: 🪙 %gold%."
@@ -1339,7 +1350,7 @@ races:
     undead: "Immune to poison & disease; 50% reduced external healing (use life steal/hex)"
     giant: "+10% damage with 1H weapons; cannot use off-hand (size limitation)"
     ent: "+20% to Constitution defense math; -20% to speed-based actions (deep roots)"
-    genie: "+15% spell effectiveness and spell crit rate (magic essence)"
+    genie: "+15% spell effectiveness and spell crit rate"
 
 league:
   title: League & Standings
@@ -1420,6 +1431,7 @@ calendar:
   status_completed: Completed
   status_failed: Failed
   league_fixture_desc: 'League Fixture - Group %group%'
+  friendly_match_desc: Friendly Match
   training_complete_title: 'Training complete: %hero%'
   tick:
     daily_reset_title: Daily Reset & Maintenance
@@ -1433,6 +1445,8 @@ calendar:
     weekly_training_title: Weekly Training Process
     weekly_training_desc: Calculate queued hero stat increases and finalize jobs
     league_match_title: League Match Tick
+    friendly_match_title: Friendly Match Tick
+    friendly_match_desc: Trigger scheduled friendly match simulations
     league_match_desc: Trigger scheduled league fixtures simulation
     season_transition_title: Season Transition Tick
     season_transition_desc: Resolve promotions, relegations, rewards, and initialize next season
@@ -1483,6 +1497,7 @@ arena:
   error_price_out_of_bounds: Ticket price must be between 1 and 50 gold.
   rule_home_only: Only the home team receives match-day ticket income.
   upgrade_hint: Upgrade the Arena in Headquarters to increase seating capacity and revenue bonuses.
+  friendly_matches_link: Friendly matches
 
 marketplace:
   merchant: Merchant
@@ -1894,7 +1909,42 @@ battle:
   error_not_found: Battle not found.
   error_unauthorized: You are not authorized to view this battle.
 
-
-
+friendly:
+  title: Friendly Matches
+  subtitle: Challenge other player teams on Wednesday or Sunday kick-off windows.
+  challenge_title: Challenge a team
+  challenge_help: You are the home team. One home friendly per week; pick a slot both teams have free (up to 14 days ahead).
+  opponent: Opponent
+  select_opponent: Select opponent…
+  slot: Kick-off slot
+  slot_hint: Choose an opponent to see available slots.
+  loading_slots: Loading available slots…
+  no_slots: No shared free slots in the next 14 days.
+  send_challenge: Send challenge
+  challenge_sent: Challenge sent.
+  action_failed: Something went wrong. Please try again.
+  confirm_cancel: Cancel this friendly match?
+  tabs_label: Friendly match lists
+  tab_upcoming: Upcoming
+  tab_pending: Pending invites
+  tab_history: History
+  empty_title: No matches here
+  empty_upcoming: Accepted friendlies will appear here before kick-off.
+  empty_pending: Pending invites to or from your kingdom appear here.
+  empty_history: Completed, declined, cancelled, and expired friendlies appear here.
+  accept: Accept
+  decline: Decline
+  cancel: Cancel
+  formations: Formations
+  view_battle: View battle
+  you_home: You (home)
+  you_away: You (away)
+  status_pending: Pending
+  status_scheduled: Scheduled
+  status_in_progress: In progress
+  status_completed: Completed
+  status_declined: Declined
+  status_cancelled: Cancelled
+  status_expired: Expired
 
 

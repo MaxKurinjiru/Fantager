@@ -1504,8 +1504,7 @@ class NpcSimulationServiceTest extends TestCase
         $spell1->setType(\App\Enum\SpellType::Offensive);
         $spell1->setRequiredMasteryTier(1);
         $spell1->setLearningCostGold(100);
-        $spell1->setLearningCostEssence(0);
-        $spell1->setRequiresMagicalWeapon(true);
+                $spell1->setRequiresMagicalWeapon(true);
 
         $spell2 = new Spell();
         $this->setEntityId($spell2, 11);
@@ -1514,8 +1513,7 @@ class NpcSimulationServiceTest extends TestCase
         $spell2->setType(\App\Enum\SpellType::Defensive);
         $spell2->setRequiredMasteryTier(1);
         $spell2->setLearningCostGold(150);
-        $spell2->setLearningCostEssence(0);
-        $spell2->setRequiresMagicalWeapon(false);
+                $spell2->setRequiresMagicalWeapon(false);
 
         $this->spellLibraryList = [$spell1, $spell2];
         $this->knownSpellsList = [];

@@ -30,7 +30,7 @@ When a hero is generated (either during starting roster initialization or when s
 - `summon_stat_random_bonus` (float) — added to the random roll ceiling (default fallback: `STAT_RANDOM_MAX = 2`)
 - `summon_stat_total_cap` (float) — reserved for future total-cap overrides
 
-For NPC teams (kingdom initialization), an empty array is passed — the built-in fallback constants are used.
+For NPC teams (kingdom initialization), `KingdomInitializationService` extracts Summoning Chamber passive bonuses from the new HQ via `extractChamberBonuses()` and passes them into `HeroGenerator::createForTeam()` (same keys as player summons). An empty array is only used if no chamber facility is present (then built-in fallback constants apply).
 
 1. **Base Value & Random Roll:**
    - For each attribute, the generator computes:
@@ -51,7 +51,7 @@ For NPC teams (kingdom initialization), an empty array is passed — the built-i
      - Chamber level 1: max single stat **5** (with +3 race), total cap 12–14
      - Chamber level 5: max single stat **11**, total cap 36–43
      - Chamber level 10: max single stat **17**, total cap 68–72
-   - *NPC teams (no chamber bonuses):* stats range **1–3** per attribute (before race bonuses).
+   - *NPC teams (chamber level 1 bonuses from kingdom init):* roughly **1–3** per attribute before race bonuses (same chamber formula as player summons at level 1).
 
 3. **Dynamic Overall Cap ($maxTotal$):**
    - The total sum of all 8 attributes is dynamically limited to **60% of the sum of the individual max limits** for the selected race, with a safety floor of 8:
@@ -117,15 +117,18 @@ Mastery tiers range from **Tier 1** to **Tier 5 (Max)**. Leveling up requires re
 - **Tier 5 (Max):** 1000 XP
 
 ### 4. Attunement & Decay Mechanics
-To gain passive bonuses from their weapon masteries, heroes must become attuned/sžitý with their equipped gear.
-- **Progress Gains:**
-  - **Combat (League Match):** +50 attunement progress and +15 XP to equipped gear types; +15 XP to schools of equipped spells.
-  - **Weekly Training (Magic):** +50 attunement progress to equipped gear types; +25 XP to schools of equipped spells.
-- **Daily Decay (Daily Reset tick):**
-  - **Unused gear types:** lose **20% attunement progress** and **10 XP** per day.
-  - **Unused magic schools:** lose **10 XP** per day.
+
+Source of truth: `HeroMasteryService`. To gain weapon-mastery XP efficiently, heroes must raise attunement on equipped gear styles.
+
+- **Combat (League Match)** — `processMatchParticipation`:
+  - Equipped gear types: **+50** attunement progress (capped at 100), then weapon XP = `round(BASE_MATCH_XP × attunement / 100)` with `BASE_MATCH_XP = 30` (uses attunement **after** the +50).
+  - Equipped spell schools: **+15 XP** fixed (no attunement on schools).
+- **Weekly Magic training** — **not implemented** for mastery/attunement. `TrainingType::Magic` only raises the hero’s **magic capacity** (and fatigue); it does not call `HeroMasteryService`.
+- **Daily Decay** — `processDailyDecayTick` (Daily Reset):
+  - **Unused gear types:** lose **20 absolute attunement points** (not 20%), then XP decay = `round(20 × (1 − attunement / 100))` using attunement **after** that decay (`BASE_DECAY_XP = 20`). At 100% attunement, unused styles still lose 20 attunement but **0 XP** that day.
+  - **Unused magic schools:** lose **10 XP** per day (fixed; no attunement).
   - If XP drops below the threshold for the current tier, the hero levels down in that mastery (down to a minimum of Tier 1).
-  - Swapping gear does *not* instantly reset attunement. Inactive gear styles decay gradually day-by-day, allowing players to adjust equipment briefly without losing all progress.
+  - Swapping gear does *not* instantly reset attunement. Inactive gear styles decay gradually day-by-day.
 
 ## Hero Traits
 

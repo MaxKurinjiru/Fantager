@@ -52,7 +52,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 *Allow players to summon their first batch of heroes, view roster stats, and manage hero profiles.*
 
 ### Step 2.1: Economy & Wallet Transactions
-- **Database & Entities**: Add currency columns (`gold`, `essence`) to `Team`. Create `FinancialRecord` logs.
+- **Database & Entities**: Add currency column (`gold`) to `Team`. Create `FinancialRecord` logs.
 - **Service Layer**: `EconomyService` to manage currency deposits, deductions, and transaction logging.
 - **Verification**: Unit tests on wallet operations (e.g., negative balance checks, overflow protection).
 - **Status**: ✅ Complete (`EconomyService`, ledger logs, weekly seating ticket revenue distribution).
@@ -119,7 +119,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Service Layer**: Magic schools mastery levels, learning spells requirements, equipping.
 - **API Contracts**: `POST /api/v1/heroes/{id}/spells/learn`, `POST /api/v1/heroes/{id}/spells/equip`, `POST /api/v1/heroes/{id}/spells/unequip`.
 - **Frontend Views**: Spell learning dashboard, magic slots assignment list.
-- **Verification**: Learn spells using essence, equip them, and confirm slot limits are respected.
+- **Verification**: Learn spells using gold, equip them, and confirm slot limits are respected.
 - **Status**: ✅ Complete (`SpellService`, `Web\SpellController`, Stimulus: `spellbook_controller.js`).
 
 ### Step 4.3: Strategic Formations
@@ -226,7 +226,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Frontend Views**:
   - HQ Arena facility panel (`/app/hq?facility=arena`), seating upgrade charts, ticket price sliders, and weekly attendance graphs.
 - **Verification**: Modify ticket price, trigger weekly ticket revenue command, and confirm revenue scales with formulas.
-- **Status**: 🔄 Partially Complete (`ArenaRevenueService`, league-match tick payout, HQ arena panel at `/app/hq?facility=arena`, ticket price API `POST /api/v1/hq/arena/tickets/price` implemented; extended analytics UI and friendly scheduling pending).
+- **Status**: 🔄 Partially Complete (`ArenaRevenueService`, league-match tick payout, HQ arena panel, ticket price API, and friendly match scheduling at `/app/friendly-matches` implemented; extended analytics UI pending).
 
 ---
 

@@ -7,7 +7,9 @@ namespace App\Service\Combat;
 use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
 use App\Enum\Race;
+use App\Enum\StatusEffect;
 use App\Service\Config\CombatAiL0Config;
+use App\Service\Config\StatusEffectConfig;
 use App\ValueObject\Combat\CombatantSnapshot;
 use App\ValueObject\Combat\CombatMatchRequest;
 use App\ValueObject\Combat\CombatSide;
@@ -25,14 +27,24 @@ class CombatEngine
 {
     public const ENGINE_VERSION = 6;
 
+    /** Hard stop for one-shot and wave/resume combat paths. */
+    public const MAX_ROUNDS = 200;
+
     private HexGridService $hexGridService;
 
     private CombatAiL0Config $l0Config;
 
-    public function __construct(?HexGridService $hexGridService = null, ?CombatAiL0Config $l0Config = null)
-    {
+    private StatusEffectConfig $statusEffectConfig;
+
+    public function __construct(
+        ?HexGridService $hexGridService = null,
+        ?CombatAiL0Config $l0Config = null,
+        ?StatusEffectConfig $statusEffectConfig = null,
+    ) {
+        $projectDir = \dirname(__DIR__, 3);
         $this->hexGridService = $hexGridService ?? new HexGridService();
-        $this->l0Config = $l0Config ?? new CombatAiL0Config(\dirname(__DIR__, 3));
+        $this->l0Config = $l0Config ?? new CombatAiL0Config($projectDir);
+        $this->statusEffectConfig = $statusEffectConfig ?? new StatusEffectConfig($projectDir);
     }
 
     public function simulate(CombatMatchRequest $request): CombatSimulationResult
@@ -40,15 +52,12 @@ class CombatEngine
         $runState = $this->initializeRunState($request);
         $round = 1;
 
-        while ('simulating' === $runState['status'] && $round <= 200) {
+        while ('simulating' === $runState['status'] && $round <= self::MAX_ROUNDS) {
             $this->simulateRound($runState, $round);
             ++$round;
         }
 
-        if ('simulating' === $runState['status']) {
-            // Hard stop at 200 rounds, force completion
-            $this->completeBattleInRunState($runState, 200);
-        }
+        $this->forceCompleteAtRoundCap($runState);
 
         return new CombatSimulationResult(
             (int) $runState['scoreA'],
@@ -517,6 +526,20 @@ class CombatEngine
         }
 
         return $roundEvents;
+    }
+
+    /**
+     * Force match_end with current kill scores when the round cap is hit.
+     *
+     * @param array<string, mixed> $runState
+     */
+    public function forceCompleteAtRoundCap(array &$runState): void
+    {
+        if ('simulating' !== ($runState['status'] ?? null)) {
+            return;
+        }
+
+        $this->completeBattleInRunState($runState, self::MAX_ROUNDS);
     }
 
     /**
@@ -1348,23 +1371,10 @@ class CombatEngine
                     $effect = $eff['effect'];
                     $duration = $eff['duration'] - 1;
 
-                    // Tick actions
-                    if ('burn' === $effect) {
-                        $damage = (int) max(1, floor($combatant['derived']['maxHp'] * 0.05));
-                        $combatant['currentHp'] = max(0, $combatant['currentHp'] - $damage);
-
-                        $roundEvents[] = [
-                            't' => count($runState['events']) + count($roundEvents),
-                            'type' => 'status_tick',
-                            'side' => $sideKey,
-                            'slot' => $combatant['slot'],
-                            'effect' => $effect,
-                            'action' => 'damage',
-                            'amount' => $damage,
-                            'hp_after' => $combatant['currentHp'],
-                        ];
-                    } elseif ('poison' === $effect) {
-                        $damage = (int) max(1, floor($combatant['derived']['maxHp'] * 0.03));
+                    // Tick actions (DOT/HOT percents from status_effects.yaml)
+                    $tickDamagePct = $this->getTickDamagePercent($effect);
+                    if ($tickDamagePct > 0) {
+                        $damage = (int) max(1, floor($combatant['derived']['maxHp'] * ($tickDamagePct / 100.0)));
                         $combatant['currentHp'] = max(0, $combatant['currentHp'] - $damage);
 
                         $roundEvents[] = [
@@ -1379,7 +1389,8 @@ class CombatEngine
                         ];
                     } elseif ('regeneration' === $effect) {
                         if ('undead' !== $combatant['race']) {
-                            $heal = (int) max(1, floor($combatant['derived']['maxHp'] * 0.05));
+                            $healPct = $this->getTickHealPercent($effect);
+                            $heal = (int) max(1, floor($combatant['derived']['maxHp'] * ($healPct / 100.0)));
                             $combatant['currentHp'] = min($combatant['derived']['maxHp'], $combatant['currentHp'] + $heal);
 
                             $roundEvents[] = [
@@ -1897,13 +1908,39 @@ class CombatEngine
 
     private function getDurationForStatus(string $effect): int
     {
-        return match ($effect) {
-            'burn', 'curse', 'regeneration', 'shield', 'bless' => 3,
-            'poison' => 4,
-            'shock', 'petrify', 'blind', 'haste', 'fury', 'shadow_cloak', 'taunt', 'silence' => 2,
-            'freeze', 'stun' => 1,
-            default => 2,
-        };
+        try {
+            return $this->statusEffectConfig->get(StatusEffect::from($effect))->getDurationTurns();
+        } catch (\Throwable) {
+            return match ($effect) {
+                'burn', 'curse', 'regeneration', 'shield', 'bless' => 3,
+                'poison' => 4,
+                'shock', 'petrify', 'blind', 'haste', 'fury', 'shadow_cloak', 'taunt', 'silence' => 2,
+                'freeze', 'stun' => 1,
+                default => 2,
+            };
+        }
+    }
+
+    private function getTickDamagePercent(string $effect): int
+    {
+        try {
+            return $this->statusEffectConfig->get(StatusEffect::from($effect))->getTickDamagePercent();
+        } catch (\Throwable) {
+            return match ($effect) {
+                'burn' => 5,
+                'poison' => 3,
+                default => 0,
+            };
+        }
+    }
+
+    private function getTickHealPercent(string $effect): int
+    {
+        try {
+            return $this->statusEffectConfig->get(StatusEffect::from($effect))->getTickHealPercent();
+        } catch (\Throwable) {
+            return 'regeneration' === $effect ? 5 : 0;
+        }
     }
 
     private function getOffensiveStatusForSchool(string $school): ?string

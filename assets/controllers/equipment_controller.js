@@ -161,7 +161,7 @@ export default class extends Controller {
                 throw new Error(result.error || this.errorDismantleValue);
             }
 
-            const successMsg = this.successDismantleValue.replace('%essence%', result.essence_gained || 5);
+            const successMsg = this.successDismantleValue.replace('%gold%', result.gold_gained ?? 0);
             this.showAlert('success', successMsg);
             setTimeout(() => window.location.reload(), 1000);
 

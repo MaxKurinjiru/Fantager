@@ -62,7 +62,7 @@ class SpellService
     }
 
     /**
-     * Learn a spell. Deducts gold and essence from the team.
+     * Learn a spell. Deducts gold from the team.
      *
      * @throws \DomainException on prerequisite failure or duplicate
      * @throws \DomainException on insufficient resources
@@ -83,23 +83,11 @@ class SpellService
         }
 
         $goldCost = $spell->getLearningCostGold();
-        $essenceCost = $spell->getLearningCostEssence();
 
         if ($goldCost > 0) {
             $this->economyService->deductGold(
                 $team,
                 $goldCost,
-                FinancialRecordType::SpellLearningCost,
-                FinancialRecordActor::Active,
-                ['hero_id' => $hero->getId(), 'spell_id' => $spell->getId()]
-            );
-        }
-
-        if ($essenceCost > 0) {
-            $this->economyService->deductEssence(
-                $team,
-                'common',
-                $essenceCost,
                 FinancialRecordType::SpellLearningCost,
                 FinancialRecordActor::Active,
                 ['hero_id' => $hero->getId(), 'spell_id' => $spell->getId()]
@@ -207,7 +195,6 @@ class SpellService
             'cooldown' => $spell->getCooldown(),
             'required_mastery_tier' => $spell->getRequiredMasteryTier(),
             'learning_cost_gold' => $spell->getLearningCostGold(),
-            'learning_cost_essence' => $spell->getLearningCostEssence(),
             'requires_magical_weapon' => $spell->requiresMagicalWeapon(),
         ];
     }
@@ -242,7 +229,6 @@ class SpellService
                 'cooldown' => 1,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 100,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Vzplanutí',
@@ -254,7 +240,6 @@ class SpellService
                 'cooldown' => 3,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 150,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Ohnivá koule',
@@ -266,7 +251,6 @@ class SpellService
                 'cooldown' => 2,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 300,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Spalování',
@@ -278,7 +262,6 @@ class SpellService
                 'cooldown' => 4,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 400,
-                'learning_cost_essence' => 0,
             ],
 
             // --- WATER ---
@@ -292,7 +275,6 @@ class SpellService
                 'cooldown' => 2,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 100,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Laskavý dotek',
@@ -304,7 +286,6 @@ class SpellService
                 'cooldown' => 2,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 150,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Léčivá vlna',
@@ -316,7 +297,6 @@ class SpellService
                 'cooldown' => 3,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 350,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Ledový osten',
@@ -328,7 +308,6 @@ class SpellService
                 'cooldown' => 4,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 450,
-                'learning_cost_essence' => 0,
             ],
 
             // --- AIR ---
@@ -342,7 +321,6 @@ class SpellService
                 'cooldown' => 3,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 100,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Statický náboj',
@@ -354,7 +332,6 @@ class SpellService
                 'cooldown' => 1,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 150,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Úder blesku',
@@ -366,7 +343,6 @@ class SpellService
                 'cooldown' => 3,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 400,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Větrná zeď',
@@ -378,7 +354,6 @@ class SpellService
                 'cooldown' => 4,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 300,
-                'learning_cost_essence' => 0,
             ],
 
             // --- EARTH ---
@@ -392,7 +367,6 @@ class SpellService
                 'cooldown' => 3,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 120,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Hod kamenem',
@@ -404,7 +378,6 @@ class SpellService
                 'cooldown' => 1,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 100,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Zemětřesení',
@@ -416,7 +389,6 @@ class SpellService
                 'cooldown' => 4,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 380,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Štěrková smršť',
@@ -428,7 +400,6 @@ class SpellService
                 'cooldown' => 2,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 320,
-                'learning_cost_essence' => 0,
             ],
 
             // --- LIGHT ---
@@ -442,7 +413,6 @@ class SpellService
                 'cooldown' => 2,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 110,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Požehnání',
@@ -454,7 +424,6 @@ class SpellService
                 'cooldown' => 3,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 150,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Očištění',
@@ -466,7 +435,6 @@ class SpellService
                 'cooldown' => 3,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 360,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Paprsek naděje',
@@ -478,7 +446,6 @@ class SpellService
                 'cooldown' => 3,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 400,
-                'learning_cost_essence' => 0,
             ],
 
             // --- DARK ---
@@ -492,7 +459,6 @@ class SpellService
                 'cooldown' => 1,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 100,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Slabost',
@@ -504,7 +470,6 @@ class SpellService
                 'cooldown' => 3,
                 'required_mastery_tier' => 1,
                 'learning_cost_gold' => 150,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Vysátí života',
@@ -516,7 +481,6 @@ class SpellService
                 'cooldown' => 3,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 380,
-                'learning_cost_essence' => 0,
             ],
             [
                 'name' => 'Zkaženost',
@@ -528,7 +492,6 @@ class SpellService
                 'cooldown' => 2,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 320,
-                'learning_cost_essence' => 0,
             ],
         ];
 
@@ -552,7 +515,6 @@ class SpellService
             $spell->setCooldown($data['cooldown']);
             $spell->setRequiredMasteryTier($data['required_mastery_tier']);
             $spell->setLearningCostGold($data['learning_cost_gold']);
-            $spell->setLearningCostEssence($data['learning_cost_essence']);
             $spell->setRequiresMagicalWeapon(SpellType::Offensive === $data['type']);
 
             if ($isNew) {

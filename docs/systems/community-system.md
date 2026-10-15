@@ -12,7 +12,8 @@ The community system covers:
 1. **Private Messages** — player-to-player inbox/outbox within the same kingdom.
 2. **Forum** — kingdom-scoped threaded discussions with categories.
 3. **News Articles** — kingdom-scoped or global announcements.
-4. **Leaderboards & Public Profiles** — planned for a future phase.
+4. **Public Profiles** — implemented (`GET /api/v1/players/{id}/profile`, `GET /api/v1/teams/{id}/profile`).
+5. **Kingdom Leaderboards** — no dedicated `/api/v1/leaderboards` endpoint; rankings are shown on the League UI (`/app/league` tab "Kingdom Leaderboard" via `/api/v1/league/standings`).
 
 All community interactions are **kingdom-scoped**: players can only send messages to or create threads for players within their own kingdom.
 
@@ -123,10 +124,23 @@ The current blacklist contains Czech and English profanities. The list is define
 
 ---
 
-## Leaderboards & Public Profiles
+## Public Profiles
+
+Implemented via `PlayerProfileService` and `Api\V1\CommunityController`:
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/v1/players/{id}/profile` | Public player profile (`User` + team projection) |
+| GET | `/api/v1/teams/{id}/profile` | Public team profile |
+
+Profiles are kingdom-scoped for viewers (same kingdom as the subject).
+
+---
+
+## Leaderboards
 
 > [!NOTE]
-> **Planned for a future phase.** The `GET /api/v1/leaderboards` and `GET /api/v1/players/{id}/profile` endpoints are not yet implemented. Leaderboard data will be derived from `LeagueStanding`; player profiles will project `User + Team`.
+> There is **no** dedicated `GET /api/v1/leaderboards` API. Kingdom-wide leaderboard data is served by the League API (`GET /api/v1/league/standings`) and displayed on `/app/league` (tab "Kingdom Leaderboard"). See [league-system.md](league-system.md) and [route-map.md](../route-map.md).
 
 ---
 

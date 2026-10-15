@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository\Kingdom;
 
+use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Kingdom\KingdomTickLog;
 use App\Enum\TickType;
@@ -28,6 +29,7 @@ class KingdomTickLogRepository extends ServiceEntityRepository
         TickType $tickType,
         ?\App\Entity\Team\Team $team = null,
         ?\App\Entity\League\LeagueFixture $fixture = null,
+        ?FriendlyMatch $friendlyMatch = null,
     ): ?\DateTimeImmutable {
         $qb = $this->createQueryBuilder('l')
             ->where('l.kingdom = :kingdom')
@@ -49,6 +51,13 @@ class KingdomTickLogRepository extends ServiceEntityRepository
                ->setParameter('fixture', $fixture);
         } else {
             $qb->andWhere('l.fixture IS NULL');
+        }
+
+        if (null !== $friendlyMatch) {
+            $qb->andWhere('l.friendlyMatch = :friendlyMatch')
+               ->setParameter('friendlyMatch', $friendlyMatch);
+        } else {
+            $qb->andWhere('l.friendlyMatch IS NULL');
         }
 
         /** @var KingdomTickLog|null $latest */

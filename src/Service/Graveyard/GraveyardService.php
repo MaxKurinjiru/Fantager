@@ -13,6 +13,7 @@ use App\Enum\MemorialCause;
 use App\Exception\UserFacingException;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroRatingCalculator;
+use App\Service\Marketplace\MarketplaceService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class GraveyardService
@@ -21,6 +22,7 @@ class GraveyardService
         private readonly EntityManagerInterface $em,
         private readonly HeroRatingCalculator $heroRatingCalculator,
         private readonly HeroChronicleService $heroChronicleService,
+        private readonly MarketplaceService $marketplaceService,
     ) {
     }
 
@@ -63,6 +65,8 @@ class GraveyardService
             throw new UserFacingException('error.graveyard_combatant_only');
         }
 
+        $this->marketplaceService->forceCancelActiveListingsForHero($hero);
+
         /** @var list<Item> $equippedItems */
         $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);
         foreach ($equippedItems as $item) {
@@ -101,6 +105,8 @@ class GraveyardService
         if (!$trainer->isTrainer()) {
             throw new UserFacingException('error.graveyard_trainer_only');
         }
+
+        $this->marketplaceService->forceCancelActiveListingsForHero($trainer);
 
         foreach ($trainer->getTrainees()->toArray() as $hero) {
             $trainer->removeTrainee($hero);
@@ -142,15 +148,8 @@ class GraveyardService
             $item->setEquippedSlot(null);
         }
 
-        // 4. Cancel marketplace listings (return to available)
-        /** @var list<Item> $listedItems */
-        $listedItems = $this->em->getRepository(Item::class)->findBy([
-            'equippedHero' => null,
-            'ownerTeam' => $hero->getTeam(),
-        ]);
-        // Items belonging to the dead hero that are listed for sale — unlist them
-        // (Items don't have a direct hero FK on listings; they are unequipped above)
-        // No further action needed: item status is managed by marketplace separately.
+        // 4. Cancel active hero/trainer marketplace listings and refund reserved bids
+        $this->marketplaceService->forceCancelActiveListingsForHero($hero);
 
         // NOTE: spells, school masteries, and training history are intentionally kept
         // so the graveyard memorial can display the hero's full profile history.

@@ -33,7 +33,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET, POST | `/register` | Web\RegisterController | Show/submit registration form (kingdom selection included) |
 | GET | `/register/success` | Web\RegisterController | Post-registration landing (check your email) |
 | POST | `/register/resend-verification` | Web\RegisterController | Resend verification email (rate-limited) |
-| GET | `/verify-email` | Web\RegisterController | Verify email token, activate account, assign NPC team, auto-login |
+| GET | `/verify-email` | Web\RegisterController | Verify email token, activate account, auto-login (NPC team was assigned at registration) |
 | POST | `/login` | (Symfony form_login) | Authenticate session |
 | GET | `/logout` | (Symfony logout) | Destroy session |
 | GET | `/password-reset` | Web\PasswordResetController | Request password reset email |
@@ -43,6 +43,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/confirm-email-change/old` | Web\SettingsController | Confirm e-mail change from old address (token link sent via e-mail) |
 | GET | `/confirm-email-change/new` | Web\SettingsController | Confirm e-mail change from new address (token link sent via e-mail) |
 | GET | `/confirm-cancel-account` | Web\SettingsController | Confirm account cancellation (token link sent via e-mail) |
+| GET | `/api/v1/me` | Api\V1\MeController | Current authenticated player info |
 
 ---
 
@@ -151,7 +152,7 @@ Reference: [api-design.md](api-design.md), [screens-overview.md](screens-overvie
 | GET | `/app/inventory` | Web\ItemController | Equipment page |
 | GET | `/api/v1/items` | Api\V1\ItemController | Inventory list |
 | PUT | `/api/v1/heroes/{heroId}/equipment` | Api\V1\ItemController | Equip/unequip |
-| POST | `/api/v1/items/dismantle` | Api\V1\ItemController | Dismantle for essence |
+| POST | `/api/v1/items/dismantle` | Api\V1\ItemController | Dismantle for gold scrap |
 | POST | `/api/v1/items/{id}/repair` | Api\V1\ItemController | Repair durability |
 
 ---
@@ -326,9 +327,16 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 | GET | `/app/arena` | Web\ArenaController | Redirect → `/app/hq?facility=arena` (legacy alias; panel shows capacity, fan appeal, revenue projection) |
 | GET | `/api/v1/arena` | Api\V1\ArenaController | Arena status (read-only) |
 | POST | `/api/v1/hq/arena/tickets/price`, `/api/v1/arena/tickets/price` | Api\V1\ArenaController | Update team ticket price (1–50 gold) with demand elasticity calculations |
-| POST | `/api/v1/arena/schedule-match` | Api\V1\ArenaController | Schedule friendly match — **planned** |
+| GET | `/app/friendly-matches` | Web\FriendlyMatchController | Kingdom-wide friendly match list + challenge UI |
+| GET | `/api/v1/arena/friendly` | Api\V1\ArenaController | List kingdom friendly matches |
+| GET | `/api/v1/arena/friendly/slots` | Api\V1\ArenaController | Available friendly kickoff slots vs opponent |
+| POST | `/api/v1/arena/schedule-match` | Api\V1\ArenaController | Create friendly match invite |
+| POST | `/api/v1/arena/friendly/{id}/accept` | Api\V1\ArenaController | Accept friendly invite |
+| POST | `/api/v1/arena/friendly/{id}/decline` | Api\V1\ArenaController | Decline friendly invite |
+| POST | `/api/v1/arena/friendly/{id}/cancel` | Api\V1\ArenaController | Cancel friendly (until T−1h) |
+| GET, PUT | `/api/v1/friendly-matches/{id}/formation` | Api\V1\FriendlyMatchFormationController | Match formation assignment |
 
-> Arena facility upgrades use `/app/hq`. Match-day ticket revenue is paid to the **home team** on the League Match tick via `ArenaRevenueService::processLeagueMatchTick()`.
+> Arena facility upgrades use `/app/hq`. Match-day ticket revenue is paid to the **home team** on the League Match tick via `ArenaRevenueService::processLeagueMatchTick()`. Friendlies: [friendly-match-system.md](systems/friendly-match-system.md).
 
 ---
 
@@ -338,11 +346,10 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 |--------|------|-----------|---------|
 | GET | `/app/settings` | Web\SettingsController | Redirects to dashboard (settings UI is the account settings modal) |
 | POST | `/app/settings/preferences` | Web\SettingsController | Update player UI preferences (`closeModalOnBackdrop`, …) |
-| GET | `/api/v1/settings` | Api\SettingsController | Get settings — **planned** |
-| PUT | `/api/v1/settings` | Api\SettingsController | Update settings — **planned** |
 | POST | `/app/settings/change-email` | Web\SettingsController | Change email (initiates token flow via `confirm-email-change/*`) |
-| POST | `/api/v1/settings/change-password` | Api\SettingsController | Change password — **planned** |
 | POST | `/app/settings/cancel-account` | Web\SettingsController | Cancel account (initiates token flow via `confirm-cancel-account`) |
+
+> Account settings are Web/session routes on `Web\SettingsController` (JSON responses for the modal). There is no separate `Api\SettingsController`; password change remains out of scope for now.
 
 ---
 
@@ -375,9 +382,9 @@ In-game UI: navbar dropdown → **Notifications** modal (`notifications_controll
 
 | | Web | API | Total |
 |--|-----|-----|-------|
-| Routes (implemented) | 26 | 66 | **92** |
-| Routes (planned) | 7 | 32+ | — |
-| Controllers (Web, implemented) | 24 | — | — |
-| Controllers (API, implemented) | — | 20 | — |
+| Routes (implemented) | 27 | 74 | **101** |
+| Routes (planned) | 7 | 25+ | — |
+| Controllers (Web, implemented) | 25 | — | — |
+| Controllers (API, implemented) | — | 23 | — |
 
 > Routes marked **planned** have no controller implementation yet. Route counts reflect the state of the codebase; the original total of 116 includes all planned future routes.

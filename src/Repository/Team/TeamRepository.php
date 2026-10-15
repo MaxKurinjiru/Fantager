@@ -29,6 +29,27 @@ class TeamRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * Player-managed teams in a kingdom (eligible friendly opponents).
+     *
+     * @return list<Team>
+     */
+    public function findPlayerTeamsByKingdom(int $kingdomId, ?int $excludeTeamId = null): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->where('t.kingdom = :kingdom')
+            ->andWhere('t.user IS NOT NULL')
+            ->setParameter('kingdom', $kingdomId)
+            ->orderBy('t.name', 'ASC');
+
+        if (null !== $excludeTeamId) {
+            $qb->andWhere('t.id != :exclude')
+               ->setParameter('exclude', $excludeTeamId);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
     public function findAvailableNpcTeam(int $kingdomId): ?Team
     {
         $teams = $this->createQueryBuilder('t')

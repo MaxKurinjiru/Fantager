@@ -52,6 +52,7 @@ class ExecuteSingleTickHandler
         private readonly FixtureFormationService $fixtureFormationService,
         private readonly MarketplaceService $marketplaceService,
         private readonly \App\Service\League\LeagueMatchResolutionService $leagueMatchResolutionService,
+        private readonly \App\Service\FriendlyMatch\FriendlyMatchResolutionService $friendlyMatchResolutionService,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
         private readonly \App\Service\League\SeasonTransitionService $seasonTransitionService,
@@ -116,6 +117,12 @@ class ExecuteSingleTickHandler
             $isSimulatingLeagueMatch = false;
             if (TickType::LeagueMatch === $log->getTickType() && null !== $log->getFixture()) {
                 $battle = $log->getFixture()->getBattle();
+                if (null !== $battle && \App\Enum\BattleStatus::Simulating === $battle->getStatus()) {
+                    $isSimulatingLeagueMatch = true;
+                }
+            }
+            if (TickType::FriendlyMatch === $log->getTickType() && null !== $log->getFriendlyMatch()) {
+                $battle = $log->getFriendlyMatch()->getBattle();
                 if (null !== $battle && \App\Enum\BattleStatus::Simulating === $battle->getStatus()) {
                     $isSimulatingLeagueMatch = true;
                 }
@@ -234,14 +241,21 @@ class ExecuteSingleTickHandler
                     $this->npcSimulationService->simulateTactics($kingdom, $scheduledAt, $fixture->getHomeTeam());
                     $this->npcSimulationService->simulateTactics($kingdom, $scheduledAt, $fixture->getAwayTeam());
 
-                    // Arena revenue and match resolution
+                    // Arena revenue and match resolution (temp formations cleaned in LeagueFixtureCompletionService)
                     $this->arenaRevenueService->payFixtureRevenue($fixture);
                     $this->leagueMatchResolutionService->resolveFixture($fixture, $scheduledAt);
 
-                    // Clean up temporary formations for the fixture
-                    $this->cleanupTemporaryFormationsForFixture($fixture);
-
                     $this->logger->debug(sprintf('Processed league match tick for fixture ID %d', $fixture->getId()));
+                }
+                break;
+
+            case TickType::FriendlyMatch:
+                $friendlyMatch = $log->getFriendlyMatch();
+                if (null !== $friendlyMatch) {
+                    // No NPC tactics simulation and no arena revenue for friendly matches
+                    $this->friendlyMatchResolutionService->resolveMatch($friendlyMatch, $scheduledAt);
+
+                    $this->logger->debug(sprintf('Processed friendly match tick for friendly match ID %d', $friendlyMatch->getId() ?? 0));
                 }
                 break;
 
@@ -401,10 +415,8 @@ class ExecuteSingleTickHandler
             $heroes = $this->em->getRepository(\App\Entity\Hero\Hero::class)
                 ->createQueryBuilder('h')
                 ->where('h.team = :team')
-                ->andWhere('h.role = :combatant')
                 ->andWhere('h.race != :undead')
                 ->setParameter('team', $team)
-                ->setParameter('combatant', \App\Enum\HeroRole::Combatant)
                 ->setParameter('undead', \App\Enum\Race::Undead)
                 ->getQuery()
                 ->getResult();
@@ -480,14 +492,6 @@ class ExecuteSingleTickHandler
         $count = $this->fixtureFormationService->cleanupStaleTemporaryFormationsForTeam($team);
         if ($count > 0) {
             $this->logger->info(sprintf('Removed %d stale temporary formation(s) for Team %s', $count, $team->getName()));
-        }
-    }
-
-    private function cleanupTemporaryFormationsForFixture(LeagueFixture $fixture): void
-    {
-        $count = $this->fixtureFormationService->cleanupTemporaryFormationsAfterCompletion($fixture);
-        if ($count > 0) {
-            $this->logger->info(sprintf('Removed %d stale temporary formation(s) for completed Fixture ID %d', $count, $fixture->getId()));
         }
     }
 
