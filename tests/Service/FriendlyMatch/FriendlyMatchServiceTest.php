@@ -58,7 +58,7 @@ class FriendlyMatchServiceTest extends TestCase
         // Stub: challenger already has 1 home friendly this ISO week → cap reached for that week
         $this->repoMock
             ->method('countHomeInWeek')
-            ->willReturnCallback(function (Team $team, \DateTimeImmutable $start, \DateTimeImmutable $end) use ($now): int {
+            ->willReturnCallback(function (Team $team, \DateTimeImmutable $start, \DateTimeImmutable $end): int {
                 // First call will be for the week containing Wed 2026-10-21 → return cap hit (1)
                 $weekOfSlot = (int) (new \DateTimeImmutable('2026-10-21'))->format('W');
                 $weekOfStart = (int) $start->format('W');
