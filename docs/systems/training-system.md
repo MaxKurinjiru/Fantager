@@ -25,8 +25,8 @@ Training is configured directly on the **Trainer** instead of individual trainin
 ### Lock Period
 
 To prevent last-minute manipulation before weekly ticks, training configurations and assignments are **locked** during the following period:
-- **Lock Start**: Thursday at 08:00:00 (server local time)
-- **Lock End**: Thursday at 10:00:00 (when the weekly tick processes)
+- **Lock Start**: Thursday at 08:00:00 in the **kingdom timezone**
+- **Lock End**: Thursday at 10:00:00 in the kingdom timezone (when the weekly training tick processes)
 
 During the lock period, players cannot configure trainers, assign heroes, or unassign heroes.
 
@@ -77,13 +77,13 @@ Trains a primary attribute (STR, DEX, KON, SPD, INT, WIL, CHA, LCK).
 - **Fatigue Impact**: Adds **+20 fatigue** (capped at 100) only when `gainRaw > 0` (no fatigue when already at the trainer’s raw-stat cap).
 
 ### 2. Magic Training
-Increases a hero's Magic Capacity by 1 (capped at a maximum of 5 slots).
-- **Fatigue Impact**: Adds **+20 fatigue** (capped at 100) only when capacity actually increased (no fatigue at the max of 5).
+Increases a hero's Magic Capacity by `max(1, round(1 × game_speed))` (capped at a maximum of 5 slots). At `game_speed = 1.0` this is +1 per week.
+- **Fatigue Impact**: Adds **+20 fatigue** (capped at 100) only when capacity actually increased (no fatigue at the max of 5). Fatigue is **not** scaled by game speed.
 
 ### 3. Form Training (Resting)
 Helps a hero recover physical conditioning and rest.
-- **Form Impact**: Increases form by **+20** (capped at 100).
-- **Fatigue Impact**: Decreases fatigue by **-20** (floor at 0).
+- **Form Impact**: Increases form by `round(20 × game_speed)` (capped at 100).
+- **Fatigue Impact**: Decreases fatigue by **-20** (floor at 0). Fatigue reduction is **not** scaled by game speed.
 
 At the end of the tick, a `HeroTrainingHistory` row is persisted for each trained hero (append-only log for hero activity and calendar history).
 

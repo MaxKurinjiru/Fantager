@@ -38,7 +38,7 @@ Possible Actions/Buttons:
 Backend Requirements (implemented):
 - Formation GET/PUT/DELETE endpoints (`/api/v1/formations`)
 - Fixture formation assign/promote (`/api/v1/fixtures/{id}/formation`)
-- Formation validation (6 heroes required, unique heroes; team must have ≥ 6 combat-ready heroes to enter matches)
+- Formation **save** accepts 0–6 slots (empty slots allowed). **Match entry** still requires ≥ 6 combat-ready heroes; incomplete lineups forfeit at kickoff (see [combat-system.md](../systems/combat-system.md#match-eligibility))
 - Persisted fields: `approach`, per-slot `strategy.movement_goal`, empty `spell_priorities: []`
 
 See `assets/controllers/formation_controller.js` and [formation-system.md](../systems/formation-system.md).

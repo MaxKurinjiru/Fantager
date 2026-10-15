@@ -216,8 +216,8 @@ class CombatStatCalculatorTest extends TestCase
         // Genie gets +15% spell power: (10 * 3) * 1.15 = 30 * 1.15 = 34.5 -> 35
         $this->assertSame(35, $stats->getSpellPower());
 
-        // Genie gets +5% crit (representing the Genie bonus): 17.5 + 5 = 22.5
-        $this->assertEqualsWithDelta(22.5, $stats->getCritPercent(), 0.0001);
+        // Physical crit uses the shared formula; the +15% Genie bonus applies only to spell crits in CombatEngine
+        $this->assertEqualsWithDelta(17.5, $stats->getCritPercent(), 0.0001);
     }
 
     public function testGiantRaceBonus(): void

@@ -15,7 +15,7 @@
 
 The site is divided into two main sections:
 
-- **Public section** (`/`) — Unauthenticated. Includes Homepage, wiki/help, news archive. Login/Register are modal windows on these pages. See [00-public-pages.md](screens/00-public-pages.md).
+- **Public section** (`/`) — Unauthenticated. Includes Homepage, wiki/help, news archive. Login/Register are **standalone pages** (`/login`, `/register`); modal UX is a planned enhancement. See [00-public-pages.md](screens/00-public-pages.md).
 - **Inside section** (authenticated) — Game content. Team Dashboard is the default landing page after login. All screens below belong to this section.
 
 ---
@@ -89,7 +89,7 @@ The site is divided into two main sections:
   - Team Chemistry (value + indicator)
 - **Quick Stats:**
   - Number of heroes in roster
-  - Current Gold, Essence
+  - Current Gold
   - Next scheduled match (time, opponent)
   - Current league tier & position
 - **Team Chronicle (recent events):**
@@ -407,7 +407,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Visual equipment paperdoll/grid:
     - Main Hand, Off-Hand
     - Head, Body, Hands, Feet
-    - Amulet, Ring 1, Ring 2
+    - Amulet, Ring
   - Stat summary with equipment vs. without
 
 ### Possible Actions/Buttons:
@@ -415,9 +415,9 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 - **Unequip Item** - remove item from slot
 - **Swap Items** - exchange between two heroes
 - **Sell Item** - list on Marketplace
-- **Dismantle Item** - dismantle for Essence (confirm modal)
+- **Dismantle Item** - dismantle for gold (confirm modal)
 - **Craft Item** - navigate to Crafting Screen (if implemented)
-- **Repair Item** - restore Durability (Essence cost)
+- **Repair Item** - restore Durability (gold cost)
 - **Enchant Item** - navigate to Enchanting (if implemented)
 - **Filter/Sort** - filtering controls
 - **Compare Items** - multi-select to compare bonuses
@@ -455,7 +455,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Display empty slots as "Learn New Spell"
 - **Available Spells (Store/Academy):**
   - Spells available to learn (filtered by School Mastery requirements)
-  - Cost (Gold + Essence)
+  - Cost (Gold)
   - Requirements (Mastery tier)
 
 ### Possible Actions/Buttons:

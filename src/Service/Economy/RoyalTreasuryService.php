@@ -47,6 +47,19 @@ class RoyalTreasuryService
     }
 
     /**
+     * Removes a previously collected fee from the kingdom pool (e.g. cancelled HQ upgrade).
+     * Floors at zero if the pool was already distributed.
+     */
+    public function refundFee(Kingdom $kingdom, int $amount): void
+    {
+        if ($amount <= 0) {
+            return;
+        }
+
+        $kingdom->setRoyalTreasuryGold(max(0, $kingdom->getRoyalTreasuryGold() - $amount));
+    }
+
+    /**
      * Distributes up to 50% of the treasury among all kingdom teams.
      *
      * @return array{distributed: int, teams_paid: int}

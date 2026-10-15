@@ -414,4 +414,57 @@ class HeadquartersServiceTest extends TestCase
         $this->assertNull($hq->getUpgradeCompletedAt());
         $this->assertSame(3, $hq->getComputedTotalLevel());
     }
+
+    public function testCancelUpgradeRefundsGoldAndTreasury(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setGameSpeed('1.00');
+        $team = new Team();
+        $team->setKingdom($kingdom);
+
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+        $facility = new \App\Entity\Headquarters\Facility();
+        $facility->setType(\App\Enum\FacilityType::Training);
+        $facility->setLevel(1);
+        $hq->addFacility($facility);
+        $hq->syncTotalLevel();
+
+        $now = new \DateTimeImmutable('2026-06-12 12:00:00', new \DateTimeZone('UTC'));
+        $hq->setUpgradingFacility($facility);
+        $hq->setUpgradeCompletedAt($now->modify('+2 days'));
+        $hq->setFacilityOperation(\App\Enum\FacilityOperation::Upgrade);
+
+        $this->hqRepositoryMock
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with(['team' => $team])
+            ->willReturn($hq);
+
+        $this->economyServiceMock
+            ->expects($this->once())
+            ->method('addGold')
+            ->with(
+                $team,
+                $this->greaterThan(0),
+                \App\Enum\FinancialRecordType::HqUpgradeRefund,
+                \App\Enum\FinancialRecordActor::Active,
+                $this->callback(static fn (mixed $context): bool => is_array($context))
+            );
+
+        $this->royalTreasuryServiceMock
+            ->expects($this->once())
+            ->method('refundFee')
+            ->with($kingdom, $this->greaterThan(0));
+
+        $this->entityManagerMock
+            ->expects($this->once())
+            ->method('flush');
+
+        $this->service->cancelUpgrade($team, $now);
+
+        $this->assertNull($hq->getUpgradingFacility());
+        $this->assertNull($hq->getUpgradeCompletedAt());
+        $this->assertNull($hq->getFacilityOperation());
+    }
 }

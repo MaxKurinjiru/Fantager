@@ -299,7 +299,7 @@ class CombatEngine
                     }
 
                     if (null !== $spell) {
-                        $this->executeSpell($runState, $actorSide, $actorSlot, $actor, $targetSlot, $target, $spell, $roundEvents);
+                        $this->executeSpell($runState, $actorSide, $actorSlot, $actor, $targetSlot, $target, $spell, $roundEvents, $rngState);
                         $cdKey = (string) $spell['id'];
                         $actor = $this->getCombatant($runState, $actorSide, $actorSlot);
                         $actor['cooldowns'][$cdKey] = $spell['cooldown'];
@@ -1725,6 +1725,7 @@ class CombatEngine
         array $target,
         array $spell,
         array &$roundEvents,
+        int &$rngState,
     ): void {
         $spellType = $spell['type'];
         $school = $spell['school'];
@@ -1760,6 +1761,21 @@ class CombatEngine
             $spellPower = (float) $caster['derived']['spellPower'];
             $baseDamage = $spellPower * (1.0 + $tier * 0.15);
             $baseDamage *= (float) ($caster['derived']['outgoingDamageMultiplier'] ?? 1.0);
+
+            $critChance = (float) ($caster['derived']['critPercent'] ?? 0.0);
+            if ('genie' === (string) ($caster['race'] ?? '')) {
+                $critChance += 15.0;
+            }
+            $critChance = min(50.0, $critChance);
+            $isCrit = $this->nextInt($rngState, 1, 100) <= $critChance;
+            if ($isCrit) {
+                $critMult = (float) ($caster['derived']['critDamageMultiplier'] ?? 1.5);
+                $baseDamage *= $critMult;
+                $roundEvents[] = [
+                    't' => count($runState['events']) + count($roundEvents),
+                    'type' => 'crit',
+                ];
+            }
 
             $dmgMult = 1.0;
             foreach ($target['statusEffects'] as $eff) {

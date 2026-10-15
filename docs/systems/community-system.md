@@ -49,6 +49,7 @@ All community interactions are **kingdom-scoped**: players can only send message
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/api/v1/messages` | Inbox (excludes deleted by receiver) |
+| GET | `/api/v1/messages/unread-count` | Navbar badge count |
 | GET | `/api/v1/messages/{id}` | Read message (sets `read_at`) |
 | POST | `/api/v1/messages` | Send a message (`receiver_user_id`, `subject`, `body`) |
 | GET | `/api/v1/messages/recipients` | List eligible recipients in the same kingdom |

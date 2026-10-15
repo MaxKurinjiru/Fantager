@@ -66,7 +66,7 @@ class PlayerInactivityServiceTest extends TestCase
 
         $this->notificationHelperMock
             ->expects($this->once())
-            ->method('sendNotification');
+            ->method('sendTranslatedNotification');
 
         $this->mailerMock
             ->expects($this->once())
@@ -136,14 +136,14 @@ class PlayerInactivityServiceTest extends TestCase
         // Therefore, sendNotification and send should only be called ONCE (for the regular user)
         $calledUser = null;
         $calledType = null;
-        $calledMessage = null;
+        $calledTitleKey = null;
         $this->notificationHelperMock
             ->expects($this->once())
-            ->method('sendNotification')
-            ->willReturnCallback(function (User $user, NotificationType $type, string $message) use (&$calledUser, &$calledType, &$calledMessage) {
+            ->method('sendTranslatedNotification')
+            ->willReturnCallback(function (User $user, NotificationType $type, string $titleKey) use (&$calledUser, &$calledType, &$calledTitleKey) {
                 $calledUser = $user;
                 $calledType = $type;
-                $calledMessage = $message;
+                $calledTitleKey = $titleKey;
             });
 
         $this->mailerMock
@@ -154,7 +154,7 @@ class PlayerInactivityServiceTest extends TestCase
 
         $this->assertSame($regularUser, $calledUser);
         $this->assertSame(NotificationType::System, $calledType);
-        $this->assertSame('Inactivity warning', $calledMessage);
+        $this->assertSame('notification.inactivity_warning_title', $calledTitleKey);
 
         // Verify regular user has warning timestamp set, but test user does not
         $this->assertNotNull($regularUser->getInactiveWarningSentAt());

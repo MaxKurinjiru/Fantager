@@ -59,7 +59,7 @@ Reference: Derived from [game-summary.md](game-summary.md), system docs, and scr
 
 ---
 
-## Database Entities (37 implemented)
+## Database Entities (38 implemented)
 
 ### 1. Auth Domain
 
@@ -307,10 +307,10 @@ See [team-chronicle-system.md](systems/team-chronicle-system.md) for full behavi
 
 | Category                   | Count  |
 | -------------------------- | ------ |
-| DB entities (implemented) | 37     |
+| DB entities (implemented) | 38     |
 | Config-based (not DB)      | 5      |
 | PHP enums                  | 40     |
-| **Total modeled concepts** | **82** |
+| **Total modeled concepts** | **83** |
 
 
 ---

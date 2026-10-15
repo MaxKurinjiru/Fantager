@@ -87,27 +87,26 @@ The game is driven by calendar events on **weekly cycles**. Each Kingdom/server 
 
 ### Purpose
 
-The economy provides resource management depth through multiple currencies, each with specific purposes and acquisition methods. Players must balance income sources with strategic spending to optimize team progression.
+Gold is the sole live currency. Players balance income (arena tickets, league rewards, marketplace sales, Royal Treasury share) against spending (HQ, summoning, marketplace, repairs, salaries).
 
 ### Currencies
 
 #### Gold (Primary Currency)
 
 - **Earned from:**
-  - Arena match ticket revenue (passive income based on arena capacity and team reputation)
-  - League match rewards (scales with tier and position)
+  - Arena match ticket revenue (passive income based on arena capacity, ticket price, and team reputation)
+  - League season / standings rewards (scales with tier and position)
   - Selling items/heroes on marketplace
-  - Daily login bonuses
-  - Combat victories
+  - Royal Treasury weekly distribution
+  - Dismantling items
 - **Spent on:**
-  - Hero training costs (increases with hero level and stat tier)
   - Headquarters facility upgrades (exponentially expensive at higher levels)
   - Marketplace purchases (items and heroes)
-  - Crafting materials
-  - Formation slot unlocks and customization
   - Hero summoning chamber fees
-  - Morale restoration items (emergency recovery)
-- **Mechanics:** Primary economic driver; scales with team reputation and arena capacity; unlimited earning potential but balanced by scaling costs
+  - Item repair
+  - Spell learning
+  - Weekly HQ maintenance and hero/trainer salaries
+- **Mechanics:** Primary economic driver; scales with team reputation and arena capacity; unlimited earning potential but balanced by scaling costs. Training itself has **no gold cost** (fatigue is the sink).
 
 #### Essence (removed)
 
@@ -117,11 +116,10 @@ Essence tiers are **not part of the live economy**. Gold is the sole currency. D
 
 | Gold Sinks | Gold Sources |
 |:---|:---|
-| **Training costs** — scales exponentially with hero level and attribute tier | **Arena ticket revenue** — passive income, scales with arena upgrades and team reputation |
-| **Headquarters facility upgrades** — major long-term investment | **League match rewards** — tier-based: higher tiers = better rewards |
-| **Marketplace transaction fees** — percentage-based, typically 5–15% | **Marketplace sales** — minus transaction fees |
-| **Formation unlocks** and strategic customization | **Combat victory bonuses** |
-| **Hero maintenance** — form restoration, fatigue recovery items | |
+| **Headquarters facility upgrades** — major long-term investment | **Arena ticket revenue** — home-match payout, scales with arena upgrades, fans, and ticket price |
+| **Marketplace transaction fees** — kingdom tax, routed to the Royal Treasury | **League / kingdom rewards** — season placement and weekly treasury share |
+| **Summoning fees, spell learning, item repair** | **Marketplace sales** — minus transaction fees |
+| **Weekly HQ maintenance and hero/trainer salaries** | **Item dismantle** — gold return by rarity |
 | **Summoning chamber usage fees** | |
 
 ### Inflation Control Mechanisms
@@ -895,26 +893,26 @@ Each team has its own **Headquarters** serving as their base of operations, prov
 
 | Facility | Description |
 |:---|:---|
-| **Training Facilities** | Improve hero training efficiency and reduce fatigue accumulation |
-| **Medical Wing** | Faster recovery from injuries and form restoration |
-| **Library/Academy** | Enhances spell learning speed and magic school mastery gains |
-| **Treasury** | Increases passive gold generation and resource storage capacity |
-| **Barracks** | Hero roster capacity *(starting capacity: **10** heroes; upgrades expand beyond this)* and team morale recovery |
+| **Training Facilities** | Improves weekly attribute training efficiency (`training_efficiency_pct`) |
+| **Medical Wing** | Daily fatigue reduction and form recovery (`fatigue_reduction_pct`, `recovery_speed_pct`) |
+| **Library/Academy** | Increases hero XP awarded after matches (`xp_gain_pct`). Does **not** change spell learning cost or school-mastery XP |
+| **Treasury** | Increases arena ticket gold income (`gold_income_pct`). There is no storage-capacity mechanic |
+| **Barracks** | Hero roster capacity *(starting capacity: **10** heroes; upgrades expand beyond this)*. No team-morale recovery bonus |
 | **Summoning Chamber** | Recruit junior heroes; time-limited *(e.g., 1 summon per week cycle)*; juniors aged between Min Age and Max Junior Age for their race; upgrading may reduce cooldown or improve quality |
-| **Arena** | Match venue with public seating; upgrading increases audience capacity, ticket revenue, and home advantage bonuses |
+| **Arena** | Match venue with public seating; upgrading increases audience capacity and ticket revenue |
 
 ### Arena Adaptation Settings
 
 **Racial Affinity** — Choose **1 preferred race** that the arena is adapted for.
 
-> **Currently implemented:** Arena adaptation determines which races appear in the Summoning Chamber pool (see [Summoning System](systems/summoning-system.md)). Training and recovery bonuses below are **planned**, not yet active in gameplay.
+> **Currently implemented:** Arena adaptation (1) restricts the Summoning Chamber race pool and (2) applies a **training** bonus in the weekly training tick: ×1.10 if the hero's race matches the adapted race, ×1.05 if the race relationship is ≥ 70, otherwise ×1.0. There is **no** training penalty for hostile races. Form/morale recovery and fatigue penalties from adaptation are **not** implemented.
 
 | Effect Type | Details |
 |:---|:---|
-| **Positive Effects** *(adapted race + positive relationship races)* | Higher training efficiency, faster form and morale recovery, reduced fatigue accumulation |
-| **Negative Effects** *(non-positive relationship races)* | Lower training efficiency, slower recovery rates, increased morale decay over time |
+| **Positive Effects** *(adapted race + relationship ≥ 70)* | Higher weekly attribute training efficiency (see [training-system.md](systems/training-system.md)). Summoning pool is limited to compatible races. |
+| **Neutral / other races** | Training bonus ×1.0. No extra fatigue, form, or morale decay from adaptation. |
 
-> *Strategic Trade-off: Specializing in certain races provides strong bonuses but limits flexibility. A team adapted for Elves benefits Humans and Ents (positive relations) but penalizes Orcs and Undead.*
+> *Strategic Trade-off: Specializing in certain races improves training for that race (and close allies) and changes which races appear when summoning.*
 
 ### Facility Upgrades
 
@@ -1180,7 +1178,7 @@ Supports **player interaction**, strategy discussion, and **community building**
 | **Forum Discussions** | Dedicated spaces for strategy discussion and player engagement |
 | **Email Notifications** | System alerts for trades, league results, and events |
 | **Player Profiles** | Public profiles showing hero stats *(level, form, fatigue, age)* and team record |
-| **Leaderboards** | Rankings by league tier, arena performance, total victories |
+| **Leaderboards** | Kingdom rankings on the League screen (`/app/league`), not a Community tab |
 
 ---
 

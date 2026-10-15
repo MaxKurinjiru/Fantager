@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace App\Tests\Service\Combat;
 
 use App\Entity\Combat\Battle;
+use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\Kingdom\Kingdom;
+use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\BattleStatus;
 use App\Enum\MatchType;
 use App\Service\Calendar\KingdomTickOrchestrator;
 use App\Service\Combat\CombatEngine;
 use App\Service\Combat\ResumeCombatService;
+use App\Service\FriendlyMatch\FriendlyMatchResolutionService;
 use App\Service\League\LeagueMatchResolutionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -42,6 +45,7 @@ class ResumeCombatServiceTest extends TestCase
             $em,
             $combatEngine,
             $league,
+            $this->createStub(FriendlyMatchResolutionService::class),
             $this->createStub(KingdomTickOrchestrator::class),
             $this->createStub(LoggerInterface::class),
         );
@@ -66,9 +70,13 @@ class ResumeCombatServiceTest extends TestCase
         $em->expects($this->exactly(2))->method('flush');
         $em->method('find')->willReturn($battle);
 
-        $repo = $this->createStub(EntityRepository::class);
-        $repo->method('findOneBy')->willReturn(null);
-        $em->method('getRepository')->willReturn($repo);
+        $fixture = $this->createStub(LeagueFixture::class);
+        $em->method('getRepository')->willReturnCallback(function (string $class) use ($fixture) {
+            $repo = $this->createStub(EntityRepository::class);
+            $repo->method('findOneBy')->willReturn(LeagueFixture::class === $class ? $fixture : null);
+
+            return $repo;
+        });
 
         $combatEngine = $this->createMock(CombatEngine::class);
         $combatEngine->expects($this->once())
@@ -93,6 +101,7 @@ class ResumeCombatServiceTest extends TestCase
             $em,
             $combatEngine,
             $league,
+            $this->createStub(FriendlyMatchResolutionService::class),
             $orchestrator,
             $this->createStub(LoggerInterface::class),
         );
@@ -104,6 +113,57 @@ class ResumeCombatServiceTest extends TestCase
         $this->assertSame(4, $battle->getScoreA());
         $this->assertSame(2, $battle->getScoreB());
         $this->assertNotNull($battle->getProcessedAt());
+    }
+
+    public function testResumeCompletesStalledFriendlyBattle(): void
+    {
+        $battle = $this->makeBattle(BattleStatus::Stalled, 4);
+        $battle->setMatchType(MatchType::Friendly);
+        $battle->setRunState(['status' => 'simulating']);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->exactly(2))->method('beginTransaction');
+        $em->expects($this->exactly(2))->method('commit');
+        $em->method('find')->willReturn($battle);
+
+        $friendly = $this->createStub(FriendlyMatch::class);
+        $em->method('getRepository')->willReturnCallback(function (string $class) use ($friendly) {
+            $repo = $this->createStub(EntityRepository::class);
+            $repo->method('findOneBy')->willReturn(FriendlyMatch::class === $class ? $friendly : null);
+
+            return $repo;
+        });
+
+        $combatEngine = $this->createMock(CombatEngine::class);
+        $combatEngine->expects($this->once())
+            ->method('simulateRound')
+            ->willReturnCallback(static function (array &$runState): array {
+                $runState['status'] = 'completed';
+                $runState['scoreA'] = 3;
+                $runState['scoreB'] = 1;
+                $runState['combatLog'] = ['version' => 1, 'events' => []];
+
+                return [];
+            });
+
+        $league = $this->createMock(LeagueMatchResolutionService::class);
+        $league->expects($this->never())->method('completeBattle');
+
+        $friendlyResolution = $this->createMock(FriendlyMatchResolutionService::class);
+        $friendlyResolution->expects($this->once())->method('completeBattle')->with($battle);
+
+        $service = new ResumeCombatService(
+            $em,
+            $combatEngine,
+            $league,
+            $friendlyResolution,
+            $this->createStub(KingdomTickOrchestrator::class),
+            $this->createStub(LoggerInterface::class),
+        );
+
+        $service->resume(7);
+
+        $this->assertSame(BattleStatus::Completed, $battle->getStatus());
     }
 
     public function testResumeReStallsWhenSimulateRoundThrows(): void
@@ -130,6 +190,7 @@ class ResumeCombatServiceTest extends TestCase
             $em,
             $combatEngine,
             $league,
+            $this->createStub(FriendlyMatchResolutionService::class),
             $this->createStub(KingdomTickOrchestrator::class),
             $this->createStub(LoggerInterface::class),
         );

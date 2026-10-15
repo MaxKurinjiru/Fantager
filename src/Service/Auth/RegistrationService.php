@@ -43,10 +43,11 @@ class RegistrationService
     public function register(
         string $email,
         string $plainPassword,
+        string $passwordConfirm,
         string $displayName,
         int $kingdomId,
     ): array {
-        $errors = $this->validate($email, $plainPassword, $displayName, $kingdomId);
+        $errors = $this->validate($email, $plainPassword, $passwordConfirm, $displayName, $kingdomId);
 
         if ([] !== $errors) {
             return ['success' => false, 'errors' => $errors];
@@ -120,7 +121,7 @@ class RegistrationService
     }
 
     /** @return array<string, string> */
-    private function validate(string $email, string $password, string $displayName, int $kingdomId): array
+    private function validate(string $email, string $password, string $passwordConfirm, string $displayName, int $kingdomId): array
     {
         $errors = [];
 
@@ -136,6 +137,8 @@ class RegistrationService
             $errors['password'] = 'register.password.min_length';
         } elseif (strlen($password) > 4096) {
             $errors['password'] = 'register.password.max_length';
+        } elseif ($password !== $passwordConfirm) {
+            $errors['password_confirm'] = 'register.password_confirm.mismatch';
         }
 
         $trimmedName = trim($displayName);

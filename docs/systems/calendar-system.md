@@ -21,7 +21,7 @@ The game world operates on automated server ticks executed at scheduled times. T
 | **Thursday** | 10:00 | **Weekly Training** | Process active trainer assignments. Calculate stat gains (non-linear formulas, raw x10 scaling) and apply to heroes. |
 | **Friday** | 18:00 | **League Match (End-Week)** | Process scheduled end-week league fixtures. **Implemented:** tactics simulation, home-team arena ticket revenue, deterministic round-by-round combat resolution, mastery XP, hero XP, form, fatigue, team morale, aging. |
 | **Friday** | 19:00 | **Season Transition** *(Week 11 only)* | Run season resolution service: finalize standings, distribute tier promotion/relegation rewards, execute team transfers (promotions/relegations), initialize the next season. |
-| **Sunday** | 09:30 | **Arena Adaptation** | Apply pending headquarters arena adaptation changes and manage weekly adaptation lock cycles. |
+| **Sunday** | 09:30 | **Arena Adaptation** (`TickType::RaceOptimization`, persisted as `race_optimization`) | Apply pending headquarters arena adaptation changes and manage weekly adaptation lock cycles. |
 | **Sunday** | 18:00 | **Friendly Match** | Second weekly friendly kickoff window (same rules as Wednesday). |
 | **Weekly** | Sun 23:59 | **Weekly Reset** | Reset summoning chamber cooldowns, process HQ maintenance fees, **hero/trainer payroll**, **Royal Treasury distribution**, facility downgrade lock expiry, and weekly financial-crisis checks. **NPC Simulation:** runs weekly HQ upgrades. |
 

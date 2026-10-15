@@ -9,6 +9,7 @@ on:
       - 'composer.json'
       - 'composer.lock'
       - 'phpstan.neon'
+      - 'phpstan.dist.neon'
       - 'phpstan-baseline.neon'
       - '.github/workflows/phpstan.yml'
   push:
@@ -21,6 +22,7 @@ on:
       - 'composer.json'
       - 'composer.lock'
       - 'phpstan.neon'
+      - 'phpstan.dist.neon'
       - 'phpstan-baseline.neon'
 
 jobs:

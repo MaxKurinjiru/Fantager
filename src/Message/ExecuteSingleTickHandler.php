@@ -8,7 +8,6 @@ use App\Entity\Auth\User;
 use App\Entity\Auth\VerificationToken;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Kingdom\KingdomTickLog;
-use App\Entity\League\LeagueFixture;
 use App\Entity\Notification\Notification;
 use App\Entity\Team\Team;
 use App\Entity\Team\TeamDailySnapshot;

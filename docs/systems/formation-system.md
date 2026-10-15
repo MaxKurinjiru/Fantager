@@ -18,7 +18,8 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 
 ## Validation Rules
 
-- Exactly 6 unique hero IDs required for match-ready lineups; each hero must belong to the team and be available (not in_match, selling, recovering, or dead).
+- **Save:** `FormationService::rebuildSlots()` persists 0–6 slots. Duplicate `hero_id` values are not rejected at save time.
+- **Match-ready:** Kickoff requires ≥ 6 combat-ready heroes on the team (see [combat-system.md](combat-system.md#match-eligibility)). Empty or duplicate slots in a saved formation are not repaired at save; forfeits happen at match resolution.
 - Team must have ≥ 6 combat-ready heroes to participate in a match at all (see [combat-system.md](combat-system.md#match-eligibility)).
 - Creating or promoting a saved formation fails when the team already has 4 saved formations.
 

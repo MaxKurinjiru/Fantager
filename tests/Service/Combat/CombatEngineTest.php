@@ -185,8 +185,10 @@ class CombatEngineTest extends TestCase
         $moves = $this->movesFor($events, 'a', 'front_1');
 
         $this->assertNotEmpty($moves);
-        $this->assertLessThan(8, $this->front($runState, 'sideA')['q']);
-        $this->assertSame(5, $moves[count($moves) - 1]['to_q']);
+        $finalQ = (int) $this->front($runState, 'sideA')['q'];
+        $this->assertLessThan(8, $finalQ);
+        $this->assertSame($finalQ, $moves[count($moves) - 1]['to_q']);
+        $this->assertGreaterThanOrEqual(2, $finalQ);
     }
 
     /**

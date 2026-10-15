@@ -25,9 +25,7 @@ class UserChecker implements UserCheckerInterface
         }
 
         if (!$user->isVerified()) {
-            throw new CustomUserMessageAccountStatusException(
-                $this->translator->trans('error.email_not_verified')
-            );
+            throw new CustomUserMessageAccountStatusException($this->translator->trans('error.email_not_verified'));
         }
     }
 

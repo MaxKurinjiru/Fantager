@@ -272,8 +272,7 @@ class CombatStatCalculator
             $dodgePercent = 50.0;
         }
 
-        $critBonus = $isGenie ? 5.0 : 0.0;
-        $critPercent = 5.0 + $lck * 1.0 + $dex * 0.25 + $critBonus + $critAdder;
+        $critPercent = 5.0 + $lck * 1.0 + $dex * 0.25 + $critAdder;
         if ($critPercent > 50.0) {
             $critPercent = 50.0;
         }

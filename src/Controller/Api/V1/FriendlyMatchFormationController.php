@@ -34,7 +34,7 @@ class FriendlyMatchFormationController extends AbstractController
     }
 
     /**
-     * GET /api/v1/friendly-matches/{id}/formation
+     * GET /api/v1/friendly-matches/{id}/formation.
      *
      * Returns current formation assignment for the requesting team.
      */
@@ -63,7 +63,7 @@ class FriendlyMatchFormationController extends AbstractController
     }
 
     /**
-     * PUT /api/v1/friendly-matches/{id}/formation
+     * PUT /api/v1/friendly-matches/{id}/formation.
      *
      * Body modes:
      * - { "mode": "default" }

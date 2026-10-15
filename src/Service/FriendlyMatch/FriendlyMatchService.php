@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service\FriendlyMatch;
 
-use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\Formation\Formation;
+use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
 use App\Enum\FriendlyMatchStatus;
 use App\Exception\UserFacingException;
-use App\Repository\FriendlyMatch\FriendlyMatchRepository;
 use App\Repository\Formation\FormationRepository;
+use App\Repository\FriendlyMatch\FriendlyMatchRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**

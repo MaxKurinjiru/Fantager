@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Service\Combat;
 
 use App\Entity\Combat\Battle;
+use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\Kingdom\KingdomTickLog;
 use App\Entity\League\LeagueFixture;
 use App\Enum\BattleStatus;
 use App\Enum\TickType;
 use App\Service\Calendar\KingdomTickOrchestrator;
+use App\Service\FriendlyMatch\FriendlyMatchResolutionService;
 use App\Service\League\LeagueMatchResolutionService;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +23,7 @@ class ResumeCombatService
         private readonly EntityManagerInterface $em,
         private readonly CombatEngine $combatEngine,
         private readonly LeagueMatchResolutionService $leagueMatchResolutionService,
+        private readonly FriendlyMatchResolutionService $friendlyMatchResolutionService,
         private readonly KingdomTickOrchestrator $orchestrator,
         private readonly LoggerInterface $logger,
     ) {
@@ -91,18 +94,33 @@ class ResumeCombatService
                     $battle->setResult($battle->getResult() ?? \App\Enum\BattleResult::fromScores($runState['scoreA'], $runState['scoreB']));
                     $battle->setProcessedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
 
-                    $this->leagueMatchResolutionService->completeBattle($battle);
+                    $leagueFixture = $this->em->getRepository(LeagueFixture::class)->findOneBy(['battle' => $battle]);
+                    if (null !== $leagueFixture) {
+                        $this->leagueMatchResolutionService->completeBattle($battle);
 
-                    $fixture = $this->em->getRepository(LeagueFixture::class)->findOneBy(['battle' => $battle]);
-                    if (null !== $fixture) {
                         $tickLog = $this->em->getRepository(KingdomTickLog::class)->findOneBy([
-                            'fixture' => $fixture,
+                            'fixture' => $leagueFixture,
                             'tickType' => TickType::LeagueMatch,
                             'status' => 'processing',
                         ]);
                         if (null !== $tickLog) {
                             $tickLog->setStatus('completed');
                             $tickLog->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                        }
+                    } else {
+                        $friendlyMatch = $this->em->getRepository(FriendlyMatch::class)->findOneBy(['battle' => $battle]);
+                        if (null !== $friendlyMatch) {
+                            $this->friendlyMatchResolutionService->completeBattle($battle);
+
+                            $tickLog = $this->em->getRepository(KingdomTickLog::class)->findOneBy([
+                                'friendlyMatch' => $friendlyMatch,
+                                'tickType' => TickType::FriendlyMatch,
+                                'status' => 'processing',
+                            ]);
+                            if (null !== $tickLog) {
+                                $tickLog->setStatus('completed');
+                                $tickLog->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                            }
                         }
                     }
                 }

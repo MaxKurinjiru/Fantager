@@ -10,7 +10,6 @@ use App\Entity\Kingdom\KingdomTickLog;
 use App\Entity\League\LeagueFixture;
 use App\Entity\League\LeagueSeason;
 use App\Entity\Team\Team;
-use App\Enum\FriendlyMatchStatus;
 use App\Enum\LeagueSeasonStatus;
 use App\Enum\TickType;
 use App\Message\ExecuteSingleTickHandler;

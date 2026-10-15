@@ -131,8 +131,12 @@ HQ maintenance is charged on the **`weekly_reset` tick** (Sunday 23:59).
 ```
 HQ fee     = 50 + (total_level × 3)
 Facilities = Σ (base_fee[type] × facility_level)
-Total      = round((HQ fee + Facilities) × game_speed)
+HQ scaled  = round(HQ fee × game_speed)
+Fac scaled = round(Facilities × game_speed)
+Total      = HQ scaled + Fac scaled
 ```
+
+Each component is rounded separately, then summed (the displayed breakdown always adds up to the charged total).
 
 ### Base facility fees (gold per level / week, before `game_speed`)
 
@@ -214,6 +218,6 @@ Ticket payout on match day is handled by `App\Service\Economy\ArenaRevenueServic
 | GET | `/app/hq` | HQ hub (Twig-rendered; facility panels via `?facility=` query) |
 | GET | `/api/v1/hq` | Facility levels, passive bonuses, upgrade/downgrade status |
 | POST | `/api/v1/hq/upgrade` | Start a facility upgrade |
-| POST | `/api/v1/hq/cancel-upgrade` | Cancel an in-progress facility upgrade |
+| POST | `/api/v1/hq/cancel-upgrade` | Cancel an in-progress **upgrade** within 1 hour of start; full gold refund to the team **and** the same amount removed from the Royal Treasury (`refundFee`) |
 | POST | `/api/v1/hq/downgrade` | Start a facility downgrade |
 | POST | `/api/v1/hq/optimize` | Request an arena adaptation change |

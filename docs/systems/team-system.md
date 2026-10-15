@@ -88,5 +88,6 @@ Players can dismiss available heroes via `POST /api/v1/heroes/{id}/dismiss`:
 
 ## APIs
 
-- `GET /api/teams/{id}/dashboard` — aggregated data for Team Dashboard
-- `POST /api/teams/{id}/settings` — update team settings
+- `GET /api/v1/teams/{teamId}/dashboard` — aggregated data for Team Dashboard
+- `POST /api/v1/teams/{teamId}/settings` — update team settings
+- `GET /api/v1/teams/{teamId}/history` — last 30 days of `TeamDailySnapshot` (morale, reputation, chemistry, fan base)
