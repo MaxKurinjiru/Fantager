@@ -8,7 +8,8 @@
 - **Key design**: [arch-spec.md](../docs/arch-spec.md), [api-design.md](../docs/api-design.md), [entity-reference.md](../docs/entity-reference.md)
 - **Domain**: [game-summary.md](../docs/game-summary.md), [calendar-system.md](../docs/systems/calendar-system.md)
 - **Known gaps**: [known-issues.md](../docs/known-issues.md)
-- **Roadmap**: [roadmap.md](../docs/roadmap.md) — implementation phases, priorities, and open blockers
+- **Active work**: [alignment-roadmap.md](../docs/alignment-roadmap.md) — docs vs code reconciliation (one step at a time)
+- **Roadmap**: [roadmap.md](../docs/roadmap.md) — historical Milestones 1–9 (M8/M9 parked)
 - **Deferred (do not use actively)**: [`_deferred/`](../_deferred/) — contains CHANGELOG.md, CONTRIBUTING.md, and legacy-migration.md; parked until the project reaches a stable version
 
 ## Repo Facts & Environment

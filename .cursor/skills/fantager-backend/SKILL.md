@@ -25,7 +25,7 @@ Copy and track:
 
 ```
 Backend task progress:
-- [ ] Read known-issues.md + implementation status + systems/screens docs
+- [ ] Read alignment-roadmap.md (if doing alignment) + known-issues.md + implementation status + systems/screens docs
 - [ ] Found sibling feature to copy (service + controllers + tests)
 - [ ] Business logic in Service/ (shared by Web + API)
 - [ ] Translation keys in messages.en.yaml + messages.cs.yaml

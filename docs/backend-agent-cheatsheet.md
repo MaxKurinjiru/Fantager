@@ -9,10 +9,11 @@ One-page reference for AI agents and quick human review.
 
 | Check | Why |
 |-------|-----|
-| [known-issues.md](known-issues.md) | Open design gaps (combat formulas, enchanting, …) — do not invent missing mechanics |
-| [README.md](README.md) § Current Implementation Status | Avoid reimplementing features that already exist |
-| [roadmap.md](roadmap.md) | Milestone order and scope |
-| Matching `systems/*.md` + `screens/*.md` | Domain rules and UI requirements for the feature |
+| [alignment-roadmap.md](alignment-roadmap.md) | Active docs/code work queue — one unchecked step at a time |
+| [known-issues.md](known-issues.md) | Open design gaps (XP curve, enchanting, chemistry, item occupancy, combat leftovers) — do not invent missing mechanics |
+| [README.md](README.md) § Current Implementation Status | Snapshot; alignment roadmap is more current during waves 0–8 |
+| [roadmap.md](roadmap.md) | Historical Milestones 1–9 (M8/M9 parked) |
+| Matching `systems/*.md` + `screens/*.md` | Domain rules and UI; systems win over `game-summary.md` |
 
 ---
 
@@ -125,10 +126,13 @@ Copy an existing feature in the same domain before inventing new patterns (e.g. 
 
 | Area | Agent note |
 |------|------------|
-| Combat engine | Formulas live in [combat-system.md](systems/combat-system.md) + `CombatStatCalculator`. Do not invent Haste/Shock initiative, in-combat morale events, or `POST /api/v1/combat/simulate`. |
+| Combat engine | Formulas live in [combat-system.md](systems/combat-system.md) + `CombatStatCalculator`. Do not invent Haste/Shock initiative, in-combat morale events, or `POST /api/v1/combat/simulate` ([known-issues.md](known-issues.md) #9). |
 | Item enchanting | Mechanics undefined — [known-issues.md](known-issues.md) #2 |
+| Hero XP / level | No production `levelUp()` — [known-issues.md](known-issues.md) #6 |
+| Team chemistry | Display-only until #7 is decided |
+| Item occupancy | Two-handed / dual-wield / ring count — #8 |
 | `docs/future/`, `_deferred/` | Out of scope unless user explicitly requests |
-| Public wiki/news | Mostly planned — check implementation status first |
+| Public wiki/news | Mostly planned — check [alignment-roadmap.md](alignment-roadmap.md) A8.5 |
 
 ---
 

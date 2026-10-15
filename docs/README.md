@@ -3,16 +3,18 @@
 This folder contains specifications derived from [game-summary.md](game-summary.md) and [screens-overview.md](screens-overview.md).
 
 **Game Design & Domain**
-- [Core Systems Summary](game-summary.md) — Complete game mechanics, races, economy, combat, and all systems
-- [Screens Overview](screens-overview.md) — All 20 game screens with UI/backend requirements
-- [Known Issues](known-issues.md) — Documentation gaps and design questions to resolve
+- [Alignment Roadmap](alignment-roadmap.md) — **Active work:** docs vs code reconciliation (waves 0–8)
+- [Core Systems Summary](game-summary.md) — Overview of game mechanics; on conflict, `systems/*.md` wins until Wave 2 rewrites it
+- [Screens Overview](screens-overview.md) — Screen catalogue (treat live UI as [screen-code-map.md](screen-code-map.md) until Wave 4)
+- [Known Issues](known-issues.md) — Open design questions; do not invent mechanics
 
 **Architecture & Backend Design**
 - [Architectural Specification](arch-spec.md) — Core backend architecture with dual-layer design (Web + Internal API)
 - [API Design Guide](api-design.md) — Internal API structure, REST principles, service layer patterns, and future evolution roadmap
 - [Entity Reference](entity-reference.md) — All DB entities, config data, enums, and structural decisions
 - [Route Map](route-map.md) — Complete reference of all Web and API routes
-- [Roadmap](roadmap.md) — Implementation order and priorities
+- [Roadmap](roadmap.md) — Historical Milestones 1–9 (M8/M9 parked)
+- [Alignment Roadmap](alignment-roadmap.md) — Current docs/code alignment order
 
 **Systems**
 - [Auth System](systems/auth-system.md) — Authentication, registration, sessions
@@ -111,7 +113,8 @@ This table provides a snapshot of implemented features versus placeholders:
 ---
 
 ## How to use
-- Each system/screen file is a template to fill with implementation details: data models, API routes, DTOs, and services.
+- **Active work** is [alignment-roadmap.md](alignment-roadmap.md) (one unchecked step at a time).
+- Live rules: matching `docs/systems/*.md`. Live UI: [screen-code-map.md](screen-code-map.md) + Twig. On conflict with [game-summary.md](game-summary.md), systems win until Wave 2.
 - Link to existing docs rather than copying large sections.
-- Consult [known-issues.md](known-issues.md) for gaps that need resolution before implementation.
+- Consult [known-issues.md](known-issues.md) for design gaps — do not invent mechanics.
 

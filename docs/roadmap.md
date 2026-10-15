@@ -1,8 +1,10 @@
 # Implementation Roadmap (Vertical-Slice & Chronological)
 
+> **Active work:** [alignment-roadmap.md](alignment-roadmap.md) — documentation vs implementation reconciliation (waves 0–8). This file is the **historical** Milestone 1–9 chronicle. Do not start Milestone 8/9. Do not treat M1–6 checkmarks as “no gaps remain.”
+
 Purpose: Define a logical, step-by-step implementation path for the Fantager project. Unlike pure backend/frontend phase separation, this roadmap is organized by functional **Milestones (Vertical Slices)**. Each milestone builds a complete, testable, and visual slice of a feature—from database schema and service logic to internal APIs and interactive web interfaces.
 
-**AI agents:** Follow [AGENTS.md](../AGENTS.md) for task routing. Write tests when implementing a step; do not run PHPUnit, migrations, or other verification commands unless the user explicitly asks.
+**AI agents:** Follow [AGENTS.md](../AGENTS.md) for task routing. For docs/code mismatches, take the next unchecked step in [alignment-roadmap.md](alignment-roadmap.md). Write tests when implementing a step; do not run PHPUnit, migrations, or other verification commands unless the user explicitly asks.
 
 ---
 
@@ -306,7 +308,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 ## Project Chronological Progression Status
 
 > [!IMPORTANT]
-> **Active Scope Guardrail:** Milestones 1–6 are fully complete. Milestone 7 (Arena Management) is the final active milestone. Everything after Milestone 7 (Milestones 8 and 9) is explicitly **deferred / parked**. Do not implement or plan work for items beyond Milestone 7.
+> **Active Scope Guardrail:** Current work is [alignment-roadmap.md](alignment-roadmap.md), not new Milestone 8/9 features. Milestones 1–6 shipped a playable core; remaining gaps (XP curve, chemistry, item occupancy, combat HUD, status-table honesty) are alignment waves. Milestone 7 analytics UI is alignment step A7.8. Everything after Milestone 7 (Milestones 8 and 9) stays **deferred / parked**.
 
 The following matrix displays what has been completed in the codebase relative to the newly defined chronological steps:
 
@@ -322,4 +324,4 @@ The following matrix displays what has been completed in the codebase relative t
 | **Milestone 8 (Endgame & Crafting)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (dungeons, crafting, quests in `future/`) |
 | **Milestone 9 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (alliance & guild systems deferred) |
 
-*Last updated: October 15, 2026 — Milestones 8 and 9 explicitly marked as Deferred / Out of Active Scope; Milestone 7 is the final active scope milestone (friendly scheduling complete; analytics UI pending).*
+*Last updated: October 15, 2026 — Active work moved to [alignment-roadmap.md](alignment-roadmap.md). M8/M9 remain deferred; M7 analytics UI is alignment A7.8.*

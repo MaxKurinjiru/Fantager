@@ -10,7 +10,7 @@ Quick ref: `docs/backend-agent-cheatsheet.md`. API spec: `docs/api-design.md`. E
 
 ## Before implementing
 
-- Check `docs/known-issues.md` and `docs/README.md` § Current Implementation Status
+- Check `docs/alignment-roadmap.md` (active work), `docs/known-issues.md`, and `docs/README.md` § Current Implementation Status
 - Read matching `docs/systems/*.md` and `docs/screens/*.md`
 - Find an existing feature in the same domain and follow its patterns
 
