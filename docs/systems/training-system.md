@@ -1,6 +1,6 @@
 # Training System
 
-Reference: [game-summary.md](../game-summary.md#25-training-system)
+Reference: [product/overview.md](../product/overview.md#25-training-system)
 
 Purpose: Document training queues, cost calculations, trainer assignment, and server tick processing.
 
@@ -42,7 +42,7 @@ During the lock period, players cannot configure trainers, assign heroes, or una
 
 ## Hero Creation Age
 
-Newly created heroes (starting roster, summoning, NPC generation) start at **level 1** with age between their race's **Min Age** and **Max Junior Age** (inclusive). See [game-summary.md § Age System](../game-summary.md#age-system).
+Newly created heroes (starting roster, summoning, NPC generation) start at **level 1** with age between their race's **Min Age** and **Max Junior Age** (inclusive). See [product/overview.md § Age System](../product/overview.md#age-system).
 
 ## Internal Stat Scaling & Diversity
 

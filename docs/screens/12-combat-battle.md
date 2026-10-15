@@ -1,6 +1,6 @@
 # Combat/Battle Screen (Replay Viewer)
 
-Reference: [screens-overview.md](../screens-overview.md#12-combatbattle-screen), [combat-system.md](../systems/combat-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#12-combatbattle-screen), [combat-system.md](../systems/combat-system.md)
 
 Purpose: Watch a **completed** (or freshly simulated) match. Combat itself is fully automated — players do **not** issue mid-battle actions. Pre-match behaviour is configured via the [Formation System](../systems/formation-system.md) (`approach` now; targeting / spell priorities in later phases).
 

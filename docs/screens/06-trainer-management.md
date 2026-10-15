@@ -1,6 +1,6 @@
 # Trainer Management Screen
 
-Reference: [screens-overview.md](../screens-overview.md#6-trainer-management-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#6-trainer-management-screen)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

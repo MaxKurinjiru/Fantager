@@ -1,6 +1,6 @@
 # Kingdom System & Server Split
 
-Reference: [game-summary.md](../game-summary.md#21-kingdom-system--server-split)
+Reference: [product/overview.md](../product/overview.md#21-kingdom-system--server-split)
 
 Purpose: Document design, data model, APIs, and deployment considerations for Kingdom/Server split.
 
@@ -36,7 +36,7 @@ Sections to fill:
 - Tests and integration points
 - Implementation notes (folders, candidate services)
 
-Summary (to extract from game-summary):
+Summary (to extract from product/overview):
 - Kingdom-specific global settings: language, timezone, gameSpeed, marketplaceTaxRate, seasonLength, **leagueTiersConfig** (tiers, groups per tier, teams per group — player capacity is derived from this), levelCap, xpModifier. `craftingBoost` is deferred with the crafting system.
 - Server tick responsibilities: fatigue recovery, league match processing, training tick, marketplace auction processing, hero aging, Royal Treasury distribution, fan club evolution, inactive player cleanup. *(Dungeon and crafting ticks deferred.)*
 

@@ -1,6 +1,6 @@
 # Combat System
 
-Reference: [game-summary.md](../game-summary.md#210-combat-system)
+Reference: [product/overview.md](../product/overview.md#210-combat-system)
 
 Purpose: Document combat simulation, match eligibility, scoring, derived combat stats, turn order, status effects, and result processing.
 
@@ -687,4 +687,4 @@ Combat is a **deterministic, fully automated** simulation. At each calendar kick
 | GET | `/api/v1/battles/{id}/log` | Combat log / replay | ✅ Implemented |
 | POST | `/api/v1/combat/simulate` | Practice/sandbox match (may stay one-shot or enqueue a private cohort) | Planned |
 
-See [route-map.md](../route-map.md#combat).
+See [architecture/routes.md](../architecture/routes.md#combat).

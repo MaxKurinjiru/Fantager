@@ -1,6 +1,6 @@
 # Player Profile & Settings Screen
 
-Reference: [screens-overview.md](../screens-overview.md#19-player-profile--settings-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#19-player-profile--settings-screen)
 
 Purpose: Per-screen API, UI data requirements, and implementation notes for account-level player settings (distinct from team profile settings on the dashboard).
 
@@ -100,7 +100,7 @@ Future preferences should extend this endpoint (or add PATCH with partial update
 - **Escape** — always closes the active modal.
 - **Backdrop click** — closes only when `UserSettings.closeModalOnBackdrop === true`.
 - **Mobile back** — always closes the active modal (stacked modals close one level per back press).
-- **Focus** — first focusable element on open; focus restored to trigger on close (see [ui-guidelines.md](../ui-guidelines.md#51-modals)).
+- **Focus** — first focusable element on open; focus restored to trigger on close (see [guides/ui-guidelines.md](../guides/ui-guidelines.md#51-modals)).
 
 ## Service layer
 

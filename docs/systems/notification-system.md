@@ -1,6 +1,6 @@
 # Notification System
 
-Reference: [entity-reference.md](../entity-reference.md#19-notification-domain), [route-map.md](../route-map.md#notifications), [community-system.md](community-system.md)
+Reference: [architecture/entities.md](../architecture/entities.md#19-notification-domain), [architecture/routes.md](../architecture/routes.md#notifications), [community-system.md](community-system.md)
 
 Purpose: In-game alerts for the **logged-in player account** (distinct from team-to-team mail and from the append-only team chronicle).
 
@@ -147,4 +147,4 @@ Navbar bell + badge are wired in `templates/components/layout/navbar.html.twig`.
 
 - Mail (team messages): [community-system.md](community-system.md)
 - Team history: [team-chronicle-system.md](team-chronicle-system.md)
-- UI patterns: [ui-guidelines.md](../ui-guidelines.md#51-modals)
+- UI patterns: [guides/ui-guidelines.md](../guides/ui-guidelines.md#51-modals)

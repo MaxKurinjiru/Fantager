@@ -5,9 +5,9 @@
 ## Checklist
 
 - [ ] Code changes are covered by tests where applicable
-- [ ] I added/updated necessary documentation (`route-map.md`, `entity-reference.md`, systems/screens docs as needed)
+- [ ] I added/updated necessary documentation (`docs/architecture/routes.md`, `docs/architecture/entities.md`, systems/screens docs as needed)
 - [ ] **UI changes:** Twig uses semantic classes only (`hidden` / `sr-only` / `group` exceptions)
-- [ ] **Backend changes:** business logic in `Service/`; translation keys in EN + CS YAML; routes in `route-map.md`
+- [ ] **Backend changes:** business logic in `Service/`; translation keys in EN + CS YAML; routes in `docs/architecture/routes.md`
 
 ## Verification (human / CI — not required in the PR description)
 
@@ -23,7 +23,7 @@ docker exec -u apache fantager-web composer php-cs
 
 ## Changelog
 
-`CHANGELOG.md` is parked in [`_deferred/`](../_deferred/) until the project reaches a stable version — no changelog entry required for now.
+`CHANGELOG.md` is parked in [`_deferred/`](../_deferred) until the project reaches a stable version — no changelog entry required for now.
 
 ## Related issues
 

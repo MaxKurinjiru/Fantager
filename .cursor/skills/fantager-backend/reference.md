@@ -21,25 +21,25 @@ Quick map of production PHP layout. Full workflow: [SKILL.md](SKILL.md) · [exam
 
 | Directory | Main services | Domain doc |
 |-----------|---------------|------------|
-| `Auth/` | `RegistrationService`, `UserSettingsService`, `PasswordResetService` | [auth-system.md](../../docs/systems/auth-system.md) |
-| `Kingdom/` | `KingdomService`, `KingdomInitializationService` | [kingdom-system.md](../../docs/systems/kingdom-system.md) |
-| `Team/` | `TeamService`, `TeamRosterService`, `FanClubService` | [team-system.md](../../docs/systems/team-system.md) |
-| `TeamChronicle/` | `TeamChronicleService`, `TeamChroniclePresenter` | [team-chronicle-system.md](../../docs/systems/team-chronicle-system.md) |
-| `Hero/` | `HeroService`, `HeroGenerator`, `HeroDismissalService` | [hero-system.md](../../docs/systems/hero-system.md) |
-| `Summoning/` | `SummoningService` | [summoning-system.md](../../docs/systems/summoning-system.md) |
-| `Economy/` | `EconomyService`, `FinancialCrisisService`, `RoyalTreasuryService`, `ArenaRevenueService` | [economy-system.md](../../docs/systems/economy-system.md) |
-| `Headquarters/` | `HeadquartersService`, `ArenaService`, `HqMaintenanceCalculator` | [headquarters-system.md](../../docs/systems/headquarters-system.md) |
-| `Training/` | `TrainingService`, `TrainerDismissalService` | [training-system.md](../../docs/systems/training-system.md) |
-| `Item/` | `ItemService` | [item-system.md](../../docs/systems/item-system.md) |
-| `Spell/` | `SpellService` | [spell-system.md](../../docs/systems/spell-system.md) |
-| `Formation/` | `FormationService`, `FixtureFormationService` | [formation-system.md](../../docs/systems/formation-system.md) |
-| `Marketplace/` | `MarketplaceService` | [marketplace-system.md](../../docs/systems/marketplace-system.md) |
-| `Community/` | `CommunityService`, `ForumThreadHelper`, `ContentFilterService` | [community-system.md](../../docs/systems/community-system.md) |
-| `Calendar/` | `CalendarService`, `TickScheduleCalculator`, `KingdomTickRunnerService`, `TickClock` | [calendar-system.md](../../docs/systems/calendar-system.md) |
-| `League/` | `LeagueService`, `LeagueFixtureScheduler`, `SeasonTransitionService` | [league-system.md](../../docs/systems/league-system.md) |
-| `Graveyard/` | `GraveyardService`, `GraveyardPresenter` | [graveyard-system.md](../../docs/systems/graveyard-system.md) |
-| `Notification/` | `NotificationService`, `NotificationHelper` | [notification-system.md](../../docs/systems/notification-system.md) |
-| `Config/` | `RaceConfig`, `KingdomInitConfig`, `StatusEffectConfig` | [entity-reference.md](../../docs/entity-reference.md) |
+| `Auth/` | `RegistrationService`, `UserSettingsService`, `PasswordResetService` | [auth-system.md](../../../docs/systems/auth-system.md) |
+| `Kingdom/` | `KingdomService`, `KingdomInitializationService` | [kingdom-system.md](../../../docs/systems/kingdom-system.md) |
+| `Team/` | `TeamService`, `TeamRosterService`, `FanClubService` | [team-system.md](../../../docs/systems/team-system.md) |
+| `TeamChronicle/` | `TeamChronicleService`, `TeamChroniclePresenter` | [team-chronicle-system.md](../../../docs/systems/team-chronicle-system.md) |
+| `Hero/` | `HeroService`, `HeroGenerator`, `HeroDismissalService` | [hero-system.md](../../../docs/systems/hero-system.md) |
+| `Summoning/` | `SummoningService` | [summoning-system.md](../../../docs/systems/summoning-system.md) |
+| `Economy/` | `EconomyService`, `FinancialCrisisService`, `RoyalTreasuryService`, `ArenaRevenueService` | [economy-system.md](../../../docs/systems/economy-system.md) |
+| `Headquarters/` | `HeadquartersService`, `ArenaService`, `HqMaintenanceCalculator` | [headquarters-system.md](../../../docs/systems/headquarters-system.md) |
+| `Training/` | `TrainingService`, `TrainerDismissalService` | [training-system.md](../../../docs/systems/training-system.md) |
+| `Item/` | `ItemService` | [item-system.md](../../../docs/systems/item-system.md) |
+| `Spell/` | `SpellService` | [spell-system.md](../../../docs/systems/spell-system.md) |
+| `Formation/` | `FormationService`, `FixtureFormationService` | [formation-system.md](../../../docs/systems/formation-system.md) |
+| `Marketplace/` | `MarketplaceService` | [marketplace-system.md](../../../docs/systems/marketplace-system.md) |
+| `Community/` | `CommunityService`, `ForumThreadHelper`, `ContentFilterService` | [community-system.md](../../../docs/systems/community-system.md) |
+| `Calendar/` | `CalendarService`, `TickScheduleCalculator`, `KingdomTickRunnerService`, `TickClock` | [calendar-system.md](../../../docs/systems/calendar-system.md) |
+| `League/` | `LeagueService`, `LeagueFixtureScheduler`, `SeasonTransitionService` | [league-system.md](../../../docs/systems/league-system.md) |
+| `Graveyard/` | `GraveyardService`, `GraveyardPresenter` | [graveyard-system.md](../../../docs/systems/graveyard-system.md) |
+| `Notification/` | `NotificationService`, `NotificationHelper` | [notification-system.md](../../../docs/systems/notification-system.md) |
+| `Config/` | `RaceConfig`, `KingdomInitConfig`, `StatusEffectConfig` | [architecture/entities.md](../../../docs/architecture/entities.md) |
 | `Translation/` | `UserMessageTranslator` | — |
 
 **Handlers:** `src/Message/ProcessKingdomTicksHandler.php` — weekly tick orchestration  
@@ -109,12 +109,12 @@ Enums: `src/Enum/` — backed enums for statuses, types, races (see entity-refer
 
 | Change | Update |
 |--------|--------|
-| New route | `docs/route-map.md` |
-| New entity/table | `docs/entity-reference.md` |
-| New enum | `docs/entity-reference.md` § Enums |
+| New route | `docs/architecture/routes.md` |
+| New entity/table | `docs/architecture/entities.md` |
+| New enum | `docs/architecture/entities.md` § Enums |
 | New domain behavior | `docs/systems/{domain}-system.md` |
-| New screen | `docs/screens/NN-*.md`, `docs/screen-code-map.md` |
-| Feature shipped / status | `docs/README.md` § Current Implementation Status |
+| New screen | `docs/screens/NN-*.md`, `docs/architecture/screen-code-map.md` |
+| Feature shipped / status | `docs/systems/README.md` § Current Implementation Status |
 
 **Automated check (human / CI):** `bash scripts/check-backend-docs.sh` (routes, entities, enums, PHP → YAML keys)
 

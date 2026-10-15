@@ -6,11 +6,11 @@ alwaysApply: false
 
 # PHP Backend (Fantager)
 
-Quick ref: `docs/backend-agent-cheatsheet.md`. API spec: `docs/api-design.md`. Entities: `docs/entity-reference.md`.
+Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entities: `docs/architecture/entities.md`.
 
 ## Before implementing
 
-- Check `docs/alignment-roadmap.md` (active work), `docs/known-issues.md`, and `docs/README.md` § Current Implementation Status
+- Check `docs/roadmap/current.md` (active work), `docs/product/known-issues.md`, and `docs/systems/README.md` § Current Implementation Status
 - Read matching `docs/systems/*.md` and `docs/screens/*.md`
 - Find an existing feature in the same domain and follow its patterns
 
@@ -26,7 +26,7 @@ Quick ref: `docs/backend-agent-cheatsheet.md`. API spec: `docs/api-design.md`. E
 - `use ApiControllerTrait;`
 - Errors: `jsonError('translation.key', $status)` — never hardcoded English
 - Caught exceptions: `jsonException($e, 422)`
-- Register new routes in `docs/route-map.md`
+- Register new routes in `docs/architecture/routes.md`
 
 ## Web (`Controller/Web`)
 
@@ -46,9 +46,9 @@ Quick ref: `docs/backend-agent-cheatsheet.md`. API spec: `docs/api-design.md`. E
 
 ## Schema & docs
 
-- New entity/enum → update `docs/entity-reference.md`
-- New route → update `docs/route-map.md`
-- Feature status change → update `docs/README.md` implementation table
+- New entity/enum → update `docs/architecture/entities.md`
+- New route → update `docs/architecture/routes.md`
+- Feature status change → update `docs/systems/README.md` implementation table
 
 ## Optional verification (user-requested only)
 

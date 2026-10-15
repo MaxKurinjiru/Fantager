@@ -1,6 +1,6 @@
 # Formation System
 
-Reference: [game-summary.md](../game-summary.md#261-formation-system)
+Reference: [product/overview.md](../product/overview.md#261-formation-system)
 
 Purpose: Document formation representation, validation rules, synergy calculations, and simulation hooks.
 
@@ -96,7 +96,7 @@ Ordered list; first matching ready spell wins that evaluation pass (exact preced
 | `lowest_hp_ally` / `self` | That ally, or the caster | Read |
 | `lowest_hp_enemy` | Lowest-HP living enemy | Not implemented (not in steps 2–7) — if used as `target`, engine falls back to the current approach/priority pick |
 
-Formation-level spell overrides vs hero-equipped fallback follow [game-summary.md](../game-summary.md#combat-strategy-settings) (formation config wins when present).
+Formation-level spell overrides vs hero-equipped fallback follow [product/overview.md](../product/overview.md#combat-strategy-settings) (formation config wins when present).
 
 ### L3 — deferred
 

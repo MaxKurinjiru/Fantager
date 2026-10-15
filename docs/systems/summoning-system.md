@@ -1,6 +1,6 @@
 # Summoning System
 
-Reference: [game-summary.md](../game-summary.md), [screens/09-summoning-chamber.md](../screens/09-summoning-chamber.md)
+Reference: [product/overview.md](../product/overview.md), [screens/09-summoning-chamber.md](../screens/09-summoning-chamber.md)
 
 Purpose: Document summoning mechanics, costs, cooldowns, race selection, and hero generation.
 

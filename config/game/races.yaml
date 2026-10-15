@@ -1,6 +1,6 @@
 # Race Definitions
 # Static game data — loaded via App\Config\RaceConfig service
-# Values derived from docs/game-summary.md §2.4
+# Values derived from docs/product/overview.md §2.4
 #
 # stat_bonuses: flat integer adjustments applied to each rolled stat during hero generation.
 #   Human baseline = +1 per stat. Convention: round((multiplier - 0.9) * 10).

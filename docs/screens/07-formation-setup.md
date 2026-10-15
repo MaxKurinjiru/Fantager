@@ -1,6 +1,6 @@
 # Formation Setup Screen
 
-Reference: [screens-overview.md](../screens-overview.md#7-formation-setup-screen), [formation-system.md](../systems/formation-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#7-formation-setup-screen), [formation-system.md](../systems/formation-system.md)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

@@ -1,6 +1,6 @@
 # Community Screen
 
-Reference: [screens-overview.md](../screens-overview.md#17-community-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#17-community-screen)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

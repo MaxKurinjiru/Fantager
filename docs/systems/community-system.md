@@ -1,6 +1,6 @@
 # Community System
 
-Reference: [game-summary.md](../game-summary.md#214-community-system)
+Reference: [product/overview.md](../product/overview.md#214-community-system)
 
 Purpose: Document leaderboards, private messages, forums, content moderation, and social features.
 
@@ -141,7 +141,7 @@ Profiles are kingdom-scoped for viewers (same kingdom as the subject).
 ## Leaderboards
 
 > [!NOTE]
-> There is **no** dedicated `GET /api/v1/leaderboards` API. Kingdom-wide leaderboard data is served by the League API (`GET /api/v1/league/standings`) and displayed on `/app/league` (tab "Kingdom Leaderboard"). See [league-system.md](league-system.md) and [route-map.md](../route-map.md).
+> There is **no** dedicated `GET /api/v1/leaderboards` API. Kingdom-wide leaderboard data is served by the League API (`GET /api/v1/league/standings`) and displayed on `/app/league` (tab "Kingdom Leaderboard"). See [league-system.md](league-system.md) and [architecture/routes.md](../architecture/routes.md).
 
 ---
 

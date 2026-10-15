@@ -1,6 +1,6 @@
 # Hero System
 
-Reference: [game-summary.md](../game-summary.md#24-hero-system)
+Reference: [product/overview.md](../product/overview.md#24-hero-system)
 
 Purpose: Document hero lifecycle, attributes, aging, relationships, and persistence.
 
@@ -72,7 +72,7 @@ Starting roster:
 
 ### Hero level vs match XP
 
-League and friendly matches add to `Hero.xp` (Library facility `xp_gain_pct` multiplies that XP only). `HeroService::levelUp()` and chronicle event `levelup` exist but **no production path** converts accumulated XP into `Hero.level`. Displayed level stays at generation until an XP curve is designed. Tracked in [known-issues.md](../known-issues.md) #6.
+League and friendly matches add to `Hero.xp` (Library facility `xp_gain_pct` multiplies that XP only). `HeroService::levelUp()` and chronicle event `levelup` exist but **no production path** converts accumulated XP into `Hero.level`. Displayed level stays at generation until an XP curve is designed. Tracked in [product/known-issues.md](../product/known-issues.md) #6.
 
 ## Age Milestones & Terminology
 

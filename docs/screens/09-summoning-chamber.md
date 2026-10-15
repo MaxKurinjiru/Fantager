@@ -1,6 +1,6 @@
 # Summoning Chamber Screen
 
-Reference: [screens-overview.md](../screens-overview.md#9-summoning-chamber-screen), [summoning-system.md](../systems/summoning-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#9-summoning-chamber-screen), [summoning-system.md](../systems/summoning-system.md)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

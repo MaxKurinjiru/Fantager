@@ -1,6 +1,6 @@
 # Marketplace System
 
-Reference: [game-summary.md](../game-summary.md#211-marketplace-system), [MarketplaceService.php](../../src/Service/Marketplace/MarketplaceService.php), [MarketplaceTransaction.php](../../src/Entity/Marketplace/MarketplaceTransaction.php)
+Reference: [product/overview.md](../product/overview.md#211-marketplace-system), [MarketplaceService.php](../../src/Service/Marketplace/MarketplaceService.php), [MarketplaceTransaction.php](../../src/Entity/Marketplace/MarketplaceTransaction.php)
 
 Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction records, and chronicle integration.
 

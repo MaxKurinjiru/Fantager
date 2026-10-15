@@ -1,6 +1,6 @@
 # Team System
 
-Reference: [game-summary.md](../game-summary.md#26-team-system)
+Reference: [product/overview.md](../product/overview.md#26-team-system)
 
 Purpose: Document team entities, roster rules, aggregation endpoints (dashboard), and team-related mechanics.
 

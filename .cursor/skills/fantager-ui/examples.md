@@ -175,5 +175,5 @@ When `.dashboard-grid-2` did not exist:
 ```
 
 2. Replaced Twig `grid grid-cols-1 md:grid-cols-2 gap-6` with `dashboard-grid-2`
-3. Documented in `ui-guidelines.md` §3.1
+3. Documented in `docs/guides/ui-guidelines.md` §3.1
 4. Ran `bash scripts/check-ui-compliance.sh`

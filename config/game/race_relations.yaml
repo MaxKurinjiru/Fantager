@@ -4,7 +4,7 @@
 # Symmetric pairs only (alphabetical canonical order: raceA < raceB)
 # Affects: team chemistry, marketplace trading bonuses, formation synergy
 #
-# Source: docs/game-summary.md §2.4 — Relationship Matrix
+# Source: docs/product/overview.md §2.4 — Relationship Matrix
 # 8 races → 28 unique pairs (C(8,2))
 
 relationships:

@@ -1,6 +1,6 @@
 # Auth System
 
-Reference: [arch-spec.md](../arch-spec.md#security-requirements)
+Reference: [architecture/overview.md](../architecture/overview.md#security-requirements)
 
 Purpose: Document authentication, registration, session management, and authorization strategy.
 
@@ -105,7 +105,7 @@ Rate limiting protects auth endpoints against brute-force attacks, credential st
 5. Server sends verification email (via `symfony/mailer`) with a signed, time-limited token
 6. User clicks link in email → `GET /verify-email?token=...`
 7. Server validates token, sets `is_verified = true`
-8. During the initial registration step (step 3), the server **immediately and automatically** assigns a random available NPC team from the player's Kingdom — sets `user_id` on the team and sets `is_npc = false`. A **`player_joined`** chronicle entry is written to `team_chronicle`. The inherited team includes **10 heroes** (see [team-system.md](../systems/team-system.md#starting-roster)).
+8. During the initial registration step (step 3), the server **immediately and automatically** assigns a random available NPC team from the player's Kingdom — sets `user_id` on the team and sets `is_npc = false`. A **`player_joined`** chronicle entry is written to `team_chronicle`. The inherited team includes **10 heroes** (see [team-system.md](team-system.md#starting-roster)).
 9. User is logged in and redirected to Team Dashboard
 
 **Unverified users cannot log in.** Login attempt by unverified user shows: "Please verify your email first."
@@ -167,7 +167,7 @@ Service: `App\Service\Auth\UserSettingsService` — lazy `getOrCreate()` for exi
 
 ## Auth endpoints
 
-Web session auth (implemented): register, verify-email, login, logout, password-reset — see [route-map.md](../route-map.md#auth).
+Web session auth (implemented): register, verify-email, login, logout, password-reset — see [architecture/routes.md](../architecture/routes.md#auth).
 
 | Method | Path | Status |
 |--------|------|--------|

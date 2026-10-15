@@ -1,6 +1,6 @@
 # Headquarters Screen
 
-Reference: [screens-overview.md](../screens-overview.md#8-headquarters-screen), [headquarters-system.md](../systems/headquarters-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#8-headquarters-screen), [headquarters-system.md](../systems/headquarters-system.md)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

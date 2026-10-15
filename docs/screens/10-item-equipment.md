@@ -1,6 +1,6 @@
 # Item/Equipment Screen
 
-Reference: [screens-overview.md](../screens-overview.md#10-itemequipment-screen), [item-system.md](../systems/item-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#10-itemequipment-screen), [item-system.md](../systems/item-system.md)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

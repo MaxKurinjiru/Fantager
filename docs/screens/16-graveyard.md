@@ -1,6 +1,6 @@
 # Graveyard Screen
 
-Reference: [screens-overview.md](../screens-overview.md#16-graveyard-screen), [graveyard-system.md](../systems/graveyard-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#16-graveyard-screen), [graveyard-system.md](../systems/graveyard-system.md)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

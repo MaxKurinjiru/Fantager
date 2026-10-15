@@ -1,6 +1,6 @@
 # Hero Roster Screen
 
-Reference: [screens-overview.md](../screens-overview.md#3-hero-roster-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#3-hero-roster-screen)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

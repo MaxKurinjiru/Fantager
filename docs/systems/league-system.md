@@ -1,6 +1,6 @@
 # League System
 
-Reference: [game-summary.md](../game-summary.md#212-league-system)
+Reference: [product/overview.md](../product/overview.md#212-league-system)
 
 Purpose: Document season scheduling, promotion/relegation, fixtures, and rewards.
 
@@ -208,6 +208,6 @@ $$\text{Gold Granted} = \text{Base\_Gold}(T_{old}) \times M_{pos}(P) \times M_{s
 | GET | `/api/v1/league/seasons` | Kingdom season history |
 | POST | `/api/v1/league/process-season` | Season transition trigger (Admin only) |
 
-See [route-map.md](../route-map.md#league).
+See [architecture/routes.md](../architecture/routes.md#league).
 
 Season transition also runs as a **`season_transition` server tick** (not only via the admin API).

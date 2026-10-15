@@ -1,6 +1,6 @@
 # Spell Management Screen & Academy Store
 
-Reference: [screens-overview.md](../screens-overview.md#11-spell-management-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#11-spell-management-screen)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes for Spell Management and the Spells Academy.
 

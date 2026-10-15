@@ -1,6 +1,6 @@
 # Arena Management Screen
 
-Reference: [screens-overview.md](../screens-overview.md#18-arena-management-screen-optionalextended-feature)
+Reference: [screens/overview-legacy.md](overview-legacy.md#18-arena-management-screen-optionalextended-feature)
 
 > **Implementation:** Arena is a **panel inside HQ**, not a standalone page. `GET /app/arena` redirects to `/app/hq?facility=arena`.
 

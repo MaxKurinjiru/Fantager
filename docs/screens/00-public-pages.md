@@ -1,6 +1,6 @@
 # Public Pages (Unauthenticated Section)
 
-Reference: [screens-overview.md](../screens-overview.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md)
 
 **When:** Before login — visible to all visitors (unauthenticated users)
 

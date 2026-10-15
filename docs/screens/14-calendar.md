@@ -1,6 +1,6 @@
 # Calendar Screen
 
-Reference: [screens-overview.md](../screens-overview.md#14-calendar-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#14-calendar-screen)
 
 Purpose: Per-screen API, UI data requirements, and implementation notes for the kingdom calendar (server ticks, league fixtures, team training).
 

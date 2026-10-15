@@ -1,6 +1,6 @@
 # League Screen
 
-Reference: [screens-overview.md](../screens-overview.md#13-league-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#13-league-screen)
 
 Purpose: Document the implemented League and Standings screen, including its Web controller, service logic, templates, and navigation.
 

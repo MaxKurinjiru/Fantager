@@ -1,6 +1,6 @@
 # Team Dashboard (Main Screen)
 
-Reference: [screens-overview.md](../screens-overview.md#2-team-dashboard-main-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#2-team-dashboard-main-screen)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

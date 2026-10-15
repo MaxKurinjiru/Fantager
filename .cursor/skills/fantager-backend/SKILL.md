@@ -1,7 +1,7 @@
 ---
 name: fantager-backend
 description: >-
-  Implements and reviews Fantager PHP/Symfony backend following docs/backend-agent-cheatsheet.md.
+  Implements and reviews Fantager PHP/Symfony backend following docs/guides/backend.md.
   Use when editing services, API/Web controllers, entities, repositories, migrations,
   Messenger handlers, console commands, or PHP tests; or when the user asks for API design,
   vertical slices, or Symfony patterns in this repo.
@@ -11,13 +11,13 @@ description: >-
 
 ## Read first
 
-1. [docs/backend-agent-cheatsheet.md](../../docs/backend-agent-cheatsheet.md) — layering, checklist, scope guardrails
-2. [docs/screen-code-map.md](../../docs/screen-code-map.md) — when implementing or changing a game screen
+1. [docs/guides/backend.md](../../../docs/guides/backend.md) — layering, checklist, scope guardrails
+2. [docs/architecture/screen-code-map.md](../../../docs/architecture/screen-code-map.md) — when implementing or changing a game screen
 3. [reference.md](reference.md) — service/entity/controller map (when needed)
 3. [examples.md](examples.md) — before/after patterns from this codebase
-4. [docs/api-design.md](../../docs/api-design.md) — when adding or changing API endpoints
+4. [docs/architecture/api.md](../../../docs/architecture/api.md) — when adding or changing API endpoints
 
-Full specs: [docs/arch-spec.md](../../docs/arch-spec.md) · [docs/entity-reference.md](../../docs/entity-reference.md)
+Full specs: [docs/architecture/overview.md](../../../docs/architecture/overview.md) · [docs/architecture/entities.md](../../../docs/architecture/entities.md)
 
 ## Workflow
 
@@ -25,11 +25,11 @@ Copy and track:
 
 ```
 Backend task progress:
-- [ ] Read alignment-roadmap.md (if doing alignment) + known-issues.md + implementation status + systems/screens docs
+- [ ] Read docs/roadmap/current.md (if doing alignment) + known-issues + systems/README status + systems/screens docs
 - [ ] Found sibling feature to copy (service + controllers + tests)
 - [ ] Business logic in Service/ (shared by Web + API)
 - [ ] Translation keys in messages.en.yaml + messages.cs.yaml
-- [ ] route-map.md (+ entity-reference.md if schema changed)
+- [ ] docs/architecture/routes.md (+ entities.md if schema changed)
 - [ ] Unit test in tests/Service/{Domain}/ for new logic
 ```
 

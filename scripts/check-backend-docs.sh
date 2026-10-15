@@ -17,8 +17,8 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 VIOLATION_COUNT=0
-ROUTE_MAP="$ROOT/docs/route-map.md"
-ENTITY_REFERENCE="$ROOT/docs/entity-reference.md"
+ROUTE_MAP="$ROOT/docs/architecture/routes.md"
+ENTITY_REFERENCE="$ROOT/docs/architecture/entities.md"
 ENUMS_SECTION_START='## Enums (PHP backed enums)'
 ENUMS_SECTION_END='## Entity Count Summary'
 
@@ -68,7 +68,7 @@ while IFS=$'\t' read -r _method path file; do
 done < <(php "$ROOT/scripts/extract-routes.php" | tr -d '\r')
 
 if [[ ${#MISSING_ROUTES[@]} -gt 0 ]]; then
-  echo -e "${RED}FAIL: Routes in code but not found in docs/route-map.md${NC}"
+  echo -e "${RED}FAIL: Routes in code but not found in docs/architecture/routes.md${NC}"
   printf '  %s\n' "${MISSING_ROUTES[@]}"
   echo
   VIOLATION_COUNT=$((VIOLATION_COUNT + 1))
@@ -93,7 +93,7 @@ while IFS= read -r entity_file; do
 done < <(find "$ROOT/src/Entity" -name '*.php' -type f | sort)
 
 if [[ ${#MISSING_ENTITIES[@]} -gt 0 ]]; then
-  echo -e "${RED}FAIL: Entity classes not referenced in docs/entity-reference.md${NC}"
+  echo -e "${RED}FAIL: Entity classes not referenced in docs/architecture/entities.md${NC}"
   printf '  %s\n' "${MISSING_ENTITIES[@]}"
   echo
   VIOLATION_COUNT=$((VIOLATION_COUNT + 1))
@@ -111,7 +111,7 @@ while IFS= read -r enum_file; do
 done < <(find "$ROOT/src/Enum" -name '*.php' -type f | sort)
 
 if [[ ${#MISSING_ENUMS[@]} -gt 0 ]]; then
-  echo -e "${RED}FAIL: Enum classes not listed in docs/entity-reference.md (Enums section)${NC}"
+  echo -e "${RED}FAIL: Enum classes not listed in docs/architecture/entities.md (Enums section)${NC}"
   printf '  %s\n' "${MISSING_ENUMS[@]}"
   echo
   VIOLATION_COUNT=$((VIOLATION_COUNT + 1))
@@ -183,7 +183,7 @@ fi
 # --- Summary ---
 if [[ "$VIOLATION_COUNT" -gt 0 ]]; then
   echo -e "${RED}Backend docs check FAILED: ${VIOLATION_COUNT} category/categories with violations.${NC}"
-  echo "See docs/backend-agent-cheatsheet.md and docs/screen-code-map.md"
+  echo "See docs/guides/backend.md and docs/architecture/screen-code-map.md"
   exit 1
 fi
 

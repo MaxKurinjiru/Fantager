@@ -1,6 +1,6 @@
 # Economy System
 
-Reference: [game-summary.md](../game-summary.md#23-economy-system)
+Reference: [product/overview.md](../product/overview.md#23-economy-system)
 
 Purpose: Document currencies, sinks/sources, anti-exploit measures and economic invariants.
 
@@ -141,7 +141,7 @@ Economy features are **not** merged into a single page. The sidebar exposes two 
 | `GET /app/marketplace` | `Web\MarketplaceController` | Marketplace tabs: browse, sell, my listings, transaction history, basic equipment |
 | `GET /app/finance` | `Web\FinanceController` | Financial ledger with type/actor filters and overview summary |
 
-See [screens/15-marketplace.md](../screens/15-marketplace.md) and [route-map.md](../route-map.md#economy--marketplace).
+See [screens/15-marketplace.md](../screens/15-marketplace.md) and [architecture/routes.md](../architecture/routes.md#economy--marketplace).
 
 ---
 
@@ -156,4 +156,4 @@ See [screens/15-marketplace.md](../screens/15-marketplace.md) and [route-map.md]
 | POST | `/api/v1/marketplace/purchase` | Buy listing |
 | POST | `/api/v1/marketplace/bid` | Place auction bid |
 
-Full route list: [route-map.md](../route-map.md#economy--marketplace).
+Full route list: [architecture/routes.md](../architecture/routes.md#economy--marketplace).

@@ -1,6 +1,6 @@
 # Hero Detail Screen
 
-Reference: [screens-overview.md](../screens-overview.md#4-hero-detail-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#4-hero-detail-screen)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

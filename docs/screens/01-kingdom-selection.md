@@ -1,6 +1,6 @@
 # Kingdom Selection (Registration Step)
 
-Reference: [screens-overview.md](../screens-overview.md#1-kingdom-selection-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#1-kingdom-selection-screen)
 
 **When:** Part of the registration form — not a separate screen. The player selects a Kingdom before submitting the registration form. The choice is permanent and cannot be changed after registration.
 

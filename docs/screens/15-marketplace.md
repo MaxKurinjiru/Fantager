@@ -1,6 +1,6 @@
 # Marketplace Screen
 
-Reference: [screens-overview.md](../screens-overview.md#15-marketplace-screen), [economy-system.md](../systems/economy-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#15-marketplace-screen), [economy-system.md](../systems/economy-system.md)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

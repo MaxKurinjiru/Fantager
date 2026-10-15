@@ -1,6 +1,6 @@
 # Spell System
 
-Reference: [game-summary.md](../game-summary.md#29-spell-system), [screens/11-spell-management.md](../screens/11-spell-management.md)
+Reference: [product/overview.md](../product/overview.md#29-spell-system), [screens/11-spell-management.md](../screens/11-spell-management.md)
 
 Purpose: Document spell schools, mastery, learning, equip slots, and academy UI.
 

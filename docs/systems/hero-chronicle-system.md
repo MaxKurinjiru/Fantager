@@ -1,6 +1,6 @@
 # Hero Chronicle System
 
-Reference: [entity-reference.md](../entity-reference.md#4-hero-domain), [hero-system.md](hero-system.md), [screens/04-hero-detail.md](../screens/04-hero-detail.md)
+Reference: [architecture/entities.md](../architecture/entities.md#4-hero-domain), [hero-system.md](hero-system.md), [screens/04-hero-detail.md](../screens/04-hero-detail.md)
 
 Purpose: Document the **hero chronicle** — an append-only per-hero event log shown on the Hero Detail **History** tab.
 

@@ -1,6 +1,6 @@
 # Training Screen
 
-Reference: [screens-overview.md](../screens-overview.md#5-training-screen), [training-system.md](../systems/training-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#5-training-screen), [training-system.md](../systems/training-system.md)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

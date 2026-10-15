@@ -6,7 +6,7 @@ alwaysApply: false
 
 # SCSS UI (Fantager)
 
-Authoritative doc: `docs/ui-guidelines.md`. Layout catalog: section 3.1.
+Authoritative doc: `docs/guides/ui-guidelines.md`. Layout catalog: section 3.1.
 
 ## File placement
 
@@ -43,7 +43,7 @@ Use `@layer components { }` in component files. Tailwind `@apply` is OK **inside
 
 1. Check `_layout.scss` and domain `_*.scss` for existing class
 2. Add semantic class with responsive rules in SCSS
-3. Document in `docs/ui-guidelines.md` §3.1 if it is a reusable layout primitive
+3. Document in `docs/guides/ui-guidelines.md` §3.1 if it is a reusable layout primitive
 4. Use class from Twig — no utility mirror in templates
 
 ## Transitions & focus
