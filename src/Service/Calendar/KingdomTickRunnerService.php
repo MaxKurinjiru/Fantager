@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Service\Calendar;
 
+use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Kingdom\KingdomTickLog;
 use App\Entity\League\LeagueFixture;
 use App\Entity\League\LeagueSeason;
 use App\Entity\Team\Team;
+use App\Enum\FriendlyMatchStatus;
 use App\Enum\LeagueSeasonStatus;
 use App\Enum\TickType;
 use App\Message\ExecuteSingleTickHandler;
@@ -35,16 +37,21 @@ class KingdomTickRunnerService
 
     /**
      * Returns a tick log that blocks further scheduling (stuck in processing or failed),
-     * optionally scoped by team or fixture.
+     * optionally scoped by team, fixture, or friendly match.
      */
-    public function findBlockedTick(Kingdom $kingdom, ?Team $team = null, ?LeagueFixture $fixture = null): ?KingdomTickLog
-    {
-        // A kingdom-level blocked tick blocks everything in the kingdom
+    public function findBlockedTick(
+        Kingdom $kingdom,
+        ?Team $team = null,
+        ?LeagueFixture $fixture = null,
+        ?FriendlyMatch $friendlyMatch = null,
+    ): ?KingdomTickLog {
+        // A kingdom-level blocked tick (no team, no fixture, no friendly match) blocks everything
         $blockedKingdom = $this->tickLogRepository->findOneBy([
             'kingdom' => $kingdom,
             'status' => ['dispatched', 'processing', 'failed'],
             'team' => null,
             'fixture' => null,
+            'friendlyMatch' => null,
         ]);
         if (null !== $blockedKingdom) {
             return $blockedKingdom;
@@ -65,6 +72,15 @@ class KingdomTickRunnerService
                 'kingdom' => $kingdom,
                 'status' => ['dispatched', 'processing', 'failed'],
                 'fixture' => $fixture,
+            ]);
+        }
+
+        if (null !== $friendlyMatch) {
+            // A friendly-match-scoped blocked tick blocks this friendly match
+            return $this->tickLogRepository->findOneBy([
+                'kingdom' => $kingdom,
+                'status' => ['dispatched', 'processing', 'failed'],
+                'friendlyMatch' => $friendlyMatch,
             ]);
         }
 
@@ -102,20 +118,6 @@ class KingdomTickRunnerService
      *
      * @return int Number of newly scheduled tick log entries
      */
-    private const TEAM_SCOPED_TICKS = [
-        TickType::WeeklyTraining,
-        TickType::WeeklyReset,
-        TickType::RaceOptimization,
-        TickType::FatigueRecovery,
-        TickType::InactivePlayerCleanup,
-        TickType::DailyReset,
-    ];
-
-    private const KINGDOM_SCOPED_TICKS = [
-        TickType::SeasonTransition,
-        TickType::InactiveRegistrationCleanup,
-    ];
-
     public function schedulePendingTicks(Kingdom $kingdom, \DateTimeImmutable $until): int
     {
         $seasonStartDate = $this->resolveSeasonStartDate($kingdom);
@@ -128,13 +130,13 @@ class KingdomTickRunnerService
             // Determine scopes for this tick type
             $scopes = [];
 
-            if (in_array($tickType, self::TEAM_SCOPED_TICKS, true)) {
+            if ($tickType->createsTeamScopedLogs()) {
                 foreach ($teams as $team) {
                     $scopes[] = ['team' => $team, 'fixture' => null];
                 }
             }
 
-            if (in_array($tickType, self::KINGDOM_SCOPED_TICKS, true) || TickType::WeeklyReset === $tickType) {
+            if ($tickType->createsKingdomScopedLogs()) {
                 // WeeklyReset has both team-scoped and kingdom-scoped logs
                 $scopes[] = ['team' => null, 'fixture' => null];
             }
@@ -199,6 +201,73 @@ class KingdomTickRunnerService
 
                     $this->em->persist($log);
                     ++$ticksScheduled;
+                }
+            }
+
+            // Special handling for Match-Scoped (FriendlyMatch)
+            if (TickType::FriendlyMatch === $tickType) {
+                if (null !== $this->findBlockedTick($kingdom)) {
+                    continue;
+                }
+
+                $latestTime = $this->tickLogRepository->getLatestCompletedTickTime($kingdom, TickType::FriendlyMatch);
+                if (null === $latestTime) {
+                    if (null !== $seasonStartDate) {
+                        try {
+                            $tz = new \DateTimeZone($kingdom->getTimezone());
+                        } catch (\Exception) {
+                            $tz = new \DateTimeZone('UTC');
+                        }
+                        $latestTime = new \DateTimeImmutable($seasonStartDate->format('Y-m-d').' 00:00:00', $tz);
+                        $latestTime = $latestTime->setTimezone(new \DateTimeZone('UTC'));
+                    } else {
+                        $latestTime = $until->modify('-24 hours');
+                    }
+                }
+
+                $occurrences = $this->scheduleCalculator->generateOccurrences(
+                    $latestTime,
+                    $until,
+                    $kingdom->getTimezone(),
+                    $seasonStartDate,
+                );
+
+                foreach ($occurrences as $occurrence) {
+                    if (TickType::FriendlyMatch !== $occurrence['type']) {
+                        continue;
+                    }
+
+                    // Find all scheduled friendly matches at this time in the kingdom
+                    /** @var list<FriendlyMatch> $friendlyMatches */
+                    $friendlyMatches = $this->em->getRepository(FriendlyMatch::class)
+                        ->findScheduledAtTime($kingdom, $occurrence['time']);
+
+                    foreach ($friendlyMatches as $friendlyMatch) {
+                        if (null !== $this->findBlockedTick($kingdom, null, null, $friendlyMatch)) {
+                            continue;
+                        }
+
+                        $existingLog = $this->tickLogRepository->findOneBy([
+                            'kingdom' => $kingdom,
+                            'tickType' => TickType::FriendlyMatch,
+                            'scheduledAt' => $occurrence['time'],
+                            'friendlyMatch' => $friendlyMatch,
+                        ]);
+
+                        if (null !== $existingLog) {
+                            continue;
+                        }
+
+                        $log = new KingdomTickLog();
+                        $log->setKingdom($kingdom);
+                        $log->setTickType(TickType::FriendlyMatch);
+                        $log->setScheduledAt($occurrence['time']);
+                        $log->setFriendlyMatch($friendlyMatch);
+                        $log->setStatus('pending');
+
+                        $this->em->persist($log);
+                        ++$ticksScheduled;
+                    }
                 }
             }
 
@@ -298,14 +367,26 @@ class KingdomTickRunnerService
             return;
         }
 
-        // Sort them chronologically, then by logical priority
+        // Sort chronologically, then by priority; team WeeklyReset before kingdom treasury.
         usort($logs, function (KingdomTickLog $a, KingdomTickLog $b): int {
             $timeCompare = $a->getScheduledAt() <=> $b->getScheduledAt();
             if (0 !== $timeCompare) {
                 return $timeCompare;
             }
 
-            return $a->getTickType()->getPriority() <=> $b->getTickType()->getPriority();
+            $priorityCompare = $a->getTickType()->getPriority() <=> $b->getTickType()->getPriority();
+            if (0 !== $priorityCompare) {
+                return $priorityCompare;
+            }
+
+            if (TickType::WeeklyReset === $a->getTickType() && TickType::WeeklyReset === $b->getTickType()) {
+                $aIsKingdom = null === $a->getTeam();
+                $bIsKingdom = null === $b->getTeam();
+
+                return ((int) $aIsKingdom) <=> ((int) $bIsKingdom);
+            }
+
+            return 0;
         });
 
         // Execute them one by one synchronously. If one fails, it throws an exception,

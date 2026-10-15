@@ -12,7 +12,7 @@ Purpose: Permanent memorial records for heroes and trainers who leave the team.
 |-------|--------|
 | **Entity & service** | Implemented — `GraveyardMemorial`, `GraveyardService` |
 | **Dismissal flows** | Implemented — hero and trainer dismiss write memorial snapshots before entity removal |
-| **Combat death flows** | Implemented — permanent combat deaths via `LeagueMatchResolutionService` → `prepareCombatDeath` + `recordMemorial(CombatDeath)` |
+| **Combat death flows** | Implemented — permanent combat deaths via `LeagueMatchResolutionService` → `prepareCombatDeath` + `recordMemorial(CombatDeath)`. `prepareCombatDeath` / dismiss prep cancel active marketplace listings via `MarketplaceService::forceCancelActiveListingsForHero` (refunds reserved bids). |
 | **Web UI** | Implemented — `Web\GraveyardController`, `/app/graveyard` |
 | **Read API** | Implemented — `Api\V1\GraveyardController`, `GET /api/v1/graveyard`, `GET /api/v1/graveyard/{id}` |
 

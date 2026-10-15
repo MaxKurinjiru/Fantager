@@ -490,7 +490,7 @@ class TeamChronicleService
         );
     }
 
-    public function recordItemDismantled(Team $team, Item $item, int $essenceAmount, string $rarity): TeamChronicle
+    public function recordItemDismantled(Team $team, Item $item, int $goldAmount, string $rarity): TeamChronicle
     {
         return $this->create(
             $team,
@@ -498,12 +498,12 @@ class TeamChronicleService
             'activity.item_dismantled',
             [
                 'item' => $item->getName(),
-                'essence' => (string) $essenceAmount,
+                'gold' => (string) $goldAmount,
                 'rarity' => $rarity,
             ],
             [
                 'item_id' => $item->getId(),
-                'essence' => $essenceAmount,
+                'gold' => $goldAmount,
                 'rarity' => $rarity,
             ],
         );

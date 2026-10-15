@@ -78,4 +78,17 @@ class NotificationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function markAllUnreadAsRead(User $user): int
+    {
+        return (int) $this->createQueryBuilder('n')
+            ->update()
+            ->set('n.isRead', ':read')
+            ->andWhere('n.user = :user')
+            ->andWhere('n.isRead = false')
+            ->setParameter('user', $user)
+            ->setParameter('read', true)
+            ->getQuery()
+            ->execute();
+    }
 }

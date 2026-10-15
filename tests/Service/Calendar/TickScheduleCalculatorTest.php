@@ -172,4 +172,59 @@ class TickScheduleCalculatorTest extends TestCase
             }
         }
     }
+
+    public function testGenerateOccurrencesFriendlyMatchOnWednesdayAndSunday(): void
+    {
+        // Wednesday June 10th 2026 (UTC)
+        $fromWed = new \DateTimeImmutable('2026-06-10T00:00:00Z');
+        $toWed = new \DateTimeImmutable('2026-06-10T23:59:59Z');
+
+        $occurrences = $this->calculator->generateOccurrences($fromWed, $toWed, 'UTC');
+        $types = array_map(static fn(array $o): string => $o['type']->value, $occurrences);
+
+        $this->assertContains(TickType::FriendlyMatch->value, $types);
+        $this->assertNotContains(TickType::LeagueMatch->value, $types);
+
+        foreach ($occurrences as $o) {
+            if ($o['type'] === TickType::FriendlyMatch) {
+                $this->assertSame('2026-06-10T18:00:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
+            }
+        }
+
+        // Sunday June 14th 2026 (UTC) — FriendlyMatch at 18:00, not interfering with RaceOptimization at 09:30
+        $fromSun = new \DateTimeImmutable('2026-06-14T00:00:00Z');
+        $toSun = new \DateTimeImmutable('2026-06-14T23:59:59Z');
+
+        $occurrencesSun = $this->calculator->generateOccurrences($fromSun, $toSun, 'UTC');
+        $typesSun = array_map(static fn(array $o): string => $o['type']->value, $occurrencesSun);
+
+        $this->assertContains(TickType::FriendlyMatch->value, $typesSun);
+        $this->assertContains(TickType::RaceOptimization->value, $typesSun);
+
+        foreach ($occurrencesSun as $o) {
+            if ($o['type'] === TickType::FriendlyMatch) {
+                $this->assertSame('2026-06-14T18:00:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
+            }
+        }
+    }
+
+    public function testGenerateOccurrencesFriendlyMatchTimezoneConversion(): void
+    {
+        // In Europe/Prague (UTC+2), Wednesday 18:00 is 16:00 UTC
+        // We need from/to that spans Wed in Prague time
+        $from = new \DateTimeImmutable('2026-06-09T21:59:59Z'); // Mon 23:59:59 Prague
+        $to = new \DateTimeImmutable('2026-06-10T22:00:00Z');   // Tue 00:00:00 Prague (next day)
+
+        $occurrences = $this->calculator->generateOccurrences($from, $to, 'Europe/Prague');
+        $types = array_map(static fn(array $o): string => $o['type']->value, $occurrences);
+
+        $this->assertContains(TickType::FriendlyMatch->value, $types);
+
+        foreach ($occurrences as $o) {
+            if ($o['type'] === TickType::FriendlyMatch) {
+                // Wed 18:00 Prague = 16:00 UTC in summer (+2)
+                $this->assertSame('2026-06-10T16:00:00+00:00', $o['time']->format(\DateTimeInterface::ATOM));
+            }
+        }
+    }
 }

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Message;
 
 use App\Entity\Combat\Battle;
+use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\Kingdom\KingdomTickLog;
 use App\Entity\League\LeagueFixture;
 use App\Enum\BattleStatus;
 use App\Enum\TickType;
 use App\Service\Calendar\KingdomTickOrchestrator;
 use App\Service\Combat\CombatEngine;
+use App\Service\FriendlyMatch\FriendlyMatchResolutionService;
 use App\Service\League\LeagueMatchResolutionService;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +28,7 @@ class ProcessCombatRoundHandler
         private readonly CombatEngine $combatEngine,
         private readonly MessageBusInterface $messageBus,
         private readonly LeagueMatchResolutionService $leagueMatchResolutionService,
+        private readonly FriendlyMatchResolutionService $friendlyMatchResolutionService,
         private readonly KingdomTickOrchestrator $orchestrator,
         private readonly LoggerInterface $logger,
     ) {
@@ -61,6 +64,11 @@ class ProcessCombatRoundHandler
             try {
                 $this->combatEngine->simulateRound($runState, $round);
                 $battle->setCurrentRound($round);
+
+                if ($round >= CombatEngine::MAX_ROUNDS) {
+                    $this->combatEngine->forceCompleteAtRoundCap($runState);
+                }
+
                 $battle->setRunState($runState);
 
                 if ('completed' === $runState['status']) {
@@ -73,20 +81,36 @@ class ProcessCombatRoundHandler
                     $battle->setResult($battle->getResult() ?? \App\Enum\BattleResult::fromScores($runState['scoreA'], $runState['scoreB']));
                     $battle->setProcessedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
 
-                    // Complete the battle and run all side effects
-                    $this->leagueMatchResolutionService->completeBattle($battle);
+                    // Branch: League vs Friendly completion
+                    $leagueFixture = $this->em->getRepository(LeagueFixture::class)->findOneBy(['battle' => $battle]);
+                    if (null !== $leagueFixture) {
+                        // League path: standings, fan club, morale, etc.
+                        $this->leagueMatchResolutionService->completeBattle($battle);
 
-                    // Complete the corresponding tick log for the fixture
-                    $fixture = $this->em->getRepository(LeagueFixture::class)->findOneBy(['battle' => $battle]);
-                    if (null !== $fixture) {
                         $tickLog = $this->em->getRepository(KingdomTickLog::class)->findOneBy([
-                            'fixture' => $fixture,
+                            'fixture' => $leagueFixture,
                             'tickType' => TickType::LeagueMatch,
                             'status' => 'processing',
                         ]);
                         if (null !== $tickLog) {
                             $tickLog->setStatus('completed');
                             $tickLog->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                        }
+                    } else {
+                        // Friendly path: XP, fatigue, durability, deaths — NO standings/fan/morale
+                        $friendlyMatch = $this->em->getRepository(FriendlyMatch::class)->findOneBy(['battle' => $battle]);
+                        if (null !== $friendlyMatch) {
+                            $this->friendlyMatchResolutionService->completeBattle($battle);
+
+                            $tickLog = $this->em->getRepository(KingdomTickLog::class)->findOneBy([
+                                'friendlyMatch' => $friendlyMatch,
+                                'tickType' => TickType::FriendlyMatch,
+                                'status' => 'processing',
+                            ]);
+                            if (null !== $tickLog) {
+                                $tickLog->setStatus('completed');
+                                $tickLog->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                            }
                         }
                     }
                 }
@@ -170,7 +194,7 @@ class ProcessCombatRoundHandler
                 ->getQuery()
                 ->getSingleScalarResult();
 
-            if ((int) $simulatingCount > 0 && $round < 200) {
+            if ((int) $simulatingCount > 0 && $round < CombatEngine::MAX_ROUNDS) {
                 $this->messageBus->dispatch(new CombatWave((int) $kingdom->getId(), $scheduledAt, $round + 1));
             }
         }

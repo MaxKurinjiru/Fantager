@@ -99,33 +99,6 @@ class EconomyServiceTest extends TestCase
         $this->assertSame(90, $team->getGold());
     }
 
-    public function testEssenceLogging(): void
-    {
-        $team = new Team();
-        $team->setEssenceCommon(2);
-
-        $calledRecord = null;
-        $this->entityManagerMock
-            ->expects($this->once())
-            ->method('persist')
-            ->willReturnCallback(function ($record) use (&$calledRecord) {
-                $calledRecord = $record;
-            });
-
-        $this->economyService->deductEssence(
-            $team,
-            'common',
-            2,
-            FinancialRecordType::SpellLearningCost,
-            FinancialRecordActor::Active
-        );
-
-        $this->assertInstanceOf(FinancialRecord::class, $calledRecord);
-        $this->assertSame($team, $calledRecord->getTeam());
-        $this->assertSame(-2, $calledRecord->getEssenceCommonChange());
-        $this->assertSame(0, $team->getEssenceCommon());
-    }
-
     public function testGoldTransactionUsesTickClockCustomTime(): void
     {
         $clock = new \App\Service\Calendar\TickClock();

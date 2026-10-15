@@ -7,19 +7,21 @@ namespace App\Service\League;
 use App\Entity\Combat\Battle;
 use App\Entity\League\LeagueFixture;
 use App\Enum\LeagueFixtureStatus;
+use App\Service\Formation\FixtureFormationService;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Canonical entry point for marking a league fixture as completed.
- * Combat simulation should call this after creating the Battle entity.
+ * Called from forfeit resolution and from completeBattle after post-match rewards.
  *
- * Temporary formation cleanup runs asynchronously via kingdom ticks
- * (see FixtureFormationService::cleanupStaleTemporaryFormationsForKingdom).
+ * Temporary match-specific formations are deleted here (after Completed), not at kickoff.
+ * DailyReset still sweeps orphans via FixtureFormationService::cleanupStaleTemporaryFormationsForTeam.
  */
 class LeagueFixtureCompletionService
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly FixtureFormationService $fixtureFormationService,
     ) {
     }
 
@@ -32,5 +34,7 @@ class LeagueFixtureCompletionService
         $fixture->setBattle($battle);
         $fixture->setStatus(LeagueFixtureStatus::Completed);
         $this->em->flush();
+
+        $this->fixtureFormationService->cleanupTemporaryFormationsAfterCompletion($fixture);
     }
 }

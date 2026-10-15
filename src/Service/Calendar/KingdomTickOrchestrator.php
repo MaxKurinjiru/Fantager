@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Service\Calendar;
 
 use App\Entity\Kingdom\Kingdom;
+use App\Entity\Kingdom\KingdomTickLog;
+use App\Enum\TickType;
 use App\Message\ExecuteSingleTickMessage;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use Doctrine\DBAL\LockMode;
@@ -94,6 +96,7 @@ class KingdomTickOrchestrator
 
             // 5. Get all pending ticks in this [scheduledAt, priority] group
             $ticksToDispatch = $this->tickLogRepository->findPendingTicksInGroup($kingdom, $oldestPendingTime, $highestPriority);
+            $ticksToDispatch = $this->deferKingdomWeeklyResetUntilTeamsFinish($ticksToDispatch);
             if (empty($ticksToDispatch)) {
                 $this->em->commit();
 
@@ -128,5 +131,39 @@ class KingdomTickOrchestrator
                 $this->messageBus->dispatch(new ExecuteSingleTickMessage($tickId));
             }
         }
+    }
+
+    /**
+     * Team-scoped WeeklyReset (maintenance, payroll, crisis) must finish before the
+     * kingdom-scoped Royal Treasury distribution, even though they share priority 6.
+     *
+     * @param list<KingdomTickLog> $ticks
+     *
+     * @return list<KingdomTickLog>
+     */
+    private function deferKingdomWeeklyResetUntilTeamsFinish(array $ticks): array
+    {
+        $hasTeamWeeklyReset = false;
+        $hasKingdomWeeklyReset = false;
+        foreach ($ticks as $tick) {
+            if (TickType::WeeklyReset !== $tick->getTickType()) {
+                continue;
+            }
+            if (null !== $tick->getTeam()) {
+                $hasTeamWeeklyReset = true;
+            } else {
+                $hasKingdomWeeklyReset = true;
+            }
+        }
+
+        if (!$hasTeamWeeklyReset || !$hasKingdomWeeklyReset) {
+            return $ticks;
+        }
+
+        return array_values(array_filter(
+            $ticks,
+            static fn (KingdomTickLog $tick): bool => TickType::WeeklyReset !== $tick->getTickType()
+                || null !== $tick->getTeam()
+        ));
     }
 }

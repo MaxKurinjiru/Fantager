@@ -6,7 +6,7 @@
                 {% set is_learned = spell.id in known_spell_ids %}
                 {% set hero_mastery = selected_hero ? (masteries[spell.school.value] ?? 1) : 1 %}
                 {% set meets_requirement = hero_mastery >= spell.requiredMasteryTier %}
-                {% set has_funds = selected_hero and team.gold >= spell.learningCostGold and (spell.learningCostEssence == 0 or team.essenceCommon >= spell.learningCostEssence) %}
+                {% set has_funds = selected_hero and team.gold >= spell.learningCostGold %}
 
                 <div class="spell-card spell-card--lg">
                     <div class="layout-stack layout-stack--sm">
@@ -36,9 +36,6 @@
                             <span class="spell-card__fee-label">{{ 'spells.scroll_fee'|trans }}</span>
                             <span class="spell-card__fee-value">
                                 🪙 {{ spell.learningCostGold|number_format(0, '.', ' ') }}
-                                {% if spell.learningCostEssence > 0 %}
-                                    <span class="spell-card__fee-essence">&bull; ✨ {{ spell.learningCostEssence }}</span>
-                                {% endif %}
                             </span>
                         </div>
 

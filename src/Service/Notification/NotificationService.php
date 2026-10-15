@@ -59,19 +59,6 @@ class NotificationService
 
     public function markAllRead(User $user): int
     {
-        /** @var list<Notification> $unread */
-        $unread = $this->notificationRepository->findForUser($user, 100, true);
-        $count = 0;
-
-        foreach ($unread as $notification) {
-            $notification->setIsRead(true);
-            ++$count;
-        }
-
-        if ($count > 0) {
-            $this->em->flush();
-        }
-
-        return $count;
+        return $this->notificationRepository->markAllUnreadAsRead($user);
     }
 }

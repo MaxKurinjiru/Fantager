@@ -11,6 +11,7 @@ use App\Service\Calendar\TickScheduleCalculator;
 use App\Service\Translation\UserMessageTranslator;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use App\Repository\FriendlyMatch\FriendlyMatchRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueSeasonRepository;
@@ -28,6 +29,8 @@ class CalendarServiceTest extends TestCase
     private $leagueFixtureRepositoryMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\League\LeagueSeasonRepository */
     private $seasonRepositoryMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&FriendlyMatchRepository */
+    private $friendlyMatchRepositoryMock;
     private UserMessageTranslator $userMessages;
     private CalendarService $service;
 
@@ -37,6 +40,7 @@ class CalendarServiceTest extends TestCase
         $this->tickLogRepositoryMock = $this->createMock(KingdomTickLogRepository::class);
         $this->leagueFixtureRepositoryMock = $this->createMock(LeagueFixtureRepository::class);
         $this->seasonRepositoryMock = $this->createMock(LeagueSeasonRepository::class);
+        $this->friendlyMatchRepositoryMock = $this->createMock(FriendlyMatchRepository::class);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(
             static fn (string $id): string => match ($id) {
@@ -50,12 +54,15 @@ class CalendarServiceTest extends TestCase
             $this->createMock(RequestStack::class),
         );
 
+        $this->friendlyMatchRepositoryMock->method('findForTeamInPeriod')->willReturn([]);
+
         $this->service = new CalendarService(
             $this->scheduleCalculatorMock,
             $this->tickLogRepositoryMock,
             $this->leagueFixtureRepositoryMock,
             $this->seasonRepositoryMock,
             $this->userMessages,
+            $this->friendlyMatchRepositoryMock,
         );
     }
 
@@ -125,5 +132,89 @@ class CalendarServiceTest extends TestCase
         $feed = $this->service->getCalendarFeed($kingdom, $start, $end, null);
 
         $this->assertCount(0, $feed);
+    }
+
+    public function testGetCalendarFeedUsesTeamScopedTickLogWhenTeamIdProvided(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setTimezone('UTC');
+
+        $start = new \DateTimeImmutable('2026-06-11T00:00:00Z');
+        $end = new \DateTimeImmutable('2026-06-11T23:59:59Z');
+        $scheduledAt = new \DateTimeImmutable('2026-06-11T10:00:00Z');
+
+        $this->seasonRepositoryMock
+            ->expects($this->exactly(2))
+            ->method('findOneBy')
+            ->willReturnMap([
+                [['kingdom' => $kingdom, 'status' => \App\Enum\LeagueSeasonStatus::Active], null, null],
+                [['kingdom' => $kingdom], ['seasonNumber' => 'DESC'], null],
+            ]);
+
+        $this->scheduleCalculatorMock
+            ->method('generateOccurrences')
+            ->willReturn([
+                ['type' => TickType::WeeklyTraining, 'time' => $scheduledAt],
+            ]);
+
+        $log = $this->createMock(\App\Entity\Kingdom\KingdomTickLog::class);
+        $log->method('getStatus')->willReturn('completed');
+
+        $this->tickLogRepositoryMock
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with([
+                'kingdom' => $kingdom,
+                'tickType' => TickType::WeeklyTraining,
+                'scheduledAt' => $scheduledAt,
+                'team' => 42,
+            ])
+            ->willReturn($log);
+
+        $this->leagueFixtureRepositoryMock
+            ->method('findFixturesInPeriod')
+            ->willReturn([]);
+
+        $feed = $this->service->getCalendarFeed($kingdom, $start, $end, 42);
+
+        $this->assertCount(1, $feed);
+        $this->assertSame('completed', $feed[0]['status']);
+    }
+
+    public function testGetCalendarFeedDoesNotGuessTeamScopedStatusWithoutTeamId(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setTimezone('UTC');
+
+        $start = new \DateTimeImmutable('2026-06-11T00:00:00Z');
+        $end = new \DateTimeImmutable('2026-06-11T23:59:59Z');
+        $scheduledAt = new \DateTimeImmutable('2026-06-11T10:00:00Z');
+
+        $this->seasonRepositoryMock
+            ->expects($this->exactly(2))
+            ->method('findOneBy')
+            ->willReturnMap([
+                [['kingdom' => $kingdom, 'status' => \App\Enum\LeagueSeasonStatus::Active], null, null],
+                [['kingdom' => $kingdom], ['seasonNumber' => 'DESC'], null],
+            ]);
+
+        $this->scheduleCalculatorMock
+            ->method('generateOccurrences')
+            ->willReturn([
+                ['type' => TickType::WeeklyTraining, 'time' => $scheduledAt],
+            ]);
+
+        $this->tickLogRepositoryMock
+            ->expects($this->never())
+            ->method('findOneBy');
+
+        $this->leagueFixtureRepositoryMock
+            ->method('findFixturesInPeriod')
+            ->willReturn([]);
+
+        $feed = $this->service->getCalendarFeed($kingdom, $start, $end, null);
+
+        $this->assertCount(1, $feed);
+        $this->assertSame('scheduled', $feed[0]['status']);
     }
 }

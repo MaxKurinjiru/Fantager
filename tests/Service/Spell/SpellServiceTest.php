@@ -58,13 +58,11 @@ class SpellServiceTest extends TestCase
         $hero = new Hero();
         $team = new Team();
         $team->setGold(1000);
-        $team->setEssenceCommon(100);
 
         $spell = new Spell();
         $spell->setSchool(School::Fire);
         $spell->setRequiredMasteryTier(0);
         $spell->setLearningCostGold(10);
-        $spell->setLearningCostEssence(1);
 
         $this->heroSpellRepositoryMock
             ->method('findOneBy')

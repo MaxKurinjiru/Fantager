@@ -95,7 +95,8 @@ All routes require `ROLE_PLAYER`. Authorization: notification must belong to `ge
 | Class | Responsibility |
 |-------|----------------|
 | `NotificationHelper` | Thin write facade used by domain services |
-| `NotificationService` | `listForUser()`, `countUnread()`, `markRead()`, `markAllRead()`, `getForUser()` |
+| `NotificationService` | `listForUser()`, `countUnread()`, `markRead()`, `markAllRead()` (bulk update, no 100-cap), `getForUser()` |
+| `NotificationHelper` | Prefer `sendTranslatedNotification()` with `notification.*` keys (user locale) |
 
 Repository methods on `NotificationRepository`:
 

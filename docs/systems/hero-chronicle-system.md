@@ -47,6 +47,7 @@ Entries are **append-only**. Rendering uses the viewer's locale via `HeroChronic
 |--------------------------|---------|---------|
 | `summoned` | Hero summoned or joined starting NPC roster | `SummoningService`, `KingdomInitializationService` |
 | `transferred` | Hero/trainer sold on marketplace | `MarketplaceService` |
+| `renamed` | Player renamed the hero | `HeroService` via `HeroChronicleService::recordRenamed` |
 | `match_played` | Hero fielded in a resolved league fixture | `LeagueMatchResolutionService` |
 | `mastery_gained` | Weapon or school mastery tier increased | `HeroMasteryService` |
 | `training_completed` | Weekly training tick completed | `TrainingService` |

@@ -484,8 +484,10 @@ class TrainingService
                         $gainExt = (int) floor(($heroStatRaw + $gainRaw) / 10) - (int) floor($heroStatRaw / 10);
                     }
 
-                    // Standard training adds +20 fatigue (capped at 100)
-                    $hero->setFatigue(min(100, $hero->getFatigue() + 20));
+                    // Fatigue only when the hero actually gained (not when already at trainer cap)
+                    if ($gainRaw > 0) {
+                        $hero->setFatigue(min(100, $hero->getFatigue() + 20));
+                    }
                 } elseif (TrainingType::Magic === $type) {
                     $cap = $hero->getMagicCapacity();
                     if ($cap < 5) {
@@ -495,8 +497,10 @@ class TrainingService
                         $gainRaw = $newCap - $cap;
                     }
 
-                    // Magic training adds +20 fatigue (capped at 100)
-                    $hero->setFatigue(min(100, $hero->getFatigue() + 20));
+                    // Fatigue only when magic capacity increased
+                    if ($gainRaw > 0) {
+                        $hero->setFatigue(min(100, $hero->getFatigue() + 20));
+                    }
                 } elseif (TrainingType::Form === $type) {
                     $form = $hero->getForm();
                     if ($form < 100) {

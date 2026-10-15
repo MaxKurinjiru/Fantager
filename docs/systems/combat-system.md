@@ -30,7 +30,7 @@ There is **no** mid-battle player input (no turn submission, target picking, Aut
 | Combat death → graveyard | ✅ Implemented | Aging, elder mortality rolls, `GraveyardService::prepareCombatDeath` + memorial; KO ≠ always permanent death |
 | Formation AI (L0–L2) | 🔄 Partial | Engine reads `target_order`, `fallback`, and spell conditions. Empty `spell_priorities` picks one ready spell. `defensive` holds the front line, then the highest `physicalAttack`. Slot editor for L1/L2 is later, not part of steps 4–7 |
 
-Status effect reference config: [config/game/status_effects.yaml](../../config/game/status_effects.yaml)
+Status effect config: [config/game/status_effects.yaml](../../config/game/status_effects.yaml) — loaded by `StatusEffectConfig` and used by `CombatEngine` for **durations** and **tick damage/heal percents** (hardcoded fallbacks remain if a key is missing). Other combat modifiers from the YAML (accuracy, skip turn, etc.) are still applied via engine logic where implemented.
 
 ### Follow-up contract (after 6.1)
 

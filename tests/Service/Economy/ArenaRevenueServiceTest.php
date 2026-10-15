@@ -12,6 +12,12 @@ use App\Entity\Team\Team;
 use App\Enum\FacilityType;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
+use App\Entity\Formation\Formation;
+use App\Entity\Formation\FormationSlot;
+use App\Entity\Hero\Hero;
+use App\Enum\FormationPosition;
+use App\Enum\HeroTrait;
+use App\Repository\Formation\FormationRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\Team\TeamRepository;
@@ -33,6 +39,8 @@ class ArenaRevenueServiceTest extends TestCase
     private $economyServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&FinancialCrisisService */
     private $financialCrisisServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&FormationRepository */
+    private $formationRepositoryMock;
     private ArenaRevenueService $arenaRevenueService;
 
     protected function setUp(): void
@@ -44,6 +52,8 @@ class ArenaRevenueServiceTest extends TestCase
         $this->financialCrisisServiceMock
             ->method('areHqBonusesActive')
             ->willReturn(true);
+        $this->formationRepositoryMock = $this->createMock(FormationRepository::class);
+        $this->formationRepositoryMock->method('findDefaultForTeam')->willReturn(null);
         $teamRepositoryMock = $this->createMock(TeamRepository::class);
         $fanClubService = new FanClubService($teamRepositoryMock);
 
@@ -53,6 +63,7 @@ class ArenaRevenueServiceTest extends TestCase
             $this->economyServiceMock,
             $this->financialCrisisServiceMock,
             $fanClubService,
+            $this->formationRepositoryMock,
         );
     }
 
@@ -131,6 +142,42 @@ class ArenaRevenueServiceTest extends TestCase
 
         $this->assertSame(600, $report['capacity']);
         $this->assertGreaterThan($report['attendance'] * ArenaRevenueService::TICKET_PRICE, $report['gold_earned']);
+    }
+
+    public function testCalculateMatchRevenueAppliesAudienceFavoriteWhenFielded(): void
+    {
+        $home = new Team();
+        $home->setFanBase(350);
+        $home->setReputation(50);
+        $home->setMorale(50);
+        $home->setChemistry(10);
+
+        $away = new Team();
+        $away->setFanBase(350);
+        $away->setReputation(50);
+        $away->setMorale(50);
+        $away->setChemistry(10);
+
+        $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
+
+        $withoutTrait = $this->arenaRevenueService->calculateMatchRevenue($home, $away);
+
+        $hero = new Hero();
+        $hero->setTrait(HeroTrait::AudienceFavorite);
+        $formation = new Formation();
+        $slot = new FormationSlot();
+        $slot->setPosition(FormationPosition::Front1);
+        $slot->setHero($hero);
+        $formation->addSlot($slot);
+
+        $withTrait = $this->arenaRevenueService->calculateMatchRevenue($home, $away, null, $formation);
+
+        $this->assertSame(0.0, $withoutTrait['audience_favorite_bonus']);
+        $this->assertSame(0.05, $withTrait['audience_favorite_bonus']);
+        $this->assertSame(
+            (int) round($withoutTrait['gold_earned'] * 1.05),
+            $withTrait['gold_earned']
+        );
     }
 
     public function testPayFixtureRevenueCreditsHomeTeamOnly(): void

@@ -107,6 +107,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->fixtureFormationServiceMock,
             $this->marketplaceServiceMock,
             $this->leagueMatchResolutionServiceMock,
+            $this->createMock(\App\Service\FriendlyMatch\FriendlyMatchResolutionService::class),
             $this->entityManagerMock,
             $this->loggerMock,
             $this->seasonTransitionServiceMock,

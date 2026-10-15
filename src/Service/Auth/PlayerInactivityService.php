@@ -103,16 +103,17 @@ class PlayerInactivityService
                 ->modify(sprintf('+%d days', FinancialCrisisService::REASSIGNMENT_COOLDOWN_DAYS))
         );
 
-        $this->notificationHelper->sendNotification(
+        $this->notificationHelper->sendTranslatedNotification(
             $user,
             NotificationType::System,
-            'Team released due to inactivity',
-            sprintf(
-                'Your team "%s" was released because you have been inactive for %d days. You may claim a new team after %d days.',
-                $team->getName(),
-                self::RELEASE_DAYS,
-                FinancialCrisisService::REASSIGNMENT_COOLDOWN_DAYS
-            )
+            'notification.inactivity_release_title',
+            'notification.inactivity_release_body',
+            [],
+            [
+                '%team%' => $team->getName(),
+                '%inactive_days%' => self::RELEASE_DAYS,
+                '%days%' => FinancialCrisisService::REASSIGNMENT_COOLDOWN_DAYS,
+            ]
         );
 
         $this->sendReleaseEmail($user, $team);
@@ -138,15 +139,16 @@ class PlayerInactivityService
 
         $user->setInactiveWarningSentAt($scheduledAt);
 
-        $this->notificationHelper->sendNotification(
+        $this->notificationHelper->sendTranslatedNotification(
             $user,
             NotificationType::System,
-            'Inactivity warning',
-            sprintf(
-                'Your team "%s" will be released in %d days if you do not log in and play. Log in to keep your team.',
-                $team->getName(),
-                $daysUntilRelease
-            )
+            'notification.inactivity_warning_title',
+            'notification.inactivity_warning_body',
+            [],
+            [
+                '%team%' => $team->getName(),
+                '%days%' => $daysUntilRelease,
+            ]
         );
 
         $this->sendWarningEmail($user, $team, $daysUntilRelease);

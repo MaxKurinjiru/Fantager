@@ -14,7 +14,7 @@ The auth system handles player identity and access control. The player selects a
 - **Registration**: Email, password + Kingdom selection → random NPC team assigned immediately → email verification required (unverified registrations older than 24 hours are deleted daily at 03:30 AM along with their team assignment)
 - **Login**: Standard session login with "remember me" option
 - **Session scoping**: `kingdom_id` from the authenticated user scopes all game data; no multi-kingdom switching (a player belongs to exactly one Kingdom).
-- **Authorization**: Role-based (ROLE_PLAYER, ROLE_ADMIN); resource ownership checks via voters
+- **Authorization**: Role-based (`ROLE_PLAYER`, `ROLE_ADMIN`). Resource ownership is enforced in API/Web controllers (compare `getPlayerTeam()` / user team id to the requested resource). Symfony Security voters are not used yet.
 - **API auth**: Session-based (shared cookies); internal API only, no external consumers
 - **Future**: OAuth2/social login; JWT for public API when exposed externally
 
@@ -165,16 +165,13 @@ Rate limiting protects auth endpoints against brute-force attacks, credential st
 
 Service: `App\Service\Auth\UserSettingsService` — lazy `getOrCreate()` for existing accounts.
 
-## API endpoints (planned)
+## Auth endpoints
 
-- `POST /register` — Create account (unverified)
-- `GET /verify-email?token=...` — Verify email and activate account
-- `POST /login` — Authenticate
-- `POST /logout` — Destroy session
-- `POST /password-reset` — Request password reset email
-- `GET /password-reset/confirm?token=...` — Show new password form
-- `POST /password-reset/confirm` — Submit new password
-- `GET /api/v1/me` — Current authenticated player info
+Web session auth (implemented): register, verify-email, login, logout, password-reset — see [route-map.md](../route-map.md#auth).
+
+| Method | Path | Status |
+|--------|------|--------|
+| GET | `/api/v1/me` | Implemented — current authenticated player (`id`, `email`, `display_name`, `locale`, `kingdom_id`, `team_id`, …) |
 
 ## Dependencies
 

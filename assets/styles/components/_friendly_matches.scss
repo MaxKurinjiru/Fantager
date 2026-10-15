@@ -1,0 +1,68 @@
+@reference "tailwindcss";
+
+@layer components {
+  .friendly-page {
+    @apply flex flex-col gap-6;
+  }
+
+  .friendly-challenge-form {
+    margin-top: 0.75rem;
+  }
+
+  .friendly-slot-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .friendly-slot-option {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface-base);
+    cursor: pointer;
+    color: var(--color-text-primary);
+
+    &:has(input:checked) {
+      border-color: var(--color-brand-500);
+      background-color: color-mix(in srgb, var(--color-brand-500) 8%, var(--color-surface-base));
+    }
+
+    input {
+      margin: 0;
+    }
+  }
+
+  .friendly-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .friendly-card__title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  .friendly-empty {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .friendly-empty__emoji {
+    font-size: 2.5rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .friendly-empty__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+}

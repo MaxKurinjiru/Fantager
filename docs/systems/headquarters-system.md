@@ -73,11 +73,15 @@ Only **one facility can be upgraded at a time**. Attempting a second upgrade whi
 
 ### Upgrade Cost Formula
 
-The Gold cost scales exponentially with the current level:
+Defined in `HeadquartersService` (`UPGRADE_TOTAL_LEVEL_FACTOR = 0.025`). Cost scales with the facility’s current level **and** the HQ’s total facility level (sum of all facility levels; 7 facilities start at level 1 → starting `totalLevel = 7`):
 
 ```
-Upgrade Cost = base_cost × 1.5^(current_level - 1)
+Upgrade Cost = round( base_cost × 1.5^(current_level − 1) × (1 + 0.025 × (totalLevel − 7)) )
 ```
+
+The total-level multiplier uses `max(0, totalLevel − 7)`, so a fresh HQ (`totalLevel = 7`) pays the pure exponential level cost. Higher aggregate HQ levels increase every upgrade.
+
+Full upgrade gold is deducted from the team and paid to the **Royal Treasury** (`RoyalTreasuryContributionSource::HqUpgradeCost`).
 
 ### Base Upgrade Costs (Gold)
 
@@ -91,7 +95,7 @@ Upgrade Cost = base_cost × 1.5^(current_level - 1)
 | Summoning Chamber | 800 |
 | Arena | 900 |
 
-**Example costs:**
+**Example costs at starting HQ** (`totalLevel = 7`, multiplier = 1.0):
 
 | Level upgrade | Training (base 500) | Arena (base 900) |
 |---------------|---------------------|------------------|
@@ -99,6 +103,8 @@ Upgrade Cost = base_cost × 1.5^(current_level - 1)
 | 2 → 3 | 750 | 1 350 |
 | 3 → 4 | 1 125 | 2 025 |
 | 5 → 6 | 2 531 | 4 556 |
+
+**Example with higher HQ** (`totalLevel = 10`, multiplier = `1 + 0.025 × 3 = 1.075`): Training 1 → 2 costs `round(500 × 1.075) = 538`.
 
 ### Upgrade Duration Formula
 
@@ -125,10 +131,10 @@ HQ maintenance is charged on the **`weekly_reset` tick** (Sunday 23:59).
 ```
 HQ fee     = 50 + (total_level × 3)
 Facilities = Σ (base_fee[type] × facility_level)
-Total      = HQ fee + Facilities
+Total      = round((HQ fee + Facilities) × game_speed)
 ```
 
-### Base facility fees (gold per level / week)
+### Base facility fees (gold per level / week, before `game_speed`)
 
 | Facility | Fee |
 |----------|-----|
@@ -140,11 +146,13 @@ Total      = HQ fee + Facilities
 | Summoning Chamber | 40 |
 | Arena | 45 |
 
-**Example:** All facilities at level 1 → total **271 gold/week**.
+**Example:** All facilities at level 1, `game_speed = 1.0` → total **271 gold/week**.
+
+Gold actually collected for maintenance is paid to the **Royal Treasury** (`RoyalTreasuryContributionSource::HqMaintenanceFee`).
 
 ### Unpaid maintenance
 
-If the team lacks sufficient gold, only the available balance is deducted. The remainder is added to `team.unpaid_debt`. See [financial-crisis-system.md](financial-crisis-system.md).
+If the team lacks sufficient gold, only the available balance is deducted (and that portion still goes to the Royal Treasury). The remainder is added to `team.unpaid_debt`. See [financial-crisis-system.md](financial-crisis-system.md).
 
 ---
 

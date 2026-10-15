@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service\Economy;
 
+use App\Entity\Formation\Formation;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\League\LeagueFixture;
 use App\Entity\Team\Team;
 use App\Enum\FacilityType;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
+use App\Repository\Formation\FormationRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Service\Team\FanClubService;
@@ -26,6 +28,7 @@ class ArenaRevenueService
         private readonly EconomyService $economyService,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly FanClubService $fanClubService,
+        private readonly FormationRepository $formationRepository,
     ) {
     }
 
@@ -70,7 +73,8 @@ class ArenaRevenueService
     {
         $homeTeam = $fixture->getHomeTeam();
         $awayTeam = $fixture->getAwayTeam();
-        $report = $this->calculateMatchRevenue($homeTeam, $awayTeam);
+        $homeFormation = $this->resolveHomeFormation($fixture);
+        $report = $this->calculateMatchRevenue($homeTeam, $awayTeam, null, $homeFormation);
         $report['fixture_id'] = $fixture->getId();
 
         if ($report['gold_earned'] > 0) {
@@ -89,6 +93,7 @@ class ArenaRevenueService
                     'away_attendees' => $report['away_attendees'],
                     'ticket_price' => $report['ticket_price'],
                     'elasticity_multiplier' => $report['elasticity_multiplier'],
+                    'audience_favorite_bonus' => $report['audience_favorite_bonus'],
                 ]
             );
         }
@@ -127,11 +132,16 @@ class ArenaRevenueService
      *     home_show_up_rate: float,
      *     away_show_up_rate: float,
      *     home_fan_appeal: float,
-     *     away_fan_appeal: float
+     *     away_fan_appeal: float,
+     *     audience_favorite_bonus: float
      * }
      */
-    public function calculateMatchRevenue(Team $homeTeam, Team $awayTeam, ?int $overrideTicketPrice = null): array
-    {
+    public function calculateMatchRevenue(
+        Team $homeTeam,
+        Team $awayTeam,
+        ?int $overrideTicketPrice = null,
+        ?Formation $homeFormation = null,
+    ): array {
         $ticketPrice = $overrideTicketPrice ?? $homeTeam->getTicketPrice();
         if ($ticketPrice < 1) {
             $ticketPrice = self::DEFAULT_TICKET_PRICE;
@@ -142,6 +152,8 @@ class ArenaRevenueService
         $attendanceData = $this->fanClubService->calculateMatchAttendance($homeTeam, $awayTeam, $capacity, $elasticity);
 
         $bonuses = $this->getFacilityBonuses($homeTeam);
+        $formation = $homeFormation ?? $this->formationRepository->findDefaultForTeam($homeTeam);
+        $audienceFavoriteBonus = $this->resolveAudienceFavoriteBonus($formation);
         $baseRevenue = $attendanceData['attendance'] * $ticketPrice;
         $speed = 1.0;
         try {
@@ -158,6 +170,7 @@ class ArenaRevenueService
             $baseRevenue
             * (1.0 + $bonuses['ticket_revenue_pct'] / 100.0)
             * (1.0 + $bonuses['gold_income_pct'] / 100.0)
+            * (1.0 + $audienceFavoriteBonus)
             * $speed
         );
 
@@ -177,7 +190,39 @@ class ArenaRevenueService
             'away_show_up_rate' => $attendanceData['away_show_up_rate'],
             'home_fan_appeal' => $attendanceData['home_show_up_rate'],
             'away_fan_appeal' => $attendanceData['away_show_up_rate'],
+            'audience_favorite_bonus' => $audienceFavoriteBonus,
         ];
+    }
+
+    /**
+     * Sum Audience Favorite bonuses from heroes fielded in the home lineup (0.05 each).
+     */
+    public function resolveAudienceFavoriteBonus(?Formation $formation): float
+    {
+        if (null === $formation) {
+            return 0.0;
+        }
+
+        $bonus = 0.0;
+        foreach ($formation->getSlots() as $slot) {
+            $hero = $slot->getHero();
+            if (null === $hero) {
+                continue;
+            }
+            $bonus += $hero->getTrait()?->getArenaRevenueBonus() ?? 0.0;
+        }
+
+        return $bonus;
+    }
+
+    private function resolveHomeFormation(LeagueFixture $fixture): ?Formation
+    {
+        $assigned = $fixture->getHomeFormation();
+        if (null !== $assigned) {
+            return $assigned;
+        }
+
+        return $this->formationRepository->findDefaultForTeam($fixture->getHomeTeam());
     }
 
     /**

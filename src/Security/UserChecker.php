@@ -9,9 +9,15 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserChecker implements UserCheckerInterface
 {
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+    ) {
+    }
+
     public function checkPreAuth(UserInterface $user): void
     {
         if (!$user instanceof User) {
@@ -19,7 +25,9 @@ class UserChecker implements UserCheckerInterface
         }
 
         if (!$user->isVerified()) {
-            throw new CustomUserMessageAccountStatusException('Please verify your email first.');
+            throw new CustomUserMessageAccountStatusException(
+                $this->translator->trans('error.email_not_verified')
+            );
         }
     }
 

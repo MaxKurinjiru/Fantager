@@ -188,6 +188,7 @@ class ProcessCombatRoundHandlerTest extends TestCase
             $combatEngine,
             $messageBus ?? $this->createStub(MessageBusInterface::class),
             $league ?? $this->createStub(LeagueMatchResolutionService::class),
+            $this->createStub(\App\Service\FriendlyMatch\FriendlyMatchResolutionService::class),
             $orchestrator ?? $this->createStub(KingdomTickOrchestrator::class),
             $this->createStub(LoggerInterface::class),
         );

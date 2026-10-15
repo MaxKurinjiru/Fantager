@@ -209,6 +209,55 @@ class MarketplaceService
         $this->em->flush();
     }
 
+    /**
+     * Cancel active hero/trainer listings for a removed entity (combat death / dismiss).
+     * Refunds every reserved bid; does not restore the hero to Available.
+     *
+     * @return int Number of cancelled listings
+     */
+    public function forceCancelActiveListingsForHero(Hero $hero): int
+    {
+        /** @var list<MarketplaceListing> $listings */
+        $listings = $this->em->getRepository(MarketplaceListing::class)->createQueryBuilder('l')
+            ->where('l.hero = :hero')
+            ->andWhere('l.status = :active')
+            ->setParameter('hero', $hero)
+            ->setParameter('active', ListingStatus::Active)
+            ->getQuery()
+            ->getResult();
+
+        $cancelled = 0;
+        foreach ($listings as $listing) {
+            foreach ($listing->getBids() as $bid) {
+                $this->economyService->addGold(
+                    $bid->getBidderTeam(),
+                    $bid->getBidAmount(),
+                    FinancialRecordType::MarketplacePurchase,
+                    FinancialRecordActor::System,
+                    ['listing_id' => $listing->getId(), 'is_refund' => true, 'reason' => 'entity_removed']
+                );
+
+                if (null !== $bid->getBidderTeam()->getUser()) {
+                    $this->notificationHelper->sendTranslatedNotification(
+                        $bid->getBidderTeam()->getUser(),
+                        NotificationType::MarketplaceBid,
+                        'notification.marketplace_bid_refunded_title',
+                        'notification.marketplace_bid_refunded_body',
+                        [],
+                        ['%amount%' => $bid->getBidAmount(), '%listing%' => (int) $listing->getId()]
+                    );
+                }
+
+                $this->em->remove($bid);
+            }
+
+            $listing->setStatus(ListingStatus::Cancelled);
+            ++$cancelled;
+        }
+
+        return $cancelled;
+    }
+
     public function buyListing(Team $buyer, int $listingId, \DateTimeImmutable $now): void
     {
         /** @var MarketplaceListing|null $listing */

@@ -194,7 +194,7 @@ class HeroChronicleService
         return $this->create(
             $hero,
             $hero->getTeam(),
-            HeroChronicleEventType::Transferred,
+            HeroChronicleEventType::Renamed,
             'hero_activity.renamed',
             [
                 'old_name' => $oldName,

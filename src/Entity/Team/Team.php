@@ -54,24 +54,6 @@ class Team
     #[ORM\Column(options: ['default' => 0])]
     private int $gold = 0;
 
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceCommon = 0;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceUncommon = 0;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceRare = 0;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceEpic = 0;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceLegendary = 0;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private int $essenceMythic = 0;
-
     #[ORM\Column(options: ['default' => false])]
     private bool $isNpc = false;
 
@@ -228,78 +210,6 @@ class Team
     public function setGold(int $gold): static
     {
         $this->gold = $gold;
-
-        return $this;
-    }
-
-    public function getEssenceCommon(): int
-    {
-        return $this->essenceCommon;
-    }
-
-    public function setEssenceCommon(int $essenceCommon): static
-    {
-        $this->essenceCommon = $essenceCommon;
-
-        return $this;
-    }
-
-    public function getEssenceUncommon(): int
-    {
-        return $this->essenceUncommon;
-    }
-
-    public function setEssenceUncommon(int $essenceUncommon): static
-    {
-        $this->essenceUncommon = $essenceUncommon;
-
-        return $this;
-    }
-
-    public function getEssenceRare(): int
-    {
-        return $this->essenceRare;
-    }
-
-    public function setEssenceRare(int $essenceRare): static
-    {
-        $this->essenceRare = $essenceRare;
-
-        return $this;
-    }
-
-    public function getEssenceEpic(): int
-    {
-        return $this->essenceEpic;
-    }
-
-    public function setEssenceEpic(int $essenceEpic): static
-    {
-        $this->essenceEpic = $essenceEpic;
-
-        return $this;
-    }
-
-    public function getEssenceLegendary(): int
-    {
-        return $this->essenceLegendary;
-    }
-
-    public function setEssenceLegendary(int $essenceLegendary): static
-    {
-        $this->essenceLegendary = $essenceLegendary;
-
-        return $this;
-    }
-
-    public function getEssenceMythic(): int
-    {
-        return $this->essenceMythic;
-    }
-
-    public function setEssenceMythic(int $essenceMythic): static
-    {
-        $this->essenceMythic = $essenceMythic;
 
         return $this;
     }

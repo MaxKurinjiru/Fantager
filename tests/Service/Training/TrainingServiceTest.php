@@ -617,4 +617,65 @@ class TrainingServiceTest extends TestCase
 
         $this->assertSame(113, $hero->getStrRaw());
     }
+
+    public function testProcessTrainingTickNoFatigueWhenAttributeCapped(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getGameSpeed')->willReturn('1.00');
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setRace(Race::Human);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setStrRaw(155);
+        $hero->setFatigue(10);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setAgeRaw(250);
+        $trainer->setTrainingType(TrainingType::Attribute);
+        $trainer->setTargetAttribute('str');
+        $trainer->setStrRaw(155);
+        $trainer->addTrainee($hero);
+
+        $this->mockTrainerQueryResult([$trainer]);
+
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable());
+
+        $this->assertSame(155, $hero->getStrRaw());
+        $this->assertSame(10, $hero->getFatigue());
+    }
+
+    public function testProcessTrainingTickNoFatigueWhenMagicCapped(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $kingdom->method('getGameSpeed')->willReturn('1.00');
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setMagicCapacity(5);
+        $hero->setFatigue(10);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setAgeRaw(250);
+        $trainer->setTrainingType(TrainingType::Magic);
+        $trainer->addTrainee($hero);
+
+        $this->mockTrainerQueryResult([$trainer]);
+
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable());
+
+        $this->assertSame(5, $hero->getMagicCapacity());
+        $this->assertSame(10, $hero->getFatigue());
+    }
 }

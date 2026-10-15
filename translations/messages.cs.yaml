@@ -32,6 +32,7 @@ nav:
   notifications: Notifikace
   calendar: Kalendář
   arena: Aréna
+  friendly_matches: Přátelské zápasy
   graveyard: Hřbitov
 
 modal:
@@ -216,14 +217,8 @@ error:
   marketplace_buy_roster_full: Nákupem nebo příhozem by byl překročen limit soupisky.
   marketplace_buy_trainer_limit_reached: Nákupem nebo příhozem by byl překročen limit trenérů.
   insufficient_gold: 'Nedostatek zlata. Potřeba: %required%, k dispozici: %available%.'
-  insufficient_essence: 'Nedostatek esence. Potřeba: %required%, k dispozici: %available%.'
+  email_not_verified: Nejprve ověřte svůj e-mail.
   insufficient_school_mastery: 'Nedostatečná úroveň školy. Potřeba: %required%, aktuální: %current%.'
-  insufficient_common_essence: Nedostatek běžné esence.
-  insufficient_uncommon_essence: Nedostatek neobvyklé esence.
-  insufficient_rare_essence: Nedostatek vzácné esence.
-  insufficient_epic_essence: Nedostatek epické esence.
-  insufficient_legendary_essence: Nedostatek legendární esence.
-  insufficient_mythic_essence: Nedostatek mýtické esence.
   summoning_roster_full: Soupiska je plná.
   summoning_limit_reached: Dosažen limit vyvolávání pro tento cyklus.
   summoning_no_compatible_races: Nebyly nalezeny žádné kompatibilní rasy pro vyvolání.
@@ -274,6 +269,17 @@ error:
   training_success_assign: Hrdina byl úspěšně přiřazen trenérovi.
   training_success_unassign: Hrdina byl odebrán od trenéra.
   player_profile_not_found: Profil hráče nebyl nalezen.
+  friendly_opponent_npc: Přátelské zápasy lze hrát pouze proti týmům s lidským manažerem.
+  friendly_same_team: Tým nemůže výzvat sám sebe na přátelský zápas.
+  friendly_different_kingdom: Přátelské zápasy mohou hrát pouze týmy ze stejného království.
+  friendly_slot_invalid: Zvolený časový slot není platný pro přátelský zápas.
+  friendly_invite_cutoff: Okno pro přijetí pozvánky se uzavřelo (je nutné přijmout nejméně 6 hodin před výkopem).
+  friendly_cancel_cutoff: Okno pro zrušení se uzavřelo (je nutné zrušit nejméně 1 hodinu před výkopem).
+  friendly_not_pending: Tento přátelský zápas nečeká na potvrzení.
+  friendly_not_participant: Nejste účastníkem tohoto přátelského zápasu.
+  friendly_home_cap: Váš tým má tento týden již naplánovaný domácí přátelský zápas.
+  friendly_already_scheduled: Jeden z týmů již má v tomto čase aktivní přátelský zápas.
+  friendly_not_found: Přátelský zápas nebyl nalezen.
 
 notification:
   marketplace_outbid_title: Přehozen / vráceno
@@ -308,6 +314,12 @@ notification:
   financial_warning_body: 'Tým má neuhrazený dluh %debt% zlata. Snižte náklady nebo prodejte aktiva.'
   financial_restricted_title: Finanční restrikce
   financial_restricted_body: 'Tým je %weeks% týdnů v krizi! Pasivní bonusy základny jsou pozastaveny.'
+  financial_bankruptcy_title: Bankrot týmu
+  financial_bankruptcy_body: 'Váš tým „%team%“ byl uvolněn kvůli dlouhodobé platební neschopnosti. Nový tým si můžete nárokovat za %days% dní.'
+  inactivity_warning_title: Varování o neaktivitě
+  inactivity_warning_body: 'Váš tým „%team%“ bude za %days% dní uvolněn, pokud se nepřihlásíte a nebudete hrát. Přihlaste se, abyste tým udrželi.'
+  inactivity_release_title: Tým uvolněn kvůli neaktivitě
+  inactivity_release_body: 'Váš tým „%team%“ byl uvolněn, protože jste byli %inactive_days% dní neaktivní. Nový tým si můžete nárokovat za %days% dní.'
   training_completed_title: Trénink dokončen
   training_completed_body: 'Týdenní tréninkový cyklus proběhl úspěšně. Trenéři předali zkušenosti hrdinům.'
 
@@ -317,7 +329,6 @@ dashboard:
   history_axis_fan_base: Fanklub
   treasury: Pokladnice
   gold: Zlato
-  total_essence: Celková esence
   edit_profile: Upravit profil
   morale: Morálka týmu
   morale_desc: Ovlivňuje efektivitu tréninku hrdinů a jejich bojovou vytrvalost.
@@ -451,7 +462,7 @@ activity:
   hero_died:
     combat_death: 'Hrdina %hero% padl v boji.'
     dismissed: 'Hrdina %hero% byl propuštěn.'
-  item_dismantled: 'Předmět %item% byl rozebrán na %essence% %rarity% esencí.'
+  item_dismantled: 'Předmět %item% byl rozebrán za %gold% zlata (%rarity%).'
   trainer_promoted: 'Hrdina %hero% byl povýšen na Trenéra.'
   financial_crisis:
     warning: 'Finanční varování: nezaplacený dluh %debt% zlata.'
@@ -1307,7 +1318,7 @@ js_flash:
     confirm_dismantle: Opravdu chcete tento předmět rozložit? Bude trvale zničen.
     dismantling: Rozkládání...
     failed_dismantle: Nepodařilo se rozložit předmět.
-    success_dismantle: "Předmět byl rozložen! Získáno %essence% esence."
+    success_dismantle: "Předmět byl rozložen! Získáno %gold% zlata."
     repairing: Opravování...
     failed_repair: Nepodařilo se opravit předmět.
     success_repair: "Předmět byl opraven! Cena: 🪙 %gold%."
@@ -1419,6 +1430,7 @@ calendar:
   status_completed: Dokončeno
   status_failed: Selhalo
   league_fixture_desc: 'Ligový zápas — skupina %group%'
+  friendly_match_desc: Přátelský zápas
   training_complete_title: 'Trénink dokončen: %hero%'
   tick:
     daily_reset_title: Denní reset a údržba
@@ -1432,6 +1444,8 @@ calendar:
     weekly_training_title: Týdenní trénink
     weekly_training_desc: Vyhodnocení fronty tréninku a navýšení statistik hrdinů
     league_match_title: Ligový zápas
+    friendly_match_title: Přátelský zápas
+    friendly_match_desc: Spustit simulaci naplánovaných přátelských zápasů
     league_match_desc: Simulace naplánovaných ligových zápasů
     season_transition_title: Přechod sezóny
     season_transition_desc: Postupy, sestupy, odměny a start další sezóny
@@ -1482,6 +1496,7 @@ arena:
   error_price_out_of_bounds: Cena vstupenky musí být v rozmezí 1 až 50 zlata.
   rule_home_only: Příjem z vstupenek dostává výhradně domácí tým.
   upgrade_hint: Vylepšete arénu v základně pro vyšší kapacitu a bonusy k příjmům.
+  friendly_matches_link: Přátelské zápasy
 
 marketplace:
   merchant: Obchodník
@@ -1899,6 +1914,44 @@ battle:
   return_to_league: Zpět do ligy
   error_not_found: Zápas nebyl nalezen.
   error_unauthorized: Nemáte oprávnění k prohlížení tohoto zápasu.
+
+friendly:
+  title: Přátelské zápasy
+  subtitle: Vyzvěte jiné hráčské týmy ve středečních a nedělních oknech.
+  challenge_title: Vyzvat tým
+  challenge_help: Jste domácí tým. Jeden domácí přátelský zápas týdně; vyberte slot, který mají volný oba týmy (až 14 dní dopředu).
+  opponent: Soupeř
+  select_opponent: Vyberte soupeře…
+  slot: Termín výkopu
+  slot_hint: Vyberte soupeře pro zobrazení dostupných slotů.
+  loading_slots: Načítám dostupné sloty…
+  no_slots: V příštích 14 dnech není společný volný slot.
+  send_challenge: Odeslat výzvu
+  challenge_sent: Výzva odeslána.
+  action_failed: Něco se pokazilo. Zkuste to znovu.
+  confirm_cancel: Zrušit tento přátelský zápas?
+  tabs_label: Seznamy přátelských zápasů
+  tab_upcoming: Nadcházející
+  tab_pending: Čekající pozvánky
+  tab_history: Historie
+  empty_title: Žádné zápasy
+  empty_upcoming: Přijaté přátelské zápasy se zde zobrazí před výkopem.
+  empty_pending: Čekající pozvánky v království se zobrazí zde.
+  empty_history: Dokončené, odmítnuté, zrušené a prošlé zápasy se zobrazí zde.
+  accept: Přijmout
+  decline: Odmítnout
+  cancel: Zrušit
+  formations: Formace
+  view_battle: Zobrazit zápas
+  you_home: Vy (domácí)
+  you_away: Vy (hosté)
+  status_pending: Čeká
+  status_scheduled: Naplánováno
+  status_in_progress: Probíhá
+  status_completed: Dokončeno
+  status_declined: Odmítnuto
+  status_cancelled: Zrušeno
+  status_expired: Vypršelo
 
 
 

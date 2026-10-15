@@ -109,19 +109,9 @@ The economy provides resource management depth through multiple currencies, each
   - Morale restoration items (emergency recovery)
 - **Mechanics:** Primary economic driver; scales with team reputation and arena capacity; unlimited earning potential but balanced by scaling costs
 
-#### Essence (Crafting/Upgrade Currency)
+#### Essence (removed)
 
-- **Earned from:**
-  - Dismantling items (returns Essence based on item rarity)
-  - Combat victories and arena performance
-  - Daily activity rewards
-- **Spent on:**
-  - Item crafting (cost scales with rarity tier)
-  - Item enchanting and upgrades
-  - Magic school mastery training
-  - Spell learning and spell slot expansion
-  - Item durability restoration
-- **Mechanics:** Rarity-specific variants (Common Essence, Uncommon Essence, Rare Essence, Epic Essence, Legendary Essence, Mythic Essence); prevents easy progression to high-tier items; different essence types cannot be converted
+Essence tiers are **not part of the live economy**. Gold is the sole currency. Deferred crafting/enchanting docs under `docs/future/` may still mention essence historically; do not reintroduce without an explicit design decision.
 
 ### Economic Sinks & Sources
 
@@ -146,7 +136,6 @@ The economy provides resource management depth through multiple currencies, each
 ### Trading & Marketplace
 
 - **Tradeable:** Heroes and items can be listed for Gold only
-- **Non-Tradeable:** Essence cannot be traded between players
 - **Marketplace Fees:** Applied to sellers (buyers pay listed price + no additional fee)
 - **Price Controls:** Suggested price ranges based on item rarity and hero stats (prevents extreme manipulation)
 - **Kingdom-Isolated:** Each server maintains separate economy; no cross-kingdom trading
@@ -157,9 +146,9 @@ The economy provides resource management depth through multiple currencies, each
 
 | Phase | Level Range | Key Characteristics |
 |:---|:---:|:---|
-| **Early Game** | 1–20 | Gold abundant for basics; Common/Uncommon Essence available; focus on initial roster and headquarters |
-| **Mid Game** | 21–50 | HQ upgrades become major gold sinks; Rare/Epic Essence needed; league becomes primary income; resource management critical |
-| **Late Game** | 51+ | Massive gold investment for high-tier facilities; Legendary/Mythic crafting; arena revenue and league rewards sustain play |
+| **Early Game** | 1–20 | Gold abundant for basics; focus on initial roster and headquarters |
+| **Mid Game** | 21–50 | HQ upgrades become major gold sinks; league becomes primary income; resource management critical |
+| **Late Game** | 51+ | Massive gold investment for high-tier facilities; arena revenue and league rewards sustain play |
 
 > *Example: A mid-game player might spend 80% of weekly gold income on a single Headquarters facility upgrade, making league participation essential for sustained progression.*
 
@@ -460,7 +449,7 @@ Beyond equipment and training, races have tactical advantages in combat:
 | Undead | Immune to poison and disease; 50% reduced healing effectiveness (unliving) |
 | Giant | +10% damage with main-hand weapons; cannot use off-hand (size limitation); **7-hex flower** on the combat map (centre + 6 neighbours) |
 | Ent | +20% Constitution defensive calculations; –20% speed-based actions (rooted nature); **7-hex flower** on the combat map (centre + 6 neighbours) |
-| Genie | +15% spell effectiveness and spell critical hit chance (magical essence) |
+| Genie | +15% spell effectiveness and spell critical hit chance |
 
 #### Race-Specific Restrictions Summary
 
@@ -487,7 +476,7 @@ Beyond equipment and training, races have tactical advantages in combat:
 
 ### Purpose
 
-Training is the primary method for improving hero attributes, expanding magic capacity, and maintaining peak performance (form). The system is trainer-centric, meaning heroes train under a configured trainer. The system balances strategic setup, trainer assignment, slot limits, and time-locking constraints without direct gold or essence costs.
+Training is the primary method for improving hero attributes, expanding magic capacity, and maintaining peak performance (form). The system is trainer-centric, meaning heroes train under a configured trainer. The system balances strategic setup, trainer assignment, slot limits, and time-locking constraints without direct gold costs.
 
 ### Training Types
 
@@ -516,7 +505,7 @@ Training is the primary method for improving hero attributes, expanding magic ca
 - Configured by setting the Trainer's training focus to Magic.
 - Assigned heroes increase their Magic Capacity by 1 per weekly tick (up to 5).
 - Adds +20 fatigue per weekly tick (capped at 100).
-- No Gold or Essence cost.
+- No Gold cost.
 
 #### Form & Condition Training (Resting)
 
@@ -599,7 +588,7 @@ To train heroes, a player configures a trainer:
 ### Training Costs & Time
 
 #### Cost Structure
-- **Monetary Costs**: None. Training does not cost Gold or Essence.
+- **Monetary Costs**: None. Training does not cost Gold.
 - **Fatigue Cost**: Standard training (Attribute/Magic) increases fatigue by +20 per tick. Recovery training (Form) decreases fatigue by -20 per tick.
 
 #### Time Investment

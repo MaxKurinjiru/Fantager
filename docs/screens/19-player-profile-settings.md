@@ -79,11 +79,10 @@ Account identity fields remain on **`User`** (`email`, `locale`, `display_name`,
 
 Future preferences should extend this endpoint (or add PATCH with partial updates) and corresponding columns on `UserSettings`.
 
-### Planned API
+### Related API
 
-- `GET /api/v1/settings` — read all settings
-- `PUT /api/v1/settings` — bulk update
-- Password change, notification, and privacy endpoints
+- `GET /api/v1/me` — current player identity (not settings); see [auth-system.md](../systems/auth-system.md)
+- Password change / dedicated `/api/v1/settings` bulk endpoints — not implemented; preferences use `POST /app/settings/preferences` above
 
 ## Frontend Implementation
 
