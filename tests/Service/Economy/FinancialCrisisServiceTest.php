@@ -154,7 +154,7 @@ class FinancialCrisisServiceTest extends TestCase
 
         $this->notificationHelperMock
             ->expects($this->once())
-            ->method('sendNotification');
+            ->method('sendTranslatedNotification');
 
         $this->service->executeBankruptcy($team, $user);
 

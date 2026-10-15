@@ -105,9 +105,15 @@ class ProcessCombatRoundHandlerTest extends TestCase
         $em->expects($this->once())->method('flush');
         $em->method('find')->willReturn($battle);
 
-        $fixtureRepo = $this->createStub(EntityRepository::class);
-        $fixtureRepo->method('findOneBy')->willReturn(null);
-        $em->method('getRepository')->willReturn($fixtureRepo);
+        $fixture = $this->createStub(\App\Entity\League\LeagueFixture::class);
+        $em->method('getRepository')->willReturnCallback(function (string $class) use ($fixture) {
+            $repo = $this->createStub(EntityRepository::class);
+            $repo->method('findOneBy')->willReturn(
+                \App\Entity\League\LeagueFixture::class === $class ? $fixture : null
+            );
+
+            return $repo;
+        });
 
         $combatEngine = $this->createMock(CombatEngine::class);
         $combatEngine->expects($this->once())

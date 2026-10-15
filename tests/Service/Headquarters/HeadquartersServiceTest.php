@@ -449,7 +449,7 @@ class HeadquartersServiceTest extends TestCase
                 $this->greaterThan(0),
                 \App\Enum\FinancialRecordType::HqUpgradeRefund,
                 \App\Enum\FinancialRecordActor::Active,
-                $this->isType('array')
+                $this->callback(static fn (mixed $context): bool => is_array($context))
             );
 
         $this->royalTreasuryServiceMock
