@@ -1,7 +1,7 @@
 ---
 name: fantager-ui
 description: >-
-  Implements and reviews Fantager frontend UI following docs/ui-guidelines.md.
+  Implements and reviews Fantager frontend UI following docs/guides/ui-guidelines.md.
   Use when editing Twig templates, SCSS in assets/styles/components, Stimulus
   controllers, modals, forms, layout, marketplace cards, or when the user asks
   for UI compliance, semantic classes, or Tailwind removal from templates.
@@ -11,11 +11,11 @@ description: >-
 
 ## Read first
 
-1. [docs/ui-agent-cheatsheet.md](../../docs/ui-agent-cheatsheet.md) — decision trees
+1. [docs/guides/ui.md](../../../docs/guides/ui.md) — decision trees
 2. [reference.md](reference.md) — layout & file map (when needed)
 3. [examples.md](examples.md) — before/after patterns
 
-Full spec: [docs/ui-guidelines.md](../../docs/ui-guidelines.md)
+Full spec: [docs/guides/ui-guidelines.md](../../../docs/guides/ui-guidelines.md)
 
 ## Workflow
 
@@ -53,7 +53,7 @@ Do not run verification commands unless the user asks (see [AGENTS.md](../../../
 ## When adding a layout primitive
 
 1. Add to `_layout.scss` or `_shared.scss`
-2. Add one row to `docs/ui-guidelines.md` §3.1
+2. Add one row to `docs/guides/ui-guidelines.md` §3.1
 3. Add to `reference.md` in this skill
 
 ## Optional verification (user-requested only)

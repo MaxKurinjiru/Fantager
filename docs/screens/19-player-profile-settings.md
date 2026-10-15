@@ -1,8 +1,10 @@
 # Player Profile & Settings Screen
 
-Reference: [screens-overview.md](../screens-overview.md#19-player-profile--settings-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#19-player-profile--settings-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [auth-system.md](../systems/auth-system.md)
 
-Purpose: Per-screen API, UI data requirements, and implementation notes for account-level player settings (distinct from team profile settings on the dashboard).
+Purpose: Account-level player settings (distinct from team profile settings on the dashboard).
+
+**Status:** Modal UI is live for language, backdrop-close preference, email change, and account deletion. Password change, notification prefs, and privacy stay **Planned** (A8.6).
 
 ## Presentation
 
@@ -13,7 +15,7 @@ Purpose: Per-screen API, UI data requirements, and implementation notes for acco
 
 - **Language:** Czech / English selector — persists to `User.locale` via `/change-locale/{locale}`.
 - **Interface preferences:**
-  - **Backdrop zavírání modalů** (`closeModalOnBackdrop`) — checkbox; default `false`. When enabled, clicking the modal overlay closes the dialog. Stored in `auth_user_settings`.
+  - **Close modals on backdrop click** (`closeModalOnBackdrop`) — checkbox; default `false`. When enabled, clicking the modal overlay closes the dialog. Stored in `auth_user_settings`. Label key: `settings.modal_backdrop_close`.
 - **Account email:** Current address shown as placeholder; form to request a new address (two-step email verification flow).
 - **Danger zone:** Account cancellation with inline confirmation panel.
 
@@ -100,7 +102,7 @@ Future preferences should extend this endpoint (or add PATCH with partial update
 - **Escape** — always closes the active modal.
 - **Backdrop click** — closes only when `UserSettings.closeModalOnBackdrop === true`.
 - **Mobile back** — always closes the active modal (stacked modals close one level per back press).
-- **Focus** — first focusable element on open; focus restored to trigger on close (see [ui-guidelines.md](../ui-guidelines.md#51-modals)).
+- **Focus** — first focusable element on open; focus restored to trigger on close (see [guides/ui-guidelines.md](../guides/ui-guidelines.md#51-modals)).
 
 ## Service layer
 

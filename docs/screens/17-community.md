@@ -1,74 +1,109 @@
 # Community Screen
 
-Reference: [screens-overview.md](../screens-overview.md#17-community-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#17-community-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [community-system.md](../systems/community-system.md)
 
-Purpose: Per-screen API, events, UI data requirements, and implementation notes.
+**When:** Kingdom forum, public player/team profiles, and private mail.
 
-Displayed Information:
-- Community hub at `/app/community`: kingdom forum threads (list + thread detail)
-- Player / team public profiles via modal (`GET /api/v1/players/{id}/profile`, `GET /api/v1/teams/{id}/profile`)
-- Private mail is the navbar mail modal (`/api/v1/messages*`), not a community tab
-- News is the public `/news` archive, not a community tab
-- Kingdom rankings live on `/app/league` (Kingdom Leaderboard). There is no `/api/v1/leaderboards` route.
+**Status:** Live forum hub at `/app/community`. Mail is the **navbar modal**, not a community tab. News is public `/news`. Kingdom rankings are the League **Kingdom Leaderboard** tab — there is no `/api/v1/leaderboards` route. Forum `is_pinned` is **stored and shown** but has **no write API** ([roadmap A6.3](../roadmap/current.md)).
 
-Possible Actions/Buttons:
-- Open thread / create thread / reply
-- View player or team profile
-- Compose mail from a profile (opens the mail modal)
+**Live UI:** `templates/community/`, `templates/components/community/`, Stimulus `community_forum`, `community_thread`, `mail`, `player-profile`.
 
-Backend Requirements (implemented):
-- Forum CRUD — `Api\V1\ForumController`
-- Player/team profile — `Api\V1\CommunityController`
-- Mail CRUD — `Api\V1\MessageController` (includes `GET /api/v1/messages/unread-count`)
-- News list — `Web\NewsController` (`/news`)
+---
 
-## Leaderboard and Profile Endpoints
+## Implemented
 
-### GET /api/v1/players/{id}/profile
-Returns public details for a team and its owner user.
-- **Access Rule:** Only accessible if the viewing user is in the same kingdom as the target user.
-- **NPC Rule:** NPC teams do not have a public player profile (returns 404/not found).
-- **Sensitive Data:** Excludes financial status (gold, debt), and tactical metrics (chemistry, morale) to prevent match exploitation.
-- **Response Format:**
-  ```json
-  {
-    "user": {
-      "id": 12,
-      "display_name": "Username",
-      "member_since": "2026-06-15T12:00:00Z"
-    },
-    "team": {
-      "id": 4,
-      "name": "Team Name",
-      "emblem": "🛡️",
-      "colors": { "primary": "#111", "secondary": "#222" },
-      "fan_base": 1500,
-      "reputation": 200,
-      "combatant_count": 8,
-      "trainer_count": 2
-    },
-    "league": {
-      "tier_name": "T1",
-      "group_name": "Group A",
-      "position": 3,
-      "points": 15,
-      "played": 6,
-      "wins": 5,
-      "draws": 0,
-      "losses": 1,
-      "form": ["W", "W", "L", "W", "W"]
-    },
-    "is_own_profile": false,
-    "can_message": true
-  }
-  ```
+### Forum hub (`GET /app/community`)
 
-## UI Components
-- **Player Profile Modal:** Implemented in `templates/components/community/player_profile_modal.html.twig`. It uses a shared Stimulus controller `player-profile` configured at the layout level in `game.html.twig` to dynamically fetch profile data and render it.
-- **Compose Stack:** Contains a "Napsat zprávu" button which automatically dispatches `modal:open-compose` with the recipient prefilled and loads the mail compose dialog directly.
+- Header + **New thread**
+- Category nav: all, `general`, `strategy`, `trading`, `bugs` (`?category=`)
+- Search (`?q=`)
+- Pinned threads (page 1 only, if `is_pinned`), then recent threads (20 per page)
+- Thread card: pin/lock icons, title, body preview, category, reply count, last activity, author (opens profile), team emblem/colors
+- Empty states for no threads / no search hits
 
-## Remaining sections to fill:
-- Mail/forum APIs
-- Moderation and privacy notes
-- Implementation notes
+### Thread detail (`GET /app/community/threads/{id}`)
 
+- Title, category, pin/lock badges, author + team, started-at
+- Original post (page 1) + paginated replies (20)
+- Reply form (hidden when locked)
+- **Lock / unlock** — thread **author only** (`POST /api/v1/forum/threads/{id}/lock`)
+
+New thread modal: title, category, body → `POST /api/v1/forum/threads`. Reply → `POST /api/v1/forum/threads/{id}/posts`. Title/body pass `ContentFilterService`. Kingdom-scoped.
+
+### Public profiles (modal)
+
+Opened from author names, league tables, and similar `player-profile` buttons. Same kingdom only.
+
+- `GET /api/v1/players/{id}/profile`
+- `GET /api/v1/teams/{id}/profile`
+
+NPC teams have no public player profile (404). Payload **excludes** gold, debt, chemistry, and morale. Typical body:
+
+```json
+{
+  "user": { "id": 12, "display_name": "Username", "member_since": "2026-06-15T12:00:00Z" },
+  "team": {
+    "id": 4, "name": "Team Name", "emblem": "🛡️",
+    "colors": { "primary": "#111", "secondary": "#222" },
+    "fan_base": 1500, "reputation": 200,
+    "combatant_count": 8, "trainer_count": 2
+  },
+  "league": {
+    "tier_name": "T1", "group_name": "Group A", "position": 3,
+    "points": 15, "played": 6, "wins": 5, "draws": 0, "losses": 1,
+    "form": ["W", "W", "L", "W", "W"]
+  },
+  "is_own_profile": false,
+  "can_message": true
+}
+```
+
+Modal: team identity, fan base, reputation, combatant/trainer counts, league block when present, member since. **Send message** (`community.send_message`) opens the mail compose dialog with the recipient prefilled (`modal:open-compose`).
+
+### Private mail (navbar)
+
+Not a tab on `/app/community`. Navbar mail control + unread badge.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/v1/messages` | Inbox or sent (`folder`, `page`; 10 per page) |
+| GET | `/api/v1/messages/unread-count` | Badge |
+| GET | `/api/v1/messages/recipients` | Same-kingdom recipients |
+| GET | `/api/v1/messages/{id}` | Read (sets `read_at`) |
+| POST | `/api/v1/messages` | Send (`receiver_user_id`, `subject`, `body`) |
+| DELETE | `/api/v1/messages/{id}` | Soft-delete for the caller |
+
+Compose / read dialogs: `templates/components/community/compose_message_modal.html.twig`, `read_message_modal.html.twig`.
+
+### Backend
+
+| Piece | Location |
+|-------|----------|
+| Web | `Web\CommunityController` |
+| Forum API | `Api\V1\ForumController` |
+| Mail API | `Api\V1\MessageController` |
+| Profiles | `Api\V1\CommunityController` |
+| Domain | `CommunityService`, `ForumThreadHelper`, `PlayerProfileService` |
+
+---
+
+## Planned
+
+Original sketch extras — do not treat as a contract:
+
+- Community tabs for leaderboards, mail, or news
+- Dedicated `/api/v1/leaderboards` (use League)
+- Pin / unpin in the UI (A6.3)
+- Notable heroes, recent match history, win/loss on the public profile
+- Email notifications for forum/mail (auth + inactivity mail only today)
+- Report / moderator tools beyond author lock and content filter
+
+---
+
+## Frontend
+
+| Piece | Location |
+|-------|----------|
+| Hub / thread | `templates/community/index.html.twig`, `thread.html.twig` |
+| Cards / posts / modals | `templates/components/community/` |
+| Stimulus | `community_forum`, `community_thread`, `mail`, `player-profile` |

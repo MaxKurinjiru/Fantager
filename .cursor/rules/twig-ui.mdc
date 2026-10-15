@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Twig UI (Fantager)
 
-Authoritative doc: `docs/ui-guidelines.md`. Quick ref: `docs/ui-agent-cheatsheet.md`.
+Authoritative doc: `docs/guides/ui-guidelines.md`. Quick ref: `docs/guides/ui.md`.
 
 ## Never add to Twig `class` (use SCSS semantic classes)
 

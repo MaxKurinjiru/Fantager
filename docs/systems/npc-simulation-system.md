@@ -51,7 +51,7 @@ To mimic realistic player progression and preserve a stable NPC budget, non-tact
 ### Daily Actions (Daily Reset - 00:00:00)
 - **Proactive Dismissal & Trainer Promotion:** Evaluates non-trainer available heroes carrying purely negative traits (`Slacker`, `Volatile`, `Fragile`, `GlassJaw`). If a negative-trait hero has a raw attribute stat >= 75% of the team's highest combatant stat (min 5.0), they are promoted to a **Trainer** first (using `TrainingService::applyTrainerPromotion()`), provided trainer slots are available. Otherwise, they are dismissed to prevent degrading team performance.
 - **Roster Recycling:** If the roster is full and at least one hero is listed for sale, dismisses the worst available combatant to make room for a new summon.
-- **Summoning:** Summons a new hero via `SummoningService::getStatus($team)` if combatant count <= rosterLimit - 1, the weekly cycle limit is not reached (`summons_used < summons_max`), and gold permits (summoning cost + 150 gold safety buffer).
+- **Summoning:** Summons a new hero via `SummoningService` (`getStatus` then `summon`) if combatant count <= rosterLimit - 1, the weekly cycle limit is not reached (`summons_used < summons_max`), and gold permits (summoning cost + 150 gold safety buffer). Race pick uses the same relationship ≥ 50 pool as players (Genie-adapted teams can summon all races).
 
 ### Twice-Weekly Marketplace Actions (Tuesday & Friday - 00:00:00)
 (`simulateMarketplaceActions` — called from `ExecuteSingleTickHandler` on Tuesday and Friday at 00:00)
@@ -77,7 +77,7 @@ To mimic realistic player progression and preserve a stable NPC budget, non-tact
 
 **Buying:** Evaluates all active listings in the same Kingdom and buys them separately:
 1. **Items:** Capped by Tier (T1: max 4/tick, T2: max 2/tick, T3: max 1/tick). NPC teams buy listings scored > 0 representing a useful upgrade for a hero in their active lineup, matching masteries. For T3 teams, single item price is capped at 1 500 gold.
-2. **Heroes:** Buys combatant heroes scored > 0 up to the role's buy limit.
+2. **Heroes:** Buys combatant heroes scored > 0 up to the role's buy limit. Compatible-race scoring uses `SummoningService::getCompatibleRacesForTeam()` **except** when the arena theme is Genie: that buy path scores only `Genie` listings (`NpcEconomySimulator`). Trainers are not race-filtered.
 3. **Trainers:** Buys trainers scored > 0 up to the role's buy limit.
 
 **Tier-aware Budget Controls:**
@@ -101,7 +101,7 @@ Score table (score `0` = not interested; higher score wins):
 | Trainer | `royal_collector` | 80 |
 | Trainer | other roles | 20 |
 
-*`mercenary_academy` preferred races: Orc, Dwarf, Human. Heroes of incompatible race (outside team's race pool) always score 0.
+*`mercenary_academy` preferred races: Orc, Dwarf, Human. Heroes of incompatible race (outside the team's race pool) always score 0. **Genie dual rule (live until [A7.9](../roadmap/current.md)):** **Players** use relationship ≥ 50 (Genie can summon all races). **NPC marketplace** may apply a stricter Genie-only filter as above. NPC daily summons still go through `SummoningService` (player pool). Do not invent a single Genie rule in code.
 
 ### Weekly Actions (Weekly Reset - Sunday 23:59:00)
 (`simulateWeeklyManagementAndEconomy` — called from `ExecuteSingleTickHandler` at Sunday 23:59)

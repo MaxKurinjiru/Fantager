@@ -6,25 +6,28 @@ Entry point for Cursor agents, Copilot, and other AI assistants working in this 
 
 | Task | Read first | Code / docs to touch |
 |------|------------|----------------------|
-| **UI / Twig / SCSS / Stimulus** | [docs/ui-agent-cheatsheet.md](docs/ui-agent-cheatsheet.md) | `templates/`, `assets/styles/`, `assets/controllers/` |
-| **New or changed API endpoint** | [docs/backend-agent-cheatsheet.md](docs/backend-agent-cheatsheet.md) → [docs/api-design.md](docs/api-design.md) | `src/Controller/Api/V1/`, `src/Service/`, [docs/route-map.md](docs/route-map.md) |
-| **Web page / screen** | [docs/screen-code-map.md](docs/screen-code-map.md) + screen in [docs/screens/](docs/screens/) + [docs/ui-agent-cheatsheet.md](docs/ui-agent-cheatsheet.md) | `src/Controller/Web/`, `templates/`, often API + Stimulus |
-| **Domain logic / service** | [docs/systems/](docs/systems/) + [docs/entity-reference.md](docs/entity-reference.md) | `src/Service/`, `src/Entity/`, `tests/Service/` |
-| **Schema / migration** | [docs/entity-reference.md](docs/entity-reference.md) | `migrations/`, entities, repositories |
-| **Bugfix / extend existing feature** | [docs/README.md](docs/README.md) § Current Implementation Status + [docs/known-issues.md](docs/known-issues.md) | Mirror patterns in the same domain |
+| **Docs vs code alignment** | [docs/roadmap/current.md](docs/roadmap/current.md) → [docs/product/known-issues.md](docs/product/known-issues.md) | Only the files listed on the **current unchecked step** |
+| **UI / Twig / SCSS / Stimulus** | [docs/guides/ui.md](docs/guides/ui.md) | `templates/`, `assets/styles/`, `assets/controllers/` |
+| **New or changed API endpoint** | [docs/guides/backend.md](docs/guides/backend.md) → [docs/architecture/api.md](docs/architecture/api.md) | `src/Controller/Api/V1/`, `src/Service/`, [docs/architecture/routes.md](docs/architecture/routes.md) |
+| **Web page / screen** | [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + screen in [docs/screens/](docs/screens/) + [docs/guides/ui.md](docs/guides/ui.md) | `src/Controller/Web/`, `templates/`, often API + Stimulus |
+| **Domain logic / service** | [docs/systems/](docs/systems/) + [docs/architecture/entities.md](docs/architecture/entities.md) | `src/Service/`, `src/Entity/`, `tests/Service/` |
+| **Schema / migration** | [docs/architecture/entities.md](docs/architecture/entities.md) | `migrations/`, entities, repositories |
+| **Bugfix / extend existing feature** | [docs/roadmap/current.md](docs/roadmap/current.md) + [docs/systems/README.md](docs/systems/README.md) § Current Implementation Status + [docs/product/known-issues.md](docs/product/known-issues.md) | Mirror patterns in the same domain |
 | **Stack, Docker, doc index** | [.github/copilot-instructions.md](.github/copilot-instructions.md) | — |
 
 Full vertical slice: backend cheatsheet § Vertical slice + UI cheatsheet when the feature has a UI.
+
+**Live rules vs overview:** `docs/systems/*.md` + [docs/product/known-issues.md](docs/product/known-issues.md) win over [docs/product/overview.md](docs/product/overview.md) until alignment Wave 2. Live UI is [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + Twig, not unchecked wish-lists in [docs/screens/overview-legacy.md](docs/screens/overview-legacy.md).
 
 ## Backend (PHP / Symfony)
 
 | Resource | When to use |
 |----------|-------------|
-| [docs/screen-code-map.md](docs/screen-code-map.md) | **Read first** for screen → controller/template/API map |
-| [docs/backend-agent-cheatsheet.md](docs/backend-agent-cheatsheet.md) | PHP/Symfony layering, checklist, scope guardrails |
-| [docs/api-design.md](docs/api-design.md) | REST shape, status codes, response format |
-| [docs/entity-reference.md](docs/entity-reference.md) | Entities, enums, naming conventions |
-| [docs/route-map.md](docs/route-map.md) | All Web and API routes |
+| [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) | **Read first** for screen → controller/template/API map |
+| [docs/guides/backend.md](docs/guides/backend.md) | PHP/Symfony layering, checklist, scope guardrails |
+| [docs/architecture/api.md](docs/architecture/api.md) | REST shape, status codes, response format |
+| [docs/architecture/entities.md](docs/architecture/entities.md) | Entities, enums, naming conventions |
+| [docs/architecture/routes.md](docs/architecture/routes.md) | All Web and API routes |
 | [.cursor/rules/php-backend.mdc](.cursor/rules/php-backend.mdc) | Auto-applied when editing `src/**/*.php`, `tests/**/*.php` |
 | [.cursor/skills/fantager-backend/SKILL.md](.cursor/skills/fantager-backend/SKILL.md) | Full backend implementation workflow |
 
@@ -32,8 +35,8 @@ Full vertical slice: backend cheatsheet § Vertical slice + UI cheatsheet when t
 
 | Resource | When to use |
 |----------|-------------|
-| [docs/ui-guidelines.md](docs/ui-guidelines.md) | Authoritative UI/CSS spec |
-| [docs/ui-agent-cheatsheet.md](docs/ui-agent-cheatsheet.md) | **Read first** for Twig/SCSS work |
+| [docs/guides/ui-guidelines.md](docs/guides/ui-guidelines.md) | Authoritative UI/CSS spec |
+| [docs/guides/ui.md](docs/guides/ui.md) | **Read first** for Twig/SCSS work |
 | [.cursor/rules/twig-ui.mdc](.cursor/rules/twig-ui.mdc) | Auto-applied when editing `templates/**/*.twig` |
 | [.cursor/rules/scss-ui.mdc](.cursor/rules/scss-ui.mdc) | Auto-applied when editing `assets/styles/**/*.scss` |
 | [.cursor/rules/stimulus-ui.mdc](.cursor/rules/stimulus-ui.mdc) | Auto-applied when editing Stimulus JS |

@@ -2,7 +2,7 @@
 
 > **Status:** Not implemented. The dungeon backend was removed from the codebase; this document preserves the intended design for a future phase (after the combat engine is complete).
 
-Reference: [game-summary.md](../game-summary.md#215-dungeon-system)
+Reference: [product/overview.md](../product/overview.md#215-dungeon-system)
 
 Purpose: Detail dungeon mechanics, rewards, and run processing.
 
@@ -46,4 +46,4 @@ Purpose: Detail dungeon mechanics, rewards, and run processing.
 |--------|------|---------|
 | GET | `/dungeons` | Dungeon selection page |
 
-See also [route-map.md](../route-map.md#dungeon-future-feature---planned).
+See also [architecture/routes.md](../architecture/routes.md#dungeon-future-feature---planned).

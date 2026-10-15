@@ -163,7 +163,7 @@ fi
 # --- Summary ---
 if [[ "$VIOLATION_COUNT" -gt 0 ]]; then
   echo -e "${RED}UI compliance FAILED: ${VIOLATION_COUNT} category/categories with violations.${NC}"
-  echo "See docs/ui-agent-cheatsheet.md and .cursor/rules/twig-ui.mdc"
+  echo "See docs/guides/ui.md and .cursor/rules/twig-ui.mdc"
   exit 1
 fi
 

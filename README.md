@@ -99,9 +99,9 @@ docker exec -u apache fantager-web php bin/console messenger:consume async --lim
 
 - **AI assistants:** [AGENTS.md](AGENTS.md) — task routing, UI/backend cheatsheets, Cursor rules
 - Documentation Index: [docs/README.md](docs/README.md)
-- UI Guidelines: [docs/ui-guidelines.md](docs/ui-guidelines.md) · Cheatsheet: [docs/ui-agent-cheatsheet.md](docs/ui-agent-cheatsheet.md)
-- Architecture Specification: [docs/arch-spec.md](docs/arch-spec.md)
-- API Design Guide: [docs/api-design.md](docs/api-design.md)
+- UI Guidelines: [docs/guides/ui-guidelines.md](docs/guides/ui-guidelines.md) · Cheatsheet: [docs/guides/ui.md](docs/guides/ui.md)
+- Architecture Specification: [docs/architecture/overview.md](docs/architecture/overview.md)
+- API Design Guide: [docs/architecture/api.md](docs/architecture/api.md)
 
 ```bash
 # Verify Twig templates follow UI guidelines (also runs in CI)

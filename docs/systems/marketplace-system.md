@@ -1,6 +1,6 @@
 # Marketplace System
 
-Reference: [game-summary.md](../game-summary.md#211-marketplace-system), [MarketplaceService.php](../../src/Service/Marketplace/MarketplaceService.php), [MarketplaceTransaction.php](../../src/Entity/Marketplace/MarketplaceTransaction.php)
+Reference: [product/overview.md](../product/overview.md#211-marketplace-system), [MarketplaceService.php](../../src/Service/Marketplace/MarketplaceService.php), [MarketplaceTransaction.php](../../src/Entity/Marketplace/MarketplaceTransaction.php)
 
 Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction records, and chronicle integration.
 
@@ -104,5 +104,5 @@ Tax rates are kingdom-specific and configured in `kingdom.marketplace_tax_rate`.
 - [Team Chronicle System](team-chronicle-system.md) — `item_purchased` / `item_sold` events
 - [Item System](item-system.md) — merchant purchase flow, item status lifecycle
 - [Economy System](economy-system.md) — gold deduction / credit (`EconomyService`)
-- [NPC Simulation System](npc-simulation-system.md) — NPC buying and selling behaviour
+- [NPC Simulation System](npc-simulation-system.md) — NPC buying and selling. Player buys have no race filter. **Genie dual rule:** NPC hero buys use the summoning compatible pool except a Genie-adapted NPC may buy Genie-only ([A7.9](../roadmap/current.md)).
 - [Headquarters System](headquarters-system.md) — roster and trainer limits

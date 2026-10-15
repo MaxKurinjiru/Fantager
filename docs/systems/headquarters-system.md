@@ -1,6 +1,6 @@
 # Headquarters System
 
-Reference: [game-summary.md](../game-summary.md#27-headquarters-system)
+Reference: [product/overview.md](../product/overview.md#27-headquarters-system)
 
 Purpose: Document HQ facilities, upgrades, passive bonuses, arena adaptation, and related APIs.
 
@@ -207,7 +207,7 @@ During the `race_optimization` tick:
 | `HqMaintenanceCalculator` | `App\Service\Headquarters` | Weekly HQ maintenance fee calculation |
 | `ArenaService` | `App\Service\Headquarters` | Arena facility status (capacity, fan appeal, projected home-match revenue) — used by HQ panel and `/api/v1/arena` |
 
-Ticket payout on match day is handled by `App\Service\Economy\ArenaRevenueService` (economy domain). Combat simulation is a separate domain — see [Combat System](combat-system.md) and the **Domain Boundaries** table in [entity-reference.md](../entity-reference.md#domain-boundaries-combat-vs-arena).
+Ticket payout on match day is handled by `App\Service\Economy\ArenaRevenueService` (economy domain). Combat simulation is a separate domain — see [Combat System](combat-system.md) and the **Domain Boundaries** table in [architecture/entities.md](../architecture/entities.md#domain-boundaries-combat-vs-arena).
 
 ---
 

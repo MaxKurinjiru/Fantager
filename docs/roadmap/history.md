@@ -1,8 +1,13 @@
 # Implementation Roadmap (Vertical-Slice & Chronological)
 
-Purpose: Define a logical, step-by-step implementation path for the Fantager project. Unlike pure backend/frontend phase separation, this roadmap is organized by functional **Milestones (Vertical Slices)**. Each milestone builds a complete, testable, and visual slice of a feature—from database schema and service logic to internal APIs and interactive web interfaces.
+> [!IMPORTANT]
+> **Active work is [current.md](current.md)** (alignment waves 0–8), not this chronicle and not “finish Milestone 8/9.”
+> Milestones 1–6 shipped a **playable core**. ✅ on a step means that slice landed, **not** that no gaps remain (XP curve, chemistry, item occupancy, inventory DnD, formation synergies, combat HUD, CI tests). Do not treat the matrix at the bottom as a green board.
+> Milestones 8 and 9 stay **parked**. Milestone 7 analytics UI is alignment A7.8.
 
-**AI agents:** Follow [AGENTS.md](../AGENTS.md) for task routing. Write tests when implementing a step; do not run PHPUnit, migrations, or other verification commands unless the user explicitly asks.
+Purpose: Historical, step-by-step chronicle of how the playable core was built (vertical slices). It is not the current work queue.
+
+**AI agents:** Follow [AGENTS.md](../../AGENTS.md) for task routing. For docs/code mismatches, take the next unchecked step in [current.md](current.md). Write tests when implementing a step; do not run PHPUnit, migrations, or other verification commands unless the user explicitly asks.
 
 ---
 
@@ -10,8 +15,8 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 - **Vertical Slice Development**: Implement database, service logic, API endpoints, and frontend views together for each feature. This ensures every step produces a runnable, visually testable increment.
 - **Dependency Flow**: Do not skip ahead. Later milestones depend on the foundational entities and calculations established in earlier ones.
-- **Aesthetic Excellence**: Every frontend step must align with the UI specifications (`docs/ui-guidelines.md`), utilizing customized colors, typography, micro-animations, and responsive designs.
-- **Verification**: Each step should include unit/integration tests where applicable and a clear manual walkthrough for humans. **Running** tests, linters, builds, and migrations is done by maintainers, CI, or when explicitly requested — AI agents write tests and follow [AGENTS.md](../AGENTS.md); they do not execute verification commands to finish a task.
+- **Aesthetic Excellence**: Every frontend step must align with the UI specifications (`docs/guides/ui-guidelines.md`), utilizing customized colors, typography, micro-animations, and responsive designs.
+- **Verification**: Each step should include unit/integration tests where applicable and a clear manual walkthrough for humans. **Running** tests, linters, builds, and migrations is done by maintainers, CI, or when explicitly requested — AI agents write tests and follow [AGENTS.md](../../AGENTS.md); they do not execute verification commands to finish a task.
 
 ---
 
@@ -110,9 +115,9 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Database & Entities**: `Item` and `Equipment` slots.
 - **Service Layer**: Equip/unequip validators, item attributes, and dismantling rewards.
 - **API Contracts**: `PUT /api/v1/heroes/{id}/equipment` (equip/unequip), `POST /api/v1/items/dismantle`, `POST /api/v1/items/{id}/repair`.
-- **Frontend Views**: Interactive inventory drag-and-drop grid and hero equipment slots (paperdoll UI).
+- **Frontend Views**: Hero-detail Equipment tab, click-to-equip paperdoll (`equipment_controller.js`). `/app/inventory` redirects there.
 - **Verification**: Equip items to matching slots, verify stat modifier calculations, dismantle items.
-- **Status**: ✅ Complete (`ItemService`, `Web\ItemController`, Stimulus: `equipment_controller.js`).
+- **Status**: ✅ Core complete (`ItemService`, `Web\ItemController`, Stimulus: `equipment_controller.js`). **Not shipped:** inventory **drag-and-drop** grid (click-to-equip only). Occupancy (two-handed / dual-wield / ring count) is open ([known-issues #8](../product/known-issues.md)); enchanting is undefined ([#2](../product/known-issues.md)). Alignment A7.3 / A7.4.
 
 ### Step 4.2: Spellbooks & Magic Learning
 - **Database & Entities**: `Spell` and `SpellMastery` entities.
@@ -124,11 +129,11 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ### Step 4.3: Strategic Formations
 - **Database & Entities**: `Formation` layout.
-- **Service Layer**: Lineup configuration (3 front, 3 back slots), target priorities, and synergies logic.
+- **Service Layer**: Lineup configuration (3 front, 3 back slots). Engine may read per-slot `target_order` / spell conditions when present; **race-synergy / chemistry tables are not live** ([known-issues #7](../product/known-issues.md)).
 - **API Contracts**: `PUT /api/v1/formations` (save/update formation), `DELETE /api/v1/formations/{id}`.
-- **Frontend Views**: Interactive drag-and-drop tactical grid, action sequences selector.
+- **Frontend Views**: Drag-and-drop **lineup** grid (formation page). Per-slot L1/L2 tactics editor and action-sequence selector are **not** in the UI (alignment A7.6).
 - **Verification**: Move heroes between positions, verify front/back line constraints (max 6 active).
-- **Status**: ✅ Complete (`FormationService`, `Web\FormationController`, Stimulus: `formation_controller.js`).
+- **Status**: ✅ Lineup CRUD complete (`FormationService`, `Web\FormationController`, Stimulus: `formation_controller.js`). **Not shipped:** formation **synergies**. Save allows 0–6 slots and duplicate `hero_id` ([#10](../product/known-issues.md)); kickoff forfeits understaffed teams.
 
 ---
 
@@ -159,11 +164,11 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 *Implement the core combat engine, chronological event tick scheduler, the weekly league competition, and hero mortality.*
 
 ### Step 6.1: Combat Simulation Engine (Core Block)
-- **Design Prerequisites (Phase 0)**: Locked in [combat-system.md](systems/combat-system.md#simulation-contract) — VOs, event-stream `combat_log`, seed, **wave Messenger orchestration** (cohort lockstep, `MAX_ROUNDS=200`, no wave timeout, `stalled` isolation, no live UI), L0→L2 AI. NPC teams use the same combat path.
+- **Design Prerequisites (Phase 0)**: Locked in [combat-system.md](../systems/combat-system.md#simulation-contract) — VOs, event-stream `combat_log`, seed, **wave Messenger orchestration** (cohort lockstep, `MAX_ROUNDS=200`, no wave timeout, `stalled` isolation, no live UI), L0→L2 AI. NPC teams use the same combat path.
 - **Service/Business Logic** (phased — see combat-system § Implementation phases):
   - **6.1a-0** — ✅ Contract VO + thin one-shot `CombatEngine` / `LeagueMatchSimulator` (placeholder scores + envelope).
   - **6.1a** — ✅ Persisted run state; `CombatWave` / `ProcessCombatRound` / `CompleteBattle`; barrier without timeout; `stalled` + `ResumeCombat`; real per-round turn loop + L0; replace one-shot league binding.
-  - **6.1b** — ✅ L1 targeting (`strategy.target_order`); freeze slot JSON schema ([formation-system.md](systems/formation-system.md#strategy-json-schema-phased)).
+  - **6.1b** — ✅ L1 targeting (`strategy.target_order`); freeze slot JSON schema ([formation-system.md](../systems/formation-system.md#strategy-json-schema-phased)).
   - **6.1c** — ✅ L2 spell conditions; **post-match** replay viewer MVP (not live).
   - **6.1d** — ✅ Combat deaths → aging → graveyard; item durability loss after battle.
   - ✅ Status effects per tick (speed order). Post-match team morale, mastery XP, hero XP, form, fatigue, durability, and aging ship with completion.
@@ -189,7 +194,7 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 - **Status**: ✅ Complete (`ProcessTicksCommand`, `TickScheduleCalculator`, `CalendarService`, `ExecuteSingleTickHandler`, Web Calendar page, kingdom calendar API). League match ticks process both arena revenue and start wave combat simulation.
 
 ### Step 6.3: League Matchmaking & Season Transition
-- **Design Prerequisites (Phase 0)**: Friendly-match rules and arena ticket revenue are specified in [friendly-match-system.md](systems/friendly-match-system.md) and [headquarters-system.md](systems/headquarters-system.md). Remaining arena gap is extended attendance analytics UI ([known-issues.md](known-issues.md) #4).
+- **Design Prerequisites (Phase 0)**: Friendly-match rules and arena ticket revenue are specified in [friendly-match-system.md](../systems/friendly-match-system.md) and [headquarters-system.md](../systems/headquarters-system.md). Remaining arena gap is extended attendance analytics UI ([product/known-issues.md](../product/known-issues.md) #4).
 - **Service Layer**:
   - Implement Berger’s Algorithm to generate 18 rounds of double round-robin fixtures.
   - Enforce home/away balance (1 home, 1 away match per week of play).
@@ -233,38 +238,38 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 ## Milestone 8: Endgame & Advanced Content (Deferred / Out of Scope)
 > [!NOTE]
 > **Status: DEFERRED / FUTURE FEATURE (Parked)**  
-> All features in Milestone 8 are deferred and outside the active development scope. Detailed design specifications are preserved in the [`docs/future/`](future/) directory.
+> All features in Milestone 8 are deferred and outside the active development scope. Detailed design specifications are preserved in the [`docs/future/`](../future) directory.
 
 *Extend the sandbox with PvE dungeon encounters, quest systems, and item crafting.*
 
 ### Step 8.1: PvE Dungeon Encounters
-- **Database & Entities**: `DungeonRun` table (depends on Combat). Design preserved in [future/dungeon-system.md](future/dungeon-system.md); no code in codebase yet.
+- **Database & Entities**: `DungeonRun` table (depends on Combat). Design preserved in [future/dungeon-system.md](../future/dungeon-system.md); no code in codebase yet.
 - **Service Layer**: Monster roster generation, floor difficulty progression, chest loot generators.
 - **API Contracts**: `POST /api/v1/dungeons/enter`, `POST /api/v1/dungeons/combat`.
 - **Frontend Views**:
   - **[NEW]** Dungeon Map UI: Floor progression map, encounter cards, reward reveals.
 - **Verification**: Complete dungeon floors, confirm health persistence across fights and reward logs.
-- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/dungeon-system.md](future/dungeon-system.md)).
+- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/dungeon-system.md](../future/dungeon-system.md)).
 
 ### Step 8.2: Daily & Weekly Quest Systems
-- **Design Reference**: [future/quest-system.md](future/quest-system.md)
+- **Design Reference**: [future/quest-system.md](../future/quest-system.md)
 - **Database & Entities**: `Quest` and `PlayerQuestProgress` tables (not scaffolded yet).
 - **Service Layer**: Daily Quest pool generation, progress triggers (e.g., training ticks, marketplace trades), rewards allocation.
 - **API Contracts**: `GET /api/v1/quests`, `POST /api/v1/quests/claim/{id}`.
 - **Frontend Views**:
   - **[NEW]** Quest log: list of daily/weekly challenges, progress indicators, claim buttons.
 - **Verification**: Perform quest conditions, verify progress bar fills, claim rewards.
-- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/quest-system.md](future/quest-system.md)).
+- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/quest-system.md](../future/quest-system.md)).
 
 ### Step 8.3: Material Gathering & Crafting
-- **Design Reference**: [future/crafting-system.md](future/crafting-system.md)
+- **Design Reference**: [future/crafting-system.md](../future/crafting-system.md)
 - **Database & Entities**: `CraftingRecipe` and `CraftingQueue` tables.
 - **Service Layer**: Recipe unlocks, materials cost validation, crafting queue speed bonuses from HQ.
 - **API/Web Controllers**: `POST /api/v1/crafting/start`, `DELETE /api/v1/crafting/queue/{id}`.
 - **Frontend Views**:
   - **[NEW]** Crafting Workshop: Recipe catalog, required ingredients checklist, active crafting progress bars.
 - **Verification**: Check material requirement validation, verify crafted items appear in the team inventory.
-- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/crafting-system.md](future/crafting-system.md)).
+- **Status**: ⏸️ Deferred / Out of Active Scope (design preserved in [future/crafting-system.md](../future/crafting-system.md)).
 
 ---
 
@@ -297,29 +302,30 @@ Purpose: Define a logical, step-by-step implementation path for the Fantager pro
 
 ## Cross-Cutting Infrastructures (Ongoing)
 
-- **CI/CD Pipeline**: Setup GitHub Actions workflow to run PHPStan static analysis and PHPUnit tests automatically on pull requests.
-- **Code Quality Tooling**: Maintain PHPStan configuration (level 6, zero errors limit) and automated PHP-CS-Fixer styling rules.
-- **E2E Testing Suite**: Set up Playwright to cover registration, team selection, and training/summoning flows under realistic user action scenarios.
+These are **not** done because M1–6 are checked. PHPUnit in CI and Playwright are alignment **Wave 8** (A8.1, A8.2).
+
+- **CI/CD Pipeline**: PHPStan (and related static checks) run on pull requests. **PHPUnit in CI is not shipped** — Wave 8 / A8.1.
+- **Code Quality Tooling**: PHPStan configuration (level 6, zero errors limit) and PHP-CS-Fixer rules are in the repo.
+- **E2E Testing Suite**: **Playwright is not shipped** — Wave 8 / A8.2 (registration, team selection, training/summoning flows).
 
 ---
 
 ## Project Chronological Progression Status
 
 > [!IMPORTANT]
-> **Active Scope Guardrail:** Milestones 1–6 are fully complete. Milestone 7 (Arena Management) is the final active milestone. Everything after Milestone 7 (Milestones 8 and 9) is explicitly **deferred / parked**. Do not implement or plan work for items beyond Milestone 7.
-
-The following matrix displays what has been completed in the codebase relative to the newly defined chronological steps:
+> **Active work:** [current.md](current.md) (alignment waves), not new Milestone 8/9 features and not “M1–6 fully complete.”
+> This matrix is a **chronicle of slices that shipped a playable core**. Remaining gaps (XP curve, chemistry, item occupancy, inventory DnD, formation synergies, combat HUD, PHPUnit/Playwright CI) live in alignment waves. Milestone 7 analytics UI is A7.8. Milestones 8 and 9 stay **deferred / parked**.
 
 | Milestone / Slice | Database / Entities | Service Layer / CLI | API Endpoints | Frontend UI Views | Current Status |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Milestone 1 (Auth & Kingdom)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 2 (Heroes & Economy)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 6 (Combat & Leagues)** | ✅ | ✅ | ✅ | ✅ | **Complete** |
-| **Milestone 7 (Arena Management)** | ✅ | 🔄 | ✅ | 🔄 | **Active / Partially Complete** (arena revenue, ticket price API, and friendly scheduling done; extended analytics UI pending) |
-| **Milestone 8 (Endgame & Crafting)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (dungeons, crafting, quests in `future/`) |
-| **Milestone 9 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / Out of Scope** (alliance & guild systems deferred) |
+| **Milestone 1 (Auth & Kingdom)** | ✅ | ✅ | ✅ | ✅ | **Shipped core** — remaining gaps in alignment waves (see [systems/README.md](../systems/README.md)) |
+| **Milestone 2 (Heroes & Economy)** | ✅ | ✅ | ✅ | ✅ | **Shipped core** — XP without `levelUp()` ([#6](../product/known-issues.md)) |
+| **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Shipped core** |
+| **Milestone 4 (Combat Prep)** | ✅ | 🔄 | ✅ | 🔄 | **Shipped core with gaps** — equipment is click-to-equip, **not** inventory DnD (4.1); **no formation synergies** (4.3); occupancy [#8](../product/known-issues.md) |
+| **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Shipped core** — forum pin has no write API (A6.3) |
+| **Milestone 6 (Combat & Leagues)** | ✅ | 🔄 | ✅ | 🔄 | **Shipped core (combat MVP)** — HUD / synergy leftovers [#9](../product/known-issues.md); `POST /api/v1/combat/simulate` not live |
+| **Milestone 7 (Arena Management)** | ✅ | 🔄 | ✅ | 🔄 | **Partial** — revenue, ticket price API, friendlies done; analytics UI = A7.8 |
+| **Milestone 8 (Endgame & Crafting)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / parked** (dungeons, crafting, quests in `future/`) |
+| **Milestone 9 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / parked** |
 
-*Last updated: October 15, 2026 — Milestones 8 and 9 explicitly marked as Deferred / Out of Active Scope; Milestone 7 is the final active scope milestone (friendly scheduling complete; analytics UI pending).*
+*Last updated: 15 October 2026 — A1.2 honesty pass. Active work: [current.md](current.md).*

@@ -61,7 +61,7 @@ class SummoningController extends AbstractController
 }
 ```
 
-Docs: add row to `docs/route-map.md`.
+Docs: add row to `docs/architecture/routes.md`.
 
 ---
 
@@ -242,11 +242,11 @@ Path: `tests/Service/Summoning/SummoningServiceTest.php`.
 When adding e.g. a new `/api/v1/foo` + `/app/foo` screen:
 
 1. `docs/systems/foo-system.md` + `docs/screens/NN-foo.md`
-2. Entity/repository if needed → `entity-reference.md`
+2. Entity/repository if needed → `docs/architecture/entities.md`
 3. `src/Service/Foo/FooService.php` + `tests/Service/Foo/FooServiceTest.php`
 4. `src/Controller/Api/V1/FooController.php` (`ApiControllerTrait`)
 5. `src/Controller/Web/FooController.php` + Twig (see `fantager-ui` skill)
-6. `docs/route-map.md` + `docs/README.md` status row
+6. `docs/architecture/routes.md` + `docs/systems/README.md` status row
 7. Stimulus only if the screen needs AJAX — call the API you added in step 4
 
 Copy the nearest complete feature (summoning, training, marketplace) before inventing new structure.

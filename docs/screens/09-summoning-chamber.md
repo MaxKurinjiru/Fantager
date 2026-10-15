@@ -1,39 +1,59 @@
 # Summoning Chamber Screen
 
-Reference: [screens-overview.md](../screens-overview.md#9-summoning-chamber-screen), [summoning-system.md](../systems/summoning-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#9-summoning-chamber-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [summoning-system.md](../systems/summoning-system.md)
 
-Purpose: Per-screen API, events, UI data requirements, and implementation notes.
+**When:** Spend a cycle summon to roll a junior hero.
 
-> **Implementation:** Summoning Chamber is a **panel inside HQ**. `GET /app/summon` redirects to `/app/hq?facility=summoning_chamber`; history subtab via `&subtab=history`.
+**Status:** Panel inside HQ — not a standalone page. `GET /app/summon` → `/app/hq?facility=summoning_chamber`; history → `&subtab=history`. **Genie dual rule:** players use relationship ≥ 50 (Genie can roll all races); NPC marketplace may apply a stricter Genie-only filter (A7.9). `summon_stat_total_cap` is unused (A6.5).
 
-Displayed Information:
-- Summon Status:
-	- Summons Used this Cycle
-	- Max Summons per Cycle (based on Kingdom game speed)
-- Summon Parameters:
-	- Arena Adaptation (displaying the adapted race of the home arena)
-	- Potential summonable races list (based on affinity and relations with the adapted race)
-	- Starting level: **1**
-	- Age range preview (Min Age - Max Junior Age for summonable races)
-	- Expected stat range (based on race flat bonuses and Summoning Chamber level)
-	- Summon Cost (Gold)
-- Recent Summons (history subtab):
-	- Recently acquired heroes
-	- Their basic stats
-- **Summon reveal card** (after successful `POST /api/v1/summoning`):
-	- Name, race, level, primary attributes
-	- **Personality trait badge** when the generated hero has a trait (~60% chance)
+**Live UI:** `templates/components/hq/facility_panel/_summoning.html.twig`, `templates/components/summoning/`.
 
-Possible Actions/Buttons:
-- Summon Hero (pulls a random compatible race based on the team's arena adaptation)
-- View Summoned Hero
+---
 
-Backend Requirements:
-- Summon availability check — `GET /api/v1/summoning/status`
-- Random hero generation + summon endpoint — `POST /api/v1/summoning`
+## Implemented
 
-Implementation:
-- **Panel route:** `/app/hq?facility=summoning_chamber`
-- **Stimulus:** `summoning_controller.js` (embedded in HQ panel)
-- **Trait UI:** `data-summoning-traits-value` from `hero_trait_js_labels()`; reveal target `heroTrait` in `portal_chamber.html.twig`
-- **API:** Summon response uses `HeroService::serialize()` — includes nullable `trait` field
+### Cycle header
+
+- Summons used / max this cycle (kingdom game speed)
+- Gold cost per summon
+- Summon button disabled with translated reason when unavailable (limit, roster full, etc.)
+
+### Summon subtab
+
+- Home arena theme (HQ race optimization) and compatible-race cards (avatar, name, combat-bonus blurb)
+- Portal idle / channeling / **reveal card**: name, race, level 1, primary attributes, trait badge when present
+- Inspect → hero detail; summon again reloads
+
+Starting level is 1. Age/stat **preview ranges** from the original sketch are **not** a separate live panel; expected ranges are implied by race cards + chamber bonuses, not listed as min/max numbers on this UI.
+
+### History subtab
+
+Table: hero name (or fallen/dismissed), race, gold cost, timestamp. Filter by race, sort by date, pagination.
+
+### Backend
+
+| Piece | Location |
+|-------|----------|
+| Panel | `/app/hq?facility=summoning_chamber` |
+| Status | `GET /api/v1/summoning/status` |
+| Summon | `POST /api/v1/summoning` — `HeroService::serialize()` including nullable `trait` |
+
+---
+
+## Planned
+
+Original sketch extras — do not treat as a contract:
+
+- Standalone `/app/summon` page (redirects)
+- Explicit min/max age and expected-stat range widgets
+- Player-facing Genie-only filter (decision is A7.9)
+
+---
+
+## Frontend
+
+| Piece | Location |
+|-------|----------|
+| Panel | `templates/components/hq/facility_panel/_summoning.html.twig` |
+| Cycle / races / portal | `templates/components/summoning/` |
+| Stimulus | `summoning` (`data-summoning-traits-value` from `hero_trait_js_labels()`) |

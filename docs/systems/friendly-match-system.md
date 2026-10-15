@@ -1,6 +1,6 @@
 # Friendly Match System
 
-Reference: [calendar-system.md](calendar-system.md#friendly-matches-practice), [combat-system.md](combat-system.md), [arena-system.md](arena-system.md) (HQ arena panel)
+Reference: [calendar-system.md](calendar-system.md#friendly-matches-practice), [combat-system.md](combat-system.md), [headquarters-system.md](headquarters-system.md) (HQ arena panel)
 
 Purpose: Player-vs-player practice matches outside the league, with full combat consequences and fixed weekly kickoff windows.
 

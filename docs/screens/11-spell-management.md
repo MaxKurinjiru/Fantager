@@ -1,24 +1,58 @@
 # Spell Management Screen & Academy Store
 
-Reference: [screens-overview.md](../screens-overview.md#11-spell-management-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#11-spell-management-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [spell-system.md](../systems/spell-system.md)
 
-Purpose: Per-screen API, events, UI data requirements, and implementation notes for Spell Management and the Spells Academy.
+**When:** Equip a hero’s spell slots, or buy spells from the Academy.
 
-## Hero Spell Management (Hero Detail Page)
-Accessed via the Spells tab on the Hero Detail screen (`/app/heroes/{id}?tab=spells`).
-- **Equipped Slots Panel:** View equipped spells in slots 1–5 (limited by hero's magic capacity). Supports equipping and unequipping.
-- **School Mastery Panel:** View current mastery levels across the 6 magic schools (Fire, Water, Air, Earth, Light, Dark) and training progression.
-- **Learned Spells Tab:** Browse all spells already learned by this specific hero.
+**Status:** Hero spells live on **Hero Detail → Spells**. `GET /app/spells` **redirects** to that tab (or `/app/heroes` if no `hero_id`). Academy store is `/app/academy`. Seeded catalog is **T1–T2**; mastery can reach T5 (A7.11). No essence / enchanting.
 
-## Academy Store Page
-Accessed via `/app/academy` (under Marketplace in the sidebar).
-- **Hero Selector:** Choose which hero of the team is the "Trainee" to view spell learning eligibility, mastery requirements, and learn new spells directly for them.
-- **School Filter:** Filter available spells by magic school.
-- **Tier Filter:** Filter available spells by Tier (1 and 2).
-- **Available Spells Grid:** Shows the spell cards with description, cooldown, mana cost, and Gold learning cost.
+**Live UI:** `templates/hero/detail.html.twig` (spells tab), `templates/spell/academy.html.twig`, `templates/components/spell/`.
 
-## Backend & API Actions
-- **Get Spells Library:** `GET /api/v1/spells` (returns list of all spells)
-- **Learn Spell:** `POST /api/v1/heroes/{id}/spells/learn` (learns spell using team Gold)
-- **Equip/Unequip:** `POST /api/v1/heroes/{id}/spells/equip` and `POST /api/v1/heroes/{id}/spells/unequip`
+---
 
+## Implemented
+
+### Routing
+
+`Web\SpellController::index()`:
+
+- `GET /app/spells?hero_id={id}` → `/app/heroes/{id}?tab=spells`
+- `GET /app/spells` → `/app/heroes`
+
+### Hero Detail → Spells
+
+- Equipped slots 1–N limited by `magicCapacity` (`trainee_manager` / spell slots) — equip / unequip
+- School mastery for Fire, Water, Air, Earth, Light, Dark
+- Inner tabs: **Learned** vs **Store** (same academy cards, scoped to this hero)
+
+### Academy (`GET /app/academy`)
+
+- Trainee `<select>` (`?hero_id=`)
+- School filter, tier filter (**1** and **2** only)
+- Treasury badge
+- Spell cards: description, cooldown, mana, gold cost, learn eligibility vs mastery
+
+### Backend
+
+| Action | Endpoint |
+|--------|----------|
+| Library | `GET /api/v1/spells` |
+| Learn | `POST /api/v1/heroes/{id}/spells/learn` |
+| Equip / unequip | `POST /api/v1/heroes/{id}/spells/equip`, `/unequip` |
+
+---
+
+## Planned
+
+- Seeded T3–T5 spells, or an explicit “unused tiers” product lock (A7.11)
+- Standalone `/app/spells` page (redirects on purpose)
+
+---
+
+## Frontend
+
+| Piece | Location |
+|-------|----------|
+| Hero tab | `templates/hero/detail.html.twig` + `templates/components/spell/`, `school_mastery.html.twig` |
+| Academy | `templates/spell/academy.html.twig` |
+| Stimulus | `spellbook` |

@@ -1,86 +1,63 @@
 # Calendar Screen
 
-Reference: [screens-overview.md](../screens-overview.md#14-calendar-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#14-calendar-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [calendar-system.md](../systems/calendar-system.md)
 
-Purpose: Per-screen API, UI data requirements, and implementation notes for the kingdom calendar (server ticks, league fixtures, team training).
+**When:** Weekly kingdom schedule (ticks, league matches, team training completions).
 
-## Displayed Information
+**Status:** Live at `GET /app/calendar`. Feed is JSON. Reminders are **Planned**. World events are deferred (`future/world-events-system.md`).
 
-- **Weekly calendar feed:**
-  - Scheduled server ticks (fatigue recovery, training, season transition, maintenance, etc.)
-  - League fixtures (home/away matches; league match ticks are not shown separately)
-  - Team-specific training queue completions (when scoped to a team)
-- **Filters:**
-  - Show/hide system-only ticks
-  - Team-only entries
-
-## Possible Actions
-
-- Navigate weeks (previous / next)
-- Toggle filters (system ticks, team-only view)
-- Set reminder — planned (`POST /api/v1/calendar/reminders`)
-
-## Backend Requirements
-
-- Calendar events feed endpoint
-- Server tick schedule and timezone normalization
-- Notification/reminder system (future)
-
-## Calendar API & Feed
-
-The calendar screen retrieves all entries via a unified JSON endpoint:
-
-- **Route**: `GET /api/v1/kingdom/{id}/calendar`
-- **Query Parameters**:
-  - `start`: ISO-8601 start date (e.g. `2026-06-08T00:00:00Z`)
-  - `end`: ISO-8601 end date (e.g. `2026-06-15T00:00:00Z`)
-  - `teamId`: Optional team ID to scope player-specific entries (own league matches) and **team-scoped tick status** (without it, team-only ticks stay `scheduled` rather than picking another team’s log; kingdom-scoped companions like WeeklyReset treasury still resolve)
-- **Response Format**:
-  ```json
-  [
-    {
-      "id": "tick_fatigue_recovery_20260608040000",
-      "type": "system_tick",
-      "title": "Fatigue & Form Recovery",
-      "description": "Passive restoration of hero fatigue and condition",
-      "scheduledAt": "2026-06-08T04:00:00Z",
-      "visibility": "system_only",
-      "status": "scheduled",
-      "metadata": {
-        "tickType": "fatigue_recovery"
-      }
-    },
-    {
-      "id": "league_match_42",
-      "type": "league_match",
-      "title": "Team Alpha vs Team Beta",
-      "description": "League Fixture - Group A",
-      "scheduledAt": "2026-06-09T18:00:00Z",
-      "visibility": "public",
-      "status": "scheduled",
-      "metadata": {
-        "fixtureId": 42,
-        "homeTeam": { "id": 12, "name": "Team Alpha" },
-        "awayTeam": { "id": 15, "name": "Team Beta" },
-        "groupName": "A"
-      }
-    }
-  ]
-  ```
-
-Feed entry types today: `system_tick`, `league_match`, `hero_training_history`. League fixtures are shown only as `league_match` entries (not as a separate `league_match` system tick). Dynamic world events are deferred — see [future/world-events-system.md](../future/world-events-system.md).
+**Live UI:** `templates/calendar/index.html.twig`, Stimulus `calendar`.
 
 ---
 
-## Tick Schedule Display
+## Implemented
 
-- **Date Conversions**: Timestamps are delivered in ISO UTC format. The frontend converts these dates to the user's browser local timezone or the kingdom's official timezone.
-- **Filtering**: Players can toggle visibility of system ticks and team-only entries on the weekly calendar feed.
+### Displayed information
+
+- Week navigation (previous / next) and range label
+- Toggles: team-only entries, show system ticks
+- Per-day groups: weekday, date, today marker, event cards or empty day
+- Entry types: `system_tick`, `league_match`, `hero_training_history`
+
+League fixtures appear as `league_match` rows only (not a duplicate system tick).
+
+### Backend
+
+`GET /api/v1/kingdom/{id}/calendar`
+
+Query: `start`, `end` (ISO-8601), optional `teamId` (own league matches + team-scoped tick status; without it, team-only ticks stay `scheduled`).
+
+Example item:
+
+```json
+{
+  "id": "tick_fatigue_recovery_20260608040000",
+  "type": "system_tick",
+  "title": "Fatigue & Form Recovery",
+  "description": "Passive restoration of hero fatigue and condition",
+  "scheduledAt": "2026-06-08T04:00:00Z",
+  "visibility": "system_only",
+  "status": "scheduled",
+  "metadata": { "tickType": "fatigue_recovery" }
+}
+```
+
+Timestamps are ISO UTC. The Stimulus controller formats them with `kingdom.timezone` (passed as `data-calendar-timezone-value`).
+
+Feed assembly: `CalendarService` from `TickScheduleCalculator`, tick logs, fixtures, training history, heroes.
 
 ---
 
-## Implementation Notes
+## Planned
 
-- **Web page**: `App\Controller\Web\CalendarController` at `/app/calendar` (Stimulus `calendar_controller.js`).
-- **API Endpoint**: `App\Controller\Api\V1\CalendarController::getFeed()` at `/api/v1/kingdom/{id}/calendar`.
-- **Feed Logic**: Constructed by `App\Service\Calendar\CalendarService` from `TickScheduleCalculator`, `KingdomTickLogRepository`, `LeagueFixtureRepository`, `HeroTrainingHistoryRepository`, and `HeroRepository`.
+- Set reminder — `POST /api/v1/calendar/reminders` (not implemented)
+- Dynamic world-event rows
+
+---
+
+## Frontend
+
+| Piece | Location |
+|-------|----------|
+| Page | `templates/calendar/index.html.twig` |
+| Stimulus | `calendar` |

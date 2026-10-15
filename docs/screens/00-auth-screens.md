@@ -1,89 +1,118 @@
 # Authentication Screens (Login / Register / Password Reset)
 
-Reference: [systems/auth-system.md](../systems/auth-system.md), [00-public-pages.md](00-public-pages.md)
+Reference: [systems/auth-system.md](../systems/auth-system.md), [00-public-pages.md](00-public-pages.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
-**When:** Before gameplay — unauthenticated users
-
-**Presentation:** Login and Register are presented as **modal windows** on public pages (Homepage, wiki, news archive) — NOT as standalone pages. Modals can switch between each other via inline links ("Already have an account?" / "Create new account").
+**When:** Before gameplay — unauthenticated users (or logged-in users hitting `/login` / `/register`, who are redirected to the dashboard).
 
 ---
 
-## Register Modal
+## Presentation — Implemented
 
-### Displayed Information:
-- Registration form fields (email, password, confirm password, **game nickname**, **Kingdom selection**)
-- Link to switch to Login modal ("Already have an account? Login")
-- Terms of service / privacy policy links
+Login and Register are **one auth modal** (`templates/auth/_modal.html.twig`) included from `templates/base.html.twig` for guests. Panels switch via Stimulus `auth_modal` (`openLogin` / `openRegister` / `switchToLogin` / `switchToRegister`).
 
-### Possible Actions/Buttons:
-- **Register** — submit registration form (email, password, confirm password, nickname, kingdom)
-- **Switch to Login** — close Register modal, open Login modal
+- Homepage and guest navbar CTAs `preventDefault` and open the modal; `href` still points at `/login` or `/register`.
+- `GET /login` and `GET /register` render the public layout with an empty body and `data-auth-modal-open-value` so the modal opens on load (`Web\AuthController`, `Web\RegisterController`).
+- Already logged-in users hitting those routes go to `/app/dashboard`.
+- **Password reset** is **standalone pages** (`/password-reset`, `/password-reset/confirm`) — not the auth modal.
+- Post-register landing: `/register/success` (check email + resend form).
 
-### Backend Requirements:
-- `POST /register` — validate input (including nickname and kingdom selection), create user (unverified, `kingdom_id` set), assign a random available NPC team (`RegistrationService`), send verification email
-- Email uniqueness validation (reported openly: "This email is already registered")
-- **Nickname**: required; uniqueness checked against `display_name_slug` (webalized form); reported openly: "This nickname is already taken"; stored as entered in `display_name`, webalized form in `display_name_slug`; displayed everywhere as entered
-- Kingdom exists + has available capacity (returned as 422 with field error if full)
-- Password strength requirements (min 8, max 4096)
-- CSRF token (intent: `register`) — hidden `_token` field validated server-side; 403 on invalid/missing
-- Rate limiting: `register` limiter — 10 requests per hour per IP; returns 429 with `Retry-After` header on exceed
-- On success: show confirmation message ("Check your email to verify your account")
-- Does NOT log in immediately — account requires email verification first
-
-### Email Verification:
-- Verification email contains a signed, time-limited link (24h expiry)
-- `GET /verify-email?token=...` — validates token, activates account (`is_verified = true`), logs in and redirects to **Team Dashboard**
-- NPC team assignment happens at **registration** (`RegistrationService`), not on verify-email — see [auth-system.md](../systems/auth-system.md)
-- Resend verification link available (subject to same rate limiter)
+Kingdom pick lives on the register panel — [01-kingdom-selection.md](01-kingdom-selection.md).
 
 ---
 
-## Login Modal
+## Register — Implemented
 
-### Displayed Information:
-- Login form (email + password)
-- "Remember me" checkbox
-- Link to switch to Register modal ("Create new account")
-- Link to Password Reset
+**Routes:** `GET, POST /register`, `GET /register/success`, `POST /register/resend-verification`, `GET /verify-email`.
 
-### Possible Actions/Buttons:
-- **Login** — authenticate and redirect to Team Dashboard (inside section)
-- **Switch to Register** — close Login modal, open Register modal
-- **Forgot Password** — navigate to password reset flow
+### Displayed information
 
-### Backend Requirements:
-- `POST /login` — validate credentials, create session
-- CSRF token (intent: `authenticate`) — hidden `_csrf_token` field validated by Symfony Security; 403 on invalid/missing
-- Rate limiting: built-in `login_throttling` — 5 failed attempts per 15 minutes per IP+email; returns 429 with `Retry-After` header
-- Unverified user attempting login sees: "Please verify your email first."
-- Redirect to Team Dashboard on success (Kingdom and team are already set at registration; there is no post-login Kingdom Selection redirect)
+- Email, password, confirm password, game nickname (`display_name`)
+- Kingdom list (desktop radio cards + mobile `<select>`)
+- Link/button to switch to the login panel
+- Password visibility toggle
+- Server field errors inline; empty-kingdom warning when none are available
 
----
+### Actions
 
-## Password Reset Screen
+- **Register** — `POST /register` (does **not** log in)
+- **Switch to login** — same modal
+- On success: redirect to `/register/success` (check-email copy + resend)
 
-### Displayed Information:
-- Email input (request step)
-- New password + confirm (reset step, via token link)
+### Backend
 
-### Possible Actions/Buttons:
-- **Send Reset Link** — trigger password reset email
-- **Set New Password** — submit new password with valid token
+- `RegistrationService`: create unverified user, set `kingdom_id`, assign a random available NPC team, default `UserSettings`, send verification email
+- Email uniqueness reported openly (`register.email.taken`)
+- Nickname: required; unique on `display_name_slug`; stored as entered in `display_name`
+- Kingdom must exist and have capacity (422-style field error if full)
+- Password: min 8, max 4096
+- CSRF intent `register` (`_token`); 403 / flash on invalid
+- Rate limit `register`: 10/hour/IP; 429 + `Retry-After` on the POST JSON path
+- `GET /verify-email?token=...` — activate, log in, redirect to Team Dashboard (NPC team was assigned at **registration**, not at verify)
+- Resend: `POST /register/resend-verification`, CSRF `register_resend`, same register limiter
 
-### Backend Requirements:
-- `POST /password-reset` — generate token, send email
-- `POST /password-reset/confirm` — validate token, update password
-- Token expiration (e.g., 1 hour)
-- CSRF tokens — intent `password_reset_request` (request step), `password_reset_confirm` (confirm step); 403 on invalid/missing
-- Rate limiting: `password_reset` limiter — 5 requests per hour per IP; returns 429 with `Retry-After` header
+Detail: [auth-system.md](../systems/auth-system.md).
 
 ---
 
-## Form Validation Rules
+## Register — Planned
 
-Validation runs on three layers: HTML5 attributes (immediate), JavaScript (pre-submit UX), and server-side (authoritative). Server-side is always the final authority.
+- Terms of service / privacy policy links (`auth.terms_agree` exists in translations; **not** on the form)
+- OAuth / social login
+- Client-side (JS) field validation beyond HTML5 `required` / `minlength` / `maxlength`
 
-### Register Form
+---
+
+## Login — Implemented
+
+**Route:** `GET, POST /login` (POST is Symfony `form_login` `check_path`).
+
+### Displayed information
+
+- Email (`_username`) + password (`_password`)
+- Remember me (`_remember_me`)
+- Switch to register; forgot-password link → `/password-reset`
+- Authentication error banner (server)
+
+### Actions
+
+- **Login** — session; redirect to Team Dashboard (kingdom and team are already set)
+- **Switch to register** — same modal
+- **Forgot password** — full page
+
+### Backend
+
+- CSRF `_csrf_token` intent `authenticate`
+- `login_throttling`: 5 failed attempts / 15 minutes / IP+email; 429 + `Retry-After`
+- Unverified user: “Please verify your email first.”
+- No post-login kingdom-selection redirect
+
+---
+
+## Password reset — Implemented
+
+**Routes:** `GET, POST /password-reset`, `GET, POST /password-reset/confirm`.
+
+Standalone public pages (`templates/auth/password_reset_request.html.twig`, `password_reset_confirm.html.twig`).
+
+### Displayed information / actions
+
+- Request: email → send reset link
+- Confirm: new password + confirm (token in query); invalid-token alert if missing
+- Back to login
+
+### Backend
+
+- Token via `VerificationToken` (see [auth-system.md](../systems/auth-system.md))
+- CSRF: `password_reset_request` / `password_reset_confirm`
+- Rate limit `password_reset`: 5/hour/IP; 429 + `Retry-After`
+
+---
+
+## Form validation (live)
+
+Authoritative layer is **server-side**. HTML5 attributes run in the browser. Stimulus `auth_modal` does **not** validate on blur or clear errors while typing.
+
+### Register form
 
 | Field | HTML5 attrs | Server rules | Error key |
 |-------|-------------|-------------|-----------|
@@ -91,9 +120,9 @@ Validation runs on three layers: HTML5 attributes (immediate), JavaScript (pre-s
 | Password | `required` `minlength="8"` `maxlength="4096"` | NotBlank, min 8, max 4096 | `register.password.*` |
 | Confirm password | `required` | Must match password field | `register.password_confirm.*` |
 | Display name (nickname) | `required` `maxlength="50"` | NotBlank, max 50, unique (by slug) | `register.display_name.*` |
-| Kingdom | `required` | Must reference an existing Kingdom with available capacity | `register.kingdom.*` |
+| Kingdom | `required` on the control | Existing Kingdom with capacity | `register.kingdom.*` |
 
-### Login Form
+### Login form
 
 | Field | HTML5 attrs | Server rules | Error key |
 |-------|-------------|-------------|-----------|
@@ -102,66 +131,41 @@ Validation runs on three layers: HTML5 attributes (immediate), JavaScript (pre-s
 
 Login errors use a single generic message for invalid credentials (does not reveal which field is wrong).
 
-### Password Reset — Request Step
+### Password reset — request
 
 | Field | HTML5 attrs | Server rules | Error key |
 |-------|-------------|-------------|-----------|
 | Email | `type="email"` `required` `maxlength="180"` | NotBlank, Email format | `password_reset.email.*` |
 
-### Password Reset — Confirm Step
+### Password reset — confirm
 
 | Field | HTML5 attrs | Server rules | Error key |
 |-------|-------------|-------------|-----------|
 | New password | `required` `minlength="8"` `maxlength="4096"` | NotBlank, min 8, max 4096 | `password_reset.password.*` |
 | Confirm password | `required` | Must match new password | `password_reset.password_confirm.*` |
 
-### Decisions
+### Decisions (locked)
 
-- **Password complexity**: Minimum 8 characters only (NIST SP 800-63B recommendation — length over complexity rules). No uppercase/number/special requirements.
-- **Email uniqueness**: Reported openly ("This email is already registered") — acceptable for a game application where UX outweighs enumeration risk.
-- **Max 4096 on passwords**: Prevents DoS via extremely long bcrypt inputs.
+- **Password complexity**: minimum 8 characters only (no uppercase/number/special rules). Max 4096 (bcrypt DoS).
+- **Email uniqueness**: reported openly (“This email is already registered”).
 
 ---
 
-## Error Display Patterns
+## Error display — Implemented
 
-### Layout
+- **Field errors (register):** inline under the input after `POST /register` re-renders the modal.
+- **Login:** banner above the form from Symfony authentication error.
+- **Flashes:** public layout flash bag (rate limit, CSRF, verify/resend, success).
+- **No** `alert()` / `confirm()` dialogs.
+- Messages go through translation keys (`validators` / `security` / `messages`).
 
-- **Field errors**: Displayed inline, directly below the relevant input field. Red text, small font size.
-- **Global errors**: Displayed as a dismissible banner at the top of the modal (above the form).
-- **Success messages**: Green banner at the top (e.g., "Reset link sent").
+## Error display — Planned
 
-### Error Classification
+- JS validation on blur; clear errors while typing; focus first invalid field after submit
+- Dismissible global banner with auto-dismiss timer
 
-| Error type | Display location | Behavior |
-|---|---|---|
-| Missing/invalid field value | Inline below field | Appears on blur (JS) or on submit (server) |
-| Email already registered | Inline below email field | Server-side only |
-| Invalid credentials (login) | Global banner | Generic: "Invalid email or password" |
-| Rate limit exceeded | Global banner | "Too many attempts. Try again in X minutes." |
-| CSRF invalid/expired | Global banner | "Session expired. Please refresh and try again." |
-| Server error (500) | Global banner | "Something went wrong. Please try again later." |
-| Password mismatch | Inline below confirm field | JS: on blur/change; Server: on submit |
+### Translation keys (validators domain)
 
-### UX Rules
-
-1. **No alert()/confirm() dialogs** — all errors are inline or banner.
-2. **Errors clear** when the user starts typing in the affected field (JS layer).
-3. **Focus shifts** to the first field with an error after submit.
-4. **Global banner** is dismissible via X button; auto-dismisses after 10 seconds for non-critical messages.
-5. **All messages are translated** — use Symfony translation keys (locale cs/en), never hardcode strings.
-
-### Translation Key Structure
-
-Error messages use the `validators` translation domain (files: `translations/validators.en.yaml`, `translations/validators.cs.yaml`).
-
-Usage in Twig:
-```twig
-{{ 'register.email.required'|trans({}, 'validators') }}
-{{ 'global.rate_limit'|trans({'%minutes%': retryMinutes}, 'validators') }}
-```
-
-Key reference (see translation files for complete list):
 ```
 register.email.required
 register.email.invalid
@@ -187,8 +191,8 @@ global.server_error
 
 ---
 
-Sections to fill:
-- OAuth/social login buttons (future)
-- UX notes and edge cases (expired sessions, already logged in)
-- Tests and mocks
-- Implementation notes
+## Planned (auth extras)
+
+- OAuth / social login
+- Dedicated handling notes for expired sessions beyond current flashes / login redirect
+- In-session **password change** for logged-in players — not this screen; stay Planned on [19-player-profile-settings.md](19-player-profile-settings.md) (A8.6)

@@ -1,6 +1,6 @@
 # Item System
 
-Reference: [game-summary.md](../game-summary.md#28-item-system)
+Reference: [product/overview.md](../product/overview.md#28-item-system)
 
 Purpose: Document items, equipment slots, dismantling, durability/repair, and marketplace interactions.
 
@@ -159,4 +159,4 @@ See [Marketplace System](marketplace-system.md) for listing, bidding, and transa
 
 - Item generation (loot drops, crafted results) — defined via `CraftingRecipe` entities; actual item generation on crafting completion is deferred (Milestone 8 / future).
 - Durability degradation per battle — ✅ formula above in `LeagueMatchResolutionService`.
-- Enchanting mechanics — not yet designed. Tracked in [known-issues.md](../known-issues.md#2). Essence currency was removed from the live economy.
+- Enchanting mechanics — not yet designed. Tracked in [product/known-issues.md](../product/known-issues.md#2). Essence currency was removed from the live economy.

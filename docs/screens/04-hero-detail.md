@@ -1,40 +1,82 @@
 # Hero Detail Screen
 
-Reference: [screens-overview.md](../screens-overview.md#4-hero-detail-screen)
+Reference: [screens/overview-legacy.md](overview-legacy.md#4-hero-detail-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [hero-system.md](../systems/hero-system.md), [hero-chronicle-system.md](../systems/hero-chronicle-system.md)
 
-Purpose: Per-screen API, events, UI data requirements, and implementation notes.
+**When:** Inspect one hero — overview, equipment, spells, history.
 
-Displayed Information:
-- Hero Header: name (editable), race icon, avatar, level + XP, age indicator, **personality trait badge** (when present)
-- **Personality Trait panel** (overview tab): trait name, category badge, full effect description
-- Primary Attributes: STR, DEX, KON, SPD, INT, WIL, CHA, LCK (values + tooltips)
-- Secondary Attributes: Form %, Fatigue %, Morale, Magic Capacity
-- **Combat statistics** (overview): `matches_played`, `matches_won`, win rate — updated after league fixtures
-- Equipment Slots: visual slots (Main Hand, Off-Hand, Head, Body, Hands, Feet, Amulet, Ring) — eight slots; a single ring
-- Equipped Spells: spell icons + names
-- **History tab:** last 15 entries from `hero_chronicle` (summons, transfers, matches, training, mastery, death)
-- Training tab: recent `hero_training_history` rows + trainer assignment UI
+**Status:** Live at `GET /app/heroes/{id}`. Tabs: `overview`, `equipment`, `spells`, `history`. There is **no** Training tab (assignment sits on overview). There is **no** “assign to formation” control. XP bar is **display-only** until [#6](../product/known-issues.md). Equipment occupancy is [#8](../product/known-issues.md).
 
-Possible Actions/Buttons:
-- Train Attributes — navigate to Training Screen
-- Manage Equipment — Equipment tab / inventory
-- Manage Spells — Spells tab
-- Assign to Formation — quick add
-- Sell on Marketplace
-- Dismiss Hero (financial crisis recovery)
-- Rename Hero
+**Live UI:** `templates/hero/detail.html.twig`, `templates/components/hero/`.
 
-Backend Requirements:
-- Hero detail endpoint (full data including `trait`, `ratings.base_ovr`, `ratings.complex_rating`)
-- Hero update endpoint (rename)
-- Hero dismiss endpoint — `POST /api/v1/heroes/{id}/dismiss`
-- Hero chronicle read — server-rendered via `HeroChroniclePresenter` (no dedicated API yet)
-- Trainer conversion endpoint — `POST /api/v1/training/trainers/promote`
+---
 
-Implementation:
-- **Route:** `GET /app/heroes/{id}` — `HeroController::detail()`; tabs: `overview`, `equipment`, `spells`, `training`, `history`
-- **Header:** `templates/components/hero/header_card.html.twig` — trait badge in meta row
-- **Overview:** `templates/components/hero/combat_stats.html.twig`, `trait_badge.html.twig`
-- **History:** `templates/components/hero/recent_activity.html.twig` with `heroHistory` from presenter
+## Implemented
+
+### Header (`header_card.html.twig`)
+
+- Avatar, status badge, inline rename
+- Race, age + phase, mortality warning
+- Base OVR, complex rating, gold value, weekly salary
+- Level; XP as `hero.xp / (1000 * hero.level)` with a bar — **not** a live level-up threshold (#6)
+- Form, fatigue, morale bars
+- Trait badge + description when present
+- Manage menu (available combatant): sell, dismiss, promote to trainer (cap / unassigned)
+
+### Overview tab
+
+- Primary attributes with gear bonuses (`attributes_panel.html.twig`)
+- Derived combat stats: HP, ATK, SP, DEF, RES, INIT (`derived_combat_stats_panel.html.twig`)
+- Trainer assignment / unassign / forecast ([05-training.md](05-training.md))
+
+Match record (`matches_played`, win rate, fallen, training counts) is on the **History** tab, not overview. Magic capacity is on the **Spells** tab.
+
+### Equipment tab
+
+See [10-item-equipment.md](10-item-equipment.md). Eight slots, one ring, click-to-equip.
+
+### Spells tab
+
+See [11-spell-management.md](11-spell-management.md). Equipped slots, school mastery, learned list, inline academy store.
+
+### History tab
+
+- Combat/training summary tiles (`combat_stats.html.twig`): matches, win rate, fallen, completed trainings, total stat gain
+- Weapon mastery panel
+- Last chronicle entries via `HeroChroniclePresenter` (`recent_activity.html.twig`) — summons, transfers, matches, training, mastery, death. Server-rendered; no hero-chronicle REST API.
+
+### Actions
+
+| Action | How |
+|--------|-----|
+| Rename | `hero-rename` → `PUT /api/v1/heroes/{id}` |
+| Sell | Modal → marketplace listing |
+| Dismiss | Modal → `POST /api/v1/heroes/{id}/dismiss` |
+| Promote | `POST /api/v1/training/trainers/promote` |
+| Assign / unassign trainer | Training APIs on overview |
+| Equip / spells | Other tabs |
+
+### Backend
+
+- **Web:** `GET /app/heroes/{id}` → `Web\HeroController::detail()` (`?tab=`)
 - **API:** `GET /api/v1/heroes/{id}` includes `trait`, `ratings` via `HeroService::serialize()`
-- **Domain docs:** [hero-system.md](../systems/hero-system.md), [hero-chronicle-system.md](../systems/hero-chronicle-system.md)
+
+---
+
+## Planned
+
+Original sketch extras — do not treat as a contract:
+
+- Dedicated Training tab
+- Quick-add to formation
+- 3D avatar
+- XP bar that actually levels the hero (#6 / A7.1)
+
+---
+
+## Frontend
+
+| Piece | Location |
+|-------|----------|
+| Page | `templates/hero/detail.html.twig` |
+| Header / panels | `templates/components/hero/` |
+| Stimulus | `hero_rename`, `hero_dismiss`, `hero_sell`, `hero-promote`, `training`, `equipment`, `spellbook`, `tab` |

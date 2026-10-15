@@ -2,7 +2,7 @@
 
 > **Status:** Not implemented and not currently planned. The crafting backend and UI were removed from the codebase. This document describes the intended design for a possible future phase.
 
-Reference: [screens-overview.md](../screens-overview.md#20-crafting-screen-deferred) and [crafting-system.md](crafting-system.md)
+Reference: [screens/overview-legacy.md](../screens/overview-legacy.md#20-crafting-screen-deferred) and [crafting-system.md](crafting-system.md)
 
 Purpose: Per-screen API, events, UI data requirements, and implementation notes.
 

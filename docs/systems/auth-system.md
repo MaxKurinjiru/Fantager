@@ -1,14 +1,25 @@
 # Auth System
 
-Reference: [arch-spec.md](../arch-spec.md#security-requirements)
+Reference: [architecture/overview.md](../architecture/overview.md#security-requirements)
 
-Purpose: Document authentication, registration, session management, and authorization strategy.
+Status: Live (session email/password)  
+Screens: [00-auth-screens.md](../screens/00-auth-screens.md), [01-kingdom-selection.md](../screens/01-kingdom-selection.md), [19-player-profile-settings.md](../screens/19-player-profile-settings.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: password change / extra notification prefs (A8.6)
+
+Purpose: Document authentication, registration, session management, and authorization.
+
+## Remaining work
+
+- [x] Register (kingdom + nickname + NPC team), email verify, login, logout, password reset, account settings (locale, UI prefs, email change, delete)
+- [ ] Session password change (Design first → A8.6)
+- [ ] Extra security headers (CSP / HSTS / frame options) — deferred; cookies already httpOnly + `secure=auto` + `sameSite=lax`
+- [ ] Dedicated registration/login/session PHPUnit suite (today: `UserSettingsServiceTest`, `PlayerInactivityServiceTest`)
 
 ## Overview
 
-The auth system handles player identity and access control. The player selects a Kingdom (game world) as part of the registration form. During the registration process, the player is immediately assigned a random available NPC team in their chosen Kingdom to ensure that player capacity numbers are always up to date. After email verification, the player is redirected to the Team Dashboard.
+The auth system handles player identity and access control. The player selects a Kingdom (game world) as part of the registration form. During registration, a random available NPC team in that Kingdom is assigned immediately so capacity stays accurate. The user lands on `/register/success` until they verify email; **after** `GET /verify-email`, they are auto-logged in and sent to the Team Dashboard.
 
-## Planned Approach
+## Approach (live)
 
 - **Session-based authentication** (Symfony Security component)
 - **Registration**: Email, password + Kingdom selection → random NPC team assigned immediately → email verification required (unverified registrations older than 24 hours are deleted daily at 03:30 AM along with their team assignment)
@@ -105,8 +116,8 @@ Rate limiting protects auth endpoints against brute-force attacks, credential st
 5. Server sends verification email (via `symfony/mailer`) with a signed, time-limited token
 6. User clicks link in email → `GET /verify-email?token=...`
 7. Server validates token, sets `is_verified = true`
-8. During the initial registration step (step 3), the server **immediately and automatically** assigns a random available NPC team from the player's Kingdom — sets `user_id` on the team and sets `is_npc = false`. A **`player_joined`** chronicle entry is written to `team_chronicle`. The inherited team includes **10 heroes** (see [team-system.md](../systems/team-system.md#starting-roster)).
-9. User is logged in and redirected to Team Dashboard
+8. During the initial registration step (step 3), the server **immediately and automatically** assigns a random available NPC team from the player's Kingdom — sets `user_id` on the team and sets `is_npc = false`. A **`player_joined`** chronicle entry is written to `team_chronicle`. The inherited team includes **10 heroes** (see [team-system.md](team-system.md#starting-roster)).
+9. User is redirected to `/register/success` (check-your-email). They are **not** logged in until verification. After `GET /verify-email?token=...`, the account is activated, the session is created, and they go to the Team Dashboard.
 
 **Unverified users cannot log in.** Login attempt by unverified user shows: "Please verify your email first."
 
@@ -150,10 +161,27 @@ Rate limiting protects auth endpoints against brute-force attacks, credential st
 
 ---
 
-## Sections to fill
+## Security headers and cookies
 
-- Security headers and cookie hardening (deferred)
-- Tests: registration, email verification, login, unauthorized access, session expiry
+Live cookie hardening (`config/packages/framework.yaml` + `security.yaml`):
+
+- Session: `httpOnly` (Symfony default), `cookie_secure: auto`, `cookie_samesite: lax`
+- Remember-me: **30 days** (`lifetime: 2592000`), `httpOnly`, same secure/sameSite defaults
+
+**Not set** in app config (deferred, not a gameplay blocker): Content-Security-Policy, HSTS, `X-Frame-Options` / `frame-ancestors`. Do not treat them as shipped.
+
+---
+
+## Tests
+
+| Coverage | Location |
+|----------|----------|
+| User settings lazy create | `tests/Service/Auth/UserSettingsServiceTest.php` |
+| Inactivity warning / release | `tests/Service/Auth/PlayerInactivityServiceTest.php` |
+
+There is **no** dedicated PHPUnit file for register → verify → login, CSRF 403, rate-limit 429, or session expiry. Those flows are live in `RegistrationService`, `UserChecker`, and the firewall; add tests there when touching auth — do not invent a suite in this step.
+
+---
 
 ## User data model (implemented)
 
@@ -167,7 +195,7 @@ Service: `App\Service\Auth\UserSettingsService` — lazy `getOrCreate()` for exi
 
 ## Auth endpoints
 
-Web session auth (implemented): register, verify-email, login, logout, password-reset — see [route-map.md](../route-map.md#auth).
+Web session auth (implemented): register, verify-email, login, logout, password-reset — see [architecture/routes.md](../architecture/routes.md#auth).
 
 | Method | Path | Status |
 |--------|------|--------|
@@ -182,5 +210,5 @@ Web session auth (implemented): register, verify-email, login, logout, password-
 
 ## Notes
 
-- This is a critical path blocker — no other system can be meaningfully tested without auth.
-- Keep the initial implementation minimal: email/password, session, basic roles.
+- OAuth2 / social login and JWT for a public API stay **future** (see Approach above).
+- Password change while logged in stays planned (A8.6 / screen 19). Email change and account deletion use signed tokens (routes on [architecture/routes.md](../architecture/routes.md#auth)).

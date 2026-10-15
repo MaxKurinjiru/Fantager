@@ -1,6 +1,6 @@
 # Graveyard System
 
-Reference: [game-summary.md](../game-summary.md#213-graveyard-system)
+Reference: [product/overview.md](../product/overview.md#213-graveyard-system)
 
 Purpose: Permanent memorial records for heroes and trainers who leave the team.
 
@@ -74,7 +74,7 @@ No minimum trainer count — trainers do not affect match eligibility.
 | GET | `/api/v1/graveyard` | List memorial records (`?role=`, `?cause=`, `?race=`, `?search=`) + summary stats |
 | GET | `/api/v1/graveyard/{id}` | Memorial detail |
 
-See [route-map.md](../route-map.md#graveyard).
+See [architecture/routes.md](../architecture/routes.md#graveyard).
 
 ---
 

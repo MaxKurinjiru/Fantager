@@ -1,54 +1,68 @@
 # Marketplace Screen
 
-Reference: [screens-overview.md](../screens-overview.md#15-marketplace-screen), [economy-system.md](../systems/economy-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#15-marketplace-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [marketplace-system.md](../systems/marketplace-system.md), [economy-system.md](../systems/economy-system.md)
 
-Purpose: Per-screen API, events, UI data requirements, and implementation notes.
+**When:** Browse, buy, and list heroes, trainers, and items.
 
-> **Implementation:** Marketplace is a **standalone screen** at `GET /app/marketplace`. The financial ledger lives on a separate screen at `GET /app/finance` (sidebar → Finance).
+**Status:** Live at `GET /app/marketplace`. Ledger is **`/app/finance`**, not a marketplace tab. Price floor/ceiling is **not** live (A7.10). Auctions **are** live (bid API + UI). Hero sell also starts from hero-detail manage menu.
 
-## Routes
+**Live UI:** `templates/marketplace/index.html.twig`, `templates/components/marketplace/`.
 
-| Route | Tab | Purpose |
-|-------|-----|---------|
-| `/app/marketplace?tab=browse` | browse | Search and buy listings |
-| `/app/marketplace?tab=basic_equipment` | basic_equipment | Fixed-price basic gear merchant (`POST /app/marketplace/buy-basic`) |
-| `/app/marketplace?tab=sell` | sell | Create new listings |
-| `/app/marketplace?tab=mylistings` | mylistings | Manage own active listings |
-| `/app/marketplace?tab=history` | history | Purchase/sale transaction history |
+---
 
-**Related screen:** full gold audit log → `/app/finance` (not a marketplace tab).
+## Implemented
 
-Displayed Information:
-- Marketplace Tabs: Heroes, Items, Trainers
-- **Basic equipment tab:** fixed-price starter gear catalog from `ItemService::BASIC_EQUIPMENT`
-- Listings:
-	- Thumbnail, name, level/age, key stats, rarity
-	- **Personality trait** (hero listings only, when present)
-	- Price (Buy Now), seller name, time remaining, bids (for auctions)
-- Filtering & Sorting:
-	- Race, level, age phase, price range, base OVR, complex rating, rarity, seller reputation
-- Search Bar: text search by name or attributes
+### Tabs (`?tab=`)
 
-Possible Actions/Buttons:
-- Buy Now
-- Place Bid (auction)
-- View Details / Inspect Hero
-- List Item/Hero for Sale
-- Manage My Listings
-- View Purchase History
-- **Buy basic equipment** (basic_equipment tab, CSRF-protected form)
+| Tab | Purpose |
+|-----|---------|
+| `browse` | Search and buy (`?category=hero\|trainer\|item`) |
+| `basic_equipment` | Fixed-price merchant (`POST /app/marketplace/buy-basic`) |
+| `sell` | Create listings (heroes, items, trainers) |
+| `mylistings` | Own active listings |
+| `history` | Purchase/sale history |
 
-Backend Requirements:
-- Listings endpoint with filters and pagination — `GET /api/v1/marketplace`
-- Purchase endpoint — `POST /api/v1/marketplace/purchase`
-- Listing creation/cancellation — `POST` / `DELETE /api/v1/marketplace/listings/{id}`
-- Transaction fee calculation and Royal Treasury collection — `RoyalTreasuryService`
-- Auction processing and bid validation — `POST /api/v1/marketplace/bid`
-- Basic gear purchase — `POST /app/marketplace/buy-basic` → `ItemService::purchaseBasicItem()`
+Header: treasury badge.
 
-Implementation:
-- **Controller:** `Web\MarketplaceController` (`app_marketplace`), `Api\V1\MarketplaceController`
-- **Stimulus:** `marketplace_controller.js`
-- **Hero trait on browse cards:** `template-card-hero` + `marketplace_controller.js#renderHeroTrait`; labels via `data-marketplace-traits-value`
-- **Hero trait on sell picker:** `trait_badge.html.twig` in `sell_tab.html.twig`
-- **API:** Hero entity in `MarketplaceService::serializeListing()` includes nullable `trait`, `ratings.base_ovr`, `ratings.complex_rating`
+### Browse
+
+Segmented type control. Filters: search, race, level min/max, age phase, rarity (items), price, base OVR / complex rating, seller reputation, sort. Cards: thumbnail/name, level/age, key stats, rarity, **trait** on heroes, price, seller, time remaining, highest bid / no bids for auctions. Buy now / bid / buyout.
+
+### Other tabs
+
+- Basic equipment: `ItemService::BASIC_EQUIPMENT`, CSRF form
+- Sell: entity picker (hero picker shows trait badge), buy-now vs auction, tax rate
+- My listings: cancel (auctions with bids cannot cancel)
+- History: settled transactions
+
+### Backend
+
+| Method | Path |
+|--------|------|
+| GET | `/api/v1/marketplace` |
+| POST | `/api/v1/marketplace/listings` |
+| DELETE | `/api/v1/marketplace/listings/{id}` |
+| POST | `/api/v1/marketplace/purchase` |
+| POST | `/api/v1/marketplace/bid` |
+| GET | `/api/v1/marketplace/my-listings` |
+| GET | `/api/v1/marketplace/history` |
+| POST | `/app/marketplace/buy-basic` |
+
+Hero payloads include nullable `trait` and `ratings`. Fees: `RoyalTreasuryService`.
+
+---
+
+## Planned
+
+- Suggested list price from complex rating as a hint only (A7.10)
+- Price floor/ceiling (cut from live overview)
+
+---
+
+## Frontend
+
+| Piece | Location |
+|-------|----------|
+| Page | `templates/marketplace/index.html.twig` |
+| Tabs | `templates/components/marketplace/` |
+| Stimulus | `marketplace` (`template-card-hero`, `data-marketplace-traits-value`) |

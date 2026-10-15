@@ -207,7 +207,7 @@ Load via `HeroRatingConfig` service (same pattern as `RaceConfig`).
 - [x] Add `config/game/hero-rating.yaml` with placeholder weights and economy constants.
 - [x] Add `HeroRatingConfig` service + Symfony service binding.
 - [x] Cross-link from [hero-system.md](hero-system.md) § Attribute calculations.
-- [x] Note planned status in [docs/README.md](../README.md) implementation table.
+- [x] Note planned status in [systems/README.md](README.md) implementation table.
 
 **Deliverable:** Config loads; no API changes.
 
@@ -259,7 +259,7 @@ Load via `HeroRatingConfig` service (same pattern as `RaceConfig`).
 - [x] Optional Twig helper `hero_rating(Hero $hero): HeroRating` in `GameExtension` for templates.
 - [x] Twig helper `hero_trait_js_labels()` for Stimulus trait badges (summoning, marketplace).
 - [x] Player-facing trait badges — see [hero-system.md](hero-system.md) § Player UI.
-- [x] Update [route-map.md](../route-map.md) response shape notes for `GET /api/v1/heroes` and hero detail.
+- [x] Update [architecture/routes.md](../architecture/routes.md) response shape notes for `GET /api/v1/heroes` and hero detail.
 
 **Deliverable:** JSON includes `trait` and rating fields; trait visible in roster, detail, summoning reveal, and marketplace UI.
 
@@ -326,7 +326,7 @@ Load via `HeroRatingConfig` service (same pattern as `RaceConfig`).
 | `src/Service/Training/TrainerDismissalService.php` | Rating-based estimate (if applicable) |
 | `src/Service/Team/NpcSimulationService.php` | Rating-based market price |
 | `docs/systems/hero-system.md` | Link to this doc |
-| `docs/README.md` | Implementation status row |
+| `docs/systems/README.md` | Implementation status row |
 
 ---
 

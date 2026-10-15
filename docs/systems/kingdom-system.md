@@ -1,50 +1,147 @@
-# Kingdom System & Server Split
+# Kingdom System
 
-Reference: [game-summary.md](../game-summary.md#21-kingdom-system--server-split)
+Reference: [product/overview.md](../product/overview.md#21-kingdom-system--server-split)
 
-Purpose: Document design, data model, APIs, and deployment considerations for Kingdom/Server split.
+Status: Live  
+Screens: [01-kingdom-selection.md](../screens/01-kingdom-selection.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: [known-issues.md](../product/known-issues.md) #6 (`Kingdom.level_cap` / `xp_modifier` unused until an XP curve exists)
 
-## Key Design Decision: Kingdom as Shared Game World
+Purpose: Document the live multi-tenant kingdom model — settings, initialization, query isolation, game-speed multipliers, and the public list API.
 
-**Kingdom = one game world (server instance) shared by many players.**
+## Remaining work
 
-Each player (User + Team) belongs to exactly one Kingdom, chosen once at account creation (after email verification). A Kingdom is **not** owned by a single player — it is a shared environment with its own economy, events, and league.
+- [x] Shared DB + `kingdom_id` scoping, init command, registration pick, `GET /api/v1/kingdoms`
+- [ ] `level_cap` / `xp_modifier` production use (Design first → #6 / A7.1)
+
+Do not invent a separate process or database per kingdom.
+
+---
+
+## Overview
+
+A **Kingdom** is one shared game world inside a single application. Isolation is **`kingdom_id` on rows**, not a separate server instance.
+
+Each player (`User` + `Team`) belongs to exactly one Kingdom, chosen once on the **registration form** (permanent; no post-login switcher). A Kingdom is not owned by a player — it is a shared environment with its own economy, league, marketplace, and ticks.
 
 - Relationship: `Kingdom (1) → Users (N)`, `Kingdom (1) → Teams (N)`, `User (1) → Team (1)`
-- The player chooses a Kingdom as part of the **registration form** (permanent, cannot be changed later).
-- During registration, the player is assigned a random available NPC team within their chosen Kingdom (see [auth-system.md](auth-system.md)).
-- `kingdom_id` on User and Team scopes all data queries, background jobs, and API calls to the correct game world.
+- During registration, the player is assigned a random available NPC team in that Kingdom (see [auth-system.md](auth-system.md)).
+- Repositories, background ticks, and API queries scope by `kingdom_id`. League, marketplace, mail, and forum do not cross kingdoms.
 
-## Kingdom Initialization
+---
 
-When a new Kingdom is created (by an admin or automated setup), the following steps happen automatically in order:
+## Data model
 
-1. **Kingdom is persisted** with all settings (language, timezone, game_speed, `league_tiers_config`, etc.).
-2. **First LeagueSeason is created** (`season_number = 1`, status `scheduled` or `active` depending on the start date). `LeagueTier` and `LeagueGroup` rows are created from `league_tiers_config` — the bracket skeleton exists but is empty.
-3. **NPC teams are created and immediately seeded** into the league groups. Each team (`is_npc = true`, `user_id = NULL`) is created with generated name and emblem and placed directly into a `LeagueGroup`, and a `LeagueStanding` row is created for it. Each new team receives a chronicle entry `team_established` in `team_chronicle`. All groups are filled in one pass.
-4. **Heroes are generated and assigned** to each NPC team — **10 heroes per team**, fully staffed and functional before the Kingdom opens to players.
+Canonical columns: [entities.md](../architecture/entities.md) § Kingdom Domain.
 
-When a real player registers, one randomly selected NPC team (with `user_id IS NULL`) in that Kingdom is assigned to the player **during registration** (`player_joined` chronicle entry). The team's `user_id` is set to the user, and `is_npc` is set to `false`. See [auth-system.md](auth-system.md) and [team-chronicle-system.md](team-chronicle-system.md).
+| Entity | Table | Role |
+|--------|-------|------|
+| **Kingdom** | `kingdom` | World settings and Royal Treasury balance |
+| **KingdomTickLog** | `kingdom_tick_log` | Idempotent tick executions (see [calendar-system.md](calendar-system.md)) |
 
-Sections to fill:
-- Overview & purpose
-- Data model (tables, key fields)
-- API endpoints (routes, payloads)
-- Server provisioning and isolation
-- Game-speed and tick-rate handling
-- Migration and cross-kingdom considerations (if any)
-- Tests and integration points
-- Implementation notes (folders, candidate services)
+**Kingdom fields (live):** `name`, `language`, `timezone`, `game_speed`, `marketplace_tax_rate`, `season_length`, `league_tiers_config` (JSON), `royal_treasury_gold`.
 
-Summary (to extract from game-summary):
-- Kingdom-specific global settings: language, timezone, gameSpeed, marketplaceTaxRate, seasonLength, **leagueTiersConfig** (tiers, groups per tier, teams per group — player capacity is derived from this), levelCap, xpModifier. `craftingBoost` is deferred with the crafting system.
-- Server tick responsibilities: fatigue recovery, league match processing, training tick, marketplace auction processing, hero aging, Royal Treasury distribution, fan club evolution, inactive player cleanup. *(Dungeon and crafting ticks deferred.)*
+**Stored but unused until #6:** `level_cap` (default 100), `xp_modifier` (default `1.00`).
 
-APIs:
-- `GET /api/v1/kingdoms` — list kingdoms (id, name, language, timezone, game_speed, player_count, capacity from `league_tiers_config`, has_active_season). Implemented by `Api\V1\KingdomController`.
-- Kingdom is chosen **on the registration form**, not via a separate POST. Registration is blocked when the kingdom has no active season (`register.kingdom.no_active_season`) or is at capacity.
+Player **capacity** is derived from `league_tiers_config`: `sum(tier.groups) × teams_per_group`. There is no separate `max_players` column.
 
-Implementation notes:
-- Partition data by `kingdom_id` in DB queries and indexes.
-- Ensure jobs and cron workers run per-kingdom to respect settings and Game Speed multipliers.
+`season_length` defaults to **28** in the entity; live seasons are **77 days** (11 weeks) via calendar/league scheduling — [calendar-system.md](calendar-system.md).
 
+---
+
+## Kingdom settings
+
+| Setting | Live? | Effect |
+|---------|-------|--------|
+| Language | Yes | Default UI locale for new users in this kingdom |
+| Timezone | Yes | Tick wall-clock in kingdom-local time |
+| Game speed | Yes | Multiplier on some tick/economy effects (not the tick clock itself) — see below |
+| Marketplace tax | Yes | Sale fee → Royal Treasury |
+| Season length | Yes | Stored; season timeline is 77 days in calendar/league |
+| `league_tiers_config` | Yes | Bracket shape + derived player capacity |
+| Level cap / XP modifier | No | Unused until [known-issues.md](../product/known-issues.md) #6 |
+
+Crafting boost is **deferred** with the crafting system (`future/`).
+
+---
+
+## Isolation (not a server split)
+
+- **One shared MariaDB** with `kingdom_id` on world-scoped tables. There is no per-kingdom database or process.
+- **No player transfer** between kingdoms after registration.
+- **No cross-kingdom** league fixtures, marketplace listings, mail, or forum threads.
+- Tick workers iterate kingdoms independently (`app:ticks:run` / `KingdomTickRunnerService`) so each world’s timezone and `game_speed` apply.
+
+“Server provisioning” and cross-kingdom migration are **not implemented** and are not planned in this alignment wave.
+
+---
+
+## Game speed
+
+`Kingdom.game_speed` is a decimal (default `1.00`). Scheduled ticks still fire at the calendar times in [calendar-system.md](calendar-system.md). Speed scales **magnitudes**, for example:
+
+- Daily **aging** increment (`round(1 × game_speed)` on `Hero.age` raw tenths; Undead excluded)
+- **Summon** cap per weekly cycle (`max(1, round(1 × game_speed))`)
+- HQ **upgrade duration** (shorter at higher speed)
+- HQ **maintenance**, training gains, **fan-club** drift / match deltas, arena-related scaling
+
+Full tick list: [calendar-system.md](calendar-system.md#weekly-server-tick-schedule). Dungeon and crafting ticks are deferred, not in the runner.
+
+---
+
+## Kingdom initialization
+
+Admin/console: `php bin/console app:kingdom:initialize "Name"` (`InitializeKingdomCommand` → `KingdomInitializationService`). Settings come from `config/kingdom/*.defaults.json`.
+
+When a new Kingdom is created, in order:
+
+1. **Kingdom is persisted** with language, timezone, game speed, tax, season length, `league_tiers_config`, etc.
+2. **First `LeagueSeason`** is created (`season_number = 1`). `LeagueTier` and `LeagueGroup` rows are built from `league_tiers_config` — the bracket skeleton exists but is empty until teams are placed.
+3. **NPC teams** fill every group (`is_npc = true`, `user_id = NULL`): generated name/emblem, `LeagueStanding`, chronicle `team_established`.
+4. **Heroes** — **10 per team**, generated with Summoning Chamber bonuses from the new HQ (`KingdomInitializationService::extractChamberBonuses()`). Each team also gets a default formation.
+
+When a real player registers, one randomly selected unclaimed NPC team (`user_id IS NULL`) in that Kingdom is assigned **during registration** (`player_joined` chronicle). `user_id` is set and `is_npc` is set to `false`. See [auth-system.md](auth-system.md) and [team-chronicle-system.md](team-chronicle-system.md).
+
+Optional flags on the command (`--test`, `--start-offset-days`, `--catch-up-ticks`) shift season start and can run missed ticks synchronously — local/dev helpers, not a second architecture.
+
+---
+
+## APIs
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/api/v1/kingdoms` | Public. `KingdomService::listWithCapacity()` |
+
+Kingdoms **without an active season are omitted** from the list (not a `has_active_season` field). Each item:
+
+```json
+{
+  "id": 1,
+  "name": "Main Kingdom",
+  "language": "en",
+  "timezone": "Europe/Prague",
+  "game_speed": "1.00",
+  "season_length": 77,
+  "capacity": 60,
+  "player_count": 12
+}
+```
+
+Kingdom is chosen **on the registration form**, not via a separate POST. Register Twig uses server-rendered `auth_kingdoms()`; the JSON list is the same data for other clients. Registration is blocked when the kingdom has no active season (`register.kingdom.no_active_season`) or is at capacity (`KingdomService::hasCapacity()`).
+
+Related (other systems): `GET /api/v1/kingdom/{id}/calendar` — [calendar-system.md](calendar-system.md). Canonical list: [architecture/routes.md](../architecture/routes.md).
+
+---
+
+## Implementation notes
+
+| Piece | Location |
+|-------|----------|
+| Entity | `src/Entity/Kingdom/Kingdom.php`, `KingdomTickLog.php` |
+| List / capacity / active season | `App\Service\Kingdom\KingdomService` |
+| Bootstrap | `App\Service\Kingdom\KingdomInitializationService`, `app:kingdom:initialize` |
+| Tick runner | `KingdomTickRunnerService`, `ExecuteSingleTickHandler` |
+| Config | `config/kingdom/*.defaults.json` |
+| API | `Api\V1\KingdomController` |
+| Register pick | `RegistrationService` + [01-kingdom-selection.md](../screens/01-kingdom-selection.md) |
+
+**Tests:** tick runner/log — `tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php`, `tests/Repository/KingdomTickLogRepositoryTest.php`. No dedicated `KingdomService` unit test file yet.
