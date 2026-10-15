@@ -7,6 +7,9 @@ namespace App\Tests\Controller\Api\V1;
 use App\Controller\Api\V1\ArenaController;
 use App\Entity\Auth\User;
 use App\Entity\Team\Team;
+use App\Repository\FriendlyMatch\FriendlyMatchRepository;
+use App\Repository\Team\TeamRepository;
+use App\Service\FriendlyMatch\FriendlyMatchService;
 use App\Service\Headquarters\ArenaService;
 use App\Service\Translation\UserMessageTranslator;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -54,7 +57,12 @@ class ArenaControllerTest extends TestCase
         $container->method('has')->willReturnCallback(static fn (string $id): bool => 'security.token_storage' === $id);
         $container->method('get')->willReturnCallback(static fn (string $id) => 'security.token_storage' === $id ? $tokenStorage : null);
 
-        $this->controller = new ArenaController($this->arenaService);
+        $this->controller = new ArenaController(
+            $this->arenaService,
+            $this->createStub(FriendlyMatchService::class),
+            $this->createStub(FriendlyMatchRepository::class),
+            $this->createStub(TeamRepository::class),
+        );
         $this->controller->setContainer($container);
         $this->controller->setUserMessageTranslator($this->userMessages);
     }

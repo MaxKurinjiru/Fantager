@@ -305,7 +305,7 @@ class FriendlyMatchService
      */
     public function serializeList(array $matches): array
     {
-        return array_values(array_map($this->serialize(...), $matches));
+        return array_map($this->serialize(...), $matches);
     }
 
     // -------------------------------------------------------------------------
