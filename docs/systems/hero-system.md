@@ -2,23 +2,91 @@
 
 Reference: [product/overview.md](../product/overview.md#24-hero-system)
 
-Purpose: Document hero lifecycle, attributes, aging, relationships, and persistence.
+Status: Live (core) — XP without level-up is [#6](../product/known-issues.md)  
+Screens: [03-hero-roster.md](../screens/03-hero-roster.md), [04-hero-detail.md](../screens/04-hero-detail.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: [known-issues.md](../product/known-issues.md) #6 (XP curve), #7 / #9 (Loner / race synergy unused in combat)
 
-Sections to fill:
-- Hero data model
-- Attribute calculations and derived stats
-- Age, mortality, and death mechanics
-- Relationship matrix and effects
-- Equipment and magic capacity integration
-- API endpoints and DTOs
-- Tests and edge cases
-- Implementation notes
+Purpose: Document hero lifecycle, attributes, aging, mortality, relationships, and persistence.
 
-Summary:
+## Remaining work
+
+- [x] Generation, roster/detail APIs, traits, mastery/attunement, dismiss → graveyard
+- [x] Match XP writes `Hero.xp` (Library `xp_gain_pct` applies)
+- [ ] Production `HeroService::levelUp()` (Design first → #6 / A7.1)
+- [ ] In-combat race synergy / Loner effect (Design first → #7 / #9)
+
+---
+
+## Summary
+
 - Heroes are defined by race, age, primary attributes (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) in the **1–20** range, and secondary stats (form, fatigue, morale).
 - No rarity or class: value derives from training and equipment.
+- See [hero-rating-system.md](hero-rating-system.md) for **base OVR** (0–100, cross-race) and **complex rating** (0–9999, intrinsic hero value for economy).
 
-See [hero-rating-system.md](hero-rating-system.md) for **base OVR** (0–100, cross-race) and **complex rating** (0–9999, intrinsic hero value for economy).
+---
+
+## Data model
+
+Canonical columns: [entities.md](../architecture/entities.md) § Hero Domain.
+
+| Entity | Table | Role |
+|--------|-------|------|
+| **Hero** | `hero` | Combatant or trainer; attributes, XP, ratings, trait, status |
+| **WeaponMastery** | `weapon_mastery` | Per-style tier, XP, attunement |
+| **SchoolMastery** | `school_mastery` | Per-school tier, XP |
+| **HeroSpell** | `hero_spell` | Learned spells and equipped slots |
+| **HeroChronicle** | `hero_chronicle` | Per-hero event log — [hero-chronicle-system.md](hero-chronicle-system.md) |
+| **HeroTrainingHistory** | `hero_training_history` | Weekly training results — [training-system.md](training-system.md) |
+
+**Hero status (`HeroStatus`):** live writers use `available`, `selling`, `dead`. `in_match` and `recovering` have no production setter. `retired` is reserved (exclusion filters treat it like dead — A6.2).
+
+**Role:** `combatant` or `trainer`. Trainers are the same entity; they do not count toward Barracks roster cap.
+
+---
+
+## Age, mortality, and death
+
+Race age data lives in `config/game/races.yaml` under each race's `age` block. Displayed age is `floor(age_raw / 10)` (`Hero::getAge()`).
+
+| Milestone (player-facing) | Config key | Meaning |
+|---------------------------|------------|---------|
+| Minimum Age | `min` | Lowest recruitment age |
+| Max Junior Age | `max_junior` | Upper bound for junior phase |
+| Prime Age Limit | `prime_limit` | Last age with full training efficiency |
+| **Mortality Threshold** | `mortality_threshold` | Age from which permanent death risk escalates after combat KOs |
+
+**Implementation:** `RaceConfig::getMortalityThreshold()`, `resolveAgePhase()`, `isAtOrAboveMortalityThreshold()`. Twig helpers: `hero_age_phase()`, `hero_mortality_threshold()`, `hero_at_mortality_threshold()`.
+
+**Daily aging** (Daily Reset tick): non-Undead heroes gain `round(1 × game_speed)` on `age` raw. At speed `1.00` that is **0.1 displayed years per day**. Undead do not age.
+
+**Combat KO aging** (league and friendly resolution): each KO in a match adds escalating full years (`sum 1..D` KOs → years × 10 on raw). **Permanent death** only for elders at/above the mortality threshold: chance `5% + 4%` per year above the threshold, capped at 100%. A KO is not always death ([known-issues.md](../product/known-issues.md) #1 / #9). Permanent deaths write a graveyard memorial and remove the live hero — [graveyard-system.md](graveyard-system.md).
+
+**Dismiss** is a player action (`POST /api/v1/heroes/{id}/dismiss`), not combat: 40% compensation, memorial `dismissed`, entity deleted. Team must keep ≥ 6 available combatants. See [team-system.md](team-system.md#hero-dismissal).
+
+There is no live “death of old age” tick (`MemorialCause::Age` is reserved).
+
+---
+
+## Relationship matrix
+
+Race affinities live in `config/game/race_relations.yaml` (0–100). They are **not** stored on the hero.
+
+Live uses of the matrix (not a per-hero relationship graph):
+
+- **Summoning** compatible-race pool (relationship ≥ 50; Genie can summon all races) — [summoning-system.md](summoning-system.md). NPC marketplace may apply a stricter Genie-only filter ([A7.9](../roadmap/current.md))
+- **Team chemistry** (combatants only; display-only until [#7](../product/known-issues.md)) — [team-system.md](team-system.md#team-chemistry)
+- Arena adaptation and weekly training group modifiers — [headquarters-system.md](headquarters-system.md), [training-system.md](training-system.md)
+
+In-combat race-synergy **tables** are deferred ([#9](../product/known-issues.md)). Loner’s `ignoresRaceSynergy` is serialized but unused.
+
+---
+
+## Equipment and magic capacity
+
+- **Items:** eight slots on the hero (`main_hand` … `ring`). Equip/unequip is `PUT /api/v1/heroes/{heroId}/equipment`. Occupancy (two-handed / dual-wield / two rings) is open [#8](../product/known-issues.md). Full rules: [item-system.md](item-system.md).
+- **Magic capacity:** integer on `Hero` (default **0** at generation). Weekly Magic training raises it (max **5**). Equipped spell count cannot exceed capacity. Gold is not charged for extra slots (`spell_slot_cost` unused). See [spell-system.md](spell-system.md) and [training-system.md](training-system.md).
+
+---
 
 ## Attribute calculations and derived stats
 
@@ -73,27 +141,6 @@ Starting roster:
 ### Hero level vs match XP
 
 League and friendly matches add to `Hero.xp` (Library facility `xp_gain_pct` multiplies that XP only). `HeroService::levelUp()` and chronicle event `levelup` exist but **no production path** converts accumulated XP into `Hero.level`. Displayed level stays at generation until an XP curve is designed. Tracked in [product/known-issues.md](../product/known-issues.md) #6.
-
-## Age Milestones & Terminology
-
-Race age data lives in `config/game/races.yaml` under each race's `age` block.
-
-| Milestone (player-facing) | Config key | Meaning |
-|---------------------------|------------|---------|
-| Minimum Age | `min` | Lowest recruitment age |
-| Max Junior Age | `max_junior` | Upper bound for junior phase |
-| Prime Age Limit | `prime_limit` | Last age with full training efficiency |
-| **Mortality Threshold** | `mortality_threshold` | Age from which permanent death risk escalates after combat deaths |
-
-**Implementation:** `RaceConfig::getMortalityThreshold()`, `resolveAgePhase()`, `isAtOrAboveMortalityThreshold()`. Twig helpers: `hero_age_phase()`, `hero_mortality_threshold()`, `hero_at_mortality_threshold()`.
-
-Mechanics & APIs:
-- Hero generation: Summoning Chamber produces junior heroes with randomized base stats within race ranges.
-- GET /api/heroes — list for a player; GET /api/heroes/{id} — detail; POST/PUT for updates (rename, equipment changes)
-
-Edge cases:
-- Ensure death is final; move to Graveyard with immutable record
-- Aging and mortality processing must be idempotent per tick
 
 ## Weapon & Magic School Mastery
 
@@ -213,3 +260,36 @@ Category comes from `HeroTrait::getCategory()`; icon from `HeroTrait::getIcon()`
 - Arena revenue bonus is consumed by `ArenaRevenueService` (not the combat engine).
 
 Per-hero match history: [hero-chronicle-system.md](hero-chronicle-system.md). League fixtures resolve through wave Messenger + `CombatEngine` (see [combat-system.md](combat-system.md)).
+
+---
+
+## APIs
+
+Combatant CHA also feeds team chemistry (display-only until [#7](../product/known-issues.md)).
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/app/heroes` | Roster (server-rendered) |
+| GET | `/app/heroes/{id}` | Detail (tabs: overview, equipment, spells) |
+| GET | `/api/v1/heroes` | List; includes `trait`, `ratings.base_ovr`, `ratings.complex_rating` (`HeroService::serialize()`) |
+| GET | `/api/v1/heroes/{id}` | Full detail |
+| PUT | `/api/v1/heroes/{id}` | Rename |
+| POST | `/api/v1/heroes/{id}/dismiss` | Dismiss → graveyard + compensation |
+| PUT | `/api/v1/heroes/{heroId}/equipment` | Equip / unequip |
+
+Canonical list: [architecture/routes.md](../architecture/routes.md). Spell learn/equip: [spell-system.md](spell-system.md).
+
+---
+
+## Implementation notes
+
+| Piece | Location |
+|-------|----------|
+| Entity | `src/Entity/Hero/Hero.php` (+ mastery, spell, chronicle) |
+| Generate | `App\Service\Hero\HeroGenerator` |
+| CRUD / serialize | `App\Service\Hero\HeroService` |
+| Dismiss | `HeroDismissalService` + `GraveyardService` |
+| Mastery | `HeroMasteryService` |
+| Ratings | `HeroRatingCalculator` — [hero-rating-system.md](hero-rating-system.md) |
+
+**Tests:** `tests/Service/Hero/HeroMasteryServiceTest.php`, `HeroRatingCalculatorTest.php`; trait enum `tests/Enum/HeroTraitTest.php`. Generator/level-up/dismiss coverage lives with summoning, graveyard, and league resolution tests. Daily aging is idempotent via `KingdomTickLog` (one daily-reset row per kingdom/team/scheduled time).

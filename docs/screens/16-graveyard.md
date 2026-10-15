@@ -1,31 +1,62 @@
 # Graveyard Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#16-graveyard-screen), [graveyard-system.md](../systems/graveyard-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#16-graveyard-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [graveyard-system.md](../systems/graveyard-system.md)
 
-Purpose: Per-screen API, events, UI data requirements, and implementation notes.
+**When:** Review memorials for dismissed heroes/trainers and permanent combat deaths.
 
-> **Status: Implemented.** Memorial records are written on hero/trainer dismissal and permanent combat death; the graveyard page and read API are available.
+**Status:** Live at `GET /app/graveyard`. Writes happen on dismiss and combat death, not from this page. Filter options include reserved `MemorialCause` values `age`, `retired`, `death` (A6.2) that current writers do not emit — live causes are **dismissed** and **combat_death**.
 
-Displayed Information:
-- Graveyard List:
-	- Name, race, role (combatant / trainer), final level, age at departure
-	- Cause (`MemorialCause`), date of departure
-- Statistics Summary:
-	- Total memorial records, average age at departure
-- Memorial detail panel (`?id=`)
+**Live UI:** `templates/graveyard/index.html.twig`.
 
-Possible Actions/Buttons:
-- View memorial detail
-- Filter by role, race, cause
-- Search by name
+---
 
-Backend (implemented):
-- Dismiss hero — `POST /api/v1/heroes/{id}/dismiss` → `GraveyardService::recordMemorial()`
-- Dismiss trainer — `POST /api/v1/training/trainers/{id}/dismiss` → same service
-- `GET /app/graveyard` — memorial wall
-- `GET /api/v1/graveyard` — list memorials + summary
-- `GET /api/v1/graveyard/{id}` — detail
+## Implemented
 
-Implementation notes:
-- Dismiss actions complete in-place on Hero detail / Training page; players can review memorials on `/app/graveyard`
-- Permanent combat deaths write `MemorialCause::CombatDeath` via `LeagueMatchResolutionService` → `GraveyardService`
+### Summary
+
+- Total memorials, average age at departure (or —)
+
+### Filters (GET, auto-submit)
+
+Role, cause, race, name search. Pagination.
+
+### List
+
+Each entry: name, role badge, trait if any, date, race, final level, age, cause, **View detail** (`?id=`).
+
+### Detail (`?id=`)
+
+Name, race, role, cause, trait, date, age, final level, final stats. Close returns to the filtered list.
+
+Empty state when the filter matches nothing.
+
+### Backend
+
+| Method | Path |
+|--------|------|
+| GET | `/app/graveyard` |
+| GET | `/api/v1/graveyard` |
+| GET | `/api/v1/graveyard/{id}` |
+
+Writers: `POST /api/v1/heroes/{id}/dismiss`, `POST /api/v1/training/trainers/{id}/dismiss`, `LeagueMatchResolutionService` → `GraveyardService` (`MemorialCause::CombatDeath`).
+
+---
+
+## Planned
+
+Original sketch extras — do not treat as a contract:
+
+- Share memorial / social
+- Sort by battles
+- “Most battles fought” legend stat
+- Gravestone visualization beyond the list
+- Age / retired / death causes as live writers (reserved enums)
+
+---
+
+## Frontend
+
+| Piece | Location |
+|-------|----------|
+| Page | `templates/graveyard/index.html.twig` |
+| Stimulus | `form-auto-submit` |

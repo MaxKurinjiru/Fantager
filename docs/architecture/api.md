@@ -40,14 +40,13 @@ The Internal API can evolve into:
 
 ### Resource-Oriented Design
 
-Every endpoint represents a resource or resource collection:
+Every endpoint represents a resource or resource collection. Canonical live list: [architecture/routes.md](routes.md). Authenticated Twig pages use the `/app/…` prefix (e.g. `GET /app/heroes`). There is no `POST /api/v1/heroes/{id}/train` — training is trainer assign / unassign / configure / promote.
 
 ```
-/api/v1/heroes              → Heroes collection
-/api/v1/heroes/{id}         → Specific hero
-/api/v1/heroes/{id}/train   → Hero training action
-/api/v1/teams               → Teams collection
-/api/v1/teams/{id}/battle   → Team battle action
+/api/v1/heroes                            → Heroes collection
+/api/v1/heroes/{id}                       → Specific hero
+/api/v1/training/trainers                 → Team trainers
+/api/v1/training/trainers/{id}/assign     → Assign a hero to a trainer
 ```
 
 ### HTTP Methods
@@ -124,19 +123,13 @@ Every endpoint represents a resource or resource collection:
 }
 ```
 
-**Action Response (POST to action endpoint):**
+**Action Response (POST to action endpoint):** live endpoints typically return a **flat snake_case object** from `$this->json()`, not a required `data` wrapper. Errors are `{ "error": "translated message" }` via `ApiControllerTrait::jsonError` / `jsonException`.
+
 ```json
 {
-  "data": {
-    "heroId": "123",
-    "action": "train",
-    "resultLevel": 16,
-    "experienceGained": 500,
-    "costGold": 1200
-  },
-  "meta": {
-    "timestamp": "2026-05-22T10:30:00Z"
-  }
+  "message": "Hero assigned to trainer.",
+  "hero_id": 123,
+  "trainer_id": 45
 }
 ```
 
@@ -150,17 +143,17 @@ Organize controllers to clearly separate web and API layers:
 src/
 ├── Controller/
 │   ├── Web/
-│   │   ├── HeroController.php          # /heroes routes (Twig rendering)
-│   │   ├── TrainingController.php      # /training routes
+│   │   ├── HeroController.php          # /app/heroes (Twig)
+│   │   ├── TrainingController.php      # /app/training (Twig)
 │   │   ├── DashboardController.php
 │   │   └── ...
 │   ├── Api/
 │   │   └── V1/
-│   │       ├── HeroController.php      # /api/v1/heroes endpoints
-│   │       ├── TrainingController.php  # /api/v1/training endpoints
-│   │       ├── BattleController.php    # /api/v1/battles endpoints
+│   │       ├── HeroController.php      # /api/v1/heroes
+│   │       ├── TrainingController.php  # /api/v1/training/trainers
+│   │       ├── BattleController.php    # /api/v1/battles
 │   │       └── ...
-│   └── HealthCheckController.php       # /health (shared)
+│   └── (no HealthCheckController — GET /health is planned, A8.3)
 ├── Service/
 │   ├── HeroService.php                 # Business logic (Web & API share this)
 │   ├── TrainingService.php
@@ -199,43 +192,42 @@ src/
 Web routes and API routes coexist in the same routing configuration. Use prefixes and controller namespacing to organize them:
 
 ```yaml
-# config/routes.yaml
+# config/routes.yaml — attribute discovery; API controllers put /api/v1 on the class Route
 
-# Web Routes
-web:
-  path: /
-  resource: '../src/Controller/Web/'
-  type: annotation
+controllers_web:
+  resource: ../src/Controller/Web/
+  type: attribute
 
-# Internal API Routes (v1)
-api_v1:
-  path: /api/v1
-  resource: '../src/Controller/Api/V1/'
-  type: annotation
-  prefix: /api/v1
+controllers_api:
+  resource: ../src/Controller/Api/V1/
+  type: attribute
 ```
 
 **Controller Examples:**
 
 ```php
 // src/Controller/Web/HeroController.php
-#[Route('/heroes', name: 'hero_list')]
-public function list(): Response { ... }  // Renders Twig
+#[Route('/app/heroes', name: 'app_heroes', methods: ['GET'])]
+public function roster(): Response { ... }  // Renders Twig
 
-#[Route('/heroes/{id}', name: 'hero_detail')]
-public function detail(int $id): Response { ... }  // Renders Twig
+#[Route('/app/heroes/{id}', name: 'app_heroes_detail', requirements: ['id' => '\d+'], methods: ['GET'])]
+public function detail(int $id, Request $request): Response { ... }  // Renders Twig
 ```
 
 ```php
 // src/Controller/Api/V1/HeroController.php
-#[Route('', name: 'api_heroes_list', methods: ['GET'])]
-public function list(): JsonResponse { ... }  // Returns JSON
+#[Route('/api/v1/heroes')]
+class HeroController extends AbstractController
+{
+    #[Route('', name: 'api_heroes_list', methods: ['GET'])]
+    public function list(): JsonResponse { ... }
 
-#[Route('/{id}', name: 'api_heroes_get', methods: ['GET'])]
-public function get(int $id): JsonResponse { ... }  // Returns JSON
+    #[Route('/{id}', name: 'api_heroes_detail', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function detail(int $id): JsonResponse { ... }
+}
 
-#[Route('/{id}/train', name: 'api_heroes_train', methods: ['POST'])]
-public function train(int $id, Request $request): JsonResponse { ... }  // Action endpoint
+// Training actions live on TrainingController, not HeroController:
+// POST /api/v1/training/trainers/{id}/assign
 ```
 
 ---
@@ -245,36 +237,13 @@ public function train(int $id, Request $request): JsonResponse { ... }  // Actio
 Services contain all business logic and are consumed by both Web and API controllers:
 
 ```php
-// src/Service/HeroService.php
-class HeroService
+// src/Service/Training/TrainingService.php
+class TrainingService
 {
-    public function __construct(
-        private HeroRepository $heroRepository,
-        private TrainingService $trainingService,
-    ) {}
-
-    public function getHero(int $id): Hero
+    public function assignHero(Hero $trainer, Hero $hero, Team $team, \DateTimeImmutable $now): void
     {
-        return $this->heroRepository->find($id)
-            ?? throw new ResourceNotFoundException("Hero not found");
-    }
-
-    public function trainHero(int $id, int $experiencePoints): TrainingResult
-    {
-        $hero = $this->getHero($id);
-
-        // Validate training conditions
-        if ($hero->isFatigued()) {
-            throw new ValidationException("Hero is too fatigued to train");
-        }
-
-        // Apply training
-        return $this->trainingService->applyTraining($hero, $experiencePoints);
-    }
-
-    public function listHeroes(int $page = 1, int $limit = 20): PaginatedResult
-    {
-        return $this->heroRepository->findPaginated($page, $limit);
+        // Ownership, lock window, slot limit, Available status — throw UserFacingException on violation
+        // Persist trainer ↔ trainee assignment
     }
 }
 ```
@@ -282,12 +251,11 @@ class HeroService
 **Usage in Web Controller:**
 ```php
 // src/Controller/Web/HeroController.php
-public function __construct(private HeroService $heroService) {}
-
-#[Route('/heroes/{id}', name: 'hero_detail')]
-public function detail(int $id): Response
+#[Route('/app/heroes/{id}', name: 'app_heroes_detail', requirements: ['id' => '\d+'], methods: ['GET'])]
+public function detail(int $id, Request $request): Response
 {
-    $hero = $this->heroService->getHero($id);
+    $hero = $this->heroRepository->find($id);
+    // Guard team ownership, then render Twig
     return $this->render('hero/detail.html.twig', ['hero' => $hero]);
 }
 ```
@@ -295,13 +263,15 @@ public function detail(int $id): Response
 **Usage in API Controller:**
 ```php
 // src/Controller/Api/V1/HeroController.php
-public function __construct(private HeroService $heroService) {}
-
-#[Route('/{id}', name: 'api_heroes_get', methods: ['GET'])]
-public function get(int $id): JsonResponse
+#[Route('/{id}', name: 'api_heroes_detail', methods: ['GET'], requirements: ['id' => '\d+'])]
+public function detail(int $id): JsonResponse
 {
-    $hero = $this->heroService->getHero($id);
-    return $this->json(['data' => $this->serializer->serialize($hero)]);
+    $hero = $this->heroService->findForTeam($id, $this->getPlayerTeam());
+    if (null === $hero) {
+        return $this->jsonError('error.hero_not_found', 404);
+    }
+
+    return $this->json($this->heroService->serialize($hero));
 }
 ```
 
@@ -354,96 +324,90 @@ class HeroSerializer
 
 ---
 
-## Example Endpoint: Hero Training
+## Example Endpoint: Assign Hero to Trainer
+
+Live page: `GET /app/training`. Live action: `POST /api/v1/training/trainers/{id}/assign` with body `{ "hero_id": N }`. Weekly attribute ticks apply the assignment; this POST does not grant XP or change displayed level ([product/known-issues.md](../product/known-issues.md) #6).
 
 ### Web Flow (Current)
 
 ```
-User clicks "Train" button in Twig template
+User assigns a hero on /app/training
   ↓
-Stimulus component captures click
+Stimulus (training_controller) captures the change
   ↓
-AJAX POST to /api/v1/heroes/123/train
+AJAX POST to /api/v1/training/trainers/{id}/assign  body: { "hero_id": 123 }
   ↓
-API Controller validates and calls HeroService::trainHero()
+Api\V1\TrainingController validates team/trainer/hero and calls TrainingService::assignHero()
   ↓
-Service applies training logic, returns result
+Service enforces lock window, slots, and Available status
   ↓
-API Controller returns JSON: { data: { heroId, resultLevel, costGold } }
+API returns JSON: { message, hero_id, trainer_id }
   ↓
-Stimulus updates DOM with response
+Stimulus shows a translated alert and reloads
 ```
 
 ### API Controller
 
 ```php
-// src/Controller/Api/V1/HeroController.php
-#[Route('/{heroId}/train', name: 'api_heroes_train', methods: ['POST'])]
-public function train(
-    int $heroId,
-    Request $request,
-    HeroService $heroService,
-    TrainingService $trainingService,
-): JsonResponse {
-    try {
-        $data = json_decode($request->getContent(), true);
-        $experiencePoints = $data['experiencePoints'] ?? 100;
-
-        $result = $heroService->trainHero($heroId, $experiencePoints);
-
-        return $this->json(
-            [
-                'data' => [
-                    'heroId' => $heroId,
-                    'resultLevel' => $result->getNewLevel(),
-                    'experienceGained' => $result->getExperienceGained(),
-                    'costGold' => $result->getCostGold(),
-                ]
-            ],
-            Response::HTTP_OK
-        );
-    } catch (ValidationException $e) {
-        return $this->json(
-            ['error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]],
-            Response::HTTP_422
-        );
-    } catch (ResourceNotFoundException $e) {
-        return $this->json(
-            ['error' => ['code' => 'NOT_FOUND', 'message' => $e->getMessage()]],
-            Response::HTTP_404
-        );
+// src/Controller/Api/V1/TrainingController.php
+#[Route('/training/trainers/{id}/assign', name: 'api_training_trainer_assign', methods: ['POST'], requirements: ['id' => '\d+'])]
+public function assign(int $id, Request $request): JsonResponse
+{
+    $team = $this->getPlayerTeam();
+    if (null === $team) {
+        return $this->jsonError('error.no_team', 422);
     }
+
+    $trainer = $this->findTeamTrainer($id, $team);
+    if (null === $trainer) {
+        return $this->jsonError('error.trainer_not_found', 404);
+    }
+
+    $body = json_decode($request->getContent(), true) ?? [];
+    $heroId = (int) ($body['hero_id'] ?? 0);
+    $hero = $this->heroRepository->findOneBy(['id' => $heroId, 'team' => $team, 'role' => HeroRole::Combatant]);
+    if (null === $hero) {
+        return $this->jsonError('error.hero_not_found', 404);
+    }
+
+    try {
+        $this->trainingService->assignHero($trainer, $hero, $team, new \DateTimeImmutable());
+    } catch (\DomainException $e) {
+        return $this->jsonException($e, 422);
+    }
+
+    return $this->json([
+        'message' => $this->transMessage('error.training_success_assign'),
+        'hero_id' => $hero->getId(),
+        'trainer_id' => $trainer->getId(),
+    ]);
 }
 ```
 
 ### Stimulus Component
 
+User-facing copy comes from Stimulus values (`data-*-value` in Twig), not hardcoded strings.
+
 ```javascript
-// assets/controllers/hero_trainer_controller.js
-import { Controller } from '@hotwired/stimulus';
+// assets/controllers/training_controller.js (excerpt)
+async assignTrainee(event) {
+  const trainerId = event.currentTarget.dataset.trainerId;
+  const heroId = event.currentTarget.value;
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 
-export default class extends Controller {
-  static targets = ['button', 'resultMessage'];
-
-  train(event) {
-    event.preventDefault();
-    const heroId = this.element.dataset.heroId;
-
-    fetch(`/api/v1/heroes/${heroId}/train`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ experiencePoints: 100 })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.error) {
-        this.resultMessageTarget.textContent = `Error: ${data.error.message}`;
-      } else {
-        this.resultMessageTarget.textContent =
-          `Success! Hero reached level ${data.data.resultLevel}. Cost: ${data.data.costGold} gold.`;
-      }
-    });
+  const response = await fetch(`/api/v1/training/trainers/${trainerId}/assign`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken,
+    },
+    body: JSON.stringify({ hero_id: parseInt(heroId, 10) }),
+  });
+  const result = await response.json();
+  if (!response.ok || result.error) {
+    throw new Error(result.error || this.errorAssignHeroValue);
   }
+  this.showAlert('success', this.successAssignValue);
 }
 ```
 
@@ -568,17 +532,14 @@ src/Controller/Api/V2/
 Services and API controllers are fully testable:
 
 ```php
-// tests/Service/HeroServiceTest.php
-class HeroServiceTest extends TestCase
+// tests/Service/Training/TrainingServiceTest.php
+class TrainingServiceTest extends TestCase
 {
-    public function testTrainHeroIncrementsLevel(): void
+    public function testAssignHeroLinksCombatantToTrainer(): void
     {
-        $hero = new Hero();
-        $hero->setLevel(10);
+        $this->trainingService->assignHero($trainer, $hero, $team, new \DateTimeImmutable());
 
-        $result = $this->heroService->trainHero($hero->getId(), 1000);
-
-        $this->assertGreaterThan(10, $result->getNewLevel());
+        $this->assertSame($trainer, $hero->getTrainer());
     }
 }
 
@@ -592,10 +553,6 @@ class HeroControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertResponseFormatSame('json');
-        $this->assertJsonStringEqualsJsonString(
-            json_encode(['data' => ['id' => 1, 'name' => 'Aragorn']]),
-            $client->getResponse()->getContent()
-        );
     }
 }
 ```
@@ -627,7 +584,8 @@ class HeroControllerTest extends WebTestCase
 
 ## References
 
+- [architecture/routes.md](routes.md) — live Web + API path list
 - [REST API Best Practices](https://restfulapi.net/)
 - [HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 - [JSON API Specification](https://jsonapi.org/)
-- [Symfony Symfony Controllers](https://symfony.com/doc/current/controller.html)
+- [Symfony Controllers](https://symfony.com/doc/current/controller.html)

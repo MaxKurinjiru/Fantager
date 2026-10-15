@@ -1,6 +1,6 @@
 # Team Chronicle System
 
-Reference: [architecture/entities.md](../architecture/entities.md#20-team-chronicle-append-only-event-log), [team-system.md](team-system.md), [screens/02-team-dashboard.md](../screens/02-team-dashboard.md)
+Reference: [architecture/entities.md](../architecture/entities.md#team-chronicle-append-only-event-log), [team-system.md](team-system.md), [screens/02-team-dashboard.md](../screens/02-team-dashboard.md)
 
 Purpose: Document the **team chronicle** — an append-only event log bound to the `Team` entity, shown on the dashboard and on a dedicated full-history screen.
 

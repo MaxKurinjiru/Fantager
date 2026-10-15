@@ -44,11 +44,11 @@ Do not treat [screens/overview-legacy.md](../screens/overview-legacy.md) or unch
 | Wave | Theme | Status |
 |------|--------|--------|
 | 0 | Agent routing + this tracker | ✅ Done |
-| 1 | Honest status (README, known-issues, historical roadmap) | ⏳ Not started |
-| 2 | Strip fiction from `product/overview.md` | ⏳ Not started |
-| 3 | Maps: routes, entities, API/arch examples | ⏳ Not started |
-| 4 | Screen contracts vs actual UI | ⏳ Not started |
-| 5 | System docs leftovers (“Sections to fill”, stale sentences) | ⏳ Not started |
+| 1 | Honest status (README, known-issues, historical roadmap) | ✅ Done |
+| 2 | Strip fiction from `product/overview.md` | ✅ Done |
+| 3 | Maps: routes, entities, API/arch examples | ✅ Done |
+| 4 | Screen contracts vs actual UI | ✅ Done |
+| 5 | System docs leftovers (“Sections to fill”, stale sentences) | ✅ Done |
 | 6 | Cheap code alignment (validation, dead enums, i18n) | ⏳ Not started |
 | 7 | Design-gated gameplay (XP, chemistry, combat polish, items) | ⏳ Not started |
 | 8 | Infra honesty (CI tests, health, legacy DB, wiki) | ⏳ Not started |
@@ -95,7 +95,7 @@ Do not change game behaviour. Make “Fully Implemented” mean the live contrac
   - Notifications → write-time locale; unused types
 - **Done when:** no row says Fully Implemented if a Wave 2–7 item still contradicts it.
 
-- [ ] A1.1 Systems status table
+- [x] A1.1 Systems status table
 
 ### A1.2 Historical roadmap banner and M1–6 caveat
 
@@ -104,7 +104,7 @@ Do not change game behaviour. Make “Fully Implemented” mean the live contrac
 - **Edits:** Active-work banner → this file. Scope guardrail: M8/M9 still parked; **alignment waves are the active work**, not “M1–6 fully complete”. Cross-cutting: PHPUnit/Playwright are Wave 8, not done. M4.1 drag-and-drop inventory and M4.3 synergies must not stay ✅ without a footnote.
 - **Done when:** a new agent cannot conclude inventory DnD and formation synergies shipped.
 
-- [ ] A1.2 Historical roadmap honesty
+- [x] A1.2 Historical roadmap honesty
 
 ### A1.3 Cheatsheet scope guardrails
 
@@ -112,7 +112,7 @@ Do not change game behaviour. Make “Fully Implemented” mean the live contrac
 - **Files:** [guides/backend.md](../guides/backend.md)
 - **Edits:** Point “before you code” at this file. Keep combat/enchanting guardrails; add chemistry (#7), item occupancy (#8), XP curve (#6).
 
-- [ ] A1.3 Cheatsheet guardrails
+- [x] A1.3 Cheatsheet guardrails
 
 ---
 
@@ -126,7 +126,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [product/overview.md](../product/overview.md)
 - **Edits:** Label as overview; “systems win on conflict”. Move dungeon/crafting **out of core TOC** into Deferred (already have `future/`). Drop Crafting Boost from kingdom settings or mark deferred.
 
-- [ ] A2.1 Summary role + TOC
+- [x] A2.1 Summary role + TOC
 
 ### A2.2 Kingdom, calendar, economy claims
 
@@ -134,7 +134,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [product/overview.md](../product/overview.md) §2.1–2.3
 - **Cut or reword:** Kingdom as a separate server instance → multi-tenant `kingdom_id`. Dungeon/crafting ticks. Price floor/ceiling. Diminishing returns as if live. Email/trade anti-fraud as if live. Season “2–4 weeks” → 77 days (or point at [calendar-system.md](../systems/calendar-system.md)).
 
-- [ ] A2.2 Kingdom / calendar / economy
+- [x] A2.2 Kingdom / calendar / economy
 
 ### A2.3 Heroes, training, team, formation
 
@@ -142,7 +142,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [product/overview.md](../product/overview.md) §2.4–2.6.1
 - **Cut or reword:** XP/leveling as a live loop → #6. In-combat race synergy as live → deferred. Suggested formations, clone, “all 6 slots required at save”, dual-wield targeting essays that the UI cannot set. Point formation save rules at [formation-system.md](../systems/formation-system.md).
 
-- [ ] A2.3 Heroes / formation
+- [x] A2.3 Heroes / formation
 
 ### A2.4 HQ, items, spells, combat, league
 
@@ -150,7 +150,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [product/overview.md](../product/overview.md) §2.7–2.12
 - **Cut:** HQ visual themes, facility layout, visitor access, combat home advantage as live, HQ morale-over-time as live. Item **two rings**, dual-wield, two-handed occupying both hands **unless #8 is decided Implement** (until then: match [item-system.md](../systems/item-system.md) — 8 slots, one ring). League win-streak/derby/relegation-pressure morale, veteran leadership, junior bonus XP, age-diversity bonus.
 
-- [ ] A2.4 HQ / items / league fiction
+- [x] A2.4 HQ / items / league fiction
 
 ### A2.5 Graveyard, community, leftover ticks
 
@@ -158,7 +158,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [product/overview.md](../product/overview.md) §2.13–end
 - **Edits:** Graveyard includes **dismissals**, not only combat death. Community: in-app mail/forum live; **email for trades/league** not live (auth + inactivity only). Remove live-looking dungeon/crafting sections or keep a single Deferred pointer.
 
-- [ ] A2.5 Graveyard / community / deferred
+- [x] A2.5 Graveyard / community / deferred
 
 ---
 
@@ -170,7 +170,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [architecture/routes.md](../architecture/routes.md)
 - **Edits:** One Combat table (today there are two). Deferred dungeon/crafting/quest routes **only** as a pointer to `future/` — not fake controller names in the live list. Mark `/app/inventory` as **redirect**. Drop or relabel planned `POST /api/v1/heroes/{id}/train` and `convert-trainer` (live: training trainer assign/promote). Health/wiki/simulate stay **planned**. Recalculate implemented counts. Unify notification `limit` with [notification-system.md](../systems/notification-system.md) (code is source).
 
-- [ ] A3.1 Route map
+- [x] A3.1 Route map
 
 ### A3.2 Entity reference hygiene
 
@@ -178,7 +178,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [architecture/entities.md](../architecture/entities.md)
 - **Edits:** Fix domain numbering (skip 13–15). Enum count vs `src/Enum` (41 files; table includes deferred `DungeonResult` / `CraftingStatus`). Design decisions: remove live `DungeonEnemy` / crafting-material / `event` table as if present. `MatchType::Arena`, `MoraleRestoration`, `hero_retired`, reserved `MemorialCause`, unused notification types: **reserved / unused** until Wave 6.
 
-- [ ] A3.2 Entity reference
+- [x] A3.2 Entity reference
 
 ### A3.3 API design + arch-spec examples
 
@@ -186,7 +186,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [architecture/api.md](../architecture/api.md), [architecture/overview.md](../architecture/overview.md)
 - **Edits:** Replace `/api/v1/heroes/{id}/train` and web `/heroes` examples with real paths (`/app/heroes`, `/api/v1/training/trainers/{id}/assign`).
 
-- [ ] A3.3 Stale REST examples
+- [x] A3.3 Stale REST examples
 
 ### A3.4 Hero/team system stale sentences
 
@@ -194,7 +194,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [hero-system.md](../systems/hero-system.md), [team-system.md](../systems/team-system.md)
 - **Edits:** `/api/heroes` → `/api/v1/heroes`. Chronicle match results are **implemented**, not future. Document chemistry formula (CHA offset, −15 hostile) as **display-only** until #7.
 
-- [ ] A3.4 Hero/team stale API and chronicle
+- [x] A3.4 Hero/team stale API and chronicle
 
 ---
 
@@ -206,9 +206,9 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 
 - **Action:** Align docs
 - **Files:** [screens/overview-legacy.md](../screens/overview-legacy.md), [00-public-pages.md](../screens/00-public-pages.md), [00-auth-screens.md](../screens/00-auth-screens.md), [01-kingdom-selection.md](../screens/01-kingdom-selection.md), [19-player-profile-settings.md](../screens/19-player-profile-settings.md)
-- **Edits:** Overview not Draft-as-source-of-truth; crafting not a core screen. Locale switcher exists in **authenticated** navbar + settings (public-pages is wrong). Screen 19: English only (“Backdrop zavírání modalů”). Wiki/news admin stay Planned. Password change / notification prefs / privacy stay Planned.
+- **Edits:** Overview not Draft-as-source-of-truth; crafting not a core screen. Locale switcher is **guest/public navbar + Account Settings** (not on the authenticated game navbar; public-pages had claimed the inside section had none). Screen 19: English only (was “Backdrop zavírání modalů”). Wiki/news admin stay Planned. Password change / notification prefs / privacy stay Planned.
 
-- [ ] A4.1 Overview + public + settings copy
+- [x] A4.1 Overview + public + settings copy
 
 ### A4.2 Dashboard, roster, formation, inventory, combat
 
@@ -220,7 +220,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 - **Combat:** keep “Still open” list; overview must not describe live logos/morale HUD/initiative queue.
 - **Dashboard:** SSE stays Planned.
 
-- [ ] A4.2 Core game screens
+- [x] A4.2 Core game screens
 
 ### A4.3 Remaining screens leftover sections
 
@@ -228,7 +228,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 - **Files:** [06-trainer-management.md](../screens/06-trainer-management.md), [17-community.md](../screens/17-community.md), others still containing “Sections to fill”
 - **Done when:** no screen file is an empty template.
 
-- [ ] A4.3 Remaining screen stubs
+- [x] A4.3 Remaining screen stubs
 
 ---
 
@@ -240,7 +240,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 - **Files:** [kingdom-system.md](../systems/kingdom-system.md), [hero-system.md](../systems/hero-system.md), [team-system.md](../systems/team-system.md), [auth-system.md](../systems/auth-system.md), [formation-system.md](../systems/formation-system.md) (purpose still says “synergy calculations”)
 - **Edits:** Replace template headings with live behaviour or delete them. Formation purpose: drop synergy until #7/#9.
 
-- [ ] A5.1 System stub headings
+- [x] A5.1 System stub headings
 
 ### A5.2 Summoning Genie rule (docs only)
 
@@ -248,7 +248,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 - **Files:** [summoning-system.md](../systems/summoning-system.md) (already notes the split), [npc-simulation-system.md](../systems/npc-simulation-system.md), [product/overview.md](../product/overview.md) if Wave 2 missed it
 - **Done when:** one paragraph states: **players** use relationship ≥ 50 (Genie can summon all races); **NPC marketplace** may apply a stricter Genie-only filter. Product change is A7.9.
 
-- [ ] A5.2 Genie dual rule documented everywhere
+- [x] A5.2 Genie dual rule documented everywhere
 
 ### A5.3 Notifications contract
 
@@ -256,7 +256,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 - **Files:** [notification-system.md](../systems/notification-system.md), [architecture/routes.md](../architecture/routes.md)
 - **Edits:** Default `limit` / max from `NotificationController`. Unused types listed. Write-time translation documented until A6.4.
 
-- [ ] A5.3 Notification limits and unused types
+- [x] A5.3 Notification limits and unused types
 
 ---
 
@@ -500,4 +500,4 @@ Do not change game rules. Optional product asks stay Design first.
 | 5 | Wave 6 decisions + execution |
 | 6+ | One Wave 7 ID per session, then Wave 8 |
 
-*Last updated: 15 October 2026 — tracker created from the docs-vs-implementation audit. Docs layout moved to `guides/`, `architecture/`, `product/`, `roadmap/` the same day. No gameplay code changed in that audit.*
+*Last updated: 15 October 2026 — A5.3 documented the live notification contract: list `limit` default 10 / max 100 from `NotificationController`, unused types `league_update` / `event_started` / `spell_learned`, and write-time title/body translation until A6.4. No gameplay code changed. Next: A6.1 Formation duplicates (decision + execution).*

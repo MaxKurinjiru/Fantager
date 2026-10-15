@@ -1,6 +1,6 @@
-# Core Systems Summary (Complete Version)
+# Game systems overview
 
-> Overview only. On conflict, matching `docs/systems/*.md` wins until alignment Wave 2 rewrites this file.
+> **Overview only — not the live contract.** On conflict, matching `docs/systems/*.md` and open rows in [known-issues.md](known-issues.md) win. Deferred design lives in [`docs/future/`](../future/), not in the core TOC below.
 
 ## Game Premise
 
@@ -23,147 +23,73 @@ Players take on the role of **arena managers** in a persistent fantasy world. Th
 - [2.12 League System](#212-league-system)
 - [2.13 Graveyard System](#213-graveyard-system)
 - [2.14 Community System](#214-community-system)
-- [2.15 Dungeon System](#215-dungeon-system)
-- [2.17 Crafting System](#217-crafting-system)
+
+**Deferred (not core):** [Dungeons](../future/dungeon-system.md) · [Crafting](../future/crafting-system.md) · [Quests](../future/quest-system.md) · [World events](../future/world-events-system.md) — Milestone 8/9, parked. See [Deferred](#deferred-not-in-core).
 
 ## 2.1 Kingdom System & Server Split
 
+Live rules: [kingdom-system.md](../systems/kingdom-system.md).
+
 ### Concept
 
-- Each **Kingdom** is a separate server instance with its own player base, economy, and events
-- Players select or are assigned a Kingdom (server) at **account creation**; all gameplay, economy, and events are **isolated per Kingdom**
+A **Kingdom** is a shared game world in one application: rows are scoped by **`kingdom_id`**, not a separate server process. Players pick a Kingdom once at **registration**; gameplay, economy, and marketplace listings do not cross kingdoms.
 
-> *Example: A player joining "Kingdom of Ashenvale" will never interact with players, items, or marketplace listings from "Kingdom of Ironforge."*
+> *Example: A player in "Kingdom of Ashenvale" never sees listings or league fixtures from "Kingdom of Ironforge."*
 
 ### Kingdom-Specific Global Settings
 
-| Setting | Purpose |
-|:---|:---|
-| **Main Language** | Primary interface language for the kingdom/server |
-| **Time Zone** | Server time zone affecting event schedules and daily resets |
-| **Game Speed** | Adjusts tick rates for training, fatigue recovery, aging, and event duration |
-| **Starting Resources** | Initial gold, items, and heroes given to new players *(default: **10 heroes** per team — see [2.6 Team System](#26-team-system))* |
-| **Marketplace Tax Rate** | Kingdom-wide transaction fee percentage |
-| **Season Length** | Duration of league seasons and event cycles |
-| **Max Player Capacity** | Server population cap for performance and community balance |
-| **Kingdom Theme/Lore** | Unique narrative, visuals, and special events tied to the kingdom's identity |
-| **Level Cap** | Max level restrictions for heroes in the kingdom |
-| **XP Modifier** | Global multiplier for experience gain |
-| **Crafting Boost** | Global modifier for crafting success rates and material yields |
-
-> *Example: A testing kingdom might use Game Speed 2x and XP Modifier 1.5x to accelerate progression for beta testing.*
+| Setting | Live? | Purpose |
+|:---|:---|:---|
+| **Main Language** | Yes | Primary interface language |
+| **Time Zone** | Yes | Tick schedule in kingdom-local time |
+| **Game Speed** | Yes | Scales some tick effects (aging, fan-club drift, …) |
+| **Starting roster** | Yes | **10 heroes** per team at creation — [2.6](#26-team-system) |
+| **Marketplace Tax Rate** | Yes | Fee on sales, routed to the Royal Treasury |
+| **Season Length** | Yes | League season is **77 days** (11 weeks) — [calendar-system.md](../systems/calendar-system.md) |
+| **Max Player Capacity** | Yes | Derived from `league_tiers_config` |
+| **Level Cap / XP Modifier** | Unused | Stored on `Kingdom`; no production level-up yet ([known-issues #6](known-issues.md)) |
 
 ---
 
 ## 2.2 Calendar & Server Ticks
 
-### Concept
+Live rules: [calendar-system.md](../systems/calendar-system.md).
 
-The game is driven by a **weekly calendar of server ticks**. Each Kingdom/server runs scheduled tasks at fixed times (server-local timezone). Hero fatigue/form limits prevent overuse during competitive play.
+The game advances on **scheduled ticks** in the kingdom timezone. A league season is **11 weeks (77 days)**: week 1 preparation, weeks 2–10 two league matches per week (Tue/Fri), week 11 transition.
 
-> **Deferred:** Dynamic world events (seasonal activities, limited missions, special economic events) are documented in [future/world-events-system.md](../future/world-events-system.md) but are not implemented and not currently planned.
+**Live ticks (summary):** daily reset / aging / NPC maintenance; fatigue and form recovery; inactivity cleanup; Tue/Fri league matches (home ticket revenue + combat); Wed/Sun friendly matches; Thursday weekly training; Sunday arena adaptation; weekly reset (summon cooldowns, HQ maintenance, payroll, Royal Treasury). Full timetable: [calendar-system.md](../systems/calendar-system.md#weekly-server-tick-schedule).
 
-### Weekly Calendar (Server Ticks)
-
-The game is driven by calendar events on **weekly cycles**. Each Kingdom/server runs scheduled tasks (*server ticks*) at fixed times (server-local timezone).
-
-| Tick Event | Category |
-|:---|:---|
-| **Fatigue and form recovery** | Hero Maintenance |
-| **League match processing** | Competition |
-| **Dungeon matches** (Future Feature) | PvE |
-| **Friendly matches** | Social |
-| **Update team morale** based on performance | Team Maintenance |
-| **Distribute arena ticket revenue** | Economy |
-| **Process training queues** | Progression |
-| **Process crafting queues** | Progression |
-| **Update hero aging** | Hero Lifecycle |
-| **Marketplace listing expiration** | Economy |
-| **Marketplace auction processing** | Economy |
-
-> *All tick events run on the Kingdom's configured time zone and are affected by the Game Speed setting.*
+**Not live:** dungeon-match ticks, crafting-queue ticks, dynamic world events ([future/world-events-system.md](../future/world-events-system.md)).
 
 ---
 
 ## 2.3 Economy System
 
-### Purpose
+Live rules: [economy-system.md](../systems/economy-system.md), [financial-crisis-system.md](../systems/financial-crisis-system.md).
 
-Gold is the sole live currency. Players balance income (arena tickets, league rewards, marketplace sales, Royal Treasury share) against spending (HQ, summoning, marketplace, repairs, salaries).
+Gold is the **sole** live currency. Training has **no gold cost** (fatigue is the sink). Essence is **not** in the live economy.
 
-### Currencies
+### Gold
 
-#### Gold (Primary Currency)
+- **Earned:** home-match arena ticket revenue, league / season rewards, marketplace sales (minus tax), weekly Royal Treasury share (`kingdom_reward`), item dismantle, dismissal compensation, HQ refunds
+- **Spent:** HQ upgrades and weekly maintenance, hero/trainer salaries, summoning, marketplace purchases, spell learning, item repair
+- Every change is a `FinancialRecord` row. Gold never goes negative; unpaid upkeep becomes **team debt**.
 
-- **Earned from:**
-  - Arena match ticket revenue (passive income based on arena capacity, ticket price, and team reputation)
-  - League season / standings rewards (scales with tier and position)
-  - Selling items/heroes on marketplace
-  - Royal Treasury weekly distribution
-  - Dismantling items
-- **Spent on:**
-  - Headquarters facility upgrades (exponentially expensive at higher levels)
-  - Marketplace purchases (items and heroes)
-  - Hero summoning chamber fees
-  - Item repair
-  - Spell learning
-  - Weekly HQ maintenance and hero/trainer salaries
-- **Mechanics:** Primary economic driver; scales with team reputation and arena capacity; unlimited earning potential but balanced by scaling costs. Training itself has **no gold cost** (fatigue is the sink).
+### Live controls
 
-#### Essence (removed)
-
-Essence tiers are **not part of the live economy**. Gold is the sole currency. Deferred crafting/enchanting docs under `docs/future/` may still mention essence historically; do not reintroduce without an explicit design decision.
-
-### Economic Sinks & Sources
-
-| Gold Sinks | Gold Sources |
+| Live | Not live (do not treat as shipped) |
 |:---|:---|
-| **Headquarters facility upgrades** — major long-term investment | **Arena ticket revenue** — home-match payout, scales with arena upgrades, fans, and ticket price |
-| **Marketplace transaction fees** — kingdom tax, routed to the Royal Treasury | **League / kingdom rewards** — season placement and weekly treasury share |
-| **Summoning fees, spell learning, item repair** | **Marketplace sales** — minus transaction fees |
-| **Weekly HQ maintenance and hero/trainer salaries** | **Item dismantle** — gold return by rarity |
-| **Summoning chamber usage fees** | |
+| Kingdom marketplace tax → Royal Treasury | **Diminishing returns** on repeated actions (planned in economy-system) |
+| Time-gated match/tick income; scaling HQ upgrade costs | **Price floor / ceiling** and suggested-price algorithms ([A7.10](../roadmap/current.md)) |
+| Fatigue / form limits on hero use | **Email / trade anti-fraud** beyond the ledger (auth + inactivity email only) |
+| Hero aging (non-Undead) on daily tick | Cross-kingdom trading |
+| Listings expire on daily reset | Level-banded “early/mid/late game” gold phases (no production `levelUp()`, [#6](known-issues.md)) |
 
-### Inflation Control Mechanisms
-
-- **Marketplace Tax Rate:** Kingdom-specific percentage (typically 5–15%) applied to all sales
-- **Diminishing Returns:** Repeated training actions within time windows yield reduced efficiency
-- **Scaling Costs:** Higher-tier upgrades and items have exponentially increasing costs
-- **Hero Maintenance Costs:** Fatigue recovery and form restoration create ongoing expenses
-- **Time-Gated Income:** Arena revenue generated per cycle; activity limits prevent infinite farming
-- **Level-Based Scaling:** Training and upgrade costs scale with hero level and facility tier
-
-### Trading & Marketplace
-
-- **Tradeable:** Heroes and items can be listed for Gold only
-- **Marketplace Fees:** Applied to sellers (buyers pay listed price + no additional fee)
-- **Price Controls:** Suggested price ranges based on item rarity and hero stats (prevents extreme manipulation)
-- **Kingdom-Isolated:** Each server maintains separate economy; no cross-kingdom trading
-- **Listing Duration:** Items expire after set period (e.g., 7 days) if unsold
-- **Anti-Sniping:** Auction-style or buy-now options based on item type
-
-### Progression Scaling
-
-| Phase | Level Range | Key Characteristics |
-|:---|:---:|:---|
-| **Early Game** | 1–20 | Gold abundant for basics; focus on initial roster and headquarters |
-| **Mid Game** | 21–50 | HQ upgrades become major gold sinks; league becomes primary income; resource management critical |
-| **Late Game** | 51+ | Massive gold investment for high-tier facilities; arena revenue and league rewards sustain play |
-
-> *Example: A mid-game player might spend 80% of weekly gold income on a single Headquarters facility upgrade, making league participation essential for sustained progression.*
-
-### Anti-Exploitation Measures
-
-- **Fatigue & Form Limits:** Prevent unlimited grinding and resource farming
-- **Diminishing Returns:** Repeated activities within time windows yield reduced rewards
-- **Hero Aging System:** Prevents indefinite use of same roster without replacement costs
-- **Activity Throttling:** Daily/weekly caps on certain high-reward activities
-- **Price Floor/Ceiling:** Marketplace algorithms suggest fair prices; prevent extreme manipulation
-- **Transaction Logging:** All trades tracked for anti-fraud monitoring
+Marketplace: gold-only hero and item listings; seller pays tax; no cross-kingdom trade (`kingdom_id` scope). Details: [marketplace-system.md](../systems/marketplace-system.md).
 
 ### Financial Crisis & Bankruptcy
 
-When weekly HQ maintenance exceeds available gold, unpaid amounts accumulate as **team debt** (`unpaid_debt`). Gold never goes negative.
+When weekly HQ maintenance (or payroll) cannot be paid, unpaid amounts accumulate as **`unpaid_debt`**.
 
 | Phase | Effect |
 |-------|--------|
@@ -173,22 +99,15 @@ When weekly HQ maintenance exceeds available gold, unpaid amounts accumulate as 
 
 **Recovery paths:** marketplace sales, hero dismissal (40% value), facility downgrade (25% refund on completion).
 
-See [systems/financial-crisis-system.md](../systems/financial-crisis-system.md).
-
-> **Deferred:** Special economic world events (market fluctuations, gold rush, crafting festivals) are described in [future/world-events-system.md](../future/world-events-system.md).
+See [financial-crisis-system.md](../systems/financial-crisis-system.md).
 
 ---
 
 ## 2.4 Hero System
 
-### Purpose
+Live rules: [hero-system.md](../systems/hero-system.md). Rating: [hero-rating-system.md](../systems/hero-rating-system.md).
 
-Heroes are the core units players manage, train, equip, and deploy. They are differentiated by **race**, **primary attributes**, and **secondary attributes**, with progression through XP and leveling.
-
-### Core Mechanics
-
-- **No Classes** — Heroes are defined by attributes and skills, not class archetypes
-- **No Rarity** — All heroes are equally valuable; power comes from training and strategy
+Heroes are roster units: **race**, primary attributes **1–20**, form / fatigue / morale, equipment, and spells. There are **no classes** and **no rarity**. Match XP writes `Hero.xp`; **displayed level does not increase** until an XP curve is designed ([known-issues #6](known-issues.md)). Optional **trait** on generation — [hero-system.md](../systems/hero-system.md#hero-traits).
 
 ### Playable Races
 
@@ -203,19 +122,17 @@ Heroes are the core units players manage, train, equip, and deploy. They are dif
 | 7 | **Ent** |
 | 8 | **Genie** |
 
-*8 playable races with unique characteristics, restrictions, and bonuses.*
-
 ### Race Relationships
 
-Each race has natural affinities and conflicts with other races, affecting **team dynamics** and **morale**. Relationship values range from **0–100**:
+Affinities **0–100** live in `config/game/race_relations.yaml`. **Team chemistry** from the matrix is **display-only** until [#7](known-issues.md). In-combat race-synergy tables are **not** in the engine ([#9](known-issues.md)).
 
-| Range | Tier | Description |
+| Range | Tier | Live meaning |
 |:---:|:---|:---|
-| **90–100** | Highly Positive | Strong chemistry, significant morale boost, mutual inspiration *(in-combat race-synergy damage tables are deferred — see [combat-system.md](../systems/combat-system.md#trait-modifiers-in-combat))* |
-| **70–89** | Positive | Bonus chemistry, improved morale when paired *(combat synergy tables deferred)* |
-| **50–69** | Neutral | No bonuses or penalties; heroes coexist without conflict |
-| **21–49** | Negative | Reduced chemistry, morale penalties, potential performance conflicts |
-| **0–20** | Hostile | Severe chemistry penalties, significant morale loss, refusal of cooperative actions |
+| **90–100** | Highly Positive | Strong pairing in the chemistry number |
+| **70–89** | Positive | Positive chemistry pairing; arena adaptation and training group bonus can include these races |
+| **50–69** | Neutral | No chemistry bonus or penalty |
+| **21–49** | Negative | Reduced chemistry |
+| **0–20** | Hostile | −15 chemistry per hostile pair (display-only until #7). Weekly training applies a group penalty when a hostile pair shares a trainer |
 
 ### Relationship Matrix
 
@@ -230,87 +147,62 @@ Each race has natural affinities and conflicts with other races, affecting **tea
 | **Ent** | 70 | 100 | 30 | 0 | 20 | 40 | 100 | 60 |
 | **Genie** | 80 | 80 | 60 | 60 | 70 | 60 | 60 | 100 |
 
-### Race Relationship Breakdown
+Live uses of the matrix (not in-combat synergy): summoning compatibility, arena-adaptation training bonus, weekly training **group** modifier, chemistry number on the dashboard.
 
-- **Human** — *Highly Positive:* Elf (90) | *Positive:* Dwarf (70), Ent (70), Genie (80) | *Negative:* Giant (30) | *Hostile:* Orc (20), Undead (10)
-- **Elf** — *Highly Positive:* Human (90), Ent (100) | *Positive:* Genie (80) | *Neutral:* Dwarf (50) | *Hostile:* Giant (20), Orc (0), Undead (10)
-- **Dwarf** — *Positive:* Human (70) | *Neutral:* Elf (50), Genie (60) | *Negative:* Giant (30), Ent (30) | *Hostile:* Orc (20), Undead (20)
-- **Orc** — *Highly Positive:* Undead (90) | *Positive:* Giant (70) | *Neutral:* Genie (60) | *Hostile:* Human (20), Dwarf (20), Elf (0), Ent (0)
-- **Undead** — *Highly Positive:* Orc (90) | *Positive:* Giant (80), Genie (70) | *Hostile:* Dwarf (20), Ent (20), Human (10), Elf (10)
-- **Giant** — *Positive:* Orc (70), Undead (80) | *Neutral:* Genie (60) | *Negative:* Human (30), Dwarf (30), Ent (40) | *Hostile:* Elf (20)
-- **Ent** — *Highly Positive:* Elf (100) | *Positive:* Human (70) | *Neutral:* Genie (60) | *Negative:* Dwarf (30), Giant (40) | *Hostile:* Orc (0), Undead (20)
-- **Genie** — *Positive:* Human (80), Elf (80), Undead (70) | *Neutral:* Dwarf (60), Orc (60), Giant (60), Ent (60)
-
-> *Example: Pairing an Elf (90) with a Human on a team provides Highly Positive chemistry bonuses. Adding an Orc (0 with Elf) would create a Hostile relationship, severely impacting team morale.*
-
-### Race Relationship Effects
-
-| Tier | Effects |
-|:---|:---|
-| **Highly Positive (90–100)** | Strong team chemistry bonuses, significant morale boost, mutual inspiration *(numeric in-combat synergy modifiers are deferred)* |
-| **Positive (70–89)** | Bonus team chemistry, improved morale when paired *(combat synergy tables deferred)* |
-| **Neutral (50–69)** | No bonuses or penalties; heroes coexist without conflict |
-| **Negative (21–49)** | Reduced team chemistry, morale penalties, potential performance conflicts |
-| **Hostile (0–20)** | Severe chemistry penalties, significant morale loss, refusal of cooperative actions, reduced combat effectiveness |
-
-**Additional Relationship Mechanics:**
-- **Arena Adaptation** — Applied bonuses benefit the adapted race and all races with *Positive* relationships (70+)
-- **Relationship Impact** — Values affect hero interactions, group training efficiency, and formation effectiveness
+**Genie dual rule (live until [A7.9](../roadmap/current.md)):** **Players** use relationship ≥ 50 (Genie scores ≥ 50 with every other race, so a Genie-adapted team can summon all races). **NPC marketplace** hero buys may apply a stricter Genie-only filter. Unifying those paths is a product decision — [summoning-system.md](../systems/summoning-system.md), [npc-simulation-system.md](../systems/npc-simulation-system.md).
 
 ### Primary Attributes
 
-| Attribute | Abbreviation | Description |
+| Attribute | Abbreviation | Live use (summary) |
 |:---|:---:|:---|
-| Strength | STR | Physical power and melee damage |
-| Dexterity | DEX | Accuracy, dodging, reflexes |
-| Constitution | KON | Health, resistance, endurance |
-| Speed | SPD | Turn order and movement |
-| Intelligence | INT | Spell power, learning speed, tactics |
-| Willpower | WIL | Resistance to status effects and morale |
-| Charisma | CHA | Leadership, trade efficiency, event influence |
-| Luck | LCK | Critical hits, loot drops, event outcomes |
+| Strength | STR | Melee damage |
+| Dexterity | DEX | Accuracy, dodge, ranged damage |
+| Constitution | KON | HP and armor (fatigue scales effective KON) |
+| Speed | SPD | Initiative / turn order |
+| Intelligence | INT | Spell power |
+| Willpower | WIL | Magic resistance |
+| Charisma | CHA | Buffers **post-match** morale deltas. Chemistry CHA offset is display-only ([#7](known-issues.md)). No trade or event bonus |
+| Luck | LCK | Crit, accuracy, dodge in combat. No loot drops or world-event outcomes |
 
-**Primary attribute range:** Each primary attribute has an integer value from **1 to 20** (inclusive). This applies to heroes and trainers. Race flat bonuses and training adjust values within this range; values above 20 are not supported in the current design.
+**Range:** integer **1–20** for heroes and trainers. Race flat bonuses and Thursday training stay inside that cap. Formulas: [combat-system.md](../systems/combat-system.md).
 
 ### Secondary Attributes
 
-| Attribute | Description |
+| Attribute | Live? |
 |:---|:---|
-| Age | Heroes age over time; race-specific milestones determine performance and mortality |
-| Form | Physical condition maintained by activity and training; declines with inactivity |
-| Fatigue | Accumulated through actions; limits the number of available actions per period |
-| Morale | Mental state affecting performance; influenced by victories, defeats, and team dynamics |
+| **Age** | Yes — daily tick (non-Undead), KO aging after matches, trainer aging on the training tick |
+| **Form** | Yes — starting HP in combat; Form training recovers it |
+| **Fatigue** | Yes — scales KON in combat; attribute/magic training adds +20; Form training reduces it. Fatigue **100 does not** block the weekly tick |
+| **Morale** | Yes — kickoff outgoing-damage band; post-match updates. Mid-combat morale events are deferred ([#9](known-issues.md)) |
 
 ### Equipment & Magic Attributes
 
-| Attribute | Description |
+| Attribute | Live? |
 |:---|:---|
-| Magic Capacity | Determines equipped spell slots (minimum 1, maximum 5); increases through training |
-| School Mastery | Individual mastery per magic school (Fire, Water, Air, Earth, Light, Dark); determines maximum usable spell tier |
+| **Magic Capacity** | Yes — equipped spell slots, **1–5**; Magic training raises it on the Thursday tick |
+| **School Mastery** | Yes — per school from combat XP (weekly Magic training does **not** grant mastery XP) |
 
 ### Equipment Slots
 
-| Slot | Type | Details |
-|:---|:---|:---|
-| **Main Hand** | Weapon | Single-handed weapon or dual-handed weapon (occupies both hands) |
-| **Off-Hand** | Shield / Spell Accelerator / Weapon | Shield, Spell Accelerator, or second single-handed weapon (dual-wielding); *unavailable with dual-handed weapons* |
-| **Armor** | 4 Slots | Head, Body (main armor), Hands, Feet |
-| **Accessories** | 3 Slots | 1 Amulet + 2 Rings |
+Live slots (**8**, one ring) — [item-system.md](../systems/item-system.md). Occupancy (two-handed occupying both hands, dual-wield, two rings) is **open** ([#8](known-issues.md)). Until then: `equip()` only clears the target slot.
 
-> *Example: A warrior wielding a dual-handed greataxe cannot equip a shield or off-hand item. A mage might use a single-handed wand + Spell Accelerator for casting speed.*
+| Slot | Type |
+|:---|:---|
+| **Main Hand** | Weapon |
+| **Off-Hand** | Shield, Spell Accelerator, or a second weapon (no auto-clear of the other hand) |
+| **Armor** | Head, Body, Hands, Feet |
+| **Accessories** | 1 Amulet + **1 Ring** |
 
 ### Age System
 
-Each race has specific age milestones that determine hero performance and lifespan.
-
-#### Age Milestones
+Milestones live in `config/game/races.yaml`. Phase is used for display, marketplace filter, and **rating** — not for a training-efficiency curve.
 
 | Milestone | Description |
 |:---|:---|
-| **Minimum Age** | Lowest recruitment age for junior heroes |
-| **Max Junior Age** | Maximum age for junior-tier heroes |
-| **Prime Age Limit** | Maximum age for optimal training efficiency and peak performance |
-| **Mortality Threshold** | Age from which permanent death risk escalates after combat deaths |
+| **Minimum Age** | Lowest recruitment age |
+| **Max Junior Age** | Upper bound for starting / summoned age |
+| **Prime Age Limit** | Last age labelled Prime |
+| **Mortality Threshold** | Age from which a KO can become permanent death |
 
 ### Race Age Milestones
 
@@ -327,54 +219,28 @@ Each race has specific age milestones that determine hero performance and lifesp
 
 ### Age Mechanics
 
-| Age Phase | Condition | Effects |
-|:---|:---|:---|
-| **Junior** | Between Min Age and Max Junior Age | Recruited at random age in range; possess growth potential; bonus training efficiency |
-| **Prime** | ≤ Prime Age Limit | Full training efficiency, peak performance, no age penalties |
-| **Veteran** | > Prime Age, < Mortality Threshold | Gradually declining training efficiency, slight stat penalties, accumulated experience bonuses |
-| **Elder** | ≥ Mortality Threshold | Significantly reduced training efficiency, increased permanent death risk per combat death |
+| Phase | Live effect |
+|:---|:---|
+| **Junior** | Starting / summoned age is rolled in [Min Age, Max Junior Age]. **No** extra training-efficiency bonus in the Thursday tick |
+| **Prime / Veteran** | Label + rating multiplier only. **No** combat stat penalty or training-speed curve by phase |
+| **Elder** | KO can become **permanent death** (mortality roll). Still **no** training-speed penalty by phase |
 
-*Undead do not age naturally; they only age through combat deaths. They use the same milestones as Elves.*
+*Undead skip daily aging; they still age from KOs and as trainers. Same milestone numbers as Elves.*
 
 ### Combat Death & Aging
 
-| Mechanic | Description |
-|:---|:---|
-| **Auto-Resurrection** | Heroes who die in combat are **automatically resurrected** after the match ends, but suffer an age penalty |
-| **Age Accumulation** | Each combat death adds years to the hero's age, *including Undead*. **Multiple deaths in the same match stack** — each subsequent death applies an escalating age penalty *(e.g., 1st death: +1 year, 2nd death: +2 years, 3rd death: +3 years)* |
-| **Mid-Combat Revival** | **Deferred** — design intent for a Light **Resurrection** spell (once per match, Mastery Tier 8+, revive at 50% HP, caster −15% stats). Not in the engine yet; see [combat-system.md](../systems/combat-system.md#implementation-status) |
-| **Mortality Threshold** | Heroes at or beyond Mortality Threshold face escalating permanent death chance per combat death. Multiple deaths in one match each trigger a separate mortality check |
-| **Permanent Death** | Final removal — hero is placed in the Graveyard and cannot return |
-
-> *Example: A Human hero (age 78, Mortality Threshold 80) is KO'd twice in one match. Post-match: the hero ages +1 year (1st death) and +2 years (2nd death) = total +3 years, pushing them to age 81 — past Mortality Threshold and at permanent death risk.*
+KO in a match is **not** always permanent death. Post-match: years are added (including Undead; multiple KOs in one match stack). Heroes at or beyond Mortality Threshold take a mortality roll per KO; a failed roll moves them to the Graveyard. Mid-combat **Resurrection** is **deferred**. Details: [combat-system.md](../systems/combat-system.md#post-match-hero-rewards), [graveyard-system.md](../systems/graveyard-system.md).
 
 ### Morale System
 
-**Individual Hero Morale** — Each hero has a morale value affecting combat performance, training efficiency, and resistance to negative effects.
+**Hero morale** and **team morale** are separate values (team morale is not an average).
 
-**Team Morale** — A separate persistent value that changes gradually based on team performance and events *(not an average of individual morale)*.
-
-#### Morale Influences
-
-| Factor | Effect |
+| Live | Not live |
 |:---|:---|
-| **Match victories** | Increase both individual and team morale |
-| **Match defeats** | Decrease both individual and team morale |
-| **Death of team members** | Significantly reduces morale for surviving heroes and team morale |
-| **High Charisma heroes** | Provide morale buffs to teammates and slow team morale decay |
-| **Prolonged inactivity / repeated losses** | Cause morale decay over time |
-| **Special events, items, kingdom bonuses** | Can boost morale |
-| **Consistent individual morale** | Heroes with persistently high/low morale gradually pull team morale in that direction |
-
-#### Morale Effects
-
-| Morale Level | Effects |
-|:---|:---|
-| **High** | Bonus to damage, accuracy, and resistance |
-| **Low** | Penalties to performance; increased chance of fleeing or refusing orders |
-| **Team-wide** | Affects formation synergy and cooperative abilities |
-
-> *Example: A team with 3 consecutive victories may see +15% morale boost. If their star hero dies in the 4th match, surviving heroes could drop 20–30% morale immediately.*
+| League result updates team morale and hero morale (lineup vs reserves) | Mid-combat `morale_change` (ally death, crits, CHA rallies) — [#9](known-issues.md) |
+| Lineup average CHA **buffers** those post-match deltas | Fleeing / refusing orders |
+| Kickoff **outgoing damage** band from hero morale ([§2.10](#210-combat-system)) | Accuracy / resistance / training-efficiency from morale |
+| Friendly matches skip morale deltas | Win-streak / derby / relegation-pressure morale ([§2.12](#212-league-system)) |
 
 ### Race Attributes & Bonuses
 
@@ -382,16 +248,12 @@ Each race has unique restrictions, bonuses, and training modifiers that define t
 
 #### Race-Specific Restrictions & Equipment
 
-| Race | Equipment Restrictions | Special Notes |
-|:---|:---|:---|
-| Human | None | Most versatile race; no restrictions |
-| Elf | None | No restrictions; versatile equipment options |
-| Dwarf | None | No restrictions; natural affinity for heavy armor |
-| Orc | None | No restrictions; natural affinity for melee weapons |
-| Undead | None | No restrictions; no benefit from healing spells (self-healing through drain/curse) |
-| Giant | Off-hand restrictions | Cannot equip off-hand items (hands too large); main-hand only |
-| Ent | **No armor or weapons** | Cannot equip any weapons, shields, or armor (body is natural armor); accessories only (Amulets, Rings) |
-| Genie | None | No restrictions; magical versatility |
+| Race | Equipment |
+|:---|:---|
+| Human, Elf, Dwarf, Orc, Genie | No slot bans |
+| Undead | No slot bans. Combat blocks external heals from non-Undead casters |
+| Giant | Cannot equip off-hand |
+| Ent | Accessories only (no weapons, shields, or armor) |
 
 #### Race-Specific Stat Bonuses
 
@@ -427,808 +289,486 @@ Races have inherent training speed multipliers based on their lifespan. Long-liv
 | Ent | Extremely Long | 0.5x | Millennia-long lifespan; training gains highly attenuated |
 | Genie | Extremely Long | 0.5x | Timeless beings; training gains highly attenuated |
 
-**Training Modifier Impact:**
-
-- Modifier applies to **all attribute training**, magic mastery, and spell slot expansion
-- **Cost-per-stat-point is identical across all races** — slow races pay *proportionally less gold per session* but also gain proportionally less stat, so the gold cost to raise a stat by 1 is the same for every race
-- The real penalty for slow races is **calendar time** (more weekly cycles needed to reach the same total), not higher gold expenditure
-- Does **NOT** affect XP from combat or events
-
-> *Example: An Elf (0.6x) and a Human (1.0x) both pay the same gold per stat-point gained in STR training. But the Elf gains 60% of what a Human gains per weekly cycle, so the Elf needs ~67% more weeks to hit the same total improvement. Slow races invest time; fast races pay the same gold in fewer cycles.*
+Race `training_speed_modifier` applies to **attribute training** on the Thursday tick (not to Magic capacity or Form recovery). Training has **no Gold cost** and does **not** write `Hero.xp` ([#6](known-issues.md)).
 
 #### Race-Specific Combat Bonuses
 
-Beyond equipment and training, races have tactical advantages in combat:
+Live engine hooks only ([combat-system.md](../systems/combat-system.md)). Other flavour bonuses below are **not** in the engine.
 
-| Race | Combat Bonus |
+| Race | Live in combat? |
 |:---|:---|
-| Human | +5% XP gain from victories (adaptability) |
-| Elf | +10% accuracy and dodge chance (natural grace) |
-| Dwarf | +15% armor effectiveness and critical resistance (natural durability) |
-| Orc | +20% melee damage against non-Orc enemies; –10% against Orc allies (bloodlust) |
-| Undead | Immune to poison and disease; 50% reduced healing effectiveness (unliving) |
-| Giant | +10% damage with main-hand weapons; cannot use off-hand (size limitation); **7-hex flower** on the combat map (centre + 6 neighbours) |
-| Ent | +20% Constitution defensive calculations; –20% speed-based actions (rooted nature); **7-hex flower** on the combat map (centre + 6 neighbours) |
-| Genie | +15% spell effectiveness and spell critical hit chance |
+| Human | No extra XP or combat bonus in the engine |
+| Elf | No accuracy/dodge race bonus in the engine |
+| Dwarf | No armor/crit race bonus in the engine |
+| Orc | **Yes** — +20% melee vs non-Orcs when the hit resolves |
+| Undead | External heals from non-Undead casters are blocked. No poison-immunity race hook |
+| Giant | **7-hex flower** footprint. No extra main-hand damage bonus in the engine |
+| Ent | **Yes** — +20% KON for HP and armor; **7-hex flower** footprint |
+| Genie | No spell-effectiveness race bonus in the engine |
 
-#### Race-Specific Restrictions Summary
+Two-hand / dual-wield occupancy is still [#8](known-issues.md).
 
-| Race | Restriction | Details |
-|:---|:---|:---|
-| **Ent** | No armor or weapons | Cannot equip any weapons, shields, or armor (body is natural armor). Can equip **Amulets and Rings only** |
-| **Giant** | No off-hand items | Cannot equip off-hand items due to hand size. No dual-wielding option |
-| **Undead** | No external healing | Do not benefit from healing spells cast by others. Can only heal through life-drain spells, curse-based effects, or items |
+### Level vs match XP
 
-### Leveling System
-
-| Mechanic | Description |
+| Mechanic | Live? |
 |:---|:---|
-| **XP Sources** | Heroes earn XP from all actions: training, battles, crafting, and events |
-| **Level-Up Gains** | Leveling increases primary stats incrementally |
-| **Progress Tracking** | XP progress tracked with `xp_to_next_level` field |
-| **Starting Level** | Every newly created hero starts at **level 1** *(team initialization, summoning, NPC generation)* |
-| **Starting Stats** | Primary attributes influenced by **race flat bonuses** (see [Race-Specific Stat Bonuses](#race-specific-stat-bonuses)) at level 1; values within the 1–20 range |
-| **Starting Age** | Newly created heroes *(team initialization, summoning, NPC generation)* receive a random age between their race's **Min Age** and **Max Junior Age** *(inclusive)* — see [Age System](#age-system) |
+| **Starting level / age / stats** | Yes — level **1**, age in [Min Age, Max Junior Age], race flat bonuses, attributes 1–20 |
+| **Match XP** | Yes — league and friendly matches add to `Hero.xp` (Library `xp_gain_pct` multiplies that XP only) |
+| **Level-up** | **No** — `HeroService::levelUp()` is never called in production. Displayed level stays at generation ([#6](known-issues.md)) |
+| **XP from training / crafting / events** | **No** — training has no XP; crafting is deferred |
 
 ---
 
 ## 2.5 Training System
 
-### Purpose
+Live rules: [training-system.md](../systems/training-system.md).
 
-Training is the primary method for improving hero attributes, expanding magic capacity, and maintaining peak performance (form). The system is trainer-centric, meaning heroes train under a configured trainer. The system balances strategic setup, trainer assignment, slot limits, and time-locking constraints without direct gold costs.
+Training is trainer-centric: configure a trainer’s focus, assign heroes, wait for the **Thursday 10:00** tick (kingdom timezone). **No Gold cost.** Training does **not** write `Hero.xp` ([#6](known-issues.md)).
 
 ### Training Types
 
-#### Attribute Training
+| Focus | Thursday tick | Fatigue |
+|:---|:---|:---|
+| **Attribute** | Raises one primary stat (1–20), capped at the trainer’s frozen value for that stat | +20 if the hero gained (cap 100) |
+| **Magic** | Magic capacity +1 (scaled by `game_speed`), cap **5** | +20 if capacity increased |
+| **Form** | Form +20 (scaled by `game_speed`), cap 100 | −20 (floor 0) |
 
-| Aspect | Details |
+Attribute gain uses trainer value, difference, difficulty, Training-facility `training_efficiency_pct`, race `training_speed_modifier`, arena adaptation, group race mix, kingdom `game_speed`, and trait (Quick Learner / Slacker / Perfectionist). Formula: [training-system.md](../systems/training-system.md#1-attribute-training).
+
+**Not in the tick:** age-phase efficiency, hero/team morale, form as a gain penalty, chemistry ([#7](known-issues.md)).
+
+### Trainers
+
+Promotion is **permanent** (cannot fight again; stats frozen). Promote via training UI, or buy a trainer on the marketplace for Gold. Focus is configured **per trainer** (no fixed specialty). Items are unequipped on promotion.
+
+| Rule | Live value |
 |:---|:---|
-| **Primary Stat Training** | Directly increases one of eight primary attributes (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) |
-| **Gold Cost** | None (Training is completely free of monetary costs) |
-| **XP Gain** | Grants XP toward hero leveling |
-| **Fatigue** | Adds +20 fatigue per weekly tick (capped at 100) |
-| **Form** | Form is maintained or recovered depending on the focus |
-| **Efficiency** | Calculated using the trainer's attribute value, difference factors, difficulty scaling, facility efficiency, and race modifiers |
+| Trainer cap | `2 + floor((trainingFacilityLevel - 1) / 2)` |
+| Slots per trainer | `3 + floor((trainingFacilityLevel - 1) / 2)` |
+| Assignment | One trainer per hero; hero status stays `Available` (can still be in a lineup) |
+| Trainer aging | Weekly tick, including Undead |
+| Lock | Thursday **08:00–10:00** kingdom time — no configure / assign / unassign |
 
-**Age Impact on Training:**
+### Efficiency (attribute tick)
 
-| Age Phase | Training Effect |
+| Live | Not live |
 |:---|:---|
-| **Junior** | Bonus efficiency and faster gains |
-| **Prime** | Standard efficiency and consistent gains |
-| **Veteran / Elder** | Reduced efficiency, slower gains |
-
-#### Magic Training
-
-**Spell Capacity Expansion** — Increases Magic Capacity from 1 to a maximum of **5 slots**:
-- Configured by setting the Trainer's training focus to Magic.
-- Assigned heroes increase their Magic Capacity by 1 per weekly tick (up to 5).
-- Adds +20 fatigue per weekly tick (capped at 100).
-- No Gold cost.
-
-#### Form & Condition Training (Resting)
-
-**Form Restoration** — Restores a hero's physical conditioning:
-- Configured by setting the Trainer's training focus to Form.
-- Assigned heroes recover +20 form per weekly tick (capped at 100).
-- Decreases fatigue by -20 per weekly tick (floor at 0).
-- No Gold cost.
-
----
-
-### Trainer System
-
-#### Trainer Transformation
-
-**Hero-to-Trainer Conversion** — Veteran age heroes can be permanently transformed into Trainers:
-
-| Rule | Detail |
-|:---|:---|
-| **Permanence** | Transformation is permanent and **cannot be reversed** |
-| **No Combat** | Transformed heroes no longer participate in combat |
-| **Frozen Stats** | Converted heroes retain their attribute values from the moment of transformation. Stats are permanently frozen — they **cannot be improved or degraded** after conversion |
-| **Role** | Trainers become non-combatant entities used exclusively for training purposes |
-
-> *Example: A Veteran Dwarf with STR 18 and KON 16 transforms into a Trainer. They retain both values but can never fight again. In a training setup targeting STR, heroes assigned to that session cannot train STR beyond 18 with this Trainer. A separate training setup targeting KON caps at 16.*
-
-#### Trainer Mechanics
-
-- **Trainer Acquisition** — Transform Veteran heroes into Trainers, or purchase Trainers from the marketplace using Gold.
-- **Trainer Attributes** — Each Trainer retains frozen values for all eight primary attributes (1–20 range) at conversion.
-- **No fixed specialty** — Trainers do **not** receive a permanent specialty at conversion. Which focus they train is configured **per trainer**.
-- **Training cap** — When assigned to an Attribute focus, the Trainer caps the target attribute at **their own frozen value** for that attribute.
-- **Trainer limits** — A team can have at most `2 + floor((trainingFacilityLevel - 1) / 2)` trainers.
-- **Hero slot limits** — Each trainer has a dynamic number of hero slots: `3 + floor((trainingFacilityLevel - 1) / 2)`.
-- **Single Active Training** — A hero can be assigned to at most one Trainer. While assigned, the hero status is set to `Training`.
-- **Trainer Aging** — Trainers age during each **training tick** (weekly cycle) by the same amount a hero would age from a combat death. This applies universally to **all races, including Undead** *(overrides the Undead race exception of aging only through combat deaths)*.
-- **Lock Period** — Training configurations and assignments are locked starting on **Thursday at 08:00:00** (server local time) and ending when the weekly tick processes on **Thursday at 10:00:00**. During this time, players cannot configure trainers or change hero assignments.
-
-#### Training Setup
-
-To train heroes, a player configures a trainer:
-
-| Step | Action |
-|:---|:---|
-| **1** | Configure the Trainer's training focus (Attribute target, Magic, Form, or idle) |
-| **2** | Assign one or more heroes to the Trainer's slots (up to the slot limit) |
-
-#### Trainer Marketplace
-
-- Trainers can be listed and sold on the marketplace for **Gold**.
-- Price reflects **attribute values** and **age** *(higher-valued or younger trainers cost more)*.
-- Trainer ownership transfers with marketplace transaction.
-- *Trainers age over time; purchasing an older Trainer provides less long-term utility.*
-
----
-
-### Training Efficiency Modifiers
-
-#### Positive Modifiers
-
-| Modifier | Effect |
-|:---|:---|
-| **Training Facilities** (HQ) | +5–25% efficiency (scales with upgrade level) |
-| **Arena Adaptation** | Heroes of the adapted race and positive relationship races gain +10–20% training efficiency |
-| **High Morale** | +5–15% training effectiveness |
-| **Team Chemistry** | Training with compatible heroes (positive race relationships) grants efficiency bonus |
-| **Kingdom Modifiers** | Server-specific training speed multipliers |
-
-#### Negative Modifiers
-
-| Modifier | Effect |
-|:---|:---|
-| **Low Form** | –10% to –30% gains |
-| **Low Morale** | –10% to –25% effectiveness |
-| **Age Penalties** | Veteran and Elder heroes face declining efficiency |
-| **Incompatible Races** | Training alongside hostile races may reduce efficiency |
-
----
-
-### Training Costs & Time
-
-#### Cost Structure
-- **Monetary Costs**: None. Training does not cost Gold.
-- **Fatigue Cost**: Standard training (Attribute/Magic) increases fatigue by +20 per tick. Recovery training (Form) decreases fatigue by -20 per tick.
-
-#### Time Investment
-- **Weekly Cycle**: Training runs in a weekly cycle, processed during the server tick every Thursday at 10:00.
-- **Pre-tick Lock**: Setting changes and assignments are locked from Thursday 08:00:00 to Thursday 10:00:00 local time.
-
----
-
-### Training Strategy
-
-#### Specialization vs. Generalization
-
-| Approach | Focus | Advantage | Disadvantage |
-|:---|:---|:---|:---|
-| **Specialist** | 2–3 core attributes for specific roles | Excel in combat roles, fast progression | Limited versatility, vulnerable to counters |
-| **Generalist** | Balanced distribution across multiple stats | Adaptable, well-rounded performance | Higher total investment, may not excel |
-
-#### Age-Based Training Decisions
-
-| Hero Phase | Recommended Strategy |
-|:---|:---|
-| **Junior** | Invest heavily in core stats to build a strong foundation |
-| **Prime Age** | Balance training with active combat deployment |
-| **Veteran** | Selective training to maintain competitive stats |
-| **Elder** | Minimal training investment; leverage accumulated experience and strategic value |
-
----
-
-### Training Limitations
-
-| Limitation | Details |
-|:---|:---|
-| **Lock Period** | No trainer configuration or hero assignment changes can be made between Thursday 08:00:00 and Thursday 10:00:00. |
-| **Trainer Limits** | Maximum `2 + floor((trainingFacilityLevel - 1) / 2)` trainers per team. |
-| **Slot Limits** | Maximum `3 + floor((trainingFacilityLevel - 1) / 2)` heroes assigned per trainer. |
-| **Fatigue Constraints** | Standard training adds fatigue (+20). High fatigue (100) blocks further training gains until fatigue is reduced (e.g., via Form recovery focus or rest). |
-| **Hero Assignment** | A hero can be assigned to only one trainer at a time. |
-
-### Training Rewards
-
-| Category | Rewards |
-|:---|:---|
-| **Direct Benefits** | Increased attribute values, XP gain toward hero leveling, improved combat performance, expanded magic capacity |
-| **Secondary Benefits** | Maintained/improved form, morale boost from productive activity, team chemistry improvements with compatible heroes |
-| **Long-term Progression** | Specialized heroes become more valuable on marketplace, well-trained rosters dominate league competition |
+| Training facility `training_efficiency_pct` | Made-up +5–25% bands |
+| Arena: ×1.10 adapted race, ×1.05 relationship ≥ 70 | Training penalty from arena hostility |
+| Group: +0.05 if another trainee is ≥ 70, −0.15 if ≤ 20 (hostile) | Chemistry as a training multiplier ([#7](known-issues.md)) |
+| Kingdom `game_speed` | Age-phase / morale / low-form gain tables |
+| Trait training multipliers | Junior “bonus efficiency” |
 
 ---
 
 ## 2.6 Team System
 
-### Purpose
+Live rules: [team-system.md](../systems/team-system.md).
 
-Each player manages a **single team** (1:1 player-to-team relationship) that serves as their primary game entity. The team is a persistent organization containing heroes, formations, and its own statistics.
+One player, one team (1:1). NPC teams fill unused kingdom slots until a player claims them.
 
 ### Starting Roster & Match Eligibility
 
-| Rule | Description |
+| Rule | Live |
 |:---|:---|
-| **Starting heroes** | Every new team receives **10 heroes** at creation *(Kingdom `startingResources` or team initialization)*. Each hero starts at **level 1** with age random within **[Min Age, Max Junior Age]** for their race. This provides a full **6-hero match lineup** plus **4 reserves** for substitutions, injuries, and roster rotation |
-| **Minimum to play** | A team must have at least **6 combat-ready heroes** *(active status, not trainers, not permanently dead)* to participate in a match |
-| **Insufficient roster** | If a team cannot field 6 combat-ready heroes when a match is scheduled, the match is **not simulated** — that team **automatically loses**. The opponent is awarded a **3–0** kill score *(half of the maximum possible score of 6)* |
-| **Both sides insufficient** | If **neither** team can field 6 combat-ready heroes, the match ends as a **0–0 draw** with no simulation |
+| **Starting heroes** | **10** at creation, level **1**, age in [Min Age, Max Junior Age] |
+| **Minimum to play** | **6** combat-ready heroes (available, not trainers, not dead) |
+| **Understaffed** | No simulation — opponent **3–0**; both sides understaffed → **0–0** draw |
 
-> *Example: A team with only 5 available heroes before a league fixture automatically loses 0–3 (kill score from their perspective). If both teams are understaffed, the fixture is recorded as 0–0 and both teams receive league draw points.*
+Kickoff eligibility is **roster size**, not “formation saved with 6 unique heroes”. Save rules: [§2.6.1](#261-formation-system).
 
 ### Team Components
 
-| Component | Description |
+| Component | Live |
 |:---|:---|
-| **Hero Roster** | Collection of all heroes recruited by the player *(starting capacity: **10** — see Barracks in [2.7 Headquarters System](#27-headquarters-system))* |
-| **Formations** | Up to 4 saved formations with customizable positioning and strategy *(can set one as default)* |
-| **Team Identity** | Name, emblem, colors, and visual customization |
-| **Headquarters** | Team's base providing passive bonuses and upgrade options *(see [2.7 Headquarters System](#27-headquarters-system))* |
+| **Hero Roster** | Barracks capacity starts at **10** — [§2.7](#27-headquarters-system) |
+| **Formations** | Up to **4** saved; one default — [§2.6.1](#261-formation-system) |
+| **Team Identity** | Name, emblem, colors (`POST /api/v1/teams/{id}/settings`) |
+| **Headquarters** | Facilities and passives — [§2.7](#27-headquarters-system) |
+| **Fan club** | Background `fan_base` (dashboard badge; drives arena attendance) |
 
 ### Team Statistics
 
-| Statistic | Description |
+| Statistic | Live? |
 |:---|:---|
-| **Team Morale** | Persistent value affecting overall team performance *(see Morale System in [2.4 Hero System](#24-hero-system))* |
-| **Team Reputation** | Earned through victories, events, and league performance |
-| **Win/Loss Record** | Historical performance tracking across all combat modes |
-| **Team Chemistry** | Calculated from race relationship values between heroes on the team |
+| **Team Morale** | Yes — post-match; not an average of hero morale ([§2.4](#24-hero-system)) |
+| **Team Reputation** | Yes — match results (not world events) |
+| **Win/Loss Record** | Yes |
+| **Team Chemistry** | Display-only from race pairs ([#7](known-issues.md)). Combat does not read it |
 
-### Hero Relations (Race Relationships Applied)
-
-- Hero interactions are determined by **race relationship values** *(90–100: Highly Positive, 70–89: Positive, 50–69: Neutral, 21–49: Negative, 0–20: Hostile)*
-- Compatible heroes (relationships **70+**) gain **team chemistry / morale benefits** when deployed together *(numeric in-combat synergy damage tables are deferred — see [combat-system.md](../systems/combat-system.md))*
-- Hostile race combinations (**0–20**) reduce team chemistry and morale significantly
-- **Charisma** attribute can partially offset negative race relationships and improve team cohesion
-
-### Mechanics
-
-- Team stats **persist and evolve** continuously based on activity and results
-- Formation changes can be made **between matches** but not during combat
-- Team-wide buffs from events and kingdom bonuses
-- Headquarters upgrades provide **passive bonuses** to all heroes
+**Not live:** in-combat race synergy, CHA offset of hostile pairs **in combat**, team-wide buffs from world events.
 
 ---
 
 ## 2.6.1 Formation System
 
-### Purpose
+Live rules: [formation-system.md](../systems/formation-system.md). UI: [screens/07-formation-setup.md](../screens/07-formation-setup.md). Engine: [combat-system.md](../systems/combat-system.md#formation-ai-phased).
 
-Formations define how heroes are **positioned** and **controlled** during combat. Each formation contains **6 heroes** arranged across two lines with customizable combat strategy, targeting priorities, spell priorities, and action sequencing. Players can save up to **4 formations** and select which to use before each match. Match-specific custom lineups are stored as temporary formations and removed automatically after the fixture completes.
+A formation is a **6-slot** layout (3 front, 3 back) that the combat engine reads at kickoff. Up to **4 saved** formations per team, plus optional **temporary** fixture lineups (deleted when the fixture completes). Combat is fully automated — no mid-match edits.
 
-### Formation Structure
+### Lineup
 
-#### Combat Lineup (6 Heroes)
-
-| Line | Heroes | Role |
+| Line | Slots | Live |
 |:---|:---:|:---|
-| **Front Line** | 3 | Primary defense — high KON and WIL heroes; absorb melee damage; influence enemy targeting |
-| **Back Line** | 3 | Support, healing, ranged, and magic specialists; protected by front line heroes |
+| **Front** | 3 | Starting hexes on the 17×11 grid |
+| **Back** | 3 | Starting hexes behind the front row |
 
-#### Hero Specialization Categories
+There is **no** abstract “front-line damage reduction” or line-break modifier. Positions are hexes; movement uses formation-wide `movement_goal`. Starting coordinates: [formation-system.md](../systems/formation-system.md#match-lineup-vs-roster).
 
-*Before setting formations, consider hero specializations:*
+Role labels (melee / ranged / healer) are **not** a saved system — only attributes, items, and spells.
 
-| Specialization | Key Attributes | Role |
-|:---|:---|:---|
-| **Melee** (Physical) | STR, KON, WIL | Close-range combat |
-| **Ranged** (Physical) | DEX, SPD | Distance-based attacks |
-| **Magic Focus** | INT, WIL | Spell-casting specialists |
-| **Support** | CHA, WIL | Buffs, heals, and team enhancement |
-| **Damage** | STR or INT | Primary offense output |
-| **Healing** | INT, WIL | Restoration spells and recovery |
+### What the player UI can set
 
-### Pre-match Approach
-
-Players can select a strategic approach before each match that defines the team's overall playstyle:
-
-| Approach | Playstyle | Best Against |
-|:---|:---|:---|
-| **Aggressive** | Prioritize high damage, target enemy damage dealers first, use offensive spells constantly, accept higher damage intake | Slower or defensive-focused teams |
-| **Balanced** | Mix offensive and defensive tactics dynamically, adapt to match situation | Varied opponents, unpredictable matchups |
-| **Defensive** | Prioritize survival and healing, use control abilities, eliminate threats with sustained offense | Aggressive or high-damage teams |
-
-### Combat Strategy Settings
-
-Each formation can be customized with the following strategy parameters:
-
-#### Targeting Priority (Hero Level)
-
-Determines which enemy hero each of your heroes attempts to target:
-
-| Priority | Description |
+| Field | Live in UI |
 |:---|:---|
-| **Priority 1** (Primary) | Preferred target *(e.g., enemy main damage dealer)* |
-| **Priority 2** (Secondary) | Secondary target if primary is unavailable |
-| **Priority 3** (Tertiary) | Fallback target |
-| **Priority 4–6** | Alternate targets |
-| **Flexible** | Auto-adjust based on threat assessment |
+| Slot heroes (drag-and-drop, empty slots allowed) | Yes |
+| Formation name; one **default** | Yes |
+| **Approach** (`aggressive` / `balanced` / `defensive`) | Yes — engine uses it for default target order and L0 heal threshold |
+| **Movement goal** (copied onto every slot) | Yes |
+| Per-slot `target_order` / `fallback` | **No** — engine may read L1 JSON if present (NPC tactics can fill it) |
+| Per-slot `spell_priorities` | **No** — UI always saves `[]`; L0 pick or NPC-filled list |
+| Action sequences, defend/flee, conditional tactics | **No** — L3 deferred |
+| Clone, suggested/auto-fill formation | **No** |
+| Sandbox `POST /api/v1/combat/simulate` | **No** ([#9](known-issues.md)). **Friendly matches** are a separate live path |
 
-#### Action Sequences
+### Save vs kickoff
 
-Determine the order and type of actions each hero takes during their turn:
+Canonical save rules: [formation-system.md](../systems/formation-system.md#validation-rules). Open decision: [#10](known-issues.md).
 
-| Action | Description | Status |
-|:---|:---|:---|
-| **Attack** | Standard physical or melee attack | Implemented |
-| **Cast Spell** | Use equipped spell from designated school | Implemented (L0/L2 pick) |
-| **Use Ability** | Activate hero-specific special ability | Deferred |
-| **Defend** | Raise defensive stance (+armor, –damage) | **Deferred** — listed in the combat log contract; L0 does not queue defend yet |
-| **Heal** | Use healing spell on lowest-health ally | Implemented via spell pick |
-| **Buff** | Apply morale/stat boost to team | Via status spells when configured |
-| **Debuff** | Apply negative status to enemy | Via offensive/status spells |
-| **Flee** | Attempt to retreat *(low priority action)* | Deferred |
-| **Auto-Suggest** | AI recommends action based on situation | N/A (fully automated simulation) |
-
-#### Spell Priority (Per Hero)
-
-Magic spells are configured at **two levels**:
-
-| Level | Scope | Description |
-|:---|:---|:---|
-| **Formation Level** (Primary) | Per formation | Spells selected specifically for this hero in this formation. Takes priority if configured. Allows match-specific customization |
-| **Hero Level** (Fallback) | Per hero | Spells equipped on heroes in inventory. Used only if no formation-level spell is configured |
-
-**Casting Conditions** *(for configured formation spells):*
-
-| Condition | Trigger |
+| Check | Live |
 |:---|:---|
-| **On Low Health** | Cast healing spell if ally health < threshold |
-| **On Low Morale** | Cast morale spell if team morale < threshold |
-| **On Enemy Weakness** | Cast debuff if enemy condition met |
-| **On Cooldown Ready** | Use high-cooldown ability when available |
+| Saved formation count | Max **4** (temporaries do not count) |
+| Slots on **save** | **0–6** persisted. Duplicate `hero_id` is **not** rejected |
+| Unique 6-hero lineup at save | **Not required** |
+| Match entry | Team must have ≥ 6 combat-ready heroes or the fixture **forfeits** (no simulation) |
+| During combat | Formation cannot be changed; no substitutions |
 
-**Spell Targets:**
+### Approach (engine defaults when `target_order` is empty)
 
-| Target | Description |
+| Approach | Default targeting |
 |:---|:---|
-| **Self** | Hero casts on themselves |
-| **Lowest Health** | Target ally with lowest HP |
-| **Highest Priority** | Target enemy set in Targeting Priority |
-| **Area** | Affects multiple targets *(if applicable)* |
+| **Aggressive** | Back row, then front |
+| **Balanced** | Front row, then back |
+| **Defensive** | Living front row, then highest physical attack |
 
-> *Example: A healer configured at Formation Level with "On Low Health" condition will automatically cast Heal when any ally falls below the HP threshold, overriding their default hero-level spells.*
+### Not live (do not treat as shipped)
 
-#### Conditional Tactics
-
-Advanced strategy rules that trigger under specific conditions:
-
-| Tactic | Trigger |
+| Claim | Status |
 |:---|:---|
-| **Formation Switch** | Change formation if condition met *(e.g., main tank health < 20%)* |
-| **Hero Substitution** | Bring in substitute hero if active hero incapacitated |
-| **Morale Threshold** | Execute special strategy if team morale drops below threshold |
-| **Numerical Disadvantage** | Activate defensive/survival tactics if outnumbered |
-| **Ally Death Response** | Increase damage/aggression if teammate dies |
-
-### Formation Mechanics
-
-#### Positioning Effects
-
-| Effect | Description |
-|:---|:---|
-| **Front Line Protection** | Back line heroes gain reduced damage (–15–25%) if front line is intact |
-| **Line Break** | If all front line heroes are incapacitated, back line takes full damage |
-| **Positioning Advantage** | Some abilities have positional bonuses *(front line area attacks, back line ranged)* |
-| **Formation Disruption** | Crowd control effects may disrupt formation positioning |
-
-#### Formation Synergy
-
-| Synergy Type | Effect |
-|:---|:---|
-| **Racial Synergy** | Heroes with positive race relationships gain tactical bonuses |
-| **Complementary Roles** | Teams with varied roles (tank, damage, support, control) gain +5–10% overall effectiveness |
-| **Line Coordination** | Front and back lines coordinate to create combined effects |
-| **Shared Morale** | Team morale adjustments affect all heroes in formation |
-
-#### Action Resolution
-
-| Step | Description |
-|:---|:---|
-| **Turn Order** | Determined by Speed (SPD) attribute |
-| **Formation Integrity** | Positioning maintained unless disrupted by crowd control |
-| **Action Queue** | Each hero's action executes according to priority queue |
-| **Spell Casting** | Spells execute immediately after queued action |
-| **Outcome Resolution** | Damage, healing, and effects apply immediately |
-
-### Formation Management
-
-#### Saving Formations
-
-Players can save up to **4 named formations**. Each formation saves:
-
-| Saved Data |
-|:---|
-| Hero lineup (6 heroes) |
-| Positions (front/back) |
-| Targeting priorities |
-| Action sequences |
-| Spell priorities |
-| Conditional tactics |
-
-*Formations persist across matches and can be reused.*
-
-#### Formation Selection
-
-| Option | Description |
-|:---|:---|
-| **Default Formation** | One saved formation designated as default for automatic selection |
-| **Match Selection** | Players choose formation before each match *(not during combat)* |
-| **Rapid Swap** | Formation can be changed between matches but **not during active combat** |
-| **Suggested Formations** | System recommends optimal formations based on opponent team composition |
-
-#### Formation Editing
-
-- Edit saved formations **between matches**
-- Test formations in **practice/friendly matches** *(friendly scheduling and `POST /api/v1/combat/simulate` are planned — see [combat-system.md](../systems/combat-system.md#api-endpoints))*
-- **Clone** existing formations to create new variants
-- **Delete** unused formations
-
-### Formation Limitations
-
-| Category | Rules |
-|:---|:---|
-| **Slot Requirements** | All 6 lineup slots must be filled. Cannot use same hero twice. Cannot use heroes on multiple teams |
-| **Roster Requirement** | The team must have at least 6 combat-ready heroes to enter a match at all *(see [Starting Roster & Match Eligibility](#starting-roster--match-eligibility))* |
-| **Cooldowns & Restrictions** | No cooldown between matches. Cannot change formation during combat. Substitutions only on incapacitation |
-| **Resource Constraints** | Each team may store up to **4 saved formations**. Temporary match-specific lineups do not count toward this limit and are deleted after the fixture completes. Advanced formation features unlock with player progression |
-
-### Formation Tips & Strategy
-
-| Area | Tips |
-|:---|:---|
-| **Front Line Selection** | Prioritize high KON and WIL heroes. Select heroes with defensive abilities. Consider race synergies within front line |
-| **Back Line Selection** | Include at least 1 dedicated healer. Mix damage dealers with support/control. Ensure spell diversity for varied tactics |
-| **Targeting Strategy** | Focus fire on high-threat enemies first (damage dealers, healers). Adapt targeting based on opponent formation. Use CC to disable dangerous enemies |
-| **Spell Prioritization** | Healing spells should activate on threshold conditions *(not manual)*. Offensive spells target high-priority enemies. Utility spells coordinate with team tactics |
-| **Conditional Tactics** | Set formation backup if main tank fails. Trigger aggression when outnumbering. Execute survival tactics when low on morale/resources |
-
-> *Example: Against a team heavy on magic damage, consider placing a high-WIL hero on the front line to absorb spells, while your back line mages target their fragile casters first.*
+| Racial / role **synergy** bonuses | Deferred ([#7](known-issues.md) / [#9](known-issues.md)) |
+| Per-hero targeting essays, dual-wield target lists, Flexible AI | No player editor ([A7.6](../roadmap/current.md)) |
+| Spell-condition editor (On Low Health / On Low Morale / …) | UI writes `[]` |
+| Mid-match formation switch or substitution | L3 deferred |
+| Suggested formations, clone, simulate sandbox | Not in UI / API |
 
 ---
 
 ## 2.7 Headquarters System
 
-### Purpose
+Live rules: [headquarters-system.md](../systems/headquarters-system.md). Summoning: [summoning-system.md](../systems/summoning-system.md).
 
-Each team has its own **Headquarters** serving as their base of operations, providing facilities, passive bonuses, and strategic settings. The Headquarters can be upgraded and customized to enhance team performance.
+Each team has one **Headquarters** with **7 facilities** (no Forge). Facilities start at level **1**. Passives scale with facility level. Restricted-crisis teams lose those passives ([financial-crisis-system.md](../systems/financial-crisis-system.md)).
 
-### Headquarters Facilities
+### Facilities
 
-| Facility | Description |
+| Facility | Live bonus |
 |:---|:---|
-| **Training Facilities** | Improves weekly attribute training efficiency (`training_efficiency_pct`) |
-| **Medical Wing** | Daily fatigue reduction and form recovery (`fatigue_reduction_pct`, `recovery_speed_pct`) |
-| **Library/Academy** | Increases hero XP awarded after matches (`xp_gain_pct`). Does **not** change spell learning cost or school-mastery XP |
-| **Treasury** | Increases arena ticket gold income (`gold_income_pct`). There is no storage-capacity mechanic |
-| **Barracks** | Hero roster capacity *(starting capacity: **10** heroes; upgrades expand beyond this)*. No team-morale recovery bonus |
-| **Summoning Chamber** | Recruit junior heroes; time-limited *(e.g., 1 summon per week cycle)*; juniors aged between Min Age and Max Junior Age for their race; upgrading may reduce cooldown or improve quality |
-| **Arena** | Match venue with public seating; upgrading increases audience capacity and ticket revenue |
+| **Training** | Weekly attribute-training `training_efficiency_pct` |
+| **Medical** | Daily `fatigue_reduction_pct` and form `recovery_speed_pct` |
+| **Library** | Match XP `xp_gain_pct` only. Does **not** change spell learning cost or school-mastery XP. That XP still does not level up ([#6](known-issues.md)) |
+| **Treasury** | `gold_income_pct` on arena ticket gold. No storage-capacity mechanic |
+| **Barracks** | Roster cap: **10 + round(2 × barracks level)**. No team-morale recovery bonus |
+| **Summoning Chamber** | Summon quality (`summon_base_stat_bonus`, `summon_stat_random_bonus`). Cycle limit is `max(1, round(1 × game_speed))` — **not** shortened by upgrades. `summon_stat_total_cap` is stored and **unread** ([A6.5](../roadmap/current.md)) |
+| **Arena** | `ticket_revenue_pct` and seating `arena_capacity` for **home-match ticket gold**. Attendance analytics UI is still open ([#4](known-issues.md)) |
 
-### Arena Adaptation Settings
+### Arena adaptation
 
-**Racial Affinity** — Choose **1 preferred race** that the arena is adapted for.
+One preferred race (`race_optimization`). Changes wait for the Sunday `race_optimization` tick and then lock for one cycle.
 
-> **Currently implemented:** Arena adaptation (1) restricts the Summoning Chamber race pool and (2) applies a **training** bonus in the weekly training tick: ×1.10 if the hero's race matches the adapted race, ×1.05 if the race relationship is ≥ 70, otherwise ×1.0. There is **no** training penalty for hostile races. Form/morale recovery and fatigue penalties from adaptation are **not** implemented.
-
-| Effect Type | Details |
+| Live | Not live |
 |:---|:---|
-| **Positive Effects** *(adapted race + relationship ≥ 70)* | Higher weekly attribute training efficiency (see [training-system.md](../systems/training-system.md)). Summoning pool is limited to compatible races. |
-| **Neutral / other races** | Training bonus ×1.0. No extra fatigue, form, or morale decay from adaptation. |
+| Summoning pool = adapted race plus relationship ≥ 50 (all 8 if unset). Genie can summon all races; NPC marketplace may use a stricter Genie-only filter ([A7.9](../roadmap/current.md)) | Training penalty for hostile races |
+| Thursday training: ×1.10 same race, ×1.05 relationship ≥ 70, else ×1.0 | Extra fatigue / form / morale decay from adaptation |
 
-> *Strategic Trade-off: Specializing in certain races improves training for that race (and close allies) and changes which races appear when summoning.*
+### Upgrades & maintenance
 
-### Facility Upgrades
-
-- Each facility can be upgraded independently using **Gold** and resources
-- Higher-level facilities provide **stronger passive bonuses**
-- Upgrades may unlock new features *(e.g., advanced training methods, special crafting recipes)*
-- **Headquarters level** represents the sum of all facility levels
-
-### Headquarters Bonuses
-
-| Bonus | Description |
+| Rule | Live |
 |:---|:---|
-| **Passive Buffs** | Continuous benefits to all heroes *(e.g., +5% XP gain, –10% fatigue rate)* |
-| **Home Advantage** | **Deferred for combat** — design intent for enhanced performance when defending *(scales with Arena seating capacity)*. Arena ticket revenue is implemented; combat-side home buff is not |
-| **Efficiency Boosts** | Reduced costs and time for training, crafting, and recovery |
-| **Morale Boost** | Well-maintained headquarters improves team morale over time |
-| **Ticket Revenue** | Arena matches generate passive gold income based on audience capacity and team reputation |
+| Currency | **Gold only** — paid to the Royal Treasury. No other resources |
+| Concurrency | **One** upgrade or downgrade at a time |
+| Cost / duration | Scale with facility level, HQ `total_level`, and kingdom `game_speed` — [headquarters-system.md](../systems/headquarters-system.md) |
+| Completion | `daily_reset` tick |
+| Cancel upgrade | Within **1 hour**, full gold refund |
+| Downgrade | Min level **1**; **25%** refund of the last upgrade cost; lock until next `weekly_reset` |
+| Weekly maintenance | `weekly_reset`; unpaid remainder → `unpaid_debt` |
 
-### Customization
+**HQ `total_level`** is the sum of the seven facility levels (starts at **7**).
 
-- **Visual themes** and decorations
-- **Facility layout** and placement
-- **Visitor access** settings *(for social features)*
+### Not live (do not treat as shipped)
+
+| Claim | Status |
+|:---|:---|
+| Visual themes, facility layout, visitor access | Not in UI |
+| HQ morale-over-time | Not implemented |
+| Combat home-advantage buff | Not in the engine (arena is ticket gold only) |
+| Crafting recipes, Forge, “advanced training methods” from HQ level | Crafting deferred ([future/crafting-system.md](../future/crafting-system.md)) |
 
 ---
 
 ## 2.8 Item System
 
-### Purpose
+Live rules: [item-system.md](../systems/item-system.md).
 
-Items boost hero attributes and provide unique effects. They can be **crafted**, **found**, or **traded**.
+Items carry **attribute bonuses** and **durability**. Live sources: **merchant** (fixed-price basics) and **marketplace** (player listings). Crafting and loot drops are **deferred**.
 
-### Categories
+### Equipment slots (8)
 
-| Type | Slots | Details |
-|:---|:---:|:---|
-| **Weapons** | Main Hand | Single-handed or dual-handed (occupies both hands) |
-| **Off-hand** | Off-Hand | Shield, Spell Accelerator, or single-handed weapon (dual-wielding) |
-| **Armor** | 4 Slots | Head, Body (main), Hands, Feet |
-| **Accessories** | 3 Slots | 1 Amulet + 2 Rings |
+Canonical slots — [item-system.md](../systems/item-system.md). Occupancy (two-handed occupying both hands, dual-wield, two rings) is **open** ([#8](known-issues.md)). Until then: `ItemService::equip()` only clears the **target** slot.
 
-### Item Rarity Tiers
-
-| Tier | Rarity | Description |
-|---:|:---|:---|
-| 1 | **Common** | Basic items with standard attribute bonuses |
-| 2 | **Uncommon** | Improved items with enhanced bonuses |
-| 3 | **Rare** | High-quality items with significant bonuses |
-| 4 | **Epic** | Exceptional items with powerful bonuses and special effects |
-| 5 | **Legendary** | Extremely rare items with unique effects and superior stats |
-| 6 | **Mythic** | The rarest and most powerful items with game-changing abilities |
-
-### Mechanics
-
-| Mechanic | Description |
+| Slot | Type |
 |:---|:---|
-| **Rarity & Durability** | Each item has rarity, durability, and attribute modifiers |
-| **Weapon Types** | Single-handed *(can be dual-wielded)* or dual-handed *(occupies both hands)* |
-| **Off-hand Options** | Shield *(defense/resistance)* or Spell Accelerator *(casting speed/power)*; **unavailable** with dual-handed weapons |
-| **Armor Slots** | Head, Body, Hands, Feet — one piece per slot. Body is the main armor and provides the highest defense |
-| **Accessory Slots** | 1 Amulet + 2 Rings per hero |
+| **Main Hand** | Weapon (`main_hand`) |
+| **Off-Hand** | Shield, Spell Accelerator, or a weapon whose `slot_type` is `off_hand` |
+| **Armor** | Head, Body, Hands, Feet |
+| **Accessories** | 1 Amulet + **1 Ring** |
 
-> *Example: A dual-wield setup uses two single-handed weapons (Main Hand + Off-Hand), sacrificing shield defense for additional attack power. This option is unavailable to Giants (no off-hand) and irrelevant for Ents (no weapons).*
+Two-handed `sub_type` values exist on items; they do **not** auto-clear `off_hand`. Giants still cannot equip off-hand; Ents accessories only ([§2.4](#24-hero-system)).
+
+### Rarity
+
+`ItemRarity`: Common, Uncommon, Rare, Epic, Legendary, Mythic. Rarity scales dismantle gold and repair cost. Do not treat “unique / game-changing effects” as a live combat contract.
+
+### Live mechanics
+
+| Mechanic | Live |
+|:---|:---|
+| Equip / unequip | Hero-detail paperdoll (click); `/app/inventory` **redirects**. Race restrictions from `RaceConfig` |
+| Durability | 0–100; loss after combat; at 0 the item contributes **no** combat bonuses |
+| Repair | Gold to 100; cost = missing points × rarity rate |
+| Dismantle | Unequipped `available` item → gold scrap by rarity |
+| Marketplace escrow | `status = selling` — cannot equip or dismantle until cancelled |
+| Enchanting | **Not designed** ([#2](known-issues.md)). No essence |
 
 ---
 
 ## 2.9 Spell System
 
-### Purpose
+Live rules: [spell-system.md](../systems/spell-system.md). Combat pick: [combat-system.md](../systems/combat-system.md).
 
-Spells provide tactical options based on hero **magic proficiency**.
+Learn for **gold only** (`spell_learning_cost`). No essence. Library HQ does **not** discount learning or grant mastery XP.
 
-### Magic Proficiency
+### Proficiency
 
-| Attribute | Description |
+| Attribute | Live |
 |:---|:---|
-| **Magic Capacity** | Determines spell slot capacity — how many spells a hero can have equipped at once *(min 1, max 5; increases with training)* |
-| **School Mastery** | Per-school permanent stat (Fire, Water, Air, Earth, Light, Dark); determines the max difficulty/tier of usable spells |
+| **Magic Capacity** | Equipped spell slots **1–5**; Thursday Magic training raises it |
+| **School Mastery** | Per school (Fire, Water, Air, Earth, Light, Dark). Learn requires mastery ≥ spell `required_mastery_tier`. Mastery XP comes from **combat**, not Magic training |
 
-### Spell Types by Purpose
+Seeded catalog is **Tier 1–2**. Mastery can still reach **Tier 5**; T3–T5 spells are unused until [A7.11](../roadmap/current.md). Offensive seeded spells set `requires_magical_weapon`.
 
-| Type | Description | Examples |
-|:---|:---|:---|
-| **Offensive** | Direct damage, damage over time, debuffs | *Fireball, Poison, Weakness* |
-| **Defensive** | Healing, shields, buffs, cleansing | *Heal, Shield, Purify* |
-| **Utility** | Crowd control, turn manipulation, summoning | *Stun, Slow, Summon* |
+### Types
 
-### Magic Schools
+`SpellType`: **Offensive**, **Defensive**, **Utility**. Seeded effects include damage, heal, burn/freeze/shock/haste/shield/curse, cleanse, and Dark life drain. There is **no** summon-creature spell. Mid-combat **Resurrection** is **deferred**.
 
-| School | Type | Effects & Abilities |
-|:---|:---|:---|
-| **Fire** | Offensive | Damage over time, area attacks, burn effects |
-| **Water** | Defensive/Control | Healing, cleansing, ice-based control and damage |
-| **Air** | Offensive/Speed | Speed buffs, lightning damage, evasion enhancement |
-| **Earth** | Defensive/Control | Defense buffs, physical damage, stuns and slows |
-| **Light** | Healing/Holy | Healing, holy damage *(bonus against Undead)*. Mid-combat **Resurrection** is **deferred** (once per match; Mastery Tier 8+; revive at 50% HP; caster −15% stats) — see [combat-system.md](../systems/combat-system.md#implementation-status) |
-| **Dark** | Cursing/Drain | Curses, life drain *(Undead are immune to enemy life drain but can use it themselves — life drain is the primary healing method for Undead, who cannot benefit from external healing spells)*, debuffs, summoning |
+When formation `spell_priorities` is empty, the engine uses the **L0** pick (heal under the approach threshold, else highest-tier offense). Player UI always saves `[]` ([§2.6.1](#261-formation-system)).
 
-> *Note: Some races (Genie, Elf) gain bonuses from Intelligence for spell effectiveness. Heroes can learn spells from multiple schools but may specialize for efficiency.*
+### Schools (live hooks only)
+
+| School | Notes |
+|:---|:---|
+| **Fire / Water / Air / Earth** | Seeded T1–T2 as above |
+| **Light** | Heal / bless / cleanse; holy extra vs Undead on seeded Light heal. **No** revive |
+| **Dark** | Curse and life drain. External heals from **non-Undead** casters are blocked on Undead ([§2.4](#24-hero-system)) |
+
+INT feeds spell power for everyone. **No** extra Genie/Elf spell-effectiveness race hook in the engine. Haste/Shock may apply as statuses; they do **not** change initiative yet ([#9](known-issues.md)).
 
 ---
 
 ## 2.10 Combat System
 
-### Concept
+Live rules: [combat-system.md](../systems/combat-system.md). Open leftovers: [#9](known-issues.md).
 
-- **Turn-based**, asynchronous battles
-- **Fully automated** — players configure behaviour via formations before kickoff; there is no mid-battle player input. The UI is a **replay** of the stored combat log.
-- Hero performance depends on **primary stats, form, fatigue, level, age, and morale**
+Turn-based, **fully automated**. Players set formation **before** kickoff; there is no mid-battle input. The UI is a **replay** of `combat_log` at `/app/battles/{id}`. League Tue/Fri and friendly Wed/Sun use the same engine.
 
-### Combat Flow
+**Live inputs:** primary stats, equipment (scaled by durability), form (starting HP), fatigue (effective KON), kickoff morale (outgoing damage), Orc/Ent race hooks ([§2.4](#24-hero-system)). Displayed **level** is in the HP formula but stays at generation until [#6](known-issues.md). **Age** is post-match KO aging / mortality, not an in-combat stat curve.
 
-| Step | Description |
+### Combat flow
+
+| Step | Live |
 |---:|:---|
-| **1** | Formation selection and setup *(each player can save up to 4 formations, set one as default, and manually select which to use per fixture — this is where all combat “decisions” are made)* |
-| **2** | **Roster eligibility check** — each team must have ≥ 6 combat-ready heroes; otherwise apply forfeit rules *(see below)* |
-| **3** | League match tick starts a **cohort** of fixtures at that kickoff *(forfeits skip simulation)* |
-| **4** | Messenger workers resolve combat in **lockstep rounds across the cohort** (round 1 for all, then round 2, …; max 200 rounds). Failed battles become `stalled` so others continue; see [combat-system.md](../systems/combat-system.md#wave-based-messenger-orchestration) |
-| **5** | On each battle completion: XP, form, fatigue, and morale updates applied |
-| **6** | Result and `combat_log` stored; product UI is **post-match replay** only *(no live match UI for now)* |
+| **1** | Fixture lineup (saved formation or default) — [§2.6.1](#261-formation-system) |
+| **2** | Roster eligibility: ≥ 6 combat-ready heroes or **forfeit** (no simulation) |
+| **3** | Kickoff starts a **cohort**; forfeits skip the engine |
+| **4** | Messenger **lockstep rounds** (max **200**). Failed battles become `stalled` so others continue |
+| **5** | Post-match: standings, fan club, morale, mastery XP, hero XP / form / fatigue, durability, aging → graveyard |
+| **6** | Persist `Battle` + `combat_log`; product UI is **replay only** |
 
-### Match Scoring
+Round **200** ends on current kill scores (HP is not a tiebreak). Preparation length and fumble-without-retarget are **locked**.
 
-Each **kill** (hero permanently removed from the opposing lineup during the match) awards **1 point** to the scoring team. The maximum possible score per team is **6** *(one kill per enemy lineup slot)*.
+### Match scoring
+
+Each **kill** (enemy lineup slot removed during the match) = **1** point. Max **6** per team.
 
 | Outcome | Kill score | Simulation |
 |:---|:---|:---|
-| **Normal match** | 0–6 per team; higher score wins *(draw if tied)* | Full combat simulation |
-| **One team understaffed** (< 6 combat-ready heroes) | **3–0** for the eligible team | No simulation — automatic forfeit loss for the understaffed team |
-| **Both teams understaffed** | **0–0** | No simulation — automatic draw |
+| **Normal match** | 0–6 per team; higher score wins (draw if tied) | Full combat |
+| **One team understaffed** | **3–0** for the eligible team | No simulation |
+| **Both understaffed** | **0–0** | No simulation |
 
-> *League table points (Win = 3, Draw = 1, Loss = 0) are derived from the match winner/loser/draw outcome, not from the kill score directly. A 3–0 forfeit counts as a win for the eligible team.*
+League table points (Win **3**, Draw **1**, Loss **0**) come from winner / loser / draw, not from kill totals directly.
 
-### Morale in Combat
+### Morale in combat
 
-**Individual Hero Morale** — At match start, morale sets an **outgoing damage multiplier** on physical and offensive-spell damage (heals unchanged). Bands: 80–100 ×1.20, 60–79 ×1.10, 40–59 ×1.00, 20–39 ×0.90, 0–19 ×0.80. See [combat-system.md](../systems/combat-system.md#physical-attack-atk).
+Kickoff **outgoing damage** band on physical and offensive-spell damage (heals unchanged): 80–100 ×1.20, 60–79 ×1.10, 40–59 ×1.00, 20–39 ×0.90, 0–19 ×0.80.
 
-**Team Morale** — Updated **post-match** from the result. Mid-battle `morale_change` events (ally death decay, Critical-hit surges, Charisma rallies) are **deferred**; trait metadata `moraleDecayMultiplier` (Volatile / Battle Hardened) is serialized but unused until then.
+Team morale updates **post-match** from the result. Mid-battle `morale_change` (ally death, crits, CHA rallies) and Volatile / Battle Hardened in-combat hooks are **deferred** ([#9](known-issues.md)).
 
-| Morale State | Effects (implemented) |
+### Not live (do not treat as shipped)
+
+| Claim | Status |
 |:---|:---|
-| **High Morale** | Higher outgoing damage band at kickoff |
-| **Low Morale** | Lower outgoing damage band at kickoff |
-
-**Deferred mid-combat morale triggers** (design only):
-
-| Trigger | Intended effect |
-|:---|:---|
-| **Ally death witnessed** | Decreases morale *(Volatile ×2 / Battle Hardened ×0.5 when shipped)* |
-| **Critical hits and victories** | Boost morale |
-| **Outnumbered or severely wounded** | Reduces morale |
-| **High Charisma hero rally** | Restores morale mid-battle for nearby allies |
-
-> *Canonical combat formulas and deferred list: [combat-system.md](../systems/combat-system.md).*
+| Replay HUD: logos, match type, morale widget, initiative queue, skip-to-end | Open ([#9](known-issues.md)) |
+| Combat **home advantage** | Not in the engine (arena is ticket gold only) |
+| Haste +30% / Shock −30% on initiative | Design text only |
+| In-combat race synergy; `POST /api/v1/combat/simulate` | Deferred ([#7](known-issues.md) / [#9](known-issues.md)) |
+| Live / in-progress match UI | Replay after completion only |
 
 ---
 
 ## 2.11 Marketplace System
 
-### Purpose
+Live rules: [marketplace-system.md](../systems/marketplace-system.md). Economy: [§2.3](#23-economy-system).
 
-Players **trade heroes and items** with other players within the same Kingdom.
+Same-kingdom **gold** listings: **hero**, **trainer**, and **item**. No cross-kingdom trade. Seller pays kingdom tax (`marketplace_tax_rate`) to the Royal Treasury; the buyer pays the listed buyout only.
 
-### Mechanics
-
-| Rule | Description |
+| Rule | Live |
 |:---|:---|
-| **Hero Stats Retained** | Heroes retain **level, age, form, fatigue** when traded |
-| **Morale Reset** | Morale is **reset to base value** when a hero changes teams |
-| **XP Continuation** | XP continues to accumulate post-trade |
-| **Transaction Fee** | A percentage-based fee applies on all sales |
+| Escrow | Listed hero `Selling`; listed item `selling` (cannot equip / dismantle) |
+| Hero transfer | Age, form, fatigue, attributes, `xp`, and displayed level stay with the hero. **Morale resets to 50** |
+| Roster / trainer caps | Buy and bid check Barracks / Training limits |
+| Auctions | Gold reserved; settle on `daily_reset` when the listing expires |
+| Merchant | Fixed-price basic items (`POST /app/marketplace/buy-basic`); `fee_amount = 0` |
+| Price floor / ceiling / suggested price | **Not live** ([A7.10](../roadmap/current.md)) |
 
-> *Example: Selling a Level 35 Elf hero — the buyer receives the hero at Level 35 with current age, form, and fatigue intact, but morale resets to the base value since the hero joins a new team.*
-
-*For detailed marketplace economics, see [2.3 Economy System — Trading & Marketplace](#23-economy-system).*
+NPC teams also buy and sell on ticks ([npc-simulation-system.md](../systems/npc-simulation-system.md)). Player marketplace buys have **no** race filter. NPC hero buys score compatible races from the summoning pool, except a Genie-adapted NPC team may buy **Genie-only** (dual rule until [A7.9](../roadmap/current.md)).
 
 ---
 
 ## 2.12 League System
 
-### Concept
+Live rules: [league-system.md](../systems/league-system.md). Calendar: [calendar-system.md](../systems/calendar-system.md).
 
-- **Structured PvP competition** organized like football/soccer leagues
-- Seasonal format with multiple **tiers and groups** within each tier
-- Teams compete for **promotion**, avoid **relegation**, and earn **seasonal rewards**
+Kingdom-scoped **tiers and groups**. Default 60-team kingdom: T1 (1 group), T2 (2), T3 (3), **10** teams per group — from `league_tiers_config`. A claimed NPC team keeps its standing and fixtures.
 
-### Structure
+### Season
 
-| Component | Description |
+**77 days (11 weeks).** Week 1 preparation (no league matches). Weeks 2–10: double round-robin, **Tue/Fri 18:00** (18 rounds; each team 9 home / 9 away). Week 11 Friday 19:00: season transition (promotion / relegation, gold rewards, next-season fixtures).
+
+Friendly matches are a **separate** live path (Wed/Sun) — [friendly-match-system.md](../systems/friendly-match-system.md).
+
+### Table & kickoff
+
+| Rule | Live |
 |:---|:---|
-| **Tiers** | Multiple competitive levels *(e.g., Premier, Division 1, Division 2, Division 3)* |
-| **Groups** | Within each tier, players are divided into groups for round-robin competition |
-| **Seasons** | Fixed-duration periods *(e.g., 2–4 weeks)* with scheduled matches |
-| **Promotion/Relegation** | Top performers move up a tier; bottom performers move down |
+| Table points | Win **3**, Draw **1**, Loss **0** |
+| Match score | Kill-based 0–6 — [§2.10](#210-combat-system) |
+| Understaffed | Forfeit **3–0** / **0–0**, no simulation |
+| Promotion / relegation | Slot counts from `league_tiers_config`; cross-group ties use points → goal difference → wins → player over NPC → reputation → chemistry → team id |
+| Season gold | Auto-credited from tier base × position × season growth × promo/releg modifier. Ledger `league_reward` |
 
-### Mechanics
+Post-match **morale** is the win / draw / loss (and forfeit) delta, CHA-buffered — [§2.4](#24-hero-system). Chemistry is a **tie-break number only** until [#7](known-issues.md).
 
-| Mechanic | Description |
+### Not live (do not treat as shipped)
+
+| Claim | Status |
 |:---|:---|
-| **Matchmaking** | Within groups; ensures fair competition based on tier and group assignment |
-| **Points System** | Win = **3 pts**, Draw = **1 pt**, Loss = **0 pts** |
-| **Match Score** | Kill-based: 1 point per enemy hero killed; max 6 per team *(see [2.10 Combat System — Match Scoring](#match-scoring))* |
-| **Match Outcomes** | Simulated matches are determined by heroes' primary stats, form, fatigue, level, age, and morale. Understaffed teams forfeit without simulation *(3–0 or 0–0)* |
-| **Schedule** | Fixed schedule with rest days between matches for strategic management |
-| **Rewards** | Seasonal rewards based on final tier and group position |
-
-### Morale Dynamics in League Play
-
-| Scenario | Morale Effect |
-|:---|:---|
-| **Win Streaks** | Consecutive victories provide escalating morale bonuses |
-| **Relegation Pressure** | Teams near bottom positions suffer morale penalties due to stress |
-| **Derby Matches** | Matches against top-ranked opponents/rivals have amplified morale swings |
-| **Promotion Reward** | Promoting to a higher tier grants significant morale boost to entire team |
-| **Season Performance** | Sustained success builds confidence; prolonged struggles erode morale |
-
-### Age Considerations in League Play
-
-| Factor | Description |
-|:---|:---|
-| **Veteran Experience** | Elder heroes (beyond Prime Age) provide tactical bonuses and leadership in high-pressure matches |
-| **Junior Development** | Junior heroes (below Max Junior Age) earn bonus XP from league matches |
-| **Age Diversity Bonus** | Teams with balanced age distribution gain tactical flexibility and formation options |
-| **Strategic Rotation** | Rotate elder heroes to minimize death risk while maintaining competitive performance |
-| **Season Fatigue** | Long seasons may accelerate aging for heavily-used elder heroes, especially through combat deaths |
-
-> *Example: A savvy manager might field junior heroes in early-season "safe" matches to develop them, then deploy veteran prime-age heroes for crucial promotion/relegation matches.*
+| Season length “2–4 weeks” | Live season is **77 days** |
+| Win-streak / derby / relegation-pressure morale | Not implemented |
+| Promotion morale boost as a separate event | Season gold only; match morale is the usual result delta |
+| Veteran leadership, junior **bonus XP**, age-diversity bonus | Not implemented (age phase is display / rating / mortality) |
+| Extra aging from “season fatigue” | Aging is daily tick + KO years, not a league-long curve |
 
 ---
 
 ## 2.13 Graveyard System
 
-### Purpose
+Live rules: [graveyard-system.md](../systems/graveyard-system.md).
 
-The Graveyard is a **permanent repository** for all heroes who have died permanently in combat. It serves as a **memorial** and **historical record** for fallen heroes.
+The Graveyard is a **memorial wall**, not combat-death-only. Hero and trainer **dismissals** write the same `GraveyardMemorial` snapshot as permanent combat death. Records do **not** consume Barracks roster space.
 
-### Mechanics
+### What writes a memorial
 
-| Mechanic | Description |
+| Cause (`MemorialCause`) | Live |
 |:---|:---|
-| **Permanent Death Storage** | When a hero dies permanently *(typically elder heroes at or beyond Mortality Threshold age)*, they are automatically moved to the Graveyard |
-| **Historical Record** | Preserves complete hero information: final stats, level, age at death, team/player association, total battles fought, victories achieved, and cause of death |
-| **No Resurrection** | Heroes in the Graveyard **cannot** be revived or returned to active play |
-| **Memorial Function** | Players can visit the Graveyard to view their fallen heroes and team history |
-| **Statistics Tracking** | Contributes to overall team legacy statistics |
+| **`dismissed`** | Hero dismiss (`POST /api/v1/heroes/{id}/dismiss`, 40% gold) and trainer dismiss (`POST /api/v1/training/trainers/{id}/dismiss`, 30% gold) |
+| **`combat_death`** | Permanent combat death after the post-match mortality roll (typically elder at or beyond Mortality Threshold) — [§2.4](#24-hero-system), [§2.10](#210-combat-system) |
+| **`age` / `retired` / `death`** | Reserved enum values — **not** written today ([A6.2](../roadmap/current.md)) |
 
-> *Note: The Graveyard is purely a record-keeping system. It does not consume roster space or affect active team management.*
+Trainers use the same table (`role_at_departure = trainer`). There is no separate staff-record entity.
+
+### Snapshot (immutable)
+
+Name, race, role at departure, age, `final_level`, `final_stats`, trait, `matches_played` / `matches_won`, `combats_fallen`, cause, `departed_at`, `original_hero_id`. Heroes **cannot** be revived or returned to the roster. Mid-combat Resurrection is **deferred** ([§2.9](#29-spell-system)).
+
+UI: `/app/graveyard` (filter by role, cause, race; search; summary counts). Read API: `GET /api/v1/graveyard`, `GET /api/v1/graveyard/{id}`.
 
 ---
 
 ## 2.14 Community System
 
-### Purpose
+Live rules: [community-system.md](../systems/community-system.md). In-app alerts: [notification-system.md](../systems/notification-system.md).
 
-Supports **player interaction**, strategy discussion, and **community building** across the Kingdom.
+Kingdom-scoped social features. Mail and forum do **not** cross kingdoms.
 
-### Features
+### Live
 
-| Feature | Description |
+| Feature | Live |
 |:---|:---|
-| **Mail System** | Private messaging between players for trading and communication |
-| **News Feed** | Kingdom-wide announcements, server events, and updates |
-| **Forum Discussions** | Dedicated spaces for strategy discussion and player engagement |
-| **Email Notifications** | System alerts for trades, league results, and events |
-| **Player Profiles** | Public profiles showing hero stats *(level, form, fatigue, age)* and team record |
-| **Leaderboards** | Kingdom rankings on the League screen (`/app/league`), not a Community tab |
+| **In-app mail** | Yes — navbar modal (`/api/v1/messages*`). Player-to-player inbox, not a trade protocol (marketplace is [§2.11](#211-marketplace-system)) |
+| **Forum** | Yes — `/app/community` threads and posts. Author can lock. `is_pinned` is stored but has **no write API** ([A6.3](../roadmap/current.md)) |
+| **News** | Public `/news` archive. Admin / CMS to create articles is **not** implemented (seed / DB) |
+| **Public profiles** | Same-kingdom player and team profile. Team identity, counts, league record. **Not** a roster of hero form / fatigue / level |
+| **Leaderboards** | Kingdom rankings on `/app/league` (standings API). No `/api/v1/leaderboards` |
+| **Content filter** | Yes — blacklist on mail and forum text |
+| **In-app notifications** | Yes — navbar modal; title/body frozen at **write-time locale** ([A6.4](../roadmap/current.md)) |
+
+### Email (outbound)
+
+Live outbound mail is **auth and inactivity only**. There is **no** email for trades, marketplace, or league results.
+
+| Live | Not live |
+|:---|:---|
+| Registration verify, password reset, email change | Trade / marketplace emails |
+| Inactivity warning (21 days) and team release (28 days) — [player-inactivity-system.md](../systems/player-inactivity-system.md) | League-result or world-event emails |
+| | Per-type notification preference emails ([A8.6](../roadmap/current.md)) |
+
+### Not live (do not treat as shipped)
+
+| Claim | Status |
+|:---|:---|
+| Public wiki CMS (`/wiki`) | Planned ([A8.5](../roadmap/current.md)) |
+| Forum pin / unpin for admins | Field only ([A6.3](../roadmap/current.md)) |
+| Cross-kingdom mail or forum | No |
+| Email alerts for trades / league / events | Not implemented |
 
 ---
 
-## 2.15 Dungeon System
+## Deferred (not in core)
 
-> [!NOTE]
-> **Future Feature**: The Dungeon System is a future feature (Milestone 8 of the implementation roadmap). It is not currently implemented; the `dungeon_run` entity was removed from the codebase. Design is preserved in [future/dungeon-system.md](../future/dungeon-system.md).
+Parked Milestone 8/9 design. **Not live.** One pointer — do not treat dungeons, crafting, quests, world events, or alliances as shipped systems. Full specs: [`docs/future/`](../future/).
 
-### Concept
+| Parked | Spec |
+|:---|:---|
+| **Dungeons** | [future/dungeon-system.md](../future/dungeon-system.md) — backend removed; no dungeon-match ticks |
+| **Crafting** | [future/crafting-system.md](../future/crafting-system.md) — backend, UI, Forge, essence, and kingdom Crafting Boost removed |
+| **Quests** | [future/quest-system.md](../future/quest-system.md) |
+| **World events** | [future/world-events-system.md](../future/world-events-system.md) |
+| **Alliances / guilds** | Milestone 9 — [roadmap/history.md](../roadmap/history.md) |
 
-- PvE encounters run via server tick processing
-- Teams enter dungeons for XP, Essence, and rare item rewards
-- Dungeon difficulty tiers scale with team level and progression
-
-### Key Mechanics (to be defined)
-
-- Dungeon types: solo, group, raid
-- Encounter generation and enemy scaling
-- Reward tables per tier and per kingdom settings
-- Fatigue/cooldown costs for participation
-- Integration with calendar server ticks
-
-> *See [future/dungeon-system.md](../future/dungeon-system.md) for the deferred design.*
+Do not implement unless the user explicitly asks.
 
 ---
 
-## 2.17 Crafting System
+**End of overview**
 
-> [!NOTE]
-> **Deferred feature:** Crafting backend and UI were removed from the codebase. The Forge HQ facility was removed with it. Design is preserved in [future/crafting-system.md](../future/crafting-system.md).
-
-### Concept
-
-- Players craft items from materials using Essence
-- Success rates vary by recipe difficulty and player facilities
-- Dismantling unwanted items returns Essence
-
-### Key Mechanics (to be defined)
-
-- Recipe model: inputs (materials + Essence) → output (item of specific rarity)
-- Success rate calculations (affected by Crafting Boost kingdom setting — Forge facility removed)
-- Crafting queue processing via server ticks
-- Dismantle rules: Essence return rates by item rarity
-
-> *See [future/crafting-system.md](../future/crafting-system.md) for the deferred design — not implemented.*
-
----
-
-**End of System Documentation**
-
-> For known documentation gaps, design questions, and open issues see [product/known-issues.md](known-issues.md).
+> Live rules: `docs/systems/*.md`. Open design: [known-issues.md](known-issues.md). Active work: [roadmap/current.md](../roadmap/current.md).

@@ -1,34 +1,70 @@
 # Training Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#5-training-screen), [training-system.md](../systems/training-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#5-training-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [training-system.md](../systems/training-system.md), [06-trainer-management.md](06-trainer-management.md)
 
-Purpose: Per-screen API, events, UI data requirements, and implementation notes.
+**When:** Configure trainer focus and assign combatants to weekly training.
 
-## Displayed Information
+**Status:** Live at `GET /app/training` (two tabs: **Trainers** and **Active trainees**). Trainer promote/dismiss is the same page — [06-trainer-management.md](06-trainer-management.md). Hero overview also assigns/unassigns a trainer; it does **not** use a separate Training tab.
 
-- **Trainers Overview Panel:**
-  - List of team's Trainers
-  - For each Trainer:
-    - Name, race, age
-    - Configuration: Focus type (Attribute, Magic, Form, or Idle) and target attribute
-    - Slots occupied vs. slots limit
-    - List of assigned heroes currently training under this Trainer
-- **Active Team Status:**
-  - Whether training assignments and focus changes are currently **locked** (from Thursday 08:00 to Thursday 10:00)
-  - Next training tick execution time (weekly Thursday at 10:00)
+**Live UI:** `templates/training/index.html.twig`, `templates/components/training/`.
 
-## Possible Actions/Buttons
+---
 
-- **Configure Trainer Focus:**
-  - Open a modal to change a Trainer's training focus type (Attribute, Magic, Form, or Idle) and select target attribute (if Attribute training type is chosen)
-- **Assign Hero to Trainer:**
-  - Select an available team hero and assign them to an empty slot on a Trainer
-- **Unassign Hero from Trainer:**
-  - Remove an assigned hero from a Trainer's slot, returning them to "Available" status
+## Implemented
 
-## Backend Requirements
+### Header
 
-- GET `/api/v1/training/trainers` — List team's trainers, current configurations, hero slot occupancy, limits, and team lock status.
-- POST `/api/v1/training/trainers/{id}/configure` — Configure trainer focus (request parameters: `type`, `attribute`).
-- POST `/api/v1/training/trainers/{id}/assign` — Assign a hero to a trainer's slot (request parameter: `hero_id`).
-- POST `/api/v1/training/trainers/{id}/unassign` — Unassign a hero from a trainer (request parameter: `hero_id`).
+- Next lock countdown (or locked badge)
+- Next weekly evaluation countdown (Thursday 10:00 kingdom time)
+- Lock alert Thursday 08:00–10:00: configure / assign / unassign / promote disabled
+
+### Trainers tab
+
+Trainer identity, stats, promote, dismiss: [06-trainer-management.md](06-trainer-management.md).
+
+Per card, for training itself:
+
+- Focus type: Idle, Attribute, Magic, Form (`<select>`; Attribute reveals target STR–LCK)
+- Save focus → `POST /api/v1/training/trainers/{id}/configure` (`type`, `attribute`)
+- Assigned trainees: name (link to hero detail), level, fatigue, form, cap progress (attribute vs trainer frozen stat, or magic capacity / 5, or form/idle copy)
+- Unassign → `POST /api/v1/training/trainers/{id}/unassign` (`hero_id`)
+- Assign `<select>` of available combatants with no trainer when a slot is free → `POST /api/v1/training/trainers/{id}/assign`
+
+A hero stays `available` while training (not a roster “training” status).
+
+### Active trainees tab
+
+Table of every assigned hero: name/level/compact stats, trainer, focus, cap, fatigue forecast, form forecast, unassign. Idle trainers with no trainees yield an empty state.
+
+### Hero detail (overview)
+
+If assigned: trainer identity, focus, cap bar, fatigue/form forecast, unassign, link to this screen. If not: compact trainer cards with assign. Same lock and APIs.
+
+### Backend
+
+| Piece | Location |
+|-------|----------|
+| Web | `GET /app/training` → `Web\TrainingController` |
+| List | `GET /api/v1/training/trainers` |
+| Configure / assign / unassign | `POST /api/v1/training/trainers/{id}/configure`, `/assign`, `/unassign` |
+| Domain | `TrainingService` (weekly tick Thursday 10:00) |
+
+Gold cost: none. Fatigue load and caps: [training-system.md](../systems/training-system.md).
+
+---
+
+## Planned
+
+Original sketch “View Trainer List” as a **separate** screen — not live; trainers are this page’s first tab.
+
+Batch training from the roster is **not** live (A7.7).
+
+---
+
+## Frontend
+
+| Piece | Location |
+|-------|----------|
+| Page | `templates/training/index.html.twig` |
+| Card / table | `templates/components/training/trainer_card.html.twig`, `active_trainees_table.html.twig` |
+| Stimulus | `training`, `tab` |

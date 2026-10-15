@@ -69,13 +69,16 @@ The race of a summoned hero is **not freely chosen** by the player. It is drawn 
 
 ### Compatible Race Pool
 
+Player summons and NPC daily summons share `SummoningService::getCompatibleRacesForTeam()`:
+
 1. The active `race_optimization` value from `Headquarters` is the **adapted race**.
 2. All 8 races are evaluated against the adapted race using the **relationship matrix** (`config/game/race_relations.yaml`).
 3. Races with a relationship score `>= 50` to the adapted race are included in the pool.
 4. A race always has a self-relationship of `100` and is always included.
-5. **Exception — Genie teams:** Although planned as restricted to `[Genie]` only, the core `SummoningService` evaluates Genie using the standard relationship matrix. Because Genie has relationship scores `>= 50` with all other 7 races, Genie adapted player teams can currently summon any race. (The restriction to `[Genie]` is only simulated locally by the NPC simulation system when evaluating marketplace decisions).
-6. If no adaptation is set (`race_optimization = null`), **all 8 races** are in the pool.
-7. One race is drawn uniformly at random from the pool.
+5. If no adaptation is set (`race_optimization = null`), **all 8 races** are in the pool.
+6. One race is drawn uniformly at random from the pool.
+
+**Genie dual rule (live until [A7.9](../roadmap/current.md)):** **Players** use relationship ≥ 50 (Genie scores ≥ 50 with every other race, so a Genie-adapted team can summon all races). **NPC marketplace** hero buys may apply a stricter Genie-only filter when the team's arena theme is Genie — [npc-simulation-system.md](npc-simulation-system.md). Do not invent a single Genie rule in code; unifying the paths is a product decision.
 
 ---
 

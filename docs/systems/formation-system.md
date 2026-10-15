@@ -2,7 +2,19 @@
 
 Reference: [product/overview.md](../product/overview.md#261-formation-system)
 
-Purpose: Document formation representation, validation rules, synergy calculations, and simulation hooks.
+Status: Partial (lineup live; no synergy; L1/L2 editor not in player UI)  
+Screens: [07-formation-setup.md](../screens/07-formation-setup.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: [known-issues.md](../product/known-issues.md) #7 / #9 (synergy), #10 (duplicate `hero_id` at save), A7.6 (per-slot tactics UI)
+
+Purpose: Document formation representation, save/kickoff validation, slot strategy JSON, and fixture assignment. **Race/role synergy is not part of this system** until #7/#9.
+
+## Remaining work
+
+- [x] CRUD, 6 slots, drag-and-drop lineup, fixture default/saved/custom, promote, temporary cleanup
+- [ ] Unique `hero_id` at save vs kickoff-only (Design first → #10 / A6.1)
+- [ ] Player L1/L2 slot editor (Design first → A7.6); UI currently writes `spell_priorities: []`
+- [ ] `POST /api/v1/formations/simulate` (planned)
+- [ ] Synergy from formation composition — not specified here; chemistry is [team-system.md](team-system.md#team-chemistry), in-combat tables are [#9](../product/known-issues.md)
 
 ## Data Model
 
@@ -104,7 +116,7 @@ Explicit action sequences and advanced conditional tactics (substitution, mid-ma
 
 ## Summary
 
-Formations are 6-slot layouts (3 front, 3 back) with per-hero action priority and spell/targeting settings. Synergy calculations (planned) consider race relationships and role balance.
+Formations are 6-slot layouts (3 front, 3 back) with formation-wide `approach` and per-slot `strategy` / `spell_priorities`. There is **no synergy calculation** on save or at kickoff. Team chemistry (display-only until [#7](../product/known-issues.md)) is computed from the combatant roster, not from filled slots.
 
 **Combat integration:** Combat is fully automated — the engine reads `approach` and (phased) strategy / spell priorities and runs the match without mid-battle player input. Snapshot building and match request shape: [combat-system.md — Simulation Contract](combat-system.md#simulation-contract). The battle UI is a replay of `combat_log` only; see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
@@ -113,7 +125,9 @@ Formations are 6-slot layouts (3 front, 3 back) with per-hero action priority an
 - `GET/PUT/DELETE /api/v1/formations` — list, save, delete saved formations
 - `GET/PUT /api/v1/fixtures/{id}/formation` — read/update fixture assignment (`mode`: `default` \| `saved` \| `custom`)
 - `POST /api/v1/fixtures/{id}/formation/promote` — promote temporary match formation to saved (counts toward limit of 4)
-- `POST /api/v1/formations/simulate` — **planned**
+- `POST /api/v1/formations/simulate` — **planned** (no controller)
+
+**Tests:** `tests/Service/Formation/FormationServiceTest.php`, `FixtureFormationServiceTest.php`.
 
 ## Implementation Notes
 

@@ -1,29 +1,59 @@
 # Friendly Matches Screen
 
-Reference: [friendly-match-system.md](../systems/friendly-match-system.md)
+Reference: [friendly-match-system.md](../systems/friendly-match-system.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [18-arena-management.md](18-arena-management.md)
 
-## Purpose
+**When:** Challenge another kingdom team to a PvP friendly (Wed/Sun 18:00 windows in the system doc).
 
-Kingdom-wide list of PvP friendly matches and challenge flow (slot picker, accept/decline/cancel).
+**Status:** Live at `GET /app/friendly-matches`. Full combat consequences. Arena HQ panel links here.
 
-## Route
+**Live UI:** `templates/friendly_matches/index.html.twig`, Stimulus `friendly_matches`.
 
-- **Web:** `GET /app/friendly-matches` — `Web\FriendlyMatchController`
-- **API:** under `/api/v1/arena/friendly*` and `/api/v1/friendly-matches/{id}/formation`
+---
 
-## UI
+## Implemented
 
-- Filter tabs: upcoming / pending invites / history
-- Challenge form: opponent select + slot radio list from `GET .../slots`
-- Row actions: accept / decline / cancel / open battle when completed
-- Formation: reuse formation patterns via friendly-match formation API (link from scheduled row)
+### Challenge form
 
-## Code map
+- Opponent `<select>` (kingdom teams)
+- Slot radios from `GET /api/v1/arena/friendly/slots` after opponent pick
+- Submit → `POST /api/v1/arena/schedule-match`
+
+### Tabs (`?tab=`)
+
+Upcoming / pending invites (with counts) / history. Empty state per tab.
+
+### Row
+
+Home vs away, kickoff, status, you-home / you-away.
+
+| Status | Actions |
+|--------|---------|
+| `pending` and you are away | Accept, decline |
+| `pending` or `scheduled` and you play | Cancel |
+| `scheduled` and you play | **Formations** → `/app/formation` (saved lineups; not a `fixture_id` match-prep URL) |
+| `completed` with a battle | View battle report |
+
+Friendly-match formation API (`/api/v1/friendly-matches/{id}/formation`) exists for programmatic lineup; the list CTA opens the general formation screen.
+
+### Backend
 
 | Layer | Path |
 |-------|------|
-| Web | `src/Controller/Web/FriendlyMatchController.php` |
-| API | `src/Controller/Api/V1/ArenaController.php`, `FriendlyMatchFormationController.php` |
+| Web | `Web\FriendlyMatchController` — `GET /app/friendly-matches` |
+| API | `Api\V1\ArenaController` (`/api/v1/arena/friendly*`), `FriendlyMatchFormationController` |
 | Service | `src/Service/FriendlyMatch/` |
-| Twig | `templates/friendly_matches/` |
-| Stimulus | `assets/controllers/friendly_matches_controller.js` |
+
+---
+
+## Planned
+
+None beyond the locked system doc. Do not add extra windows or casual “no consequence” friendlies without a design decision.
+
+---
+
+## Frontend
+
+| Piece | Location |
+|-------|----------|
+| Page | `templates/friendly_matches/index.html.twig` |
+| Stimulus | `friendly_matches` |

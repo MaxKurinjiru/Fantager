@@ -39,8 +39,8 @@ This document defines the basic backend architecture of the project. It serves a
 
 **Dual-Layer Design**: Web-First with Internal API Readiness
 - Controllers route to reusable Services (not duplicating logic for Web vs. API)
-- **Web routes** (`/heroes`, `/training`) render Twig templates; frontend uses Stimulus + Turbo for interactivity
-- **Internal API routes** (`/api/v1/heroes`, `/api/v1/training`) return JSON from the same Service methods
+- **Web routes** (`/app/heroes`, `/app/training`) render Twig templates; frontend uses Stimulus + Turbo for interactivity
+- **Internal API routes** (`/api/v1/heroes`, `/api/v1/training/trainers/{id}/assign`) return JSON from the same Service methods
 - Stimulus components trigger API endpoints via AJAX; Turbo handles navigation between web pages
 - Internal API design follows REST principles; ready for external consumption, mobile apps, or REST API layer migration
 
@@ -54,12 +54,12 @@ This document defines the basic backend architecture of the project. It serves a
 
 **Web Route (Traditional Navigation)**
 ```
-User clicks link → Turbo intercepts → GET /heroes → WebController → Service → Twig render → HTML response → DOM update
+User clicks link → Turbo intercepts → GET /app/heroes → WebController → Service → Twig render → HTML response → DOM update
 ```
 
 **API Route (Stimulus AJAX)**
 ```
-Stimulus event (click, submit) → AJAX POST /api/v1/heroes/123/train → ApiController → Service → JSON response → DOM update
+Stimulus event (click, submit) → AJAX POST /api/v1/training/trainers/{id}/assign → ApiController → Service → JSON response → DOM update
 ```
 
 ## Frontend Architecture
@@ -328,4 +328,4 @@ Production backups should follow the retention and verification policy in the se
 
 ---
 
-**Document Status**: Last updated June 4, 2026. Reflects current approved architecture and technology choices.
+**Document Status**: Last updated 15 October 2026. Dual-layer route examples match live `/app/heroes` and `POST /api/v1/training/trainers/{id}/assign` (A3.3).

@@ -1,8 +1,8 @@
 # Route Map
 
-Purpose: Complete reference of all planned routes (Web + API). Derived from screen and system documentation.
+Purpose: Live Web + API routes as implemented in `src/Controller/`. Planned rows are marked **planned** and have no controller. Deferred Milestone 8 systems are a pointer only — not listed as if they exist.
 
-Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screens/overview-legacy.md), [auth-system.md](../systems/auth-system.md)
+Reference: [architecture/api.md](api.md), [architecture/screen-code-map.md](screen-code-map.md), [auth-system.md](../systems/auth-system.md)
 
 ---
 
@@ -12,6 +12,8 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 - **API routes** (`/api/v1/*`): JSON responses, handled by `App\Controller\Api\V1\*`
 - All authenticated routes require `ROLE_PLAYER` unless noted
 - API follows REST principles defined in [architecture/api.md](api.md)
+- **Redirect** in Purpose means the action exists but only forwards to another live screen
+- Counts in [Summary](#summary) are method-level `#[Route]` attributes in code (GET+POST on one attribute = one route; two attributes on one action, e.g. ticket-price alias, = two routes)
 
 ---
 
@@ -21,7 +23,7 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 |--------|------|-----------|---------|
 | GET | `/` | Web\DefaultController | Homepage |
 | GET | `/news` | Web\NewsController | News archive (each item displayed in full; no detail page) |
-| GET | `/wiki` | Web\WikiController | Help/wiki section — **planned** |
+| GET | `/wiki` | — | Help/wiki section — **planned** (A8.5) |
 
 ---
 
@@ -29,17 +31,14 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/login` | Web\AuthController | Render login form |
+| GET, POST | `/login` | Web\AuthController | Render login form; POST is Symfony `form_login` (`check_path`) |
 | GET, POST | `/register` | Web\RegisterController | Show/submit registration form (kingdom selection included) |
 | GET | `/register/success` | Web\RegisterController | Post-registration landing (check your email) |
 | POST | `/register/resend-verification` | Web\RegisterController | Resend verification email (rate-limited) |
 | GET | `/verify-email` | Web\RegisterController | Verify email token, activate account, auto-login (NPC team was assigned at registration) |
-| POST | `/login` | (Symfony form_login) | Authenticate session |
-| GET | `/logout` | (Symfony logout) | Destroy session |
-| GET | `/password-reset` | Web\PasswordResetController | Request password reset email |
-| POST | `/password-reset` | Web\PasswordResetController | Request password reset email |
-| GET | `/password-reset/confirm` | Web\PasswordResetController | Validate token + submit new password |
-| POST | `/password-reset/confirm` | Web\PasswordResetController | Validate token + submit new password |
+| GET | `/logout` | Web\AuthController | Destroy session (Symfony logout firewall) |
+| GET, POST | `/password-reset` | Web\PasswordResetController | Request password reset email |
+| GET, POST | `/password-reset/confirm` | Web\PasswordResetController | Validate token + submit new password |
 | GET | `/confirm-email-change/old` | Web\SettingsController | Confirm e-mail change from old address (token link sent via e-mail) |
 | GET | `/confirm-email-change/new` | Web\SettingsController | Confirm e-mail change from new address (token link sent via e-mail) |
 | GET | `/confirm-cancel-account` | Web\SettingsController | Confirm account cancellation (token link sent via e-mail) |
@@ -50,7 +49,7 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 ## Locale
 
 | Method | Path | Controller | Purpose |
-|--------|------|-----------|------|
+|--------|------|-----------|---------|
 | GET | `/change-locale/{locale}` | Web\LocaleController | Switch user locale (cs/en); persists to User entity if authenticated |
 
 ---
@@ -77,6 +76,8 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 
 ## Hero
 
+Training is not a hero-id POST. Live trainer assign/promote: [Training & Trainer Management](#training--trainer-management).
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/heroes` | Web\HeroController | Hero Roster page |
@@ -85,8 +86,6 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 | GET | `/api/v1/heroes/{id}` | Api\V1\HeroController | Hero full detail (`trait`, `ratings`, attributes, masteries, …) |
 | PUT | `/api/v1/heroes/{id}` | Api\V1\HeroController | Update hero (rename) |
 | POST | `/api/v1/heroes/{id}/dismiss` | Api\V1\HeroController | Dismiss hero for partial compensation (financial crisis recovery) |
-| POST | `/api/v1/heroes/{id}/train` | Api\V1\HeroController | Trigger training — **planned** |
-| POST | `/api/v1/heroes/{id}/convert-trainer` | Api\V1\HeroController | Convert hero to trainer — **planned** (trainers are created separately today) |
 
 ---
 
@@ -115,7 +114,7 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 | GET | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Fixture formation assignment state |
 | PUT | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Assign default / saved / custom lineup |
 | POST | `/api/v1/fixtures/{id}/formation/promote` | Api\V1\FixtureFormationController | Promote temporary match lineup to saved |
-| POST | `/api/v1/formations/simulate` | Api\V1\FormationController | Simulation preview — **planned** |
+| POST | `/api/v1/formations/simulate` | — | Simulation preview — **planned** |
 
 ---
 
@@ -130,7 +129,7 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 | POST | `/api/v1/hq/cancel-upgrade` | Api\V1\HeadquartersController | Cancel ongoing facility upgrade |
 | POST | `/api/v1/hq/optimize` | Api\V1\HeadquartersController | Change arena adaptation |
 
-> Legacy shortcuts `/app/arena` and `/app/summon` redirect into HQ (`?facility=arena` / `?facility=summoning_chamber`).
+> Legacy shortcuts `/app/arena` and `/app/summon` **redirect** into HQ (`?facility=arena` / `?facility=summoning_chamber`).
 
 ---
 
@@ -138,8 +137,8 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/summon` | Web\SummoningController | Redirect → `/app/hq?facility=summoning_chamber` |
-| GET | `/app/summon/history` | Web\SummoningController | Redirect → `/app/hq?facility=summoning_chamber&subtab=history` |
+| GET | `/app/summon` | Web\SummoningController | **Redirect** → `/app/hq?facility=summoning_chamber` |
+| GET | `/app/summon/history` | Web\SummoningController | **Redirect** → `/app/hq?facility=summoning_chamber&subtab=history` |
 | GET | `/api/v1/summoning/status` | Api\V1\SummoningController | Cooldown/availability |
 | POST | `/api/v1/summoning` | Api\V1\SummoningController | Summon new hero (response: full hero payload including nullable `trait`) |
 
@@ -147,9 +146,11 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 
 ## Item / Equipment
 
+Equipment UI is the hero-detail tab, not a standalone inventory page.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/inventory` | Web\ItemController | Equipment page |
+| GET | `/app/inventory` | Web\ItemController | **Redirect** — `?hero_id=` → `/app/heroes/{id}?tab=equipment`; otherwise `/app/heroes` |
 | GET | `/api/v1/items` | Api\V1\ItemController | Inventory list |
 | PUT | `/api/v1/heroes/{heroId}/equipment` | Api\V1\ItemController | Equip/unequip |
 | POST | `/api/v1/items/dismantle` | Api\V1\ItemController | Dismantle for gold scrap |
@@ -161,7 +162,7 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/spells` | Web\SpellController | Spell Management page (redirects to Hero details) |
+| GET | `/app/spells` | Web\SpellController | **Redirect** — `?hero_id=` → `/app/heroes/{id}?tab=spells`; otherwise `/app/heroes` |
 | GET | `/app/academy` | Web\SpellController | Academy Store page |
 | GET | `/api/v1/spells` | Api\V1\SpellController | Spell library |
 | GET | `/api/v1/heroes/{heroId}/spells` | Api\V1\SpellController | Hero's known spells |
@@ -173,22 +174,20 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 
 ## Combat
 
-> [!NOTE]
-> Implemented: `Web\BattleController` (`/app/battles/{id}`) and `Api\V1\BattleController` (`/api/v1/battles/{id}`, `/api/v1/battles/{id}/log`). Sandbox/practice route (`POST /api/v1/combat/simulate`) is planned.
+Implemented: `Web\BattleController` (`/app/battles/{id}`) and `Api\V1\BattleController` (`/api/v1/battles/{id}`, `/api/v1/battles/{id}/log`). Sandbox `POST /api/v1/combat/simulate` is **planned** (A7.5 / [#9](../product/known-issues.md)).
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/battles/{id}` | Web\BattleController | Battle viewer page |
-| GET | `/api/v1/battles/{id}` | Api\V1\BattleController | Battle result |
-| GET | `/api/v1/battles/{id}/log` | Api\V1\BattleController | Combat log/replay |
-| POST | `/api/v1/combat/simulate` | Api\V1\CombatController | Sandbox combat simulation (planned) |
+| GET | `/app/battles/{id}` | Web\BattleController | Match report: final formations and round-by-round logs |
+| GET | `/api/v1/battles/{id}` | Api\V1\BattleController | Battle result metadata (scores, teams, status, result) |
+| GET | `/api/v1/battles/{id}/log` | Api\V1\BattleController | Detailed combat log / replay (JSON) |
+| POST | `/api/v1/combat/simulate` | — | Sandbox combat simulation — **planned** |
 
 ---
 
 ## League
 
-> [!NOTE]
-> Both the Web dashboard (`/app/league`) and the REST API endpoints (`/api/v1/league/*`) are fully implemented.
+Both the Web dashboard (`/app/league`) and the REST API (`/api/v1/league/*`) are implemented.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
@@ -197,16 +196,6 @@ Reference: [architecture/api.md](api.md), [screens/overview-legacy.md](../screen
 | GET | `/api/v1/league/fixtures` | Api\V1\LeagueController | Fixture schedule for group or team |
 | GET | `/api/v1/league/seasons` | Api\V1\LeagueController | Kingdom season history |
 | POST | `/api/v1/league/process-season` | Api\V1\LeagueController | Season transition trigger (Admin only) |
-
----
-
-## Combat & Battles
-
-| Method | Path | Controller | Purpose |
-|--------|------|-----------|---------|
-| GET | `/app/battles/{id}` | Web\BattleController | Match Report page showing final formations and round-by-round logs |
-| GET | `/api/v1/battles/{id}` | Api\V1\BattleController | Battle result metadata (scores, teams, status, result) |
-| GET | `/api/v1/battles/{id}/log` | Api\V1\BattleController | Detailed combat log (JSON) |
 
 ---
 
@@ -245,55 +234,14 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 
 ---
 
-## Dungeon (Deferred — design only)
-
-> Design preserved in [future/dungeon-system.md](../future/dungeon-system.md). No routes or controllers in the codebase.
-
-| Method | Path | Controller | Purpose |
-|--------|------|-----------|---------|
-| GET | `/dungeons` | Web\DungeonController | Dungeon selection page |
-| POST | `/api/v1/dungeons/enter` | Api\V1\DungeonController | Start dungeon run |
-| GET | `/api/v1/dungeons/{runId}/result` | Api\V1\DungeonController | Run result + rewards |
-
----
-
-## Crafting (Deferred — design only)
-
-> Design preserved in [future/crafting-system.md](../future/crafting-system.md). No routes or controllers in the codebase.
-
-| Method | Path | Controller | Purpose |
-|--------|------|-----------|---------|
-| GET | `/crafting` | Web\CraftingController | Crafting page |
-| GET | `/api/v1/crafting/recipes` | Api\V1\CraftingController | Recipe list |
-| POST | `/api/v1/crafting` | Api\V1\CraftingController | Start crafting |
-| GET | `/api/v1/crafting/queue` | Api\V1\CraftingController | Active jobs |
-| DELETE | `/api/v1/crafting/queue/{id}` | Api\V1\CraftingController | Cancel job |
-
----
-
-## Quests (Deferred — design only)
-
-> Design preserved in [future/quest-system.md](../future/quest-system.md). No routes or controllers in the codebase.
-
-| Method | Path | Controller | Purpose |
-|--------|------|-----------|---------|
-| GET | `/api/v1/quests` | Api\V1\QuestController | Available and active quests |
-| POST | `/api/v1/quests/{id}/accept` | Api\V1\QuestController | Accept a quest |
-| POST | `/api/v1/quests/{id}/claim` | Api\V1\QuestController | Claim quest rewards |
-
-
----
-
 ## Community
 
-> [!NOTE]
-> The community hub web page and messaging/forum API endpoints are implemented. Kingdom-wide leaderboards are available via the League screen (`/app/league` tab "Kingdom Leaderboard"); dedicated leaderboard API is not required.
+The community hub web page and messaging/forum API are implemented. Kingdom-wide leaderboards are on the League screen (`/app/league` tab "Kingdom Leaderboard") via `GET /api/v1/league/standings`. There is no `GET /api/v1/leaderboards` route.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/community` | Web\CommunityController | Kingdom discussion board (thread list) |
 | GET | `/app/community/threads/{id}` | Web\CommunityController | Thread detail with replies |
-| GET | `/api/v1/leaderboards` | Api\V1\CommunityController | Leaderboard rankings — **not needed** (see League UI) |
 | GET | `/api/v1/players/{id}/profile` | Api\V1\CommunityController | Public player profile |
 | GET | `/api/v1/teams/{id}/profile` | Api\V1\CommunityController | Public team profile |
 | GET | `/api/v1/messages` | Api\V1\MessageController | Inbox |
@@ -324,9 +272,10 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/arena` | Web\ArenaController | Redirect → `/app/hq?facility=arena` (legacy alias; panel shows capacity, fan appeal, revenue projection) |
+| GET | `/app/arena` | Web\ArenaController | **Redirect** → `/app/hq?facility=arena` |
 | GET | `/api/v1/arena` | Api\V1\ArenaController | Arena status (read-only) |
-| POST | `/api/v1/hq/arena/tickets/price`, `/api/v1/arena/tickets/price` | Api\V1\ArenaController | Update team ticket price (1–50 gold) with demand elasticity calculations |
+| POST | `/api/v1/hq/arena/tickets/price` | Api\V1\ArenaController | Update team ticket price (1–50 gold) with demand elasticity |
+| POST | `/api/v1/arena/tickets/price` | Api\V1\ArenaController | Alias of `/api/v1/hq/arena/tickets/price` |
 | GET | `/app/friendly-matches` | Web\FriendlyMatchController | Kingdom-wide friendly match list + challenge UI |
 | GET | `/api/v1/arena/friendly` | Api\V1\ArenaController | List kingdom friendly matches |
 | GET | `/api/v1/arena/friendly/slots` | Api\V1\ArenaController | Available friendly kickoff slots vs opponent |
@@ -334,7 +283,8 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 | POST | `/api/v1/arena/friendly/{id}/accept` | Api\V1\ArenaController | Accept friendly invite |
 | POST | `/api/v1/arena/friendly/{id}/decline` | Api\V1\ArenaController | Decline friendly invite |
 | POST | `/api/v1/arena/friendly/{id}/cancel` | Api\V1\ArenaController | Cancel friendly (until T−1h) |
-| GET, PUT | `/api/v1/friendly-matches/{id}/formation` | Api\V1\FriendlyMatchFormationController | Match formation assignment |
+| GET | `/api/v1/friendly-matches/{id}/formation` | Api\V1\FriendlyMatchFormationController | Match formation assignment |
+| PUT | `/api/v1/friendly-matches/{id}/formation` | Api\V1\FriendlyMatchFormationController | Save match formation assignment |
 
 > Arena facility upgrades use `/app/hq`. Match-day ticket revenue is paid to the **home team** on the League Match tick via `ArenaRevenueService::processLeagueMatchTick()`. Friendlies: [friendly-match-system.md](../systems/friendly-match-system.md).
 
@@ -344,7 +294,7 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/settings` | Web\SettingsController | Redirects to dashboard (settings UI is the account settings modal) |
+| GET | `/app/settings` | Web\SettingsController | **Redirect** → `/app/dashboard` (settings UI is the account settings modal) |
 | POST | `/app/settings/preferences` | Web\SettingsController | Update player UI preferences (`closeModalOnBackdrop`, …) |
 | POST | `/app/settings/change-email` | Web\SettingsController | Change email (initiates token flow via `confirm-email-change/*`) |
 | POST | `/app/settings/cancel-account` | Web\SettingsController | Cancel account (initiates token flow via `confirm-cancel-account`) |
@@ -355,26 +305,41 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 
 ## Notifications
 
+Query contract — `Api\V1\NotificationController::list()` is source of truth (see [notification-system.md](../systems/notification-system.md)):
+
+| Query | Live rule |
+|-------|-----------|
+| `limit` | Default **10**, clamped to **1–100** |
+| `page` | Default **1**, minimum **1** |
+| `unread_only` | Optional boolean |
+
+List JSON: `{ items, page, total_pages, total_items }`. Navbar requests `?limit=10&page=`. `read-all` has no 100-item cap.
+
+Title/body are **write-time locale** strings until A6.4. Unused types (`league_update`, `event_started`, `spell_learned`): reserved, no writers (A6.2).
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/api/v1/notifications` | Api\V1\NotificationController | List notifications (`?unread_only=1`, `?limit=50`) |
+| GET | `/api/v1/notifications` | Api\V1\NotificationController | List (`?unread_only=`, `?limit=` default 10 max 100, `?page=` default 1) |
 | GET | `/api/v1/notifications/unread-count` | Api\V1\NotificationController | Unread count for navbar badge |
-| PUT | `/api/v1/notifications/read-all` | Api\V1\NotificationController | Mark all as read |
+| PUT | `/api/v1/notifications/read-all` | Api\V1\NotificationController | Mark all as read (no 100-cap) |
 | GET | `/api/v1/notifications/{id}` | Api\V1\NotificationController | Notification detail (marks read) |
 | PUT | `/api/v1/notifications/{id}/read` | Api\V1\NotificationController | Mark one as read |
 
-In-game UI: navbar dropdown → **Notifications** modal (`notifications_controller.js`). See [notification-system.md](../systems/notification-system.md).
+In-game UI: navbar dropdown → **Notifications** modal (`notifications_controller.js`).
 
 ---
 
 ## Infrastructure
 
-> [!NOTE]
-> Not yet implemented.
-
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/health` | Web\HealthController | Health check — **planned** |
+| GET | `/health` | — | Health check — **planned** (A8.3) |
+
+---
+
+## Deferred (not in this list)
+
+Dungeon, crafting, and quest HTTP APIs are **not** live and have no controllers. Design only: [future/dungeon-system.md](../future/dungeon-system.md), [future/crafting-system.md](../future/crafting-system.md), [future/quest-system.md](../future/quest-system.md). Do not add those paths to the tables above.
 
 ---
 
@@ -382,9 +347,11 @@ In-game UI: navbar dropdown → **Notifications** modal (`notifications_controll
 
 | | Web | API | Total |
 |--|-----|-----|-------|
-| Routes (implemented) | 27 | 74 | **101** |
-| Routes (planned) | 7 | 25+ | — |
+| Routes (implemented) | 41 | 84 | **125** |
+| Routes (planned) | 2 | 2 | 4 |
 | Controllers (Web, implemented) | 25 | — | — |
 | Controllers (API, implemented) | — | 23 | — |
 
-> Routes marked **planned** have no controller implementation yet. Route counts reflect the state of the codebase; the original total of 116 includes all planned future routes.
+Implemented counts are method-level `#[Route]` attributes in `src/Controller/` as of this alignment. Redirects (`/app/inventory`, `/app/spells`, `/app/arena`, `/app/summon`, `/app/settings`, …) are included because they exist in code.
+
+**Planned** (no controller): `GET /wiki`, `GET /health`, `POST /api/v1/combat/simulate`, `POST /api/v1/formations/simulate`.

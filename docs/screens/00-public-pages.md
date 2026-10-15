@@ -1,94 +1,104 @@
 # Public Pages (Unauthenticated Section)
 
-Reference: [screens/overview-legacy.md](overview-legacy.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [architecture/routes.md](../architecture/routes.md)
 
-**When:** Before login — visible to all visitors (unauthenticated users)
+**When:** Before login — visible to visitors who are not in the game shell.
 
----
-
-## Site Structure Overview
-
-The site is divided into two main sections:
-
-- **Public** (`/`) — Open to all visitors. Contains Homepage, wiki (help), and news archive.
-- **Inside** (`/app/...`) — Authenticated game area. Dashboard (`/app/dashboard`) serves as the main page for logged-in users. All other game screens live here.
-
-Authentication (login/register) is implemented as **standalone pages** (`/login`, `/register`). Modal-window UX is a planned future enhancement but is not the current implementation.
+**Live UI:** `templates/layouts/public.html.twig` (guest navbar + `guest_body`). Auth forms on these pages: [00-auth-screens.md](00-auth-screens.md).
 
 ---
 
-## Language Switcher
+## Site structure
 
-- Displayed on **all public pages** (homepage, news, wiki) — not in the authenticated inside section.
-- Supported languages: **Czech (`cs`)** and **English (`en`)**.
-- Switching language updates the URL locale prefix (e.g. `/cs/`, `/en/`) or sets a cookie; Symfony Translator picks it up on the next request.
-- The switcher is a simple toggle/dropdown in the site header, always visible on public pages.
-- Authenticated players manage their language in **Profile / Settings** (the inside section has no switcher).
+- **Public** (`/`, `/news`) — open to all visitors. Homepage and paginated news archive.
+- **Game** (`/app/...`) — authenticated. Dashboard (`/app/dashboard`) is the landing page after login.
 
----
+Login/register are a **modal** included from `templates/base.html.twig` for guests. `/login` and `/register` exist as routes that auto-open that modal. Password reset is standalone pages. Modal-on-homepage CTAs are live, not a future enhancement.
 
-## Homepage
-
-### Displayed Information:
-- General project description — what Fantager is about
-- Latest news feed (most recent items displayed in full, with link to full archive)
-- Login / Register buttons (navigate to standalone auth pages)
-
-### Possible Actions/Buttons:
-- **Login** — navigate to `/login` page
-- **Register** — navigate to `/register` page
-- **View News Archive** — navigate to full news list
-- **Wiki / Help** — navigate to help/wiki section
-
-### Navigation between auth pages:
-- Login page has a "Create new account" link → navigates to Register page
-- Register page has a "Already have an account? Login" link → navigates to Login page
-
-> **Note**: Modal-window UX is a planned future enhancement. Current implementation uses standalone pages.
-
-### Backend Requirements:
-- Endpoint for latest news (paginated, limited count for homepage)
-- Static or CMS-driven homepage content
+Public wiki (`GET /wiki`) has **no controller** — **Planned** (A8.5).
 
 ---
 
-## News Archive
+## Language switcher
 
-### Displayed Information:
-- Paginated list of news items — each item is displayed in full (title, date, full text); no detail page or excerpt
+**Implemented**
 
-### Possible Actions/Buttons:
-- **Pagination** — navigate pages
-- **Back to Homepage** — return to main page
+- **Guest / public navbar** (`templates/components/layout/navbar.html.twig` when `is_guest` is true): Czech (`cs`) / English (`en`) dropdown. Used on homepage, news, login/register (empty shell), and password-reset pages.
+- **Authenticated Account Settings** modal: the same two locales via a locale picker. Opened from the game navbar player menu — the game navbar itself has **no** locale dropdown.
+- Both hit `GET /change-locale/{locale}` (`Web\LocaleController`): session `_locale`; if the user is logged in, also persists `User.locale`. Redirects back to the local referer.
 
-### Backend Requirements:
-- `GET /news` — paginated news list (full content per item) — **implemented** (`NewsArticle` entity + `Web\NewsController`)
-- Admin interface for creating/editing news (future)
+**Planned**
 
----
-
-## Wiki / Help
-
-### Displayed Information:
-- Help articles and game guides
-- Categorized help topics
-- Search within wiki
-
-### Possible Actions/Buttons:
-- **Search** — find help articles
-- **Browse categories** — navigate help topics
-- **Back to Homepage** — return to main page
-
-### Backend Requirements:
-- Content management for help articles (static files or DB-driven)
-- Search endpoint for wiki content (future)
+- Locale control on a public wiki page (no wiki yet).
+- Locale dropdown on the authenticated game navbar (not required while Settings has the picker).
 
 ---
 
-## Sections to fill:
-- Exact URL routing (`/`, `/news`, `/wiki`)
-- SEO requirements (meta tags, open graph)
-- News item data model (title, content, published_at, author)
-- Wiki content structure and categorization
-- Responsive design considerations for modals
-- Analytics / tracking on public pages
+## Homepage — Implemented
+
+**Route:** `GET /` → `Web\DefaultController` → `templates/home/index.html.twig`.
+
+### Displayed information
+
+- Title, tagline, and project description (translated `homepage.*` keys)
+- Latest **3** published news items (title, date, full text) when any exist
+- Link to the news archive
+
+### Actions
+
+- **Play / Register** — `click->auth-modal#openRegister` (href `/register` as fallback)
+- **Login** — `click->auth-modal#openLogin` (href `/login` as fallback)
+- **Enter game** — if already authenticated, link to `/app/dashboard`
+- **News archive** — `GET /news`
+- Guest navbar: logo (home), News, locale dropdown, Login
+
+### Backend
+
+- `NewsArticleRepository::findLatestPublished(3)` — no separate homepage CMS
+
+---
+
+## Homepage — Planned
+
+- Wiki / Help link (no `/wiki` route)
+- Static or CMS-driven homepage beyond translated Twig + latest news
+- SEO extras (Open Graph, dedicated meta beyond the page title)
+
+---
+
+## News archive — Implemented
+
+**Route:** `GET /news` → `Web\NewsController` → `templates/news/index.html.twig`.
+
+### Displayed information
+
+- Paginated list (10 per page). Each item is shown in full (title, published time, kingdom name or “global”, full text). **No** detail page or excerpt.
+- Empty state when there are no published articles
+- Back to homepage
+
+### Actions
+
+- Pagination (`?page=`)
+- Back to homepage
+
+### Backend
+
+- `NewsArticle` (`news_article`: `title`, `content`, `published_at`, optional `kingdom_id`)
+- `GET /news` lists published rows (`published_at` not in the future)
+- Articles are seeded / inserted in the DB today — **no** in-app admin UI
+
+---
+
+## News archive — Planned
+
+- Admin interface for creating/editing news (stay Planned; A8.5-adjacent content, not a live CMS)
+
+---
+
+## Wiki / Help — Planned
+
+`GET /wiki` is listed in [architecture/routes.md](../architecture/routes.md) as **planned** (A8.5). No Twig, no controller, no search.
+
+Original sketch (not live): help articles, categories, search, back to homepage.
+
+Do not treat wiki as a public-section screen until A8.5 scopes it.

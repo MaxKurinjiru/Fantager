@@ -4,18 +4,18 @@ Per-screen UI contracts. **Live UI** is [../architecture/screen-code-map.md](../
 
 [overview-legacy.md](overview-legacy.md) is a historical catalogue kept for alignment Wave 4. Do not treat it as an implementation contract.
 
-Each screen file should separate **Implemented** (what Twig/API does) from **Planned**.
+Each screen file separates **Implemented** (what Twig/API does) from **Planned**. Wave 4 (A4.1–A4.3) aligned every file in this folder; none is an empty “Sections to fill” template.
 
 ## Site structure
 
-- **Public** (`/`) — unauthenticated: homepage, news. Login/register are standalone pages.
+- **Public** (`/`) — unauthenticated: homepage, news. Login/register open as a **modal** (`/login` and `/register` auto-open it). Password reset is standalone. Wiki is **Planned**.
 - **Game** (`/app/*`) — authenticated; Team Dashboard is the default landing page.
 
 ## Screen files
 
 | Doc | Screen |
 |-----|--------|
-| [00-public-pages.md](00-public-pages.md) | Homepage, wiki, news |
+| [00-public-pages.md](00-public-pages.md) | Homepage, news (wiki Planned) |
 | [00-auth-screens.md](00-auth-screens.md) | Login, register, password reset |
 | [01-kingdom-selection.md](01-kingdom-selection.md) | Kingdom selection (registration) |
 | [02-team-dashboard.md](02-team-dashboard.md) | Team dashboard |

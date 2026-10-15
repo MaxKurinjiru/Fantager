@@ -1,29 +1,72 @@
 # Headquarters Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#8-headquarters-screen), [headquarters-system.md](../systems/headquarters-system.md)
+Reference: [screens/overview-legacy.md](overview-legacy.md#8-headquarters-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [headquarters-system.md](../systems/headquarters-system.md)
 
-Purpose: Per-screen API, events, UI data requirements, and implementation notes.
+**When:** Upgrade the seven facilities, set arena race adaptation, open Arena / Summoning panels.
 
-> **Implementation:** HQ is the central hub for facility management. Arena and Summoning Chamber panels are opened via query params (`?facility=arena`, `?facility=summoning_chamber`). Legacy routes `/app/arena` and `/app/summon` redirect here.
+**Status:** Live at `GET /app/hq`. `/app/arena` and `/app/summon` **redirect** here (`?facility=arena` / `?facility=summoning_chamber`). Visual HQ themes, visitor access, morale-over-time, and combat home-advantage are **not** live. `summon_stat_total_cap` may appear as a bonus label but is unread (A6.5).
 
-Displayed Information:
-- HQ Overview: level, theme preview, arena adaptation
-- Facilities List (**7 facilities**): training, medical wing, library/academy, treasury, barracks, summoning chamber, arena — levels and upgrade costs
-- Passive Bonuses Summary: total bonuses and race-specific bonuses
-- Facility panels: Arena (capacity, fan appeal, revenue projection), Summoning Chamber (summon + history subtab)
+**Live UI:** `templates/hq/index.html.twig`, `templates/components/hq/`.
 
-Possible Actions/Buttons:
-- Upgrade Facility
-- Downgrade Facility (financial crisis recovery)
-- Change Arena Adaptation
-- Summon Hero (Summoning Chamber panel)
+---
 
-Backend Requirements:
-- HQ data endpoint — `GET /api/v1/hq`
-- Facility upgrade/downgrade — `POST /api/v1/hq/upgrade`, `POST /api/v1/hq/downgrade`
-- Arena adaptation change — `POST /api/v1/hq/optimize`
-- Passive bonuses calculation — `HeadquartersService`, `FacilityType::getPassiveBonuses()`
+## Implemented
 
-Implementation:
-- **Route:** `GET /app/hq` — `HeadquartersController`
-- **Stimulus:** `hq_controller.js`, `summoning_controller.js`, `dashboard_banner_controller.js`
+### Header stats (`compound_stats.html.twig`)
+
+- Weekly HQ maintenance, weekly payroll
+- Active race optimization (or none)
+- Unpaid debt when crisis debt > 0
+- Financial-crisis banner when applicable
+
+No dedicated “HQ total level” or theme-preview illustration. `computedTotalLevel` is used for upgrade **costs**, not as a headline stat.
+
+### Facility grid (7)
+
+Cards: training, medical, library, treasury, barracks, summoning chamber, arena. Plus a separate **arena adaptation** card.
+
+Each facility card: name, description, level, current passive bonuses and next-level values, upgrade gold cost, upgrade / downgrade. **Manage** only for training (link to `/app/training`), arena, and summoning chamber (panels).
+
+Upgrade in progress: page banner with completion date; **cancel** in the first hour of an upgrade (`POST /api/v1/hq/cancel-upgrade`). Downgrade-lock-cycle warning when set. One facility operation at a time.
+
+### Arena adaptation
+
+Race `<select>` (or none) → `POST /api/v1/hq/optimize`. Pending / locked states shown on the card. This is the summoning “home theme”, not a visual HQ skin.
+
+### Panels
+
+- Arena: [18-arena-management.md](18-arena-management.md)
+- Summoning: [09-summoning-chamber.md](09-summoning-chamber.md)
+
+### Backend
+
+| Piece | Location |
+|-------|----------|
+| Web | `GET /app/hq` → `Web\HeadquartersController` |
+| Data | `GET /api/v1/hq` |
+| Upgrade / downgrade / cancel | `POST /api/v1/hq/upgrade`, `/downgrade`, `/cancel-upgrade` |
+| Adaptation | `POST /api/v1/hq/optimize` |
+| Domain | `HeadquartersService`, `FacilityType::getPassiveBonuses()` |
+
+---
+
+## Planned
+
+Original sketch extras — do not treat as a contract:
+
+- Visual theme preview / customize theme
+- Facility layout editor, visitor access
+- Separate passive-bonuses summary board (bonuses are on each card)
+- Combat home-advantage as a live match buff
+
+Arena attendance **graphs** beyond the panel tables: [#4](../product/known-issues.md) / A7.8.
+
+---
+
+## Frontend
+
+| Piece | Location |
+|-------|----------|
+| Page | `templates/hq/index.html.twig` |
+| Cards / panels | `templates/components/hq/` |
+| Stimulus | `hq`, `arena`, `summoning` |
