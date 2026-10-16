@@ -4,7 +4,7 @@ Reference: [product/overview.md](../product/overview.md#24-hero-system)
 
 Status: Live (core) — match XP levels heroes ([#6](../product/known-issues.md) Resolved / A7.1)  
 Screens: [03-hero-roster.md](../screens/03-hero-roster.md), [04-hero-detail.md](../screens/04-hero-detail.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none for combat traits. **#9 decided** (A7.5 Cut) — no in-combat synergy; Loner copy is flavor. **#6 decided** (A7.1 Implement) — [locked hero level invariant](#locked-hero-level-invariant). **#7 decided** (A7.2 flavor) — chemistry does not affect matches. **#13 decided** (A7.7 Cut) — roster extras parked; live card lock on [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras). **#14 decided** (A7.9 Implement) — [summoning-system.md](summoning-system.md#locked-genie-summon-pool).
+Open design: none for combat traits. **#9 decided** (A7.5 Cut) — no in-combat synergy; Loner copy is flavor. **#6 decided** (A7.1 Implement) — [locked hero level invariant](#locked-hero-level-invariant). **#7 decided** (A7.2 flavor) — chemistry is flavor for matches (live for dashboard, fan club / attendance, league tie-break; combat does not read it). Lock: [team-system.md](team-system.md#locked-chemistry-flavor). **#13 decided** (A7.7 Cut) — roster extras parked; live card lock on [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras). **#14 decided** (A7.9 Implement) — [summoning-system.md](summoning-system.md#locked-genie-summon-pool).
 
 Purpose: Document hero lifecycle, attributes, aging, mortality, relationships, and persistence.
 
@@ -290,7 +290,7 @@ Per-hero match history: [hero-chronicle-system.md](hero-chronicle-system.md). Le
 
 ## APIs
 
-Combatant CHA also feeds team chemistry (flavor for matches; live in the chemistry number — [#7](../product/known-issues.md) Resolved).
+Combatant CHA also feeds team chemistry (flavor for matches — live for dashboard, fan club / attendance, league tie-break; combat does not read it — [#7](../product/known-issues.md) Resolved).
 
 | Method | Path | Notes |
 |--------|------|-------|
