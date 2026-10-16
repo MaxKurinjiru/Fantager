@@ -2,7 +2,18 @@
 
 Reference: [product/overview.md](../product/overview.md#214-community-system)
 
+Status: Live (core)  
+Screens: [17-community.md](../screens/17-community.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none for pin. Lock: [Locked: forum pin](#locked-forum-pin). Wiki stays Planned.
+
 Purpose: Document leaderboards, private messages, forums, content moderation, and social features.
+
+## Remaining work
+
+- [x] Mail, forum threads/posts, content filter, public profiles
+- [x] Forum pin write path Cut (A6.3 / [#11](../product/known-issues.md))
+- [ ] Public wiki CMS — stays **Planned** (A8.5; [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned))
+- [ ] Trade / league emails — not live ([known-issues.md](../product/known-issues.md) § Later product decisions)
 
 ---
 
@@ -104,6 +115,16 @@ All community interactions are **kingdom-scoped**: players can only send message
 | POST | `/api/v1/forum/threads/{id}/lock` | Lock or unlock thread (author only; `{"lock": true/false}`) |
 
 There is **no** pin/unpin route. `is_pinned` stays on the entity for listing/display if a row is already true; the app cannot set it.
+
+## Locked: forum pin
+
+**#11 Resolved (A6.3 Cut).** Do not add a pin/unpin API, a forum admin/moderator role, or a writer that sets `is_pinned`.
+
+| Rule | Meaning |
+|------|---------|
+| Display only | Listing and UI may show pinned threads first when the flag is already true. |
+| No write path | Create, lock, and reply never set `is_pinned`. There is no pin route. |
+| Later | A later product decision is required before a pin write path or a forum role. |
 
 ---
 

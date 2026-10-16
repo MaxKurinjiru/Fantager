@@ -2,9 +2,18 @@
 
 Reference: [hero-system.md](hero-system.md), [combat-system.md](combat-system.md), [marketplace-system.md](marketplace-system.md)
 
-Purpose: Define a unified, intrinsic hero value model with two metrics — cross-race **base OVR** and hero-specific **complex rating** — and plan its backend rollout. External influences (equipment, spells, team morale/chemistry, form/fatigue) are excluded by design.
+Status: Live (Phases 0–5 complete)  
+Screens: [03-hero-roster.md](../screens/03-hero-roster.md), [04-hero-detail.md](../screens/04-hero-detail.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
 
-**Status:** Implemented (Phases 0–5 complete). Run `php bin/console app:hero-ratings:refresh` after migration to backfill existing heroes.
+Purpose: Define a unified, intrinsic hero value model with two metrics — cross-race **base OVR** and hero-specific **complex rating**. External influences (equipment, spells, team morale/chemistry, form/fatigue) are excluded by design.
+
+## Remaining work
+
+- [x] `base_ovr` + `complex_rating` cache, refresh command, marketplace / salary / dismiss wiring
+- [ ] Rating breakdown payload — not exposed (API is two integers; do not invent)
+
+Run `php bin/console app:hero-ratings:refresh` after migration to backfill existing heroes.
 
 ---
 
@@ -207,7 +216,7 @@ Load via `HeroRatingConfig` service (same pattern as `RaceConfig`).
 - [x] Add `config/game/hero-rating.yaml` with placeholder weights and economy constants.
 - [x] Add `HeroRatingConfig` service + Symfony service binding.
 - [x] Cross-link from [hero-system.md](hero-system.md) § Attribute calculations.
-- [x] Note planned status in [systems/README.md](README.md) implementation table.
+- [x] Note planned status in [systems/README.md](README.md) status snapshot.
 
 **Deliverable:** Config loads; no API changes.
 
@@ -326,7 +335,7 @@ Load via `HeroRatingConfig` service (same pattern as `RaceConfig`).
 | `src/Service/Training/TrainerDismissalService.php` | Rating-based estimate (if applicable) |
 | `src/Service/Team/NpcSimulationService.php` | Rating-based market price |
 | `docs/systems/hero-system.md` | Link to this doc |
-| `docs/systems/README.md` | Implementation status row |
+| `docs/systems/README.md` | Status snapshot row |
 
 ---
 

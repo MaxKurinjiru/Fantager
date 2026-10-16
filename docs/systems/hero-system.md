@@ -140,7 +140,7 @@ Starting roster:
 - Races are drawn from the same compatible pool as summoning for the team's assigned race (Genie → Genie / Human / Elf). See [summoning-system.md](summoning-system.md#locked-genie-summon-pool).
 - Each hero starts at **level 1** with age random within **[Min Age, Max Junior Age]** for their race.
 
-### Locked: hero level invariant
+## Locked: hero level invariant
 
 **Future work must keep this.** It is not optional polish.
 

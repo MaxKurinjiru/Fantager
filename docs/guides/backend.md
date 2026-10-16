@@ -12,7 +12,7 @@ Alignment waves 0–8 are complete ([roadmap/current.md](../roadmap/current.md))
 | Check | Why |
 |-------|-----|
 | [product/known-issues.md](../product/known-issues.md) | Design first — stop and ask on Open IDs |
-| [systems/README.md](../systems/README.md) § Current Implementation Status | Honest live-contract snapshot |
+| Matching `systems/*.md` Remaining work | Leftovers for that feature. Snapshot: [systems/README.md](../systems/README.md) |
 | Matching `systems/*.md` + `screens/*.md` | Domain rules and UI; systems win over `product/overview.md` |
 | [roadmap/current.md](../roadmap/current.md) | Now / next (alignment complete) |
 | [roadmap/history.md](../roadmap/history.md) | Historical M1–9 only; M1–6 ✅ ≠ no gaps |
@@ -120,7 +120,7 @@ Copy an existing feature in the same domain before inventing new patterns (e.g. 
 - [ ] Schema/entity changes reflected in [architecture/entities.md](../architecture/entities.md) (entities + enums tables)
 - [ ] PHP translation keys in `messages.en.yaml` + `messages.cs.yaml` (or `validators.*.yaml` for form validation)
 - [ ] Domain behavior matches `systems/*.md`; screen matches `screens/*.md`
-- [ ] Implementation status updated in [systems/README.md](../systems/README.md) when feature status changes
+- [ ] Matching `systems/*.md` Remaining work (and the [systems/README.md](../systems/README.md) status snapshot) updated when feature status changes
 
 ---
 

@@ -101,6 +101,6 @@ Public wiki (`GET /wiki`) has **no controller** — **Planned** (A8.5 stay Plann
 
 Original sketch (not live): help articles, categories, search, back to homepage.
 
-### Locked: public wiki stays Planned
+## Locked: public wiki stays Planned
 
 `GET /wiki` stays **Planned**. Do not ship a wiki CMS, static help pages, categories, search, or a navbar Help link. Live public content is homepage + `/news` (seed / DB; news admin stays Planned). Unused translation key `nav.wiki` may stay for a later slice. A later product decision is required before adding a wiki.

@@ -13,6 +13,7 @@ Purpose: Document team entities, roster rules, dashboard aggregation, and team-r
 - [x] Roster of 10, NPC claim on register, dashboard, settings, history chart, chronicle, forfeit if understaffed
 - [x] Chemistry formula written to `Team.chemistry` (dashboard / history)
 - [x] Chemistry confirmed flavor-only for matches (A7.2 / #7) — live for dashboard, fan club, league tie-break
+- [ ] Dashboard SSE — stays **Planned** (A4.2; [known-issues.md](../product/known-issues.md) § Later product decisions)
 
 ## Starting Roster
 

@@ -2,7 +2,17 @@
 
 Reference: [architecture/entities.md](../architecture/entities.md#team-chronicle-append-only-event-log), [team-system.md](team-system.md), [screens/02-team-dashboard.md](../screens/02-team-dashboard.md)
 
+Status: Live  
+Screens: [02a-team-chronicle.md](../screens/02a-team-chronicle.md), [02-team-dashboard.md](../screens/02-team-dashboard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
 Purpose: Document the **team chronicle** — an append-only event log bound to the `Team` entity, shown on the dashboard and on a dedicated full-history screen.
+
+## Remaining work
+
+- [x] Dashboard feed + full-history screen
+- [x] Reserved event types unused — do not write (A6.2)
+- [ ] Ownership-period filter — not live (do not invent)
 
 ---
 

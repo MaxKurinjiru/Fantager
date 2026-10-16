@@ -144,4 +144,4 @@ Parked Milestone 8/9 design. **Not live.** Do not implement unless the user expl
 
 **End of overview**
 
-> Live rules: `docs/systems/*.md`. Open design: [known-issues.md](known-issues.md). Now / next: [roadmap/current.md](../roadmap/current.md).
+> Live rules: `docs/systems/*.md`. Glossary: [glossary.md](glossary.md). Open design: [known-issues.md](known-issues.md). Now / next: [roadmap/current.md](../roadmap/current.md).

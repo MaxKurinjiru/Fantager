@@ -2,7 +2,15 @@
 
 Reference: [team-system.md](team-system.md), [team-chronicle-system.md](team-chronicle-system.md), [financial-crisis-system.md](financial-crisis-system.md), [calendar-system.md](calendar-system.md)
 
+Status: Live  
+Screens: N/A (email + in-app; no dashboard banner, by design) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
 Purpose: Release teams from verified players who stop playing, so NPC slots remain available for active managers.
+
+## Remaining work
+
+- [x] Warning at 21 days, team release at 28 days; no dashboard banner (by design)
 
 ---
 

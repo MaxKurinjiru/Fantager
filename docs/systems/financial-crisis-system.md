@@ -2,7 +2,15 @@
 
 Reference: [economy-system.md](economy-system.md), [headquarters-system.md](headquarters-system.md), [team-system.md](team-system.md)
 
+Status: Live  
+Screens: [02-team-dashboard.md](../screens/02-team-dashboard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
 Purpose: Handle long-term team insolvency — debt tracking, escalating restrictions, recovery paths, and bankruptcy.
+
+## Remaining work
+
+- [x] Debt levels, gameplay restrictions, bankruptcy → NPC pool
 
 ---
 

@@ -2,7 +2,16 @@
 
 Reference: [NpcSimulationService.php](../../src/Service/Team/NpcSimulationService.php) (facade), [NpcTacticsSimulator](../../src/Service/Team/NpcTacticsSimulator.php), [NpcTrainingSimulator](../../src/Service/Team/NpcTrainingSimulator.php), [NpcEconomySimulator](../../src/Service/Team/NpcEconomySimulator.php), [calendar-system.md](calendar-system.md), [team-system.md](team-system.md)
 
+Status: Live (tick-driven)  
+Screens: N/A · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
 Purpose: Document autonomous behaviors of NPC teams including tactics, training, economy, and scheduler integration.
+
+## Remaining work
+
+- [x] Autonomous NPC tactics, training, and economy on ticks
+- [x] Daily summons and marketplace hero buys share the player race pool (A7.9 / [#14](../product/known-issues.md))
 
 ---
 

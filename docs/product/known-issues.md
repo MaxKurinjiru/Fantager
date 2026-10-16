@@ -22,12 +22,15 @@ Parked until an explicit product ask. Do not treat these as a backlog.
 |-------|--------|------|
 | Public wiki (`GET /wiki`) | Planned (A8.5) | [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned) |
 | Session password change / extra settings | Planned (A8.6) | [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned) |
-| Dashboard SSE | Planned | [02-team-dashboard.md](../screens/02-team-dashboard.md) |
+| Dashboard SSE | Planned | [02-team-dashboard.md](../screens/02-team-dashboard.md), [team-system.md](../systems/team-system.md) |
 | Combat home-advantage | Planned | [combat-system.md](../systems/combat-system.md), [18-arena-management.md](../screens/18-arena-management.md) |
+| HQ visual themes / visitor access / morale-over-time | Not live | [headquarters-system.md](../systems/headquarters-system.md), [08-headquarters.md](../screens/08-headquarters.md) |
+| Economy diminishing returns | Planned | [economy-system.md](../systems/economy-system.md) |
+| Trade / league emails | Not live | [community-system.md](../systems/community-system.md) |
 | Combat simulate sandbox | Route stays Planned | [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) |
 | Enchanting / essence | Cut from live game | [item-system.md](../systems/item-system.md#locked-no-enchanting) |
 | In-combat morale / race synergy | Cut | [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) |
-| Forum pin write path | Cut | [community-system.md](../systems/community-system.md) |
+| Forum pin write path | Cut | [community-system.md](../systems/community-system.md#locked-forum-pin) |
 | League morale fiction (streak / derby / relegation pressure) | Cut | [league-system.md](../systems/league-system.md) |
 
 Deferred features beyond this list (Milestone 8 dungeons/quests/crafting, Milestone 9 alliances/guilds, world events) stay under [`future/`](../future/) and are **not** issues.
@@ -46,7 +49,7 @@ Deferred features beyond this list (Milestone 8 dungeons/quests/crafting, Milest
 | 8 | Item occupancy | Resolved | [item-system.md](../systems/item-system.md#locked-item-occupancy) |
 | 9 | Combat leftovers | Resolved (HUD + Haste/Shock locked; morale / synergy / simulate Cut) | [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate), [12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud) |
 | 10 | Formation save | Resolved | [formation-system.md](../systems/formation-system.md) |
-| 11 | Forum pin | Resolved (Cut) | [community-system.md](../systems/community-system.md) |
+| 11 | Forum pin | Resolved (Cut) | [community-system.md](../systems/community-system.md#locked-forum-pin) |
 | 12 | Formation L1/L2 | Resolved | [formation-system.md](../systems/formation-system.md#locked-l1l2-editor) |
 | 13 | Roster extras | Resolved (Cut) | [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras) |
 | 14 | Genie summon pool | Resolved | [summoning-system.md](../systems/summoning-system.md#locked-genie-summon-pool) |

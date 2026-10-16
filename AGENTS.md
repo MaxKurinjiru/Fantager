@@ -12,8 +12,9 @@ Entry point for Cursor agents, Copilot, and other AI assistants working in this 
 | **Web page / screen** | [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + screen in [docs/screens/](docs/screens/) + [docs/guides/ui.md](docs/guides/ui.md) | `src/Controller/Web/`, `templates/`, often API + Stimulus |
 | **Domain logic / service** | [docs/systems/](docs/systems/) + [docs/architecture/entities.md](docs/architecture/entities.md) | `src/Service/`, `src/Entity/`, `tests/Service/` |
 | **Schema / migration** | [docs/architecture/entities.md](docs/architecture/entities.md) | `migrations/`, entities, repositories |
-| **Bugfix / extend existing feature** | [docs/systems/README.md](docs/systems/README.md) § Current Implementation Status + matching `systems/` and `screens/` | Mirror patterns in the same domain |
-| **Stack, Docker, doc index** | [.github/copilot-instructions.md](.github/copilot-instructions.md) | — |
+| **Bugfix / extend existing feature** | Matching `systems/*.md` Remaining work + [docs/screens/](docs/screens/) | Mirror patterns in the same domain |
+| **Domain terms** | [docs/product/glossary.md](docs/product/glossary.md) | — |
+| **Stack & Docker** | [.github/copilot-instructions.md](.github/copilot-instructions.md) | — |
 
 Full vertical slice: backend cheatsheet § Vertical slice + UI cheatsheet when the feature has a UI.
 
@@ -74,7 +75,20 @@ docker exec -u apache fantager-web composer phpstan
 
 ## English
 
-Documentation and code comments are in English (see copilot-instructions).
+All documentation, markdown files, and code comments must be in English.
+
+## File changes
+
+When creating, deleting, moving, or renaming files/directories:
+
+1. Update [docs/README.md](docs/README.md) (link the new file in the appropriate section).
+2. If agent routing or locks changed, update this file.
+3. If stack or Docker commands changed, update [.github/copilot-instructions.md](.github/copilot-instructions.md).
+4. Search repo-wide for old references and update stale links.
+
+When adding routes, entities, enums, or features also update [docs/architecture/routes.md](docs/architecture/routes.md), [docs/architecture/entities.md](docs/architecture/entities.md), [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md), the matching `systems/*.md` Remaining work, and the status snapshot in [docs/systems/README.md](docs/systems/README.md).
+
+Make small, reversible changes. Do not change DB/backup/CI infrastructure without consulting maintainers.
 
 ## Strict constraints
 

@@ -2,7 +2,16 @@
 
 Reference: [product/overview.md](../product/overview.md#213-graveyard-system)
 
+Status: Live ([#5](../product/known-issues.md) Resolved)  
+Screens: [16-graveyard.md](../screens/16-graveyard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
 Purpose: Permanent memorial records for heroes and trainers who leave the team.
+
+## Remaining work
+
+- [x] Dismissal + permanent combat-death memorials, `/app/graveyard`, read API
+- [x] Reserved causes `age` / `retired` / `death` — do not write (A6.2)
 
 ---
 

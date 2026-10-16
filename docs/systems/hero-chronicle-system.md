@@ -2,7 +2,16 @@
 
 Reference: [architecture/entities.md](../architecture/entities.md#4-hero-domain), [hero-system.md](hero-system.md), [screens/04-hero-detail.md](../screens/04-hero-detail.md)
 
+Status: Live  
+Screens: [04-hero-detail.md](../screens/04-hero-detail.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
 Purpose: Document the **hero chronicle** — an append-only per-hero event log shown on the Hero Detail **History** tab.
+
+## Remaining work
+
+- [x] Append-only log on the History tab
+- [x] Event type `retired` reserved — do not write (A6.2)
 
 ---
 

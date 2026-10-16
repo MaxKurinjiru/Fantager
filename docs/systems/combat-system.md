@@ -2,7 +2,20 @@
 
 Reference: [product/overview.md](../product/overview.md#210-combat-system)
 
+Status: Live (automated engine + post-match replay)  
+Screens: [12-combat-battle.md](../screens/12-combat-battle.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none for live leftovers. Lock: [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate).
+
 Purpose: Document combat simulation, match eligibility, scoring, derived combat stats, turn order, status effects, and result processing.
+
+## Remaining work
+
+- [x] Automated engine + replay; follow-up 6.1 steps 2–7
+- [x] L1/L2 editor (A7.6 / [#12](../product/known-issues.md)); HUD lock; Haste/Shock on initiative sort
+- [x] In-combat morale / race synergy / simulate Cut (A7.5 / [#9](../product/known-issues.md))
+- [x] `MatchType::Arena` reserved — do not write (A6.2)
+- [ ] Combat home-advantage — stays **Planned** ([known-issues.md](../product/known-issues.md) § Later product decisions)
+- [ ] `POST /api/v1/combat/simulate` stays Planned / Cut — do not ship ([#locked-no-race-synergy--no-simulate](#locked-no-race-synergy--no-simulate))
 
 ---
 

@@ -2,7 +2,16 @@
 
 Reference: [product/overview.md](../product/overview.md#25-training-system)
 
+Status: Live  
+Screens: [05-training.md](../screens/05-training.md), [06-trainer-management.md](../screens/06-trainer-management.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
 Purpose: Document training queues, cost calculations, trainer assignment, and server tick processing.
+
+## Remaining work
+
+- [x] Trainer assignment, Thursday weekly tick, no gold cost
+- [x] Library `xp_gain_pct` multiplies match XP that levels heroes (A7.1 / [#6](../product/known-issues.md))
 
 ## Primary Attribute Range
 

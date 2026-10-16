@@ -2,7 +2,15 @@
 
 Reference: [calendar-system.md](calendar-system.md#friendly-matches-practice), [combat-system.md](combat-system.md), [headquarters-system.md](headquarters-system.md) (HQ arena panel)
 
+Status: Live ([#3](../product/known-issues.md) Resolved)  
+Screens: [18a-friendly-matches.md](../screens/18a-friendly-matches.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
 Purpose: Player-vs-player practice matches outside the league, with full combat consequences and fixed weekly kickoff windows.
+
+## Remaining work
+
+- [x] Player-vs-player practice, Wed/Sun 18:00, same combat engine, no standings or ticket gold
 
 ## Overview
 

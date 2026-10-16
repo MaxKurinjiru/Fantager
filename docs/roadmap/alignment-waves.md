@@ -33,7 +33,7 @@ Until a later step changes this, conflicts resolve as:
 2. **Live UI:** [architecture/screen-code-map.md](../architecture/screen-code-map.md) + Twig/Stimulus (not the wish-list in [screens/overview-legacy.md](../screens/overview-legacy.md))
 3. **Routes / schema:** [architecture/routes.md](../architecture/routes.md), [architecture/entities.md](../architecture/entities.md) — keep them true to code
 4. **[product/overview.md](../product/overview.md):** overview only; **systems win** on conflict (Wave 2 rewrite landed)
-5. **[systems/README.md](../systems/README.md) status table:** live-contract snapshot; this file is the finished alignment chronicle (waves 0–8)
+5. **[systems/README.md](../systems/README.md) status snapshot:** one word + link; this file is the finished alignment chronicle (waves 0–8)
 
 Do not treat [screens/overview-legacy.md](../screens/overview-legacy.md) or unchecked screen “Displayed Information” lists as implementation contracts.
 
@@ -84,7 +84,7 @@ Do not change game behaviour. Make “Fully Implemented” mean the live contrac
 ### A1.1 Systems status table
 
 - **Action:** Align docs
-- **Files:** [systems/README.md](../systems/README.md) § Current Implementation Status
+- **Files:** [systems/README.md](../systems/README.md) § Status snapshot
 - **Edits:**
   - Combat → **MVP / partial** (engine + replay; HUD and synergy open)
   - Heroes → note XP without level-up ([product/known-issues.md](../product/known-issues.md) #6)

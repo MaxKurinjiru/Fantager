@@ -2,7 +2,18 @@
 
 Reference: [product/overview.md](../product/overview.md#23-economy-system)
 
+Status: Live  
+Screens: [02-team-dashboard.md](../screens/02-team-dashboard.md) (`/app/finance`) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
 Purpose: Document currencies, sinks/sources, anti-exploit measures and economic invariants.
+
+## Remaining work
+
+- [x] Gold ledger, Royal Treasury, `/app/finance`, marketplace tax
+- [x] Listing price band (A7.10 / [#15](../product/known-issues.md))
+- [x] Ledger types `spell_slot_cost` / `morale_restoration` reserved — do not write (A6.2)
+- [ ] Diminishing returns on repeated activities — stays planned ([known-issues.md](../product/known-issues.md) § Later product decisions)
 
 ---
 
