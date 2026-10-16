@@ -128,7 +128,7 @@ Copy an existing feature in the same domain before inventing new patterns (e.g. 
 
 - Do not invent formulas, slots, or UI for **Open** rows in [product/known-issues.md](../product/known-issues.md).
 - Locks: [known-issues.md](../product/known-issues.md) § Resolved locks → matching `## Locked:` in `systems/` or `screens/`. Do not duplicate them here. Highest-risk reminders: [AGENTS.md](../../AGENTS.md).
-- Combat formulas live in [combat-system.md](../systems/combat-system.md) + `CombatStatCalculator`. Do not change locked round-200 / fumble / KO≠death.
+- Combat formulas live in [combat-formulas.md](../systems/combat-formulas.md) + `CombatStatCalculator`. Match rules: [combat-system.md](../systems/combat-system.md). Do not change locked round-200 / fumble / KO≠death.
 - `docs/future/` and `_deferred/` are out of scope unless the user explicitly requests them.
 
 ---

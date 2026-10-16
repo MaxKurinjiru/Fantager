@@ -46,7 +46,7 @@ yaml_has_key() {
   php "$ROOT/scripts/flatten-yaml-keys.php" "$yaml_file" | tr -d '\r' | rg -xF "$key" >/dev/null
 }
 
-# --- Build normalized path index from route-map.md ---
+# --- Build normalized path index from architecture/routes.md ---
 declare -A ROUTE_MAP_PATHS=()
 while IFS= read -r doc_path; do
   ROUTE_MAP_PATHS["$(normalize_path "$doc_path")"]=1
@@ -58,7 +58,7 @@ path_documented() {
   [[ -n "${ROUTE_MAP_PATHS[$norm]:-}" ]]
 }
 
-# --- Routes: code → route-map.md ---
+# --- Routes: code → architecture/routes.md ---
 MISSING_ROUTES=()
 while IFS=$'\t' read -r _method path file; do
   [[ -z "$path" ]] && continue
@@ -74,7 +74,7 @@ if [[ ${#MISSING_ROUTES[@]} -gt 0 ]]; then
   VIOLATION_COUNT=$((VIOLATION_COUNT + 1))
 fi
 
-# --- Entities: src/Entity → entity-reference.md ---
+# --- Entities: src/Entity → architecture/entities.md ---
 MISSING_ENTITIES=()
 while IFS= read -r entity_file; do
   base="$(basename "$entity_file" .php)"
@@ -99,7 +99,7 @@ if [[ ${#MISSING_ENTITIES[@]} -gt 0 ]]; then
   VIOLATION_COUNT=$((VIOLATION_COUNT + 1))
 fi
 
-# --- Enums: src/Enum → entity-reference.md § Enums ---
+# --- Enums: src/Enum → architecture/entities.md § Enums ---
 ENUMS_SECTION="$(sed -n "/${ENUMS_SECTION_START}/,/${ENUMS_SECTION_END}/p" "$ENTITY_REFERENCE")"
 MISSING_ENUMS=()
 while IFS= read -r enum_file; do
@@ -151,7 +151,7 @@ if [[ ${#MISSING_I18N[@]} -gt 0 ]]; then
   VIOLATION_COUNT=$((VIOLATION_COUNT + 1))
 fi
 
-# --- Stale route-map paths (warn only) ---
+# --- Stale architecture/routes.md paths (warn only) ---
 CODE_PATHS_NORM=()
 while IFS=$'\t' read -r _m path _f; do
   CODE_PATHS_NORM+=("$(normalize_path "$path")")
@@ -174,7 +174,7 @@ while IFS= read -r doc_path; do
 done < <(rg -o '\`(/[^`]*)\`' "$ROUTE_MAP" | sed -E 's/^`|`$//g' | sort -u)
 
 if [[ ${#STALE[@]} -gt 0 ]]; then
-  echo -e "${YELLOW}WARN: route-map.md paths with no matching controller Route attribute:${NC}"
+  echo -e "${YELLOW}WARN: architecture/routes.md paths with no matching controller Route attribute:${NC}"
   printf '  %s\n' "${STALE[@]}" | head -15
   [[ ${#STALE[@]} -gt 15 ]] && echo "  ... and $((${#STALE[@]} - 15)) more"
   echo

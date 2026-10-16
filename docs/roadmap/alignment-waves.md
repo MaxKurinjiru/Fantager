@@ -2,7 +2,7 @@
 
 Finished chronicle of the 15 Oct 2026 docs-vs-code alignment. **Not a work queue.** Now / next: [current.md](current.md). Feature chronicle: [history.md](history.md). Open design: [product/known-issues.md](../product/known-issues.md).
 
-Docs layout (15 Oct 2026): views live under `docs/guides/`, `docs/architecture/`, `docs/product/`, `docs/roadmap/`. Old root filenames are stubs. Index: [../README.md](../README.md).
+Docs layout (15 Oct 2026): views live under `docs/guides/`, `docs/architecture/`, `docs/product/`, `docs/roadmap/`. Former filenames: [../README.md](../README.md) § Former filenames. Index: [../README.md](../README.md).
 
 **AI agents:** Do not invent a next alignment step. Do not execute this file as a backlog. Remaining leftovers live in each `systems/*.md` Remaining work section and [`future/`](../future/). Locks live in the matching system or screen `## Locked:` section.
 
@@ -30,12 +30,12 @@ Each step has an **Action**:
 Until a later step changes this, conflicts resolve as:
 
 1. **Live rules:** matching `docs/systems/*.md` + open rows in [product/known-issues.md](../product/known-issues.md)
-2. **Live UI:** [architecture/screen-code-map.md](../architecture/screen-code-map.md) + Twig/Stimulus (not the wish-list in [screens/overview-legacy.md](../screens/overview-legacy.md))
+2. **Live UI:** [architecture/screen-code-map.md](../architecture/screen-code-map.md) + Twig/Stimulus (not the wish-list in [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md))
 3. **Routes / schema:** [architecture/routes.md](../architecture/routes.md), [architecture/entities.md](../architecture/entities.md) — keep them true to code
 4. **[product/overview.md](../product/overview.md):** overview only; **systems win** on conflict (Wave 2 rewrite landed)
 5. **[systems/README.md](../systems/README.md) status snapshot:** one word + link; this file is the finished alignment chronicle (waves 0–8)
 
-Do not treat [screens/overview-legacy.md](../screens/overview-legacy.md) or unchecked screen “Displayed Information” lists as implementation contracts.
+Do not treat [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) or unchecked screen “Displayed Information” lists as implementation contracts.
 
 ---
 
@@ -205,7 +205,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 ### A4.1 Overview + public/auth
 
 - **Action:** Align docs
-- **Files:** [screens/overview-legacy.md](../screens/overview-legacy.md), [00-public-pages.md](../screens/00-public-pages.md), [00-auth-screens.md](../screens/00-auth-screens.md), [01-kingdom-selection.md](../screens/01-kingdom-selection.md), [19-player-profile-settings.md](../screens/19-player-profile-settings.md)
+- **Files:** [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md), [00-public-pages.md](../screens/00-public-pages.md), [00-auth-screens.md](../screens/00-auth-screens.md), [01-kingdom-selection.md](../screens/01-kingdom-selection.md), [19-player-profile-settings.md](../screens/19-player-profile-settings.md)
 - **Edits:** Overview not Draft-as-source-of-truth; crafting not a core screen. Locale switcher is **guest/public navbar + Account Settings** (not on the authenticated game navbar; public-pages had claimed the inside section had none). Screen 19: English only (was “Backdrop zavírání modalů”). Wiki/news admin stay Planned. Password change / notification prefs / privacy stay Planned.
 
 - [x] A4.1 Overview + public + settings copy
@@ -331,7 +331,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 - **Action:** Design first → **Cut / flavor** (16 Oct 2026)
 - **Must decide:** flavor-only number **or** combat/morale modifiers (tables).
 - **If flavor:** dashboard copy + systems say it does not affect matches; Loner trait text matches.
-- **If live:** formulas in [combat-system.md](../systems/combat-system.md) first, then `CombatEngine`. Do not invent tables in code.
+- **If live:** formulas in [combat-formulas.md](../systems/combat-formulas.md) first, then `CombatEngine`. Do not invent tables in code.
 - **Done:** Chemistry is flavor for matches. Combat / in-match morale do not read `Team.chemistry`. Live consumers stay dashboard, history, fan club / attendance, league tie-break. Dashboard `chemistry_desc` and Loner trait copy match. In-combat race-synergy later Cut in A7.5. Lock: [team-system.md](../systems/team-system.md#locked-chemistry-flavor). [product/known-issues.md](../product/known-issues.md) #7 Resolved.
 
 - [x] A7.2 Chemistry
@@ -360,7 +360,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 
 - **Action:** Design first → remaining **Cut** (16 Oct 2026)
 - **HUD locked (16 Oct 2026):** Implement emblems + League/Friendly label + contextual back link. Cut morale widget, initiative queue, team-stats sidebar, skip-to-end, hex debug, unused formation grid. Lock: [12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud).
-- **Haste/Shock locked (16 Oct 2026):** YAML `speed_bonus_percent` / `speed_reduction_percent` apply to the per-round initiative sort after ticks. Additive; not AP. `ENGINE_VERSION` 7. Spec: [combat-system.md](../systems/combat-system.md#speed--initiative-init).
+- **Haste/Shock locked (16 Oct 2026):** YAML `speed_bonus_percent` / `speed_reduction_percent` apply to the per-round initiative sort after ticks. Additive; not AP. `ENGINE_VERSION` 7. Spec: [combat-formulas.md](../systems/combat-formulas.md#speed--initiative-init).
 - **In-combat morale Cut (16 Oct 2026):** No `morale_change`. Volatile / Battle Hardened copy is flavor. `moraleDecayMultiplier` stays unused. Kickoff damage band and post-match morale stay.
 - **Race synergy Cut (16 Oct 2026):** No in-combat race/role synergy tables. Combat does not read `ignoresRaceSynergy` (serialized unused). Loner copy stays flavor. Chemistry stays [#7](../product/known-issues.md). A later product decision is required before adding in-combat synergy.
 - **Simulate Cut (16 Oct 2026):** `POST /api/v1/combat/simulate` stays **Planned** (no controller). Do not ship a sandbox. Friendly matches remain the live adjacent path. `CombatEngine::simulate()` stays for tests. A later product decision is required (consequences, opponent, one-shot vs cohort).

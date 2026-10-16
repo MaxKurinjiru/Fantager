@@ -43,7 +43,8 @@ Locks use **`## Locked:`** (exactly that heading level) so [AGENTS.md](../../AGE
 | [headquarters-system.md](headquarters-system.md) | HQ facilities |
 | [item-system.md](item-system.md) | Items and equipment |
 | [spell-system.md](spell-system.md) | Spells |
-| [combat-system.md](combat-system.md) | Combat engine and replay |
+| [combat-system.md](combat-system.md) | Combat engine, replay, simulation contract |
+| [combat-formulas.md](combat-formulas.md) | Derived stats, durability, mastery, traits |
 | [marketplace-system.md](marketplace-system.md) | Marketplace |
 | [league-system.md](league-system.md) | Leagues |
 | [graveyard-system.md](graveyard-system.md) | Graveyard |
@@ -74,7 +75,7 @@ One-line index of the **live contract**. Leftovers, Cut items, and Planned later
 | Items | Live | [item-system.md](item-system.md) |
 | Spells | Live | [spell-system.md](spell-system.md) |
 | Leagues | Live | [league-system.md](league-system.md) |
-| Combat | Live (replay) | [combat-system.md](combat-system.md) |
+| Combat | Live (replay) | [combat-system.md](combat-system.md), [combat-formulas.md](combat-formulas.md) |
 | Marketplace | Live | [marketplace-system.md](marketplace-system.md) |
 | Community | Live (core) | [community-system.md](community-system.md) |
 | Graveyard | Live | [graveyard-system.md](graveyard-system.md) |

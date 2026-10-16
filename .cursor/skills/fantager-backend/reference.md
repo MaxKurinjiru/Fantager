@@ -67,7 +67,7 @@ Quick map of production PHP layout. Full workflow: [SKILL.md](SKILL.md) · [exam
 | `Notification/` | `Notification` | `NotificationRepository` |
 | `Combat/` | `Battle` *(scaffold)* | `BattleRepository` |
 
-Enums: `src/Enum/` — backed enums for statuses, types, races (see entity-reference).
+Enums: `src/Enum/` — backed enums for statuses, types, races (see [docs/architecture/entities.md](../../../docs/architecture/entities.md)).
 
 ---
 

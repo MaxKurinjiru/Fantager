@@ -278,7 +278,7 @@ Category comes from `HeroTrait::getCategory()`; icon from `HeroTrait::getIcon()`
 
 ### Combat Engine Integration
 
-`DerivedCombatStats` carries trait metadata for the combat engine. Full formulas: [combat-system.md](combat-system.md).
+`DerivedCombatStats` carries trait metadata for the combat engine. Full formulas: [combat-formulas.md](combat-formulas.md).
 
 - Immediate modifiers (HP, attack, accuracy, crit, dodge, spell power, armor) are applied in `CombatStatCalculator`.
 - Situational modifiers (clutch threshold, glass jaw threshold, consistent damage) are passed as metadata and applied by the combat engine at runtime. Morale-decay flags and race-synergy flags are serialized but unused ([#9](../product/known-issues.md) Cut).

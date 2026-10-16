@@ -100,7 +100,7 @@ Learn for **gold only**. Seeded catalog is **Tier 1–5** (two spells per school
 
 ## 2.10 Combat System
 
-Live rules: [combat-system.md](../systems/combat-system.md). Replay UI: [12-combat-battle.md](../screens/12-combat-battle.md).
+Live rules: [combat-system.md](../systems/combat-system.md). Formulas: [combat-formulas.md](../systems/combat-formulas.md). Replay UI: [12-combat-battle.md](../screens/12-combat-battle.md).
 
 Fully automated. Players set formation **before** kickoff; the UI is a **replay** of `combat_log`. League Tue/Fri and friendly Wed/Sun use the same engine. Kill score 0–6; round **200** ends on current scores. Haste/Shock apply YAML speed percents to the initiative **sort**, not AP ([#9](known-issues.md)). Replay HUD: emblems, League/Friendly label, contextual back link. Mid-combat morale, race synergy, and `POST /api/v1/combat/simulate` are Cut.
 

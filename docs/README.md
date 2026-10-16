@@ -33,3 +33,26 @@ Conflicts resolve as:
 - Deferred design: [future/](future/)
 - Parked repo meta and the original screen sketch: [`_deferred/`](../_deferred/)
 - Remaining work for a feature lives in that feature’s `systems/*.md` (see the Remaining work convention there)
+- Glossary: [product/glossary.md](product/glossary.md)
+
+## Former filenames
+
+Old `docs/*.md` root names were stubs after the 15 Oct 2026 layout. Those stubs are gone. Use the canonical path:
+
+| Old path | Canonical |
+|----------|-----------|
+| `docs/game-summary.md` | [product/overview.md](product/overview.md) |
+| `docs/known-issues.md` | [product/known-issues.md](product/known-issues.md) |
+| `docs/api-design.md` | [architecture/api.md](architecture/api.md) |
+| `docs/arch-spec.md` | [architecture/overview.md](architecture/overview.md) |
+| `docs/entity-reference.md` | [architecture/entities.md](architecture/entities.md) |
+| `docs/route-map.md` | [architecture/routes.md](architecture/routes.md) |
+| `docs/screen-code-map.md` | [architecture/screen-code-map.md](architecture/screen-code-map.md) |
+| `docs/ui-guidelines.md` | [guides/ui-guidelines.md](guides/ui-guidelines.md) |
+| `docs/ui-agent-cheatsheet.md` | [guides/ui.md](guides/ui.md) |
+| `docs/backend-agent-cheatsheet.md` | [guides/backend.md](guides/backend.md) |
+| `docs/alignment-roadmap.md` | [roadmap/current.md](roadmap/current.md) |
+| `docs/screens-overview.md` | [screens/README.md](screens/README.md) |
+| `docs/screens/overview-legacy.md` | [`_deferred/screens-overview-legacy.md`](../_deferred/screens-overview-legacy.md) |
+| `docs/systems/combat-formulas-draft.md` | [systems/combat-formulas.md](systems/combat-formulas.md) |
+| `_deferred/notes.md` | [future/notes.md](future/notes.md) |

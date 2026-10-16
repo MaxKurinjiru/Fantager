@@ -1,6 +1,6 @@
 # Parked brainstorm notes
 
-Not a live backlog. Czech design sketches moved from `_deferred/notes.md`. Translate or promote into `future/` system docs before using.
+Not a live backlog. Czech design sketches (parked). Translate or promote into `future/` system docs before using.
 
 ### Dynamické změny vyvážení (Kingdom Events)
 * **Konkrétní aplikace:**

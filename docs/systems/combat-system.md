@@ -4,9 +4,10 @@ Reference: [product/overview.md](../product/overview.md#210-combat-system)
 
 Status: Live (automated engine + post-match replay)  
 Screens: [12-combat-battle.md](../screens/12-combat-battle.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Formulas: [combat-formulas.md](combat-formulas.md)  
 Open design: none for live leftovers. Lock: [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate).
 
-Purpose: Document combat simulation, match eligibility, scoring, derived combat stats, turn order, status effects, and result processing.
+Purpose: Live combat contract — eligibility, scoring, hex layout, simulation / `combat_log`, formation AI, post-match boundary. Derived stats live in [combat-formulas.md](combat-formulas.md).
 
 ## Remaining work
 
@@ -45,23 +46,9 @@ There is **no** mid-battle player input (no turn submission, target picking, Aut
 
 **Match types:** live battles persist `MatchType::League` or `MatchType::Friendly`. `MatchType::Arena` is **reserved / unused (A6.2)** — it is not an arena-facility match and must not be written. Arena as a HQ building is ticket gold only (`ArenaService`).
 
-Status effect config: [config/game/status_effects.yaml](../../config/game/status_effects.yaml) — loaded by `StatusEffectConfig` and used by `CombatEngine` for **durations**, **tick damage/heal percents**, and **Haste/Shock speed percents on the initiative sort** (hardcoded fallbacks remain if a key is missing). Other combat modifiers from the YAML (accuracy, skip turn, etc.) are still applied via engine logic where implemented.
+Status effect config: [config/game/status_effects.yaml](../../config/game/status_effects.yaml) — loaded by `StatusEffectConfig` and used by `CombatEngine` for **durations**, **tick damage/heal percents**, and **Haste/Shock speed percents on the initiative sort** (hardcoded fallbacks remain if a key is missing). Other combat modifiers from the YAML (accuracy, skip turn, etc.) are still applied via engine logic where implemented. Formulas: [combat-formulas.md](combat-formulas.md). Haste/Shock lock: [combat-formulas.md — Speed / Initiative](combat-formulas.md#speed--initiative-init).
 
-### Follow-up contract (after 6.1)
-
-Core league simulation (6.1a–d) is in the tree. These steps close the gaps above. Preparation length, fumble-without-retarget, and the round-200 kill-score rule are **locked** and are not steps.
-
-| Step | Deliverable |
-|------|-------------|
-| **1** | This documentation pass |
-| **2** | ✅ L0 spell pick when `spell_priorities` is empty; thresholds in `config/game/combat_ai_l0.yaml` |
-| **3** | ✅ `defensive` targets the front line, then highest `physicalAttack`; `balanced` stays front then back |
-| **4** | ✅ Fatigue on KON, morale damage bands, Orc +20% melee vs non-Orcs, Ent +20% armor |
-| **5** | ✅ Post-match hero XP, form, fatigue; mortality roll drawn from the match RNG state |
-| **6** | ✅ Replay fold includes `status_tick`; playback starts from snapshot `currentHp`; semantic styles on the battle page |
-| **7** | ✅ Spend the full AP budget on movement; `seek_cover_ranged` retreats to the weapon's max range. Units with `preparationRemaining > 0` stay still |
-
-Explicitly **not** in steps 2–7: Resurrection (`revive`), L3 sequences. Per-slot L1/L2 editor shipped in A7.6. Haste/Shock on the initiative sort is locked ([Speed / Initiative](#speed--initiative-init)). In-combat `morale_change` / Volatile / Battle Hardened is **Cut** (trait copy; engine does not read `moraleDecayMultiplier`). Race synergy and `POST /api/v1/combat/simulate` are **Cut** ([Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)).
+Core league simulation (6.1) and follow-up steps 2–7 are shipped — see Remaining work. Preparation length, fumble-without-retarget, and the round-200 kill-score rule are **locked**. Resurrection (`revive`) and L3 sequences stay out. Per-slot L1/L2 editor shipped in A7.6. In-combat `morale_change` / Volatile / Battle Hardened is **Cut**. Race synergy and `POST /api/v1/combat/simulate` are **Cut** ([Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)).
 
 ## Locked: no race synergy / no simulate
 
@@ -164,199 +151,11 @@ Most races occupy **1 hex** (the centre). **Ent** and **Giant** occupy a **7-hex
 
 ---
 
-## Item Influence on Combat Stats
+## Derived stats
 
-Equipped items affect combat calculations in two stages, scaled by **durability**:
+HP, ATK, SP, DEF, RES, INIT, accuracy, dodge, crit, durability scaling, mastery, and trait modifiers: **[combat-formulas.md](combat-formulas.md)**. Do not duplicate formulas here.
 
-### Durability scaling
-
-`Durability_Factor = Durability / 100`
-
-- **100%:** full stat bonuses
-- **50%:** stats halved
-- **0% (broken):** zero bonuses
-
-### Indirect modifiers (primary attributes)
-
-Added to base attributes **before** derived stats:
-
-```
-Effective_STR = Hero_Base_STR + Sum(Item_STR_Bonus × Durability_Factor)
-Effective_KON = (Hero_Base_KON + Sum(Item_KON_Bonus × Durability_Factor)) × (100 − Fatigue) / 100
-```
-
-Fatigue is clamped to 0–100. It scales KON before HP and armor. Only the **Equipped** profile applies it. Fatigue gained by walking during the match stays on the run state and does not recalculate KON until the next snapshot.
-
-### Direct modifiers (derived stats)
-
-Added **after** primary contribution:
-
-```
-Total_Armor_Value = (Effective_KON × 1.5) + Sum(Item_Armor_Bonus × Durability_Factor)
-Total_Spell_Power = (Effective_INT × 3) + Sum(Item_Spell_Accelerator_Bonus × Durability_Factor)
-```
-
----
-
-## Derived Combat Stats & Formulas
-
-Combat stats derive from primary attributes (1–20), equipped items, race, form, fatigue, and morale. No character classes.
-
-### Health Points (HP)
-
-- **Max HP:** `Max_HP = (Level × 30) + (Effective_KON × 12)`
-- **Form / Fatigue:** starting HP is `Max_HP × Form / 100`. Fatigue scales effective KON by `(100 − Fatigue) / 100` before HP and armor. `HumanNeutral` and `FullIntrinsic` ignore fatigue (and form stays 100)
-- **Race:** Ents +20% to Constitution-based calculations
-
-### Physical Attack (ATK)
-
-- **Unarmed:** `Base_ATK = Effective_STR × 2`
-- **Melee weapon:** `Physical_ATK = Weapon_Damage × (1 + Effective_STR / 15)`
-- **Ranged weapon:** `Physical_ATK = Weapon_Damage × (1 + Effective_DEX / 15)`
-- **Weapon_Damage:** sum of durability-scaled `damage` bonuses on **all** equipped items (dual-wield stacks). Occupancy prevents a two-hander plus an off-hand item ([item-system.md](item-system.md#locked-item-occupancy)). Reach / `weaponSubType` is the **main_hand** weapon, else off-hand
-- **Race:** Orcs deal ×1.20 melee damage against a non-Orc target when the hit resolves (bows, crossbows, staves, and wands do not). There is no penalty for hitting an Orc. Giants +10% main-hand damage; Ents cannot equip weapons
-- **Morale (Equipped profile):** multiplier on outgoing physical and offensive-spell damage, stored as `outgoingDamageMultiplier`. Heals are unchanged
-
-| Morale | Damage |
-|--------|--------|
-| 80–100 | ×1.20 |
-| 60–79 | ×1.10 |
-| 40–59 | ×1.00 |
-| 20–39 | ×0.90 |
-| 0–19 | ×0.80 |
-
-### Spell Power (SP)
-
-```
-Spell_Power = Effective_INT × 3 + Equipped_Spell_Accelerator_Bonus
-Final_Spell_Effect = Spell_Base_Effect × (1 + Spell_Power / 100)
-```
-
-- **Race:** Genies +15% spell effectiveness
-
-### Physical Defense / Armor (DEF)
-
-```
-Armor_Value = Equipped_Armor_Defense_Sum + (Effective_KON × 1.5)
-Damage_Reduction_Percent = Armor_Value / (Armor_Value + 100)
-```
-
-- **Race:** Dwarves +15% armor effectiveness on the whole armor value. Ents apply +20% to the KON term of both HP and armor (`KON × 1.5 × 1.2`) and cannot equip armor
-
-### Magic Resistance (RES)
-
-```
-Magic_Resistance = Equipped_Accessory_Resistance_Sum + (Effective_WIL × 2)
-Magic_Reduction_Percent = Magic_Resistance / (Magic_Resistance + 100)
-```
-
-### Speed / Initiative (INIT)
-
-Implemented in `CombatStatCalculator` and the per-round sort in `CombatEngine`:
-
-```
-baseInitiative = round(Effective_SPD × 2)
-```
-
-Ents apply ×0.80 to that product before rounding. That product is stored as `derived.baseInitiative` and is the AP input.
-
-Each round, after status ticks (expired effects are gone), the turn sort uses:
-
-```
-initiative = round(baseInitiative × (1 + speed_bonus_percent/100 − speed_reduction_percent/100)) + random_int(-3, 3)
-```
-
-Percents come from remaining statuses via `status_effects.yaml` (`StatusEffectConfig`). Haste is +30, Shock is −30. Both at once cancel (additive). The modifier is clamped at 0. Equal initiative breaks by ascending `heroId`.
-
-**AP does not use this modifier** — movement AP stays `4 + floor(baseInitiative / 5)`. A Haste applied during a round affects the **next** round's sort (ticks run before the sort). Duration 1 remaining at round start expires in the tick and does not affect that round.
-
-Lock: do not also feed this modifier into AP, stored `baseInitiative`, or a replay HUD queue ([12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud)).
-
-### Accuracy (ACC)
-
-```
-Accuracy_Percent = 80 + Effective_DEX × 1 + Effective_LCK × 0.5
-```
-
-- **Race:** Elves +10% accuracy
-- **Status:** Blind −40%
-
-### Dodge (EVA)
-
-```
-Dodge_Chance_Percent = (Effective_DEX + Effective_SPD) × 0.75 + Effective_LCK × 0.25  (cap 50%)
-```
-
-- **Race:** Elves +10% dodge
-- **Status:** Shadow Cloak +40% dodge
-
-### Critical Hit Chance (CRT)
-
-```
-Crit_Chance_Percent = 5 + Effective_LCK × 1 + Effective_DEX × 0.25  (cap 50%)
-```
-
-- **Race:** Genies add **+15% spell crit chance** when an **offensive spell** resolves (`CombatEngine::executeSpell`). The shared `critPercent` on `DerivedCombatStats` is physical-only and does **not** include the Genie bonus.
-- Default crit damage multiplier: **1.5×** (Berserker trait overrides to 2.0×). Offensive spells use the same multiplier when the spell crit roll succeeds.
-
----
-
-## Technical Implementation (Derived Stats)
-
-| Component | Path |
-|-----------|------|
-| Value object | `src/ValueObject/Combat/DerivedCombatStats.php` |
-| Calculator | `src/Service/Combat/CombatStatCalculator.php` |
-| Profiles | `CombatStatProfile::Equipped`, `HumanNeutral`, `FullIntrinsic` |
-| Tests | `tests/Service/Combat/CombatStatCalculatorTest.php` |
-
-`calculate(Hero)` uses the **Equipped** profile (items, trait, form). Rating system uses **HumanNeutral** and **FullIntrinsic** — see [hero-rating-system.md](hero-rating-system.md).
-
----
-
-## Mastery Combat Bonuses
-
-When equipped gear sub-types reach **100% attunement**, passive bonuses apply per mastery tier above 1:
-
-### Weapon mastery (examples)
-
-| Style | Bonus per tier above 1 |
-|-------|----------------------|
-| One-handed sword/axe/mace | Physical ATK +5% |
-| Two-handed sword/axe/mace | Physical ATK +6% (+ crit or armor for some styles) |
-| Dagger | Physical ATK +4%, Crit +2% |
-| Bow / crossbow | Physical ATK +5–6%, Accuracy +1–2% |
-| Wand / staff / spell accelerator | Spell Power +4–5%, Initiative +1–2% |
-| Shield | Armor +5%, Dodge/Block +2% |
-
-### Magic school mastery
-
-Each equipped spell's school: **Spell Power +5% per tier above 1** (stacks across schools).
-
----
-
-## Trait Modifiers in Combat
-
-### Static (in `DerivedCombatStats`)
-
-| Trait | Effect |
-|-------|--------|
-| Fragile | Max HP × 0.90 |
-| Glasscannon | Spell Power × 1.15, Armor × 0.90 |
-| Overconfident | Physical ATK × 1.10, Accuracy −8% |
-| Berserker | Crit +15%, Accuracy −8%, crit damage 2.0× |
-| Reckless | Crit +15%, Dodge −10% |
-
-### Conditional (engine metadata on `DerivedCombatStats`)
-
-| Trait | Trigger |
-|-------|---------|
-| Clutch | HP ≤ 30% → Accuracy +15%, Armor × 1.10 |
-| Glass Jaw | HP ≤ 50% → incoming physical × 1.10 |
-| Perfectionist | Consistent damage (no RNG variance) |
-| Loner | **No in-engine effect** (#9 Cut). Chemistry is flavor for matches ([#7](../product/known-issues.md) Resolved). `ignoresRaceSynergy` is serialized but unused. Player copy matches. |
-| Volatile / Battle Hardened | **No in-combat effect** (#9 Cut). `moraleDecayMultiplier` is serialized but unused. Player copy matches. Kickoff damage band and post-match team morale are unchanged by these traits. No `morale_change` event |
-| Audience Favorite | +5% arena revenue when fielded (handled in `ArenaRevenueService`, not combat engine) |
+`CombatStatCalculator` + `DerivedCombatStats` use the Equipped profile (form on HP, fatigue on KON, morale damage multiplier, Ent KON for HP/armor). Orc +20% melee vs non-Orcs applies when the hit resolves.
 
 ---
 
@@ -612,32 +411,13 @@ XP is `round(base × library multiplier × kingdom.xp_modifier)`. The library mu
 
 The elder mortality roll uses the LCG in `CombatEngine::drawInt()`, starting from `combat_log.result.rng_state` (the generator state after the last combat roll). Every id in `killed_hero_ids` consumes one roll, in that order, before the next id. A missing `rng_state` falls back to the combat-log seed, then to 1. The same log state produces the same graveyard outcome.
 
-### Recommended code order (contract → engine)
-
-1. ✅ VO: `CombatMatchRequest`, `CombatSide`, `CombatantSnapshot`; extend `MatchOutcome`.
-2. ✅ Builder: `Formation` → snapshots via `CombatStatCalculator`.
-3. ✅ Thin one-shot `CombatEngine` + `LeagueMatchSimulator` (transitional placeholder scores + envelope).
-4. ✅ Persisted run state + Messenger wave/round messages + barrier.
-5. ✅ Real per-round turn loop + L0 AI + full event set (`MAX_ROUNDS = 200`).
-6. ✅ `stalled` / `ResumeCombat` path; live league uses waves (one-shot helpers remain for tests/sandbox).
-7. ✅ Regression: same seed ⇒ same log across wave boundaries.
-8. ✅ 6.1d aging / permanent death / graveyard + durability on completion.
-
 ---
 
 ## Engine Architecture Decisions
 
-Decided model for Milestone 6 Step 6.1. Detailed request/result shapes, event payloads, and **wave orchestration**: [Simulation Contract](#simulation-contract). Do not invent alternate formats without updating both sections.
+Request/result shapes, event payloads, and **wave orchestration**: [Simulation Contract](#simulation-contract). Do not invent alternate formats without updating that section.
 
-### Combat log format — event stream
-
-`Battle.combat_log` is an **append-only event stream** (not per-turn full snapshots). Envelope, event table, and seed rules are defined in the [Simulation Contract](#simulation-contract).
-
-**Rationale:** Smaller payloads, easy unit tests, replay seek via fold-reduce; hybrid snapshots can be added later if UI needs fast scrubbing.
-
-#### Planned extension — hybrid snapshots
-
-If replay seek becomes costly: emit optional `snapshot` events every N turns or after each `ko`, without replacing the event stream as source of truth.
+`Battle.combat_log` is an **append-only event stream** (not per-turn full snapshots). Optional hybrid `snapshot` events are not live — do not add them without a product ask.
 
 ### Determinism and RNG
 
@@ -672,7 +452,7 @@ Combat AI is fully automated. It reads `Formation.approach` and per-slot `strate
 | **L0** | Approach slot order, plus one ready spell when `spell_priorities` is empty (heal under the yaml threshold, else highest-tier offense). Defensive holds the front line, then highest physical attack | Approach radios and one formation-wide `movement_goal` (copied onto every slot) |
 | **L1** | Per-hero `target_order` (+ `fallback`: `lowest_hp`, `highest_threat`, or approach order) | Player slot editor (A7.6 / [#12](../product/known-issues.md)). Empty order = approach |
 | **L2** | `spell_priorities` with `always`, `self_hp_below`, `ally_hp_below` | Thin player editor for equipped spells. Empty list = L0 pick. NPC may still fill lists. `enemy_status` / `lowest_hp_enemy` Cut from UI |
-| **L3** | Explicit action sequences + advanced conditional tactics (sub, formation switch) | Deferred — game-summary design only |
+| **L3** | Explicit action sequences + advanced conditional tactics (sub, formation switch) | Deferred — not live |
 
 ### Approach weight sketch (L0)
 
@@ -686,27 +466,7 @@ High-level bias (concrete target order and heal thresholds in [L0 defaults](#l0-
 
 Config file: `config/game/combat_ai_l0.yaml`, loaded by `CombatAiL0Config`.
 
-### Decision algorithm (target: L1+, after L0 ship)
-
-Each turn for the active hero:
-
-1. Build candidate actions (basic attack, equipped/prioritised spells that are ready, defend).
-2. Score each (action, target) pair using targeting order, HP thresholds, approach weights, and trait/race modifiers.
-3. Pick the highest score (ties broken deterministically from seed).
-
-L0 may use a simpler approach→heuristic path without a full scorer; replace with the scorer when L1 lands.
-
-### Implementation phases
-
-| Phase | Deliverable | Replaces / unlocks |
-|-------|-------------|-------------------|
-| **6.1a-0** | ✅ Contract VO + thin one-shot engine + `LeagueMatchSimulator` (placeholder scores) | Stub DI binding |
-| **6.1a** | ✅ Implemented: Persisted run state + **wave Messenger** (cohort lockstep, `MAX_ROUNDS=200`, `stalled`/`ResumeCombat`) + real per-round turn loop + L0 AI + full events | Transitional one-shot league path |
-| **6.1b** | ✅ Engine reads `strategy.target_order` and `fallback`. Player editor in A7.6 | Real “who hits whom” when JSON is present |
-| **6.1c** | ✅ Engine reads spell conditions; post-match replay viewer at `/app/battles/{id}` folds status ticks and starts from snapshot HP | [screen 12](../screens/12-combat-battle.md) |
-| **6.1d** | ✅ Combat deaths → aging → permanent death → graveyard; durability loss after battle. Mortality roll continues the match RNG | [graveyard-system.md](graveyard-system.md) |
-| **2–7** | Follow-up contract in [Implementation Status](#follow-up-contract-after-61) | Closes L0 spell pick, defensive targeting, stat formulas, post-match hero XP/form/fatigue, replay fidelity, movement AP |
-| **Later** | L3 sequences UI; hybrid snapshots; Resurrection; optional live UI | Post–core combat |
+Shipped 6.1 VO / wave / L0–L2 / graveyard work is in Remaining work (all `[x]`). L3 sequences, hybrid snapshots, Resurrection, and live match UI stay out of scope (see Out of scope above).
 
 ---
 

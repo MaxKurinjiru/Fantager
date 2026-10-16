@@ -39,7 +39,7 @@ Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entit
 
 - YAML `speed_bonus_percent` / `speed_reduction_percent` apply to the per-round turn **sort** after status ticks.
 - Do not apply them to AP or stored `derived.baseInitiative`. Additive; clamp modifier at 0.
-- Spec: `docs/systems/combat-system.md` § Speed / Initiative.
+- Spec: `docs/systems/combat-formulas.md` § Speed / Initiative.
 
 ## In-combat morale (Cut — #9 slice)
 
