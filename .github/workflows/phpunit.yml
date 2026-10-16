@@ -46,6 +46,7 @@ jobs:
           --health-retries=10
           --health-start-period=10s
     env:
+      APP_ENV: test
       DATABASE_URL: mysql://fantager:fantager@127.0.0.1:3306/fantager?serverVersion=11.4.0-MariaDB&charset=utf8mb4
     steps:
       - name: Checkout code
@@ -75,8 +76,8 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Migrate test database
-        run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
+      - name: Create test database schema
+        run: composer init-db
 
       - name: Run PHPUnit
         run: composer test

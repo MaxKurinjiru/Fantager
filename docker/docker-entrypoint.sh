@@ -15,11 +15,11 @@ chown -R apache:apache "$APP_DIR/var" || true
 chmod -R 0777 "$APP_DIR/var" || true
 mkdir -p /var/www/opcache && chown -R apache:apache /var/www/opcache || true
 
-# Run database migrations on startup in production environment
+# Apply entity schema on production start (empty DB creates tables; existing DB gets mapping diffs).
 if [ "${APP_ENV:-dev}" = "prod" ]; then
-    echo "Running database migrations..."
-    # We run it as the apache user to ensure correct file permissions on cache/logs generated during console commands
-    su -s /bin/sh -c "php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing" apache
+    echo "Updating database schema from entities..."
+    su -s /bin/sh -c "php bin/console doctrine:schema:update --force --no-interaction" apache
+    su -s /bin/sh -c "php bin/console messenger:setup-transports --no-interaction" apache
 fi
 
 exec httpd -D FOREGROUND

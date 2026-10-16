@@ -7,6 +7,7 @@ namespace App\Repository\Team;
 use App\Entity\Team\Team;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<Team>
@@ -40,7 +41,7 @@ class TeamRepository extends ServiceEntityRepository
             ->where('t.kingdom = :kingdom')
             ->andWhere('t.user IS NOT NULL')
             ->setParameter('kingdom', $kingdomId)
-            ->orderBy('t.name', 'ASC');
+            ->orderBy('t.name', SortDirection::Ascending);
 
         if (null !== $excludeTeamId) {
             $qb->andWhere('t.id != :exclude')

@@ -10,6 +10,7 @@ use App\Entity\Team\Team;
 use App\Enum\FriendlyMatchStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use SortDirection;
 
 /** @extends ServiceEntityRepository<FriendlyMatch> */
 class FriendlyMatchRepository extends ServiceEntityRepository
@@ -94,7 +95,7 @@ class FriendlyMatchRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('fm')
             ->where('fm.kingdom = :kingdom')
             ->setParameter('kingdom', $kingdom)
-            ->orderBy('fm.scheduledAt', 'DESC');
+            ->orderBy('fm.scheduledAt', SortDirection::Descending);
 
         if (null !== $status) {
             $qb->andWhere('fm.status = :status')
@@ -118,7 +119,7 @@ class FriendlyMatchRepository extends ServiceEntityRepository
             ->setParameter('teamId', $teamId)
             ->setParameter('start', $start)
             ->setParameter('end', $end)
-            ->orderBy('fm.scheduledAt', 'ASC')
+            ->orderBy('fm.scheduledAt', SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

@@ -8,6 +8,7 @@ use App\Entity\Auth\User;
 use App\Entity\Notification\Notification;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<Notification>
@@ -27,7 +28,7 @@ class NotificationRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('n')
             ->andWhere('n.user = :user')
             ->setParameter('user', $user)
-            ->orderBy('n.createdAt', 'DESC')
+            ->orderBy('n.createdAt', SortDirection::Descending)
             ->setMaxResults(max(1, min($limit, 100)));
 
         if ($unreadOnly) {

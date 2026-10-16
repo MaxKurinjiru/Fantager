@@ -7,6 +7,7 @@ namespace App\Repository\Team;
 use App\Entity\Team\FinancialRecord;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<FinancialRecord>
@@ -39,17 +40,17 @@ class FinancialRecordRepository extends ServiceEntityRepository
 
         switch ($sort) {
             case 'date-asc':
-                $qb->orderBy('f.createdAt', 'ASC');
+                $qb->orderBy('f.createdAt', SortDirection::Ascending);
                 break;
             case 'amount-desc':
-                $qb->orderBy('f.goldChange', 'DESC');
+                $qb->orderBy('f.goldChange', SortDirection::Descending);
                 break;
             case 'amount-asc':
-                $qb->orderBy('f.goldChange', 'ASC');
+                $qb->orderBy('f.goldChange', SortDirection::Ascending);
                 break;
             case 'date-desc':
             default:
-                $qb->orderBy('f.createdAt', 'DESC');
+                $qb->orderBy('f.createdAt', SortDirection::Descending);
                 break;
         }
 
@@ -91,7 +92,7 @@ class FinancialRecordRepository extends ServiceEntityRepository
             ->andWhere('f.type = :type')
             ->setParameter('team', $team)
             ->setParameter('type', $type)
-            ->orderBy('f.createdAt', 'DESC')
+            ->orderBy('f.createdAt', SortDirection::Descending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -105,7 +106,7 @@ class FinancialRecordRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('f')
             ->where('f.team = :team')
             ->setParameter('team', $team)
-            ->orderBy('f.createdAt', 'DESC')
+            ->orderBy('f.createdAt', SortDirection::Descending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

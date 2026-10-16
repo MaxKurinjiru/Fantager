@@ -8,6 +8,7 @@ use App\Entity\Team\Team;
 use App\Entity\Team\TeamDailySnapshot;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<TeamDailySnapshot>
@@ -31,7 +32,7 @@ class TeamDailySnapshotRepository extends ServiceEntityRepository
             ->andWhere('s.recordedAt >= :limitDate')
             ->setParameter('team', $team)
             ->setParameter('limitDate', $limitDate)
-            ->orderBy('s.recordedAt', 'ASC')
+            ->orderBy('s.recordedAt', SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

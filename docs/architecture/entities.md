@@ -170,7 +170,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 | **LeagueGroup**    | id, tier_id, group_name                                                          | → LeagueTier                     |
 | **LeagueStanding** | id, group_id, team_id, played, wins, draws, losses, points, goal_difference      | → LeagueGroup, → Team            |
 | **LeagueFixture**  | id, group_id, home_team_id, away_team_id, home_formation_id (nullable), away_formation_id (nullable), scheduled_at, battle_id, status (enum) | → LeagueGroup, → Teams, → Formations (optional), → Battle |
-| **FriendlyMatch**  | id, kingdom_id, home_team_id (challenger), away_team_id, home_formation_id (nullable), away_formation_id (nullable), scheduled_at, battle_id (nullable), status (`FriendlyMatchStatus`), created_at, responded_at (nullable) | → Kingdom, → Teams, → Formations (optional), → Battle |
+| **FriendlyMatch**  | id, kingdom_id, home_team_id (challenger), away_team_id, home_formation_id (nullable), away_formation_id (nullable), scheduled_at, battle_id (nullable, unique), status (`FriendlyMatchStatus`), created_at, responded_at (nullable) | → Kingdom, → Teams, → Formations (optional), → Battle |
 
 
 ### 12. Marketplace Domain
