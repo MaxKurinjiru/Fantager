@@ -1,10 +1,10 @@
 # Community Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#17-community-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [community-system.md](../systems/community-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [community-system.md](../systems/community-system.md)
 
 **When:** Kingdom forum, public player/team profiles, and private mail.
 
-**Status:** Live forum hub at `/app/community`. Mail is the **navbar modal**, not a community tab. News is public `/news`. Kingdom rankings are the League **Kingdom Leaderboard** tab — there is no `/api/v1/leaderboards` route. Forum `is_pinned` is **stored and shown** when true, but **unsettable** in the app ([roadmap A6.3](../roadmap/current.md) Cut — no pin/unpin API, no admin pin).
+**Status:** Live forum hub at `/app/community`. Mail is the **navbar modal**, not a community tab. News is public `/news`. Kingdom rankings are the League **Kingdom Leaderboard** tab — there is no `/api/v1/leaderboards` route. Forum `is_pinned` is **stored and shown** when true, but **unsettable** in the app ([A6.3](../roadmap/alignment-waves.md#a63-forum-pin) Cut — no pin/unpin API, no admin pin).
 
 **Live UI:** `templates/community/`, `templates/components/community/`, Stimulus `community_forum`, `community_thread`, `mail`, `player-profile`.
 

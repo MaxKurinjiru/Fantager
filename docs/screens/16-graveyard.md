@@ -1,6 +1,6 @@
 # Graveyard Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#16-graveyard-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [graveyard-system.md](../systems/graveyard-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [graveyard-system.md](../systems/graveyard-system.md)
 
 **When:** Review memorials for dismissed heroes/trainers and permanent combat deaths.
 

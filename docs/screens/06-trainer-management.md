@@ -1,6 +1,6 @@
 # Trainer Management Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#6-trainer-management-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [training-system.md](../systems/training-system.md), [05-training.md](05-training.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [training-system.md](../systems/training-system.md), [05-training.md](05-training.md)
 
 **When:** Promote combatants to trainers, inspect frozen stats, dismiss a trainer.
 

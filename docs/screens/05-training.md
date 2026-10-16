@@ -1,6 +1,6 @@
 # Training Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#5-training-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [training-system.md](../systems/training-system.md), [06-trainer-management.md](06-trainer-management.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [training-system.md](../systems/training-system.md), [06-trainer-management.md](06-trainer-management.md)
 
 **When:** Configure trainer focus and assign combatants to weekly training.
 

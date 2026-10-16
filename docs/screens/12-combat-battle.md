@@ -1,6 +1,6 @@
 # Combat/Battle Screen (Replay Viewer)
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#12-combatbattle-screen) (historical), [combat-system.md](../systems/combat-system.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [combat-system.md](../systems/combat-system.md)
 
 **When:** Watch a **completed** match. Combat is fully automated — players do **not** issue mid-battle actions. Pre-match behaviour is set on [Formation Setup](07-formation-setup.md) (`approach`, movement goal, per-slot L1/L2 — A7.6 / [#12](../product/known-issues.md)).
 

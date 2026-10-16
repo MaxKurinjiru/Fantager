@@ -1,6 +1,6 @@
 # Team Chronicle Screen
 
-Reference: [team-chronicle-system.md](../systems/team-chronicle-system.md), [02-team-dashboard.md](02-team-dashboard.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [team-chronicle-system.md](../systems/team-chronicle-system.md), [02-team-dashboard.md](02-team-dashboard.md)
 
 **When:** Full team event log (dashboard shows only the last five).
 

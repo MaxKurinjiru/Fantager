@@ -2,64 +2,55 @@
 
 Single source of truth for **design questions** that must not be invented in code.
 
-**Work queue (docs/code mismatches, cut vs implement):** [roadmap/current.md](../roadmap/current.md).  
-**AI agents:** Do not invent mechanics for **Open** rows. **#16 is Resolved** — seeded spell catalog is T1–T5 (two per school per tier); follow [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5). **#15 is Resolved** — listing prices must sit in the suggested band (−50% / +100%); follow [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band). **#14 is Resolved** — Genie adaptation uses relationship ≥ 80 (pool Genie / Human / Elf); follow [summoning-system.md](../systems/summoning-system.md#locked-genie-summon-pool). **#4 is Resolved** — arena attendance graphs/history in the HQ panel; follow [18-arena-management.md](../screens/18-arena-management.md#locked-attendance-analytics). **#13 is Resolved** — roster extras Cut; follow [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras). **#12 is Resolved** — per-slot L1 targeting + thin L2 equipped-spell priorities; L3 and unmet `when`/`target` Cut; follow [formation-system.md](../systems/formation-system.md#locked-l1l2-editor). **#9 is Resolved** — HUD + Haste/Shock locked; in-combat morale, race synergy, and `POST /api/v1/combat/simulate` Cut; follow [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) and [12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud). **#2 is Resolved** — enchanting is not in the live game; do not reintroduce essence or ship an enchant UI; follow [item-system.md](../systems/item-system.md#locked-no-enchanting). **#6 is Resolved** — follow the locked progression invariant in [hero-system.md](../systems/hero-system.md#locked-hero-level-invariant); do not derive `Hero.level` from XP on read. **#7 is Resolved** — chemistry is flavor for matches; combat must not read `Team.chemistry`. **#8 is Resolved** — two rings, two-handed occupancy, dual-wield; follow [item-system.md](../systems/item-system.md#locked-item-occupancy). Read [roadmap/current.md](../roadmap/current.md) and [architecture/screen-code-map.md](../architecture/screen-code-map.md) before related work.
+**Locks** live in the matching `systems/*.md` or `screens/*.md` `## Locked:` section — not in this file. Now / next: [roadmap/current.md](../roadmap/current.md).
 
-**Legend:** `Blocks` = alignment step or feature waiting on a decision. `Decided — Implement` = product lock recorded; code still on the listed alignment step. `Resolved` rows stay as history until the alignment roadmap says to drop them.
+**AI agents:** Do not invent mechanics for **Open** rows. Do not implement **Later product decisions** unless the user explicitly asks.
 
-| ID | Area | Issue | Severity | Blocks | Status |
-|----|------|-------|----------|--------|--------|
-| 1 | Combat | Follow-up steps 2–7 + wave `MAX_ROUNDS` force-complete are in. A KO is not always permanent death. Preparation length and fumble-without-retarget stay locked. Replay HUD extras were tracked as **#9**; the HUD slice is locked (emblems + match type live; morale/queue/sidebar/skip cut). Haste/Shock initiative sort is locked. In-combat `morale_change`, race synergy, and simulate are Cut (A7.5). Status durations/DOT percents/speed percents read from `status_effects.yaml` via `StatusEffectConfig` (with hardcoded fallback). | High | — | Resolved (core); leftovers → #9 Resolved |
-| 2 | Item System | **Resolved (A7.4 Cut).** Enchanting is not in the live game. No essence. `Item.special_effects` stays unused (combat reads `bonuses` only; item API omits the key). A later product decision is required before adding enchanting. | High | Alignment A7.4 | Resolved |
-| 3 | Friendly Matches | Spec + implementation in [friendly-match-system.md](../systems/friendly-match-system.md) (Wed/Sun 18:00 windows, PvP invites, full combat consequences) | Low | — | Resolved |
-| 4 | Arena Matches | **Resolved (A7.8 Implement).** Home-match revenue, ticket price API, friendlies, and HQ attendance analytics (last 18 payouts: table + attendance/gold chart + window summary). Combat home-advantage stays Planned. | Low | Alignment A7.8 | Resolved |
-| 5 | Graveyard | Memorial snapshots on dismiss and permanent combat death implemented; read UI/API at `/app/graveyard` and `GET /api/v1/graveyard/*` | Low | — | Resolved |
-| 6 | Hero progression | **Resolved (A7.1).** Package **B**: career level; attributes 1–20 via training only. Lifetime `Hero.xp`. Stored `Hero.level` is live truth. Match XP path raises level; formula/cap change uses `app:hero-levels:refresh`. | High | Alignment A7.1 | Resolved |
-| 7 | Team chemistry | **Resolved (A7.2 Cut / flavor).** `TeamChemistryService` writes 0–100 (CHA offset, −15 per hostile pair). Live: dashboard, history, fan club / attendance, league tie-break. Combat and in-match morale do **not** read it. In-combat race-synergy tables are **Cut** (#9 / A7.5). Loner does not skip chemistry and has no live combat pairing effect. | High | Alignment A7.2 | Resolved |
-| 8 | Item occupancy | **Resolved (A7.3 Implement).** Nine slots including `ring_2`. Two-handed subtypes occupy both hands. Dual-wield for one-handed melee. Giant/Ent stay `RaceConfig`. Combat still sums equipped bonuses; reach from main_hand. | High | Alignment A7.3 | Resolved |
-| 9 | Combat leftovers | **Resolved (A7.5).** HUD locked (emblems + League/Friendly + back link). Haste/Shock on initiative sort only. **Cut:** in-combat `morale_change`; race-synergy tables; `POST /api/v1/combat/simulate` (stays Planned). Volatile / Battle Hardened / Loner combat copy is flavor. `moraleDecayMultiplier` and `ignoresRaceSynergy` unused. Do not change locked round-200 / fumble / KO≠death. | Medium | Alignment A7.5 | Resolved |
-| 10 | Formation save | **Closed as Implement (A6.1):** save rejects duplicate `hero_id` (422). Empty slots (0–6) remain allowed. Kickoff uses the assigned lineup if it has 6 unique combat-ready heroes; else the default if match-ready; else auto-fills remaining slots from the combat-ready roster. Forfeit only when the team cannot field 6 combat-ready heroes. | Medium | Alignment A6.1 | Resolved |
-| 11 | Community | Forum `is_pinned` is stored and displayed when true, but the app cannot set it. **Closed as Cut (A6.3):** no pin/unpin API, no forum admin/moderator role. Do not treat pin as live admin use. | Low | Alignment A6.3 | Resolved |
-| 12 | Formation tactics | **Resolved (A7.6 Implement).** Per-slot L1 `target_order` + `fallback`. Thin L2 equipped `spell_priorities` (`always` / `ally_hp_below` / `self_hp_below`; `priority` / `lowest_hp_ally` / `self`). Empty lists = L0. **Cut:** L3 sequences; `enemy_status`; `lowest_hp_enemy`. Save sanitizes JSON. | Medium | Alignment A7.6 | Resolved |
-| 13 | Hero roster UI | **Resolved (A7.7 Cut).** Live card: name, race, level, trait, age, form, fatigue, attributes, inspect, client filter/sort. **Cut:** morale on card, equipped icons, tired/training status, quick-action dropdown, batch training, multi-select, level filter, marketplace header CTA, server-side list filter. A later product decision is required before adding any of these. | Low | Alignment A7.7 | Resolved |
-| 14 | Summoning | **Resolved (A7.9 Implement).** One compatible-race pool: relationship ≥ 50, except Genie adaptation ≥ 80 (Genie / Human / Elf). Shared by player summons, NPC daily summons, NPC marketplace hero buys, and kingdom starting roster. Do not restore Genie-only NPC buys or a Genie-only starting roster. | Medium | Alignment A7.9 | Resolved |
-| 15 | Marketplace | **Resolved (A7.10 Implement).** Suggested list price (heroes/trainers from `complex_rating`; items from merchant 70% / rarity table). Floor −50%, ceiling +100%. `createListing` rejects prices outside the band. Auction bids are not capped. | Medium | Alignment A7.10 | Resolved |
-| 16 | Spells | **Resolved (A7.11 seed).** Catalog is two spells per school per tier for **T1–T5** (60). `required_mastery_tier` = `tier`. No T6+, resurrection, or summon-creature. Combat still uses school + type + `spell.tier`. | Medium | Alignment A7.11 | Resolved |
+## Open
 
-Deferred features beyond the alignment waves (Milestone 8 dungeons/quests/crafting, Milestone 9 alliances/guilds, world events) stay under [`future/`](../future) and are **not** active issues. Alignment waves 0–8 are complete. Public wiki CMS stays **Planned** (A8.5; later product decision before `/wiki`). Session password change / extra settings stay **Planned** (A8.6; later product decision). PHPUnit in CI is A8.1 (done). Playwright browser E2E is A8.2 **Cut**. `GET /health` is A8.3 (done). Legacy Doctrine connection is A8.4 **Parked** (one-shot old-game import immediately before first production deploy; not a second live DB).
+| ID | Area | Issue | Severity | Status |
+|----|------|-------|----------|--------|
+| — | — | None. Next new question is **#17**. | — | — |
 
-When an Open row is decided, record Cut vs Implement on the alignment step. Mark **Decided — Implement** until that code lands, then **Resolved**. Cut decisions may go straight to Resolved.
+When an Open row is decided, record Cut vs Implement. Mark **Decided — Implement** until that code lands, then **Resolved** and move the lock into the matching system or screen doc. Cut decisions may go straight to Resolved.
 
-**#2 (16 Oct 2026):** Cut. Enchanting is not in the live game. Do not reintroduce essence. Do not ship an enchant UI, cost, or combat effect. `Item.special_effects` stays unused (combat reads `bonuses` only; item API omits the key). Column stays. A later product decision is required before adding enchanting. Full lock: [item-system.md](../systems/item-system.md#locked-no-enchanting).
+## Later product decisions (not Open)
 
-**#6 (16 Oct 2026):** Implement package **B**. Lifetime `Hero.xp` (never consumed). Stored `Hero.level` is live truth. Live writer: `HeroProgressionService::applyMatchXp()` after league/friendly XP (Library + `xp_modifier`, chronicle on raise). Formula/`level_cap` change: `app:hero-levels:refresh` (no chronicle). Cap **20**. Curve in `config/game/hero-progression.yaml` (`coefficient: 400`). Full lock: [hero-system.md](../systems/hero-system.md#locked-hero-level-invariant).
+Parked until an explicit product ask. Do not treat these as a backlog.
 
-**#7 (16 Oct 2026):** Cut (flavor for matches). Chemistry stays a roster-derived 0–100 number. Combat does not read it. Live consumers: dashboard / history, `FanClubService` target and show-up, league standings tie-break. Loner player text matches (no combat pairing claim). Race-synergy tables later Cut in **#9**. Full lock: [team-system.md](../systems/team-system.md#locked-chemistry-flavor).
+| Topic | Status | Spec |
+|-------|--------|------|
+| Public wiki (`GET /wiki`) | Planned (A8.5) | [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned) |
+| Session password change / extra settings | Planned (A8.6) | [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned) |
+| Dashboard SSE | Planned | [02-team-dashboard.md](../screens/02-team-dashboard.md) |
+| Combat home-advantage | Planned | [combat-system.md](../systems/combat-system.md), [18-arena-management.md](../screens/18-arena-management.md) |
+| Combat simulate sandbox | Route stays Planned | [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) |
+| Enchanting / essence | Cut from live game | [item-system.md](../systems/item-system.md#locked-no-enchanting) |
+| In-combat morale / race synergy | Cut | [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) |
+| Forum pin write path | Cut | [community-system.md](../systems/community-system.md) |
+| League morale fiction (streak / derby / relegation pressure) | Cut | [league-system.md](../systems/league-system.md) |
 
-**#8 (16 Oct 2026):** Implement. Nine slots (`ring` + `ring_2`). Two-handed (`two_handed_*`, bow, crossbow, staff) clears `off_hand`. Dual-wield: one-handed sword/axe/mace and dagger in `off_hand`. Giant/Ent restrictions unchanged. Pre-existing two-hand + off-hand rows: `app:item-occupancy:refresh`. Full lock: [item-system.md](../systems/item-system.md#locked-item-occupancy).
+Deferred features beyond this list (Milestone 8 dungeons/quests/crafting, Milestone 9 alliances/guilds, world events) stay under [`future/`](../future/) and are **not** issues.
 
-**#10 (16 Oct 2026):** Implement. Unique `hero_id` at save. Kickoff lineup waterfall: assigned → default → roster fill. Forfeit stays a roster-size failure, not an incomplete saved draft.
+## Resolved locks (index)
 
-**#11 (16 Oct 2026):** Cut. Pin stays a stored display flag. No write path and no admin pin. A later product decision would be required before adding either.
+| ID | Area | Status | Spec |
+|----|------|--------|------|
+| 1 | Combat core | Resolved | [combat-system.md](../systems/combat-system.md) |
+| 2 | Enchanting | Resolved (Cut) | [item-system.md](../systems/item-system.md#locked-no-enchanting) |
+| 3 | Friendly matches | Resolved | [friendly-match-system.md](../systems/friendly-match-system.md) |
+| 4 | Arena analytics | Resolved | [18-arena-management.md](../screens/18-arena-management.md#locked-attendance-analytics) |
+| 5 | Graveyard | Resolved | [graveyard-system.md](../systems/graveyard-system.md) |
+| 6 | Hero level | Resolved | [hero-system.md](../systems/hero-system.md#locked-hero-level-invariant) |
+| 7 | Team chemistry | Resolved (flavor) | [team-system.md](../systems/team-system.md#locked-chemistry-flavor) |
+| 8 | Item occupancy | Resolved | [item-system.md](../systems/item-system.md#locked-item-occupancy) |
+| 9 | Combat leftovers | Resolved (HUD + Haste/Shock locked; morale / synergy / simulate Cut) | [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate), [12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud) |
+| 10 | Formation save | Resolved | [formation-system.md](../systems/formation-system.md) |
+| 11 | Forum pin | Resolved (Cut) | [community-system.md](../systems/community-system.md) |
+| 12 | Formation L1/L2 | Resolved | [formation-system.md](../systems/formation-system.md#locked-l1l2-editor) |
+| 13 | Roster extras | Resolved (Cut) | [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras) |
+| 14 | Genie summon pool | Resolved | [summoning-system.md](../systems/summoning-system.md#locked-genie-summon-pool) |
+| 15 | Marketplace price band | Resolved | [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band) |
+| 16 | Spell catalog T1–T5 | Resolved | [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) |
 
-**#9 HUD (16 Oct 2026):** Implement emblems + League/Friendly label + contextual back link. Cut morale widget, initiative queue, team-stats sidebar, skip-to-end, hex debug labels, unused formation grid. Full HUD lock: [12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud).
-
-**#9 Haste/Shock (16 Oct 2026):** Implement. After status ticks, `initiative = round(baseInitiative × (1 + speed_bonus_percent/100 − speed_reduction_percent/100)) + jitter`. Haste +30 / Shock −30 from YAML, additive, clamp at 0. AP and stored `baseInitiative` unchanged. `ENGINE_VERSION` **7**. Spec: [combat-system.md](../systems/combat-system.md#speed--initiative-init).
-
-**#9 in-combat morale (16 Oct 2026):** Cut. No `morale_change` event. Combat does not read `moraleDecayMultiplier`. Volatile / Battle Hardened player copy is flavor (same honesty as Loner). Kickoff outgoing-damage band and post-match team / hero morale stay. Crits and CHA rallies are not live morale hooks. A later product decision is required before mid-combat morale.
-
-**#9 race synergy (16 Oct 2026):** Cut. No in-combat race/role synergy tables. Combat does not read `ignoresRaceSynergy` (serialized unused). Loner copy is flavor. Chemistry stays **#7**. Full lock: [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate). A later product decision is required before in-combat synergy.
-
-**#9 simulate (16 Oct 2026):** Cut from live leftovers. `POST /api/v1/combat/simulate` stays Planned (no controller). Friendly matches remain the live adjacent path. `CombatEngine::simulate()` stays for tests. A later product decision is required before a sandbox (consequences, opponent, one-shot vs cohort).
-
-**#12 (16 Oct 2026):** Implement L1 + thin L2. Per-slot `target_order` + `fallback` (`lowest_hp` / `highest_threat` / approach). Spell priorities are equipped spells only; live `when`/`target` only. Empty lists keep L0. Cut L3 action sequences, `enemy_status`, and `lowest_hp_enemy` from the player UI. `FormationTacticsNormalizer` drops those fields on save. Full lock: [formation-system.md](../systems/formation-system.md#locked-l1l2-editor).
-
-**#4 (16 Oct 2026):** Implement. HQ arena panel graphs/history from the last 18 `arena_revenue` ledger rows. Dual-axis attendance + gold chart, occupancy on the table, window summary (total gold, average attendance). No new route, season query, or snapshot entity. Combat home-advantage stays Planned. Full lock: [18-arena-management.md](../screens/18-arena-management.md#locked-attendance-analytics).
-
-**#13 (16 Oct 2026):** Cut. Roster extras from the original screen-03 sketch are not in the live game. Do not add morale/item icons, tired/training status, quick actions, batch training, multi-select, or a level filter to the roster. Train / equip / spells / sell stay on hero detail; trainer assign stays `/app/training`. Full lock: [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras).
-
-**#14 (16 Oct 2026):** Implement a higher Genie bar, not Genie-only and not ≥ 50 for everyone. Compatible races use relationship **≥ 50**, except Genie adaptation uses **≥ 80** (live pool: Genie, Human, Elf). Same path for player summons, NPC daily summons, NPC marketplace hero buys, and kingdom starting roster (`RaceConfig::getCompatibleRacesForAdaptation()`). Player marketplace buys keep no race filter. Training ≥ 70 and hostile chemistry ≤ 20 are unchanged. Full lock: [summoning-system.md](../systems/summoning-system.md#locked-genie-summon-pool).
-
-**#15 (16 Oct 2026):** Implement listing price guidance. Suggested gold is the NPC market price (`HeroRatingCalculator::estimateMarketPrice` / `ItemService::estimateMarketPrice`). Floor **−50%**, ceiling **+100%** of suggested (`round`, min 1). Buy-now, auction start, and optional buyout must sit in the band. Auction bids may exceed the ceiling. UI shows suggested + range with a fill button. Full lock: [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band).
-
-**#16 (16 Oct 2026):** Seed T3–T5. Two spells per school per tier through T5. Same type mix and effect keys as T1–T2. Gold ~2.5× per tier. Cast duration stays `1 + tier`. Existing DBs: `app:spells:seed`. Full lock: [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5).
+Decision notes for #1–#16 live in the linked specs and in [roadmap/alignment-waves.md](../roadmap/alignment-waves.md) (waves 6–8).

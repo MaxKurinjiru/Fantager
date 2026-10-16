@@ -1,6 +1,6 @@
 # Summoning Chamber Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#9-summoning-chamber-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [summoning-system.md](../systems/summoning-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [summoning-system.md](../systems/summoning-system.md)
 
 **When:** Spend a cycle summon to roll a junior hero.
 

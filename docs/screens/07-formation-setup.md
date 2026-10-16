@@ -1,6 +1,6 @@
 # Formation Setup Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#7-formation-setup-screen) (historical), [formation-system.md](../systems/formation-system.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [formation-system.md](../systems/formation-system.md)
 
 **When:** Edit saved lineups, or prepare a specific fixture (`?fixture_id=`).
 

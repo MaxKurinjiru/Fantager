@@ -7,10 +7,10 @@
 - **All docs index**: [docs/README.md](../docs/README.md)
 - **Key design**: [architecture/overview.md](../docs/architecture/overview.md), [architecture/api.md](../docs/architecture/api.md), [architecture/entities.md](../docs/architecture/entities.md)
 - **Domain**: [product/overview.md](../docs/product/overview.md), [calendar-system.md](../docs/systems/calendar-system.md)
-- **Known gaps**: [product/known-issues.md](../docs/product/known-issues.md)
-- **Active work**: [roadmap/current.md](../docs/roadmap/current.md) — alignment waves 0–8 complete; remaining leftovers in `systems/` Remaining work and `future/`
-- **Roadmap**: [roadmap/history.md](../docs/roadmap/history.md) — historical Milestones 1–9 (M8/M9 parked)
-- **Deferred (do not use actively)**: [`_deferred/`](../_deferred/) — CHANGELOG.md and CONTRIBUTING.md (parked until a stable version); `legacy-migration.md` parked until the one-shot old-game import immediately before the first production deploy (A8.4). Design brainstorm: [docs/future/notes.md](../docs/future/notes.md).
+- **Known gaps**: [product/known-issues.md](../docs/product/known-issues.md) — Open rows (currently none); resolved-lock index
+- **Now / next**: [roadmap/current.md](../docs/roadmap/current.md) — alignment waves 0–8 complete; leftovers in `systems/` Remaining work and `future/`
+- **Roadmap**: [roadmap/history.md](../docs/roadmap/history.md) — historical Milestones 1–9 (M8/M9 parked). Wave archive: [roadmap/alignment-waves.md](../docs/roadmap/alignment-waves.md)
+- **Deferred (do not use actively)**: [`_deferred/`](../_deferred/) — CHANGELOG.md and CONTRIBUTING.md (parked until a stable version); `legacy-migration.md` parked until the one-shot old-game import immediately before the first production deploy (A8.4); original screen sketch `screens-overview-legacy.md`. Design brainstorm: [docs/future/notes.md](../docs/future/notes.md).
 
 ## Repo Facts & Environment
 - **Stack**: PHP 8.5 (Symfony 7.4), MariaDB 11.4, Node >=24 (Webpack Encore, Tailwind CSS).

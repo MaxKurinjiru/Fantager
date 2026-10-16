@@ -1,6 +1,6 @@
 # Kingdom Selection (Registration Step)
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#1-kingdom-selection-screen) (historical sketch), [00-auth-screens.md](00-auth-screens.md), [kingdom-system.md](../systems/kingdom-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [kingdom-system.md](../systems/kingdom-system.md), [00-auth-screens.md](00-auth-screens.md)
 
 **When:** Field on the **register form**, not a separate post-login screen. Choice is permanent (`User.kingdom_id`); no kingdom switcher after registration.
 

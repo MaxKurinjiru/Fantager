@@ -1,6 +1,6 @@
 # Public Pages (Unauthenticated Section)
 
-Reference: [screens/overview-legacy.md](overview-legacy.md) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [architecture/routes.md](../architecture/routes.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [architecture/routes.md](../architecture/routes.md)
 
 **When:** Before login — visible to visitors who are not in the game shell.
 

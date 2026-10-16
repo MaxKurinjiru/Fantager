@@ -7,15 +7,15 @@ One-page reference for AI agents and quick human review.
 
 ## Before you code
 
-**Work queue:** [roadmap/current.md](../roadmap/current.md) — alignment waves 0–8 complete; do not invent a next alignment step. Do not start Milestone 8/9. Do not invent mechanics for **Open** rows in [product/known-issues.md](../product/known-issues.md). **#16 is Resolved** — spell catalog T1–T5; follow [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5). **#15 is Resolved** — listing price band −50% / +100%; follow [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band). **#14 is Resolved** — Genie adaptation ≥ 80; follow [summoning-system.md](../systems/summoning-system.md#locked-genie-summon-pool). **#4 is Resolved** — HQ attendance analytics; follow [18-arena-management.md](../screens/18-arena-management.md#locked-attendance-analytics). **#13 is Resolved** — roster extras Cut; follow [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras). **#12 is Resolved** — L1 + thin L2 editor; L3 / unmet `when`/`target` Cut; follow [formation-system.md](../systems/formation-system.md#locked-l1l2-editor). **#9 is Resolved** — HUD + Haste/Shock locked; in-combat morale, race synergy, and simulate Cut; follow [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) and [12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud). **#2 is Resolved** — enchanting is not in the live game; follow [item-system.md](../systems/item-system.md#locked-no-enchanting); do not reintroduce essence. **#6 is Resolved** — follow [hero-system.md](../systems/hero-system.md#locked-hero-level-invariant); do not derive `Hero.level` from XP on read. **#7 is Resolved** — chemistry is flavor for matches; follow [team-system.md](../systems/team-system.md#locked-chemistry-flavor). **#8 is Resolved** — occupancy; follow [item-system.md](../systems/item-system.md#locked-item-occupancy).
+Alignment waves 0–8 are complete ([roadmap/current.md](../roadmap/current.md)). Do not invent a next alignment step. Do not start Milestone 8/9. Do not invent mechanics for **Open** rows in [product/known-issues.md](../product/known-issues.md). Locks live in the matching system or screen `## Locked:` section (index: [known-issues.md](../product/known-issues.md) § Resolved locks).
 
 | Check | Why |
 |-------|-----|
-| [roadmap/current.md](../roadmap/current.md) | Active docs/code work queue |
 | [product/known-issues.md](../product/known-issues.md) | Design first — stop and ask on Open IDs |
-| [systems/README.md](../systems/README.md) § Current Implementation Status | Honest live-contract snapshot (A1.1) |
-| [roadmap/history.md](../roadmap/history.md) | Historical M1–9 only; M1–6 ✅ ≠ no gaps (A1.2) |
+| [systems/README.md](../systems/README.md) § Current Implementation Status | Honest live-contract snapshot |
 | Matching `systems/*.md` + `screens/*.md` | Domain rules and UI; systems win over `product/overview.md` |
+| [roadmap/current.md](../roadmap/current.md) | Now / next (alignment complete) |
+| [roadmap/history.md](../roadmap/history.md) | Historical M1–9 only; M1–6 ✅ ≠ no gaps |
 
 ---
 
@@ -126,23 +126,10 @@ Copy an existing feature in the same domain before inventing new patterns (e.g. 
 
 ## Scope guardrails
 
-Do not invent formulas, slots, or UI for Open known-issues. Combat leftovers stay locked as below; XP, chemistry, occupancy, enchanting, and roster extras are Resolved locks.
-
-| Area | Agent note |
-|------|------------|
-| Combat engine | Formulas live in [combat-system.md](../systems/combat-system.md) + `CombatStatCalculator`. Replay HUD is locked ([12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud)). Haste/Shock YAML speed percents apply to the initiative **sort only**, not AP ([combat-system.md](../systems/combat-system.md#speed--initiative-init)). In-combat `morale_change` is Cut — do not read `moraleDecayMultiplier`. Race synergy and `POST /api/v1/combat/simulate` are Cut ([product/known-issues.md](../product/known-issues.md) #9 Resolved). Do not change locked round-200 / fumble / KO≠death. |
-| Item enchanting | **#2 Resolved (Cut).** Enchanting is not in the live game. Do not reintroduce essence or ship an enchant UI, cost, or combat effect. `Item.special_effects` stays unused (column kept; item API omits the key). Spec: [item-system.md](../systems/item-system.md#locked-no-enchanting). |
-| Hero XP / level | **#6 Resolved (B).** Lifetime `Hero.xp` (never spent). Stored `Hero.level` is live truth — combat/UI/API must not compute level from XP. After match XP, `HeroProgressionService` raises stored level. Formula/`level_cap` change: `app:hero-levels:refresh` (or a migration), never lazy-recalc on read. Curve: `config/game/hero-progression.yaml`. Spec: [hero-system.md](../systems/hero-system.md#locked-hero-level-invariant). |
-| Team chemistry | **#7 Resolved (flavor).** `TeamChemistryService` writes 0–100. Combat does not read it. Live: dashboard, fan club / attendance, league tie-break. Do not add in-combat synergy or Loner combat effects (#9 Cut). Spec: [team-system.md](../systems/team-system.md#locked-chemistry-flavor). |
-| Item occupancy | **#8 Resolved.** Nine slots (`ring` + `ring_2`). Two-handed subtypes occupy both hands. Dual-wield one-handed melee. Spec: [item-system.md](../systems/item-system.md#locked-item-occupancy). Do not add extra dual-wield attacks or a third ring. |
-| Formation L1/L2 | **#12 Resolved.** Per-slot `target_order` + `fallback` and thin equipped `spell_priorities`. Do not add L3 sequences or `enemy_status` / `lowest_hp_enemy` in the UI. Save via `FormationTacticsNormalizer`. Spec: [formation-system.md](../systems/formation-system.md#locked-l1l2-editor). |
-| Roster extras | **#13 Resolved (Cut).** Do not add batch training / multi-select APIs, server-side roster filters, or sketch extras on the hero card. Spec: [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras). |
-| Arena analytics | **#4 Resolved.** Last 18 `arena_revenue` rows in the HQ panel (`ArenaService::buildRevenueHistory()`). Do not add a new analytics route, season query, or snapshot entity. Spec: [18-arena-management.md](../screens/18-arena-management.md#locked-attendance-analytics). |
-| Marketplace price band | **#15 Resolved.** Suggested list price; floor −50% / ceiling +100%. `createListing` rejects out-of-band buy-now / start / buyout. Auction bids are not capped. Spec: [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band). |
-| Spell catalog | **#16 Resolved.** Two spells per school per tier for T1–T5. No T6+, resurrection, or summon-creature. Spec: [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5). |
-| `docs/future/`, `_deferred/` | Out of scope unless the user explicitly requests |
-| Public wiki/news | Wiki stays **Planned** (A8.5) — do not ship `GET /wiki`, a CMS, or a navbar Help link. Live public content is homepage + `/news` (no admin UI). Lock: [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned). |
-| Password / settings extras | Session password change, notification prefs, and privacy stay **Planned** (A8.6). Do not ship a password-change form or `/api/v1/settings`. Forgotten passwords use `/password-reset`. Lock: [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned). |
+- Do not invent formulas, slots, or UI for **Open** rows in [product/known-issues.md](../product/known-issues.md).
+- Locks: [known-issues.md](../product/known-issues.md) § Resolved locks → matching `## Locked:` in `systems/` or `screens/`. Do not duplicate them here. Highest-risk reminders: [AGENTS.md](../../AGENTS.md).
+- Combat formulas live in [combat-system.md](../systems/combat-system.md) + `CombatStatCalculator`. Do not change locked round-200 / fumble / KO≠death.
+- `docs/future/` and `_deferred/` are out of scope unless the user explicitly requests them.
 
 ---
 

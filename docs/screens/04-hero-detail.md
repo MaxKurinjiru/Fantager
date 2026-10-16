@@ -1,6 +1,6 @@
 # Hero Detail Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#4-hero-detail-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [hero-system.md](../systems/hero-system.md), [hero-chronicle-system.md](../systems/hero-chronicle-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [hero-system.md](../systems/hero-system.md), [hero-chronicle-system.md](../systems/hero-chronicle-system.md)
 
 **When:** Inspect one hero — overview, equipment, spells, history.
 

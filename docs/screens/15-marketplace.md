@@ -1,6 +1,6 @@
 # Marketplace Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#15-marketplace-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [marketplace-system.md](../systems/marketplace-system.md), [economy-system.md](../systems/economy-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [marketplace-system.md](../systems/marketplace-system.md), [economy-system.md](../systems/economy-system.md)
 
 **When:** Browse, buy, and list heroes, trainers, and items.
 

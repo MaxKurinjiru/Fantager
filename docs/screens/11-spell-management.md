@@ -1,6 +1,6 @@
 # Spell Management Screen & Academy Store
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#11-spell-management-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [spell-system.md](../systems/spell-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [spell-system.md](../systems/spell-system.md)
 
 **When:** Equip a hero’s spell slots, or buy spells from the Academy.
 

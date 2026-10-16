@@ -1,7 +1,7 @@
 # Implementation Roadmap (Vertical-Slice & Chronological)
 
 > [!IMPORTANT]
-> Alignment waves 0–8 are **complete** ([current.md](current.md)). This file is the M1–9 chronicle, not a new work queue. Do not start Milestone 8/9.
+> Alignment waves 0–8 are **complete** ([current.md](current.md); archive: [alignment-waves.md](alignment-waves.md)). This file is the M1–9 chronicle, not a new work queue. Do not start Milestone 8/9.
 > Milestones 1–6 shipped a **playable core**. ✅ on a step means that slice landed, **not** that no gaps remain (inventory DnD, formation synergies Cut, combat HUD extras Cut). Do not treat the matrix at the bottom as a green board.
 > Milestones 8 and 9 stay **parked**. Milestone 7 analytics UI shipped as alignment A7.8.
 
@@ -317,7 +317,7 @@ These shipped with the playable core or during alignment. They are **not** an op
 ## Project Chronological Progression Status
 
 > [!IMPORTANT]
-> **Active work:** [current.md](current.md) (alignment waves), not new Milestone 8/9 features and not “M1–6 fully complete.”
+> **Now / next:** [current.md](current.md). Wave archive: [alignment-waves.md](alignment-waves.md). Not new Milestone 8/9 features and not “M1–6 fully complete.”
 > This matrix is a **chronicle of slices that shipped a playable core**. Remaining honesty footnotes: inventory is click-to-equip (not DnD); formation synergies and combat HUD extras were Cut in Wave 7. PHPUnit in CI is A8.1 (done). Playwright browser E2E is A8.2 **Cut**. `GET /health` is A8.3 (done). Legacy Doctrine connection is A8.4 **Parked** (one-shot import before first prod). Public wiki is A8.5 **Planned**. Password change / extra settings are A8.6 **Planned**. XP→level is A7.1; chemistry is flavor for matches (A7.2); occupancy is A7.3. Milestone 7 analytics UI is A7.8 (done). Alignment waves 0–8 complete. Milestones 8 and 9 stay **deferred / parked**.
 
 | Milestone / Slice | Database / Entities | Service Layer / CLI | API Endpoints | Frontend UI Views | Current Status |
@@ -332,4 +332,4 @@ These shipped with the playable core or during alignment. They are **not** an op
 | **Milestone 8 (Endgame & Crafting)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / parked** (dungeons, crafting, quests in `future/`) |
 | **Milestone 9 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / parked** |
 
-*Last updated: 16 October 2026 — Alignment waves 0–8 complete. This file is the M1–9 chronicle, not a work queue. Leftovers: [current.md](current.md) and each `systems/*.md` Remaining work.*
+*Last updated: 16 October 2026 — Alignment waves 0–8 complete. This file is the M1–9 chronicle, not a work queue. Now / next: [current.md](current.md). Wave archive: [alignment-waves.md](alignment-waves.md). Leftovers: each `systems/*.md` Remaining work.*

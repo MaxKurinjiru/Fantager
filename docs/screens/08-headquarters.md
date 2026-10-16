@@ -1,6 +1,6 @@
 # Headquarters Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#8-headquarters-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [headquarters-system.md](../systems/headquarters-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [headquarters-system.md](../systems/headquarters-system.md)
 
 **When:** Upgrade the seven facilities, set arena race adaptation, open Arena / Summoning panels.
 

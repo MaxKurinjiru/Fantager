@@ -1,6 +1,6 @@
 # Friendly Matches Screen
 
-Reference: [friendly-match-system.md](../systems/friendly-match-system.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [18-arena-management.md](18-arena-management.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [friendly-match-system.md](../systems/friendly-match-system.md), [18-arena-management.md](18-arena-management.md)
 
 **When:** Challenge another kingdom team to a PvP friendly (Wed/Sun 18:00 windows in the system doc).
 

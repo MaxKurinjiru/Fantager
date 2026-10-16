@@ -115,7 +115,7 @@ Quick reference: which files implement each game screen.
 | Resource | Purpose |
 |----------|---------|
 | This file | Screen → code file map |
-| [roadmap/current.md](../roadmap/current.md) | Active docs vs code work queue |
+| [roadmap/current.md](../roadmap/current.md) | Now / next (alignment complete) |
 | [guides/backend.md](../guides/backend.md) | PHP/API workflow |
 | [guides/ui.md](../guides/ui.md) | Twig/SCSS workflow |
 | `bash scripts/check-backend-docs.sh` | Routes, entities, enums, i18n keys |

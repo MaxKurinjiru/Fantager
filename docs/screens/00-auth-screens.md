@@ -1,6 +1,6 @@
 # Authentication Screens (Login / Register / Password Reset)
 
-Reference: [systems/auth-system.md](../systems/auth-system.md), [00-public-pages.md](00-public-pages.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [auth-system.md](../systems/auth-system.md), [00-public-pages.md](00-public-pages.md)
 
 **When:** Before gameplay — unauthenticated users (or logged-in users hitting `/login` / `/register`, who are redirected to the dashboard).
 

@@ -1,6 +1,6 @@
 # Arena Management Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#18-arena-management-screen-optionalextended-feature) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [headquarters-system.md](../systems/headquarters-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [headquarters-system.md](../systems/headquarters-system.md)
 
 **When:** Ticket price, capacity, projected home-match gold, and recent attendance analytics.
 

@@ -1,6 +1,6 @@
 # Player Profile & Settings Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#19-player-profile--settings-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [auth-system.md](../systems/auth-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [auth-system.md](../systems/auth-system.md)
 
 Purpose: Account-level player settings (distinct from team profile settings on the dashboard).
 

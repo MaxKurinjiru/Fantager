@@ -1,6 +1,6 @@
 # League Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#13-league-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [league-system.md](../systems/league-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [league-system.md](../systems/league-system.md)
 
 **When:** Group table, own fixtures, kingdom-wide ranking.
 

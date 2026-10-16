@@ -4,7 +4,7 @@ Canonical **gameplay contracts**. On conflict with [product/overview.md](../prod
 
 Open design questions: [product/known-issues.md](../product/known-issues.md) — do not invent mechanics for **Open** rows.
 
-The status table below is the live-contract snapshot after A1.1. Alignment waves 0–8 are complete ([../roadmap/current.md](../roadmap/current.md)). Remaining leftovers live in each system doc’s Remaining work section.
+The status table below is the live-contract snapshot. Alignment waves 0–8 are complete ([../roadmap/current.md](../roadmap/current.md); archive: [../roadmap/alignment-waves.md](../roadmap/alignment-waves.md)). Remaining leftovers live in each system doc’s Remaining work section.
 
 ## Remaining work convention
 

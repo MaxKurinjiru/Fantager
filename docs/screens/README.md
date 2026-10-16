@@ -1,21 +1,19 @@
 # Screens
 
-Per-screen UI contracts. **Live UI** is [../architecture/screen-code-map.md](../architecture/screen-code-map.md) plus Twig/Stimulus — not unchecked wish-lists.
+Per-screen UI contracts. **Live UI** is [../architecture/screen-code-map.md](../architecture/screen-code-map.md) plus Twig/Stimulus.
 
-[overview-legacy.md](overview-legacy.md) is a historical catalogue kept for alignment Wave 4. Do not treat it as an implementation contract.
-
-Each screen file separates **Implemented** (what Twig/API does) from **Planned**. Wave 4 (A4.1–A4.3) aligned every file in this folder; none is an empty “Sections to fill” template.
+Each screen file separates **Implemented** (what Twig/API does) from **Planned**. The original screen sketch is parked at [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) — not an implementation contract.
 
 ## Site structure
 
-- **Public** (`/`) — unauthenticated: homepage, news. Login/register open as a **modal** (`/login` and `/register` auto-open it). Password reset is standalone. Wiki stays **Planned** (A8.5).
+- **Public** (`/`) — unauthenticated: homepage, news. Login/register open as a **modal** (`/login` and `/register` auto-open it). Password reset is standalone. Wiki stays **Planned**.
 - **Game** (`/app/*`) — authenticated; Team Dashboard is the default landing page.
 
 ## Screen files
 
 | Doc | Screen |
 |-----|--------|
-| [00-public-pages.md](00-public-pages.md) | Homepage, news (wiki stays Planned, A8.5) |
+| [00-public-pages.md](00-public-pages.md) | Homepage, news (wiki stays Planned) |
 | [00-auth-screens.md](00-auth-screens.md) | Login, register, password reset |
 | [01-kingdom-selection.md](01-kingdom-selection.md) | Kingdom selection (registration) |
 | [02-team-dashboard.md](02-team-dashboard.md) | Team dashboard |
@@ -37,4 +35,4 @@ Each screen file separates **Implemented** (what Twig/API does) from **Planned**
 | [17-community.md](17-community.md) | Community |
 | [18-arena-management.md](18-arena-management.md) | Arena (HQ panel) |
 | [18a-friendly-matches.md](18a-friendly-matches.md) | Friendly matches |
-| [19-player-profile-settings.md](19-player-profile-settings.md) | Player profile and settings (password change / extras stay Planned, A8.6) |
+| [19-player-profile-settings.md](19-player-profile-settings.md) | Player profile and settings (password change / extras stay Planned) |

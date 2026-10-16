@@ -71,7 +71,7 @@ All community interactions are **kingdom-scoped**: players can only send message
 | `author_user_id` | FK → User | Player who created the thread |
 | `author_team_id` | FK → Team (nullable) | Author's team at creation time (snapshot) |
 | `created_at` | datetime | Creation timestamp |
-| `is_pinned` | bool | Stored flag. Listing and UI show pinned threads first when true. **Unsettable** in the app ([A6.3](../roadmap/current.md) Cut): no pin/unpin API, create/lock never set it, no forum admin/moderator role. |
+| `is_pinned` | bool | Stored flag. Listing and UI show pinned threads first when true. **Unsettable** in the app ([A6.3](../roadmap/alignment-waves.md#a63-forum-pin) Cut): no pin/unpin API, create/lock never set it, no forum admin/moderator role. |
 | `is_locked` | bool | Locked threads do not accept new replies |
 
 **ForumPost:**

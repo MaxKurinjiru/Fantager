@@ -10,7 +10,7 @@ Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entit
 
 ## Before implementing
 
-- Check `docs/roadmap/current.md` (active work), `docs/product/known-issues.md`, and `docs/systems/README.md` § Current Implementation Status
+- Check `docs/product/known-issues.md` (Open rows), `docs/systems/README.md` § Current Implementation Status, and matching `docs/systems/*.md` / `docs/screens/*.md`
 - Read matching `docs/systems/*.md` and `docs/screens/*.md`
 - Find an existing feature in the same domain and follow its patterns
 

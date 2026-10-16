@@ -1,6 +1,6 @@
 # Item/Equipment Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#10-itemequipment-screen) (historical), [item-system.md](../systems/item-system.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [item-system.md](../systems/item-system.md)
 
 **When:** Equip, unequip, repair, or dismantle items for one hero.
 

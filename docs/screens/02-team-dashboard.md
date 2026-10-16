@@ -1,6 +1,6 @@
 # Team Dashboard (Main Screen)
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#2-team-dashboard-main-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [team-system.md](../systems/team-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [team-system.md](../systems/team-system.md)
 
 **When:** Default authenticated landing page after login.
 

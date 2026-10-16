@@ -1,6 +1,6 @@
 # Hero Roster Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#3-hero-roster-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [hero-system.md](../systems/hero-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [hero-system.md](../systems/hero-system.md)
 
 **When:** Browse the team’s combatants.
 

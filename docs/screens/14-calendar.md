@@ -1,6 +1,6 @@
 # Calendar Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#14-calendar-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [calendar-system.md](../systems/calendar-system.md), [18a-friendly-matches.md](18a-friendly-matches.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [calendar-system.md](../systems/calendar-system.md), [18a-friendly-matches.md](18a-friendly-matches.md)
 
 **When:** Weekly kingdom schedule (ticks, league fixtures, own friendly matches).
 
