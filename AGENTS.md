@@ -14,7 +14,8 @@ Entry point for Cursor agents, Copilot, and other AI assistants working in this 
 | **Schema / migration** | [docs/architecture/entities.md](docs/architecture/entities.md) | `migrations/`, entities, repositories |
 | **Bugfix / extend existing feature** | Matching `systems/*.md` Remaining work + [docs/product/known-issues.md](docs/product/known-issues.md) § Later product decisions + [docs/screens/](docs/screens/) | Mirror patterns in the same domain |
 | **Domain terms** | [docs/product/glossary.md](docs/product/glossary.md) | — |
-| **Stack & Docker** | [.github/copilot-instructions.md](.github/copilot-instructions.md) | — |
+| **Reader progress snapshot** | [docs/product/progress.md](docs/product/progress.md) | Root [README.md](README.md) § Game progress + `progress.md` — not a work queue |
+| **Stack & Docker** | [.github/copilot-instructions.md](.github/copilot-instructions.md) | [docs/guides/local-setup.md](docs/guides/local-setup.md), [docker/README.md](docker/README.md) |
 
 Full vertical slice: backend cheatsheet § Vertical slice + UI cheatsheet when the feature has a UI.
 
@@ -86,7 +87,7 @@ When creating, deleting, moving, or renaming files/directories:
 3. If stack or Docker commands changed, update [.github/copilot-instructions.md](.github/copilot-instructions.md).
 4. Search repo-wide for old references and update stale links.
 
-When adding routes, entities, enums, or features also update [docs/architecture/routes.md](docs/architecture/routes.md), [docs/architecture/entities.md](docs/architecture/entities.md), [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md), the matching `systems/*.md` Remaining work (if unfinished code remains), [docs/product/known-issues.md](docs/product/known-issues.md) § Later product decisions when parking a product choice, and the status snapshot in [docs/systems/README.md](docs/systems/README.md).
+When adding routes, entities, enums, or features also update [docs/architecture/routes.md](docs/architecture/routes.md), [docs/architecture/entities.md](docs/architecture/entities.md), [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md), the matching `systems/*.md` Remaining work (if unfinished code remains), [docs/product/known-issues.md](docs/product/known-issues.md) § Later product decisions when parking a product choice, the status snapshot in [docs/systems/README.md](docs/systems/README.md), and the reader snapshot in [docs/product/progress.md](docs/product/progress.md) (plus the compact table in [README.md](README.md) § Game progress).
 
 Make small, reversible changes. Do not change DB/backup/CI infrastructure without consulting maintainers.
 

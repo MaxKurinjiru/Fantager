@@ -42,3 +42,5 @@ Short definitions for live game terms. **Rules** live in `docs/systems/*.md`. Th
 | **Deferred** | Specified in `docs/future/` (Milestone 8/9). Out of scope. |
 | **Reserved** | Enum/column exists; **no writer**. Do not start writing it. |
 | **Lock** | `## Locked:` in a system or screen doc. Do not reopen without an explicit product ask. Index: [known-issues.md](known-issues.md) § Resolved locks. |
+
+Reader icons for these words: [progress.md](progress.md) (✅ Live · 🟡 Incomplete · 📋 Planned · ⏳ Future · ✂️ Cut).

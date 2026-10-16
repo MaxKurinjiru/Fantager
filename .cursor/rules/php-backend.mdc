@@ -142,7 +142,7 @@ Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entit
 
 - New entity/enum → update `docs/architecture/entities.md`
 - New route → update `docs/architecture/routes.md`
-- Feature status change → update `docs/systems/README.md` status snapshot
+- Feature status change → update `docs/systems/README.md` status snapshot and the reader snapshot in `docs/product/progress.md` (plus the compact table in `README.md` § Game progress)
 
 ## Optional verification (user-requested only)
 

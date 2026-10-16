@@ -4,6 +4,8 @@
 
 **[current.md](current.md)** — leftovers after alignment waves 0–8. Conflict order: [docs/README.md](../README.md) § Canonical sources.
 
+Reader icon snapshot (not a work queue): [product/progress.md](../product/progress.md).
+
 ## Next (design still open)
 
 **Open** rows in [product/known-issues.md](../product/known-issues.md) (currently none). Later product decisions: [product/known-issues.md](../product/known-issues.md) § Later product decisions — not a second checklist here.

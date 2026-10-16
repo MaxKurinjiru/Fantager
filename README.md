@@ -4,115 +4,195 @@
 
 Fantager is a server-backed arena-management game built with Symfony and a Webpack Encore frontend.
 
-## Development Quickstart
+## Game progress
 
-Use the container-first development flow to ensure consistent local environments.
+Player-facing snapshot: **domain → block → feature**. **Not a contract** — live rules live in [`docs/systems/`](docs/systems/README.md). Spec links: [docs/product/progress.md](docs/product/progress.md).
 
-```bash
-# build and start local stack
-docker compose up --build -d
+| Icon | Meaning |
+|------|---------|
+| ✅ | **Live** — in the game |
+| 🟡 | **Incomplete** — leftover player-visible work (none right now) |
+| 📋 | **Planned** — parked until a product ask |
+| ⏳ | **Future** — Milestone 8/9 |
+| ✂️ | **Cut** — decided against |
 
-# install PHP deps (inside web container)
-docker exec -it fantager-web composer install
+### Public and account
 
-# install frontend deps and build
-docker exec -it fantager-web npm ci
-docker exec -it fantager-web npm run build
+| Block | Feature | Status |
+|-------|---------|--------|
+| Homepage | Landing copy + Play / Login / Enter game | ✅ |
+| Homepage | Latest 3 news teasers | ✅ |
+| Homepage | Guest language switcher (cs / en) | ✅ |
+| News | Paginated news archive | ✅ |
+| Auth | Login modal | ✅ |
+| Auth | Register + email verification | ✅ |
+| Auth | Password reset | ✅ |
+| Kingdom | Pick kingdom at registration | ✅ |
+| Account settings | Language | ✅ |
+| Account settings | Close modals on backdrop click | ✅ |
+| Account settings | Email change | ✅ |
+| Account settings | Account deletion | ✅ |
+| Account settings | Session password change | 📋 |
+| Account settings | Extra settings (notification prefs, privacy, connected accounts) | 📋 |
+| Wiki | Public wiki (`GET /wiki`) | 📋 |
 
-# run DB migrations
-docker exec -it fantager-web composer migrate
-# or
-docker exec -it fantager-web php bin/console doctrine:migrations:migrate
-```
+### Team
 
-Or run the equivalent commands locally if you prefer not to use containers.
+| Block | Feature | Status |
+|-------|---------|--------|
+| Dashboard | Banner (name, emblem, colors, manager, morale, fans, chemistry, reputation) | ✅ |
+| Dashboard | Finance snapshot + crisis banner | ✅ |
+| Dashboard | Last 5 chronicle entries | ✅ |
+| Dashboard | League this week + prepare formation | ✅ |
+| Dashboard | Quick stats and quick actions | ✅ |
+| Dashboard | 30-day history chart (morale, reputation, chemistry, fans) | ✅ |
+| Dashboard | Edit team profile (name, emblem, colors) | ✅ |
+| Dashboard | Live SSE updates | 📋 |
+| Team chronicle | Full read-only log | ✅ |
+| Chemistry | Flavor for matches, fan club / attendance, league tie-break | ✅ |
+| Chemistry | Combat reads chemistry | ✂️ |
 
-## Database Seeding & Initialization
+### Heroes
 
-After running the migrations, bootstrap your local development database with a default kingdom and then create test players:
+| Block | Feature | Status |
+|-------|---------|--------|
+| Roster | Hero cards (race, level, trait, age phase, form/fatigue, stats, OVR, status) | ✅ |
+| Roster | Filter / sort (name, race, status, level, OVR, age, form, STR–INT) | ✅ |
+| Roster | Summon CTA | ✅ |
+| Roster | Per-card quick actions / multi-select / batch | ✂️ |
+| Hero detail | Header (rename, ratings, gold value, salary, stored level + XP bar, secondaries, trait) | ✅ |
+| Hero detail | Overview (attributes + gear, derived combat stats, trainer assign) | ✅ |
+| Hero detail | Manage: sell, dismiss, promote to trainer | ✅ |
+| History tab | Match / training tiles, weapon mastery, chronicle entries | ✅ |
+| Rating | Base OVR (0–100) and complex rating (0–9999) | ✅ |
 
-```bash
-# Initialize default kingdom (NPCs, heroes, league standings)
-docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom" --test
+Equipment and spells on hero detail are under **Items and spells**.
 
-# Mid-season dev setup (~1 month of simulated game time)
-docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom" --test --start-offset-days=-21
+### Training
 
-# Create the 3 default test users, each assigned to an NPC team
-docker exec -u apache fantager-web php bin/console app:user:create-test "Main Kingdom" --default
-```
+| Block | Feature | Status |
+|-------|---------|--------|
+| Trainers | Promote combatant → trainer (stats freeze) | ✅ |
+| Trainers | Dismiss trainer | ✅ |
+| Trainers | Focus: Idle / Attribute / Magic / Form | ✅ |
+| Trainers | Assign / unassign trainees (slot cap) | ✅ |
+| Trainers | Thursday 08:00–10:00 lock | ✅ |
+| Active trainees | Table + fatigue / form forecast | ✅ |
+| Weekly tick | Thursday 10:00 evaluation (no gold cost, no XP write) | ✅ |
 
-The `--default` option creates three verified users, each assigned to an NPC team:
+### Formations and combat
 
-| Email | Nickname | Password |
-|-------|----------|----------|
-| player1@example.com | Test Player 1 | password |
-| player2@example.com | Test Player 2 | password |
-| player3@example.com | Test Player 3 | password |
+| Block | Feature | Status |
+|-------|---------|--------|
+| Saved lineups | Up to 4 formations; create / delete / set default | ✅ |
+| Saved lineups | Pitch 3+3 drag-and-drop + quick-assign | ✅ |
+| Tactics | Pre-match approach (Aggressive / Balanced / Defensive) | ✅ |
+| Tactics | Formation-wide movement goal | ✅ |
+| Tactics | Per-slot L1 target order + thin L2 spell priorities | ✅ |
+| Tactics | L3 sequences / synergy tables / simulate sandbox | ✂️ |
+| Match prep | Assign lineup to a league fixture | ✅ |
+| Engine | Fully automated match (kill score 0–6, round 200 cap) | ✅ |
+| Engine | Combat home-advantage | 📋 |
+| Engine | In-combat race synergy | ✂️ |
+| Replay | Hex playback (play / pause, step, speed, round scrubber) | ✅ |
+| Replay | Round combat log | ✅ |
+| Replay | Forfeit state (no canvas) | ✅ |
+| Friendly matches | Challenge + time slots | ✅ |
+| Friendly matches | Accept / decline / cancel | ✅ |
+| Friendly matches | Upcoming / pending / history + battle report | ✅ |
 
-To create an additional test user manually:
+### Headquarters
 
-```bash
-docker exec -u apache fantager-web php bin/console app:user:create-test "Main Kingdom" user@example.com "Player Nickname" "password"
-```
+Seven facilities. Forge is not live (crafting is ⏳).
 
-## Running Server Ticks & Background Workers
+| Block | Feature | Status |
+|-------|---------|--------|
+| Facilities | Training / Medical / Library / Treasury / Barracks cards + passives | ✅ |
+| Facilities | Summoning Chamber + Arena cards (open panels) | ✅ |
+| Facilities | Upgrade / downgrade / cancel (first hour) | ✅ |
+| Facilities | Header: maintenance, payroll, debt, crisis, race optimization | ✅ |
+| Facilities | Visual themes / visitor access / morale-over-time | 📋 |
+| Facilities | Forge / workshop | ⏳ |
+| Arena adaptation | Set home-arena race (summoning pool, not a visual skin) | ✅ |
+| Arena panel | Ticket price 1–50 + elasticity | ✅ |
+| Arena panel | Attendance / gold projections | ✅ |
+| Arena panel | Last-18 attendance analytics (chart + table) | ✅ |
+| Arena panel | Home-match ticket gold payout | ✅ |
+| Summoning | Cycle limit, gold cost, summon button | ✅ |
+| Summoning | Compatible-race pool + reveal card | ✅ |
+| Summoning | History (filter, sort, pagination) | ✅ |
 
-To simulate game progression, the application uses a tick-based calendar system and asynchronous message queues.
+### Items and spells
 
-### 1. Processing Server Ticks
+| Block | Feature | Status |
+|-------|---------|--------|
+| Equipment | Nine-slot paperdoll (two rings), click-to-equip / unequip | ✅ |
+| Equipment | Rucksack: repair / dismantle | ✅ |
+| Equipment | Enchanting / essence | ✂️ |
+| Equipment | Crafting | ⏳ |
+| Spellbook | Equip / unequip slots (magic capacity) | ✅ |
+| Spellbook | School mastery (Fire / Water / Air / Earth / Light / Dark) | ✅ |
+| Spellbook | Learned list + inline store | ✅ |
+| Academy | Buy T1–T5 for gold (school / tier filters) | ✅ |
 
-To check and execute scheduled game events (such as daily resets, weekly training, and league match simulation), run the tick runner command:
+### League and calendar
 
-```bash
-# Check and schedule pending ticks for all active kingdoms
-docker exec -u apache fantager-web php bin/console app:ticks:run
-```
+| Block | Feature | Status |
+|-------|---------|--------|
+| Standings | Group table (W/D/L, GD, points, last-5, promo/releg) | ✅ |
+| Standings | Group fixtures + score link to replay | ✅ |
+| My fixtures | Own season matches + prepare formation | ✅ |
+| Kingdom leaderboard | All teams in the active season | ✅ |
+| League | Win-streak / derby / relegation-pressure morale | ✂️ |
+| Calendar | Week navigation, team-only / system-tick toggles | ✅ |
+| Calendar | League fixtures + own friendlies in the feed | ✅ |
+| Calendar | World-event rows | ⏳ |
 
-You can also simulate running ticks at a specific date and time or limit execution to a single kingdom:
+### Marketplace and economy
 
-```bash
-# Simulate running ticks at a specific time in the future or past
-docker exec -u apache fantager-web php bin/console app:ticks:run --time="2026-06-27 18:00:00"
+| Block | Feature | Status |
+|-------|---------|--------|
+| Browse | Search / filter heroes, trainers, items | ✅ |
+| Browse | Buy now / bid / buyout | ✅ |
+| Sell | Create listing (buy-now or auction, price band −50% / +100%) | ✅ |
+| Sell | My listings + cancel (blocked if auction has bids) | ✅ |
+| Basic merchant | Fixed-price starter equipment | ✅ |
+| History | Settled purchase / sale log | ✅ |
+| Finance | Gold, debt, weekly payroll + HQ maintenance, period / all-time net | ✅ |
+| Finance | Full ledger with type / actor filters | ✅ |
+| Finance | Navbar recent-ledger modal | ✅ |
+| Crisis | Warning → restricted → bankruptcy | ✅ |
+| Economy | Gold never goes negative | ✅ |
+| Economy | Diminishing returns | 📋 |
 
-# Run ticks only for a specific kingdom ID
-docker exec -u apache fantager-web php bin/console app:ticks:run --kingdom-id=1
-```
+### Community
 
-### 2. Running Messenger Consumers (Background Workers)
+| Block | Feature | Status |
+|-------|---------|--------|
+| Forum | Categories, search, new thread, paginated replies | ✅ |
+| Forum | Author lock / unlock | ✅ |
+| Forum | Player-set pin | ✂️ |
+| Mail | Inbox / sent, compose, unread badge (navbar) | ✅ |
+| Mail | Trade / league emails | 📋 |
+| Profiles | Public player / team profile modal | ✅ |
+| Notifications | Navbar modal + unread badge | ✅ |
+| Graveyard | Memorial list, filters, detail (dismiss + combat death) | ✅ |
 
-When `app:ticks:run` schedules ticks, it dispatches them to Symfony Messenger to be processed asynchronously. To consume and process these tasks, you must run the consumer workers:
+### Future (Milestone 8 / 9)
 
-```bash
-# Run worker to consume the queue manually (ideal for local development)
-docker exec -u apache fantager-web php bin/console messenger:consume async
-```
+| Block | Feature | Status |
+|-------|---------|--------|
+| PvE | Dungeons | ⏳ |
+| PvE | Quests | ⏳ |
+| Economy | Crafting | ⏳ |
+| Calendar | World events | ⏳ |
+| Social | Alliances / guilds | ⏳ |
 
-This command will block your terminal and process tasks as they arrive. To limit how long they run or how many messages they process (similar to the production cron worker):
+## Development
 
-```bash
-# Consume messages with message, time, and memory limits
-docker exec -u apache fantager-web php bin/console messenger:consume async --limit=200 --time-limit=270 --memory-limit=128M
-```
+Local stack, seed, ticks, and workers live in docs, not here:
 
-## Where to look
-
-- **AI assistants:** [AGENTS.md](AGENTS.md) — task routing, UI/backend cheatsheets, Cursor rules
-- Documentation Index: [docs/README.md](docs/README.md)
-- UI Guidelines: [docs/guides/ui-guidelines.md](docs/guides/ui-guidelines.md) · Cheatsheet: [docs/guides/ui.md](docs/guides/ui.md)
-- Architecture Specification: [docs/architecture/overview.md](docs/architecture/overview.md)
-- API Design Guide: [docs/architecture/api.md](docs/architecture/api.md)
-
-```bash
-# Verify Twig templates follow UI guidelines (also runs in CI)
-bash scripts/check-ui-compliance.sh
-
-# Verify routes and entities are documented (also runs in CI)
-bash scripts/check-backend-docs.sh
-```
-
-## Notes
-
-- Prefer running developer tools inside the `fantager-web` container to avoid local version mismatches.
-- See `docker/` and `docker-compose.yml` for container configuration.
-- To execute any console tasks, make sure to prefix commands with `php` (e.g. `php bin/console <command>`).
+- [docs/guides/local-setup.md](docs/guides/local-setup.md)
+- [docker/README.md](docker/README.md)
+- [docs/guides/](docs/guides/README.md) — how to edit backend and UI
+- [docs/README.md](docs/README.md) — documentation index

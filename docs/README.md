@@ -1,6 +1,6 @@
 # Fantager documentation
 
-Pick a view. This file is an index, not a status table.
+Pick a view. This file is an index, not a status table. Reader icon snapshot: [product/progress.md](product/progress.md) (derived; systems and the Later index win).
 
 ## Canonical sources
 
@@ -23,10 +23,11 @@ Old `docs/*.md` root names: [roadmap/archive/alignment-waves.md](roadmap/archive
 About 20 minutes for a new reader:
 
 1. [product/overview.md](product/overview.md) then [product/glossary.md](product/glossary.md) — what the game is
-2. [architecture/overview.md](architecture/overview.md) — stack and dual-layer flow
-3. [architecture/screen-code-map.md](architecture/screen-code-map.md) — which files implement each screen
-4. One matching `systems/*.md` for the area you care about
-5. [guides/backend.md](guides/backend.md) or [guides/ui.md](guides/ui.md) before you edit
+2. [product/progress.md](product/progress.md) — live / planned / future at a glance (also in the [root README](../README.md#game-progress))
+3. [architecture/overview.md](architecture/overview.md) — stack and dual-layer flow
+4. [architecture/screen-code-map.md](architecture/screen-code-map.md) — which files implement each screen
+5. One matching `systems/*.md` for the area you care about
+6. [guides/backend.md](guides/backend.md) or [guides/ui.md](guides/ui.md) before you edit
 
 Status words: [product/glossary.md](product/glossary.md#how-to-read-status-words). Task routing: [AGENTS.md](../AGENTS.md).
 
@@ -35,6 +36,7 @@ Status words: [product/glossary.md](product/glossary.md#how-to-read-status-words
 | Goal | Start |
 |------|-------|
 | Understand the game | [product/overview.md](product/overview.md) → [product/glossary.md](product/glossary.md) |
+| See what is live / planned / future | [product/progress.md](product/progress.md) (compact: [root README](../README.md#game-progress)) |
 | New feature | [guides/backend.md](guides/backend.md) § Vertical slice |
 | Change a screen | [architecture/screen-code-map.md](architecture/screen-code-map.md) → `screens/` → [guides/ui.md](guides/ui.md) |
 | Change a game rule | matching `systems/*.md` |
@@ -45,9 +47,9 @@ Status words: [product/glossary.md](product/glossary.md#how-to-read-status-words
 
 | View | Start here | Contains |
 |------|------------|----------|
-| **Development** | [guides/](guides/README.md) | Backend and UI cheatsheets, UI guidelines |
+| **Development** | [guides/](guides/README.md) | Local setup, backend and UI cheatsheets, UI guidelines |
 | **Architecture** | [architecture/](architecture/README.md) | Stack, API, entities, routes, screen → code |
-| **Product / domain** | [product/](product/README.md) | Game overview, glossary, known issues, live `systems/` and `screens/` |
+| **Product / domain** | [product/](product/README.md) | Game overview, [progress snapshot](product/progress.md), glossary, known issues, live `systems/` and `screens/` |
 | **Roadmap** | [roadmap/](roadmap/README.md) | Now / next; deferred M8/M9; [archive/](roadmap/archive/README.md) |
 
 ## Out of scope

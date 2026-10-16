@@ -1,6 +1,6 @@
 # Architecture
 
-Live stack, dual-layer request flow, security, and local ops. API shape: [api.md](api.md). Schema: [entities.md](entities.md). Routes: [routes.md](routes.md). Local setup: [README.md](../../README.md), [docker/README.md](../../docker/README.md).
+Live stack, dual-layer request flow, security, and local ops. API shape: [api.md](api.md). Schema: [entities.md](entities.md). Routes: [routes.md](routes.md). Local setup: [guides/local-setup.md](../guides/local-setup.md), [docker/README.md](../../docker/README.md).
 
 ## Stack
 

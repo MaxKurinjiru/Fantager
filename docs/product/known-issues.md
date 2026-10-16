@@ -16,7 +16,7 @@ When an Open row is decided, record Cut vs Implement. Mark **Decided — Impleme
 
 ## Later product decisions (not Open)
 
-**The only parked-product index.** Parked until an explicit product ask. Do not treat this as a backlog. Do not copy this table into `roadmap/`, `systems/README.md`, or `screen-code-map.md`.
+**The only parked-product index.** Parked until an explicit product ask. Do not treat this as a backlog. Do not copy this table into `roadmap/`, `systems/README.md`, or `screen-code-map.md`. The reader icon snapshot ([progress.md](progress.md)) may mark the same topics 📋; it is not a second index and not a work queue.
 
 System and screen `## Parked` sections list only **unique** later items for that file — not rows already here. **Cut** belongs in `## Locked:` / Resolved locks, not here.
 

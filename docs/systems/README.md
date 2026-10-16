@@ -2,7 +2,7 @@
 
 Canonical **gameplay contracts**. Conflict order: [docs/README.md](../README.md) § Canonical sources.
 
-The status snapshot below is one word plus a link. Leftover **code** lives in that system’s **Remaining work**. Later product decisions live in [product/known-issues.md](../product/known-issues.md) § Later product decisions — not in this table.
+The status snapshot below is one word plus a link. Leftover **code** lives in that system’s **Remaining work**. Later product decisions live in [product/known-issues.md](../product/known-issues.md) § Later product decisions — not in this table. Reader icon snapshot (not a contract): [product/progress.md](../product/progress.md).
 
 ## Remaining work convention
 

@@ -116,7 +116,7 @@ Enums: `src/Enum/` — backed enums for statuses, types, races (see [docs/archit
 | New enum | `docs/architecture/entities.md` § Enums |
 | New domain behavior | `docs/systems/{domain}-system.md` |
 | New screen | `docs/screens/NN-*.md`, `docs/architecture/screen-code-map.md` |
-| Feature shipped / status | Matching `docs/systems/*.md` Remaining work + `docs/systems/README.md` status snapshot. Later product decisions go in `docs/product/known-issues.md` § Later product decisions |
+| Feature shipped / status | Matching `docs/systems/*.md` Remaining work + `docs/systems/README.md` status snapshot + `docs/product/progress.md` (and the compact table in `README.md`). Later product decisions go in `docs/product/known-issues.md` § Later product decisions |
 
 **Automated check (human / CI):** `bash scripts/check-backend-docs.sh` (routes, entities, enums, PHP → YAML keys)
 

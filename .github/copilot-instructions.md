@@ -1,6 +1,6 @@
 # Stack and Docker
 
-Agent rules, task routing, locks, and UI/backend checklists live in **[AGENTS.md](../AGENTS.md)**. Docs index: [docs/README.md](../docs/README.md).
+Agent rules, task routing, locks, and UI/backend checklists live in **[AGENTS.md](../AGENTS.md)**. Local setup: [docs/guides/local-setup.md](../docs/guides/local-setup.md). Docs index: [docs/README.md](../docs/README.md).
 
 ## Stack
 

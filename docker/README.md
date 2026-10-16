@@ -28,6 +28,8 @@ docker exec -it fantager-web npm run build
 
 5. Open the app at http://localhost:10001
 
+Kingdom seed, test users, ticks, and Messenger workers: [docs/guides/local-setup.md](../docs/guides/local-setup.md).
+
 Database is exposed on host port `10006` and mapped to MariaDB `3306` inside the container.
 
 What this stack does:
