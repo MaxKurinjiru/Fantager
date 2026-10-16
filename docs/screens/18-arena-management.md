@@ -65,11 +65,7 @@ Cut from this screen (do not add without a new product decision): combat home-ad
 
 ---
 
-## Parked
-
-Do not implement unless the user explicitly asks.
-
-- Combat home-advantage
+Later product decisions (combat home-advantage): [known-issues.md](../product/known-issues.md) § Later product decisions.
 
 ---
 

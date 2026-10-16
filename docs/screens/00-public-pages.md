@@ -4,11 +4,15 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Before login — visible to visitors who are not in the game shell.
 
+**Status:** Live at `GET /` and `GET /news`. Wiki stays **Planned**. Lock: [Locked: public wiki stays Planned](#locked-public-wiki-stays-planned).
+
 **Live UI:** `templates/layouts/public.html.twig` (guest navbar + `guest_body`). Auth forms on these pages: [00-auth-screens.md](00-auth-screens.md).
 
 ---
 
-## Site structure
+## Implemented
+
+### Site structure
 
 - **Public** (`/`, `/news`) — open to all visitors. Homepage and paginated news archive.
 - **Game** (`/app/...`) — authenticated. Dashboard (`/app/dashboard`) is the landing page after login.
@@ -17,36 +21,23 @@ Login/register are a **modal** included from `templates/base.html.twig` for gues
 
 Public wiki (`GET /wiki`) has **no controller** — **Planned**. Lock: [Locked: public wiki stays Planned](#locked-public-wiki-stays-planned).
 
----
-
-## Language switcher
-
-**Implemented**
+### Language switcher
 
 - **Guest / public navbar** (`templates/components/layout/navbar.html.twig` when `is_guest` is true): Czech (`cs`) / English (`en`) dropdown. Used on homepage, news, login/register (empty shell), and password-reset pages.
 - **Authenticated Account Settings** modal: the same two locales via a locale picker. Opened from the game navbar player menu — the game navbar itself has **no** locale dropdown.
 - Both hit `GET /change-locale/{locale}` (`Web\LocaleController`): session `_locale`; if the user is logged in, also persists `User.locale`. Redirects back to the local referer.
 
-**Parked**
-
-Do not implement unless the user explicitly asks.
-
-- Locale control on a public wiki page (no wiki yet)
-- Locale dropdown on the authenticated game navbar (not required while Settings has the picker)
-
----
-
-## Homepage — Implemented
+### Homepage
 
 **Route:** `GET /` → `Web\DefaultController` → `templates/home/index.html.twig`.
 
-### Displayed information
+**Displayed information**
 
 - Title, tagline, and project description (translated `homepage.*` keys)
 - Latest **3** published news items (title, date, full text) when any exist
 - Link to the news archive
 
-### Actions
+**Actions**
 
 - **Play / Register** — `click->auth-modal#openRegister` (href `/register` as fallback)
 - **Login** — `click->auth-modal#openLogin` (href `/login` as fallback)
@@ -54,36 +45,26 @@ Do not implement unless the user explicitly asks.
 - **News archive** — `GET /news`
 - Guest navbar: logo (home), News, locale dropdown, Login
 
-### Backend
+**Backend**
 
 - `NewsArticleRepository::findLatestPublished(3)` — no separate homepage CMS
 
----
-
-## Homepage — Planned
-
-- Wiki / Help link (no `/wiki` route)
-- Static or CMS-driven homepage beyond translated Twig + latest news
-- SEO extras (Open Graph, dedicated meta beyond the page title)
-
----
-
-## News archive — Implemented
+### News archive
 
 **Route:** `GET /news` → `Web\NewsController` → `templates/news/index.html.twig`.
 
-### Displayed information
+**Displayed information**
 
 - Paginated list (10 per page). Each item is shown in full (title, published time, kingdom name or “global”, full text). **No** detail page or excerpt.
 - Empty state when there are no published articles
 - Back to homepage
 
-### Actions
+**Actions**
 
 - Pagination (`?page=`)
 - Back to homepage
 
-### Backend
+**Backend**
 
 - `NewsArticle` (`news_article`: `title`, `content`, `published_at`, optional `kingdom_id`)
 - `GET /news` lists published rows (`published_at` not in the future)
@@ -91,17 +72,16 @@ Do not implement unless the user explicitly asks.
 
 ---
 
-## News archive — Planned
+## Parked
 
-- Admin interface for creating/editing news (stay Planned; not a live CMS)
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions (public wiki is A8.5 — [Locked: public wiki stays Planned](#locked-public-wiki-stays-planned)). Unique to this screen:
 
----
+- Locale dropdown on the authenticated game navbar (not required while Settings has the picker)
+- Static or CMS-driven homepage beyond translated Twig + latest news
+- SEO extras (Open Graph, dedicated meta beyond the page title)
+- Admin interface for creating/editing news (not a live CMS)
 
-## Wiki / Help — Planned
-
-`GET /wiki` is listed in [architecture/routes.md](../architecture/routes.md) as **planned**. No Twig, no controller, no entity, no search, no guest-navbar Help link.
-
-Original sketch (not live): help articles, categories, search, back to homepage.
+Locale control on a public wiki page waits on the wiki lock.
 
 ## Locked: public wiki stays Planned
 

@@ -4,9 +4,11 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Group table, own fixtures, kingdom-wide ranking.
 
-**Status:** Live at `GET /app/league`. Three **English** tabs (translation keys): Group standings, My fixtures, Kingdom leaderboard. Win-streak / derby / relegation-pressure morale are **not** live. Page is server-rendered; JSON also exists under `/api/v1/league/*`.
+**Status:** Live at `GET /app/league`. Three **English** tabs (translation keys): Group standings, My fixtures, Kingdom leaderboard. Win-streak / derby / relegation-pressure morale are **Cut**. Page is server-rendered; JSON also exists under `/api/v1/league/*`.
 
 **Live UI:** `templates/league/index.html.twig`, `templates/components/league/`.
+
+**Lock:** [league-system.md — no league morale fiction](../systems/league-system.md#locked-no-league-morale-fiction)
 
 ---
 

@@ -7,13 +7,7 @@ Screens: [02-team-dashboard.md](../screens/02-team-dashboard.md), [02a-team-chro
 Open design: none  
 Lock: [Locked: chemistry flavor](#locked-chemistry-flavor)
 
-Purpose: Document team entities, roster rules, dashboard aggregation, and team-related mechanics.
-
-## Parked
-
-Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
-
-- Dashboard SSE — Planned
+Purpose: Document team entities, roster rules, dashboard aggregation, and team-related mechanics. Later product decisions (dashboard SSE): [known-issues.md](../product/known-issues.md) § Later product decisions.
 
 ## Starting Roster
 

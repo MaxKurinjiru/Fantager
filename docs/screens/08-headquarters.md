@@ -50,12 +50,7 @@ Race `<select>` (or none) → `POST /api/v1/hq/optimize`. Pending / locked state
 
 ---
 
-## Parked
-
-Do not implement unless the user explicitly asks.
-
-- Visual HQ themes / visitor access / morale-over-time
-- Combat home-advantage as a live match buff
+Later product decisions (HQ themes / visitor access / morale-over-time, combat home-advantage): [known-issues.md](../product/known-issues.md) § Later product decisions.
 
 ## Sketch leftover
 

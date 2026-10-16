@@ -2,14 +2,14 @@
 
 Canonical **gameplay contracts**. Conflict order: [docs/README.md](../README.md) § Canonical sources.
 
-The status snapshot below is one word plus a link. Leftovers live in that system’s **Remaining work** or **Parked** section — not in this table.
+The status snapshot below is one word plus a link. Leftover **code** lives in that system’s **Remaining work**. Later product decisions live in [product/known-issues.md](../product/known-issues.md) § Later product decisions — not in this table.
 
 ## Remaining work convention
 
 Each system doc should open with Status / Screens / Open design.
 
 - **Remaining work** — only genuine unfinished work (tests, wiring). Omit the heading when there is none. Do not list shipped `[x]` items.
-- **Parked** — Later product decisions for that system. Bullets **without checkboxes** so they are not a backlog. Do not implement unless the user explicitly asks. Index: [product/known-issues.md](../product/known-issues.md) § Later product decisions.
+- **Parked** — later product decisions **unique to this file** and not already in the known-issues Later index. Bullets **without checkboxes**. Omit the heading when there is nothing unique. Do not list **Cut** here — Cut belongs in `## Locked:`. Index: [product/known-issues.md](../product/known-issues.md) § Later product decisions.
 
 ```markdown
 Status: Live | Partial | Planned
@@ -21,14 +21,14 @@ Lock: [Locked: …](#…)   ← only when a ## Locked: section exists
 - genuine unfinished item
 
 ## Parked
-Do not implement unless the user explicitly asks.
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
 
-- Topic — Planned. Spec: …
+- Unique local topic — Planned
 ```
 
-**Open design** is only for **Open** rows in [product/known-issues.md](../product/known-issues.md). Resolved decisions belong in `## Locked:` or Parked — not in the header chronicle (wave IDs, “#n decided”). Index: [product/known-issues.md](../product/known-issues.md) § Resolved locks.
+**Open design** is only for **Open** rows in [product/known-issues.md](../product/known-issues.md). Resolved decisions belong in `## Locked:` — not in Parked and not in the header chronicle (wave IDs, “#n decided”). Index: [product/known-issues.md](../product/known-issues.md) § Resolved locks.
 
-Locks use **`## Locked:`** (exactly that heading level) so [AGENTS.md](../../AGENTS.md) and grep find them. Do not duplicate Remaining work or Parked in the roadmap. [../roadmap/README.md](../roadmap/README.md) only points here and to known-issues.
+Locks use **`## Locked:`** (exactly that heading level) so [AGENTS.md](../../AGENTS.md) and grep find them. Do not duplicate Remaining work or the Later table in the roadmap. [../roadmap/README.md](../roadmap/README.md) only points here and to known-issues.
 
 ## System files
 
@@ -63,7 +63,7 @@ Locks use **`## Locked:`** (exactly that heading level) so [AGENTS.md](../../AGE
 
 ## Status snapshot
 
-One-line index of the **live contract**. Leftovers and Planned later decisions live in that doc’s Remaining work or Parked — do not restate them here.
+One-line index of the **live contract**. Leftovers live in that doc’s Remaining work. Later product decisions: [product/known-issues.md](../product/known-issues.md) § Later product decisions — do not restate them here.
 
 | Area | Status | Spec |
 |------|--------|------|
@@ -92,8 +92,5 @@ One-line index of the **live contract**. Leftovers and Planned later decisions l
 | Notifications | Live | [notification-system.md](notification-system.md) |
 | NPC simulation | Live | [npc-simulation-system.md](npc-simulation-system.md) |
 | Player inactivity | Live | [player-inactivity-system.md](player-inactivity-system.md) |
-| World events | Deferred | [world-events-system.md](../future/world-events-system.md) |
-| Dungeons | Deferred | [dungeon-system.md](../future/dungeon-system.md) |
-| Quests | Deferred | [quest-system.md](../future/quest-system.md) |
-| Crafting | Deferred | [crafting-system.md](../future/crafting-system.md) |
-| Alliances & guilds | Deferred | [history.md](../roadmap/history.md) |
+
+Deferred (not live): [future/](../future/) — dungeons, quests, crafting, world events. Milestone 9 alliances: [archive/history.md](../roadmap/archive/history.md).

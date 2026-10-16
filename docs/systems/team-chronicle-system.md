@@ -10,7 +10,7 @@ Purpose: Document the **team chronicle** — an append-only event log bound to t
 
 ## Parked
 
-Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this system:
 
 - Ownership-period filter — not live
 

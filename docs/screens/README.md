@@ -2,11 +2,21 @@
 
 Per-screen UI contracts. **Live UI** is [../architecture/screen-code-map.md](../architecture/screen-code-map.md) plus Twig/Stimulus.
 
-Each screen file separates **Implemented** (what Twig/API does) from leftovers. Omit a leftover heading when there is nothing to list.
+## File template
 
-- **Parked** — later product decisions. Do not implement unless the user explicitly asks.
+Each screen file opens with:
+
+```markdown
+**When:** who uses this screen, and when
+**Status:** Live at `GET /app/…`
+**Live UI:** `templates/…`
+```
+
+Then **Implemented** (what Twig/API does). Omit a leftover heading when there is nothing to list.
+
+- **Parked** — later product decisions **unique to this screen** and not already in [product/known-issues.md](../product/known-issues.md) § Later product decisions. Do not implement unless the user explicitly asks. Do not list **Cut** here.
 - **Sketch leftover** — original screen sketch extras; not a contract.
-- **Cut / Deferred** belong in `## Locked:` or [`../future/`](../future/), not a Planned checklist.
+- **Cut / Deferred** belong in `## Locked:` or [`../future/`](../future/), not Parked.
 
 The original screen sketch is parked at [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) — not an implementation contract.
 
@@ -43,3 +53,12 @@ The original screen sketch is parked at [`_deferred/screens-overview-legacy.md`]
 | [18a-friendly-matches.md](18a-friendly-matches.md) | Friendly matches |
 | [19-player-profile-settings.md](19-player-profile-settings.md) | Player profile and settings (password change / extras stay Planned) |
 | [20-finance.md](20-finance.md) | Finance ledger |
+
+## Shell features (no dedicated screen file)
+
+Navbar / layout UI that is not a numbered screen. Live map: [screen-code-map.md](../architecture/screen-code-map.md) § Notifications & mail.
+
+| Feature | Spec |
+|---------|------|
+| Notifications modal | [notification-system.md](../systems/notification-system.md) |
+| Player mail | [community-system.md](../systems/community-system.md), [17-community.md](17-community.md) |

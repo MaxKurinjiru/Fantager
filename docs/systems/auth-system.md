@@ -14,9 +14,8 @@ Purpose: Document authentication, registration, session management, and authoriz
 
 ## Parked
 
-Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions (session password change is there). Unique to this system:
 
-- Session password change — Planned. Lock: [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned)
 - Extra security headers (CSP / HSTS / frame options) — not live; cookies already httpOnly + `secure=auto` + `sameSite=lax`
 
 ## Overview

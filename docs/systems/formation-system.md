@@ -7,13 +7,7 @@ Screens: [07-formation-setup.md](../screens/07-formation-setup.md) · Code: [scr
 Open design: none  
 Lock: [Locked: L1/L2 editor](#locked-l1l2-editor)
 
-Purpose: Document formation representation, save/kickoff validation, slot strategy JSON, and fixture assignment. **Race/role synergy is not part of this system.** Team chemistry is [team-system.md](team-system.md#locked-chemistry-flavor) (flavor for matches). In-combat tables are Cut ([combat-system.md](combat-system.md#locked-no-race-synergy--no-simulate)).
-
-## Parked
-
-Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
-
-- `POST /api/v1/formations/simulate` — Planned; adjacent to combat simulate Cut ([combat-system.md](combat-system.md#locked-no-race-synergy--no-simulate))
+Purpose: Document formation representation, save/kickoff validation, slot strategy JSON, and fixture assignment. **Race/role synergy is not part of this system.** Team chemistry is [team-system.md](team-system.md#locked-chemistry-flavor) (flavor for matches). In-combat tables and a simulate sandbox are Cut ([combat-system.md](combat-system.md#locked-no-race-synergy--no-simulate)). Do not ship `POST /api/v1/formations/simulate`.
 
 ## Data Model
 
@@ -137,7 +131,7 @@ Formations are 6-slot layouts (3 front, 3 back) with formation-wide `approach` a
 - `GET/PUT/DELETE /api/v1/formations` — list, save, delete saved formations
 - `GET/PUT /api/v1/fixtures/{id}/formation` — read/update fixture assignment (`mode`: `default` \| `saved` \| `custom`)
 - `POST /api/v1/fixtures/{id}/formation/promote` — promote temporary match formation to saved (counts toward limit of 4)
-- `POST /api/v1/formations/simulate` — **planned** (no controller)
+- `POST /api/v1/formations/simulate` — **Cut** (no controller); do not ship a sandbox
 
 **Tests:** `tests/Service/Formation/FormationServiceTest.php`, `FormationTacticsNormalizerTest.php`, `MatchLineupServiceTest.php`, `FixtureFormationServiceTest.php`.
 

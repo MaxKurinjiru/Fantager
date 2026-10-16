@@ -53,7 +53,7 @@ Feed assembly: `CalendarService` from `TickScheduleCalculator`, tick logs, leagu
 
 ## Parked
 
-Do not implement unless the user explicitly asks.
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this screen:
 
 - Set reminder — `POST /api/v1/calendar/reminders`
 

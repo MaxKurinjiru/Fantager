@@ -101,12 +101,9 @@ Quick reference: which files implement each game screen.
 
 ## Planned / out of scope
 
-| Screen / feature | Status |
-|------------------|--------|
-| Public wiki (`/wiki`) | **Planned** (A8.5 stay Planned) — no controller. Live public content is homepage + `/news`. Lock: [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned). |
-| Session password change / extra settings | **Planned** (A8.6 stay Planned) — no password-change form or `/api/v1/settings`. Live settings: language, backdrop-close, email change, delete. Lock: [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned). |
-| Alliances & Guilds (Milestone 9) | ⏸️ **Deferred / Out of Scope** — [roadmap/history.md](../roadmap/history.md) |
-| Dungeons, Quests, Crafting (Milestone 8) | ⏸️ **Deferred / Out of Scope** — [future/](../future) |
+Later product decisions (wiki, password change, SSE, …): [product/known-issues.md](../product/known-issues.md) § Later product decisions — do not copy that table here.
+
+Deferred Milestone 8/9 (dungeons, quests, crafting, alliances): [`future/`](../future/) and [archive/history.md](../roadmap/archive/history.md). Shell features without a numbered screen file (notifications, mail): [screens/README.md](../screens/README.md#shell-features-no-dedicated-screen-file).
 
 ---
 
@@ -115,7 +112,7 @@ Quick reference: which files implement each game screen.
 | Resource | Purpose |
 |----------|---------|
 | This file | Screen → code file map |
-| [roadmap/current.md](../roadmap/current.md) | Now / next (alignment complete) |
+| [roadmap/current.md](../roadmap/current.md) | Now / next (alignment complete). Chronicle: [roadmap/archive/](../roadmap/archive/README.md) |
 | [guides/backend.md](../guides/backend.md) | PHP/API workflow |
 | [guides/ui.md](../guides/ui.md) | Twig/SCSS workflow |
 | `bash scripts/check-backend-docs.sh` | Routes, entities, enums, i18n keys |

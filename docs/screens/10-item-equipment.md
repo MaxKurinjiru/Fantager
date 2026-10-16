@@ -66,7 +66,7 @@ Validation: race restrictions and slot compatibility in `ItemService`.
 
 ## Parked
 
-Do not implement unless the user explicitly asks.
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this screen:
 
 - Standalone Inventory screen (`/app/inventory` as its own UI; route redirects today)
 - Drag-and-drop equip / paperdoll (live is click-to-equip)

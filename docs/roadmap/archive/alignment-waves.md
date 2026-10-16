@@ -1,6 +1,6 @@
 # Alignment waves 0–8 (archive)
 
-Finished chronicle of the 15 Oct 2026 docs-vs-code alignment. **Not a work queue.** Now / next: [current.md](current.md). Feature chronicle: [history.md](history.md). Live conflict order: [docs/README.md](../README.md) § Canonical sources.
+Finished chronicle of the 15 Oct 2026 docs-vs-code alignment. **Not a work queue.** Do not open this file unless you need the wave chronicle. Now / next: [current.md](../current.md). Feature chronicle: [history.md](history.md). Live conflict order: [docs/README.md](../../README.md) § Canonical sources.
 
 Do not execute this file as a backlog.
 
@@ -12,21 +12,21 @@ Old `docs/*.md` root names were stubs after the 15 Oct 2026 layout. Those stubs 
 
 | Old path | Canonical |
 |----------|-----------|
-| `docs/game-summary.md` | [product/overview.md](../product/overview.md) |
-| `docs/known-issues.md` | [product/known-issues.md](../product/known-issues.md) |
-| `docs/api-design.md` | [architecture/api.md](../architecture/api.md) |
-| `docs/arch-spec.md` | [architecture/overview.md](../architecture/overview.md) |
-| `docs/entity-reference.md` | [architecture/entities.md](../architecture/entities.md) |
-| `docs/route-map.md` | [architecture/routes.md](../architecture/routes.md) |
-| `docs/screen-code-map.md` | [architecture/screen-code-map.md](../architecture/screen-code-map.md) |
-| `docs/ui-guidelines.md` | [guides/ui-guidelines.md](../guides/ui-guidelines.md) |
-| `docs/ui-agent-cheatsheet.md` | [guides/ui.md](../guides/ui.md) |
-| `docs/backend-agent-cheatsheet.md` | [guides/backend.md](../guides/backend.md) |
-| `docs/alignment-roadmap.md` | [roadmap/current.md](current.md) |
-| `docs/screens-overview.md` | [screens/README.md](../screens/README.md) |
-| `docs/screens/overview-legacy.md` | [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) |
-| `docs/systems/combat-formulas-draft.md` | [systems/combat-formulas.md](../systems/combat-formulas.md) |
-| `_deferred/notes.md` | [future/notes.md](../future/notes.md) |
+| `docs/game-summary.md` | [product/overview.md](../../product/overview.md) |
+| `docs/known-issues.md` | [product/known-issues.md](../../product/known-issues.md) |
+| `docs/api-design.md` | [architecture/api.md](../../architecture/api.md) |
+| `docs/arch-spec.md` | [architecture/overview.md](../../architecture/overview.md) |
+| `docs/entity-reference.md` | [architecture/entities.md](../../architecture/entities.md) |
+| `docs/route-map.md` | [architecture/routes.md](../../architecture/routes.md) |
+| `docs/screen-code-map.md` | [architecture/screen-code-map.md](../../architecture/screen-code-map.md) |
+| `docs/ui-guidelines.md` | [guides/ui-guidelines.md](../../guides/ui-guidelines.md) |
+| `docs/ui-agent-cheatsheet.md` | [guides/ui.md](../../guides/ui.md) |
+| `docs/backend-agent-cheatsheet.md` | [guides/backend.md](../../guides/backend.md) |
+| `docs/alignment-roadmap.md` | [roadmap/current.md](../current.md) |
+| `docs/screens-overview.md` | [screens/README.md](../../screens/README.md) |
+| `docs/screens/overview-legacy.md` | [`_deferred/screens-overview-legacy.md`](../../../_deferred/screens-overview-legacy.md) |
+| `docs/systems/combat-formulas-draft.md` | [systems/combat-formulas.md](../../systems/combat-formulas.md) |
+| `_deferred/notes.md` | [future/notes.md](../../future/notes.md) |
 
 ---
 
@@ -39,7 +39,7 @@ Each step has an **Action**:
 | **Cut** | Remove or park the claim. Live code stays. Move leftover design to `docs/future/` or a Planned section — do not leave it looking live. |
 | **Align docs** | Rewrite the spec to match code. No behaviour change. |
 | **Implement** | Change code (and tests) to match an already-locked spec. |
-| **Design first** | Product decision required. Do not code a new formula, slot, or UI. Record the decision in [product/known-issues.md](../product/known-issues.md), then add/execute a follow-up Implement or Cut step. |
+| **Design first** | Product decision required. Do not code a new formula, slot, or UI. Record the decision in [product/known-issues.md](../../product/known-issues.md), then add/execute a follow-up Implement or Cut step. |
 
 **Done when:** the listed files no longer contradict each other, and a second reader can tell live vs planned vs deferred.
 
@@ -49,7 +49,7 @@ Each step has an **Action**:
 
 ## Canonical sources (locked)
 
-This wave locked the conflict order now documented in [docs/README.md](../README.md) § Canonical sources. Do not treat [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) or unchecked screen “Displayed Information” lists as implementation contracts.
+This wave locked the conflict order now documented in [docs/README.md](../../README.md) § Canonical sources. Do not treat [`_deferred/screens-overview-legacy.md`](../../../_deferred/screens-overview-legacy.md) or unchecked screen “Displayed Information” lists as implementation contracts.
 
 ---
 
@@ -76,7 +76,7 @@ Milestone 7 arena **analytics UI** is Wave 7 (A7.8), not a separate M7 track.
 ### A0.1 Index this tracker
 
 - **Action:** Align docs
-- **Files:** [../README.md](../README.md), [AGENTS.md](../../AGENTS.md), [guides/backend.md](../guides/backend.md), [.github/copilot-instructions.md](../../.github/copilot-instructions.md), [history.md](history.md)
+- **Files:** [../README.md](../../README.md), [AGENTS.md](../../../AGENTS.md), [guides/backend.md](../../guides/backend.md), [.github/copilot-instructions.md](../../../.github/copilot-instructions.md), [history.md](history.md)
 - **Done when:** “read first” paths point here for alignment work; historical M1–9 stay in `history.md` with an active-work banner.
 
 - [x] A0.1 Index this tracker (created with this file)
@@ -84,7 +84,7 @@ Milestone 7 arena **analytics UI** is Wave 7 (A7.8), not a separate M7 track.
 ### A0.2 Known-issues is for design only
 
 - **Action:** Align docs
-- **Files:** [product/known-issues.md](../product/known-issues.md)
+- **Files:** [product/known-issues.md](../../product/known-issues.md)
 - **Done when:** Open design rows exist for chemistry, item occupancy, combat leftovers, formation save policy; enchanting no longer “blocks Phase 6”; this roadmap is linked as the work queue.
 
 - [x] A0.2 Expand known-issues (#2, #6–#10 + pointer to this file)
@@ -98,10 +98,10 @@ Do not change game behaviour. Make “Fully Implemented” mean the live contrac
 ### A1.1 Systems status table
 
 - **Action:** Align docs
-- **Files:** [systems/README.md](../systems/README.md) § Status snapshot
+- **Files:** [systems/README.md](../../systems/README.md) § Status snapshot
 - **Edits:**
   - Combat → **MVP / partial** (engine + replay; HUD and synergy open)
-  - Heroes → note XP without level-up ([product/known-issues.md](../product/known-issues.md) #6)
+  - Heroes → note XP without level-up ([product/known-issues.md](../../product/known-issues.md) #6)
   - Items → note occupancy / ring count open (#8)
   - Formations → no synergy; save ≠ kickoff rules
   - Add **NPC simulation** and **player inactivity** rows (implemented, currently missing)
@@ -123,7 +123,7 @@ Do not change game behaviour. Make “Fully Implemented” mean the live contrac
 ### A1.3 Cheatsheet scope guardrails
 
 - **Action:** Align docs
-- **Files:** [guides/backend.md](../guides/backend.md)
+- **Files:** [guides/backend.md](../../guides/backend.md)
 - **Edits:** Point “before you code” at this file. Keep combat/enchanting guardrails; add chemistry (#7), item occupancy (#8), XP curve (#6).
 
 - [x] A1.3 Cheatsheet guardrails
@@ -137,7 +137,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 ### A2.1 Front matter and TOC
 
 - **Action:** Cut
-- **Files:** [product/overview.md](../product/overview.md)
+- **Files:** [product/overview.md](../../product/overview.md)
 - **Edits:** Label as overview; “systems win on conflict”. Move dungeon/crafting **out of core TOC** into Deferred (already have `future/`). Drop Crafting Boost from kingdom settings or mark deferred.
 
 - [x] A2.1 Summary role + TOC
@@ -145,31 +145,31 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 ### A2.2 Kingdom, calendar, economy claims
 
 - **Action:** Cut / Align docs
-- **Files:** [product/overview.md](../product/overview.md) §2.1–2.3
-- **Cut or reword:** Kingdom as a separate server instance → multi-tenant `kingdom_id`. Dungeon/crafting ticks. Price floor/ceiling. Diminishing returns as if live. Email/trade anti-fraud as if live. Season “2–4 weeks” → 77 days (or point at [calendar-system.md](../systems/calendar-system.md)).
+- **Files:** [product/overview.md](../../product/overview.md) §2.1–2.3
+- **Cut or reword:** Kingdom as a separate server instance → multi-tenant `kingdom_id`. Dungeon/crafting ticks. Price floor/ceiling. Diminishing returns as if live. Email/trade anti-fraud as if live. Season “2–4 weeks” → 77 days (or point at [calendar-system.md](../../systems/calendar-system.md)).
 
 - [x] A2.2 Kingdom / calendar / economy
 
 ### A2.3 Heroes, training, team, formation
 
 - **Action:** Cut / Align docs
-- **Files:** [product/overview.md](../product/overview.md) §2.4–2.6.1
-- **Cut or reword:** XP/leveling as a live loop → #6. In-combat race synergy as live → deferred. Suggested formations, clone, “all 6 slots required at save”, dual-wield targeting essays that the UI cannot set. Point formation save rules at [formation-system.md](../systems/formation-system.md).
+- **Files:** [product/overview.md](../../product/overview.md) §2.4–2.6.1
+- **Cut or reword:** XP/leveling as a live loop → #6. In-combat race synergy as live → deferred. Suggested formations, clone, “all 6 slots required at save”, dual-wield targeting essays that the UI cannot set. Point formation save rules at [formation-system.md](../../systems/formation-system.md).
 
 - [x] A2.3 Heroes / formation (later restored live Elf/Dwarf/Giant/Genie/Ent engine hooks that the first pass over-cut as synergy)
 
 ### A2.4 HQ, items, spells, combat, league
 
 - **Action:** Cut / Align docs
-- **Files:** [product/overview.md](../product/overview.md) §2.7–2.12
-- **Cut:** HQ visual themes, facility layout, visitor access, combat home advantage as live, HQ morale-over-time as live. Item **two rings**, dual-wield, two-handed occupying both hands **unless #8 is decided Implement** (until then: match [item-system.md](../systems/item-system.md) — 8 slots, one ring). League win-streak/derby/relegation-pressure morale, veteran leadership, junior bonus XP, age-diversity bonus.
+- **Files:** [product/overview.md](../../product/overview.md) §2.7–2.12
+- **Cut:** HQ visual themes, facility layout, visitor access, combat home advantage as live, HQ morale-over-time as live. Item **two rings**, dual-wield, two-handed occupying both hands **unless #8 is decided Implement** (until then: match [item-system.md](../../systems/item-system.md) — 8 slots, one ring). League win-streak/derby/relegation-pressure morale, veteran leadership, junior bonus XP, age-diversity bonus.
 
 - [x] A2.4 HQ / items / league fiction
 
 ### A2.5 Graveyard, community, leftover ticks
 
 - **Action:** Align docs
-- **Files:** [product/overview.md](../product/overview.md) §2.13–end
+- **Files:** [product/overview.md](../../product/overview.md) §2.13–end
 - **Edits:** Graveyard includes **dismissals**, not only combat death. Community: in-app mail/forum live; **email for trades/league** not live (auth + inactivity only). Remove live-looking dungeon/crafting sections or keep a single Deferred pointer.
 
 - [x] A2.5 Graveyard / community / deferred (A2.1 stub anchors `#215` / `#217` dropped with the single Deferred pointer; `future/` retargeted)
@@ -181,15 +181,15 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 ### A3.1 Route map: one live list
 
 - **Action:** Align docs
-- **Files:** [architecture/routes.md](../architecture/routes.md)
-- **Edits:** One Combat table (today there are two). Deferred dungeon/crafting/quest routes **only** as a pointer to `future/` — not fake controller names in the live list. Mark `/app/inventory` as **redirect**. Drop or relabel planned `POST /api/v1/heroes/{id}/train` and `convert-trainer` (live: training trainer assign/promote). Health/wiki/simulate stay **planned**. Recalculate implemented counts. Unify notification `limit` with [notification-system.md](../systems/notification-system.md) (code is source).
+- **Files:** [architecture/routes.md](../../architecture/routes.md)
+- **Edits:** One Combat table (today there are two). Deferred dungeon/crafting/quest routes **only** as a pointer to `future/` — not fake controller names in the live list. Mark `/app/inventory` as **redirect**. Drop or relabel planned `POST /api/v1/heroes/{id}/train` and `convert-trainer` (live: training trainer assign/promote). Health/wiki/simulate stay **planned**. Recalculate implemented counts. Unify notification `limit` with [notification-system.md](../../systems/notification-system.md) (code is source).
 
 - [x] A3.1 Route map
 
 ### A3.2 Entity reference hygiene
 
 - **Action:** Align docs
-- **Files:** [architecture/entities.md](../architecture/entities.md)
+- **Files:** [architecture/entities.md](../../architecture/entities.md)
 - **Edits:** Fix domain numbering (skip 13–15). Enum count vs `src/Enum` (41 files; table includes deferred `DungeonResult` / `CraftingStatus`). Design decisions: remove live `DungeonEnemy` / crafting-material / `event` table as if present. `MatchType::Arena`, `MoraleRestoration`, `hero_retired`, reserved `MemorialCause`, unused notification types: **reserved / unused** until Wave 6.
 
 - [x] A3.2 Entity reference
@@ -197,7 +197,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 ### A3.3 API design + arch-spec examples
 
 - **Action:** Align docs
-- **Files:** [architecture/api.md](../architecture/api.md), [architecture/overview.md](../architecture/overview.md)
+- **Files:** [architecture/api.md](../../architecture/api.md), [architecture/overview.md](../../architecture/overview.md)
 - **Edits:** Replace `/api/v1/heroes/{id}/train` and web `/heroes` examples with real paths (`/app/heroes`, `/api/v1/training/trainers/{id}/assign`).
 
 - [x] A3.3 Stale REST examples
@@ -205,7 +205,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 ### A3.4 Hero/team system stale sentences
 
 - **Action:** Align docs
-- **Files:** [hero-system.md](../systems/hero-system.md), [team-system.md](../systems/team-system.md)
+- **Files:** [hero-system.md](../../systems/hero-system.md), [team-system.md](../../systems/team-system.md)
 - **Edits:** `/api/heroes` → `/api/v1/heroes`. Chronicle match results are **implemented**, not future. Document chemistry formula (CHA offset, −15 hostile) as **display-only** until #7.
 
 - [x] A3.4 Hero/team stale API and chronicle
@@ -219,7 +219,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 ### A4.1 Overview + public/auth
 
 - **Action:** Align docs
-- **Files:** [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md), [00-public-pages.md](../screens/00-public-pages.md), [00-auth-screens.md](../screens/00-auth-screens.md), [01-kingdom-selection.md](../screens/01-kingdom-selection.md), [19-player-profile-settings.md](../screens/19-player-profile-settings.md)
+- **Files:** [`_deferred/screens-overview-legacy.md`](../../../_deferred/screens-overview-legacy.md), [00-public-pages.md](../../screens/00-public-pages.md), [00-auth-screens.md](../../screens/00-auth-screens.md), [01-kingdom-selection.md](../../screens/01-kingdom-selection.md), [19-player-profile-settings.md](../../screens/19-player-profile-settings.md)
 - **Edits:** Overview not Draft-as-source-of-truth; crafting not a core screen. Locale switcher is **guest/public navbar + Account Settings** (not on the authenticated game navbar; public-pages had claimed the inside section had none). Screen 19: English only (was “Backdrop zavírání modalů”). Wiki/news admin stay Planned. Password change / notification prefs / privacy stay Planned.
 
 - [x] A4.1 Overview + public + settings copy
@@ -227,7 +227,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 ### A4.2 Dashboard, roster, formation, inventory, combat
 
 - **Action:** Align docs (UI Implement is Wave 7 if product wants the old lists)
-- **Files:** [02-team-dashboard.md](../screens/02-team-dashboard.md), [03-hero-roster.md](../screens/03-hero-roster.md), [07-formation-setup.md](../screens/07-formation-setup.md), [10-item-equipment.md](../screens/10-item-equipment.md), [12-combat-battle.md](../screens/12-combat-battle.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
+- **Files:** [02-team-dashboard.md](../../screens/02-team-dashboard.md), [03-hero-roster.md](../../screens/03-hero-roster.md), [07-formation-setup.md](../../screens/07-formation-setup.md), [10-item-equipment.md](../../screens/10-item-equipment.md), [12-combat-battle.md](../../screens/12-combat-battle.md), [architecture/screen-code-map.md](../../architecture/screen-code-map.md)
 - **Roster live:** name, race, level, trait, age, form, fatigue, attributes, inspect, client filter/sort. **Not live (later Cut A7.7 / #13):** item icons, morale on card, tired/training status, quick-action dropdown, batch training, multi-select, level filter control.
 - **Formation:** keep the existing Planned table; summary/overview must not re-add synergies/clone/simulate as live. Drag-and-drop **is** live for lineup, **not** for equipment.
 - **Inventory:** route redirects; equipment is hero-detail tab, click-to-equip paperdoll.
@@ -239,7 +239,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 ### A4.3 Remaining screens leftover sections
 
 - **Action:** Align docs
-- **Files:** [06-trainer-management.md](../screens/06-trainer-management.md), [17-community.md](../screens/17-community.md), others still containing “Sections to fill”
+- **Files:** [06-trainer-management.md](../../screens/06-trainer-management.md), [17-community.md](../../screens/17-community.md), others still containing “Sections to fill”
 - **Done when:** no screen file is an empty template.
 
 - [x] A4.3 Remaining screen stubs
@@ -251,7 +251,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 ### A5.1 Fill or delete “Sections to fill”
 
 - **Action:** Align docs
-- **Files:** [kingdom-system.md](../systems/kingdom-system.md), [hero-system.md](../systems/hero-system.md), [team-system.md](../systems/team-system.md), [auth-system.md](../systems/auth-system.md), [formation-system.md](../systems/formation-system.md) (purpose still says “synergy calculations”)
+- **Files:** [kingdom-system.md](../../systems/kingdom-system.md), [hero-system.md](../../systems/hero-system.md), [team-system.md](../../systems/team-system.md), [auth-system.md](../../systems/auth-system.md), [formation-system.md](../../systems/formation-system.md) (purpose still says “synergy calculations”)
 - **Edits:** Replace template headings with live behaviour or delete them. Formation purpose: drop synergy until #7/#9.
 
 - [x] A5.1 System stub headings
@@ -259,7 +259,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 ### A5.2 Summoning Genie rule (docs only)
 
 - **Action:** Align docs
-- **Files:** [summoning-system.md](../systems/summoning-system.md) (already notes the split), [npc-simulation-system.md](../systems/npc-simulation-system.md), [product/overview.md](../product/overview.md) if Wave 2 missed it
+- **Files:** [summoning-system.md](../../systems/summoning-system.md) (already notes the split), [npc-simulation-system.md](../../systems/npc-simulation-system.md), [product/overview.md](../../product/overview.md) if Wave 2 missed it
 - **Done when:** one paragraph states: **players** use relationship ≥ 50 (Genie can summon all races); **NPC marketplace** may apply a stricter Genie-only filter. Product change is A7.9.
 
 - [x] A5.2 Genie dual rule documented everywhere (later superseded by A7.9 / #14: one shared pool, Genie adaptation ≥ 80 — do not restore the player-vs-NPC split)
@@ -267,7 +267,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 ### A5.3 Notifications contract
 
 - **Action:** Align docs
-- **Files:** [notification-system.md](../systems/notification-system.md), [architecture/routes.md](../architecture/routes.md)
+- **Files:** [notification-system.md](../../systems/notification-system.md), [architecture/routes.md](../../architecture/routes.md)
 - **Edits:** Default `limit` / max from `NotificationController`. Unused types listed. Write-time translation documented until A6.4.
 
 - [x] A5.3 Notification limits and unused types
@@ -281,7 +281,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 ### A6.1 Formation unique `hero_id` on save
 
 - **Action:** Implement (decision: unique at save; kickoff waterfall)
-- **Blocks:** [product/known-issues.md](../product/known-issues.md) #10 — Resolved
+- **Blocks:** [product/known-issues.md](../../product/known-issues.md) #10 — Resolved
 - **Done:** `FormationService::rebuildSlots()` rejects duplicate `hero_id` (422). Empty slots still persist, including a fully empty draft (API + Formation Setup UI). Kickoff (`MatchLineupService`): assigned if 6 unique combat-ready, else default if match-ready, else roster fill (temporary copy). Forfeit only when the team cannot field 6 combat-ready heroes. Docs + tests updated.
 
 - [x] A6.1 Formation duplicates (decision + execution)
@@ -289,7 +289,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 ### A6.2 Dead writers / reserved enums
 
 - **Action:** Align docs + optional code
-- **Files:** enums + writers + [architecture/entities.md](../architecture/entities.md)
+- **Files:** enums + writers + [architecture/entities.md](../../architecture/entities.md)
 - **Default (Cut / reserve):** keep enum values, mark **unused**: `MatchType::Arena`, `FinancialRecordType::MoraleRestoration`, `ChronicleEventType::HeroRetired`, `MemorialCause::{Age,Retired,Death}`, `NotificationType::{LeagueUpdate,EventStarted,SpellLearned}`, `FinancialRecordType::SpellSlotCost`.
 - **Do not delete columns** without an explicit migrate step in this item.
 - **Done:** Cases kept (`isReserved()` / `liveCases()`). No writers existed to remove; columns not dropped. Entity-reference + system docs list each as reserved. Finance / graveyard / chronicle type filters omit reserved cases. Related unused retirement cases (`HeroStatus::Retired`, `HeroChronicleEventType::Retired`) have `isReserved()` the same way.
@@ -301,7 +301,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 - **Action:** Design first → **Cut** (16 Oct 2026)
 - **If Cut:** docs say pin is stored but unsettable (no admin API). Remove “admin use” as if it exists.
 - **If Implement:** author-or-admin pin/unpin API + UI, CSRF, tests. Do not invent roles.
-- **Done:** Pin stays on `ForumThread` and in listing/UI when true. No pin/unpin API, create/lock never set it, no forum admin role. Docs drop “admin use”. [product/known-issues.md](../product/known-issues.md) #11 Resolved.
+- **Done:** Pin stays on `ForumThread` and in listing/UI when true. No pin/unpin API, create/lock never set it, no forum admin role. Docs drop “admin use”. [product/known-issues.md](../../product/known-issues.md) #11 Resolved.
 
 - [x] A6.3 Forum pin write path or docs-only
 
@@ -316,7 +316,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 ### A6.5 `summon_stat_total_cap`
 
 - **Action:** Align docs (code already ignores it) **or** Implement wiring
-- **Default:** keep unread; [hero-system.md](../systems/hero-system.md) already says reserved. Ensure HQ/summary do not show it as an active bonus.
+- **Default:** keep unread; [hero-system.md](../../systems/hero-system.md) already says reserved. Ensure HQ/summary do not show it as an active bonus.
 - **Done:** Field stays on `FacilityType::getPassiveBonuses()` and is still passed into `HeroGenerator`, which ignores it (live total cap is 60% of per-stat ceilings). HQ cards, Stimulus bonus map, and API `passive_bonuses` omit it via `getDisplayedPassiveBonuses()`. Unused `hq.bonus_summon_stat_total_cap` translation dropped. Docs mark it reserved/unread.
 
 - [x] A6.5 Chamber total-cap unused everywhere
@@ -330,7 +330,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 ### A7.1 XP → level curve — #6
 
 - **Action:** Implement (decision locked 16 Oct 2026)
-- **Locked (do not reopen in this step):** [hero-system.md](../systems/hero-system.md#locked-hero-level-invariant) + [product/known-issues.md](../product/known-issues.md) #6.
+- **Locked (do not reopen in this step):** [hero-system.md](../../systems/hero-system.md#locked-hero-level-invariant) + [product/known-issues.md](../../product/known-issues.md) #6.
   - Package **B**: career level; training keeps the 1–20 attribute cap; no stat points on level-up.
   - Lifetime `Hero.xp` (never spent). Stored `Hero.level` is the live truth — no on-read derivation.
   - Writers: match XP path (current curve); formula/cap change → migration or job only.
@@ -345,15 +345,15 @@ No new combat formulas. Behaviour changes only where the live system doc already
 - **Action:** Design first → **Cut / flavor** (16 Oct 2026)
 - **Must decide:** flavor-only number **or** combat/morale modifiers (tables).
 - **If flavor:** dashboard copy + systems say it does not affect matches; Loner trait text matches.
-- **If live:** formulas in [combat-formulas.md](../systems/combat-formulas.md) first, then `CombatEngine`. Do not invent tables in code.
-- **Done:** Chemistry is flavor for matches. Combat / in-match morale do not read `Team.chemistry`. Live consumers stay dashboard, history, fan club / attendance, league tie-break. Dashboard `chemistry_desc` and Loner trait copy match. In-combat race-synergy later Cut in A7.5. Lock: [team-system.md](../systems/team-system.md#locked-chemistry-flavor). [product/known-issues.md](../product/known-issues.md) #7 Resolved.
+- **If live:** formulas in [combat-formulas.md](../../systems/combat-formulas.md) first, then `CombatEngine`. Do not invent tables in code.
+- **Done:** Chemistry is flavor for matches. Combat / in-match morale do not read `Team.chemistry`. Live consumers stay dashboard, history, fan club / attendance, league tie-break. Dashboard `chemistry_desc` and Loner trait copy match. In-combat race-synergy later Cut in A7.5. Lock: [team-system.md](../../systems/team-system.md#locked-chemistry-flavor). [product/known-issues.md](../../product/known-issues.md) #7 Resolved.
 
 - [x] A7.2 Chemistry
 
 ### A7.3 Item occupancy — #8
 
 - **Action:** Implement (decision locked 16 Oct 2026)
-- **Locked:** [item-system.md](../systems/item-system.md#locked-item-occupancy) + [product/known-issues.md](../product/known-issues.md) #8.
+- **Locked:** [item-system.md](../../systems/item-system.md#locked-item-occupancy) + [product/known-issues.md](../../product/known-issues.md) #8.
   - Nine slots including `ring_2`. Ring items equip in `ring` or `ring_2`.
   - Two-handed (`two_handed_*`, bow, crossbow, staff) clears `off_hand`; equipping off-hand clears that two-hander.
   - Dual-wield: one-handed sword/axe/mace and dagger in `off_hand`.
@@ -366,27 +366,27 @@ No new combat formulas. Behaviour changes only where the live system doc already
 
 - **Action:** Design first → **Cut** (16 Oct 2026)
 - **Must decide:** redesign without essence **or** explicit never.
-- **Done:** Enchanting is not in the live game. No essence. Remaining Enchant Item planned rows cut. `Item.special_effects` stays unused/reserved (combat reads `bonuses` only; item API omits the key). Lock: [item-system.md](../systems/item-system.md#locked-no-enchanting). [product/known-issues.md](../product/known-issues.md) #2 Resolved.
+- **Done:** Enchanting is not in the live game. No essence. Remaining Enchant Item planned rows cut. `Item.special_effects` stays unused/reserved (combat reads `bonuses` only; item API omits the key). Lock: [item-system.md](../../systems/item-system.md#locked-no-enchanting). [product/known-issues.md](../../product/known-issues.md) #2 Resolved.
 
 - [x] A7.4 Enchanting redesign or explicit never
 
 ### A7.5 Combat leftovers — #9
 
 - **Action:** Design first → remaining **Cut** (16 Oct 2026)
-- **HUD locked (16 Oct 2026):** Implement emblems + League/Friendly label + contextual back link. Cut morale widget, initiative queue, team-stats sidebar, skip-to-end, hex debug, unused formation grid. Lock: [12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud).
-- **Haste/Shock locked (16 Oct 2026):** YAML `speed_bonus_percent` / `speed_reduction_percent` apply to the per-round initiative sort after ticks. Additive; not AP. `ENGINE_VERSION` 7. Spec: [combat-formulas.md](../systems/combat-formulas.md#speed--initiative-init).
+- **HUD locked (16 Oct 2026):** Implement emblems + League/Friendly label + contextual back link. Cut morale widget, initiative queue, team-stats sidebar, skip-to-end, hex debug, unused formation grid. Lock: [12-combat-battle.md](../../screens/12-combat-battle.md#locked-replay-hud).
+- **Haste/Shock locked (16 Oct 2026):** YAML `speed_bonus_percent` / `speed_reduction_percent` apply to the per-round initiative sort after ticks. Additive; not AP. `ENGINE_VERSION` 7. Spec: [combat-formulas.md](../../systems/combat-formulas.md#speed--initiative-init).
 - **In-combat morale Cut (16 Oct 2026):** No `morale_change`. Volatile / Battle Hardened copy is flavor. `moraleDecayMultiplier` stays unused. Kickoff damage band and post-match morale stay.
-- **Race synergy Cut (16 Oct 2026):** No in-combat race/role synergy tables. Combat does not read `ignoresRaceSynergy` (serialized unused). Loner copy stays flavor. Chemistry stays [#7](../product/known-issues.md). A later product decision is required before adding in-combat synergy.
+- **Race synergy Cut (16 Oct 2026):** No in-combat race/role synergy tables. Combat does not read `ignoresRaceSynergy` (serialized unused). Loner copy stays flavor. Chemistry stays [#7](../../product/known-issues.md). A later product decision is required before adding in-combat synergy.
 - **Simulate Cut (16 Oct 2026):** `POST /api/v1/combat/simulate` stays **Planned** (no controller). Do not ship a sandbox. Friendly matches remain the live adjacent path. `CombatEngine::simulate()` stays for tests. A later product decision is required (consequences, opponent, one-shot vs cohort).
 - **Do not** change locked round-200 / fumble / KO≠death rules. Do not reopen the HUD cut list, Haste/Shock AP coupling, in-combat morale, synergy tables, or simulate.
-- **Done:** Remaining #9 closed. Lock: [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate). [product/known-issues.md](../product/known-issues.md) #9 Resolved.
+- **Done:** Remaining #9 closed. Lock: [combat-system.md](../../systems/combat-system.md#locked-no-race-synergy--no-simulate). [product/known-issues.md](../../product/known-issues.md) #9 Resolved.
 
 - [x] A7.5 Combat leftover traits / simulate (HUD + Haste/Shock locked; morale / synergy / simulate Cut)
 
 ### A7.6 Formation L1/L2 editor
 
 - **Action:** Design first (UI) then **Implement** (16 Oct 2026)
-- **Locked:** [formation-system.md](../systems/formation-system.md#locked-l1l2-editor) + [product/known-issues.md](../product/known-issues.md) #12.
+- **Locked:** [formation-system.md](../../systems/formation-system.md#locked-l1l2-editor) + [product/known-issues.md](../../product/known-issues.md) #12.
   - Per-slot **L1** `target_order` + `fallback` (`lowest_hp` / `highest_threat` / approach). Empty order = L0 approach.
   - Thin **L2**: ordered **equipped** spells; `when` `always` / `ally_hp_below` / `self_hp_below`; `target` `priority` / `lowest_hp_ally` / `self`. Empty list = L0 spell pick.
   - **Cut:** L3 action sequences / conditional tactics UI; `enemy_status`; `lowest_hp_enemy`. Save sanitizes JSON (`FormationTacticsNormalizer`).
@@ -398,14 +398,14 @@ No new combat formulas. Behaviour changes only where the live system doc already
 
 - **Action:** Design first → **Cut** (16 Oct 2026)
 - **Candidates from old screen 03:** morale on card, equipped icons, tired/training status, quick-action dropdown, batch training, multi-select, level filter, marketplace header CTA, server-side list filtering.
-- **Done:** Live roster stays name, race, level, trait, age, form, fatigue, compact attributes/combat stats, OVR, status badge, Inspect, client filter/sort, Summon CTA. Morale remains a hidden sort key only. **Cut:** morale value/icon on the card, equipped-item icons, tired/training status, level filter, per-card quick-action dropdown, multi-select, batch training / formation assignment from the grid, marketplace CTA in the roster header, server-side list filtering, batch-operation APIs. Lock: [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras). [product/known-issues.md](../product/known-issues.md) #13 Resolved.
+- **Done:** Live roster stays name, race, level, trait, age, form, fatigue, compact attributes/combat stats, OVR, status badge, Inspect, client filter/sort, Summon CTA. Morale remains a hidden sort key only. **Cut:** morale value/icon on the card, equipped-item icons, tired/training status, level filter, per-card quick-action dropdown, multi-select, batch training / formation assignment from the grid, marketplace CTA in the roster header, server-side list filtering, batch-operation APIs. Lock: [03-hero-roster.md](../../screens/03-hero-roster.md#locked-roster-extras). [product/known-issues.md](../../product/known-issues.md) #13 Resolved.
 
 - [x] A7.7 Roster extras or confirmed cut
 
 ### A7.8 Arena analytics UI — #4
 
-- **Action:** Implement after a short UI spec in [18-arena-management.md](../screens/18-arena-management.md)
-- **Locked:** [18-arena-management.md](../screens/18-arena-management.md#locked-attendance-analytics) + [product/known-issues.md](../product/known-issues.md) #4.
+- **Action:** Implement after a short UI spec in [18-arena-management.md](../../screens/18-arena-management.md)
+- **Locked:** [18-arena-management.md](../../screens/18-arena-management.md#locked-attendance-analytics) + [product/known-issues.md](../../product/known-issues.md) #4.
   - HQ panel only. Last **18** `arena_revenue` payouts for table, Chart.js (attendance + gold), and summary (total gold, average attendance).
   - Same window — no season query, no new route, no snapshot entity.
   - **Cut:** combat home-advantage, match results on the table, seating-upgrade charts, standalone `/app/arena` page.
@@ -416,7 +416,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 ### A7.9 Genie summon rule — #14
 
 - **Action:** Design first → **Implement** (16 Oct 2026)
-- **Locked:** [summoning-system.md](../systems/summoning-system.md#locked-genie-summon-pool) + [product/known-issues.md](../product/known-issues.md) #14.
+- **Locked:** [summoning-system.md](../../systems/summoning-system.md#locked-genie-summon-pool) + [product/known-issues.md](../../product/known-issues.md) #14.
   - Shared pool: relationship **≥ 50**, except Genie adaptation **≥ 80** (Genie / Human / Elf).
   - Same path for player summons, NPC daily summons, NPC marketplace hero buys, and kingdom starting roster.
   - **Cut:** Genie-only NPC buy filter; Genie-only starting roster; ≥ 50 for Genie (all 8 races).
@@ -427,7 +427,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 ### A7.10 Marketplace price guidance
 
 - **Action:** Design first → **Implement** (16 Oct 2026)
-- **Locked:** [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band) + [product/known-issues.md](../product/known-issues.md) #15.
+- **Locked:** [marketplace-system.md](../../systems/marketplace-system.md#locked-listing-price-band) + [product/known-issues.md](../../product/known-issues.md) #15.
   - Suggested: heroes/trainers from `estimateMarketPrice()`; items from `ItemService::estimateMarketPrice()` (same as NPC).
   - Floor **−50%**, ceiling **+100%** (`round`, then floor ≥ 1).
   - `createListing` rejects buy-now / start / buyout outside the band. Auction **bids** are not capped. UI shows suggested + range.
@@ -438,7 +438,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 ### A7.11 Spell catalog T3–T5
 
 - **Action:** Design first (content) then **seed** (16 Oct 2026)
-- **Locked:** [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) + [product/known-issues.md](../product/known-issues.md) #16.
+- **Locked:** [spell-system.md](../../systems/spell-system.md#locked-catalog-t1t5) + [product/known-issues.md](../../product/known-issues.md) #16.
   - Two spells per school per tier for **T1–T5** (60). `required_mastery_tier` = `tier`.
   - Same type mix and effect keys as T1–T2. No resurrection, summon-creature, or new combat formulas.
   - Gold ~2.5× per tier. Academy filter 1–5. Combat still uses school + type + `spell.tier` (cast `1 + tier`).
@@ -465,7 +465,7 @@ Do not change game rules. Optional product asks stay Design first.
 - **Action:** Design first → **Cut** (16 Oct 2026)
 - **If Cut:** remove Cross-Cutting Playwright claim; do not leave “ongoing”.
 - **If Implement:** real suite (register → dashboard → training or summon), not only a Vitest transitive dependency.
-- **Done:** Playwright is not in the live toolchain. No suite, no `playwright.config`, no `npm run test:e2e`, no CI job. Cross-Cutting no longer lists browser E2E as ongoing. Live automated tests stay PHPUnit (`composer test` / A8.1). A later product decision is required before adding a browser suite. [architecture/overview.md](../architecture/overview.md) Testing Strategy parks the pointer.
+- **Done:** Playwright is not in the live toolchain. No suite, no `playwright.config`, no `npm run test:e2e`, no CI job. Cross-Cutting no longer lists browser E2E as ongoing. Live automated tests stay PHPUnit (`composer test` / A8.1). A later product decision is required before adding a browser suite. [architecture/overview.md](../../architecture/overview.md) Testing Strategy parks the pointer.
 
 - [x] A8.2 Playwright or cut the claim
 
@@ -490,7 +490,7 @@ Do not change game rules. Optional product asks stay Design first.
 
 - **Action:** Design first (content model) or keep Planned → **keep Planned** (16 Oct 2026)
 - **Default:** stay Planned; Wave 2/4 already stop calling it live.
-- **Done:** `GET /wiki` stays **Planned** (no controller, Twig, entity, search, or navbar Help link). Live public content is homepage + `/news` (seed / DB; no admin UI). News admin CMS stays Planned. Unused `nav.wiki` translation may stay. A later product decision is required before adding a wiki. Lock: [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned).
+- **Done:** `GET /wiki` stays **Planned** (no controller, Twig, entity, search, or navbar Help link). Live public content is homepage + `/news` (seed / DB; no admin UI). News admin CMS stays Planned. Unused `nav.wiki` translation may stay. A later product decision is required before adding a wiki. Lock: [00-public-pages.md](../../screens/00-public-pages.md#locked-public-wiki-stays-planned).
 
 - [x] A8.5 Wiki stays planned or scoped
 
@@ -498,7 +498,7 @@ Do not change game rules. Optional product asks stay Design first.
 
 - **Action:** Design first → **keep Planned** (16 Oct 2026)
 - **Today:** out of scope on purpose. Either implement session password change or keep Planned in screen 19 only.
-- **Done:** Session password change, notification prefs, privacy, account-info panel, and connected accounts stay **Planned**. No password-change form, per-type notification toggles, privacy flags, or `GET/PUT /api/v1/settings`. Live settings stay language, backdrop-close, email change, and account deletion. Forgotten passwords use `/password-reset`. A later product decision is required before adding extras. Lock: [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned).
+- **Done:** Session password change, notification prefs, privacy, account-info panel, and connected accounts stay **Planned**. No password-change form, per-type notification toggles, privacy flags, or `GET/PUT /api/v1/settings`. Live settings stay language, backdrop-close, email change, and account deletion. Forgotten passwords use `/password-reset`. A later product decision is required before adding extras. Lock: [19-player-profile-settings.md](../../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned).
 
 - [x] A8.6 Password change
 
@@ -552,4 +552,4 @@ Do not change game rules. Optional product asks stay Design first.
 | 5 | Wave 6 decisions + execution |
 | 6+ | One Wave 7 ID per session, then Wave 8 |
 
-*Last updated: 16 October 2026 — Alignment waves 0–8 complete (archived). Now / next: [current.md](current.md). Honesty leftovers: A5.2 dual Genie rule superseded by A7.9; item API omits unused `special_effects`.*
+*Last updated: 16 October 2026 — Alignment waves 0–8 complete (archived). Now / next: [current.md](../current.md). Honesty leftovers: A5.2 dual Genie rule superseded by A7.9; item API omits unused `special_effects`.*

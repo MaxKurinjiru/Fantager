@@ -6,17 +6,20 @@
 
 ## Next (design still open)
 
-**Open** rows in [product/known-issues.md](../product/known-issues.md) (currently none). Later product decisions stay parked until an explicit product ask.
+**Open** rows in [product/known-issues.md](../product/known-issues.md) (currently none). Later product decisions: [product/known-issues.md](../product/known-issues.md) § Later product decisions — not a second checklist here.
 
-Per-feature leftover steps belong in the matching `systems/*.md` Remaining work or Parked section, not in a second checklist here.
+Per-feature leftover **code** steps belong in the matching `systems/*.md` Remaining work section.
 
 ## Parked
 
+Deferred design and repo meta — not the Later product-decisions table.
+
 - Milestone 8: dungeons, quests, crafting — [`../future/`](../future/)
-- Milestone 9: alliances and guilds — [history.md](history.md)
+- Milestone 9: alliances and guilds — [archive/history.md](archive/history.md)
 - Repo meta (CHANGELOG, CONTRIBUTING) and the original screen sketch — [`_deferred/`](../../_deferred/)
 
-## History
+## Archive (not a work queue)
 
-- [history.md](history.md) — Milestones 1–9 chronicle. Do not treat M1–6 checkmarks as “no gaps remain.”
-- [alignment-waves.md](alignment-waves.md) — finished waves 0–8 (archive, not a work queue)
+Do not open these unless you need the chronicle.
+
+- [archive/](archive/README.md) — M1–9 history and alignment waves 0–8

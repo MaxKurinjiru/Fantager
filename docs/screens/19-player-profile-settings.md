@@ -2,17 +2,24 @@
 
 Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [auth-system.md](../systems/auth-system.md)
 
-Purpose: Account-level player settings (distinct from team profile settings on the dashboard).
+**When:** Account-level player settings (distinct from team profile settings on the dashboard).
 
-**Status:** Modal UI is live for language, backdrop-close preference, email change, and account deletion.  
+**Status:** Modal UI is live for language, backdrop-close preference, email change, and account deletion.
+
+**Live UI:** `templates/components/layout/_account_settings_modal.html.twig`. Stimulus `account_settings`, `profile_settings`, `modal`.
+
 **Lock:** [Locked: password change / extra settings stay Planned](#locked-password-change--extra-settings-stay-planned)
 
-## Presentation
+---
+
+## Implemented
+
+### Presentation
 
 - **Inside section** (`/app/*`): Account settings open as a **modal** from the navbar (event `modal:open-account-settings`), not as a standalone page.
 - **Route** `GET /app/settings` redirects to the dashboard; the modal is included in `templates/layouts/game.html.twig`.
 
-## Displayed Information (implemented)
+### Displayed information
 
 - **Language:** Czech / English selector — persists to `User.locale` via `/change-locale/{locale}`.
 - **Interface preferences:**
@@ -20,24 +27,16 @@ Purpose: Account-level player settings (distinct from team profile settings on t
 - **Account email:** Current address shown as placeholder; form to request a new address (two-step email verification flow).
 - **Danger zone:** Account cancellation with inline confirmation panel.
 
-## Displayed Information (planned)
-
-- Account info panel (display name, kingdom, member since, supporter tier)
-- Notification settings (email / in-game toggles)
-- Privacy settings (profile visibility, HQ visitor access, trade requests)
-- Password change
-- Connected accounts / support & donations
-
-## Possible Actions (implemented)
+### Actions
 
 - **Change language** — link to locale switcher
 - **Toggle backdrop modal closing** — auto-saves via AJAX (`account-settings` Stimulus controller)
 - **Request email change** — `POST /app/settings/change-email` → token flows `confirm-email-change/old`, `confirm-email-change/new`
 - **Cancel account** — `POST /app/settings/cancel-account` → `confirm-cancel-account`
 
-## Backend Requirements
+### Backend
 
-### Data model
+#### Data model
 
 Player UI preferences live in a dedicated **`UserSettings`** entity (`auth_user_settings`), not as ad-hoc columns on `User`:
 
@@ -50,7 +49,7 @@ Player UI preferences live in a dedicated **`UserSettings`** entity (`auth_user_
 
 Account identity fields remain on **`User`** (`email`, `locale`, `display_name`, etc.).
 
-### Web routes (implemented)
+#### Web routes (implemented)
 
 | Method | Path | Purpose |
 |--------|------|---------|
@@ -62,7 +61,7 @@ Account identity fields remain on **`User`** (`email`, `locale`, `display_name`,
 | POST | `/app/settings/cancel-account` | Initiate account deletion |
 | GET | `/confirm-cancel-account` | Confirm and execute deletion |
 
-### Preferences API
+#### Preferences API
 
 - **Route:** `POST /app/settings/preferences`
 - **Auth:** `ROLE_PLAYER`, session cookie
@@ -82,12 +81,12 @@ Account identity fields remain on **`User`** (`email`, `locale`, `display_name`,
 
 Do not add password-change, notification, or privacy fields here until a later product decision. New live UI prefs (like backdrop-close) may still extend this endpoint or add PATCH with partial updates and corresponding columns on `UserSettings`.
 
-### Related API
+#### Related API
 
 - `GET /api/v1/me` — current player identity (not settings); see [auth-system.md](../systems/auth-system.md)
 - Password change / dedicated `/api/v1/settings` bulk endpoints stay **Planned**; preferences use `POST /app/settings/preferences` above
 
-## Frontend Implementation
+### Frontend
 
 | Piece | Location |
 |-------|----------|
@@ -98,22 +97,26 @@ Do not add password-change, notification, or privacy fields here until a later p
 | Modal close behaviour | `assets/controllers/modal_controller.js`, `assets/controllers/auth_modal_controller.js` |
 | Mobile back / gesture | `assets/utils/modal_history.js` — `history.pushState` on open; browser back closes topmost modal |
 
-### Modal behaviour rules
+#### Modal behaviour rules
 
 - **Escape** — always closes the active modal.
 - **Backdrop click** — closes only when `UserSettings.closeModalOnBackdrop === true`.
 - **Mobile back** — always closes the active modal (stacked modals close one level per back press).
 - **Focus** — first focusable element on open; focus restored to trigger on close (see [guides/ui-guidelines.md](../guides/ui-guidelines.md#51-modals)).
 
-## Service layer
+### Service layer
 
 - **`UserSettingsService`** (`App\Service\Auth\UserSettingsService`) — `getOrCreate(User $user): UserSettings`
 - Used by `RegistrationService`, `TestUserService`, and `SettingsController::updatePreferences()`
 
-## Tests
+### Tests
 
 - `tests/Controller/Web/SettingsControllerTest.php` — CSRF and validation for preferences endpoint
 - `tests/Service/Auth/UserSettingsServiceTest.php` — get-or-create behaviour
+
+## Parked
+
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Password change, notification prefs, privacy, account-info panel, and connected accounts are A8.6 — [Locked: password change / extra settings stay Planned](#locked-password-change--extra-settings-stay-planned).
 
 ## Locked: password change / extra settings stay Planned
 

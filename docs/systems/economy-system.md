@@ -6,13 +6,7 @@ Status: Live
 Screens: [20-finance.md](../screens/20-finance.md), [02-team-dashboard.md](../screens/02-team-dashboard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
 Open design: none
 
-Purpose: Document currencies, sinks/sources, anti-exploit measures and economic invariants.
-
-## Parked
-
-Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
-
-- Diminishing returns on repeated activities — Planned
+Purpose: Document currencies, sinks/sources, anti-exploit measures and economic invariants. Later product decisions (diminishing returns): [known-issues.md](../product/known-issues.md) § Later product decisions.
 
 ---
 

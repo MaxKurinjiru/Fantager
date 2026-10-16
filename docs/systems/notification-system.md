@@ -3,7 +3,7 @@
 Reference: [architecture/entities.md](../architecture/entities.md#15-notification-domain), [architecture/routes.md](../architecture/routes.md#notifications), [community-system.md](community-system.md)
 
 Status: Live (navbar modal + API; title/body rendered at **read time** from keys, like chronicle)  
-Screens: navbar modal — [screen-code-map.md](../architecture/screen-code-map.md)  
+Screens: navbar modal (shell feature — [screens/README.md](../screens/README.md#shell-features-no-dedicated-screen-file)) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
 Open design: none
 
 Purpose: In-game alerts for the **logged-in player account** (distinct from team-to-team mail and from the append-only team chronicle).
@@ -181,11 +181,12 @@ Navbar bell + badge are wired in `templates/components/layout/navbar.html.twig`.
 
 ---
 
-## Optional Hardening
+## Parked
+
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions (notification prefs are A8.6 extra settings). Unique to this system:
 
 - Retention policy: delete read notifications older than 90 days (daily tick or cron)
 - `action_url` deep links (e.g. open economy tab on marketplace sale)
-- Notification preferences in `UserSettings` (per-type toggles) — stay **Planned** (A8.6 keep Planned; later product decision). Live outbound mail is auth + inactivity only.
 
 ---
 

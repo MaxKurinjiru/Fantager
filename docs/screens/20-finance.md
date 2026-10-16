@@ -67,13 +67,7 @@ Writers are other systems (`EconomyService` ledger entries). This screen does no
 
 ---
 
-## Parked
-
-Do not implement unless the user explicitly asks. Index: [economy-system.md](../systems/economy-system.md).
-
-- Diminishing returns on repeated gold sources
-
-Royal Treasury balance stays hidden from players.
+Later product decisions (diminishing returns): [known-issues.md](../product/known-issues.md) § Later product decisions. Royal Treasury balance stays hidden from players.
 
 ---
 

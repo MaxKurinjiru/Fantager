@@ -10,7 +10,7 @@ Purpose: Two cached **intrinsic** ratings — cross-race **base OVR** (0–100) 
 
 ## Parked
 
-Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this system:
 
 - Rating breakdown payload — API is two integers; do not invent a third field
 - Stat normalization if Human-neutral OVR skews Orc/Giant

@@ -6,14 +6,7 @@ Status: Live
 Screens: [08-headquarters.md](../screens/08-headquarters.md), [18-arena-management.md](../screens/18-arena-management.md), [09-summoning-chamber.md](../screens/09-summoning-chamber.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
 Open design: none
 
-Purpose: Document HQ facilities, upgrades, passive bonuses, arena adaptation, and related APIs.
-
-## Parked
-
-Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
-
-- Visual themes / visitor access / morale-over-time — not live
-- Combat home-advantage — Planned
+Purpose: Document HQ facilities, upgrades, passive bonuses, arena adaptation, and related APIs. Later product decisions: [known-issues.md](../product/known-issues.md) § Later product decisions.
 
 ---
 

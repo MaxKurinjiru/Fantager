@@ -110,7 +110,7 @@ Parked Milestone 8/9 design. **Not live.** Do not implement unless the user expl
 | **Crafting** | [future/crafting-system.md](../future/crafting-system.md) |
 | **Quests** | [future/quest-system.md](../future/quest-system.md) |
 | **World events** | [future/world-events-system.md](../future/world-events-system.md) |
-| **Alliances / guilds** | Milestone 9 — [roadmap/history.md](../roadmap/history.md) |
+| **Alliances / guilds** | Milestone 9 — [archive/history.md](../roadmap/archive/history.md) |
 
 ---
 

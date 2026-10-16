@@ -88,11 +88,7 @@ Compose / read dialogs: `templates/components/community/compose_message_modal.ht
 
 ---
 
-## Parked
-
-Do not implement unless the user explicitly asks.
-
-- Trade / league emails (forum/mail stay in-app; auth + inactivity mail only today)
+Later product decisions (trade / league emails): [known-issues.md](../product/known-issues.md) § Later product decisions. Forum/mail stay in-app; auth + inactivity mail only today.
 
 ## Sketch leftover
 

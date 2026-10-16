@@ -91,11 +91,7 @@ Gold also appears on the game resource bar (layout), not only on this screen.
 
 ---
 
-## Parked
-
-Do not implement unless the user explicitly asks.
-
-- Server-Sent Events (SSE) for live dashboard or notification push. In-app notifications today are the navbar modal + polling, separate from chronicle.
+Later product decisions (dashboard SSE): [known-issues.md](../product/known-issues.md) § Later product decisions. In-app notifications today are the navbar modal + polling — [notification-system.md](../systems/notification-system.md).
 
 ## Sketch leftover
 

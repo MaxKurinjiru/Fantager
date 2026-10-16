@@ -4,7 +4,7 @@ Single source of truth for **design questions** that must not be invented in cod
 
 **Locks** live in the matching `systems/*.md` or `screens/*.md` `## Locked:` section — not in this file. Conflict order: [docs/README.md](../README.md) § Canonical sources. Now / next: [roadmap/current.md](../roadmap/current.md).
 
-**AI agents:** Do not invent mechanics for **Open** rows. Do not implement **Later product decisions** unless the user explicitly asks.
+**AI agents:** Do not invent mechanics for **Open** rows. Do not implement **Later product decisions** unless the user explicitly asks. Do not treat **Cut** rows in Resolved locks as later work.
 
 ## Open
 
@@ -16,7 +16,9 @@ When an Open row is decided, record Cut vs Implement. Mark **Decided — Impleme
 
 ## Later product decisions (not Open)
 
-Parked until an explicit product ask. Do not treat these as a backlog.
+**The only parked-product index.** Parked until an explicit product ask. Do not treat this as a backlog. Do not copy this table into `roadmap/`, `systems/README.md`, or `screen-code-map.md`.
+
+System and screen `## Parked` sections list only **unique** later items for that file — not rows already here. **Cut** belongs in `## Locked:` / Resolved locks, not here.
 
 | Topic | Status | Spec |
 |-------|--------|------|
@@ -27,11 +29,7 @@ Parked until an explicit product ask. Do not treat these as a backlog.
 | HQ visual themes / visitor access / morale-over-time | Not live | [headquarters-system.md](../systems/headquarters-system.md), [08-headquarters.md](../screens/08-headquarters.md) |
 | Economy diminishing returns | Planned | [economy-system.md](../systems/economy-system.md) |
 | Trade / league emails | Not live | [community-system.md](../systems/community-system.md) |
-| Combat simulate sandbox | Route stays Planned | [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) |
-| Enchanting / essence | Cut from live game | [item-system.md](../systems/item-system.md#locked-no-enchanting) |
-| In-combat morale / race synergy | Cut | [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) |
-| Forum pin write path | Cut | [community-system.md](../systems/community-system.md#locked-forum-pin) |
-| League morale fiction (streak / derby / relegation pressure) | Cut | [league-system.md](../systems/league-system.md) |
+| Legacy Doctrine connection | Parked (A8.4) | [`_deferred/legacy-migration.md`](../../_deferred/legacy-migration.md) |
 
 Deferred features beyond this list (Milestone 8 dungeons/quests/crafting, Milestone 9 alliances/guilds, world events) stay under [`future/`](../future/) and are **not** issues.
 
@@ -55,5 +53,6 @@ Deferred features beyond this list (Milestone 8 dungeons/quests/crafting, Milest
 | 14 | Genie summon pool | Resolved | [summoning-system.md](../systems/summoning-system.md#locked-genie-summon-pool) |
 | 15 | Marketplace price band | Resolved | [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band) |
 | 16 | Spell catalog T1–T5 | Resolved | [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) |
+| — | League morale fiction | Resolved (Cut) | [league-system.md](../systems/league-system.md#locked-no-league-morale-fiction) |
 
-Decision notes for #1–#16 live in the linked specs and in [roadmap/alignment-waves.md](../roadmap/alignment-waves.md) (waves 6–8).
+Decision notes for #1–#16 live in the linked specs and in [roadmap/archive/alignment-waves.md](../roadmap/archive/alignment-waves.md) (waves 6–8).

@@ -7,14 +7,7 @@ Screens: [17-community.md](../screens/17-community.md) · Code: [screen-code-map
 Open design: none  
 Lock: [Locked: forum pin](#locked-forum-pin)
 
-Purpose: Document leaderboards, private messages, forums, content moderation, and social features.
-
-## Parked
-
-Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
-
-- Public wiki CMS — Planned. Lock: [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned)
-- Trade / league emails — not live
+Purpose: Document leaderboards, private messages, forums, content moderation, and social features. Later product decisions: [known-issues.md](../product/known-issues.md) § Later product decisions.
 
 ---
 
@@ -83,7 +76,7 @@ All community interactions are **kingdom-scoped**: players can only send message
 | `author_user_id` | FK → User | Player who created the thread |
 | `author_team_id` | FK → Team (nullable) | Author's team at creation time (snapshot) |
 | `created_at` | datetime | Creation timestamp |
-| `is_pinned` | bool | Stored flag. Listing and UI show pinned threads first when true. **Unsettable** in the app ([A6.3](../roadmap/alignment-waves.md#a63-forum-pin) Cut): no pin/unpin API, create/lock never set it, no forum admin/moderator role. |
+| `is_pinned` | bool | Stored flag. Listing and UI show pinned threads first when true. **Unsettable** in the app ([A6.3](../roadmap/archive/alignment-waves.md#a63-forum-pin) Cut): no pin/unpin API, create/lock never set it, no forum admin/moderator role. |
 | `is_locked` | bool | Locked threads do not accept new replies |
 
 **ForumPost:**

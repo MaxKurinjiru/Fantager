@@ -11,10 +11,10 @@ Conflict order, Open rows, leftovers: [docs/README.md](../README.md) § Canonica
 
 | Check | Why |
 |-------|-----|
-| [product/known-issues.md](../product/known-issues.md) | Design first — stop and ask on Open IDs |
-| Matching `systems/*.md` Remaining work / Parked | Leftovers for that feature. Snapshot: [systems/README.md](../systems/README.md) |
+| [product/known-issues.md](../product/known-issues.md) | Design first — stop and ask on Open IDs. Later decisions: § Later product decisions |
+| Matching `systems/*.md` Remaining work | Unfinished **code** for that feature. Snapshot: [systems/README.md](../systems/README.md) |
 | Matching `systems/*.md` + `screens/*.md` | Domain rules and UI |
-| [roadmap/history.md](../roadmap/history.md) | Historical M1–9 only; M1–6 checkmarks ≠ no gaps |
+| [roadmap/archive/history.md](../roadmap/archive/history.md) | Chronicle only — do not open unless you need M1–9 history. M1–6 checkmarks ≠ no gaps |
 
 ---
 
@@ -119,7 +119,7 @@ Copy an existing feature in the same domain before inventing new patterns (e.g. 
 - [ ] Schema/entity changes reflected in [architecture/entities.md](../architecture/entities.md) (entities + enums tables)
 - [ ] PHP translation keys in `messages.en.yaml` + `messages.cs.yaml` (or `validators.*.yaml` for form validation)
 - [ ] Domain behavior matches `systems/*.md`; screen matches `screens/*.md`
-- [ ] Matching `systems/*.md` Remaining work / Parked (and the [systems/README.md](../systems/README.md) status snapshot) updated when feature status changes
+- [ ] Matching `systems/*.md` Remaining work updated when unfinished code remains; later product decisions go in [known-issues.md](../product/known-issues.md) § Later product decisions, not a second checklist
 
 ---
 

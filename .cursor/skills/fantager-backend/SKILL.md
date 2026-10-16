@@ -25,7 +25,7 @@ Copy and track:
 
 ```
 Backend task progress:
-- [ ] Read known-issues Open rows + matching systems Remaining work / Parked + screens docs
+- [ ] Read known-issues Open rows + Later product decisions + matching systems Remaining work + screens docs
 - [ ] Found sibling feature to copy (service + controllers + tests)
 - [ ] Business logic in Service/ (shared by Web + API)
 - [ ] Translation keys in messages.en.yaml + messages.cs.yaml

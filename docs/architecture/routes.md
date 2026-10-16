@@ -114,7 +114,7 @@ Training is not a hero-id POST. Live trainer assign/promote: [Training & Trainer
 | GET | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Fixture formation assignment state |
 | PUT | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Assign default / saved / custom lineup |
 | POST | `/api/v1/fixtures/{id}/formation/promote` | Api\V1\FixtureFormationController | Promote temporary match lineup to saved |
-| POST | `/api/v1/formations/simulate` | — | Simulation preview — **planned** (later product decision; not live #9) |
+| POST | `/api/v1/formations/simulate` | — | Simulation preview — **Cut** (no controller; [#9](../product/known-issues.md) / combat simulate lock) |
 
 ---
 
@@ -174,14 +174,14 @@ Equipment UI is the hero-detail tab, not a standalone inventory page.
 
 ## Combat
 
-Implemented: `Web\BattleController` (`/app/battles/{id}`) and `Api\V1\BattleController` (`/api/v1/battles/{id}`, `/api/v1/battles/{id}/log`). Sandbox `POST /api/v1/combat/simulate` is **planned** (A7.5 Cut from live leftovers; [#9](../product/known-issues.md) Resolved).
+Implemented: `Web\BattleController` (`/app/battles/{id}`) and `Api\V1\BattleController` (`/api/v1/battles/{id}`, `/api/v1/battles/{id}/log`). Sandbox `POST /api/v1/combat/simulate` is **Cut** (no controller; [#9](../product/known-issues.md) Resolved).
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/battles/{id}` | Web\BattleController | Match report: final formations and round-by-round logs |
 | GET | `/api/v1/battles/{id}` | Api\V1\BattleController | Battle result metadata (scores, teams, status, result) |
 | GET | `/api/v1/battles/{id}/log` | Api\V1\BattleController | Detailed combat log / replay (JSON) |
-| POST | `/api/v1/combat/simulate` | — | Sandbox combat simulation — **planned** (A7.5 Cut; later product decision) |
+| POST | `/api/v1/combat/simulate` | — | Sandbox combat simulation — **Cut** (no controller; A7.5 / [#9](../product/known-issues.md)) |
 
 ---
 
@@ -359,4 +359,4 @@ Dungeon, crafting, and quest HTTP APIs are **not** live and have no controllers.
 
 Implemented counts are method-level `#[Route]` attributes in `src/Controller/` as of this alignment. Redirects (`/app/inventory`, `/app/spells`, `/app/arena`, `/app/summon`, `/app/settings`, …) are included because they exist in code. Infra is `GET /health` (`HealthCheckController`, not under `Web/` or `Api/V1`).
 
-**Planned** (no controller): `GET /wiki` (A8.5 stay Planned), `POST /api/v1/combat/simulate`, `POST /api/v1/formations/simulate`.
+**Planned** (no controller, later product ask): `GET /wiki` (A8.5). **Cut** (no controller, do not ship): `POST /api/v1/combat/simulate`, `POST /api/v1/formations/simulate`.

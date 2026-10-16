@@ -8,14 +8,7 @@ Formulas: [combat-formulas.md](combat-formulas.md)
 Open design: none  
 Lock: [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)
 
-Purpose: Live combat contract — eligibility, scoring, hex layout, simulation / `combat_log`, formation AI, post-match boundary. Derived stats live in [combat-formulas.md](combat-formulas.md).
-
-## Parked
-
-Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
-
-- Combat home-advantage — Planned
-- `POST /api/v1/combat/simulate` — Cut; see [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)
+Purpose: Live combat contract — eligibility, scoring, hex layout, simulation / `combat_log`, formation AI, post-match boundary. Derived stats live in [combat-formulas.md](combat-formulas.md). Later product decisions (home-advantage): [known-issues.md](../product/known-issues.md) § Later product decisions. Simulate is **Cut** — [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate).
 
 ---
 

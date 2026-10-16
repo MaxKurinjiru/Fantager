@@ -4,7 +4,9 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Field on the **register form**, not a separate post-login screen. Choice is permanent (`User.kingdom_id`); no kingdom switcher after registration.
 
-**Live UI:** `templates/components/auth/register_panel.html.twig` (desktop radio cards + mobile `<select>`). Stimulus `auth_modal` keeps select and radios in sync.
+**Status:** Live on the register panel (desktop radio cards + mobile `<select>`).
+
+**Live UI:** `templates/components/auth/register_panel.html.twig`. Stimulus `auth_modal` keeps select and radios in sync.
 
 ---
 

@@ -37,8 +37,8 @@ Short definitions for live game terms. **Rules** live in `docs/systems/*.md`. Th
 | Word | Meaning |
 |------|---------|
 | **Live** | In code and docs. Follow the matching `systems/*.md`. |
-| **Planned** | Parked until an explicit product ask. Do not implement. |
-| **Cut** | Decided against for the live game. Do not reintroduce. |
+| **Planned** | Parked until an explicit product ask. Index: [known-issues.md](known-issues.md) § Later product decisions. Do not implement. |
+| **Cut** | Decided against for the live game. Lives in `## Locked:` / Resolved locks, not Parked. Do not reintroduce. |
 | **Deferred** | Specified in `docs/future/` (Milestone 8/9). Out of scope. |
 | **Reserved** | Enum/column exists; **no writer**. Do not start writing it. |
 | **Lock** | `## Locked:` in a system or screen doc. Do not reopen without an explicit product ask. Index: [known-issues.md](known-issues.md) § Resolved locks. |

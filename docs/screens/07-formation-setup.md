@@ -80,12 +80,11 @@ See `assets/controllers/formation_controller.js` and [formation-system.md](../sy
 
 ## Parked
 
-Do not implement unless the user explicitly asks. Do not describe these as live.
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this screen:
 
 - Clone formation
-- Test formation / simulate sandbox (`POST /api/v1/formations/simulate`)
 - Quick Fill (auto-suggest)
 - Hero pool filter by role / stats / race
 - View opponent formation
 
-L3 sequences, Flexible AI, `enemy_status` / `lowest_hp_enemy`, and synergy tables are **Cut**. Chemistry is flavor: [team-system.md](../systems/team-system.md#locked-chemistry-flavor). Do not invent L3, synergy, or a simulate sandbox here.
+L3 sequences, Flexible AI, `enemy_status` / `lowest_hp_enemy`, synergy tables, and a simulate sandbox (`POST /api/v1/formations/simulate`) are **Cut**. Chemistry is flavor: [team-system.md](../systems/team-system.md#locked-chemistry-flavor). Do not invent L3, synergy, or a simulate sandbox here.

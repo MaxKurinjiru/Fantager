@@ -4,15 +4,10 @@ Reference: [product/overview.md](../product/overview.md#league)
 
 Status: Live  
 Screens: [13-league.md](../screens/13-league.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none
+Open design: none  
+Lock: [Locked: no league morale fiction](#locked-no-league-morale-fiction)
 
 Purpose: Document season scheduling, promotion/relegation, fixtures, standings, and rewards.
-
-## Parked
-
-Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
-
-- League morale fiction (win-streak, derby, relegation pressure) — Cut
 
 ## League Structure Configuration
 
@@ -214,7 +209,7 @@ Group tables and the kingdom-wide ranking are **live**, not a leftover sketch.
 
 Web page is server-rendered (`Web\LeagueController`); JSON is optional for the same data. Empty state when the kingdom has no active season. Full UI: [13-league.md](../screens/13-league.md).
 
-**Not live:** win-streak / derby / relegation-pressure morale, veteran leadership, junior bonus XP.
+Veteran leadership and junior bonus XP are **not live**. Win-streak / derby / relegation-pressure morale is **Cut** — [Locked: no league morale fiction](#locked-no-league-morale-fiction).
 
 ---
 
@@ -231,6 +226,10 @@ Web page is server-rendered (`Web\LeagueController`); JSON is optional for the s
 See [architecture/routes.md](../architecture/routes.md#league).
 
 Season transition also runs as a **`season_transition` server tick** (not only via the admin API).
+
+## Locked: no league morale fiction
+
+Win-streak, derby, and relegation-pressure morale are **Cut**. Do not add them. Live standings use points, goal difference, wins, real-player-before-NPC, reputation, and chemistry (tie-break only).
 
 ---
 
