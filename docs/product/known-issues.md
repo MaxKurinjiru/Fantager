@@ -2,7 +2,7 @@
 
 Single source of truth for **design questions** that must not be invented in code.
 
-**Locks** live in the matching `systems/*.md` or `screens/*.md` `## Locked:` section — not in this file. Now / next: [roadmap/current.md](../roadmap/current.md).
+**Locks** live in the matching `systems/*.md` or `screens/*.md` `## Locked:` section — not in this file. Conflict order: [docs/README.md](../README.md) § Canonical sources. Now / next: [roadmap/current.md](../roadmap/current.md).
 
 **AI agents:** Do not invent mechanics for **Open** rows. Do not implement **Later product decisions** unless the user explicitly asks.
 

@@ -1,10 +1,8 @@
 # Systems (live domain rules)
 
-Canonical **gameplay contracts**. On conflict with [product/overview.md](../product/overview.md), this folder wins.
+Canonical **gameplay contracts**. Conflict order: [docs/README.md](../README.md) § Canonical sources.
 
-Open design questions: [product/known-issues.md](../product/known-issues.md) — do not invent mechanics for **Open** rows.
-
-The status snapshot below is one word plus a link. Leftovers live in that system’s **Remaining work** or **Parked** section — not in this table. Alignment archive: [../roadmap/current.md](../roadmap/current.md), [../roadmap/alignment-waves.md](../roadmap/alignment-waves.md).
+The status snapshot below is one word plus a link. Leftovers live in that system’s **Remaining work** or **Parked** section — not in this table.
 
 ## Remaining work convention
 
@@ -15,8 +13,9 @@ Each system doc should open with Status / Screens / Open design.
 
 ```markdown
 Status: Live | Partial | Planned
-Screens: …    Code: ../architecture/screen-code-map.md
-Open design: ../product/known-issues.md #n (if any)
+Screens: … · Code: ../architecture/screen-code-map.md
+Open design: none
+Lock: [Locked: …](#…)   ← only when a ## Locked: section exists
 
 ## Remaining work
 - genuine unfinished item
@@ -26,6 +25,8 @@ Do not implement unless the user explicitly asks.
 
 - Topic — Planned. Spec: …
 ```
+
+**Open design** is only for **Open** rows in [product/known-issues.md](../product/known-issues.md). Resolved decisions belong in `## Locked:` or Parked — not in the header chronicle (wave IDs, “#n decided”). Index: [product/known-issues.md](../product/known-issues.md) § Resolved locks.
 
 Locks use **`## Locked:`** (exactly that heading level) so [AGENTS.md](../../AGENTS.md) and grep find them. Do not duplicate Remaining work or Parked in the roadmap. [../roadmap/README.md](../roadmap/README.md) only points here and to known-issues.
 
@@ -66,10 +67,10 @@ One-line index of the **live contract**. Leftovers and Planned later decisions l
 
 | Area | Status | Spec |
 |------|--------|------|
-| Authentication | Live (core) | [auth-system.md](auth-system.md) |
+| Authentication | Live | [auth-system.md](auth-system.md) |
 | Kingdom | Live | [kingdom-system.md](kingdom-system.md) |
 | Team / dashboard | Live | [team-system.md](team-system.md) |
-| Hero roster | Live (core) | [hero-system.md](hero-system.md) |
+| Hero roster | Live | [hero-system.md](hero-system.md) |
 | Hero rating | Live | [hero-rating-system.md](hero-rating-system.md) |
 | Hero chronicle | Live | [hero-chronicle-system.md](hero-chronicle-system.md) |
 | Summoning | Live | [summoning-system.md](summoning-system.md) |
@@ -84,7 +85,7 @@ One-line index of the **live contract**. Leftovers and Planned later decisions l
 | Leagues | Live | [league-system.md](league-system.md) |
 | Combat | Live (replay) | [combat-system.md](combat-system.md), [combat-formulas.md](combat-formulas.md) |
 | Marketplace | Live | [marketplace-system.md](marketplace-system.md) |
-| Community | Live (core) | [community-system.md](community-system.md) |
+| Community | Live | [community-system.md](community-system.md) |
 | Graveyard | Live | [graveyard-system.md](graveyard-system.md) |
 | Economy / finance | Live | [economy-system.md](economy-system.md), [financial-crisis-system.md](financial-crisis-system.md) |
 | Team chronicle | Live | [team-chronicle-system.md](team-chronicle-system.md) |

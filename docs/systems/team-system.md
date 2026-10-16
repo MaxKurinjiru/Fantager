@@ -2,9 +2,10 @@
 
 Reference: [product/overview.md](../product/overview.md#team)
 
-Status: Live (chemistry flavor for matches — [#7](../product/known-issues.md) Resolved / A7.2)  
+Status: Live  
 Screens: [02-team-dashboard.md](../screens/02-team-dashboard.md), [02a-team-chronicle.md](../screens/02a-team-chronicle.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none for chemistry. In-combat race synergy is **Cut** ([#9](../product/known-issues.md) Resolved / A7.5).
+Open design: none  
+Lock: [Locked: chemistry flavor](#locked-chemistry-flavor)
 
 Purpose: Document team entities, roster rules, dashboard aggregation, and team-related mechanics.
 

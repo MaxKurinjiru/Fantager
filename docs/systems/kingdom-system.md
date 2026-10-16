@@ -4,7 +4,7 @@ Reference: [product/overview.md](../product/overview.md#kingdom)
 
 Status: Live  
 Screens: [01-kingdom-selection.md](../screens/01-kingdom-selection.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none for XP — [known-issues.md](../product/known-issues.md) #6 Resolved (A7.1).
+Open design: none
 
 Purpose: Document the live multi-tenant kingdom model — settings, initialization, query isolation, game-speed multipliers, and the public list API.
 

@@ -2,9 +2,10 @@
 
 Reference: [product/overview.md](../product/overview.md#items)
 
-Status: Live (no enchanting — [#2](../product/known-issues.md) Resolved / A7.4 Cut)  
+Status: Live  
 Screens: [10-item-equipment.md](../screens/10-item-equipment.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none for enchanting. Occupancy locked ([#8](../product/known-issues.md)).
+Open design: none  
+Lock: [Locked: item occupancy](#locked-item-occupancy), [Locked: no enchanting](#locked-no-enchanting)
 
 Purpose: Document items, equipment slots, dismantling, durability/repair, and marketplace interactions.
 

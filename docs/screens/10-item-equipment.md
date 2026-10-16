@@ -4,7 +4,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Equip, unequip, repair, or dismantle items for one hero.
 
-**Status:** There is **no standalone inventory page**. `GET /app/inventory` **redirects**. Equipment is the **hero-detail Equipment tab**. Interaction is **click-to-equip** on the paperdoll / rucksack — **not** drag-and-drop. Occupancy (two-handed, dual-wield, two rings) is **locked** ([#8](../product/known-issues.md)). Enchanting is **not in the live game** ([#2](../product/known-issues.md) Resolved / A7.4 Cut).
+**Status:** There is **no standalone inventory page**. `GET /app/inventory` **redirects**. Equipment is the **hero-detail Equipment tab**. Interaction is **click-to-equip** on the paperdoll / rucksack — **not** drag-and-drop.  
+**Lock:** [item-system.md — item occupancy](../systems/item-system.md#locked-item-occupancy), [item-system.md — no enchanting](../systems/item-system.md#locked-no-enchanting)
 
 ---
 
@@ -63,18 +64,17 @@ Validation: race restrictions and slot compatibility in `ItemService`.
 
 ---
 
-## Planned / not implemented
+## Parked
 
-| Feature | Status |
-|---------|--------|
-| Standalone Inventory screen (`/app/inventory` as its own UI) | Not implemented — route redirects |
-| Drag-and-drop equip / paperdoll | Not implemented — click-to-equip |
-| Rucksack filter / sort | Not implemented |
-| Compare items / swap between two heroes | Not implemented |
-| Stat summary with vs without equipment on this tab | Not implemented |
-| Craft Item | Deferred — [future/crafting-system.md](../future/crafting-system.md) |
-| Enchant Item | Cut — not in the live game (#2 / A7.4) |
-| Craft API endpoints | Deferred |
+Do not implement unless the user explicitly asks.
+
+- Standalone Inventory screen (`/app/inventory` as its own UI; route redirects today)
+- Drag-and-drop equip / paperdoll (live is click-to-equip)
+- Rucksack filter / sort
+- Compare items / swap between two heroes
+- Stat summary with vs without equipment on this tab
+
+Crafting is **Deferred**: [future/crafting-system.md](../future/crafting-system.md). Enchanting is **Cut** — [Locked: no enchanting](../systems/item-system.md#locked-no-enchanting).
 
 ---
 

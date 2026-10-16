@@ -53,13 +53,11 @@ Gold cost: none. Fatigue load and caps: [training-system.md](../systems/training
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch “View Trainer List” as a **separate** screen — not live; trainers are this page’s first tab.
+Not a contract: original sketch “View Trainer List” as a **separate** screen — trainers are this page’s first tab.
 
-## Cut
-
-Batch training from the roster is **Cut** (A7.7 / [#13](../product/known-issues.md) Resolved). Assign stays per trainer on this page and on hero-detail overview.
+Batch training from the roster is **Cut**. Assign stays per trainer on this page and on hero-detail overview. Lock: [03-hero-roster.md — roster extras](03-hero-roster.md#locked-roster-extras).
 
 ---
 

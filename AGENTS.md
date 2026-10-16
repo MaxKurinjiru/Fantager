@@ -6,7 +6,7 @@ Entry point for Cursor agents, Copilot, and other AI assistants working in this 
 
 | Task | Read first | Code / docs to touch |
 |------|------------|----------------------|
-| **Docs vs code alignment** | [docs/roadmap/current.md](docs/roadmap/current.md) → [docs/product/known-issues.md](docs/product/known-issues.md) | Waves 0–8 complete — do not invent a next alignment step |
+| **Docs vs code conflict** | [docs/README.md](docs/README.md) § Canonical sources | Align to the live source; do not start a new alignment wave |
 | **UI / Twig / SCSS / Stimulus** | [docs/guides/ui.md](docs/guides/ui.md) | `templates/`, `assets/styles/`, `assets/controllers/` |
 | **New or changed API endpoint** | [docs/guides/backend.md](docs/guides/backend.md) → [docs/architecture/api.md](docs/architecture/api.md) | `src/Controller/Api/V1/`, `src/Service/`, [docs/architecture/routes.md](docs/architecture/routes.md) |
 | **Web page / screen** | [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + screen in [docs/screens/](docs/screens/) + [docs/guides/ui.md](docs/guides/ui.md) | `src/Controller/Web/`, `templates/`, often API + Stimulus |
@@ -18,9 +18,9 @@ Entry point for Cursor agents, Copilot, and other AI assistants working in this 
 
 Full vertical slice: backend cheatsheet § Vertical slice + UI cheatsheet when the feature has a UI.
 
-**Live rules vs overview:** matching `docs/systems/*.md` wins over [docs/product/overview.md](docs/product/overview.md). Do not invent mechanics for **Open** rows in [docs/product/known-issues.md](docs/product/known-issues.md). Live UI is [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + Twig.
+Conflict order, Open rows, leftovers: [docs/README.md](docs/README.md) § Canonical sources.
 
-**Locks** live in the matching `systems/*.md` or `screens/*.md` `## Locked:` section (index: [docs/product/known-issues.md](docs/product/known-issues.md) § Resolved locks). Highest-risk — do not reopen without an explicit product ask:
+**Locks** live in the matching `systems/*.md` or `screens/*.md` `## Locked:` section (full index: [docs/product/known-issues.md](docs/product/known-issues.md) § Resolved locks). Highest-risk — do not reopen without an explicit product ask:
 
 - **Hero level:** stored `Hero.level` is live truth — do not derive it from `Hero.xp` on read. [hero-system.md](docs/systems/hero-system.md#locked-hero-level-invariant)
 - **Chemistry:** `Team.chemistry` is flavor for matches — combat must not read it. [team-system.md](docs/systems/team-system.md#locked-chemistry-flavor)

@@ -4,7 +4,8 @@ Reference: [combat-system.md](combat-system.md) (live contract), `CombatStatCalc
 
 Status: Live  
 Screens: [12-combat-battle.md](../screens/12-combat-battle.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none. In-combat morale change / race synergy Cut ([combat-system.md](combat-system.md#locked-no-race-synergy--no-simulate)).
+Open design: none  
+Lock: [combat-system.md — no race synergy / no simulate](combat-system.md#locked-no-race-synergy--no-simulate)
 
 Purpose: Derived combat stats, durability scaling, mastery bonuses, and trait modifiers. Match rules, waves, and `combat_log` stay in [combat-system.md](combat-system.md).
 

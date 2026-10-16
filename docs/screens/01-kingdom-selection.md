@@ -40,9 +40,9 @@ There is no separate “confirm kingdom” step, no “show details” expander,
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch, not in the register UI:
+Not a contract:
 
 - Theme / lore copy per kingdom
 - Time zone on the cards

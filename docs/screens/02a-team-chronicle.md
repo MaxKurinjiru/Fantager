@@ -32,12 +32,6 @@ No chronicle REST API; page is server-rendered.
 
 ---
 
-## Planned
-
-None for this screen. Navbar notifications also render at read time (A6.4).
-
----
-
 ## Frontend
 
 | Piece | Location |

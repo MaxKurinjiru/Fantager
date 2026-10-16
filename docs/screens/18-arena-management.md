@@ -4,7 +4,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Ticket price, capacity, projected home-match gold, and recent attendance analytics.
 
-**Status:** HQ panel, not a standalone page. `GET /app/arena` → `/app/hq?facility=arena`. Match-day revenue and attendance **graphs/history** are live ([#4](../product/known-issues.md) Resolved / A7.8). Combat home-advantage buff is **not** in the engine. Lock: [Locked: attendance analytics](#locked-attendance-analytics).
+**Status:** HQ panel, not a standalone page. `GET /app/arena` → `/app/hq?facility=arena`. Match-day revenue and attendance **graphs/history** are live. Combat home-advantage buff is **not** in the engine.  
+**Lock:** [Locked: attendance analytics](#locked-attendance-analytics)
 
 **Live UI:** `templates/components/hq/facility_panel/_arena.html.twig`.
 
@@ -15,7 +16,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 ### Displayed information
 
 - Arena level, seating capacity, ticket price, fan base, show-up rate
-- Fan-club hint (fan base vs target, reputation, morale, chemistry) — chemistry here is **live** for attendance math, not a combat modifier (#7 Resolved)
+- Fan-club hint (fan base vs target, reputation, morale, chemistry) — chemistry here is **live** for attendance math, not a combat modifier
 - Ticket price slider/input **1–50** gold + elasticity badge + save
 - Projection table (price / attendance / occupancy / elasticity / projected gold) when `projections` is non-empty
 - Next home match (opponent, kickoff, projected revenue) when set
@@ -64,7 +65,9 @@ Cut from this screen (do not add without a new product decision): combat home-ad
 
 ---
 
-## Planned
+## Parked
+
+Do not implement unless the user explicitly asks.
 
 - Combat home-advantage
 

@@ -1,6 +1,6 @@
 # Game systems overview
 
-> **Overview only — not the live contract.** On conflict, matching `docs/systems/*.md` wins. Open design: [known-issues.md](known-issues.md). Deferred design: [`docs/future/`](../future/).
+> **Overview only — not the live contract.** Conflict order: [docs/README.md](../README.md) § Canonical sources. Open design: [known-issues.md](known-issues.md). Deferred design: [`docs/future/`](../future/).
 
 ## Game Premise
 

@@ -4,7 +4,8 @@ Reference: [product/overview.md](../product/overview.md#formations)
 
 Status: Live (lineup + L1/L2 slot editor; no synergy)  
 Screens: [07-formation-setup.md](../screens/07-formation-setup.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none for L1/L2. Lock: [Locked: L1/L2 editor](#locked-l1l2-editor). In-combat synergy is **Cut** ([#9](../product/known-issues.md) Resolved / A7.5).
+Open design: none  
+Lock: [Locked: L1/L2 editor](#locked-l1l2-editor)
 
 Purpose: Document formation representation, save/kickoff validation, slot strategy JSON, and fixture assignment. **Race/role synergy is not part of this system.** Team chemistry is [team-system.md](team-system.md#locked-chemistry-flavor) (flavor for matches). In-combat tables are Cut ([combat-system.md](combat-system.md#locked-no-race-synergy--no-simulate)).
 

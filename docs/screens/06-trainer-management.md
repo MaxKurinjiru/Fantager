@@ -50,9 +50,9 @@ Hero-detail manage menu also offers **Promote** when the hero is an available co
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch extras — do not treat as a contract:
+Not a contract:
 
 - Dedicated trainer-management route
 - Trainer detail (caps timeline, marketplace cost on this screen)

@@ -2,7 +2,13 @@
 
 Per-screen UI contracts. **Live UI** is [../architecture/screen-code-map.md](../architecture/screen-code-map.md) plus Twig/Stimulus.
 
-Each screen file separates **Implemented** (what Twig/API does) from **Planned**. The original screen sketch is parked at [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) — not an implementation contract.
+Each screen file separates **Implemented** (what Twig/API does) from leftovers. Omit a leftover heading when there is nothing to list.
+
+- **Parked** — later product decisions. Do not implement unless the user explicitly asks.
+- **Sketch leftover** — original screen sketch extras; not a contract.
+- **Cut / Deferred** belong in `## Locked:` or [`../future/`](../future/), not a Planned checklist.
+
+The original screen sketch is parked at [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) — not an implementation contract.
 
 ## Site structure
 

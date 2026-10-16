@@ -4,7 +4,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Upgrade the seven facilities, set arena race adaptation, open Arena / Summoning panels.
 
-**Status:** Live at `GET /app/hq`. `/app/arena` and `/app/summon` **redirect** here (`?facility=arena` / `?facility=summoning_chamber`). Visual HQ themes, visitor access, morale-over-time, and combat home-advantage are **not** live. `summon_stat_total_cap` is stored/computed and unread — HQ cards and API do **not** show it as a live bonus (A6.5).
+**Status:** Live at `GET /app/hq`. `/app/arena` and `/app/summon` **redirect** here (`?facility=arena` / `?facility=summoning_chamber`). `summon_stat_total_cap` is stored/computed and unread — HQ cards and API do **not** show it as a live bonus.
 
 **Live UI:** `templates/hq/index.html.twig`, `templates/components/hq/`.
 
@@ -50,16 +50,21 @@ Race `<select>` (or none) → `POST /api/v1/hq/optimize`. Pending / locked state
 
 ---
 
-## Planned
+## Parked
 
-Original sketch extras — do not treat as a contract:
+Do not implement unless the user explicitly asks.
 
-- Visual theme preview / customize theme
-- Facility layout editor, visitor access
-- Separate passive-bonuses summary board (bonuses are on each card)
+- Visual HQ themes / visitor access / morale-over-time
 - Combat home-advantage as a live match buff
 
-Arena attendance graphs/history live in the arena facility panel ([#4](../product/known-issues.md) Resolved / A7.8).
+## Sketch leftover
+
+Not a contract:
+
+- Facility layout editor
+- Separate passive-bonuses summary board (bonuses are on each card)
+
+Arena attendance graphs/history are live in the arena facility panel: [18-arena-management.md](18-arena-management.md#locked-attendance-analytics).
 
 ---
 

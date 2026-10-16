@@ -4,7 +4,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Review memorials for dismissed heroes/trainers and permanent combat deaths.
 
-**Status:** Live at `GET /app/graveyard`. Writes happen on dismiss and combat death, not from this page. Cause filters are live values **dismissed** and **combat_death** (`MemorialCause::liveCases()`). Reserved `age`, `retired`, `death` stay on the enum (A6.2) but are not offered as filter options.
+**Status:** Live at `GET /app/graveyard`. Writes happen on dismiss and combat death, not from this page. Cause filters are live values **dismissed** and **combat_death** (`MemorialCause::liveCases()`). Reserved `age`, `retired`, `death` stay on the enum but are not offered as filter options.
 
 **Live UI:** `templates/graveyard/index.html.twig`.
 
@@ -42,15 +42,16 @@ Writers: `POST /api/v1/heroes/{id}/dismiss`, `POST /api/v1/training/trainers/{id
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch extras — do not treat as a contract:
+Not a contract:
 
 - Share memorial / social
 - Sort by battles
 - “Most battles fought” legend stat
 - Gravestone visualization beyond the list
-- Age / retired / death causes as live writers (reserved enums)
+
+`MemorialCause::{Age, Retired, Death}` stay **Reserved** — no live writers.
 
 ---
 

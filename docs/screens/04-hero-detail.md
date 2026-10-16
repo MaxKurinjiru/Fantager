@@ -4,7 +4,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Inspect one hero — overview, equipment, spells, history.
 
-**Status:** Live at `GET /app/heroes/{id}`. Tabs: `overview`, `equipment`, `spells`, `history`. There is **no** Training tab (assignment sits on overview). There is **no** “assign to formation” control. XP bar uses locked cumulative thresholds; displayed level is stored `hero.level` ([#6](../product/known-issues.md)). Equipment occupancy is locked ([#8](../product/known-issues.md)).
+**Status:** Live at `GET /app/heroes/{id}`. Tabs: `overview`, `equipment`, `spells`, `history`. There is **no** Training tab (assignment sits on overview). There is **no** “assign to formation” control. XP bar uses locked cumulative thresholds; displayed level is stored `hero.level`.  
+**Lock:** [hero-system.md — hero level invariant](../systems/hero-system.md#locked-hero-level-invariant), [item-system.md — item occupancy](../systems/item-system.md#locked-item-occupancy)
 
 **Live UI:** `templates/hero/detail.html.twig`, `templates/components/hero/`.
 
@@ -17,7 +18,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 - Avatar, status badge, inline rename
 - Race, age + phase, mortality warning
 - Base OVR, complex rating, gold value, weekly salary
-- Level from stored `hero.level` (do not derive from XP). XP bar via `hero_xp_bar()` (`C(level)` / `C(level + 1)`) (#6 / A7.1)
+- Level from stored `hero.level` (do not derive from XP). XP bar via `hero_xp_bar()` (`C(level)` / `C(level + 1)`)
 - Form, fatigue, morale bars
 - Trait badge + description when present
 - Manage menu (available combatant): sell, dismiss, promote to trainer (cap / unassigned)
@@ -62,9 +63,9 @@ See [11-spell-management.md](11-spell-management.md). Equipped slots, school mas
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch extras — do not treat as a contract:
+Not a contract:
 
 - Dedicated Training tab
 - Quick-add to formation

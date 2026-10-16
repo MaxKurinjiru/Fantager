@@ -15,7 +15,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 Login/register are a **modal** included from `templates/base.html.twig` for guests. `/login` and `/register` exist as routes that auto-open that modal. Password reset is standalone pages. Modal-on-homepage CTAs are live, not a future enhancement.
 
-Public wiki (`GET /wiki`) has **no controller** — **Planned** (A8.5 stay Planned).
+Public wiki (`GET /wiki`) has **no controller** — **Planned**. Lock: [Locked: public wiki stays Planned](#locked-public-wiki-stays-planned).
 
 ---
 
@@ -27,10 +27,12 @@ Public wiki (`GET /wiki`) has **no controller** — **Planned** (A8.5 stay Plann
 - **Authenticated Account Settings** modal: the same two locales via a locale picker. Opened from the game navbar player menu — the game navbar itself has **no** locale dropdown.
 - Both hit `GET /change-locale/{locale}` (`Web\LocaleController`): session `_locale`; if the user is logged in, also persists `User.locale`. Redirects back to the local referer.
 
-**Planned**
+**Parked**
 
-- Locale control on a public wiki page (no wiki yet).
-- Locale dropdown on the authenticated game navbar (not required while Settings has the picker).
+Do not implement unless the user explicitly asks.
+
+- Locale control on a public wiki page (no wiki yet)
+- Locale dropdown on the authenticated game navbar (not required while Settings has the picker)
 
 ---
 
@@ -91,13 +93,13 @@ Public wiki (`GET /wiki`) has **no controller** — **Planned** (A8.5 stay Plann
 
 ## News archive — Planned
 
-- Admin interface for creating/editing news (stay Planned; adjacent to A8.5, not a live CMS)
+- Admin interface for creating/editing news (stay Planned; not a live CMS)
 
 ---
 
 ## Wiki / Help — Planned
 
-`GET /wiki` is listed in [architecture/routes.md](../architecture/routes.md) as **planned** (A8.5 stay Planned). No Twig, no controller, no entity, no search, no guest-navbar Help link.
+`GET /wiki` is listed in [architecture/routes.md](../architecture/routes.md) as **planned**. No Twig, no controller, no entity, no search, no guest-navbar Help link.
 
 Original sketch (not live): help articles, categories, search, back to homepage.
 

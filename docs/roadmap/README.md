@@ -2,11 +2,11 @@
 
 ## Now
 
-**[current.md](current.md)** — alignment waves 0–8 complete. Do not invent a next alignment step. Do not start Milestone 8/9.
+**[current.md](current.md)** — leftovers after alignment waves 0–8. Conflict order: [docs/README.md](../README.md) § Canonical sources.
 
 ## Next (design still open)
 
-**Open** rows in [product/known-issues.md](../product/known-issues.md) (currently none). Later product decisions (wiki, password change, SSE, home-advantage, …) stay parked until an explicit product ask.
+**Open** rows in [product/known-issues.md](../product/known-issues.md) (currently none). Later product decisions stay parked until an explicit product ask.
 
 Per-feature leftover steps belong in the matching `systems/*.md` Remaining work or Parked section, not in a second checklist here.
 

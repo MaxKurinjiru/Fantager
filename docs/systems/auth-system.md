@@ -4,7 +4,7 @@ Reference: [architecture/overview.md](../architecture/overview.md#security)
 
 Status: Live (session email/password)  
 Screens: [00-auth-screens.md](../screens/00-auth-screens.md), [01-kingdom-selection.md](../screens/01-kingdom-selection.md), [19-player-profile-settings.md](../screens/19-player-profile-settings.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Password change / extra settings stay **Planned** (A8.6 keep Planned)
+Open design: none
 
 Purpose: Document authentication, registration, session management, and authorization.
 

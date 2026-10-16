@@ -4,7 +4,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 Purpose: Account-level player settings (distinct from team profile settings on the dashboard).
 
-**Status:** Modal UI is live for language, backdrop-close preference, email change, and account deletion. Password change, notification prefs, privacy, account-info panel, and connected accounts stay **Planned** (A8.6 keep Planned).
+**Status:** Modal UI is live for language, backdrop-close preference, email change, and account deletion.  
+**Lock:** [Locked: password change / extra settings stay Planned](#locked-password-change--extra-settings-stay-planned)
 
 ## Presentation
 
@@ -79,12 +80,12 @@ Account identity fields remain on **`User`** (`email`, `locale`, `display_name`,
   ```
 - **Errors:** `403` (invalid CSRF), `400` (missing/invalid payload)
 
-Do not add password-change, notification, or privacy fields here until a later product decision (A8.6 stay Planned). New live UI prefs (like backdrop-close) may still extend this endpoint or add PATCH with partial updates and corresponding columns on `UserSettings`.
+Do not add password-change, notification, or privacy fields here until a later product decision. New live UI prefs (like backdrop-close) may still extend this endpoint or add PATCH with partial updates and corresponding columns on `UserSettings`.
 
 ### Related API
 
 - `GET /api/v1/me` — current player identity (not settings); see [auth-system.md](../systems/auth-system.md)
-- Password change / dedicated `/api/v1/settings` bulk endpoints stay **Planned** (A8.6); preferences use `POST /app/settings/preferences` above
+- Password change / dedicated `/api/v1/settings` bulk endpoints stay **Planned**; preferences use `POST /app/settings/preferences` above
 
 ## Frontend Implementation
 

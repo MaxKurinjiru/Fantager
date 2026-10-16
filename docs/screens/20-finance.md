@@ -67,9 +67,13 @@ Writers are other systems (`EconomyService` ledger entries). This screen does no
 
 ---
 
-## Planned
+## Parked
 
-None for this screen. Diminishing returns on repeated gold sources stays Planned on [economy-system.md](../systems/economy-system.md). Royal Treasury balance stays hidden from players.
+Do not implement unless the user explicitly asks. Index: [economy-system.md](../systems/economy-system.md).
+
+- Diminishing returns on repeated gold sources
+
+Royal Treasury balance stays hidden from players.
 
 ---
 

@@ -2,9 +2,10 @@
 
 Reference: [product/overview.md](../product/overview.md#community)
 
-Status: Live (core)  
+Status: Live  
 Screens: [17-community.md](../screens/17-community.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none for pin. Lock: [Locked: forum pin](#locked-forum-pin). Wiki stays Planned.
+Open design: none  
+Lock: [Locked: forum pin](#locked-forum-pin)
 
 Purpose: Document leaderboards, private messages, forums, content moderation, and social features.
 

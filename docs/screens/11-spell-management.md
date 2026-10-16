@@ -4,7 +4,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Equip a hero’s spell slots, or buy spells from the Academy.
 
-**Status:** Hero spells live on **Hero Detail → Spells**. `GET /app/spells` **redirects** to that tab (or `/app/heroes` if no `hero_id`). Academy store is `/app/academy`. Seeded catalog is **T1–T5** (A7.11 / [#16](../product/known-issues.md)). No essence. Enchanting is not in the live game (A7.4 / [#2](../product/known-issues.md)).
+**Status:** Hero spells live on **Hero Detail → Spells**. `GET /app/spells` **redirects** to that tab (or `/app/heroes` if no `hero_id`). Academy store is `/app/academy`. Seeded catalog is **T1–T5**. No essence. Enchanting is not in the live game.  
+**Lock:** [Locked: catalog T1–T5](#locked-catalog-t1t5)
 
 **Live UI:** `templates/hero/detail.html.twig` (spells tab), `templates/spell/academy.html.twig`, `templates/components/spell/`.
 
@@ -45,12 +46,6 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 | Library | `GET /api/v1/spells` |
 | Learn | `POST /api/v1/heroes/{id}/spells/learn` |
 | Equip / unequip | `POST /api/v1/heroes/{id}/spells/equip`, `/unequip` |
-
----
-
-## Planned
-
-- Standalone `/app/spells` page (redirects on purpose)
 
 ---
 

@@ -4,7 +4,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Weekly kingdom schedule (ticks, league fixtures, own friendly matches).
 
-**Status:** Live at `GET /app/calendar`. Feed is JSON. Reminders are **Planned**. World events are deferred (`future/world-events-system.md`). Per-hero training completions are **not** calendar rows — weekly training is a `system_tick`; results live on Training / hero history.
+**Status:** Live at `GET /app/calendar`. Feed is JSON. Per-hero training completions are **not** calendar rows — weekly training is a `system_tick`; results live on Training / hero history.
 
 **Live UI:** `templates/calendar/index.html.twig`, Stimulus `calendar`.
 
@@ -51,10 +51,13 @@ Feed assembly: `CalendarService` from `TickScheduleCalculator`, tick logs, leagu
 
 ---
 
-## Planned
+## Parked
 
-- Set reminder — `POST /api/v1/calendar/reminders` (not implemented)
-- Dynamic world-event rows
+Do not implement unless the user explicitly asks.
+
+- Set reminder — `POST /api/v1/calendar/reminders`
+
+World-event rows are **Deferred**: [future/world-events-system.md](../future/world-events-system.md).
 
 ---
 

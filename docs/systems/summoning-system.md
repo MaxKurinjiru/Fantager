@@ -2,9 +2,10 @@
 
 Reference: [product/overview.md](../product/overview.md), [screens/09-summoning-chamber.md](../screens/09-summoning-chamber.md)
 
-Status: Live — Genie adaptation uses relationship ≥ 80 ([#14](../product/known-issues.md) Resolved / A7.9)  
+Status: Live  
 Screens: [09-summoning-chamber.md](../screens/09-summoning-chamber.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none for the compatible-race pool. Lock: [Locked: Genie summon pool](#locked-genie-summon-pool).
+Open design: none  
+Lock: [Locked: Genie summon pool](#locked-genie-summon-pool)
 
 Purpose: Document summoning mechanics, costs, cooldowns, race selection, and hero generation.
 

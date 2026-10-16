@@ -1,13 +1,13 @@
 # Implementation Roadmap (Vertical-Slice & Chronological)
 
 > [!IMPORTANT]
-> Alignment waves 0–8 are **complete** ([current.md](current.md); archive: [alignment-waves.md](alignment-waves.md)). This file is the M1–9 chronicle, not a new work queue. Do not start Milestone 8/9.
+> This file is the M1–9 chronicle, not a work queue. Now / next: [current.md](current.md). Wave archive: [alignment-waves.md](alignment-waves.md). Conflict order: [docs/README.md](../README.md) § Canonical sources.
 > Milestones 1–6 shipped a **playable core**. ✅ on a step means that slice landed, **not** that no gaps remain (inventory DnD, formation synergies Cut, combat HUD extras Cut). Do not treat the matrix at the bottom as a green board.
-> Milestones 8 and 9 stay **parked**. Milestone 7 analytics UI shipped as alignment A7.8.
+> Milestones 8 and 9 stay **parked**.
 
-Purpose: Historical, step-by-step chronicle of how the playable core was built (vertical slices). It is not the current work queue.
+Purpose: Historical, step-by-step chronicle of how the playable core was built (vertical slices).
 
-**AI agents:** Follow [AGENTS.md](../../AGENTS.md) for task routing. Alignment waves 0–8 have no remaining unchecked steps. Write tests when implementing a step; do not run PHPUnit, migrations, or other verification commands unless the user explicitly asks.
+**AI agents:** Follow [AGENTS.md](../../AGENTS.md). Write tests when implementing; do not run verification commands unless the user explicitly asks.
 
 ---
 

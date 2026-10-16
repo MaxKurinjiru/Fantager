@@ -2,9 +2,10 @@
 
 Reference: [product/overview.md](../product/overview.md#marketplace), [MarketplaceService.php](../../src/Service/Marketplace/MarketplaceService.php), [MarketplaceTransaction.php](../../src/Entity/Marketplace/MarketplaceTransaction.php)
 
-Status: Live (listing price band — [#15](../product/known-issues.md) Resolved / A7.10)  
+Status: Live  
 Screens: [15-marketplace.md](../screens/15-marketplace.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none. Lock: [Locked: listing price band](#locked-listing-price-band).
+Open design: none  
+Lock: [Locked: listing price band](#locked-listing-price-band)
 
 Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction records, and chronicle integration.
 

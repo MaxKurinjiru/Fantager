@@ -2,7 +2,7 @@
 
 Reference: [calendar-system.md](calendar-system.md#friendly-matches-practice), [combat-system.md](combat-system.md), [headquarters-system.md](headquarters-system.md) (HQ arena panel)
 
-Status: Live ([#3](../product/known-issues.md) Resolved)  
+Status: Live  
 Screens: [18a-friendly-matches.md](../screens/18a-friendly-matches.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
 Open design: none
 

@@ -191,8 +191,10 @@ global.server_error
 
 ---
 
-## Planned (auth extras)
+## Parked
+
+Do not implement unless the user explicitly asks.
 
 - OAuth / social login
 - Dedicated handling notes for expired sessions beyond current flashes / login redirect
-- In-session **password change** for logged-in players — not this screen; stay **Planned** on [19-player-profile-settings.md](19-player-profile-settings.md) (A8.6 keep Planned)
+- In-session **password change** — not this screen; [19-player-profile-settings.md](19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned)

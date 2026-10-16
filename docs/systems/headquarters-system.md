@@ -4,7 +4,7 @@ Reference: [product/overview.md](../product/overview.md#headquarters)
 
 Status: Live  
 Screens: [08-headquarters.md](../screens/08-headquarters.md), [18-arena-management.md](../screens/18-arena-management.md), [09-summoning-chamber.md](../screens/09-summoning-chamber.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none for live facilities
+Open design: none
 
 Purpose: Document HQ facilities, upgrades, passive bonuses, arena adaptation, and related APIs.
 

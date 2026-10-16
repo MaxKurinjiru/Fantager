@@ -7,15 +7,14 @@ One-page reference for AI agents and quick human review.
 
 ## Before you code
 
-Alignment waves 0–8 are complete ([roadmap/current.md](../roadmap/current.md)). Do not invent a next alignment step. Do not start Milestone 8/9. Do not invent mechanics for **Open** rows in [product/known-issues.md](../product/known-issues.md). Locks live in the matching system or screen `## Locked:` section (index: [known-issues.md](../product/known-issues.md) § Resolved locks).
+Conflict order, Open rows, leftovers: [docs/README.md](../README.md) § Canonical sources. Locks: matching `## Locked:` (index: [known-issues.md](../product/known-issues.md) § Resolved locks).
 
 | Check | Why |
 |-------|-----|
 | [product/known-issues.md](../product/known-issues.md) | Design first — stop and ask on Open IDs |
 | Matching `systems/*.md` Remaining work / Parked | Leftovers for that feature. Snapshot: [systems/README.md](../systems/README.md) |
-| Matching `systems/*.md` + `screens/*.md` | Domain rules and UI; systems win over `product/overview.md` |
-| [roadmap/current.md](../roadmap/current.md) | Now / next (alignment complete) |
-| [roadmap/history.md](../roadmap/history.md) | Historical M1–9 only; M1–6 ✅ ≠ no gaps |
+| Matching `systems/*.md` + `screens/*.md` | Domain rules and UI |
+| [roadmap/history.md](../roadmap/history.md) | Historical M1–9 only; M1–6 checkmarks ≠ no gaps |
 
 ---
 

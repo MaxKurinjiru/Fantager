@@ -1,16 +1,8 @@
 # Roadmap — now
 
-Alignment waves 0–8 are **complete**. Do not invent a next alignment step. Do not start Milestone 8/9.
+Alignment waves 0–8 are **complete** ([alignment-waves.md](alignment-waves.md) is the archive). Conflict order: [docs/README.md](../README.md) § Canonical sources. Do not start Milestone 8/9.
 
-| Need | Where |
-|------|--------|
-| Live rules | matching `docs/systems/*.md` (`## Locked:` when present) |
-| Live UI | [architecture/screen-code-map.md](../architecture/screen-code-map.md) + Twig/Stimulus |
-| Open design | [product/known-issues.md](../product/known-issues.md) — do not invent mechanics for **Open** rows |
-| Per-feature leftovers | that system’s Remaining work or Parked section |
-| Deferred design | [`docs/future/`](../future/) |
-| Wave chronicle (archive) | [alignment-waves.md](alignment-waves.md) |
-| Feature chronicle (M1–9) | [history.md](history.md) |
+Per-feature leftovers live in that system’s Remaining work or Parked section, not in a second checklist here.
 
 ## Later (not a work queue)
 
@@ -28,5 +20,3 @@ Wave 8 leftovers that stay Planned or Parked:
 - Milestone 9: alliances and guilds — [history.md](history.md)
 - Repo meta (CHANGELOG, CONTRIBUTING) — [`_deferred/`](../../_deferred/)
 - Original screen sketch — [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md)
-
-*Last updated: 16 October 2026 — post-alignment cleanup. Wave steps A0.1–A8.6 live in [alignment-waves.md](alignment-waves.md).*

@@ -4,7 +4,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Browse the team’s combatants.
 
-**Status:** Live at `GET /app/heroes`. Sketch extras are **Cut** (A7.7 / [#13](../product/known-issues.md) Resolved) — see [Locked: roster extras](#locked-roster-extras).
+**Status:** Live at `GET /app/heroes`.  
+**Lock:** [Locked: roster extras](#locked-roster-extras)
 
 **Live UI:** `templates/hero/roster.html.twig`, `templates/components/hero/card.html.twig`. Filter/sort is **client-side** (`roster_filter`); the page does not send filter query params.
 
@@ -53,7 +54,7 @@ No per-card dropdown (train / equip / spells / sell), no multi-select, no batch 
 
 - **Web:** `GET /app/heroes` → `Web\HeroController::roster()` — `HeroRepository::findCombatantsByTeam()`
 - **API:** `GET /api/v1/heroes` returns the team list via `HeroService::serialize()` — **no** filter/sort query parameters; the roster page does not call this endpoint
-- Batch-operation APIs: **Cut** (A7.7) — do not add them
+- Batch-operation APIs: **Cut** — do not add them
 
 ---
 
@@ -71,12 +72,6 @@ No per-card dropdown (train / equip / spells / sell), no multi-select, no batch 
 - Server-side list filtering / batch-operation APIs
 
 Train, equip, spells, and sell stay on hero detail. Trainer assign stays `/app/training` and hero-detail overview. A later product decision is required before adding any sketch extra.
-
----
-
-## Planned
-
-None for this screen. Sketch extras are **Cut** ([#13](../product/known-issues.md) Resolved / A7.7).
 
 ---
 

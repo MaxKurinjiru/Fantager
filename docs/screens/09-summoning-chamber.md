@@ -4,7 +4,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Spend a cycle summon to roll a junior hero.
 
-**Status:** Panel inside HQ — not a standalone page. `GET /app/summon` → `/app/hq?facility=summoning_chamber`; history → `&subtab=history`. Compatible-race cards follow the shared pool (Genie adaptation ≥ 80 → Genie / Human / Elf; [#14](../product/known-issues.md) Resolved / A7.9). `summon_stat_total_cap` is reserved / unread and is not shown as a chamber bonus (A6.5).
+**Status:** Panel inside HQ — not a standalone page. `GET /app/summon` → `/app/hq?facility=summoning_chamber`; history → `&subtab=history`. Compatible-race cards follow the shared pool (Genie adaptation ≥ 80 → Genie / Human / Elf). `summon_stat_total_cap` is reserved / unread and is not shown as a chamber bonus.  
+**Lock:** [summoning-system.md — Genie summon pool](../systems/summoning-system.md#locked-genie-summon-pool)
 
 **Live UI:** `templates/components/hq/facility_panel/_summoning.html.twig`, `templates/components/summoning/`.
 
@@ -40,11 +41,11 @@ Table: hero name (or fallen/dismissed), race, gold cost, timestamp. Filter by ra
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch extras — do not treat as a contract:
+Not a contract:
 
-- Standalone `/app/summon` page (redirects)
+- Standalone `/app/summon` page (redirects on purpose)
 - Explicit min/max age and expected-stat range widgets
 
 ---

@@ -4,7 +4,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Edit saved lineups, or prepare a specific fixture (`?fixture_id=`).
 
-**Status:** Lineup drag-and-drop is **live**. Per-slot L1/L2 tactics editor is **live** (A7.6 / [#12](../product/known-issues.md)). Synergies are **Cut** (#9 / A7.5). Clone and simulate stay **Planned** (table below) — do not describe them as live. Save rejects duplicate `hero_id` (A6.1 / [#10](../product/known-issues.md)). Lock: [formation-system.md](../systems/formation-system.md#locked-l1l2-editor).
+**Status:** Lineup drag-and-drop is **live**. Per-slot L1/L2 tactics editor is **live**. Synergies are **Cut**. Save rejects duplicate `hero_id`.  
+**Lock:** [formation-system.md — L1/L2 editor](../systems/formation-system.md#locked-l1l2-editor)
 
 **Live UI:** `templates/formation/index.html.twig`, `templates/components/formation/`, Stimulus `formation`.
 
@@ -77,22 +78,14 @@ See `assets/controllers/formation_controller.js` and [formation-system.md](../sy
 
 ---
 
-## Planned / not implemented
+## Parked
 
-These appear in older screen sketches but are **not** in the current Formation UI or save payload:
+Do not implement unless the user explicitly asks. Do not describe these as live.
 
-| Feature | Status |
-|---------|--------|
-| Per-hero targeting priority (`target_order` / Flexible) | **L1 live** (ordered enemy slots + fallback). Flexible AI Cut |
-| Action sequence (Attack / Cast / Defend / Heal / …) | Cut / deferred L3 |
-| Spell priority editor (spell, conditions, targets) | **Thin L2 live** — equipped spells; `always` / HP-below; `priority` / ally / self. `enemy_status` / `lowest_hp_enemy` Cut |
-| Conditional tactics editor | Cut / deferred L3 |
-| Formation synergy indicator (race / role / chemistry) | Cut (#9 / A7.5) — chemistry is flavor ([team-system.md](../systems/team-system.md#locked-chemistry-flavor)) |
-| Clone Formation | Planned / not implemented |
-| Test Formation (simulation / practice match) | Planned (`POST /api/v1/formations/simulate`; later product decision) |
-| Quick Fill (auto-suggest optimal formation) | Planned / not implemented |
-| Hero pool filter by role / stats / race | Planned / not implemented |
-| Synergy calculation API | Cut (#9 / A7.5) |
-| View opponent formation | Planned / not implemented |
+- Clone formation
+- Test formation / simulate sandbox (`POST /api/v1/formations/simulate`)
+- Quick Fill (auto-suggest)
+- Hero pool filter by role / stats / race
+- View opponent formation
 
-L1/L2 editor is locked (A7.6 / #12). Do not invent L3 sequences, synergy tables (#9 Cut), or a simulate sandbox here.
+L3 sequences, Flexible AI, `enemy_status` / `lowest_hp_enemy`, and synergy tables are **Cut**. Chemistry is flavor: [team-system.md](../systems/team-system.md#locked-chemistry-flavor). Do not invent L3, synergy, or a simulate sandbox here.

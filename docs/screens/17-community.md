@@ -4,7 +4,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Kingdom forum, public player/team profiles, and private mail.
 
-**Status:** Live forum hub at `/app/community`. Mail is the **navbar modal**, not a community tab. News is public `/news`. Kingdom rankings are the League **Kingdom Leaderboard** tab — there is no `/api/v1/leaderboards` route. Forum `is_pinned` is **stored and shown** when true, but **unsettable** in the app ([A6.3](../roadmap/alignment-waves.md#a63-forum-pin) Cut — no pin/unpin API, no admin pin).
+**Status:** Live forum hub at `/app/community`. Mail is the **navbar modal**, not a community tab. News is public `/news`. Kingdom rankings are the League **Kingdom Leaderboard** tab — there is no `/api/v1/leaderboards` route. Forum `is_pinned` is **stored and shown** when true, but **unsettable** in the app.  
+**Lock:** [community-system.md — forum pin](../systems/community-system.md#locked-forum-pin)
 
 **Live UI:** `templates/community/`, `templates/components/community/`, Stimulus `community_forum`, `community_thread`, `mail`, `player-profile`.
 
@@ -87,16 +88,22 @@ Compose / read dialogs: `templates/components/community/compose_message_modal.ht
 
 ---
 
-## Planned
+## Parked
 
-Original sketch extras — do not treat as a contract:
+Do not implement unless the user explicitly asks.
+
+- Trade / league emails (forum/mail stay in-app; auth + inactivity mail only today)
+
+## Sketch leftover
+
+Not a contract:
 
 - Community tabs for leaderboards, mail, or news
 - Dedicated `/api/v1/leaderboards` (use League)
-- Pin / unpin in the UI — **cut** (A6.3): field + display only
 - Notable heroes, recent match history, win/loss on the public profile
-- Email notifications for forum/mail (auth + inactivity mail only today)
 - Report / moderator tools beyond author lock and content filter
+
+Pin / unpin in the UI is **Cut**: [Locked: forum pin](../systems/community-system.md#locked-forum-pin).
 
 ---
 

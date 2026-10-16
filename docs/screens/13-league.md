@@ -47,13 +47,14 @@ Team names open the community profile modal (`player-profile`).
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch extras — do not treat as a contract:
+Not a contract:
 
 - Separate “player’s current tier/rank/points” hero block on this page (the table already shows it)
 - Arena-revenue / hero-level leaderboard categories (those were community-sketch lists)
-- League morale modifiers (stripped in Wave 2)
+
+League morale fiction (win-streak / derby / relegation pressure) is **Cut**: [league-system.md](../systems/league-system.md).
 
 ---
 

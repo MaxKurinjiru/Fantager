@@ -1,6 +1,6 @@
 # Deferred design
 
-Features that are specified but **out of active scope**. Do not implement unless the user explicitly asks. Alignment work may **cut** leftover mentions of these from live docs.
+Features that are specified but **out of active scope**. Do not implement unless the user explicitly asks.
 
 | Doc | Topic |
 |-----|-------|

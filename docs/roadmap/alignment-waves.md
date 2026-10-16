@@ -1,10 +1,32 @@
 # Alignment waves 0–8 (archive)
 
-Finished chronicle of the 15 Oct 2026 docs-vs-code alignment. **Not a work queue.** Now / next: [current.md](current.md). Feature chronicle: [history.md](history.md). Open design: [product/known-issues.md](../product/known-issues.md).
+Finished chronicle of the 15 Oct 2026 docs-vs-code alignment. **Not a work queue.** Now / next: [current.md](current.md). Feature chronicle: [history.md](history.md). Live conflict order: [docs/README.md](../README.md) § Canonical sources.
 
-Docs layout (15 Oct 2026): views live under `docs/guides/`, `docs/architecture/`, `docs/product/`, `docs/roadmap/`. Former filenames: [../README.md](../README.md) § Former filenames. Index: [../README.md](../README.md).
+Do not execute this file as a backlog.
 
-**AI agents:** Do not invent a next alignment step. Do not execute this file as a backlog. Remaining leftovers live in each `systems/*.md` Remaining work section and [`future/`](../future/). Locks live in the matching system or screen `## Locked:` section.
+---
+
+## Former filenames
+
+Old `docs/*.md` root names were stubs after the 15 Oct 2026 layout. Those stubs are gone. Use the canonical path:
+
+| Old path | Canonical |
+|----------|-----------|
+| `docs/game-summary.md` | [product/overview.md](../product/overview.md) |
+| `docs/known-issues.md` | [product/known-issues.md](../product/known-issues.md) |
+| `docs/api-design.md` | [architecture/api.md](../architecture/api.md) |
+| `docs/arch-spec.md` | [architecture/overview.md](../architecture/overview.md) |
+| `docs/entity-reference.md` | [architecture/entities.md](../architecture/entities.md) |
+| `docs/route-map.md` | [architecture/routes.md](../architecture/routes.md) |
+| `docs/screen-code-map.md` | [architecture/screen-code-map.md](../architecture/screen-code-map.md) |
+| `docs/ui-guidelines.md` | [guides/ui-guidelines.md](../guides/ui-guidelines.md) |
+| `docs/ui-agent-cheatsheet.md` | [guides/ui.md](../guides/ui.md) |
+| `docs/backend-agent-cheatsheet.md` | [guides/backend.md](../guides/backend.md) |
+| `docs/alignment-roadmap.md` | [roadmap/current.md](current.md) |
+| `docs/screens-overview.md` | [screens/README.md](../screens/README.md) |
+| `docs/screens/overview-legacy.md` | [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) |
+| `docs/systems/combat-formulas-draft.md` | [systems/combat-formulas.md](../systems/combat-formulas.md) |
+| `_deferred/notes.md` | [future/notes.md](../future/notes.md) |
 
 ---
 
@@ -27,15 +49,7 @@ Each step has an **Action**:
 
 ## Canonical sources (locked)
 
-Until a later step changes this, conflicts resolve as:
-
-1. **Live rules:** matching `docs/systems/*.md` + open rows in [product/known-issues.md](../product/known-issues.md)
-2. **Live UI:** [architecture/screen-code-map.md](../architecture/screen-code-map.md) + Twig/Stimulus (not the wish-list in [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md))
-3. **Routes / schema:** [architecture/routes.md](../architecture/routes.md), [architecture/entities.md](../architecture/entities.md) — keep them true to code
-4. **[product/overview.md](../product/overview.md):** overview only; **systems win** on conflict (Wave 2 rewrite landed)
-5. **[systems/README.md](../systems/README.md) status snapshot:** one word + link; this file is the finished alignment chronicle (waves 0–8)
-
-Do not treat [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) or unchecked screen “Displayed Information” lists as implementation contracts.
+This wave locked the conflict order now documented in [docs/README.md](../README.md) § Canonical sources. Do not treat [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) or unchecked screen “Displayed Information” lists as implementation contracts.
 
 ---
 

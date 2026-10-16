@@ -4,7 +4,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Browse, buy, and list heroes, trainers, and items.
 
-**Status:** Live at `GET /app/marketplace`. Ledger is **`/app/finance`** ([20-finance.md](20-finance.md)), not a marketplace tab. Listing price band is live (A7.10 / [#15](../product/known-issues.md)). Auctions **are** live (bid API + UI). Hero sell also starts from hero-detail manage menu.
+**Status:** Live at `GET /app/marketplace`. Ledger is **`/app/finance`** ([20-finance.md](20-finance.md)), not a marketplace tab. Listing price band is live. Auctions **are** live (bid API + UI). Hero sell also starts from hero-detail manage menu.  
+**Lock:** [Locked: listing price band](#locked-listing-price-band)
 
 **Live UI:** `templates/marketplace/index.html.twig`, `templates/components/marketplace/`.
 
@@ -55,12 +56,6 @@ Hero payloads include nullable `trait` and `ratings`. Fees: `RoyalTreasuryServic
 ## Locked: listing price band
 
 **#15 Resolved (A7.10 Implement).** Sell tab and hero-detail sell panel show suggested gold and the allowed range. `POST /api/v1/marketplace/listings` rejects prices outside `[floor, ceiling]`. Auction bids are not capped. Do not add a second pricing formula. Spec: [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band).
-
----
-
-## Planned
-
-None for this screen. Listing price band is live ([#15](../product/known-issues.md) Resolved / A7.10).
 
 ---
 

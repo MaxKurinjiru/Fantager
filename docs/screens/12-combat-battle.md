@@ -2,9 +2,10 @@
 
 Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [combat-system.md](../systems/combat-system.md)
 
-**When:** Watch a **completed** match. Combat is fully automated — players do **not** issue mid-battle actions. Pre-match behaviour is set on [Formation Setup](07-formation-setup.md) (`approach`, movement goal, per-slot L1/L2 — A7.6 / [#12](../product/known-issues.md)).
+**When:** Watch a **completed** match. Combat is fully automated — players do **not** issue mid-battle actions. Pre-match behaviour is set on [Formation Setup](07-formation-setup.md) (`approach`, movement goal, per-slot L1/L2).
 
-**Status:** Implemented at `/app/battles/{id}` (`Web\BattleController`, `templates/battle/index.html.twig`). Post-match replay only (no live / in-progress match UI). Replay HUD lock: [Locked: replay HUD](#locked-replay-hud). Combat leftovers [#9](../product/known-issues.md) Resolved (A7.5).
+**Status:** Live at `/app/battles/{id}` (`Web\BattleController`, `templates/battle/index.html.twig`). Post-match replay only (no live / in-progress match UI).  
+**Lock:** [Locked: replay HUD](#locked-replay-hud)
 
 ---
 
@@ -43,6 +44,7 @@ Not in the HUD: morale widget, initiative queue, remaining-heroes sidebar, forma
 - Accordion of `combat_log` events (`battle_report`)
 - Semantic row styles per event type
 - Spell events use type `spell` (i18n key remains `battle.spell_cast`)
+- Turn order stays in the accordion (`turn_start`); Haste/Shock change initiative sort only — no HUD queue
 
 **Forfeit**
 
@@ -80,12 +82,6 @@ Canonical `combat_log` format: [combat-system.md — Simulation Contract](../sys
 **#9 HUD slice (A7.5, 16 Oct 2026).** Live chrome is emblems, League/Friendly label, and a contextual back link. Cut from this screen (do not re-add without a new product decision): morale widget, initiative queue, team-stats sidebar, skip-to-end, hex coordinate debug labels, unused formation-grid sketch.
 
 Kickoff `morale` on the combat snapshot is not a replay HUD. In-combat `morale_change` is **Cut** (#9). Turn order stays in the accordion (`turn_start`); do not add a second initiative queue. Engine, log format, round-200 / fumble / KO≠death stay locked.
-
-## Still open
-
-None for this screen. Race synergy and `POST /api/v1/combat/simulate` are **Cut** ([#9](../product/known-issues.md) Resolved / A7.5). Haste/Shock **do** change turn order (initiative sort only). `turn_start.initiative` includes the YAML speed modifier. Do not add an initiative queue HUD.
-
-Log accordion uses event type `spell` (i18n key remains `battle.spell_cast`). Do not change locked round-200 / fumble / KO≠death rules.
 
 ---
 

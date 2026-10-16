@@ -4,7 +4,7 @@ Reference: [product/overview.md](../product/overview.md#league)
 
 Status: Live  
 Screens: [13-league.md](../screens/13-league.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: win-streak / derby / relegation-pressure morale are **not** live (stripped in Wave 2)
+Open design: none
 
 Purpose: Document season scheduling, promotion/relegation, fixtures, standings, and rewards.
 

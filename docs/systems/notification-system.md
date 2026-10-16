@@ -3,7 +3,8 @@
 Reference: [architecture/entities.md](../architecture/entities.md#15-notification-domain), [architecture/routes.md](../architecture/routes.md#notifications), [community-system.md](community-system.md)
 
 Status: Live (navbar modal + API; title/body rendered at **read time** from keys, like chronicle)  
-Screens: navbar modal — [screen-code-map.md](../architecture/screen-code-map.md)
+Screens: navbar modal — [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
 
 Purpose: In-game alerts for the **logged-in player account** (distinct from team-to-team mail and from the append-only team chronicle).
 

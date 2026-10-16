@@ -2,7 +2,7 @@
 
 Reference: [product/overview.md](../product/overview.md#graveyard)
 
-Status: Live ([#5](../product/known-issues.md) Resolved)  
+Status: Live  
 Screens: [16-graveyard.md](../screens/16-graveyard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
 Open design: none
 

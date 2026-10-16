@@ -2,20 +2,6 @@
 
 Pick a view. This file is an index, not a status table.
 
-**Live rules:** matching `systems/*.md`.  
-**Live UI:** [architecture/screen-code-map.md](architecture/screen-code-map.md) + Twig.  
-**Overview vs live:** [product/overview.md](product/overview.md) loses to `systems/` on conflict.  
-**Now / next:** [roadmap/current.md](roadmap/current.md) — leftovers in `systems/` Remaining work / Parked and `future/`.
-
-## Views
-
-| View | Start here | Contains |
-|------|------------|----------|
-| **Development** | [guides/](guides/README.md) | Backend and UI cheatsheets, UI guidelines |
-| **Architecture** | [architecture/](architecture/README.md) | Stack, API, entities, routes, screen → code |
-| **Product / domain** | [product/](product/README.md) | Game overview, glossary, known issues, live `systems/` and `screens/` |
-| **Roadmap** | [roadmap/](roadmap/README.md) | Now / next / parked; historical milestones; alignment-wave archive |
-
 ## Canonical sources
 
 Conflicts resolve as:
@@ -26,33 +12,34 @@ Conflicts resolve as:
 4. **[product/overview.md](product/overview.md):** overview only; **systems win** on conflict
 5. **[systems/README.md](systems/README.md) status snapshot:** one word + link. Leftovers in that system’s Remaining work or Parked. Wave chronicle: [roadmap/alignment-waves.md](roadmap/alignment-waves.md)
 
+Do not invent mechanics for **Open** rows. Do not invent a next alignment wave (0–8 are complete — [roadmap/current.md](roadmap/current.md)). Do not start Milestone 8/9 ([future/](future/)).
+
+Locks live in `## Locked:` in the matching system or screen doc (index: [product/known-issues.md](product/known-issues.md) § Resolved locks).
+
+Old `docs/*.md` root names: [roadmap/alignment-waves.md](roadmap/alignment-waves.md#former-filenames).
+
+## Reading paths
+
+| Goal | Start |
+|------|-------|
+| Understand the game | [product/overview.md](product/overview.md) → [product/glossary.md](product/glossary.md) |
+| New feature | [guides/backend.md](guides/backend.md) § Vertical slice |
+| Change a screen | [architecture/screen-code-map.md](architecture/screen-code-map.md) → `screens/` → [guides/ui.md](guides/ui.md) |
+| Change a game rule | matching `systems/*.md` |
+| Agent task routing | [AGENTS.md](../AGENTS.md) |
+
+## Views
+
+| View | Start here | Contains |
+|------|------------|----------|
+| **Development** | [guides/](guides/README.md) | Backend and UI cheatsheets, UI guidelines |
+| **Architecture** | [architecture/](architecture/README.md) | Stack, API, entities, routes, screen → code |
+| **Product / domain** | [product/](product/README.md) | Game overview, glossary, known issues, live `systems/` and `screens/` |
+| **Roadmap** | [roadmap/](roadmap/README.md) | Now / next / parked; historical milestones; alignment-wave archive |
+
 ## How to use
 
-- Agents: [AGENTS.md](../AGENTS.md)
-- Do not invent mechanics for **Open** rows in known-issues
 - Deferred design: [future/](future/)
 - Parked repo meta and the original screen sketch: [`_deferred/`](../_deferred/)
-- Remaining work and Parked items for a feature live in that feature’s `systems/*.md` (see the Remaining work convention there)
+- Remaining work and Parked items for a feature live in that feature’s `systems/*.md`
 - Glossary: [product/glossary.md](product/glossary.md)
-
-## Former filenames
-
-Old `docs/*.md` root names were stubs after the 15 Oct 2026 layout. Those stubs are gone. Use the canonical path:
-
-| Old path | Canonical |
-|----------|-----------|
-| `docs/game-summary.md` | [product/overview.md](product/overview.md) |
-| `docs/known-issues.md` | [product/known-issues.md](product/known-issues.md) |
-| `docs/api-design.md` | [architecture/api.md](architecture/api.md) |
-| `docs/arch-spec.md` | [architecture/overview.md](architecture/overview.md) |
-| `docs/entity-reference.md` | [architecture/entities.md](architecture/entities.md) |
-| `docs/route-map.md` | [architecture/routes.md](architecture/routes.md) |
-| `docs/screen-code-map.md` | [architecture/screen-code-map.md](architecture/screen-code-map.md) |
-| `docs/ui-guidelines.md` | [guides/ui-guidelines.md](guides/ui-guidelines.md) |
-| `docs/ui-agent-cheatsheet.md` | [guides/ui.md](guides/ui.md) |
-| `docs/backend-agent-cheatsheet.md` | [guides/backend.md](guides/backend.md) |
-| `docs/alignment-roadmap.md` | [roadmap/current.md](roadmap/current.md) |
-| `docs/screens-overview.md` | [screens/README.md](screens/README.md) |
-| `docs/screens/overview-legacy.md` | [`_deferred/screens-overview-legacy.md`](../_deferred/screens-overview-legacy.md) |
-| `docs/systems/combat-formulas-draft.md` | [systems/combat-formulas.md](systems/combat-formulas.md) |
-| `_deferred/notes.md` | [future/notes.md](future/notes.md) |

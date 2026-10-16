@@ -2,9 +2,10 @@
 
 Reference: [product/overview.md](../product/overview.md#spells), [screens/11-spell-management.md](../screens/11-spell-management.md)
 
-Status: Live (catalog T1–T5 — [#16](../product/known-issues.md) Resolved / A7.11)  
+Status: Live (catalog T1–T5)  
 Screens: [11-spell-management.md](../screens/11-spell-management.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none. Lock: [Locked: catalog T1–T5](#locked-catalog-t1t5).
+Open design: none  
+Lock: [Locked: catalog T1–T5](#locked-catalog-t1t5)
 
 Purpose: Document spell schools, mastery, learning, equip slots, and academy UI.
 
