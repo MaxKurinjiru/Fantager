@@ -42,6 +42,7 @@ use App\ValueObject\Combat\DerivedCombatStats;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -373,7 +374,7 @@ class CombatDeathAndDurabilityTest extends TestCase
      *
      * @return array{battle: Battle, fixture: LeagueFixture}
      */
-    private function battleForRewards(Team $homeTeam, Team $awayTeam, Hero $homeHero, Hero $awayHero, array $combatLog): array
+    private function battleForRewards(Team&Stub $homeTeam, Team&Stub $awayTeam, Hero $homeHero, Hero $awayHero, array $combatLog): array
     {
         $this->stubKingdomOn($homeTeam);
         $this->stubKingdomOn($awayTeam);
@@ -475,7 +476,7 @@ class CombatDeathAndDurabilityTest extends TestCase
         );
     }
 
-    private function stubKingdomOn(Team $team): void
+    private function stubKingdomOn(Team&Stub $team): void
     {
         $kingdom = $this->createStub(\App\Entity\Kingdom\Kingdom::class);
         $kingdom->method('getXpModifier')->willReturn('1.00');

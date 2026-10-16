@@ -50,7 +50,6 @@ class ArenaServiceTest extends TestCase
 
         $history = $this->service->buildRevenueHistory($this->team);
 
-        $this->assertSame(18, ArenaService::HISTORY_WINDOW);
         $this->assertSame([], $history['recent_revenue']);
         $this->assertSame([
             'window' => 18,

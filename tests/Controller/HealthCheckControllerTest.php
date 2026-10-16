@@ -8,6 +8,7 @@ use App\Controller\HealthCheckController;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\TerminableInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class HealthCheckControllerTest extends KernelTestCase
@@ -40,7 +41,9 @@ class HealthCheckControllerTest extends KernelTestCase
                 );
             }
         } finally {
-            $kernel->terminate($request, $response);
+            if ($kernel instanceof TerminableInterface) {
+                $kernel->terminate($request, $response);
+            }
             restore_exception_handler();
         }
     }

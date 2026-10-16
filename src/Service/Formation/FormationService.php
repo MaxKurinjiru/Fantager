@@ -353,8 +353,8 @@ class FormationService
             $prepared[] = [
                 'position' => $position,
                 'hero' => $hero,
-                'strategy' => $this->tacticsNormalizer->normalizeStrategy($slotData['strategy'] ?? []),
-                'spell_priorities' => $this->tacticsNormalizer->normalizeSpellPriorities($slotData['spell_priorities'] ?? []),
+                'strategy' => $this->tacticsNormalizer->normalizeStrategy($slotData['strategy']),
+                'spell_priorities' => $this->tacticsNormalizer->normalizeSpellPriorities($slotData['spell_priorities']),
             ];
         }
 
