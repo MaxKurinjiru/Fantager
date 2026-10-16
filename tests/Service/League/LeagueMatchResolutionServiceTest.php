@@ -342,6 +342,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->createMock(\App\Service\Notification\NotificationHelper::class),
             $this->createMock(\App\Repository\Headquarters\HeadquartersRepository::class),
             $this->createMock(\App\Service\Economy\FinancialCrisisService::class),
+            $this->createStub(\App\Service\Hero\HeroProgressionService::class),
         );
 
         $partial->expects($this->once())

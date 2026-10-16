@@ -19,7 +19,7 @@ class MarketplacePriceGuidanceTest extends TestCase
     {
         $hero = new Hero();
         $calculator = $this->createMock(HeroRatingCalculator::class);
-        $calculator->method('estimateMarketPrice')->with($hero)->willReturn(100);
+        $calculator->expects($this->once())->method('estimateMarketPrice')->with($hero)->willReturn(100);
         $itemService = $this->createMock(ItemService::class);
 
         $guidance = (new MarketplacePriceGuidance($calculator, $itemService))->forHero($hero);
@@ -67,7 +67,7 @@ class MarketplacePriceGuidanceTest extends TestCase
         $item = new Item();
         $calculator = $this->createMock(HeroRatingCalculator::class);
         $itemService = $this->createMock(ItemService::class);
-        $itemService->method('estimateMarketPrice')->with($item)->willReturn(180);
+        $itemService->expects($this->once())->method('estimateMarketPrice')->with($item)->willReturn(180);
 
         $guidance = (new MarketplacePriceGuidance($calculator, $itemService))->forItem($item);
 

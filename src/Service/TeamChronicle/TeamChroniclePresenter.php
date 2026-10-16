@@ -105,6 +105,7 @@ class TeamChroniclePresenter
 
         $typesWithRace = [
             ChronicleEventType::SummonCompleted,
+            ChronicleEventType::StartingRoster,
             ChronicleEventType::HeroPurchased,
             ChronicleEventType::HeroSold,
             ChronicleEventType::TrainerPurchased,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ValueObject\Combat;
 
 use App\Enum\MatchType;
+use App\Service\Combat\CombatEngine;
 
 /**
  * Pure input for {@see \App\Service\Combat\CombatEngine}.
@@ -16,7 +17,7 @@ final class CombatMatchRequest
         private CombatSide $sideB,
         private MatchType $matchType,
         private int $seed,
-        private int $engineVersion = 6,
+        private int $engineVersion = CombatEngine::ENGINE_VERSION,
     ) {
     }
 

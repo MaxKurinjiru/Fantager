@@ -113,6 +113,41 @@ class TeamChroniclePresenterTest extends TestCase
         );
     }
 
+    public function testPresentEntryTranslatesStartingRosterRace(): void
+    {
+        $repository = $this->createMock(TeamChronicleRepository::class);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(
+            static fn (string $id, array $params = [], ?string $domain = null, ?string $locale = null): string => match ($id) {
+                'activity.type.starting_roster' => 'Founding member',
+                'heroes.race_dwarf' => 'Dwarf',
+                'activity.starting_roster' => sprintf(
+                    'Hero %s (%s) joined the team as a founding member.',
+                    $params['%hero%'] ?? $params['hero'] ?? '',
+                    $params['%race%'] ?? $params['race'] ?? '',
+                ),
+                default => $id,
+            }
+        );
+
+        $log = new TeamChronicle();
+        $log->setTeam(new Team());
+        $log->setType(ChronicleEventType::StartingRoster);
+        $log->setSubjectKey('activity.starting_roster');
+        $log->setSubjectParams([
+            'hero' => 'Dain Underhill',
+            'race' => 'dwarf',
+        ]);
+
+        $presenter = new TeamChroniclePresenter($repository, $translator);
+        $entry = $presenter->presentEntry($log, 'en');
+
+        $this->assertSame(
+            'Hero Dain Underhill (Dwarf) joined the team as a founding member.',
+            $entry['message'],
+        );
+    }
+
     public function testPresentTeamRenamedEntry(): void
     {
         $repository = $this->createMock(TeamChronicleRepository::class);

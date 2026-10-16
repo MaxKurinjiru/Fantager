@@ -163,7 +163,7 @@ CombatMatchRequest
   sideA, sideB: CombatSide
   matchType: MatchType
   seed: int                         // required
-  engineVersion: int = 2
+  engineVersion: int = CombatEngine::ENGINE_VERSION  // 7
 
 CombatSide
   teamId: int

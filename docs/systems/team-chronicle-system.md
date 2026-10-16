@@ -45,7 +45,7 @@ Table: `team_chronicle` — entity `App\Entity\Team\TeamChronicle`.
 
 Entries are **append-only**. Individual rows are not updated; bulk pruning after a configurable retention period is planned but not implemented yet.
 
-Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter` + `messages.*` keys under `activity.*`).
+Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter` + `messages.*` keys under `activity.*`). Stored race slugs (`starting_roster`, summon, marketplace hero/trainer buy/sell, arena adaptation) translate through `heroes.race_*`.
 
 ---
 

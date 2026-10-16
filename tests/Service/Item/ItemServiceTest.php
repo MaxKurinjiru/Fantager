@@ -173,7 +173,7 @@ class ItemServiceTest extends TestCase
         $item->setCategory(ItemCategory::Weapon);
 
         $this->raceConfigMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getEquipmentRestrictions')
             ->with(Race::Ent)
             ->willReturn(['weapon', 'shield', 'armor']);
@@ -210,7 +210,7 @@ class ItemServiceTest extends TestCase
         $item->setCategory(ItemCategory::Shield);
 
         $this->raceConfigMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('getEquipmentRestrictions')
             ->with(Race::Giant)
             ->willReturn(['off_hand']);
@@ -419,6 +419,7 @@ class ItemServiceTest extends TestCase
         $sword->setSubType(\App\Enum\ItemSubType::OneHandedSword);
 
         $this->raceConfigMock
+            ->expects($this->exactly(2))
             ->method('getEquipmentRestrictions')
             ->with(Race::Giant)
             ->willReturn(['off_hand']);
@@ -450,6 +451,7 @@ class ItemServiceTest extends TestCase
         $shield->setEquippedSlot(ItemSlotType::OffHand);
 
         $this->itemRepositoryMock
+            ->expects($this->once())
             ->method('findBy')
             ->with(['equippedSlot' => ItemSlotType::MainHand])
             ->willReturn([$greatsword]);

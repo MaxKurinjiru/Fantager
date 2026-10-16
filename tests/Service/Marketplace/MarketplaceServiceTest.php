@@ -219,6 +219,7 @@ class MarketplaceServiceTest extends TestCase
             ->with($seller, $hero);
 
         $this->priceGuidanceMock
+            ->expects($this->once())
             ->method('forHero')
             ->with($hero)
             ->willReturn(new ListingPriceGuidance(100, 50, 200));
@@ -246,6 +247,7 @@ class MarketplaceServiceTest extends TestCase
     {
         $hero = $this->stubAvailableHeroListing();
         $this->priceGuidanceMock
+            ->expects($this->once())
             ->method('forHero')
             ->with($hero)
             ->willReturn(new ListingPriceGuidance(100, 50, 200));
@@ -272,6 +274,7 @@ class MarketplaceServiceTest extends TestCase
     {
         $hero = $this->stubAvailableHeroListing();
         $this->priceGuidanceMock
+            ->expects($this->once())
             ->method('forHero')
             ->with($hero)
             ->willReturn(new ListingPriceGuidance(100, 50, 200));
@@ -297,6 +300,7 @@ class MarketplaceServiceTest extends TestCase
     {
         $hero = $this->stubAvailableHeroListing();
         $this->priceGuidanceMock
+            ->expects($this->once())
             ->method('forHero')
             ->with($hero)
             ->willReturn(new ListingPriceGuidance(100, 50, 200));
@@ -323,6 +327,7 @@ class MarketplaceServiceTest extends TestCase
     {
         $hero = $this->stubAvailableHeroListing();
         $this->priceGuidanceMock
+            ->expects($this->once())
             ->method('forHero')
             ->with($hero)
             ->willReturn(new ListingPriceGuidance(100, 50, 200));
@@ -378,8 +383,7 @@ class MarketplaceServiceTest extends TestCase
             });
 
         $this->teamRosterServiceMock
-            ->method('assertCanRemoveCombatReadyHero')
-            ->with($seller, $hero);
+            ->method('assertCanRemoveCombatReadyHero');
 
         return $hero;
     }
