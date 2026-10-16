@@ -1,6 +1,6 @@
 # Auth System
 
-Reference: [architecture/overview.md](../architecture/overview.md#security-requirements)
+Reference: [architecture/overview.md](../architecture/overview.md#security)
 
 Status: Live (session email/password)  
 Screens: [00-auth-screens.md](../screens/00-auth-screens.md), [01-kingdom-selection.md](../screens/01-kingdom-selection.md), [19-player-profile-settings.md](../screens/19-player-profile-settings.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
@@ -10,10 +10,14 @@ Purpose: Document authentication, registration, session management, and authoriz
 
 ## Remaining work
 
-- [x] Register (kingdom + nickname + NPC team), email verify, login, logout, password reset, account settings (locale, UI prefs, email change, delete)
-- [ ] Session password change — stays **Planned** (A8.6 keep Planned; later product decision)
-- [ ] Extra security headers (CSP / HSTS / frame options) — deferred; cookies already httpOnly + `secure=auto` + `sameSite=lax`
-- [ ] Dedicated registration/login/session PHPUnit suite (today: `UserSettingsServiceTest`, `PlayerInactivityServiceTest`)
+- Dedicated registration/login/session PHPUnit suite (today: `UserSettingsServiceTest`, `PlayerInactivityServiceTest`)
+
+## Parked
+
+Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+
+- Session password change — Planned. Lock: [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned)
+- Extra security headers (CSP / HSTS / frame options) — not live; cookies already httpOnly + `secure=auto` + `sameSite=lax`
 
 ## Overview
 

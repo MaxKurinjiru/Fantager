@@ -4,11 +4,14 @@ Canonical **gameplay contracts**. On conflict with [product/overview.md](../prod
 
 Open design questions: [product/known-issues.md](../product/known-issues.md) — do not invent mechanics for **Open** rows.
 
-The status snapshot below is one word plus a link. Alignment waves 0–8 are complete ([../roadmap/current.md](../roadmap/current.md); archive: [../roadmap/alignment-waves.md](../roadmap/alignment-waves.md)). Leftovers live in each system doc’s Remaining work section — not in this table.
+The status snapshot below is one word plus a link. Leftovers live in that system’s **Remaining work** or **Parked** section — not in this table. Alignment archive: [../roadmap/current.md](../roadmap/current.md), [../roadmap/alignment-waves.md](../roadmap/alignment-waves.md).
 
 ## Remaining work convention
 
-Each system doc should open with:
+Each system doc should open with Status / Screens / Open design.
+
+- **Remaining work** — only genuine unfinished work (tests, wiring). Omit the heading when there is none. Do not list shipped `[x]` items.
+- **Parked** — Later product decisions for that system. Bullets **without checkboxes** so they are not a backlog. Do not implement unless the user explicitly asks. Index: [product/known-issues.md](../product/known-issues.md) § Later product decisions.
 
 ```markdown
 Status: Live | Partial | Planned
@@ -16,11 +19,15 @@ Screens: …    Code: ../architecture/screen-code-map.md
 Open design: ../product/known-issues.md #n (if any)
 
 ## Remaining work
-- [x] shipped …
-- [ ] parked item (Design first → known-issues § Later product decisions)
+- genuine unfinished item
+
+## Parked
+Do not implement unless the user explicitly asks.
+
+- Topic — Planned. Spec: …
 ```
 
-Locks use **`## Locked:`** (exactly that heading level) so [AGENTS.md](../../AGENTS.md) and grep find them. Do not duplicate Remaining work in the roadmap. [../roadmap/README.md](../roadmap/README.md) only points here and to known-issues.
+Locks use **`## Locked:`** (exactly that heading level) so [AGENTS.md](../../AGENTS.md) and grep find them. Do not duplicate Remaining work or Parked in the roadmap. [../roadmap/README.md](../roadmap/README.md) only points here and to known-issues.
 
 ## System files
 
@@ -55,7 +62,7 @@ Locks use **`## Locked:`** (exactly that heading level) so [AGENTS.md](../../AGE
 
 ## Status snapshot
 
-One-line index of the **live contract**. Leftovers, Cut items, and Planned later decisions live in that doc’s Remaining work — do not restate them here. Alignment waves 0–8 are complete ([../roadmap/current.md](../roadmap/current.md)).
+One-line index of the **live contract**. Leftovers and Planned later decisions live in that doc’s Remaining work or Parked — do not restate them here.
 
 | Area | Status | Spec |
 |------|--------|------|

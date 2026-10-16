@@ -2,7 +2,7 @@
 
 > **Status:** Not implemented. The dungeon backend was removed from the codebase; this document preserves the intended design for a future phase (after the combat engine is complete).
 
-Reference: [product/overview.md](../product/overview.md#deferred-not-in-core) (parked; not a live system).
+Reference: [product/overview.md](../product/overview.md#deferred) (parked; not a live system).
 
 Purpose: Detail dungeon mechanics, rewards, and run processing.
 

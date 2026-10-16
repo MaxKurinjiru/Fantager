@@ -36,3 +36,4 @@ Each screen file separates **Implemented** (what Twig/API does) from **Planned**
 | [18-arena-management.md](18-arena-management.md) | Arena (HQ panel) |
 | [18a-friendly-matches.md](18a-friendly-matches.md) | Friendly matches |
 | [19-player-profile-settings.md](19-player-profile-settings.md) | Player profile and settings (password change / extras stay Planned) |
+| [20-finance.md](20-finance.md) | Finance ledger |

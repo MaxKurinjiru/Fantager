@@ -8,13 +8,6 @@ Open design: none
 
 Purpose: Document autonomous behaviors of NPC teams including tactics, training, economy, and scheduler integration.
 
-## Remaining work
-
-- [x] Autonomous NPC tactics, training, and economy on ticks
-- [x] Daily summons and marketplace hero buys share the player race pool (A7.9 / [#14](../product/known-issues.md))
-
----
-
 ## 1. Economic Archetypes (Roles)
 
 Every NPC team is assigned an archetype based on a deterministic modulo calculation of its database ID: `team_id % 4`. This role dictates priorities for facility upgrades and marketplace activity:

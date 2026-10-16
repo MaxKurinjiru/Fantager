@@ -50,14 +50,14 @@ Quick reference: which files implement each game screen.
 | [18-arena-management.md](../screens/18-arena-management.md) | `/app/arena` → `/app/hq?facility=arena` | `Web\ArenaController` (redirect), `Web\HeadquartersController` | `Api\V1\ArenaController` | `templates/components/hq/facility_panel/_arena.html.twig` | `hq`, `arena`, `arena_analytics` |
 | [18a-friendly-matches.md](../screens/18a-friendly-matches.md) | `/app/friendly-matches` | `Web\FriendlyMatchController` | `Api\V1\ArenaController`, `Api\V1\FriendlyMatchFormationController` | `templates/friendly_matches/` | `friendly_matches` |
 | [19-player-profile-settings.md](../screens/19-player-profile-settings.md) | `/app/settings`, account modal | `Web\SettingsController` | `POST /app/settings/*` (JSON from modal) | `templates/components/layout/_account_settings_modal.html.twig` | `account_settings`, `profile_settings`, `modal` |
+| [20-finance.md](../screens/20-finance.md) | `/app/finance` | `Web\FinanceController` | `Api\V1\FinanceController` (`/status`, `/recent`) | `templates/finance/`, `templates/components/finance/` | `form-auto-submit` (page); `ledger` + `modal` (navbar recent list) |
 
 ---
 
-## Finance & notifications (cross-cutting)
+## Notifications & mail (cross-cutting)
 
 | Feature | Web route | Web controller | API | Twig / Stimulus |
 |---------|-----------|----------------|-----|-----------------|
-| Finance ledger | `/app/finance` | `Web\FinanceController` | `Api\V1\FinanceController` | `templates/finance/`, `ledger` |
 | Notifications modal | (navbar) | — | `Api\V1\NotificationController` | `templates/components/notifications/` | `notifications` |
 | Player mail | (navbar / community) | — | `Api\V1\MessageController` | `templates/components/mail/` | `mail` |
 

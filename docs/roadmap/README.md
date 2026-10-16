@@ -8,7 +8,7 @@
 
 **Open** rows in [product/known-issues.md](../product/known-issues.md) (currently none). Later product decisions (wiki, password change, SSE, home-advantage, …) stay parked until an explicit product ask.
 
-Per-feature leftover steps belong in the matching `systems/*.md` Remaining work section, not in a second checklist here.
+Per-feature leftover steps belong in the matching `systems/*.md` Remaining work or Parked section, not in a second checklist here.
 
 ## Parked
 

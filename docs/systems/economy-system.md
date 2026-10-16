@@ -1,19 +1,18 @@
 # Economy System
 
-Reference: [product/overview.md](../product/overview.md#23-economy-system)
+Reference: [product/overview.md](../product/overview.md#economy)
 
 Status: Live  
-Screens: [02-team-dashboard.md](../screens/02-team-dashboard.md) (`/app/finance`) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Screens: [20-finance.md](../screens/20-finance.md), [02-team-dashboard.md](../screens/02-team-dashboard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
 Open design: none
 
 Purpose: Document currencies, sinks/sources, anti-exploit measures and economic invariants.
 
-## Remaining work
+## Parked
 
-- [x] Gold ledger, Royal Treasury, `/app/finance`, marketplace tax
-- [x] Listing price band (A7.10 / [#15](../product/known-issues.md))
-- [x] Ledger types `spell_slot_cost` / `morale_restoration` reserved — do not write (A6.2)
-- [ ] Diminishing returns on repeated activities — stays planned ([known-issues.md](../product/known-issues.md) § Later product decisions)
+Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+
+- Diminishing returns on repeated activities — Planned
 
 ---
 
@@ -154,7 +153,7 @@ Economy features are **not** merged into a single page. The sidebar exposes two 
 | `GET /app/marketplace` | `Web\MarketplaceController` | Marketplace tabs: browse, sell, my listings, transaction history, basic equipment |
 | `GET /app/finance` | `Web\FinanceController` | Financial ledger with type/actor filters and overview summary |
 
-See [screens/15-marketplace.md](../screens/15-marketplace.md) and [architecture/routes.md](../architecture/routes.md#economy--marketplace).
+See [screens/20-finance.md](../screens/20-finance.md), [screens/15-marketplace.md](../screens/15-marketplace.md), and [architecture/routes.md](../architecture/routes.md#economy--marketplace).
 
 ---
 

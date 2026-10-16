@@ -1,20 +1,12 @@
 # Marketplace System
 
-Reference: [product/overview.md](../product/overview.md#211-marketplace-system), [MarketplaceService.php](../../src/Service/Marketplace/MarketplaceService.php), [MarketplaceTransaction.php](../../src/Entity/Marketplace/MarketplaceTransaction.php)
+Reference: [product/overview.md](../product/overview.md#marketplace), [MarketplaceService.php](../../src/Service/Marketplace/MarketplaceService.php), [MarketplaceTransaction.php](../../src/Entity/Marketplace/MarketplaceTransaction.php)
 
 Status: Live (listing price band — [#15](../product/known-issues.md) Resolved / A7.10)  
 Screens: [15-marketplace.md](../screens/15-marketplace.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
 Open design: none. Lock: [Locked: listing price band](#locked-listing-price-band).
 
 Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction records, and chronicle integration.
-
-## Remaining work
-
-- [x] Listings with ratings and trait; filter/sort by value and OVR
-- [x] Player buys have no race filter; NPC hero buys use the shared summoning pool (A7.9 / [#14](../product/known-issues.md))
-- [x] Listing prices in the suggested band (−50% / +100%)
-
----
 
 ## Listing Types
 

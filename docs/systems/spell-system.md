@@ -1,6 +1,6 @@
 # Spell System
 
-Reference: [product/overview.md](../product/overview.md#29-spell-system), [screens/11-spell-management.md](../screens/11-spell-management.md)
+Reference: [product/overview.md](../product/overview.md#spells), [screens/11-spell-management.md](../screens/11-spell-management.md)
 
 Status: Live (catalog T1–T5 — [#16](../product/known-issues.md) Resolved / A7.11)  
 Screens: [11-spell-management.md](../screens/11-spell-management.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
@@ -8,12 +8,6 @@ Open design: none. Lock: [Locked: catalog T1–T5](#locked-catalog-t1t5).
 
 Purpose: Document spell schools, mastery, learning, equip slots, and academy UI.
 
-## Remaining work
-
-- [x] Library, learn for gold, slot equip, seeded catalog T1–T5
-- [x] No essence; `spell_slot_cost` reserved — do not write (A6.2)
-
----
 
 ## Overview
 

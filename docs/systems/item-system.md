@@ -1,20 +1,12 @@
 # Item System
 
-Reference: [product/overview.md](../product/overview.md#28-item-system)
+Reference: [product/overview.md](../product/overview.md#items)
 
 Status: Live (no enchanting — [#2](../product/known-issues.md) Resolved / A7.4 Cut)  
 Screens: [10-item-equipment.md](../screens/10-item-equipment.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
 Open design: none for enchanting. Occupancy locked ([#8](../product/known-issues.md)).
 
 Purpose: Document items, equipment slots, dismantling, durability/repair, and marketplace interactions.
-
-## Remaining work
-
-- [x] Equip/unequip, repair, dismantle, merchant, marketplace escrow
-- [x] Occupancy: nine slots, two-handed, dual-wield (A7.3 / #8)
-- [x] Enchanting cut — not in the live game (A7.4 / #2)
-
----
 
 ## Item Entity
 

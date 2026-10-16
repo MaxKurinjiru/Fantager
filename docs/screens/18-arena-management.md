@@ -30,7 +30,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 - History table: date, opponent, ticket price, attendance, occupancy %, gold
 - Occupancy is `attendance / capacity × 100` from that payout’s ledger context; missing attendance or capacity shows an em dash
 - Empty state: same copy as no home-match revenue yet
-- Link to `/app/finance`
+- Link to `/app/finance` ([20-finance.md](20-finance.md))
 
 ### Revenue model (backend)
 

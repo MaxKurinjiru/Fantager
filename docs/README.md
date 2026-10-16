@@ -5,7 +5,7 @@ Pick a view. This file is an index, not a status table.
 **Live rules:** matching `systems/*.md`.  
 **Live UI:** [architecture/screen-code-map.md](architecture/screen-code-map.md) + Twig.  
 **Overview vs live:** [product/overview.md](product/overview.md) loses to `systems/` on conflict.  
-**Now / next:** [roadmap/current.md](roadmap/current.md) — alignment waves 0–8 complete; leftovers in `systems/` Remaining work and `future/`.
+**Now / next:** [roadmap/current.md](roadmap/current.md) — leftovers in `systems/` Remaining work / Parked and `future/`.
 
 ## Views
 
@@ -24,7 +24,7 @@ Conflicts resolve as:
 2. **Live UI:** [architecture/screen-code-map.md](architecture/screen-code-map.md) + Twig/Stimulus
 3. **Routes / schema:** [architecture/routes.md](architecture/routes.md), [architecture/entities.md](architecture/entities.md)
 4. **[product/overview.md](product/overview.md):** overview only; **systems win** on conflict
-5. **[systems/README.md](systems/README.md) status snapshot:** one word + link. Leftovers in that system’s Remaining work. Wave chronicle: [roadmap/alignment-waves.md](roadmap/alignment-waves.md)
+5. **[systems/README.md](systems/README.md) status snapshot:** one word + link. Leftovers in that system’s Remaining work or Parked. Wave chronicle: [roadmap/alignment-waves.md](roadmap/alignment-waves.md)
 
 ## How to use
 
@@ -32,7 +32,7 @@ Conflicts resolve as:
 - Do not invent mechanics for **Open** rows in known-issues
 - Deferred design: [future/](future/)
 - Parked repo meta and the original screen sketch: [`_deferred/`](../_deferred/)
-- Remaining work for a feature lives in that feature’s `systems/*.md` (see the Remaining work convention there)
+- Remaining work and Parked items for a feature live in that feature’s `systems/*.md` (see the Remaining work convention there)
 - Glossary: [product/glossary.md](product/glossary.md)
 
 ## Former filenames

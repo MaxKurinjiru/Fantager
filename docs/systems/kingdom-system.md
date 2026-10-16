@@ -1,17 +1,12 @@
 # Kingdom System
 
-Reference: [product/overview.md](../product/overview.md#21-kingdom-system--server-split)
+Reference: [product/overview.md](../product/overview.md#kingdom)
 
 Status: Live  
 Screens: [01-kingdom-selection.md](../screens/01-kingdom-selection.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
 Open design: none for XP — [known-issues.md](../product/known-issues.md) #6 Resolved (A7.1).
 
 Purpose: Document the live multi-tenant kingdom model — settings, initialization, query isolation, game-speed multipliers, and the public list API.
-
-## Remaining work
-
-- [x] Shared DB + `kingdom_id` scoping, init command, registration pick, `GET /api/v1/kingdoms`
-- [x] `level_cap` / `xp_modifier` production use (A7.1)
 
 Do not invent a separate process or database per kingdom.
 

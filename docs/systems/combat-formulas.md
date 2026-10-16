@@ -8,11 +8,6 @@ Open design: none. In-combat morale change / race synergy Cut ([combat-system.md
 
 Purpose: Derived combat stats, durability scaling, mastery bonuses, and trait modifiers. Match rules, waves, and `combat_log` stay in [combat-system.md](combat-system.md).
 
-## Remaining work
-
-- [x] Equipped profile: form on HP, fatigue on KON, morale damage bands, Ent armor, Orc melee vs non-Orcs
-- [x] Haste/Shock YAML speed percents on the initiative **sort**, not AP (`ENGINE_VERSION` 7)
-
 Do not edit formulas here without matching `CombatStatCalculator` / `CombatEngine`. Do not invent synergy tables.
 
 ---

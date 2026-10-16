@@ -8,12 +8,6 @@ Open design: none
 
 Purpose: Release teams from verified players who stop playing, so NPC slots remain available for active managers.
 
-## Remaining work
-
-- [x] Warning at 21 days, team release at 28 days; no dashboard banner (by design)
-
----
-
 ## Overview
 
 Verified players must stay active to keep their team. Activity is tracked on `auth_user.last_activity_at` and updated on login and authenticated game requests (at most once per hour).

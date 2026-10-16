@@ -7,15 +7,6 @@ Screens: navbar modal — [screen-code-map.md](../architecture/screen-code-map.m
 
 Purpose: In-game alerts for the **logged-in player account** (distinct from team-to-team mail and from the append-only team chronicle).
 
-## Remaining work
-
-- [x] Entity, `NotificationHelper`, read API, navbar modal with unread badge
-- [x] List query contract from `NotificationController` (limit default 10, max 100)
-- [x] Unused types stay reserved — do not add writers (A6.2)
-- [x] Locale switch re-renders notifications like chronicle (A6.4)
-
----
-
 ## Implementation Status
 
 | Layer | Status |

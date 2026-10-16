@@ -1,6 +1,6 @@
 # Calendar & Server Ticks System
 
-Reference: [product/overview.md](../product/overview.md#22-calendar--server-ticks), [league-system.md](league-system.md)
+Reference: [product/overview.md](../product/overview.md#calendar-and-ticks), [league-system.md](league-system.md)
 
 Status: Live  
 Screens: [14-calendar.md](../screens/14-calendar.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
@@ -8,10 +8,11 @@ Open design: none
 
 Purpose: Document the weekly schedule, automated event sequences, daily/weekly server ticks, and the timeline of a league season.
 
-## Remaining work
+## Parked
 
-- [x] `/app/calendar`, kingdom feed API, scheduled live ticks
-- [x] Dungeon / crafting ticks deferred — not in the runner ([future/](../future/))
+Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+
+- Dungeon / crafting ticks — Deferred ([future/](../future/)); not in the runner
 
 ---
 

@@ -205,8 +205,8 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 
 | Screen | Route | Purpose |
 |--------|-------|---------|
-| **Marketplace** | `/app/marketplace` | Browse, sell, my listings, transaction history, basic equipment merchant |
-| **Finance ledger** | `/app/finance` | Full financial audit log with filters |
+| **Marketplace** | `/app/marketplace` | Browse, sell, my listings, transaction history, basic equipment merchant — [15-marketplace.md](../screens/15-marketplace.md) |
+| **Finance ledger** | `/app/finance` | Full financial audit log with filters — [20-finance.md](../screens/20-finance.md) |
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|

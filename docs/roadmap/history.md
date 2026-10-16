@@ -332,4 +332,4 @@ These shipped with the playable core or during alignment. They are **not** an op
 | **Milestone 8 (Endgame & Crafting)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / parked** (dungeons, crafting, quests in `future/`) |
 | **Milestone 9 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / parked** |
 
-*Last updated: 16 October 2026 — Alignment waves 0–8 complete. This file is the M1–9 chronicle, not a work queue. Now / next: [current.md](current.md). Wave archive: [alignment-waves.md](alignment-waves.md). Leftovers: each `systems/*.md` Remaining work.*
+*Last updated: 16 October 2026 — Alignment waves 0–8 complete. This file is the M1–9 chronicle, not a work queue. Now / next: [current.md](current.md). Wave archive: [alignment-waves.md](alignment-waves.md). Leftovers: each `systems/*.md` Remaining work or Parked.*

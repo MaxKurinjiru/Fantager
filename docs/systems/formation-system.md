@@ -1,6 +1,6 @@
 # Formation System
 
-Reference: [product/overview.md](../product/overview.md#261-formation-system)
+Reference: [product/overview.md](../product/overview.md#formations)
 
 Status: Live (lineup + L1/L2 slot editor; no synergy)  
 Screens: [07-formation-setup.md](../screens/07-formation-setup.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
@@ -8,13 +8,11 @@ Open design: none for L1/L2. Lock: [Locked: L1/L2 editor](#locked-l1l2-editor). 
 
 Purpose: Document formation representation, save/kickoff validation, slot strategy JSON, and fixture assignment. **Race/role synergy is not part of this system.** Team chemistry is [team-system.md](team-system.md#locked-chemistry-flavor) (flavor for matches). In-combat tables are Cut ([combat-system.md](combat-system.md#locked-no-race-synergy--no-simulate)).
 
-## Remaining work
+## Parked
 
-- [x] CRUD, 6 slots, drag-and-drop lineup, fixture default/saved/custom, promote, temporary cleanup
-- [x] Unique `hero_id` at save; kickoff assigned → default → roster fill (A6.1 / #10)
-- [x] Player L1/L2 slot editor (A7.6 / #12); save sanitizes JSON
-- [ ] `POST /api/v1/formations/simulate` (Planned; later product decision — not live #9)
-- [x] Synergy from formation composition Cut (A7.5 / #9) — chemistry is [team-system.md](team-system.md#locked-chemistry-flavor); in-combat tables are not in the engine
+Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+
+- `POST /api/v1/formations/simulate` — Planned; adjacent to combat simulate Cut ([combat-system.md](combat-system.md#locked-no-race-synergy--no-simulate))
 
 ## Data Model
 

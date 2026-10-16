@@ -8,14 +8,6 @@ Open design: none for the compatible-race pool. Lock: [Locked: Genie summon pool
 
 Purpose: Document summoning mechanics, costs, cooldowns, race selection, and hero generation.
 
-## Remaining work
-
-- [x] Compatible-race summon, cooldowns, `TeamSummonHistory`, trait reveal
-- [x] Shared pool: relationship ≥ 50, Genie adaptation ≥ 80 (A7.9 / [#14](../product/known-issues.md))
-- [x] `summon_stat_total_cap` reserved / unread (A6.5) — do not apply or show on HQ
-
----
-
 ## Overview
 
 Teams can summon new heroes through the **Summoning Chamber** — a facility in their Headquarters. Each summon:

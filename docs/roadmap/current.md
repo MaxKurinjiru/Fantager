@@ -7,7 +7,7 @@ Alignment waves 0–8 are **complete**. Do not invent a next alignment step. Do 
 | Live rules | matching `docs/systems/*.md` (`## Locked:` when present) |
 | Live UI | [architecture/screen-code-map.md](../architecture/screen-code-map.md) + Twig/Stimulus |
 | Open design | [product/known-issues.md](../product/known-issues.md) — do not invent mechanics for **Open** rows |
-| Per-feature leftovers | that system’s Remaining work section |
+| Per-feature leftovers | that system’s Remaining work or Parked section |
 | Deferred design | [`docs/future/`](../future/) |
 | Wave chronicle (archive) | [alignment-waves.md](alignment-waves.md) |
 | Feature chronicle (M1–9) | [history.md](history.md) |

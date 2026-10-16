@@ -12,7 +12,7 @@ Entry point for Cursor agents, Copilot, and other AI assistants working in this 
 | **Web page / screen** | [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + screen in [docs/screens/](docs/screens/) + [docs/guides/ui.md](docs/guides/ui.md) | `src/Controller/Web/`, `templates/`, often API + Stimulus |
 | **Domain logic / service** | [docs/systems/](docs/systems/) + [docs/architecture/entities.md](docs/architecture/entities.md) | `src/Service/`, `src/Entity/`, `tests/Service/` |
 | **Schema / migration** | [docs/architecture/entities.md](docs/architecture/entities.md) | `migrations/`, entities, repositories |
-| **Bugfix / extend existing feature** | Matching `systems/*.md` Remaining work + [docs/screens/](docs/screens/) | Mirror patterns in the same domain |
+| **Bugfix / extend existing feature** | Matching `systems/*.md` Remaining work / Parked + [docs/screens/](docs/screens/) | Mirror patterns in the same domain |
 | **Domain terms** | [docs/product/glossary.md](docs/product/glossary.md) | — |
 | **Stack & Docker** | [.github/copilot-instructions.md](.github/copilot-instructions.md) | — |
 
@@ -86,7 +86,7 @@ When creating, deleting, moving, or renaming files/directories:
 3. If stack or Docker commands changed, update [.github/copilot-instructions.md](.github/copilot-instructions.md).
 4. Search repo-wide for old references and update stale links.
 
-When adding routes, entities, enums, or features also update [docs/architecture/routes.md](docs/architecture/routes.md), [docs/architecture/entities.md](docs/architecture/entities.md), [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md), the matching `systems/*.md` Remaining work, and the status snapshot in [docs/systems/README.md](docs/systems/README.md).
+When adding routes, entities, enums, or features also update [docs/architecture/routes.md](docs/architecture/routes.md), [docs/architecture/entities.md](docs/architecture/entities.md), [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md), the matching `systems/*.md` Remaining work / Parked, and the status snapshot in [docs/systems/README.md](docs/systems/README.md).
 
 Make small, reversible changes. Do not change DB/backup/CI infrastructure without consulting maintainers.
 

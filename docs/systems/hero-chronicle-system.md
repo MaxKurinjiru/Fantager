@@ -8,13 +8,6 @@ Open design: none
 
 Purpose: Document the **hero chronicle** — an append-only per-hero event log shown on the Hero Detail **History** tab.
 
-## Remaining work
-
-- [x] Append-only log on the History tab
-- [x] Event type `retired` reserved — do not write (A6.2)
-
----
-
 ## Overview
 
 The hero chronicle answers: **“What happened to this hero?”** — summons, transfers, training, matches, mastery gains, and death.

@@ -1,6 +1,6 @@
 # Combat System
 
-Reference: [product/overview.md](../product/overview.md#210-combat-system)
+Reference: [product/overview.md](../product/overview.md#combat)
 
 Status: Live (automated engine + post-match replay)  
 Screens: [12-combat-battle.md](../screens/12-combat-battle.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
@@ -9,14 +9,12 @@ Open design: none for live leftovers. Lock: [Locked: no race synergy / no simula
 
 Purpose: Live combat contract — eligibility, scoring, hex layout, simulation / `combat_log`, formation AI, post-match boundary. Derived stats live in [combat-formulas.md](combat-formulas.md).
 
-## Remaining work
+## Parked
 
-- [x] Automated engine + replay; follow-up 6.1 steps 2–7
-- [x] L1/L2 editor (A7.6 / [#12](../product/known-issues.md)); HUD lock; Haste/Shock on initiative sort
-- [x] In-combat morale / race synergy / simulate Cut (A7.5 / [#9](../product/known-issues.md))
-- [x] `MatchType::Arena` reserved — do not write (A6.2)
-- [ ] Combat home-advantage — stays **Planned** ([known-issues.md](../product/known-issues.md) § Later product decisions)
-- [ ] `POST /api/v1/combat/simulate` stays Planned / Cut — do not ship ([#locked-no-race-synergy--no-simulate](#locked-no-race-synergy--no-simulate))
+Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+
+- Combat home-advantage — Planned
+- `POST /api/v1/combat/simulate` — Cut; see [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)
 
 ---
 
@@ -48,7 +46,7 @@ There is **no** mid-battle player input (no turn submission, target picking, Aut
 
 Status effect config: [config/game/status_effects.yaml](../../config/game/status_effects.yaml) — loaded by `StatusEffectConfig` and used by `CombatEngine` for **durations**, **tick damage/heal percents**, and **Haste/Shock speed percents on the initiative sort** (hardcoded fallbacks remain if a key is missing). Other combat modifiers from the YAML (accuracy, skip turn, etc.) are still applied via engine logic where implemented. Formulas: [combat-formulas.md](combat-formulas.md). Haste/Shock lock: [combat-formulas.md — Speed / Initiative](combat-formulas.md#speed--initiative-init).
 
-Core league simulation (6.1) and follow-up steps 2–7 are shipped — see Remaining work. Preparation length, fumble-without-retarget, and the round-200 kill-score rule are **locked**. Resurrection (`revive`) and L3 sequences stay out. Per-slot L1/L2 editor shipped in A7.6. In-combat `morale_change` / Volatile / Battle Hardened is **Cut**. Race synergy and `POST /api/v1/combat/simulate` are **Cut** ([Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)).
+Core league simulation (6.1) and follow-up steps 2–7 are shipped. Preparation length, fumble-without-retarget, and the round-200 kill-score rule are **locked**. Resurrection (`revive`) and L3 sequences stay out. Per-slot L1/L2 editor shipped in A7.6. In-combat `morale_change` / Volatile / Battle Hardened is **Cut**. Race synergy and `POST /api/v1/combat/simulate` are **Cut** ([Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)).
 
 ## Locked: no race synergy / no simulate
 
@@ -466,7 +464,7 @@ High-level bias (concrete target order and heal thresholds in [L0 defaults](#l0-
 
 Config file: `config/game/combat_ai_l0.yaml`, loaded by `CombatAiL0Config`.
 
-Shipped 6.1 VO / wave / L0–L2 / graveyard work is in Remaining work (all `[x]`). L3 sequences, hybrid snapshots, Resurrection, and live match UI stay out of scope (see Out of scope above).
+L0–L2, wave orchestration, and graveyard writes are live. L3 sequences, hybrid snapshots, Resurrection, and live match UI stay out of scope (see Out of scope above).
 
 ---
 

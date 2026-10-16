@@ -4,7 +4,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Browse, buy, and list heroes, trainers, and items.
 
-**Status:** Live at `GET /app/marketplace`. Ledger is **`/app/finance`**, not a marketplace tab. Listing price band is live (A7.10 / [#15](../product/known-issues.md)). Auctions **are** live (bid API + UI). Hero sell also starts from hero-detail manage menu.
+**Status:** Live at `GET /app/marketplace`. Ledger is **`/app/finance`** ([20-finance.md](20-finance.md)), not a marketplace tab. Listing price band is live (A7.10 / [#15](../product/known-issues.md)). Auctions **are** live (bid API + UI). Hero sell also starts from hero-detail manage menu.
 
 **Live UI:** `templates/marketplace/index.html.twig`, `templates/components/marketplace/`.
 

@@ -4,7 +4,7 @@ Dual-layer design: Web (Twig + Stimulus/Turbo) and Internal API (`/api/v1`) shar
 
 | Doc | Contents |
 |-----|----------|
-| [overview.md](overview.md) | Stack, dual-layer request flow, ops, security |
+| [overview.md](overview.md) | Stack, dual-layer request flow, security, local backup |
 | [api.md](api.md) | REST shape, status codes, JSON conventions |
 | [entities.md](entities.md) | Entities, enums, naming, design decisions |
 | [routes.md](routes.md) | All Web and API routes (must match code) |

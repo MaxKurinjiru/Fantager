@@ -8,11 +8,11 @@ Open design: none
 
 Purpose: Document the **team chronicle** — an append-only event log bound to the `Team` entity, shown on the dashboard and on a dedicated full-history screen.
 
-## Remaining work
+## Parked
 
-- [x] Dashboard feed + full-history screen
-- [x] Reserved event types unused — do not write (A6.2)
-- [ ] Ownership-period filter — not live (do not invent)
+Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+
+- Ownership-period filter — not live
 
 ---
 

@@ -1,6 +1,6 @@
 # League System
 
-Reference: [product/overview.md](../product/overview.md#212-league-system)
+Reference: [product/overview.md](../product/overview.md#league)
 
 Status: Live  
 Screens: [13-league.md](../screens/13-league.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
@@ -8,10 +8,11 @@ Open design: win-streak / derby / relegation-pressure morale are **not** live (s
 
 Purpose: Document season scheduling, promotion/relegation, fixtures, standings, and rewards.
 
-## Remaining work
+## Parked
 
-- [x] Bracket from `league_tiers_config`, Berger fixtures, lockstep match tick, standings, kingdom leaderboard, season transition, gold rewards
-- [ ] League morale fiction (win-streak, derby, relegation pressure) — stay cut unless a later design step reopens them
+Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+
+- League morale fiction (win-streak, derby, relegation pressure) — Cut
 
 ## League Structure Configuration
 

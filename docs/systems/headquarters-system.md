@@ -1,6 +1,6 @@
 # Headquarters System
 
-Reference: [product/overview.md](../product/overview.md#27-headquarters-system)
+Reference: [product/overview.md](../product/overview.md#headquarters)
 
 Status: Live  
 Screens: [08-headquarters.md](../screens/08-headquarters.md), [18-arena-management.md](../screens/18-arena-management.md), [09-summoning-chamber.md](../screens/09-summoning-chamber.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
@@ -8,13 +8,12 @@ Open design: none for live facilities
 
 Purpose: Document HQ facilities, upgrades, passive bonuses, arena adaptation, and related APIs.
 
-## Remaining work
+## Parked
 
-- [x] 7 facilities (no Forge), hub panels, upgrades/downgrades, arena adaptation, live passives
-- [x] Arena + summoning via `?facility=`; attendance analytics (A7.8 / [#4](../product/known-issues.md))
-- [x] `summon_stat_total_cap` computed unread, omitted from cards/API (A6.5)
-- [ ] Visual themes / visitor access / morale-over-time — not live ([known-issues.md](../product/known-issues.md) § Later product decisions)
-- [ ] Combat home-advantage — stays **Planned** ([known-issues.md](../product/known-issues.md) § Later product decisions)
+Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+
+- Visual themes / visitor access / morale-over-time — not live
+- Combat home-advantage — Planned
 
 ---
 

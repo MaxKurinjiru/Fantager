@@ -8,10 +8,6 @@ Open design: none
 
 Purpose: Player-vs-player practice matches outside the league, with full combat consequences and fixed weekly kickoff windows.
 
-## Remaining work
-
-- [x] Player-vs-player practice, Wed/Sun 18:00, same combat engine, no standings or ticket gold
-
 ## Overview
 
 Friendly matches use the same `CombatEngine` / wave Messenger pipeline as league fixtures (`MatchType::Friendly`). They do **not** affect league standings, arena ticket revenue, or fan-base deltas. Hero XP, form, fatigue, durability, KO aging, and **permanent death** (mortality roll) apply the same as league play.

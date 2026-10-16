@@ -1,6 +1,6 @@
 # Team System
 
-Reference: [product/overview.md](../product/overview.md#26-team-system)
+Reference: [product/overview.md](../product/overview.md#team)
 
 Status: Live (chemistry flavor for matches — [#7](../product/known-issues.md) Resolved / A7.2)  
 Screens: [02-team-dashboard.md](../screens/02-team-dashboard.md), [02a-team-chronicle.md](../screens/02a-team-chronicle.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
@@ -8,12 +8,11 @@ Open design: none for chemistry. In-combat race synergy is **Cut** ([#9](../prod
 
 Purpose: Document team entities, roster rules, dashboard aggregation, and team-related mechanics.
 
-## Remaining work
+## Parked
 
-- [x] Roster of 10, NPC claim on register, dashboard, settings, history chart, chronicle, forfeit if understaffed
-- [x] Chemistry formula written to `Team.chemistry` (dashboard / history)
-- [x] Chemistry confirmed flavor-only for matches (A7.2 / #7) — live for dashboard, fan club, league tie-break
-- [ ] Dashboard SSE — stays **Planned** (A4.2; [known-issues.md](../product/known-issues.md) § Later product decisions)
+Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+
+- Dashboard SSE — Planned
 
 ## Starting Roster
 

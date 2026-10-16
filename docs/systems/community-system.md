@@ -1,6 +1,6 @@
 # Community System
 
-Reference: [product/overview.md](../product/overview.md#214-community-system)
+Reference: [product/overview.md](../product/overview.md#community)
 
 Status: Live (core)  
 Screens: [17-community.md](../screens/17-community.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
@@ -8,12 +8,12 @@ Open design: none for pin. Lock: [Locked: forum pin](#locked-forum-pin). Wiki st
 
 Purpose: Document leaderboards, private messages, forums, content moderation, and social features.
 
-## Remaining work
+## Parked
 
-- [x] Mail, forum threads/posts, content filter, public profiles
-- [x] Forum pin write path Cut (A6.3 / [#11](../product/known-issues.md))
-- [ ] Public wiki CMS — stays **Planned** (A8.5; [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned))
-- [ ] Trade / league emails — not live ([known-issues.md](../product/known-issues.md) § Later product decisions)
+Do not implement unless the user explicitly asks. Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
+
+- Public wiki CMS — Planned. Lock: [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned)
+- Trade / league emails — not live
 
 ---
 

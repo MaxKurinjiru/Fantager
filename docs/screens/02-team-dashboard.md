@@ -23,7 +23,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 - Chemistry (value / 100 + bar, `chemistry_desc` tooltip) — **flavor for matches**; combat does not read it (#7 Resolved). Live for fan club / attendance and league tie-break.
 - Reputation (value + bar)
 
-**Finance**
+**Finance** — full ledger: [20-finance.md](20-finance.md)
 
 - Treasury / gold on hand, unpaid debt, weekly expenses (payroll + HQ maintenance), period and all-time net (`components/finance/summary_stats.html.twig`)
 - Recent ledger rows with link to `/app/finance`

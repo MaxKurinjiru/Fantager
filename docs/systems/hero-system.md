@@ -1,22 +1,12 @@
 # Hero System
 
-Reference: [product/overview.md](../product/overview.md#24-hero-system)
+Reference: [product/overview.md](../product/overview.md#heroes)
 
 Status: Live (core) — match XP levels heroes ([#6](../product/known-issues.md) Resolved / A7.1)  
 Screens: [03-hero-roster.md](../screens/03-hero-roster.md), [04-hero-detail.md](../screens/04-hero-detail.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
 Open design: none for combat traits. **#9 decided** (A7.5 Cut) — no in-combat synergy; Loner copy is flavor. **#6 decided** (A7.1 Implement) — [locked hero level invariant](#locked-hero-level-invariant). **#7 decided** (A7.2 flavor) — chemistry is flavor for matches (live for dashboard, fan club / attendance, league tie-break; combat does not read it). Lock: [team-system.md](team-system.md#locked-chemistry-flavor). **#13 decided** (A7.7 Cut) — roster extras parked; live card lock on [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras). **#14 decided** (A7.9 Implement) — [summoning-system.md](summoning-system.md#locked-genie-summon-pool).
 
 Purpose: Document hero lifecycle, attributes, aging, mortality, relationships, and persistence.
-
-## Remaining work
-
-- [x] Generation, roster/detail APIs, traits, mastery/attunement, dismiss → graveyard
-- [x] Match XP writes `Hero.xp` (Library `xp_gain_pct` applies)
-- [x] Production `HeroService::levelUp()` via `HeroProgressionService` after league/friendly XP (A7.1 / #6)
-- [x] In-combat race synergy / Loner combat hook Cut (A7.5 / #9) — `ignoresRaceSynergy` unused; copy is flavor
-- [x] Roster extras Cut (A7.7 / #13) — live card contract in [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras)
-
----
 
 ## Summary
 
