@@ -34,7 +34,7 @@ Frontend source is `assets/` (Stimulus controllers, SCSS). `npm run build` write
 ## Data
 
 - One MariaDB schema. Kingdoms are **not** separate databases: isolation is `kingdom_id` on rows — [kingdom-system.md](../systems/kingdom-system.md).
-- Schema bootstrap: Doctrine migrations (init migration covers the current schema).
+- Schema bootstrap: empty database via `composer init-db` (`doctrine:schema:create`, Messenger transports, migrations metadata). Historical `Version*` files were removed; new mapping diffs go in `migrations/` (`composer migrate-diff` / `composer migrate`). Production start runs `doctrine:schema:update --force` plus Messenger transports.
 - Player session is tied to one Kingdom; no cross-kingdom marketplace or league play.
 
 ## Quality

@@ -155,4 +155,4 @@ bash scripts/check-backend-docs.sh
 
 ## No automatic commands
 
-Do not run `composer test`, PHPStan, php-cs, `check-backend-docs.sh`, migrations, or Docker verify commands unless the user explicitly requests them.
+Do not run `composer test`, PHPStan, php-cs, `check-backend-docs.sh`, migrations, `composer init-db`, or Docker verify commands unless the user explicitly requests them.

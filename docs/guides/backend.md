@@ -42,7 +42,7 @@ Conflict order, Open rows, leftovers: [docs/README.md](../README.md) § Canonica
 ## Vertical slice (new feature)
 
 1. Read `systems/{feature}.md`, screen doc, `architecture/entities.md`
-2. Entity / enum / migration (if schema changes) — follow table naming in architecture/entities.md
+2. Entity / enum / migration (if schema changes: empty DB with `composer init-db`, later diffs via `composer migrate-diff`) — follow table naming in architecture/entities.md
 3. `Service/{Domain}/` + unit test in `tests/Service/{Domain}/`
 4. `Controller/Api/V1/` with `ApiControllerTrait` (if AJAX/Stimulus needs it)
 5. `Controller/Web/` + Twig (follow [guides/ui.md](ui.md))
@@ -103,7 +103,9 @@ Copy an existing feature in the same domain before inventing new patterns (e.g. 
 
 ## Schema changes
 
-- New migration in `migrations/` via `doctrine:migrations:diff` (user-requested) or hand-written `Version*.php`
+- Empty database: `composer init-db` (`schema:create` + Messenger transports + migrations metadata)
+- New mapping diffs: `migrations/` via `composer migrate-diff` (user-requested) or a hand-written `Version*.php`, then `composer migrate`
+- Recreate the database with `composer init-db` after mapping changes when you are not adding a Version file
 - Document new entities/enums in [architecture/entities.md](../architecture/entities.md)
 - Respect naming conventions (domain prefixes on sub-entities — see architecture/entities.md § Design Decisions)
 
@@ -140,7 +142,8 @@ Agents must not run these unless asked. Humans may use them before a PR:
 docker exec -u apache fantager-web composer test
 docker exec -u apache fantager-web composer phpstan
 docker exec -u apache fantager-web composer php-cs
-docker exec -u apache fantager-web php bin/console doctrine:migrations:migrate
+docker exec -u apache fantager-web composer init-db
+docker exec -u apache fantager-web composer migrate
 bash scripts/check-backend-docs.sh
 ```
 

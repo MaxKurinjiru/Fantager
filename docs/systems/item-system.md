@@ -81,7 +81,7 @@ An item's `slot_type` is its **native** type (`ring` items stay `ring` even when
 | Rule | Meaning |
 |------|---------|
 | Not live | No enchant service, route, or UI. Equipment actions stay equip / unequip / repair / dismantle. |
-| No essence | Team / ledger / spell essence columns were dropped (`Version20261014140000`). Do not add them back. |
+| No essence | Team / ledger / spell essence columns were dropped. Do not add them back. |
 | `special_effects` unused | JSON column stays. Merchant and generators write `[]`. `CombatStatCalculator` reads `bonuses` only. Item API `serialize()` omits the key so it does not look live. Do not drop the column. |
 | Later | A later product decision is required before adding enchanting. |
 

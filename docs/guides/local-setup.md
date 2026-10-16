@@ -14,16 +14,17 @@ docker exec -it fantager-web composer install
 docker exec -it fantager-web npm ci
 docker exec -it fantager-web npm run build
 
-docker exec -it fantager-web composer migrate
-# or
-docker exec -it fantager-web php bin/console doctrine:migrations:migrate
+# Empty database: create schema from entities + Messenger table
+docker exec -it fantager-web composer init-db
 ```
+
+After entity mapping changes, either drop and recreate the database then `composer init-db`, or add a Version file (`composer migrate-diff`) and `composer migrate`. Historical `Version*` files were removed; the migrations bundle and commands stay.
 
 App: http://localhost:10001
 
 ## Database seeding
 
-After migrations, bootstrap a kingdom and test players. Kingdom defaults: [config/kingdom/README.md](../../config/kingdom/README.md).
+After schema init, bootstrap a kingdom and test players. Kingdom defaults: [config/kingdom/README.md](../../config/kingdom/README.md).
 
 ```bash
 # Initialize default kingdom (NPCs, heroes, league standings)

@@ -27,5 +27,6 @@ Do **not** run tests, linters, builds, or verification commands unless the user 
 | Clear cache | `docker exec -u apache fantager-web php bin/console cache:clear` |
 | PHPStan | `docker exec -u apache fantager-web vendor/bin/phpstan` |
 | Style check / fix | `docker exec -u apache fantager-web composer php-cs` / `composer php-cs-fix` |
-| Migrations | `docker exec -u apache fantager-web php bin/console doctrine:migrations:migrate` |
+| Empty DB schema | `docker exec -u apache fantager-web composer init-db` |
+| Migrations | `docker exec -u apache fantager-web composer migrate` |
 | Build assets | `docker exec -u apache fantager-web npm run build` |

@@ -11,7 +11,7 @@ Entry point for Cursor agents, Copilot, and other AI assistants working in this 
 | **New or changed API endpoint** | [docs/guides/backend.md](docs/guides/backend.md) → [docs/architecture/api.md](docs/architecture/api.md) | `src/Controller/Api/V1/`, `src/Service/`, [docs/architecture/routes.md](docs/architecture/routes.md) |
 | **Web page / screen** | [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + screen in [docs/screens/](docs/screens/) + [docs/guides/ui.md](docs/guides/ui.md) | `src/Controller/Web/`, `templates/`, often API + Stimulus |
 | **Domain logic / service** | [docs/systems/](docs/systems/) + [docs/architecture/entities.md](docs/architecture/entities.md) | `src/Service/`, `src/Entity/`, `tests/Service/` |
-| **Schema / migration** | [docs/architecture/entities.md](docs/architecture/entities.md) | `migrations/`, entities, repositories |
+| **Schema / migration** | [docs/architecture/entities.md](docs/architecture/entities.md) | entities, `migrations/`, `composer init-db` |
 | **Bugfix / extend existing feature** | Matching `systems/*.md` Remaining work + [docs/product/known-issues.md](docs/product/known-issues.md) § Later product decisions + [docs/screens/](docs/screens/) | Mirror patterns in the same domain |
 | **Domain terms** | [docs/product/glossary.md](docs/product/glossary.md) | — |
 | **Reader progress snapshot** | [docs/product/progress.md](docs/product/progress.md) | Root [README.md](README.md) § Game progress + `progress.md` — not a work queue |

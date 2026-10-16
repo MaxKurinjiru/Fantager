@@ -38,6 +38,11 @@
         }
     },
     "scripts": {
+        "init-db": [
+            "php bin/console doctrine:schema:create --no-interaction",
+            "php bin/console messenger:setup-transports --no-interaction",
+            "php bin/console doctrine:migrations:sync-metadata-storage --no-interaction"
+        ],
         "migrate": "php bin/console doctrine:migrations:migrate --no-interaction",
         "migrate-diff": "php bin/console doctrine:migrations:diff",
         "cache-clear": "php bin/console cache:clear",
@@ -47,10 +52,10 @@
         "test": "vendor/bin/phpunit",
         "kingdom": "php bin/console app:kingdom:initialize \"Main Kingdom\" --test --start-offset-days=-20",
         "ticks": "php bin/console app:ticks:run",
-        "messenger": "php bin/console messenger:consume async --limit=5000 -vv",
+        "messenger": "php bin/console messenger:consume async --limit=3000 -vv",
         "users": "php bin/console app:user:create-test \"Main Kingdom\" --default",
         "new-kingdom": [
-            "@migrate",
+            "@init-db",
             "@kingdom",
             "@ticks"
         ],

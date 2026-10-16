@@ -7,6 +7,7 @@ namespace App\Repository\Community;
 use App\Entity\Community\NewsArticle;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<NewsArticle>
@@ -30,8 +31,8 @@ class NewsArticleRepository extends ServiceEntityRepository
         $articles = $this->createQueryBuilder('n')
             ->where('n.publishedAt <= :now')
             ->setParameter('now', new \DateTimeImmutable())
-            ->orderBy('n.publishedAt', 'DESC')
-            ->addOrderBy('n.id', 'DESC')
+            ->orderBy('n.publishedAt', SortDirection::Descending)
+            ->addOrderBy('n.id', SortDirection::Descending)
             ->setFirstResult(($page - 1) * $perPage)
             ->setMaxResults($perPage)
             ->getQuery()
@@ -61,8 +62,8 @@ class NewsArticleRepository extends ServiceEntityRepository
         $articles = $this->createQueryBuilder('n')
             ->where('n.publishedAt <= :now')
             ->setParameter('now', new \DateTimeImmutable())
-            ->orderBy('n.publishedAt', 'DESC')
-            ->addOrderBy('n.id', 'DESC')
+            ->orderBy('n.publishedAt', SortDirection::Descending)
+            ->addOrderBy('n.id', SortDirection::Descending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

@@ -38,7 +38,7 @@ class FriendlyMatch
     private \DateTimeImmutable $scheduledAt;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(nullable: true, unique: true, onDelete: 'SET NULL')]
     private ?Battle $battle = null;
 
     #[ORM\ManyToOne]

@@ -11,6 +11,7 @@ use App\Enum\LeagueFixtureStatus;
 use App\Service\League\LeagueFixtureKickoffMatcher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use SortDirection;
 
 /** @extends ServiceEntityRepository<LeagueFixture> */
 class LeagueFixtureRepository extends ServiceEntityRepository
@@ -45,7 +46,7 @@ class LeagueFixtureRepository extends ServiceEntityRepository
             ->andWhere('f.status = :status')
             ->setParameter('team', $team)
             ->setParameter('status', LeagueFixtureStatus::Scheduled)
-            ->orderBy('f.scheduledAt', 'ASC')
+            ->orderBy('f.scheduledAt', SortDirection::Ascending)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -62,7 +63,7 @@ class LeagueFixtureRepository extends ServiceEntityRepository
             ->setParameter('team', $team)
             ->setParameter('start', $start)
             ->setParameter('end', $end)
-            ->orderBy('f.scheduledAt', 'ASC')
+            ->orderBy('f.scheduledAt', SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
@@ -74,7 +75,7 @@ class LeagueFixtureRepository extends ServiceEntityRepository
             ->andWhere('f.status = :status')
             ->setParameter('team', $team)
             ->setParameter('status', LeagueFixtureStatus::Scheduled)
-            ->orderBy('f.scheduledAt', 'ASC')
+            ->orderBy('f.scheduledAt', SortDirection::Ascending)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -126,7 +127,7 @@ class LeagueFixtureRepository extends ServiceEntityRepository
             ->setParameter('kingdom', $kingdom)
             ->setParameter('status', LeagueFixtureStatus::Scheduled)
             ->setParameter('until', $until)
-            ->orderBy('f.scheduledAt', 'ASC')
+            ->orderBy('f.scheduledAt', SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

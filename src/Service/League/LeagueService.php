@@ -13,6 +13,7 @@ use App\Entity\Team\Team;
 use App\Enum\LeagueFixtureStatus;
 use App\Enum\LeagueSeasonStatus;
 use Doctrine\ORM\EntityManagerInterface;
+use SortDirection;
 
 class LeagueService
 {
@@ -86,7 +87,7 @@ class LeagueService
             ->setParameter('season', $season)
             ->setParameter('status', LeagueFixtureStatus::Completed)
             ->setParameter('team', $team)
-            ->orderBy('lf.scheduledAt', 'DESC')
+            ->orderBy('lf.scheduledAt', SortDirection::Descending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -174,8 +175,8 @@ class LeagueService
             ->join('g.tier', 't')
             ->where('t.season = :season')
             ->setParameter('season', $season)
-            ->orderBy('t.id', 'ASC')
-            ->addOrderBy('g.groupName', 'ASC')
+            ->orderBy('t.id', SortDirection::Ascending)
+            ->addOrderBy('g.groupName', SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
@@ -249,7 +250,7 @@ class LeagueService
             ->andWhere('(lf.homeTeam = :team OR lf.awayTeam = :team)')
             ->setParameter('season', $season)
             ->setParameter('team', $team)
-            ->orderBy('lf.scheduledAt', 'ASC')
+            ->orderBy('lf.scheduledAt', SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

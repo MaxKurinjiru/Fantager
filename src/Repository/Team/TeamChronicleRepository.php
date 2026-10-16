@@ -10,6 +10,7 @@ use App\Enum\ChronicleCategory;
 use App\Enum\ChronicleEventType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<TeamChronicle>
@@ -29,7 +30,7 @@ class TeamChronicleRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('a')
             ->where('a.team = :team')
             ->setParameter('team', $team)
-            ->orderBy('a.createdAt', 'DESC')
+            ->orderBy('a.createdAt', SortDirection::Descending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -63,11 +64,11 @@ class TeamChronicleRepository extends ServiceEntityRepository
 
         switch ($sort) {
             case 'date-asc':
-                $qb->orderBy('a.createdAt', 'ASC');
+                $qb->orderBy('a.createdAt', SortDirection::Ascending);
                 break;
             case 'date-desc':
             default:
-                $qb->orderBy('a.createdAt', 'DESC');
+                $qb->orderBy('a.createdAt', SortDirection::Descending);
                 break;
         }
 
