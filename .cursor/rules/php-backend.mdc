@@ -49,7 +49,7 @@ Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entit
 ## Race synergy / simulate (Cut — #9)
 
 - Do not add in-combat race/role synergy tables. Combat must not read `ignoresRaceSynergy`.
-- Do not ship `POST /api/v1/combat/simulate`. Route stays Planned. Friendly matches are the live adjacent path.
+- Do not ship `POST /api/v1/combat/simulate`. The route is **Cut** (no controller). Friendly matches are the live adjacent path.
 - Spec: `docs/systems/combat-system.md` § Locked: no race synergy / no simulate.
 
 ## Public wiki (Planned — A8.5)
@@ -142,7 +142,7 @@ Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entit
 
 - New entity/enum → update `docs/architecture/entities.md`
 - New route → update `docs/architecture/routes.md`
-- Feature status change → update `docs/systems/README.md` implementation table
+- Feature status change → update `docs/systems/README.md` status snapshot
 
 ## Optional verification (user-requested only)
 

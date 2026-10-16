@@ -36,8 +36,8 @@ Locked live rules: round-200 kill-score end, preparation length, fumble-without-
 |------|---------|
 | No synergy tables | Combat does not apply race-pair or role-pair match modifiers. `race_relations.yaml` stays summoning / chemistry / training / arena-adaptation only. |
 | `ignoresRaceSynergy` unused | Serialized on `DerivedCombatStats` (Loner = true). `CombatEngine` does not read it. Loner player copy is flavor. |
-| No sandbox route | `POST /api/v1/combat/simulate` stays Planned (no controller). Friendly matches are the live adjacent path. `CombatEngine::simulate()` stays for tests. |
-| Later | A later product decision is required before in-combat synergy or a sandbox (consequences, opponent, one-shot vs cohort). |
+| No sandbox route | `POST /api/v1/combat/simulate` is **Cut** (no controller). Do not ship a sandbox. Friendly matches are the live adjacent path. `CombatEngine::simulate()` stays for tests. |
+| Reopen | Explicit product ask required before in-combat synergy or a sandbox (consequences, opponent, one-shot vs cohort). |
 
 ---
 
@@ -147,7 +147,7 @@ Align PHP value objects and Messenger orchestration with this section; do not in
 |-------|----------------|
 | League match tick / cohort starter | Eligibility + forfeit; create `Battle` + persisted run state for each non-forfeit fixture at `scheduledAt`; start wave orchestration (see [Wave-based Messenger orchestration](#wave-based-messenger-orchestration)). |
 | `CombatEngine` (per-round) | Pure **per-round** (and per-turn within a round) resolution via `ProcessCombatRound` — no Doctrine fixtures, no standings writes. Input: run state + round number; output: updated state + appended events. |
-| `CombatEngine::simulate()` / `LeagueMatchSimulator` | One-shot helpers retained for **tests**; **live league path uses wave Messenger**, not a single `simulate()` call. Sandbox API is Cut / Planned ([Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)). |
+| `CombatEngine::simulate()` / `LeagueMatchSimulator` | One-shot helpers retained for **tests**; **live league path uses wave Messenger**, not a single `simulate()` call. Sandbox API is **Cut** ([Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)). |
 | Completion handler (`LeagueMatchResolutionService`) | When a battle reaches `match_end`: persist final scores/log, apply post-match side effects (standings, fan club, morale, chronicles, mastery, aging/graveyard, durability). |
 
 Forfeit outcomes stay **outside** the engine (existing `resolveForfeitOutcome()`).

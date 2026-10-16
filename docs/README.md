@@ -18,6 +18,18 @@ Locks live in `## Locked:` in the matching system or screen doc (index: [product
 
 Old `docs/*.md` root names: [roadmap/archive/alignment-waves.md](roadmap/archive/alignment-waves.md#former-filenames).
 
+## Start here
+
+About 20 minutes for a new reader:
+
+1. [product/overview.md](product/overview.md) then [product/glossary.md](product/glossary.md) — what the game is
+2. [architecture/overview.md](architecture/overview.md) — stack and dual-layer flow
+3. [architecture/screen-code-map.md](architecture/screen-code-map.md) — which files implement each screen
+4. One matching `systems/*.md` for the area you care about
+5. [guides/backend.md](guides/backend.md) or [guides/ui.md](guides/ui.md) before you edit
+
+Status words: [product/glossary.md](product/glossary.md#how-to-read-status-words). Task routing: [AGENTS.md](../AGENTS.md).
+
 ## Reading paths
 
 | Goal | Start |
@@ -38,10 +50,15 @@ Old `docs/*.md` root names: [roadmap/archive/alignment-waves.md](roadmap/archive
 | **Product / domain** | [product/](product/README.md) | Game overview, glossary, known issues, live `systems/` and `screens/` |
 | **Roadmap** | [roadmap/](roadmap/README.md) | Now / next; deferred M8/M9; [archive/](roadmap/archive/README.md) |
 
-## How to use
+## Out of scope
 
-- Deferred design: [future/](future/)
-- Parked repo meta and the original screen sketch: [`_deferred/`](../_deferred/)
-- Remaining work (unfinished code) lives in that feature’s `systems/*.md`
-- Later product decisions: [product/known-issues.md](product/known-issues.md) § Later product decisions — the only parked-product index
-- Glossary: [product/glossary.md](product/glossary.md)
+Not a work queue. Do not implement unless the user explicitly asks.
+
+| Kind | Where |
+|------|-------|
+| Later product decisions (wiki, SSE, …) | [product/known-issues.md](product/known-issues.md) § Later product decisions |
+| Milestone 8 + world events | [future/](future/) |
+| Milestone 9 alliances / guilds | [roadmap/archive/history.md](roadmap/archive/history.md) |
+| Repo meta and original screen sketch | [`_deferred/`](../_deferred/) |
+
+**Cut** decisions live in `## Locked:` (index: [product/known-issues.md](product/known-issues.md) § Resolved locks), not in this table. Unfinished **code** for a live feature lives in that system’s Remaining work.

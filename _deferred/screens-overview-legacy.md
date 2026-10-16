@@ -278,7 +278,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 7. Formation Setup Screen
 **When:** Setting up formations for combat
 
-> **Live contract:** [07-formation-setup.md](07-formation-setup.md). Lineup **drag-and-drop is live**. Per-slot L1/L2 tactics are **live** (#12). Synergies are **Cut** (#9). Clone and simulate are **Planned** — not live. The lists below mix the live pitch with the original sketch.
+> **Live contract:** [07-formation-setup.md](07-formation-setup.md). Lineup **drag-and-drop is live**. Per-slot L1/L2 tactics are **live** (#12). Synergies and simulate are **Cut** (#9). Clone is **Planned** — not live. The lists below mix the live pitch with the original sketch.
 
 ### Displayed Information:
 - **Formation Selector:**

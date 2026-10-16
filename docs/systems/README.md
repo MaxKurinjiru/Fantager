@@ -30,37 +30,6 @@ Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
 
 Locks use **`## Locked:`** (exactly that heading level) so [AGENTS.md](../../AGENTS.md) and grep find them. Do not duplicate Remaining work or the Later table in the roadmap. [../roadmap/README.md](../roadmap/README.md) only points here and to known-issues.
 
-## System files
-
-| Doc | Area |
-|-----|------|
-| [auth-system.md](auth-system.md) | Authentication, registration, sessions |
-| [kingdom-system.md](kingdom-system.md) | Kingdoms / servers |
-| [summoning-system.md](summoning-system.md) | Summoning chamber |
-| [calendar-system.md](calendar-system.md) | Weekly ticks, schedule, season timeline |
-| [friendly-match-system.md](friendly-match-system.md) | PvP practice matches |
-| [economy-system.md](economy-system.md) | Gold, ledger, treasury |
-| [financial-crisis-system.md](financial-crisis-system.md) | Financial crisis |
-| [hero-system.md](hero-system.md) | Heroes |
-| [hero-rating-system.md](hero-rating-system.md) | Base OVR, complex rating |
-| [hero-chronicle-system.md](hero-chronicle-system.md) | Per-hero event log |
-| [training-system.md](training-system.md) | Training |
-| [team-system.md](team-system.md) | Teams |
-| [team-chronicle-system.md](team-chronicle-system.md) | Team event log |
-| [formation-system.md](formation-system.md) | Formations |
-| [headquarters-system.md](headquarters-system.md) | HQ facilities |
-| [item-system.md](item-system.md) | Items and equipment |
-| [spell-system.md](spell-system.md) | Spells |
-| [combat-system.md](combat-system.md) | Combat engine, replay, simulation contract |
-| [combat-formulas.md](combat-formulas.md) | Derived stats, durability, mastery, traits |
-| [marketplace-system.md](marketplace-system.md) | Marketplace |
-| [league-system.md](league-system.md) | Leagues |
-| [graveyard-system.md](graveyard-system.md) | Graveyard |
-| [community-system.md](community-system.md) | Mail, forum |
-| [notification-system.md](notification-system.md) | In-app notifications |
-| [player-inactivity-system.md](player-inactivity-system.md) | Inactive player release |
-| [npc-simulation-system.md](npc-simulation-system.md) | NPC tactics, training, economy |
-
 ## Status snapshot
 
 One-line index of the **live contract**. Leftovers live in that doc’s Remaining work. Later product decisions: [product/known-issues.md](../product/known-issues.md) § Later product decisions — do not restate them here.
@@ -93,4 +62,4 @@ One-line index of the **live contract**. Leftovers live in that doc’s Remainin
 | NPC simulation | Live | [npc-simulation-system.md](npc-simulation-system.md) |
 | Player inactivity | Live | [player-inactivity-system.md](player-inactivity-system.md) |
 
-Deferred (not live): [future/](../future/) — dungeons, quests, crafting, world events. Milestone 9 alliances: [archive/history.md](../roadmap/archive/history.md).
+Out of scope (not live): [docs/README.md](../README.md#out-of-scope).
