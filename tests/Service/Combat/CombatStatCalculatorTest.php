@@ -512,7 +512,7 @@ class CombatStatCalculatorTest extends TestCase
     }
 
     /**
-     * Loner trait: ignoresRaceSynergy = true.
+     * Loner trait: ignoresRaceSynergy = true (serialized; combat does not read it).
      */
     public function testLonerIgnoresRaceSynergy(): void
     {

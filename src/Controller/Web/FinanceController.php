@@ -69,7 +69,7 @@ class FinanceController extends AbstractController
             'current_type' => $type,
             'current_actor' => $actor,
             'current_sort' => $sort,
-            'types' => FinancialRecordType::cases(),
+            'types' => FinancialRecordType::liveCases(),
             'actors' => FinancialRecordActor::cases(),
             'page' => $page,
             'total_pages' => $totalPages,

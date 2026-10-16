@@ -510,12 +510,21 @@
       color: var(--color-success-text);
     }
 
-    &--scheduled {
+    &--scheduled,
+    &--pending,
+    &--processing,
+    &--in_progress {
       color: var(--color-warning-text);
     }
 
     &--failed {
       color: var(--color-error-text);
+    }
+
+    &--declined,
+    &--cancelled,
+    &--expired {
+      color: var(--color-text-secondary);
     }
   }
 

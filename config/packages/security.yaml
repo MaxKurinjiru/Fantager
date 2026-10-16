@@ -13,6 +13,10 @@ security:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
 
+    health:
+      pattern: ^/health$
+      security: false
+
     main:
       lazy: true
       provider: app_user_provider
@@ -38,6 +42,7 @@ security:
     - { path: ^/verify-email, roles: PUBLIC_ACCESS }
     - { path: ^/password-reset, roles: PUBLIC_ACCESS }
     - { path: ^/api/v1/kingdoms, roles: PUBLIC_ACCESS }
+    - { path: ^/health$, roles: PUBLIC_ACCESS }
     - { path: ^/api/v1, roles: ROLE_PLAYER }
     - { path: ^/app/, roles: ROLE_PLAYER }
     - { path: ^/, roles: PUBLIC_ACCESS }

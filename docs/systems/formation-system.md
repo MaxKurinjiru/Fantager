@@ -1,20 +1,13 @@
 # Formation System
 
-Reference: [product/overview.md](../product/overview.md#261-formation-system)
+Reference: [product/overview.md](../product/overview.md#formations)
 
-Status: Partial (lineup live; no synergy; L1/L2 editor not in player UI)  
+Status: Live (lineup + L1/L2 slot editor; no synergy)  
 Screens: [07-formation-setup.md](../screens/07-formation-setup.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: [known-issues.md](../product/known-issues.md) #7 / #9 (synergy), #10 (duplicate `hero_id` at save), A7.6 (per-slot tactics UI)
+Open design: none  
+Lock: [Locked: L1/L2 editor](#locked-l1l2-editor)
 
-Purpose: Document formation representation, save/kickoff validation, slot strategy JSON, and fixture assignment. **Race/role synergy is not part of this system** until #7/#9.
-
-## Remaining work
-
-- [x] CRUD, 6 slots, drag-and-drop lineup, fixture default/saved/custom, promote, temporary cleanup
-- [ ] Unique `hero_id` at save vs kickoff-only (Design first → #10 / A6.1)
-- [ ] Player L1/L2 slot editor (Design first → A7.6); UI currently writes `spell_priorities: []`
-- [ ] `POST /api/v1/formations/simulate` (planned)
-- [ ] Synergy from formation composition — not specified here; chemistry is [team-system.md](team-system.md#team-chemistry), in-combat tables are [#9](../product/known-issues.md)
+Purpose: Document formation representation, save/kickoff validation, slot strategy JSON, and fixture assignment. **Race/role synergy is not part of this system.** Team chemistry is [team-system.md](team-system.md#locked-chemistry-flavor) (flavor for matches). In-combat tables and a simulate sandbox are Cut ([combat-system.md](combat-system.md#locked-no-race-synergy--no-simulate)). Do not ship `POST /api/v1/formations/simulate`.
 
 ## Data Model
 
@@ -30,8 +23,8 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 
 ## Validation Rules
 
-- **Save:** `FormationService::rebuildSlots()` persists 0–6 slots. Duplicate `hero_id` values are not rejected at save time.
-- **Match-ready:** Kickoff requires ≥ 6 combat-ready heroes on the team (see [combat-system.md](combat-system.md#match-eligibility)). Empty or duplicate slots in a saved formation are not repaired at save; forfeits happen at match resolution.
+- **Save:** `FormationService::rebuildSlots()` persists 0–6 slots. Duplicate `hero_id` values are rejected (`error.formation_duplicate_hero`, API 422). Empty slots stay allowed, including a fully empty draft (UI and API).
+- **Match-ready (kickoff):** `MatchLineupService` fields 6 unique combat-ready heroes in this order: (1) assigned fixture/friendly formation if all 6 slots are unique combat-ready heroes; (2) else the team default if that is match-ready; (3) else auto-fill remaining empty / duplicate / unready slots from the combat-ready roster (`id` ascending), persisted as a temporary copy (league: `source_fixture_id` for existing cleanup). Forfeit if the team has fewer than 6 combat-ready heroes — see [combat-system.md](combat-system.md#match-eligibility).
 - Team must have ≥ 6 combat-ready heroes to participate in a match at all (see [combat-system.md](combat-system.md#match-eligibility)).
 - Creating or promoting a saved formation fails when the team already has 4 saved formations.
 
@@ -55,7 +48,7 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 
 ## Strategy JSON Schema (Phased)
 
-Per-slot `strategy` and `spell_priorities` are stored as JSON. The Formation UI saves formation-level `approach` (`aggressive` | `balanced` | `defensive`) and copies one `strategy.movement_goal` onto every slot. It always writes `spell_priorities: []` (no per-slot target or spell editor). Combat AI phases: [combat-system.md — Formation AI](combat-system.md#formation-ai-phased).
+Per-slot `strategy` and `spell_priorities` are stored as JSON. The Formation UI saves formation-level `approach` (`aggressive` | `balanced` | `defensive`) and copies one `strategy.movement_goal` onto every slot, merged with that slot’s L1 `target_order` / `fallback` and L2 `spell_priorities`. Empty lists keep engine L0 defaults. Combat AI phases: [combat-system.md — Formation AI](combat-system.md#formation-ai-phased). See [Locked: L1/L2 editor](#locked-l1l2-editor).
 
 ### Empty / missing → engine defaults
 
@@ -100,23 +93,36 @@ Ordered list; first matching ready spell wins that evaluation pass (exact preced
 | `always` | Eligible whenever the spell is ready | Read |
 | `ally_hp_below` | Any living ally under `threshold` % HP | Read |
 | `self_hp_below` | Caster under `threshold` % HP | Read |
-| `enemy_status` | Enemy has a listed status | Not implemented (not in steps 2–7) — engine **skips** the entry (condition never met); later priorities can still match |
+| `enemy_status` | Enemy has a listed status | **Cut from player UI (A7.6).** Engine **skips** the entry if present; save sanitizer drops it |
 
 | `target` | Resolve to | Engine |
 |----------|------------|--------|
 | `priority` | Current targeting pick from `strategy` | Read (default when `target` is omitted) |
 | `lowest_hp_ally` / `self` | That ally, or the caster | Read |
-| `lowest_hp_enemy` | Lowest-HP living enemy | Not implemented (not in steps 2–7) — if used as `target`, engine falls back to the current approach/priority pick |
+| `lowest_hp_enemy` | Lowest-HP living enemy | **Cut from player UI (A7.6).** Save sanitizer remaps to `priority` |
 
-Formation-level spell overrides vs hero-equipped fallback follow [product/overview.md](../product/overview.md#combat-strategy-settings) (formation config wins when present).
+Non-empty per-slot `spell_priorities` is evaluated before the L0 pick (equipped spells only). Empty list = L0. Engine: [combat-system.md](combat-system.md#formation-ai-phased). Player editor: [Locked: L1/L2 editor](#locked-l1l2-editor).
 
 ### L3 — deferred
 
 Explicit action sequences and advanced conditional tactics (substitution, mid-match formation switch) stay design-only. Do not invent L3 field names in production code until this section is extended.
 
+## Locked: L1/L2 editor
+
+**#12 Resolved (A7.6 Implement, 16 Oct 2026).** Players edit per-slot L1 targeting and thin L2 spell priorities on Formation Setup. Do not add L3 sequences or unmet `when`/`target` values to the UI.
+
+| Rule | Meaning |
+|------|---------|
+| L1 targeting | Click a pitch slot. Ordered unique enemy slots (`front_1`–`back_3`) plus `fallback` `lowest_hp` / `highest_threat` / `approach`. Empty `target_order` = L0 approach. Fallback is stored only with a non-empty order. |
+| Thin L2 | Ordered **equipped** spells for the hero in that slot. Live `when`: `always`, `ally_hp_below`, `self_hp_below` (threshold 1–99). Live `target`: `priority`, `lowest_hp_ally`, `self`. Empty list = L0 spell pick. |
+| Movement stays formation-wide | One `movement_goal` is copied onto every slot on save and merged with that slot’s L1 fields. |
+| Cut | L3 action sequences / Conditional Tactics UI. `enemy_status`. `lowest_hp_enemy`. Dual-wield targeting lists. Flexible AI. On Low Morale. |
+| Save sanitizer | `FormationTacticsNormalizer` keeps only the live schema. NPC-shaped objects and unmet `when` values are dropped. Invalid `target` (including `lowest_hp_enemy`) remaps to `priority`. Duplicate `spell_id` / slot values are collapsed. |
+| L2 follows the hero | Swapping or moving a hero moves `spell_priorities` with them. L1 stays on the slot. |
+
 ## Summary
 
-Formations are 6-slot layouts (3 front, 3 back) with formation-wide `approach` and per-slot `strategy` / `spell_priorities`. There is **no synergy calculation** on save or at kickoff. Team chemistry (display-only until [#7](../product/known-issues.md)) is computed from the combatant roster, not from filled slots.
+Formations are 6-slot layouts (3 front, 3 back) with formation-wide `approach` and per-slot `strategy` / `spell_priorities`. There is **no synergy calculation** on save or at kickoff. Team chemistry (flavor for matches — [#7](../product/known-issues.md) Resolved) is computed from the combatant roster, not from filled slots.
 
 **Combat integration:** Combat is fully automated — the engine reads `approach` and (phased) strategy / spell priorities and runs the match without mid-battle player input. Snapshot building and match request shape: [combat-system.md — Simulation Contract](combat-system.md#simulation-contract). The battle UI is a replay of `combat_log` only; see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
@@ -125,12 +131,12 @@ Formations are 6-slot layouts (3 front, 3 back) with formation-wide `approach` a
 - `GET/PUT/DELETE /api/v1/formations` — list, save, delete saved formations
 - `GET/PUT /api/v1/fixtures/{id}/formation` — read/update fixture assignment (`mode`: `default` \| `saved` \| `custom`)
 - `POST /api/v1/fixtures/{id}/formation/promote` — promote temporary match formation to saved (counts toward limit of 4)
-- `POST /api/v1/formations/simulate` — **planned** (no controller)
+- `POST /api/v1/formations/simulate` — **Cut** (no controller); do not ship a sandbox
 
-**Tests:** `tests/Service/Formation/FormationServiceTest.php`, `FixtureFormationServiceTest.php`.
+**Tests:** `tests/Service/Formation/FormationServiceTest.php`, `FormationTacticsNormalizerTest.php`, `MatchLineupServiceTest.php`, `FixtureFormationServiceTest.php`.
 
 ## Implementation Notes
 
-- Combat engine should resolve lineups via `FixtureFormationService::resolveFormation()` and finalize fixtures via `LeagueFixtureCompletionService::complete()`.
+- Player UI and fixture assignment still read via `FixtureFormationService::resolveFormation()` (assigned or default, unrepaired). **Kickoff / simulation** uses `MatchLineupService::resolveForKickoff()` so the engine always receives 6 unique combat-ready heroes. Finalize fixtures via `LeagueFixtureCompletionService::complete()`.
 - Temporary formation cleanup runs in `LeagueFixtureCompletionService::complete()` **after** the fixture is `Completed` (and after post-match rewards have used Battle formation FKs). Do **not** clean up on `LeagueMatch` kickoff while combat is still simulating. `DailyReset` is an orphan safety net.
 - Deleting a temporary formation clears fixture FKs; battle formation FKs use `ON DELETE SET NULL`.

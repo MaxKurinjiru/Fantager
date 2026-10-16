@@ -1,21 +1,13 @@
 # Hero System
 
-Reference: [product/overview.md](../product/overview.md#24-hero-system)
+Reference: [product/overview.md](../product/overview.md#heroes)
 
-Status: Live (core) — XP without level-up is [#6](../product/known-issues.md)  
+Status: Live  
 Screens: [03-hero-roster.md](../screens/03-hero-roster.md), [04-hero-detail.md](../screens/04-hero-detail.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: [known-issues.md](../product/known-issues.md) #6 (XP curve), #7 / #9 (Loner / race synergy unused in combat)
+Open design: none  
+Lock: [Locked: hero level invariant](#locked-hero-level-invariant)
 
 Purpose: Document hero lifecycle, attributes, aging, mortality, relationships, and persistence.
-
-## Remaining work
-
-- [x] Generation, roster/detail APIs, traits, mastery/attunement, dismiss → graveyard
-- [x] Match XP writes `Hero.xp` (Library `xp_gain_pct` applies)
-- [ ] Production `HeroService::levelUp()` (Design first → #6 / A7.1)
-- [ ] In-combat race synergy / Loner effect (Design first → #7 / #9)
-
----
 
 ## Summary
 
@@ -38,7 +30,7 @@ Canonical columns: [entities.md](../architecture/entities.md) § Hero Domain.
 | **HeroChronicle** | `hero_chronicle` | Per-hero event log — [hero-chronicle-system.md](hero-chronicle-system.md) |
 | **HeroTrainingHistory** | `hero_training_history` | Weekly training results — [training-system.md](training-system.md) |
 
-**Hero status (`HeroStatus`):** live writers use `available`, `selling`, `dead`. `in_match` and `recovering` have no production setter. `retired` is reserved (exclusion filters treat it like dead — A6.2).
+**Hero status (`HeroStatus`):** live writers use `available`, `selling`, `dead`. `in_match` and `recovering` have no production setter. `retired` is reserved (`isReserved()`; exclusion filters treat it like dead — A6.2).
 
 **Role:** `combatant` or `trainer`. Trainers are the same entity; they do not count toward Barracks roster cap.
 
@@ -63,7 +55,7 @@ Race age data lives in `config/game/races.yaml` under each race's `age` block. D
 
 **Dismiss** is a player action (`POST /api/v1/heroes/{id}/dismiss`), not combat: 40% compensation, memorial `dismissed`, entity deleted. Team must keep ≥ 6 available combatants. See [team-system.md](team-system.md#hero-dismissal).
 
-There is no live “death of old age” tick (`MemorialCause::Age` is reserved).
+There is no live “death of old age” tick. `MemorialCause::{Age, Retired, Death}`, `ChronicleEventType::HeroRetired`, `HeroChronicleEventType::Retired`, and `HeroStatus::Retired` are **reserved / unused (A6.2)** — no production writers.
 
 ---
 
@@ -73,18 +65,18 @@ Race affinities live in `config/game/race_relations.yaml` (0–100). They are **
 
 Live uses of the matrix (not a per-hero relationship graph):
 
-- **Summoning** compatible-race pool (relationship ≥ 50; Genie can summon all races) — [summoning-system.md](summoning-system.md). NPC marketplace may apply a stricter Genie-only filter ([A7.9](../roadmap/current.md))
-- **Team chemistry** (combatants only; display-only until [#7](../product/known-issues.md)) — [team-system.md](team-system.md#team-chemistry)
+- **Summoning** compatible-race pool (relationship ≥ 50; Genie adaptation ≥ 80 → Genie / Human / Elf) — [summoning-system.md](summoning-system.md#locked-genie-summon-pool)
+- **Team chemistry** (combatants only; flavor for matches — [#7](../product/known-issues.md) Resolved) — [team-system.md](team-system.md#locked-chemistry-flavor)
 - Arena adaptation and weekly training group modifiers — [headquarters-system.md](headquarters-system.md), [training-system.md](training-system.md)
 
-In-combat race-synergy **tables** are deferred ([#9](../product/known-issues.md)). Loner’s `ignoresRaceSynergy` is serialized but unused.
+In-combat race-synergy **tables** are **Cut** ([#9](../product/known-issues.md) Resolved / A7.5). Loner’s `ignoresRaceSynergy` is serialized but unused.
 
 ---
 
 ## Equipment and magic capacity
 
-- **Items:** eight slots on the hero (`main_hand` … `ring`). Equip/unequip is `PUT /api/v1/heroes/{heroId}/equipment`. Occupancy (two-handed / dual-wield / two rings) is open [#8](../product/known-issues.md). Full rules: [item-system.md](item-system.md).
-- **Magic capacity:** integer on `Hero` (default **0** at generation). Weekly Magic training raises it (max **5**). Equipped spell count cannot exceed capacity. Gold is not charged for extra slots (`spell_slot_cost` unused). See [spell-system.md](spell-system.md) and [training-system.md](training-system.md).
+- **Items:** nine slots on the hero (`main_hand` … `ring` + `ring_2`). Equip/unequip is `PUT /api/v1/heroes/{heroId}/equipment`. Occupancy locked [#8](../product/known-issues.md). Full rules: [item-system.md](item-system.md#locked-item-occupancy).
+- **Magic capacity:** integer on `Hero` (default **0** at generation). Weekly Magic training raises it (max **5**). Equipped spell count cannot exceed capacity. Gold is not charged for extra slots (`spell_slot_cost` reserved / unused, A6.2). See [spell-system.md](spell-system.md) and [training-system.md](training-system.md).
 
 ---
 
@@ -96,7 +88,7 @@ When a hero is generated (either during starting roster initialization or when s
 **Inputs:** `HeroGenerator::createForTeam()` receives a `$chamberBonuses` array with the following keys:
 - `summon_base_stat_bonus` (float) — added to the base stat value (default fallback: `BASE_STAT_VALUE = 1`)
 - `summon_stat_random_bonus` (float) — added to the random roll ceiling (default fallback: `STAT_RANDOM_MAX = 2`)
-- `summon_stat_total_cap` (float) — reserved for future total-cap overrides
+- `summon_stat_total_cap` (float) — reserved / unread (A6.5); not applied and not shown on HQ cards or API `passive_bonuses`
 
 For NPC teams (kingdom initialization), `KingdomInitializationService` extracts Summoning Chamber passive bonuses from the new HQ via `extractChamberBonuses()` and passes them into `HeroGenerator::createForTeam()` (same keys as player summons). An empty array is only used if no chamber facility is present (then built-in fallback constants apply).
 
@@ -124,7 +116,7 @@ For NPC teams (kingdom initialization), `KingdomInitializationService` extracts 
 3. **Dynamic Overall Cap (maxTotal):**
    - The total sum of all 8 attributes is dynamically limited to **60% of the sum of the individual max limits** for the selected race, with a safety floor of 8:
      - `maxTotal = max(8, round(sum(maxStatLimit) × 0.6))`
-   - `HeroGenerator` hardcodes the 0.6 factor; `summon_stat_total_cap` from chamber bonuses is reserved and not read.
+   - `HeroGenerator` hardcodes the 0.6 factor; `summon_stat_total_cap` from chamber bonuses is reserved and not read (A6.5). HQ/API omit it from displayed bonuses.
    - This ensures that heroes are specialized: they can have one or two very high stats, but the other stats will be reduced to fit the budget.
 
 4. **Organic Random Trimming:**
@@ -136,11 +128,35 @@ For NPC teams (kingdom initialization), `KingdomInitializationService` extracts 
 
 Starting roster:
 - Every new team receives **10 heroes** at creation (6 match lineup + 4 reserves). See [team-system.md](team-system.md#starting-roster).
+- Races are drawn from the same compatible pool as summoning for the team's assigned race (Genie → Genie / Human / Elf). See [summoning-system.md](summoning-system.md#locked-genie-summon-pool).
 - Each hero starts at **level 1** with age random within **[Min Age, Max Junior Age]** for their race.
+
+## Locked: hero level invariant
+
+**Future work must keep this.** It is not optional polish.
+
+| Rule | Meaning |
+|------|---------|
+| Lifetime XP | `Hero.xp` is a career total. Award paths only add. Level-up **never** subtracts XP. |
+| Stored level is live truth | Combat, rating (via HP), UI, API, marketplace filters, and chronicles **read `Hero.level`**. Do not compute level from XP on read, in Twig, or in the combat snapshot builder. |
+| Keep the column current | After match XP is written, apply the **current** curve and cap and update stored level if it should change (multi-level in one match is allowed). `levelUp()` records chronicle only. |
+| Formula / cap change | Do **not** lazy-recalc on the next page load. Run a **migration or job** that rewrites `Hero.level` from stored XP (may go up or down). Until that job finishes, the stored value remains the correct live value. |
+| First enable (A7.1) | Turning the curve on is a formula change: backfill stored levels from existing XP in the same slice, do not wait for each hero’s next match. |
+
+Package **B** (locked with #6, 16 Oct 2026):
+
+- Level is career identity. Combat HP already uses `level * 30 + KON * 12 * raceFactor`. Level-up does **not** grant attribute points and does **not** raise the training cap **1–20**.
+- Library `xp_gain_pct` stays (`1 + pct / 100` on match XP).
+- `Kingdom.xp_modifier` multiplies XP **at award time** (already baked into stored XP; changing the modifier does not relevel anyone until a job, and should not).
+- `Kingdom.level_cap` live target **20**. XP may keep growing past the cap so a later cap raise can unlock levels via job.
+- Cumulative cost to leave level `L` (need this much **more** total XP than `C(L)`): `400 × (L + 1)`. So 1→2 needs **800** total XP, 2→3 needs **2000** total, 3→4 needs **3600**. General minimum total XP to *be* level `n` (`n >= 2`): `C(n) = 400 × (n × (n + 1) / 2 − 1)`. `C(1) = 0`. `C(20) = 83600`.
+- XP bar: progress inside the current stored level, using `C(level)` and `C(level + 1)` (`hero_xp_bar()` / API `xp_for_level`, `xp_for_next_level`).
+
+Live writers: `HeroProgressionService::applyMatchXp()` (league and friendly resolution) raises stored level and writes chronicle `levelup` / `hero_levelup`. Formula or `level_cap` changes: `php bin/console app:hero-levels:refresh` (no chronicle). Curve YAML: `config/game/hero-progression.yaml`.
 
 ### Hero level vs match XP
 
-League and friendly matches add to `Hero.xp` (Library facility `xp_gain_pct` multiplies that XP only). `HeroService::levelUp()` and chronicle event `levelup` exist but **no production path** converts accumulated XP into `Hero.level`. Displayed level stays at generation until an XP curve is designed. Tracked in [product/known-issues.md](../product/known-issues.md) #6.
+League and friendly matches add to `Hero.xp` (Library `xp_gain_pct` and `Kingdom.xp_modifier` multiply at award). After the write, `HeroProgressionService` updates stored `Hero.level` from the current curve and cap. XP is never spent. Tracked in [product/known-issues.md](../product/known-issues.md) #6 (Resolved).
 
 ## Weapon & Magic School Mastery
 
@@ -202,13 +218,13 @@ Enum: `App\Enum\HeroTrait` — authoritative source of all modifiers.
 | Quick Learner | `quick_learner` | +20% attribute training speed |
 | Clutch | `clutch` | When HP ≤ 30%: +15% accuracy, armor ×1.10 |
 | Audience Favorite | `audience_favorite` | +5% arena ticket revenue when fielded |
-| Battle Hardened | `battle_hardened` | Morale decay on ally death ×0.5 (slower) |
+| Battle Hardened | `battle_hardened` | No live combat morale effect ([#9](../product/known-issues.md) Cut) |
 
 #### Negative (pure downside)
 
 | Trait | Key | Effect |
 |-------|-----|--------|
-| Volatile | `volatile` | Morale decay on ally death ×2.0 (faster) |
+| Volatile | `volatile` | No live combat morale effect ([#9](../product/known-issues.md) Cut). NPC lineup still treats it as a purely negative trait |
 | Slacker | `slacker` | -15% attribute training speed |
 | Fragile | `fragile` | -10% max HP |
 | Glass Jaw | `glass_jaw` | When HP ≤ 50%: incoming physical damage ×1.10 |
@@ -220,7 +236,7 @@ Enum: `App\Enum\HeroTrait` — authoritative source of all modifiers.
 | Berserker | `berserker` | Crit +15%, crit damage 2.0× | Accuracy -8% |
 | Glasscannon | `glass_cannon` | Spell power +15% | Armor -10% |
 | Reckless | `reckless` | Crit +15% | Dodge -10% |
-| Loner | `loner` | Ignores negative race synergy | Ignores positive race synergy |
+| Loner | `loner` | No live combat pairing effect (synergy tables Cut, [#9](../product/known-issues.md) Resolved) | Still counted in team chemistry |
 | Overconfident | `overconfident` | Physical attack +10% | Accuracy -8% |
 | Perfectionist | `perfectionist` | Consistent (non-random) damage | Training speed -10% |
 
@@ -253,10 +269,10 @@ Category comes from `HeroTrait::getCategory()`; icon from `HeroTrait::getIcon()`
 
 ### Combat Engine Integration
 
-`DerivedCombatStats` carries trait metadata for the combat engine. Full formulas: [combat-system.md](combat-system.md).
+`DerivedCombatStats` carries trait metadata for the combat engine. Full formulas: [combat-formulas.md](combat-formulas.md).
 
 - Immediate modifiers (HP, attack, accuracy, crit, dodge, spell power, armor) are applied in `CombatStatCalculator`.
-- Situational modifiers (clutch threshold, glass jaw threshold, consistent damage, morale decay, race synergy flag) are passed as metadata and applied by the combat engine at runtime.
+- Situational modifiers (clutch threshold, glass jaw threshold, consistent damage) are passed as metadata and applied by the combat engine at runtime. Morale-decay flags and race-synergy flags are serialized but unused ([#9](../product/known-issues.md) Cut).
 - Arena revenue bonus is consumed by `ArenaRevenueService` (not the combat engine).
 
 Per-hero match history: [hero-chronicle-system.md](hero-chronicle-system.md). League fixtures resolve through wave Messenger + `CombatEngine` (see [combat-system.md](combat-system.md)).
@@ -265,14 +281,14 @@ Per-hero match history: [hero-chronicle-system.md](hero-chronicle-system.md). Le
 
 ## APIs
 
-Combatant CHA also feeds team chemistry (display-only until [#7](../product/known-issues.md)).
+Combatant CHA also feeds team chemistry (flavor for matches — live for dashboard, fan club / attendance, league tie-break; combat does not read it — [#7](../product/known-issues.md) Resolved).
 
 | Method | Path | Notes |
 |--------|------|-------|
 | GET | `/app/heroes` | Roster (server-rendered) |
 | GET | `/app/heroes/{id}` | Detail (tabs: overview, equipment, spells) |
 | GET | `/api/v1/heroes` | List; includes `trait`, `ratings.base_ovr`, `ratings.complex_rating` (`HeroService::serialize()`) |
-| GET | `/api/v1/heroes/{id}` | Full detail |
+| GET | `/api/v1/heroes/{id}` | Full detail; `level` is stored; `xp_for_level` / `xp_for_next_level` / `level_cap` from the curve |
 | PUT | `/api/v1/heroes/{id}` | Rename |
 | POST | `/api/v1/heroes/{id}/dismiss` | Dismiss → graveyard + compensation |
 | PUT | `/api/v1/heroes/{heroId}/equipment` | Equip / unequip |
@@ -292,4 +308,4 @@ Canonical list: [architecture/routes.md](../architecture/routes.md). Spell learn
 | Mastery | `HeroMasteryService` |
 | Ratings | `HeroRatingCalculator` — [hero-rating-system.md](hero-rating-system.md) |
 
-**Tests:** `tests/Service/Hero/HeroMasteryServiceTest.php`, `HeroRatingCalculatorTest.php`; trait enum `tests/Enum/HeroTraitTest.php`. Generator/level-up/dismiss coverage lives with summoning, graveyard, and league resolution tests. Daily aging is idempotent via `KingdomTickLog` (one daily-reset row per kingdom/team/scheduled time).
+**Tests:** `tests/Service/Hero/HeroMasteryServiceTest.php`, `HeroRatingCalculatorTest.php`, `HeroProgressionServiceTest.php`; trait enum `tests/Enum/HeroTraitTest.php`. Generator/level-up/dismiss coverage lives with summoning, graveyard, and league resolution tests. Daily aging is idempotent via `KingdomTickLog` (one daily-reset row per kingdom/team/scheduled time).

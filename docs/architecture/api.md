@@ -137,50 +137,23 @@ Every endpoint represents a resource or resource collection. Canonical live list
 
 ## Directory Structure
 
-Organize controllers to clearly separate web and API layers:
+Live layout (same as [guides/backend.md](../guides/backend.md) § Where code lives). There is no `src/DTO/` or `src/Serializer/`.
 
 ```
 src/
 ├── Controller/
-│   ├── Web/
-│   │   ├── HeroController.php          # /app/heroes (Twig)
-│   │   ├── TrainingController.php      # /app/training (Twig)
-│   │   ├── DashboardController.php
-│   │   └── ...
+│   ├── Web/                            # Twig pages (`/app/…`)
 │   ├── Api/
-│   │   └── V1/
-│   │       ├── HeroController.php      # /api/v1/heroes
-│   │       ├── TrainingController.php  # /api/v1/training/trainers
-│   │       ├── BattleController.php    # /api/v1/battles
-│   │       └── ...
-│   └── (no HealthCheckController — GET /health is planned, A8.3)
-├── Service/
-│   ├── HeroService.php                 # Business logic (Web & API share this)
-│   ├── TrainingService.php
-│   ├── BattleService.php
-│   ├── ValidationService.php
-│   └── ...
-├── Repository/
-│   ├── HeroRepository.php
-│   ├── TrainingRepository.php
-│   └── ...
-├── Entity/
-│   ├── Hero.php
-│   ├── Training.php
-│   ├── Team.php
-│   └── ...
-├── DTO/
-│   ├── HeroDTO.php                     # Data Transfer Objects for API responses
-│   ├── TrainingDTO.php
-│   └── ...
-├── Exception/
-│   ├── ValidationException.php
-│   ├── ResourceNotFoundException.php
-│   └── ...
-└── Serializer/
-    ├── HeroSerializer.php              # Convert entities to DTOs/JSON
-    ├── ErrorSerializer.php
-    └── ...
+│   │   ├── ApiControllerTrait.php      # jsonError / jsonException
+│   │   └── V1/                         # JSON (`/api/v1/…`)
+│   └── HealthCheckController.php       # GET /health
+├── Service/{Domain}/                   # Shared logic + *Presenter.php
+├── Repository/{Domain}/
+├── Entity/{Domain}/
+├── Enum/
+├── Exception/                          # UserFacingException, …
+├── Command/
+└── Message/
 ```
 
 ---
@@ -200,6 +173,10 @@ controllers_web:
 
 controllers_api:
   resource: ../src/Controller/Api/V1/
+  type: attribute
+
+controllers_health:
+  resource: ../src/Controller/HealthCheckController.php
   type: attribute
 ```
 
@@ -277,50 +254,13 @@ public function detail(int $id): JsonResponse
 
 ---
 
-## DTO & Serialization
+## JSON payloads
 
-Use Data Transfer Objects (DTOs) to normalize responses and decouple entities from API payloads:
+Do not add DTO or Serializer classes. Domain services return snake_case arrays; presenters shape read models for Twig/JSON.
 
-```php
-// src/DTO/HeroDTO.php
-readonly class HeroDTO
-{
-    public function __construct(
-        public int $id,
-        public string $name,
-        public int $level,
-        public string $race,
-        public int $experience,
-    ) {}
-}
-
-// src/Serializer/HeroSerializer.php
-class HeroSerializer
-{
-    public function toDTO(Hero $hero): HeroDTO
-    {
-        return new HeroDTO(
-            $hero->getId(),
-            $hero->getName(),
-            $hero->getLevel(),
-            $hero->getRace(),
-            $hero->getExperience(),
-        );
-    }
-
-    public function toArray(Hero $hero): array
-    {
-        $dto = $this->toDTO($hero);
-        return [
-            'id' => $dto->id,
-            'name' => $dto->name,
-            'level' => $dto->level,
-            'race' => $dto->race,
-            'experience' => $dto->experience,
-        ];
-    }
-}
-```
+- Resource JSON: `HeroService::serialize()`, listing serializers on the owning service (e.g. `MarketplaceService::serializeListing()`).
+- Translated read models: `*Presenter` next to the service (`TeamChroniclePresenter`, `NotificationPresenter`).
+- Controllers: `$this->json($payload)` — flat object, no required `data` wrapper.
 
 ---
 
@@ -415,98 +355,17 @@ async assignTrainee(event) {
 
 ## Error Handling
 
-**Consistent Error Structure:**
+Live JSON errors are a flat `{ "error": "translated message" }`. There is no `ApiException` hierarchy or API exception listener.
 
-All API endpoints return errors in a standardized format:
-
-```php
-// src/Exception/ApiException.php (base)
-abstract class ApiException extends Exception
-{
-    abstract public function getErrorCode(): string;
-    abstract public function getHttpStatusCode(): int;
-}
-
-// src/Exception/ValidationException.php
-class ValidationException extends ApiException
-{
-    public function __construct(
-        private array $errors,
-        string $message = "Validation failed"
-    ) {
-        parent::__construct($message);
-    }
-
-    public function getErrorCode(): string { return 'VALIDATION_ERROR'; }
-    public function getHttpStatusCode(): int { return Response::HTTP_422; }
-    public function getErrors(): array { return $this->errors; }
-}
-
-// src/Exception/ResourceNotFoundException.php
-class ResourceNotFoundException extends ApiException
-{
-    public function getErrorCode(): string { return 'NOT_FOUND'; }
-    public function getHttpStatusCode(): int { return Response::HTTP_404; }
-}
-```
-
-**Exception Event Listener:**
-
-```php
-// src/EventListener/ApiExceptionListener.php
-#[AsEventListener(event: ExceptionEvent::class, priority: 100)]
-class ApiExceptionListener
-{
-    public function __invoke(ExceptionEvent $event): void
-    {
-        $exception = $event->getThrowable();
-        $request = $event->getRequest();
-
-        // Only handle API requests
-        if (!str_starts_with($request->getPathInfo(), '/api/')) {
-            return;
-        }
-
-        if ($exception instanceof ApiException) {
-            $event->setResponse(new JsonResponse(
-                [
-                    'error' => [
-                        'code' => $exception->getErrorCode(),
-                        'message' => $exception->getMessage(),
-                        'details' => $exception instanceof ValidationException
-                            ? $exception->getErrors()
-                            : null,
-                    ]
-                ],
-                $exception->getHttpStatusCode()
-            ));
-        }
-    }
-}
-```
+- Expected failures: throw `UserFacingException('translation.key', $params)` from the service.
+- Controllers: `jsonError('error.key', $status)` or `jsonException($e, 422)` via `ApiControllerTrait`.
+- Keys live in `translations/messages.en.yaml` and `messages.cs.yaml`.
 
 ---
 
 ## Authentication & Authorization
 
-API endpoints should be protected. Currently they are internal only, but design with security in mind:
-
-```php
-// src/Controller/Api/V1/HeroController.php
-#[Route('/{id}', methods: ['GET'])]
-public function get(int $id): JsonResponse
-{
-    // Verify user is authenticated and owns the hero
-    $user = $this->getUser() ?? throw new UnauthenticatedException();
-    $hero = $this->heroService->getHero($id);
-
-    if ($hero->getOwner() !== $user) {
-        throw new ForbiddenException();
-    }
-
-    return $this->json(['data' => $this->serializer->toArray($hero)]);
-}
-```
+Authenticated game API uses `#[IsGranted('ROLE_PLAYER')]` (class or method). Resolve the player's team with the sibling `getPlayerTeam()` helper; load resources scoped to that team (e.g. `HeroService::findForTeam()`). Missing team → `jsonError('error.no_team', 422)`. Missing or foreign resource → 404, not a separate Forbidden exception.
 
 ---
 
@@ -529,7 +388,7 @@ src/Controller/Api/V2/
 
 ## Testing Internal API
 
-Services and API controllers are fully testable:
+Unit tests live under `tests/Service/{Domain}/` (mirror `src/Service/`). Example: `tests/Service/Training/TrainingServiceTest.php`. Liveness (`GET /health`): `tests/Controller/HealthCheckControllerTest.php` (payload, route, HTTP kernel without a session cookie).
 
 ```php
 // tests/Service/Training/TrainingServiceTest.php
@@ -540,19 +399,6 @@ class TrainingServiceTest extends TestCase
         $this->trainingService->assignHero($trainer, $hero, $team, new \DateTimeImmutable());
 
         $this->assertSame($trainer, $hero->getTrainer());
-    }
-}
-
-// tests/Controller/Api/V1/HeroControllerTest.php
-class HeroControllerTest extends WebTestCase
-{
-    public function testGetHeroReturnsJson(): void
-    {
-        $client = static::createClient();
-        $client->request('GET', '/api/v1/heroes/1');
-
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseFormatSame('json');
     }
 }
 ```

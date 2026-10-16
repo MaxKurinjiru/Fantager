@@ -23,7 +23,7 @@ Reference: [architecture/api.md](api.md), [architecture/screen-code-map.md](scre
 |--------|------|-----------|---------|
 | GET | `/` | Web\DefaultController | Homepage |
 | GET | `/news` | Web\NewsController | News archive (each item displayed in full; no detail page) |
-| GET | `/wiki` | — | Help/wiki section — **planned** (A8.5) |
+| GET | `/wiki` | — | Help/wiki section — **planned** (A8.5 stay Planned; later product decision) |
 
 ---
 
@@ -82,7 +82,7 @@ Training is not a hero-id POST. Live trainer assign/promote: [Training & Trainer
 |--------|------|-----------|---------|
 | GET | `/app/heroes` | Web\HeroController | Hero Roster page |
 | GET | `/app/heroes/{id}` | Web\HeroController | Hero Detail page |
-| GET | `/api/v1/heroes` | Api\V1\HeroController | List heroes (filterable). Each hero includes `trait` (nullable string), `ratings.base_ovr` (0–100), and `ratings.complex_rating` (0–9999). |
+| GET | `/api/v1/heroes` | Api\V1\HeroController | Team list (no filter/sort query params; roster filter is client-side). Each hero includes `trait` (nullable string), `ratings.base_ovr` (0–100), and `ratings.complex_rating` (0–9999). |
 | GET | `/api/v1/heroes/{id}` | Api\V1\HeroController | Hero full detail (`trait`, `ratings`, attributes, masteries, …) |
 | PUT | `/api/v1/heroes/{id}` | Api\V1\HeroController | Update hero (rename) |
 | POST | `/api/v1/heroes/{id}/dismiss` | Api\V1\HeroController | Dismiss hero for partial compensation (financial crisis recovery) |
@@ -109,12 +109,12 @@ Training is not a hero-id POST. Live trainer assign/promote: [Training & Trainer
 |--------|------|-----------|---------|
 | GET | `/app/formation` | Web\FormationController | Formation Setup page (supports `?fixture_id=` for match prep) |
 | GET | `/api/v1/formations` | Api\V1\FormationController | Get team saved formations (max 4) |
-| PUT | `/api/v1/formations` | Api\V1\FormationController | Save/update saved formations |
+| PUT | `/api/v1/formations` | Api\V1\FormationController | Save/update saved formations (0–6 slots; duplicate `hero_id` → 422) |
 | DELETE | `/api/v1/formations/{id}` | Api\V1\FormationController | Delete saved formation |
 | GET | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Fixture formation assignment state |
 | PUT | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Assign default / saved / custom lineup |
 | POST | `/api/v1/fixtures/{id}/formation/promote` | Api\V1\FixtureFormationController | Promote temporary match lineup to saved |
-| POST | `/api/v1/formations/simulate` | — | Simulation preview — **planned** |
+| POST | `/api/v1/formations/simulate` | — | Simulation preview — **Cut** (no controller; [#9](../product/known-issues.md) / combat simulate lock) |
 
 ---
 
@@ -123,7 +123,7 @@ Training is not a hero-id POST. Live trainer assign/promote: [Training & Trainer
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/hq` | Web\HeadquartersController | HQ hub (facility panels: training, medical, library, treasury, barracks, summoning chamber, arena) |
-| GET | `/api/v1/hq` | Api\V1\HeadquartersController | Facility levels + bonuses |
+| GET | `/api/v1/hq` | Api\V1\HeadquartersController | Facility levels + live bonuses (`summon_stat_total_cap` omitted, A6.5) |
 | POST | `/api/v1/hq/upgrade` | Api\V1\HeadquartersController | Upgrade facility |
 | POST | `/api/v1/hq/downgrade` | Api\V1\HeadquartersController | Downgrade facility (financial crisis recovery) |
 | POST | `/api/v1/hq/cancel-upgrade` | Api\V1\HeadquartersController | Cancel ongoing facility upgrade |
@@ -163,8 +163,8 @@ Equipment UI is the hero-detail tab, not a standalone inventory page.
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/spells` | Web\SpellController | **Redirect** — `?hero_id=` → `/app/heroes/{id}?tab=spells`; otherwise `/app/heroes` |
-| GET | `/app/academy` | Web\SpellController | Academy Store page |
-| GET | `/api/v1/spells` | Api\V1\SpellController | Spell library |
+| GET | `/app/academy` | Web\SpellController | Academy Store page (library T1–T5, school/tier filters) |
+| GET | `/api/v1/spells` | Api\V1\SpellController | Spell library (`school`, `tier` query) |
 | GET | `/api/v1/heroes/{heroId}/spells` | Api\V1\SpellController | Hero's known spells |
 | POST | `/api/v1/heroes/{heroId}/spells/learn` | Api\V1\SpellController | Learn spell |
 | POST | `/api/v1/heroes/{heroId}/spells/equip` | Api\V1\SpellController | Equip to slot |
@@ -174,14 +174,14 @@ Equipment UI is the hero-detail tab, not a standalone inventory page.
 
 ## Combat
 
-Implemented: `Web\BattleController` (`/app/battles/{id}`) and `Api\V1\BattleController` (`/api/v1/battles/{id}`, `/api/v1/battles/{id}/log`). Sandbox `POST /api/v1/combat/simulate` is **planned** (A7.5 / [#9](../product/known-issues.md)).
+Implemented: `Web\BattleController` (`/app/battles/{id}`) and `Api\V1\BattleController` (`/api/v1/battles/{id}`, `/api/v1/battles/{id}/log`). Sandbox `POST /api/v1/combat/simulate` is **Cut** (no controller; [#9](../product/known-issues.md) Resolved).
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/battles/{id}` | Web\BattleController | Match report: final formations and round-by-round logs |
 | GET | `/api/v1/battles/{id}` | Api\V1\BattleController | Battle result metadata (scores, teams, status, result) |
 | GET | `/api/v1/battles/{id}/log` | Api\V1\BattleController | Detailed combat log / replay (JSON) |
-| POST | `/api/v1/combat/simulate` | — | Sandbox combat simulation — **planned** |
+| POST | `/api/v1/combat/simulate` | — | Sandbox combat simulation — **Cut** (no controller; A7.5 / [#9](../product/known-issues.md)) |
 
 ---
 
@@ -205,8 +205,8 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 
 | Screen | Route | Purpose |
 |--------|-------|---------|
-| **Marketplace** | `/app/marketplace` | Browse, sell, my listings, transaction history, basic equipment merchant |
-| **Finance ledger** | `/app/finance` | Full financial audit log with filters |
+| **Marketplace** | `/app/marketplace` | Browse, sell, my listings, transaction history, basic equipment merchant — [15-marketplace.md](../screens/15-marketplace.md) |
+| **Finance ledger** | `/app/finance` | Full financial audit log with filters — [20-finance.md](../screens/20-finance.md) |
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
@@ -216,7 +216,7 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 | GET | `/api/v1/finance/status` | Api\V1\FinanceController | Financial crisis status |
 | GET | `/api/v1/finance/recent` | Api\V1\FinanceController | Recent financial ledger entries |
 | GET | `/api/v1/marketplace` | Api\V1\MarketplaceController | Search listings. Query: `type`, `race`, `level_min`/`level_max`, `rating_min`/`rating_max`, `base_ovr_min`/`base_ovr_max`, `age_phase`, `price_min`/`price_max`, `seller_reputation_min`, `rarity`, `search`, `sort`. Hero entities include `trait` (nullable), `ratings`; `seller_team` includes `reputation`. |
-| POST | `/api/v1/marketplace/listings` | Api\V1\MarketplaceController | Create listing |
+| POST | `/api/v1/marketplace/listings` | Api\V1\MarketplaceController | Create listing. Price / start / buyout must be in the suggested band (−50% / +100%; [#15](../product/known-issues.md)). |
 | DELETE | `/api/v1/marketplace/listings/{id}` | Api\V1\MarketplaceController | Cancel listing |
 | POST | `/api/v1/marketplace/purchase` | Api\V1\MarketplaceController | Buy listing |
 | POST | `/api/v1/marketplace/bid` | Api\V1\MarketplaceController | Place auction bid |
@@ -256,6 +256,8 @@ The community hub web page and messaging/forum API are implemented. Kingdom-wide
 | POST | `/api/v1/forum/threads/{id}/posts` | Api\V1\ForumController | Reply |
 | POST | `/api/v1/forum/threads/{id}/lock` | Api\V1\ForumController | Lock/unlock thread (author only) |
 
+There is **no** pin/unpin route. `ForumThread.is_pinned` is stored and shown if true, but **unsettable** in the app (A6.3 Cut).
+
 ---
 
 ## Graveyard
@@ -273,7 +275,7 @@ The community hub web page and messaging/forum API are implemented. Kingdom-wide
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/arena` | Web\ArenaController | **Redirect** → `/app/hq?facility=arena` |
-| GET | `/api/v1/arena` | Api\V1\ArenaController | Arena status (read-only) |
+| GET | `/api/v1/arena` | Api\V1\ArenaController | Arena status (read-only; includes last 18 `arena_revenue` rows + analytics summary) |
 | POST | `/api/v1/hq/arena/tickets/price` | Api\V1\ArenaController | Update team ticket price (1–50 gold) with demand elasticity |
 | POST | `/api/v1/arena/tickets/price` | Api\V1\ArenaController | Alias of `/api/v1/hq/arena/tickets/price` |
 | GET | `/app/friendly-matches` | Web\FriendlyMatchController | Kingdom-wide friendly match list + challenge UI |
@@ -299,7 +301,7 @@ The community hub web page and messaging/forum API are implemented. Kingdom-wide
 | POST | `/app/settings/change-email` | Web\SettingsController | Change email (initiates token flow via `confirm-email-change/*`) |
 | POST | `/app/settings/cancel-account` | Web\SettingsController | Cancel account (initiates token flow via `confirm-cancel-account`) |
 
-> Account settings are Web/session routes on `Web\SettingsController` (JSON responses for the modal). There is no separate `Api\SettingsController`; password change remains out of scope for now.
+> Account settings are Web/session routes on `Web\SettingsController` (JSON responses for the modal). There is no separate `Api\SettingsController`. Session password change / extra settings stay **Planned** (A8.6 keep Planned). Lock: [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned).
 
 ---
 
@@ -315,7 +317,7 @@ Query contract — `Api\V1\NotificationController::list()` is source of truth (s
 
 List JSON: `{ items, page, total_pages, total_items }`. Navbar requests `?limit=10&page=`. `read-all` has no 100-item cap.
 
-Title/body are **write-time locale** strings until A6.4. Unused types (`league_update`, `event_started`, `spell_learned`): reserved, no writers (A6.2).
+Title/body in JSON are **read-time** translations of `title_key` / `body_key` (A6.4; same pattern as chronicle). Pre-A6.4 rows without keys keep frozen strings. Unused types (`league_update`, `event_started`, `spell_learned`): **reserved / unused (A6.2)** — no writers; do not hook them for completeness.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
@@ -331,9 +333,11 @@ In-game UI: navbar dropdown → **Notifications** modal (`notifications_controll
 
 ## Infrastructure
 
+Unauthenticated **liveness** only. JSON `{ "status": "ok" }`. No database ping, no env/version/DSN. Dedicated firewall (`security: false`) so probes do not start a session. Compose `web` healthchecks call this path.
+
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/health` | — | Health check — **planned** (A8.3) |
+| GET | `/health` | HealthCheckController | Liveness JSON `{ "status": "ok" }` (A8.3) |
 
 ---
 
@@ -345,13 +349,14 @@ Dungeon, crafting, and quest HTTP APIs are **not** live and have no controllers.
 
 ## Summary
 
-| | Web | API | Total |
-|--|-----|-----|-------|
-| Routes (implemented) | 41 | 84 | **125** |
-| Routes (planned) | 2 | 2 | 4 |
-| Controllers (Web, implemented) | 25 | — | — |
-| Controllers (API, implemented) | — | 23 | — |
+| | Web | API | Infra | Total |
+|--|-----|-----|-------|-------|
+| Routes (implemented) | 41 | 84 | 1 | **126** |
+| Routes (planned) | 1 | 2 | 0 | 3 |
+| Controllers (Web, implemented) | 25 | — | — | — |
+| Controllers (API, implemented) | — | 23 | — | — |
+| Controllers (infra, implemented) | — | — | 1 | — |
 
-Implemented counts are method-level `#[Route]` attributes in `src/Controller/` as of this alignment. Redirects (`/app/inventory`, `/app/spells`, `/app/arena`, `/app/summon`, `/app/settings`, …) are included because they exist in code.
+Implemented counts are method-level `#[Route]` attributes in `src/Controller/` as of this alignment. Redirects (`/app/inventory`, `/app/spells`, `/app/arena`, `/app/summon`, `/app/settings`, …) are included because they exist in code. Infra is `GET /health` (`HealthCheckController`, not under `Web/` or `Api/V1`).
 
-**Planned** (no controller): `GET /wiki`, `GET /health`, `POST /api/v1/combat/simulate`, `POST /api/v1/formations/simulate`.
+**Planned** (no controller, later product ask): `GET /wiki` (A8.5). **Cut** (no controller, do not ship): `POST /api/v1/combat/simulate`, `POST /api/v1/formations/simulate`.

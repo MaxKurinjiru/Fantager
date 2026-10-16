@@ -196,6 +196,7 @@ error:
   invalid_attribute: 'Neplatný atribut. Povolené hodnoty: %values%.'
   unknown_attribute: 'Neznámý atribut "%attribute%".'
   marketplace_price_positive: Cena nebo vyvolávací cena musí být kladná.
+  marketplace_price_out_of_range: Cena musí být mezi %min% a %max% zlatými.
   marketplace_buyout_higher: Pevná cena musí být vyšší než vyvolávací cena.
   marketplace_hero_not_found: Hrdina nenalezen nebo nepatří k vašemu týmu.
   marketplace_hero_only_available: Na trh lze vystavit pouze dostupné hrdiny.
@@ -258,6 +259,7 @@ error:
   formation_max_saved: 'Maximálně %max% uložených formací.'
   formation_invalid_position: 'Neplatná pozice "%position%".'
   formation_hero_not_on_team: 'Hrdina %id% nebyl ve vašem týmu nalezen.'
+  formation_duplicate_hero: Stejný hrdina nemůže stát ve více slotech formace.
   formation_not_on_fixture: Tým není součástí tohoto zápasu.
   formation_only_scheduled: Formaci lze měnit pouze u naplánovaných zápasů.
   formation_not_belong_team: Přiřazená formace nepatří k týmu.
@@ -333,7 +335,7 @@ dashboard:
   morale: Morálka týmu
   morale_desc: Ovlivňuje efektivitu tréninku hrdinů a jejich bojovou vytrvalost.
   chemistry: Chemie týmu
-  chemistry_desc: Určuje spouštění komb a synergické bonusy během zápasů.
+  chemistry_desc: Soudržnost soupisky z rasových dvojic. Pomáhá návštěvnosti a rozhoduje ligové shody. Neovlivňuje zápasy.
   quick_actions: Rychlé akce
   stats: Statistiky týmu
   reputation: Reputace týmu
@@ -794,10 +796,10 @@ heroes:
       desc: "+5 % příjem ze vstupného na aréně, když je nasazen v zápase."
     battle_hardened:
       name: Zocelený bojem
-      desc: Morálka klesá při smrti spojence jen poloviční rychlostí.
+      desc: Zkušený a klidný. Nemění souboj; kickoff morálka i týmová morálka po zápase platí jako u kteréhokoli jiného hrdiny.
     volatile:
       name: Vrtkavý
-      desc: Morálka klesá při smrti spojence dvakrát rychleji.
+      desc: Neklidná povaha. Nemění souboj; kickoff morálka i týmová morálka po zápase platí jako u kteréhokoli jiného hrdiny.
     slacker:
       name: Flákač
       desc: "-15 % rychlost tréninku atributů."
@@ -818,7 +820,7 @@ heroes:
       desc: "+15 % šance na krit, ale -10 % úhyb."
     loner:
       name: Samotář
-      desc: Ignoruje pozitivní i negativní bonusy rasové synergie.
+      desc: Samostatný bojovník. Nemění souboj; týmová chemie ho počítá jako každého jiného bojovníka.
     overconfident:
       name: Přehnaně sebevědomý
       desc: "+10 % fyzický útok, ale -8 % přesnost."
@@ -834,7 +836,7 @@ summoning:
   summon_junior: Vyvolat mladého hrdiny
   summon_junior_desc: "Nasměrujte své zlato k vyvolání nového hrdiny. Rasa vyvolaného hrdiny se volí na základě uzpůsobení vaší arény a rasových vztahů."
   home_theme: Uzpůsobení arény
-  arena_theme_desc: "Rasy jsou losovány podle uzpůsobení vaší arény a jejich vztahu/afinity (>= 50) k vybrané rase."
+  arena_theme_desc: "Rasy jsou losovány podle uzpůsobení vaší arény a jejich vztahu/afinity k vybrané rase (obvykle ≥ 50; uzpůsobení na džina vyžaduje ≥ 80)."
   potential_races: Potenciální vyvolatelné rasy
   portal_title: Vyvolávací portál
   race_placeholder: "Rasa"
@@ -1005,7 +1007,6 @@ hq:
   bonus_roster_capacity: Kapacita soupisky
   bonus_summon_base_stat_bonus: Bonus k zákl. atributům vyvolání
   bonus_summon_stat_random_bonus: Náhodný bonus atributů vyvolání
-  bonus_summon_stat_total_cap: Limit atributů vyvolání
   bonus_ticket_revenue_pct: Příjmy ze vstupného
   bonus_arena_capacity: Kapacita tribun
 
@@ -1125,6 +1126,8 @@ inventory:
   repair: Opravit
   dismantle: Rozložit
   equip_slot_btn: Vybavit slot
+  equip_into_slot: "Vybavit: %slot%"
+  slot_two_hand_held: Obsazeno obouruční zbraní
   rucksack_empty: Batoh je prázdný
   rucksack_empty_desc: Nakupte zbraně a naplňte sklad svého týmu.
   slot_head: Hlava
@@ -1135,6 +1138,7 @@ inventory:
   slot_weapon: Zbraň
   slot_off_hand: Druhá ruka
   slot_ring: Prsten
+  slot_ring_2: Prsten 2
   slot_feet: Boty
   rarity_common: Běžné
   rarity_uncommon: Neobvyklé
@@ -1161,6 +1165,7 @@ inventory:
 spells:
   title: Kniha kouzel a akademie
   tier_label: "Úroveň %tier%"
+  filter_tier: Úroveň
   subtitle: Učte své hrdiny svitky kouzel a spravujte jejich aktivní bojové sloty.
   slot_empty: "Slot %slot% prázdný"
   academy_desc: "V zápasech způsobuje efekty závislé na magické škole."
@@ -1200,7 +1205,7 @@ formation:
     front_3: Přední pravá
   delete_btn: Smazat
   starting_lineup: Startovní sestava
-  starting_lineup_desc: Rozmístěte 6 hrdinů na pozice na hřišti. Přetáhněte hrdiny z poolu nebo použijte rychlé přiřazení.
+  starting_lineup_desc: Rozmístěte 6 hrdinů na pozice na hřišti. Přetáhněte hrdiny z poolu nebo použijte rychlé přiřazení. Klikněte na slot pro úpravu cílení a priority kouzel.
   back_line: "Zadní řada (Obrana / Podpora)"
   front_line: "Přední řada (Útok / Ofenzíva)"
   match_strategy: Strategie zápasu
@@ -1235,6 +1240,35 @@ formation:
   custom_for_match: Vlastní úprava pro tento zápas
   promote_match_formation: Uložit jako vlastní formaci
   save_match_lineup: Uložit sestavu pro zápas
+  tactics_panel_title: Taktika slotu
+  tactics_panel_hint: Klikněte na slot na hřišti a nastavte cílení a prioritu kouzel. Prázdné seznamy použijí přístup formace a výchozí výběr kouzla.
+  tactics_select_slot: Vyberte slot na hřišti pro úpravu taktiky.
+  tactics_empty_hero: Žádný hrdina
+  tactics_targeting: Pořadí cílů
+  tactics_targeting_hint: Preferované sloty nepřítele v pořadí. Prázdný seznam = přístup formace.
+  tactics_add_target: Přidat slot nepřítele
+  tactics_add: Přidat
+  tactics_fallback: Když je seznam cílů prázdný nebo vyčerpaný
+  tactics_fallback_approach: Použít přístup formace
+  tactics_fallback_lowest_hp: Nejnižší zbývající HP
+  tactics_fallback_highest_threat: Nejvyšší fyzický útok
+  tactics_spells: Priorita kouzel
+  tactics_spells_hint: Seřazená nasazená kouzla. Prázdný seznam = výchozí léčení nebo nejsilnější útok.
+  tactics_assign_hero_spells: Přiřaďte hrdinu do slotu, abyste nastavili prioritu kouzel.
+  tactics_no_spells: Tento hrdina nemá nasazená kouzla.
+  tactics_add_spell: Přidat nasazené kouzlo
+  tactics_when: Kdy
+  tactics_when_always: Kdykoli je připraveno
+  tactics_when_ally_hp: HP spojence pod
+  tactics_when_self_hp: Vlastní HP pod
+  tactics_threshold: Práh HP (%)
+  tactics_spell_target: Cíl
+  tactics_target_priority: Aktuální zaměření
+  tactics_target_lowest_ally: Spojenec s nejnižším HP
+  tactics_target_self: Sám sebe
+  tactics_move_up: Posunout nahoru
+  tactics_move_down: Posunout dolů
+  tactics_remove: Odebrat
 
 js_flash:
   common:
@@ -1296,7 +1330,6 @@ js_flash:
     success_sell: Hrdina byl vystaven na trh. Sledujte stav v sekci Moje nabídky.
   formation:
     name_empty: Název formace nemůže být prázdný.
-    assign_hero: Musíte k formaci přiřadit alespoň jednoho hrdinu.
     saving: Ukládání...
     failed_save: Nepodařilo se uložit formaci.
     success_save: Sestava a taktika formace byly úspěšně uloženy.
@@ -1411,7 +1444,7 @@ league:
 
 calendar:
   title: Kalendář a události
-  subtitle: Plán království — ligové zápasy, tréninkové ticky a týmové události.
+  subtitle: Plán království — ligové zápasy, přátelské zápasy a ticky království.
   prev_week: Předchozí týden
   next_week: Další týden
   loading: Načítání kalendáře...
@@ -1425,13 +1458,18 @@ calendar:
   filter_show_system: Zobrazit systémové ticky
   type_system_tick: Systém
   type_league_match: Liga
-  type_hero_training_history: Trénink
+  type_friendly_match: Přátelský
   status_scheduled: Naplánováno
   status_completed: Dokončeno
   status_failed: Selhalo
+  status_pending: Čeká
+  status_processing: Zpracovává se
+  status_in_progress: Probíhá
+  status_declined: Odmítnuto
+  status_cancelled: Zrušeno
+  status_expired: Vypršelo
   league_fixture_desc: 'Ligový zápas — skupina %group%'
   friendly_match_desc: Přátelský zápas
-  training_complete_title: 'Trénink dokončen: %hero%'
   tick:
     daily_reset_title: Denní reset a údržba
     daily_reset_desc: Systémové čištění, reset stárnutí hrdinů
@@ -1476,6 +1514,12 @@ arena:
   revenue_history: Příjmy z domácích zápasů
   col_opponent: Soupeř
   col_attendance: Návštěvnost
+  analytics_window: Posledních %count% výplat z domácích zápasů (okno %window%)
+  analytics_total_gold: Zlato ze vstupenek v okně
+  analytics_avg_attendance: Průměrná návštěvnost
+  analytics_chart_label: Návštěvnost a příjem ze vstupenek u nedávných domácích zápasů
+  axis_attendance: Návštěvnost
+  axis_gold: Zlato
   no_revenue_yet: Zatím žádné příjmy z domácích zápasů. Výplata proběhne po odehrání ligového zápasu.
   view_full_ledger: Zobrazit finanční deník
   how_it_works: Jak funguje příjem z arény
@@ -1545,6 +1589,7 @@ marketplace:
   filter_seller_reputation_placeholder: Libovolná
   label_seller_reputation: "Rep. %value%"
   suggested_price: Doporučená cena
+  price_range: Povolené rozmezí
   btn_use_suggested_price: Použít doporučenou
   sort_newest: Nejnovější
   sort_price_asc: "Cena: Vzestupně"
@@ -1912,6 +1957,9 @@ battle:
   no_team: Bez týmu
   unknown_actor: Neznámý
   return_to_league: Zpět do ligy
+  return_to_friendly: Zpět k přátelským zápasům
+  match_type_league: Liga
+  match_type_friendly: Přátelský
   error_not_found: Zápas nebyl nalezen.
   error_unauthorized: Nemáte oprávnění k prohlížení tohoto zápasu.
 

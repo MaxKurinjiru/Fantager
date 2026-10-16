@@ -99,10 +99,16 @@
     @apply relative flex flex-col justify-between items-center text-center min-h-[140px] p-3 rounded-2xl shadow-sm transition-colors;
     background-color: color-mix(in srgb, var(--color-surface-base) 65%, transparent);
     border: 1px solid var(--color-border);
+    cursor: pointer;
 
     &--drag-over {
       border-color: var(--color-brand-400);
       background-color: color-mix(in srgb, var(--color-brand-500) 12%, transparent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-500) 25%, transparent);
+    }
+
+    &--selected {
+      border-color: var(--color-brand-400);
       box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-500) 25%, transparent);
     }
 
@@ -299,5 +305,30 @@
 .formation-pool-empty {
   @apply text-center py-4 select-none italic text-xs;
   color: var(--color-text-muted);
+}
+
+.formation-tactics-panel {
+  min-height: 12rem;
+}
+
+.formation-tactics-panel__slot-label {
+  @apply text-sm font-bold;
+  color: var(--color-text-primary);
+}
+
+.formation-tactics-list {
+  @apply flex flex-col gap-2 m-0 p-0;
+  list-style: none;
+}
+
+.formation-tactics-row {
+  @apply flex flex-col gap-2 p-2 rounded-lg;
+  border: 1px solid var(--color-border);
+  background-color: color-mix(in srgb, var(--color-surface-raised) 40%, transparent);
+
+  &__label {
+    @apply text-xs font-bold;
+    color: var(--color-text-primary);
+  }
 }
 

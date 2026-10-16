@@ -1,6 +1,6 @@
 # Team Chronicle Screen
 
-Reference: [team-chronicle-system.md](../systems/team-chronicle-system.md), [02-team-dashboard.md](02-team-dashboard.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [team-chronicle-system.md](../systems/team-chronicle-system.md), [02-team-dashboard.md](02-team-dashboard.md)
 
 **When:** Full team event log (dashboard shows only the last five).
 
@@ -14,7 +14,7 @@ Reference: [team-chronicle-system.md](../systems/team-chronicle-system.md), [02-
 
 ### Displayed information
 
-- Filter bar: category, event type, sort (newest / oldest)
+- Filter bar: category, event type (`ChronicleEventType::liveCases()` — `hero_retired` omitted), sort (newest / oldest)
 - Chronological entries: event-type label, localized message (`subject_key` + `subject_params`), timestamp
 - Empty state when nothing matches
 
@@ -29,12 +29,6 @@ Dashboard: last **5** entries in `recent_chronicle.html.twig` with **Full chroni
 | Present | `TeamChroniclePresenter::presentFilteredForTeam()` |
 
 No chronicle REST API; page is server-rendered.
-
----
-
-## Planned
-
-None for this screen. Notification locale-at-read is A6.4 (navbar notifications, not chronicle).
 
 ---
 

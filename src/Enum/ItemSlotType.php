@@ -14,4 +14,10 @@ enum ItemSlotType: string
     case Feet = 'feet';
     case Amulet = 'amulet';
     case Ring = 'ring';
+    case Ring2 = 'ring_2';
+
+    public function isRingSlot(): bool
+    {
+        return self::Ring === $this || self::Ring2 === $this;
+    }
 }

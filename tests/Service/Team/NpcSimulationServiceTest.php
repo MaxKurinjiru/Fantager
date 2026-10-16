@@ -1128,14 +1128,14 @@ class NpcSimulationServiceTest extends TestCase
         $item6->setStatus(ItemStatus::Available);
         $items[] = $item6;
 
-        // Mock ItemService::getBasicItemMerchantPrice
-        // Item 1 and 2 are basic (price 50), others are not (null)
-        $this->itemService->method('getBasicItemMerchantPrice')
+        // NPC listings use suggested price (A7.10): catalog commons = 70% of merchant cost, else rarity table.
+        $this->itemService->method('estimateMarketPrice')
             ->willReturnCallback(function (Item $item) {
                 if (in_array($item->getId(), [1, 2], true)) {
-                    return 50;
+                    return 35;
                 }
-                return null;
+
+                return 75;
             });
 
         // Setup mock repos

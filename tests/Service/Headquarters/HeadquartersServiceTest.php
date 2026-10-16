@@ -467,4 +467,20 @@ class HeadquartersServiceTest extends TestCase
         $this->assertNull($hq->getUpgradeCompletedAt());
         $this->assertNull($hq->getFacilityOperation());
     }
+
+    public function testSerializeFacilityOmitsUnreadSummonStatTotalCap(): void
+    {
+        $hq = new Headquarters();
+        $facility = new \App\Entity\Headquarters\Facility();
+        $facility->setType(\App\Enum\FacilityType::SummoningChamber);
+        $facility->setLevel(5);
+        $hq->addFacility($facility);
+
+        $payload = $this->service->serializeFacility($facility, \App\Enum\FacilityType::SummoningChamber, $hq);
+
+        $this->assertArrayHasKey('summon_base_stat_bonus', $payload['passive_bonuses']);
+        $this->assertArrayHasKey('summon_stat_random_bonus', $payload['passive_bonuses']);
+        $this->assertArrayNotHasKey('summon_stat_total_cap', $payload['passive_bonuses']);
+        $this->assertArrayHasKey('summon_stat_total_cap', $facility->getPassiveBonuses());
+    }
 }

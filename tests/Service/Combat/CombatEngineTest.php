@@ -191,6 +191,72 @@ class CombatEngineTest extends TestCase
         $this->assertGreaterThanOrEqual(2, $finalQ);
     }
 
+    public function testHasteRaisesInitiativeSortAheadOfEqualBase(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->equalInitFronts($engine, [['effect' => 'haste', 'duration' => 2]], []);
+        $events = $engine->simulateRound($runState, 1);
+
+        $this->assertSame('a', $this->firstTurnStart($events)['side']);
+        $aInit = $this->turnStartInitiative($events, 'a');
+        $bInit = $this->turnStartInitiative($events, 'b');
+        $this->assertGreaterThan($bInit, $aInit);
+        $this->assertGreaterThanOrEqual(127, $aInit);
+        $this->assertLessThanOrEqual(133, $aInit);
+    }
+
+    public function testShockLowersInitiativeSortBehindEqualBase(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->equalInitFronts($engine, [['effect' => 'shock', 'duration' => 2]], []);
+        $events = $engine->simulateRound($runState, 1);
+
+        $this->assertSame('b', $this->firstTurnStart($events)['side']);
+        $aInit = $this->turnStartInitiative($events, 'a');
+        $this->assertGreaterThanOrEqual(67, $aInit);
+        $this->assertLessThanOrEqual(73, $aInit);
+    }
+
+    public function testHasteAndShockCancelOnInitiative(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->equalInitFronts($engine, [
+            ['effect' => 'haste', 'duration' => 2],
+            ['effect' => 'shock', 'duration' => 2],
+        ], []);
+        $events = $engine->simulateRound($runState, 1);
+
+        $aInit = $this->turnStartInitiative($events, 'a');
+        $this->assertGreaterThanOrEqual(97, $aInit);
+        $this->assertLessThanOrEqual(103, $aInit);
+    }
+
+    public function testExpiredHasteDoesNotAffectThisRoundSort(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->equalInitFronts($engine, [['effect' => 'haste', 'duration' => 1]], []);
+        $events = $engine->simulateRound($runState, 1);
+
+        $aInit = $this->turnStartInitiative($events, 'a');
+        $this->assertGreaterThanOrEqual(97, $aInit);
+        $this->assertLessThanOrEqual(103, $aInit);
+    }
+
+    public function testHasteDoesNotChangeActionPointBudget(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->isolatedFronts($engine, 1, 5, 16, 5);
+        $this->tuneFront($runState, 'sideA', static function (array &$combatant): void {
+            $combatant['derived']['baseInitiative'] = 25;
+            $combatant['statusEffects'] = [['effect' => 'haste', 'duration' => 2]];
+        });
+
+        $events = $engine->simulateRound($runState, 1);
+        $moves = $this->movesFor($events, 'a', 'front_1');
+
+        $this->assertCount(4, $moves);
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -223,6 +289,59 @@ class CombatEngineTest extends TestCase
         });
 
         return $runState;
+    }
+
+    /**
+     * Two living front_1 combatants with equal baseInitiative 100.
+     *
+     * @param list<array{effect: string, duration: int}> $statusA
+     * @param list<array{effect: string, duration: int}> $statusB
+     *
+     * @return array<string, mixed>
+     */
+    private function equalInitFronts(CombatEngine $engine, array $statusA, array $statusB): array
+    {
+        $runState = $this->isolatedFronts($engine, 5, 5, 11, 5);
+        $this->tuneFront($runState, 'sideA', static function (array &$combatant) use ($statusA): void {
+            $combatant['derived']['baseInitiative'] = 100;
+            $combatant['statusEffects'] = $statusA;
+        });
+        $this->tuneFront($runState, 'sideB', static function (array &$combatant) use ($statusB): void {
+            $combatant['derived']['baseInitiative'] = 100;
+            $combatant['statusEffects'] = $statusB;
+        });
+
+        return $runState;
+    }
+
+    /**
+     * @param array<array<string, mixed>> $events
+     *
+     * @return array<string, mixed>
+     */
+    private function firstTurnStart(array $events): array
+    {
+        foreach ($events as $event) {
+            if ('turn_start' === ($event['type'] ?? '')) {
+                return $event;
+            }
+        }
+
+        $this->fail('Expected a turn_start event');
+    }
+
+    /**
+     * @param array<array<string, mixed>> $events
+     */
+    private function turnStartInitiative(array $events, string $side): int
+    {
+        foreach ($events as $event) {
+            if ('turn_start' === ($event['type'] ?? '') && $side === ($event['side'] ?? '')) {
+                return (int) $event['initiative'];
+            }
+        }
+
+        $this->fail('Expected turn_start for side '.$side);
     }
 
     /**

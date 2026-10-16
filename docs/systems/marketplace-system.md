@@ -1,10 +1,13 @@
 # Marketplace System
 
-Reference: [product/overview.md](../product/overview.md#211-marketplace-system), [MarketplaceService.php](../../src/Service/Marketplace/MarketplaceService.php), [MarketplaceTransaction.php](../../src/Entity/Marketplace/MarketplaceTransaction.php)
+Reference: [product/overview.md](../product/overview.md#marketplace), [MarketplaceService.php](../../src/Service/Marketplace/MarketplaceService.php), [MarketplaceTransaction.php](../../src/Entity/Marketplace/MarketplaceTransaction.php)
+
+Status: Live  
+Screens: [15-marketplace.md](../screens/15-marketplace.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none  
+Lock: [Locked: listing price band](#locked-listing-price-band)
 
 Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction records, and chronicle integration.
-
----
 
 ## Listing Types
 
@@ -18,6 +21,21 @@ Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction r
 - Listing an item sets `item.status = Selling` (escrow).
 - **Trainers listed for sale:** all items equipped on the trainer are automatically unequipped before the listing is created.
 - Cancelling a listing returns the entity to its previous status (`Available`).
+
+---
+
+## Locked: listing price band
+
+**#15 Resolved (A7.10 Implement).** `createListing` enforces a band around the suggested price. Do not add a second formula, a bid cap, or a listing with no suggested price.
+
+| Rule | Meaning |
+|------|---------|
+| Suggested | Heroes/trainers: `HeroRatingCalculator::estimateMarketPrice()` (`complex_rating × gold_per_complex_point`, trainers × `trainer_market_multiplier`). Items: `ItemService::estimateMarketPrice()` (catalog commons = 70% of merchant cost; otherwise rarity table). Suggested is at least **1** gold. |
+| Floor / ceiling | `floor = max(1, round(suggested × 0.5))` (−50%). `ceiling = max(floor, round(suggested × 2.0))` (+100%). |
+| Enforce | Buy-now price, auction starting price, and optional auction buyout must each lie in `[floor, ceiling]` (`error.marketplace_price_out_of_range`). Still require gold ≥ 1. |
+| Hint | Sell tab and hero-detail sell panel show suggested + allowed range and a “use suggested” button. HTML `min`/`max` match the band. |
+| Not a bid cap | Auction **bids** may exceed the ceiling. NPC listings use suggested, so they stay in band. |
+| Shared | Same suggested path for player UI and NPC sell (`NpcEconomySimulator`). |
 
 ---
 
@@ -104,5 +122,5 @@ Tax rates are kingdom-specific and configured in `kingdom.marketplace_tax_rate`.
 - [Team Chronicle System](team-chronicle-system.md) — `item_purchased` / `item_sold` events
 - [Item System](item-system.md) — merchant purchase flow, item status lifecycle
 - [Economy System](economy-system.md) — gold deduction / credit (`EconomyService`)
-- [NPC Simulation System](npc-simulation-system.md) — NPC buying and selling. Player buys have no race filter. **Genie dual rule:** NPC hero buys use the summoning compatible pool except a Genie-adapted NPC may buy Genie-only ([A7.9](../roadmap/current.md)).
+- [NPC Simulation System](npc-simulation-system.md) — NPC buying and selling. Player buys have no race filter. NPC hero buys use the shared summoning compatible pool ([summoning-system.md](summoning-system.md#locked-genie-summon-pool)).
 - [Headquarters System](headquarters-system.md) — roster and trainer limits

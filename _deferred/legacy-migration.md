@@ -1,12 +1,14 @@
 # Legacy Database Migration Guide
 
-This document describes how to access and query the legacy database to perform data migrations to the main Fantager database.
+> **Parked (A8.4).** The `legacy` Doctrine connection is unused at runtime. Live Fantager uses `default` / `DATABASE_URL` only. This import is planned as a **one-shot job immediately before the first production deploy**, not as a second live game database. Do not inject `legacy` into day-to-day services. Do not treat this file as a current setup guide until that deploy window.
+
+This document describes how to access and query the old game database when that import runs.
 
 ## Database Connections
 
 Two connections are configured in Symfony:
-1. `default` — The main Fantager database (MariaDB 11.4).
-2. `legacy` — The read-only source database containing legacy game data.
+1. `default` — The live Fantager database (MariaDB 11.4). Runtime uses this only.
+2. `legacy` — Parked read-only source for the old game data. Set `DATABASE_LEGACY_URL` only for the pre-prod import.
 
 Both connections are defined in `config/packages/doctrine.yaml` and reference environment variables in `.env`.
 

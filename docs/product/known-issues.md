@@ -2,24 +2,57 @@
 
 Single source of truth for **design questions** that must not be invented in code.
 
-**Work queue (docs/code mismatches, cut vs implement):** [roadmap/current.md](../roadmap/current.md).  
-**AI agents:** Do not invent mechanics for **Open** rows (especially #2 enchanting, #6 XP curve, #7 chemistry, #8 item occupancy, #9 combat leftovers). Read [roadmap/current.md](../roadmap/current.md) and [architecture/screen-code-map.md](../architecture/screen-code-map.md) before related work.
+**Locks** live in the matching `systems/*.md` or `screens/*.md` `## Locked:` section — not in this file. Conflict order: [docs/README.md](../README.md) § Canonical sources. Now / next: [roadmap/current.md](../roadmap/current.md).
 
-**Legend:** `Blocks` = alignment step or feature waiting on a decision. `Resolved` rows stay as history until the alignment roadmap says to drop them.
+**AI agents:** Do not invent mechanics for **Open** rows. Do not implement **Later product decisions** unless the user explicitly asks. Do not treat **Cut** rows in Resolved locks as later work.
 
-| ID | Area | Issue | Severity | Blocks | Status |
-|----|------|-------|----------|--------|--------|
-| 1 | Combat | Follow-up steps 2–7 + wave `MAX_ROUNDS` force-complete are in. A KO is not always permanent death. Preparation length and fumble-without-retarget stay locked. Replay HUD (logos, match type, morale, initiative queue), Haste/Shock initiative, and unused trait hooks are tracked as **#9**. Status durations/DOT percents read from `status_effects.yaml` via `StatusEffectConfig` (with hardcoded fallback). | High | — | Resolved (core); leftovers → #9 |
-| 2 | Item System | Enchanting mechanics undefined (essence currency removed from live economy; redesign without essence). Not part of Milestone 6. | High | Alignment A7.4 | Open |
-| 3 | Friendly Matches | Spec + implementation in [friendly-match-system.md](../systems/friendly-match-system.md) (Wed/Sun 18:00 windows, PvP invites, full combat consequences) | Low | — | Resolved |
-| 4 | Arena Matches | Home-match revenue, ticket price API, and friendly scheduling implemented; extended attendance analytics UI still pending | Low | Alignment A7.8 | Partially resolved |
-| 5 | Graveyard | Memorial snapshots on dismiss and permanent combat death implemented; read UI/API at `/app/graveyard` and `GET /api/v1/graveyard/*` | Low | — | Resolved |
-| 6 | Hero progression | Match XP is awarded to `Hero.xp` (Library `xp_gain_pct` applies). `HeroService::levelUp()` is never called; displayed level stays at generation until an XP→level curve is designed. Also decide what `Kingdom.level_cap` / `xp_modifier` do. | High | Alignment A7.1 | Open |
-| 7 | Team chemistry | `TeamChemistryService` writes 0–100 (CHA offset, −15 per hostile pair). Dashboard shows it. Combat does not read it. In-combat race-synergy tables are deferred; Loner `ignoresRaceSynergy` is unused. Decide flavor-only vs live modifiers. | High | Alignment A7.2 | Open |
-| 8 | Item occupancy | Overview and [item-system.md](../systems/item-system.md) match code: one `ring` slot; `ItemService::equip()` only clears the target slot. Two-handed occupying both hands, dual-wield, and two rings are **not** live. Decide occupancy rules before changing `ItemService`. | High | Alignment A7.3 | Open |
-| 9 | Combat leftovers | Replay HUD extras; Haste/Shock on initiative (design text only); Volatile / Battle Hardened in-combat morale; race synergy tables; optional `POST /api/v1/combat/simulate`. Do not change locked round-200 / fumble / KO≠death. | Medium | Alignment A7.5 | Open |
-| 10 | Formation save | Save accepts 0–6 slots and does not reject duplicate `hero_id`. Kickoff forfeits understaffed teams. Overview §2.6.1 now matches [formation-system.md](../systems/formation-system.md) (unique 6 at save is **not** claimed). Decide save-time validation vs kickoff-only. | Medium | Alignment A6.1 | Open |
+## Open
 
-Deferred features beyond the alignment waves (Milestone 8 dungeons/quests/crafting, Milestone 9 alliances/guilds, world events, public wiki as a full CMS) stay under [`future/`](../future) and are **not** active issues unless [roadmap/current.md](../roadmap/current.md) Wave 8 picks wiki/health/CI up as infra.
+| ID | Area | Issue | Severity | Status |
+|----|------|-------|----------|--------|
+| — | — | None. Next new question is **#17**. | — | — |
 
-When an Open row is decided, record Cut vs Implement on the alignment step, then mark this row Resolved.
+When an Open row is decided, record Cut vs Implement. Mark **Decided — Implement** until that code lands, then **Resolved** and move the lock into the matching system or screen doc. Cut decisions may go straight to Resolved.
+
+## Later product decisions (not Open)
+
+**The only parked-product index.** Parked until an explicit product ask. Do not treat this as a backlog. Do not copy this table into `roadmap/`, `systems/README.md`, or `screen-code-map.md`. The reader icon snapshot ([progress.md](progress.md)) may mark the same topics 📋; it is not a second index and not a work queue.
+
+System and screen `## Parked` sections list only **unique** later items for that file — not rows already here. **Cut** belongs in `## Locked:` / Resolved locks, not here.
+
+| Topic | Status | Spec |
+|-------|--------|------|
+| Public wiki (`GET /wiki`) | Planned (A8.5) | [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned) |
+| Session password change / extra settings | Planned (A8.6) | [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned) |
+| Dashboard SSE | Planned | [02-team-dashboard.md](../screens/02-team-dashboard.md), [team-system.md](../systems/team-system.md) |
+| Combat home-advantage | Planned | [combat-system.md](../systems/combat-system.md), [18-arena-management.md](../screens/18-arena-management.md) |
+| HQ visual themes / visitor access / morale-over-time | Not live | [headquarters-system.md](../systems/headquarters-system.md), [08-headquarters.md](../screens/08-headquarters.md) |
+| Economy diminishing returns | Planned | [economy-system.md](../systems/economy-system.md) |
+| Trade / league emails | Not live | [community-system.md](../systems/community-system.md) |
+| Legacy Doctrine connection | Parked (A8.4) | [`_deferred/legacy-migration.md`](../../_deferred/legacy-migration.md) |
+
+Deferred features beyond this list (Milestone 8 dungeons/quests/crafting, Milestone 9 alliances/guilds, world events) stay under [`future/`](../future/) and are **not** issues.
+
+## Resolved locks (index)
+
+| ID | Area | Status | Spec |
+|----|------|--------|------|
+| 1 | Combat core | Resolved | [combat-system.md](../systems/combat-system.md) |
+| 2 | Enchanting | Resolved (Cut) | [item-system.md](../systems/item-system.md#locked-no-enchanting) |
+| 3 | Friendly matches | Resolved | [friendly-match-system.md](../systems/friendly-match-system.md) |
+| 4 | Arena analytics | Resolved | [18-arena-management.md](../screens/18-arena-management.md#locked-attendance-analytics) |
+| 5 | Graveyard | Resolved | [graveyard-system.md](../systems/graveyard-system.md) |
+| 6 | Hero level | Resolved | [hero-system.md](../systems/hero-system.md#locked-hero-level-invariant) |
+| 7 | Team chemistry | Resolved (flavor) | [team-system.md](../systems/team-system.md#locked-chemistry-flavor) |
+| 8 | Item occupancy | Resolved | [item-system.md](../systems/item-system.md#locked-item-occupancy) |
+| 9 | Combat leftovers | Resolved (HUD + Haste/Shock locked; morale / synergy / simulate Cut) | [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate), [12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud) |
+| 10 | Formation save | Resolved | [formation-system.md](../systems/formation-system.md) |
+| 11 | Forum pin | Resolved (Cut) | [community-system.md](../systems/community-system.md#locked-forum-pin) |
+| 12 | Formation L1/L2 | Resolved | [formation-system.md](../systems/formation-system.md#locked-l1l2-editor) |
+| 13 | Roster extras | Resolved (Cut) | [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras) |
+| 14 | Genie summon pool | Resolved | [summoning-system.md](../systems/summoning-system.md#locked-genie-summon-pool) |
+| 15 | Marketplace price band | Resolved | [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band) |
+| 16 | Spell catalog T1–T5 | Resolved | [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) |
+| — | League morale fiction | Resolved (Cut) | [league-system.md](../systems/league-system.md#locked-no-league-morale-fiction) |
+
+Decision notes for #1–#16 live in the linked specs and in [roadmap/archive/alignment-waves.md](../roadmap/archive/alignment-waves.md) (waves 6–8).

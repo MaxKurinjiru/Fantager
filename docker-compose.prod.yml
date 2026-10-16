@@ -12,6 +12,12 @@ services:
       - sessions_data:/var/www/html/var/sessions
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/health | grep -q '\"status\":\"ok\"'"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
     networks:
       - fantager-network
 

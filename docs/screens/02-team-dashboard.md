@@ -1,10 +1,11 @@
 # Team Dashboard (Main Screen)
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#2-team-dashboard-main-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [team-system.md](../systems/team-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [team-system.md](../systems/team-system.md)
 
 **When:** Default authenticated landing page after login.
 
-**Status:** Live at `GET /app/dashboard`. Chemistry on the banner is **display-only** ([product/known-issues.md](../product/known-issues.md) #7). Server-Sent Events (SSE) stay **Planned**. UI extras from the original sketch (win/loss record, league tier/position on this page) are Wave 7 if product wants them.
+**Status:** Live at `GET /app/dashboard`. Chemistry on the banner is **flavor for matches** — combat does not read it.  
+**Lock:** [team-system.md — chemistry flavor](../systems/team-system.md#locked-chemistry-flavor)
 
 **Live UI:** `templates/dashboard/index.html.twig` plus `templates/components/dashboard/`.
 
@@ -20,10 +21,10 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#2-team-dashboard-main
 - Manager display name and kingdom name
 - Morale (value / 100 + bar)
 - Fan club size and last delta (when non-zero)
-- Chemistry (value / 100 + bar) — **display-only**; combat does not read it (#7)
+- Chemistry (value / 100 + bar, `chemistry_desc` tooltip) — **flavor for matches**; combat does not read it. Live for fan club / attendance and league tie-break.
 - Reputation (value + bar)
 
-**Finance**
+**Finance** — full ledger: [20-finance.md](20-finance.md)
 
 - Treasury / gold on hand, unpaid debt, weekly expenses (payroll + HQ maintenance), period and all-time net (`components/finance/summary_stats.html.twig`)
 - Recent ledger rows with link to `/app/finance`
@@ -90,11 +91,14 @@ Gold also appears on the game resource bar (layout), not only on this screen.
 
 ---
 
-## Planned
+Later product decisions (dashboard SSE): [known-issues.md](../product/known-issues.md) § Later product decisions. In-app notifications today are the navbar modal + polling — [notification-system.md](../systems/notification-system.md).
 
-- **Server-Sent Events / SSE** for live dashboard or notification push (A4.2). In-app notifications today are the navbar modal + polling, separate from chronicle.
+## Sketch leftover
+
+Not a contract:
+
 - Win/loss record on the dashboard
-- Current league tier & position on the dashboard
+- Current league tier and position on the dashboard
 - Dedicated shortcuts to Training, Marketplace, and League as first-class quick-action tiles (league/finance/heroes are reached via other blocks)
 
 ---

@@ -282,3 +282,15 @@
 
 .arena-upgrade-hint { @apply text-[11px] mt-4; color: color-mix(in srgb, var(--color-text-muted) 85%, transparent); }
 .arena-empty-copy { @apply text-sm; color: var(--color-text-muted); }
+
+.arena-analytics-summary {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.arena-analytics-chart {
+  position: relative;
+  width: 100%;
+  height: 16rem;
+  margin-bottom: 1.25rem;
+}

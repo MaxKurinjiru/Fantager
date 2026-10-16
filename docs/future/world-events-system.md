@@ -2,7 +2,7 @@
 
 > **Status:** Not implemented and not currently planned. This document preserves the original design for a possible future phase. The calendar and server-tick systems remain in scope; only dynamic world events (`event`, `event_participation`) were removed from the codebase.
 
-Reference: [product/overview.md](../product/overview.md#22-calendar--server-ticks)
+Reference: [calendar-system.md](../systems/calendar-system.md), [product/overview.md](../product/overview.md#deferred)
 
 ---
 

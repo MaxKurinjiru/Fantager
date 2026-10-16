@@ -1,6 +1,6 @@
 # Trainer Management Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#6-trainer-management-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [training-system.md](../systems/training-system.md), [05-training.md](05-training.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [training-system.md](../systems/training-system.md), [05-training.md](05-training.md)
 
 **When:** Promote combatants to trainers, inspect frozen stats, dismiss a trainer.
 
@@ -50,9 +50,9 @@ Hero-detail manage menu also offers **Promote** when the hero is an available co
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch extras — do not treat as a contract:
+Not a contract:
 
 - Dedicated trainer-management route
 - Trainer detail (caps timeline, marketplace cost on this screen)

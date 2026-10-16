@@ -422,7 +422,7 @@ class HeadquartersService
         return [
             'type' => $facility->getType()->value,
             'level' => $facility->getLevel(),
-            'passive_bonuses' => $facility->getPassiveBonuses(),
+            'passive_bonuses' => $facility->getDisplayedPassiveBonuses(),
             'upgrade_cost' => $this->calculateUpgradeCost($type, $facility->getLevel(), $totalLevel),
             'can_upgrade' => $canChange,
             'can_downgrade' => $canChange && $facility->getLevel() > 1,

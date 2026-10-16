@@ -78,7 +78,7 @@ class TeamChronicleController extends AbstractController
             'current_type' => $type?->value,
             'current_category' => $category->value,
             'current_sort' => $sort,
-            'types' => ChronicleEventType::cases(),
+            'types' => ChronicleEventType::liveCases(),
             'categories' => ChronicleCategory::cases(),
             'page' => $page,
             'total_pages' => $totalPages,

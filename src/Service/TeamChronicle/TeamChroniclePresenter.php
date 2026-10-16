@@ -105,6 +105,7 @@ class TeamChroniclePresenter
 
         $typesWithRace = [
             ChronicleEventType::SummonCompleted,
+            ChronicleEventType::StartingRoster,
             ChronicleEventType::HeroPurchased,
             ChronicleEventType::HeroSold,
             ChronicleEventType::TrainerPurchased,
@@ -216,7 +217,7 @@ class TeamChroniclePresenter
             ChronicleEventType::BattleDraw => '🤝',
             ChronicleEventType::HeroLevelup => '⬆️',
             ChronicleEventType::HeroDied => '⚰️',
-            ChronicleEventType::HeroRetired => '🌅',
+            ChronicleEventType::HeroRetired => '🌅', // reserved / unused (A6.2); exhaustive match only
             ChronicleEventType::TrainingCompleted => '💪',
             ChronicleEventType::ItemPurchased => '🛒',
             ChronicleEventType::ItemSold => '💰',

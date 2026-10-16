@@ -2,28 +2,26 @@
 
 ## Now
 
-Docs vs code alignment (waves 0–8): **[current.md](current.md)**. One unchecked step at a time. Do not start Milestone 8/9.
+**[current.md](current.md)** — leftovers after alignment waves 0–8. Conflict order: [docs/README.md](../README.md) § Canonical sources.
+
+Reader icon snapshot (not a work queue): [product/progress.md](../product/progress.md).
 
 ## Next (design still open)
 
-Decisions in [product/known-issues.md](../product/known-issues.md) before new formulas or slots:
+**Open** rows in [product/known-issues.md](../product/known-issues.md) (currently none). Later product decisions: [product/known-issues.md](../product/known-issues.md) § Later product decisions — not a second checklist here.
 
-- #6 Hero XP → level curve
-- #7 Team chemistry (display vs combat)
-- #8 Item occupancy (two-handed, dual-wield, rings)
-- #2 Enchanting redesign
-- #9 Combat leftovers (replay HUD, unused trait hooks)
-- #4 Arena analytics UI (alignment A7.8)
-- #10 Formation save validation
-
-Per-feature leftover steps belong in the matching `systems/*.md` Remaining work section, not in a second checklist here.
+Per-feature leftover **code** steps belong in the matching `systems/*.md` Remaining work section.
 
 ## Parked
 
+Deferred design and repo meta — not the Later product-decisions table.
+
 - Milestone 8: dungeons, quests, crafting — [`../future/`](../future/)
-- Milestone 9: alliances and guilds — [history.md](history.md)
-- Repo meta (CHANGELOG, CONTRIBUTING) — [`_deferred/`](../../_deferred/)
+- Milestone 9: alliances and guilds — [archive/history.md](archive/history.md)
+- Repo meta (CHANGELOG, CONTRIBUTING) and the original screen sketch — [`_deferred/`](../../_deferred/)
 
-## History
+## Archive (not a work queue)
 
-[history.md](history.md) — Milestones 1–9 chronicle. Do not treat M1–6 checkmarks as “no gaps remain.”
+Do not open these unless you need the chronicle.
+
+- [archive/](archive/README.md) — M1–9 history and alignment waves 0–8

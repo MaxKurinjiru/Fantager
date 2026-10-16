@@ -176,10 +176,8 @@ enum HeroTrait: string
     // ────────────────────────────────────────────────────────────────────────
 
     /**
-     * Multiplikátor poklesu morálky při smrti spojence.
-     *   BattleHardened: 0.5  — morálka klesá jen na 50 %
-     *   Volatile:       2.0  — morálka klesá 2× rychleji
-     *   neutrál:        1.0.
+     * Reserved in-combat morale hook (A7.5 / #9 Cut). Serialized on DerivedCombatStats;
+     * CombatEngine does not read it. BattleHardened 0.5, Volatile 2.0, else 1.0.
      */
     public function getMoraleDecayMultiplier(): float
     {
@@ -280,10 +278,8 @@ enum HeroTrait: string
     // ────────────────────────────────────────────────────────────────────────
 
     /**
-     * Pokud true, hrdina ignoruje jak pozitivní, tak negativní race relationship bonusy.
-     * Je to "vlk samotář" — nezávislý na složení týmu.
-     *
-     * Platí pro Loner.
+     * Reserved in-combat synergy hook (A7.5 / #9 Cut). Serialized on DerivedCombatStats;
+     * CombatEngine does not read it. True for Loner, else false.
      */
     public function ignoresRaceSynergy(): bool
     {

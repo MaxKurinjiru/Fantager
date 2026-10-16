@@ -1,0 +1,82 @@
+name: PHPUnit
+
+on:
+  workflow_call:
+  pull_request:
+    paths:
+      - 'src/**/*.php'
+      - 'tests/**'
+      - 'config/**'
+      - 'migrations/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpunit.xml.dist'
+      - '.github/workflows/phpunit.yml'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/**/*.php'
+      - 'tests/**'
+      - 'config/**'
+      - 'migrations/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpunit.xml.dist'
+
+jobs:
+  phpunit:
+    name: PHPUnit
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MYSQL_ROOT_PASSWORD: fantager
+          MYSQL_DATABASE: fantager
+          MYSQL_USER: fantager
+          MYSQL_PASSWORD: fantager
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+          --health-start-period=10s
+    env:
+      DATABASE_URL: mysql://fantager:fantager@127.0.0.1:3306/fantager?serverVersion=11.4.0-MariaDB&charset=utf8mb4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          extensions: pdo_mysql
+          tools: composer
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Migrate test database
+        run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
+
+      - name: Run PHPUnit
+        run: composer test

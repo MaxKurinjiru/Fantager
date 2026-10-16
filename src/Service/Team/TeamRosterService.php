@@ -24,6 +24,14 @@ class TeamRosterService
         return $this->heroRepository->countCombatReadyByTeam($team);
     }
 
+    /**
+     * @return list<Hero>
+     */
+    public function listCombatReadyHeroes(Team $team): array
+    {
+        return $this->heroRepository->findCombatReadyByTeam($team);
+    }
+
     public function isCombatReady(Hero $hero): bool
     {
         return $hero->isCombatant() && HeroStatus::Available === $hero->getStatus();

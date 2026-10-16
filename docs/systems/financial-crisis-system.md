@@ -2,9 +2,11 @@
 
 Reference: [economy-system.md](economy-system.md), [headquarters-system.md](headquarters-system.md), [team-system.md](team-system.md)
 
-Purpose: Handle long-term team insolvency — debt tracking, escalating restrictions, recovery paths, and bankruptcy.
+Status: Live  
+Screens: [02-team-dashboard.md](../screens/02-team-dashboard.md), [20-finance.md](../screens/20-finance.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
 
----
+Purpose: Handle long-term team insolvency — debt tracking, escalating restrictions, recovery paths, and bankruptcy.
 
 ## Overview
 

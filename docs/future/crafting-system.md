@@ -2,7 +2,7 @@
 
 > **Status:** Not implemented and not currently planned. The crafting backend and UI were removed from the codebase; this document preserves the intended design for a possible future phase. The Forge HQ facility was removed with it.
 
-Reference: [product/overview.md](../product/overview.md#217-crafting-system) and [crafting-screen.md](crafting-screen.md)
+Reference: [product/overview.md](../product/overview.md#deferred) (parked; not a live system) and [crafting-screen.md](crafting-screen.md)
 
 Purpose: Detail crafting mechanics, recipes, and queue processing.
 

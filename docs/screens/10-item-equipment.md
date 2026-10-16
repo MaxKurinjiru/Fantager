@@ -1,10 +1,11 @@
 # Item/Equipment Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#10-itemequipment-screen) (historical), [item-system.md](../systems/item-system.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [item-system.md](../systems/item-system.md)
 
 **When:** Equip, unequip, repair, or dismantle items for one hero.
 
-**Status:** There is **no standalone inventory page**. `GET /app/inventory` **redirects**. Equipment is the **hero-detail Equipment tab**. Interaction is **click-to-equip** on the paperdoll / rucksack — **not** drag-and-drop. Occupancy (two-handed, dual-wield, two rings) is [#8](../product/known-issues.md). Enchanting is [#2](../product/known-issues.md).
+**Status:** There is **no standalone inventory page**. `GET /app/inventory` **redirects**. Equipment is the **hero-detail Equipment tab**. Interaction is **click-to-equip** on the paperdoll / rucksack — **not** drag-and-drop.  
+**Lock:** [item-system.md — item occupancy](../systems/item-system.md#locked-item-occupancy), [item-system.md — no enchanting](../systems/item-system.md#locked-no-enchanting)
 
 ---
 
@@ -23,9 +24,9 @@ Buying and selling items is the **Marketplace** (`/app/marketplace`), including 
 
 ### Displayed information (Hero Detail → Equipment)
 
-**Paperdoll** (`components/item/equip_manager.html.twig`) — eight slots, **one ring**:
+**Paperdoll** (`components/item/equip_manager.html.twig`) — nine slots, **two rings**:
 
-- Head, Amulet, Body, Hands, Main Hand, Off-Hand, Ring, Feet
+- Head, Amulet, Body, Hands, Main Hand, Off-Hand, Ring, Ring 2, Feet
 - Equipped item name + rarity styling; empty-slot placeholder
 - Unequip (✕) on a filled slot
 
@@ -35,7 +36,7 @@ Buying and selling items is the **Marketplace** (`/app/marketplace`), including 
 - Name, rarity, slot type, durability, numeric bonuses
 - Equip / Repair / Dismantle buttons
 
-No rucksack filter/sort controls. No equipment-vs-naked stat comparison panel on this tab (derived combat stats live on hero overview). No second ring slot.
+No rucksack filter/sort controls. No equipment-vs-naked stat comparison panel on this tab (derived combat stats live on hero overview). Ring items show Equip Ring / Equip Ring 2; dual-wieldable one-handers show Main Hand / Off-Hand.
 
 ### Actions
 
@@ -47,7 +48,7 @@ No rucksack filter/sort controls. No equipment-vs-naked stat comparison panel on
 | Dismantle | Confirm, then `POST /api/v1/items/dismantle` (unequipped only; gold scrap) |
 | Buy / sell | Marketplace — not this tab |
 
-`ItemService::equip()` only clears the **target** slot. Two-handed occupying both hands, dual-wield, and two rings are **not** live (#8).
+`ItemService::equip()` uses occupancy (#8): two-handed clears `off_hand`; dual-wield one-handers may target `off_hand`; rings go in `ring` or `ring_2`.
 
 ### Backend
 
@@ -63,19 +64,17 @@ Validation: race restrictions and slot compatibility in `ItemService`.
 
 ---
 
-## Planned / not implemented
+## Parked
 
-| Feature | Status |
-|---------|--------|
-| Standalone Inventory screen (`/app/inventory` as its own UI) | Not implemented — route redirects |
-| Drag-and-drop equip / paperdoll | Not implemented — click-to-equip |
-| Rucksack filter / sort | Not implemented |
-| Compare items / swap between two heroes | Not implemented |
-| Stat summary with vs without equipment on this tab | Not implemented |
-| Two rings / two-handed occupying off-hand / dual-wield | Open design — #8 / A7.3 |
-| Craft Item | Deferred — [future/crafting-system.md](../future/crafting-system.md) |
-| Enchant Item | Not designed — #2 |
-| Craft API endpoints | Deferred |
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this screen:
+
+- Standalone Inventory screen (`/app/inventory` as its own UI; route redirects today)
+- Drag-and-drop equip / paperdoll (live is click-to-equip)
+- Rucksack filter / sort
+- Compare items / swap between two heroes
+- Stat summary with vs without equipment on this tab
+
+Crafting is **Deferred**: [future/crafting-system.md](../future/crafting-system.md). Enchanting is **Cut** — [Locked: no enchanting](../systems/item-system.md#locked-no-enchanting).
 
 ---
 

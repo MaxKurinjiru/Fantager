@@ -1,6 +1,6 @@
 # Deferred design
 
-Features that are specified but **out of active scope**. Do not implement unless the user explicitly asks. Alignment work may **cut** leftover mentions of these from live docs.
+Features that are specified but **out of active scope**. Do not implement unless the user explicitly asks.
 
 | Doc | Topic |
 |-----|-------|
@@ -11,4 +11,4 @@ Features that are specified but **out of active scope**. Do not implement unless
 | [crafting-screen.md](crafting-screen.md) | Crafting UI (Milestone 8) |
 | [notes.md](notes.md) | Parked brainstorm (Czech); not a live backlog |
 
-Alliances and guilds (Milestone 9) are described in [../roadmap/history.md](../roadmap/history.md), not here.
+Alliances and guilds (Milestone 9) are described in [../roadmap/archive/history.md](../roadmap/archive/history.md), not here.

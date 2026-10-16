@@ -46,7 +46,7 @@ class FormationController extends AbstractController
      *   "approach": "balanced",
      *   "is_default": true,
      *   "slots": [
-     *     { "position": "front_1", "hero_id": 5, "strategy": {}, "spell_priorities": [] },
+     *     { "position": "front_1", "hero_id": 5, "strategy": {"movement_goal": "advance_to_melee", "target_order": ["back_2"], "fallback": "lowest_hp"}, "spell_priorities": [{"spell_id": 12, "when": "ally_hp_below", "threshold": 40, "target": "lowest_hp_ally"}] },
      *     ...
      *   ]
      * }

@@ -1,10 +1,11 @@
 # Hero Roster Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#3-hero-roster-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [hero-system.md](../systems/hero-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [hero-system.md](../systems/hero-system.md)
 
 **When:** Browse the team’s combatants.
 
-**Status:** Live at `GET /app/heroes`. Card extras from the original sketch (item icons, morale on the card, tired/training status, quick-action dropdown, batch training, multi-select, level filter) are **not** live — Wave 7 / A7.7 if product re-specs them.
+**Status:** Live at `GET /app/heroes`.  
+**Lock:** [Locked: roster extras](#locked-roster-extras)
 
 **Live UI:** `templates/hero/roster.html.twig`, `templates/components/hero/card.html.twig`. Filter/sort is **client-side** (`roster_filter`); the page does not send filter query params.
 
@@ -53,22 +54,24 @@ No per-card dropdown (train / equip / spells / sell), no multi-select, no batch 
 
 - **Web:** `GET /app/heroes` → `Web\HeroController::roster()` — `HeroRepository::findCombatantsByTeam()`
 - **API:** `GET /api/v1/heroes` returns the team list via `HeroService::serialize()` — **no** filter/sort query parameters; the roster page does not call this endpoint
-- Batch-operation APIs: **not** implemented
+- Batch-operation APIs: **Cut** — do not add them
 
 ---
 
-## Planned
+## Locked: roster extras
 
-Original sketch / A7.7 candidates — do not treat as a contract:
+**#13 (A7.7, 16 Oct 2026).** The live roster card and filter bar above are the contract. Cut from this screen (do not re-add without a new product decision):
 
-- Morale value + icon on the card
+- Morale value + icon on the card (`data-morale` sort key stays)
 - Equipped item icons
-- Tired / training status on the card (training today is a dashboard count + hero-detail training tab)
-- Level filter control
-- Quick-action dropdown (train, equip, spells, sell)
-- Multi-select + batch training / formation assignment
-- Marketplace CTA from the roster header
-- Server-side list filtering
+- Tired / training status on the card (training stays a dashboard count + hero-detail overview / `/app/training`)
+- Level filter control (sort by level stays)
+- Per-card quick-action dropdown (train, equip, spells, sell)
+- Multi-select + batch training / formation assignment from the grid
+- Marketplace CTA in the roster header (Summon CTA stays)
+- Server-side list filtering / batch-operation APIs
+
+Train, equip, spells, and sell stay on hero detail. Trainer assign stays `/app/training` and hero-detail overview. A later product decision is required before adding any sketch extra.
 
 ---
 

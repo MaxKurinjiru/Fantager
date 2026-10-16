@@ -124,7 +124,7 @@ class HeroChroniclePresenter
             HeroChronicleEventType::SpellLearned => '📜',
             HeroChronicleEventType::Injured => '🩹',
             HeroChronicleEventType::Recovered => '❤️',
-            HeroChronicleEventType::Retired => '🌅',
+            HeroChronicleEventType::Retired => '🌅', // reserved / unused (A6.2); exhaustive match only
             HeroChronicleEventType::Died => '⚰️',
         };
     }

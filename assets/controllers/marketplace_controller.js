@@ -1,6 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
 import { showConfirm } from '../utils/confirm.js';
+import { formatNumber } from '../utils/locale.js';
 
 export default class extends Controller {
     static targets = [
@@ -11,7 +12,8 @@ export default class extends Controller {
         'sellCatButton', 'sellEntitiesContainer',
         'selectedEntityLabel', 'sellIdInput',
         'listingModeSelect', 'buyoutFieldContainer', 'priceLabel',
-        'suggestedPriceRow', 'suggestedPriceValue', 'listingPriceInput',
+        'suggestedPriceRow', 'suggestedPriceValue', 'priceRangeValue',
+        'listingPriceInput', 'listingBuyoutInput',
         'alert', 'alertMessage', 'sellSearchInput', 'sellSortSelect', 'sellSortOption',
         'browsePagination', 'browsePrevBtn', 'browseNextBtn', 'browsePageInfo',
         'myListingsPagination', 'myListingsPrevBtn', 'myListingsNextBtn', 'myListingsPageInfo',
@@ -132,6 +134,7 @@ export default class extends Controller {
         this.selectedEntityId = null;
         this.sellIdInputTarget.value = '';
         this.selectedEntityLabelTarget.textContent = this.translationsValue.none_selected || '';
+        this._updatePriceGuidance(0, 0, 0);
 
         // Unhighlight any selected card
         this.sellEntitiesContainerTargets.forEach(container => {
@@ -232,11 +235,13 @@ export default class extends Controller {
         const id = card.dataset.entityId;
         const name = card.dataset.entityName;
         const suggestedPrice = parseInt(card.dataset.suggestedPrice || '0', 10);
+        const priceFloor = parseInt(card.dataset.priceFloor || '0', 10);
+        const priceCeiling = parseInt(card.dataset.priceCeiling || '0', 10);
 
         this.selectedEntityId = id;
         this.sellIdInputTarget.value = id;
         this.selectedEntityLabelTarget.textContent = name;
-        this._updateSuggestedPrice(suggestedPrice);
+        this._updatePriceGuidance(suggestedPrice, priceFloor, priceCeiling);
 
         // Highlight selection
         const container = card.closest('[data-marketplace-target="sellEntitiesContainer"]');
@@ -257,7 +262,11 @@ export default class extends Controller {
         this.selectedEntityId = String(heroId);
         this.sellIdInputTarget.value = String(heroId);
         this.selectedEntityLabelTarget.textContent = card.dataset.entityName || '';
-        this._updateSuggestedPrice(parseInt(card.dataset.suggestedPrice || '0', 10));
+        this._updatePriceGuidance(
+            parseInt(card.dataset.suggestedPrice || '0', 10),
+            parseInt(card.dataset.priceFloor || '0', 10),
+            parseInt(card.dataset.priceCeiling || '0', 10)
+        );
 
         heroContainer.querySelectorAll('.sell-card').forEach(c => {
             c.classList.toggle('sell-card--selected', c === card);
@@ -277,18 +286,77 @@ export default class extends Controller {
         }
     }
 
-    _updateSuggestedPrice(price) {
-        if (!this.hasSuggestedPriceRowTarget || !this.hasSuggestedPriceValueTarget) {
-            return;
+    _updatePriceGuidance(suggested, floor, ceiling) {
+        this.currentPriceFloor = floor;
+        this.currentPriceCeiling = ceiling;
+
+        if (this.hasSuggestedPriceRowTarget) {
+            if (suggested > 0) {
+                this.suggestedPriceRowTarget.classList.remove('hidden');
+                if (this.hasSuggestedPriceValueTarget) {
+                    this.suggestedPriceValueTarget.textContent = `🪙 ${formatNumber(suggested)}`;
+                }
+                if (this.hasPriceRangeValueTarget) {
+                    this.priceRangeValueTarget.textContent = `🪙 ${formatNumber(floor)} – ${formatNumber(ceiling)}`;
+                }
+            } else {
+                this.suggestedPriceRowTarget.classList.add('hidden');
+                if (this.hasSuggestedPriceValueTarget) {
+                    this.suggestedPriceValueTarget.textContent = '';
+                }
+                if (this.hasPriceRangeValueTarget) {
+                    this.priceRangeValueTarget.textContent = '';
+                }
+            }
         }
 
-        if (price > 0) {
-            this.suggestedPriceRowTarget.classList.remove('hidden');
-            this.suggestedPriceValueTarget.textContent = `🪙 ${price.toLocaleString()}`;
-        } else {
-            this.suggestedPriceRowTarget.classList.add('hidden');
-            this.suggestedPriceValueTarget.textContent = '';
+        this._applyPriceInputBounds(floor, ceiling);
+    }
+
+    _applyPriceInputBounds(floor, ceiling) {
+        const apply = (input) => {
+            if (!input) {
+                return;
+            }
+            if (floor > 0 && ceiling > 0) {
+                input.min = String(floor);
+                input.max = String(ceiling);
+            } else {
+                input.min = '1';
+                input.removeAttribute('max');
+            }
+        };
+
+        if (this.hasListingPriceInputTarget) {
+            apply(this.listingPriceInputTarget);
         }
+        if (this.hasListingBuyoutInputTarget) {
+            apply(this.listingBuyoutInputTarget);
+        }
+    }
+
+    _pricesInBand(price, buyout) {
+        const floor = this.currentPriceFloor || 0;
+        const ceiling = this.currentPriceCeiling || 0;
+        if (floor <= 0 || ceiling <= 0) {
+            return price > 0;
+        }
+        if (price < floor || price > ceiling) {
+            return false;
+        }
+        if (buyout !== null && !Number.isNaN(buyout) && (buyout < floor || buyout > ceiling)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    _priceOutOfRangeMessage() {
+        const template = this.translationsValue.price_out_of_range || '';
+
+        return template
+            .replace('%min%', formatNumber(this.currentPriceFloor))
+            .replace('%max%', formatNumber(this.currentPriceCeiling));
     }
 
     onListingModeChange(event) {
@@ -619,6 +687,15 @@ export default class extends Controller {
         }
 
         const form = event.target;
+        const formData = new FormData(form);
+        const priceGold = parseInt(formData.get('price'), 10);
+        const buyoutRaw = formData.get('buyout');
+        const buyoutPriceGold = buyoutRaw ? parseInt(buyoutRaw, 10) : null;
+        if (!this._pricesInBand(priceGold, buyoutPriceGold)) {
+            this.showAlert('error', this._priceOutOfRangeMessage());
+            return;
+        }
+
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn ? submitBtn.textContent : '';
         if (submitBtn) {
@@ -626,12 +703,11 @@ export default class extends Controller {
             submitBtn.textContent = this.translationsValue.label_processing;
         }
 
-        const formData = new FormData(form);
         const payload = {
             type: this.activeSellCategory,
             entity_id: parseInt(this.selectedEntityId),
-            price_gold: parseInt(formData.get('price')),
-            buyout_price_gold: formData.get('buyout') ? parseInt(formData.get('buyout')) : null,
+            price_gold: priceGold,
+            buyout_price_gold: buyoutPriceGold,
             mode: formData.get('mode'),
             duration_days: parseInt(formData.get('duration'))
         };

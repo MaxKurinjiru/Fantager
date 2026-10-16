@@ -1,10 +1,13 @@
 # Item System
 
-Reference: [product/overview.md](../product/overview.md#28-item-system)
+Reference: [product/overview.md](../product/overview.md#items)
+
+Status: Live  
+Screens: [10-item-equipment.md](../screens/10-item-equipment.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none  
+Lock: [Locked: item occupancy](#locked-item-occupancy), [Locked: no enchanting](#locked-no-enchanting)
 
 Purpose: Document items, equipment slots, dismantling, durability/repair, and marketplace interactions.
-
----
 
 ## Item Entity
 
@@ -16,32 +19,33 @@ Items are represented by the `Item` entity (`src/Entity/Item/Item.php`). Key fie
 | `equipped_hero_id` | FK → Hero (nullable) | Hero the item is equipped on; `null` if in rucksack |
 | `equipped_slot` | `ItemSlotType` enum (nullable) | The specific slot where the item is equipped |
 | `name` | string | Item display name |
-| `slot_type` | `ItemSlotType` enum | The slot this item can be equipped in |
+| `slot_type` | `ItemSlotType` enum | Native type (`ring` items stay `ring` when worn in `ring_2`) |
 | `category` | `ItemCategory` enum | Weapon, Shield, Spell Accelerator, Armor, Accessory, Material |
 | `rarity` | `ItemRarity` enum | Common, Uncommon, Rare, Epic, Legendary, Mythic |
 | `durability` | int (0–100) | Current durability; decreases after combat |
 | `status` | `ItemStatus` enum | `available` or `selling` (in marketplace escrow) |
 | `bonuses` | JSON | Map of attribute bonuses (e.g. `{"str": 3, "dex": 2}`) |
-| `special_effects` | JSON | Optional list of special effect definitions |
+| `special_effects` | JSON | Unused / reserved (A7.4). Merchant writes `[]`. Combat does not read it. Omitted from item API `serialize()`. |
 
 ---
 
 ## Equipment Slots
 
-Each hero has 8 equipment slots corresponding to `ItemSlotType`:
+Each hero has **9** equipment slots (`ItemSlotType`):
 
 | Slot | Description |
 |------|-------------|
 | `main_hand` | Primary weapon |
-| `off_hand` | Shield or secondary weapon |
+| `off_hand` | Shield, spell accelerator, or a dual-wielded one-hander |
 | `head` | Helmet or headpiece |
 | `body` | Chest armour |
 | `hands` | Gloves |
 | `feet` | Boots |
 | `amulet` | Neck accessory |
-| `ring` | Ring accessory |
+| `ring` | First ring |
+| `ring_2` | Second ring |
 
-An item can only be equipped in the slot matching its `slot_type`. Equipping an item to a slot automatically unequips any previously equipped item in that slot.
+An item's `slot_type` is its **native** type (`ring` items stay `ring` even when worn in `ring_2`). Equipping clears the target slot, plus the other hand when two-handed occupancy applies. See [Locked: item occupancy](#locked-item-occupancy).
 
 ---
 
@@ -49,9 +53,37 @@ An item can only be equipped in the slot matching its `slot_type`. Equipping an 
 
 - An item must have `status = available` to be equipped.
 - The item's `owner_team_id` must match the hero's team.
-- The item's `slot_type` must match the target `slot`.
-- Race restrictions from `RaceConfig::getEquipmentRestrictions()` (e.g. Ents cannot wear armor) are enforced in `ItemService::equip()`.
+- The target `slot` must be in `ItemService::compatibleSlots()` (not always equal to `slot_type`).
+- Race restrictions from `RaceConfig::getEquipmentRestrictions()` are enforced on **native** `slot_type`, **category**, and the **target** slot (Giants cannot dual-wield into `off_hand`).
 - Equipping a listed (escrow) item is blocked — cancel the marketplace listing first.
+
+---
+
+## Locked: item occupancy
+
+**#8 Resolved (A7.3 Implement).** Do not add a third ring, extra attacks for dual-wield, or two-handed occupancy for subtypes outside the list below.
+
+| Rule | Meaning |
+|------|---------|
+| Nine slots, two rings | Paperdoll slots are the eight classic pieces plus `ring_2`. Ring items (`slot_type = ring`) may be equipped in `ring` or `ring_2`. |
+| Two-handed clears `off_hand` | Subtypes `two_handed_sword`, `two_handed_axe`, `two_handed_mace`, `bow`, `crossbow`, and `staff` occupy both hands. Equipping one to `main_hand` unequips `off_hand`. Equipping anything to `off_hand` unequips that two-hander. |
+| Dual-wield | `one_handed_sword`, `one_handed_axe`, `one_handed_mace`, and `dagger` may go in `main_hand` or `off_hand`. Two-handers, bows, staves, shields, and wands cannot sit in the other hand. |
+| Combat stacking | `CombatStatCalculator` still sums bonuses from **all** equipped items (durability-scaled). Dual-wield therefore stacks `damage`. Weapon reach / `weaponSubType` comes from **main_hand**, else off-hand. No extra swing. Targeting is per-slot L1 on Formation Setup ([#12](../product/known-issues.md)). |
+| Race | Giant/Ent restrictions stay `RaceConfig` (Giant: no `off_hand`; Ent: no weapon / shield / armor). |
+| Pre-A7.3 rows | Two-hand + off-hand pairs that already exist are cleared by `app:item-occupancy:refresh` (no chronicle). |
+
+---
+
+## Locked: no enchanting
+
+**#2 Resolved (A7.4 Cut).** Enchanting is not in the live game. Do not reintroduce essence. Do not ship an enchant UI, cost, or combat effect.
+
+| Rule | Meaning |
+|------|---------|
+| Not live | No enchant service, route, or UI. Equipment actions stay equip / unequip / repair / dismantle. |
+| No essence | Team / ledger / spell essence columns were dropped (`Version20261014140000`). Do not add them back. |
+| `special_effects` unused | JSON column stays. Merchant and generators write `[]`. `CombatStatCalculator` reads `bonuses` only. Item API `serialize()` omits the key so it does not look live. Do not drop the column. |
+| Later | A later product decision is required before adding enchanting. |
 
 ---
 
@@ -134,6 +166,7 @@ Teams can purchase fixed-price basic equipment from the merchant via the web fro
 
 ## Marketplace Interactions
 
+- Suggested list price is `ItemService::estimateMarketPrice()` (catalog commons: 70% of merchant cost; otherwise rarity table). Player listings must sit in the −50% / +100% band ([marketplace-system.md](marketplace-system.md#locked-listing-price-band)).
 - Listing an item for sale sets `status = selling` (escrow). The item cannot be equipped or dismantled while listed.
 - Cancelling a listing returns the item to `status = available`.
 - On a successful sale the item is transferred to the buyer's team; `owner_team_id` changes and `equipped_hero_id` is cleared.
@@ -159,4 +192,5 @@ See [Marketplace System](marketplace-system.md) for listing, bidding, and transa
 
 - Item generation (loot drops, crafted results) — defined via `CraftingRecipe` entities; actual item generation on crafting completion is deferred (Milestone 8 / future).
 - Durability degradation per battle — ✅ formula above in `LeagueMatchResolutionService`.
-- Enchanting mechanics — not yet designed. Tracked in [product/known-issues.md](../product/known-issues.md#2). Essence currency was removed from the live economy.
+- Occupancy (two-handed / dual-wield / two rings) — ✅ locked above (A7.3 / [#8](../product/known-issues.md)).
+- Enchanting — ✅ cut (A7.4 / [#2](../product/known-issues.md)). Not in the live game. `special_effects` unused (omitted from item API).

@@ -1,10 +1,12 @@
 # Kingdom Selection (Registration Step)
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#1-kingdom-selection-screen) (historical sketch), [00-auth-screens.md](00-auth-screens.md), [kingdom-system.md](../systems/kingdom-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [kingdom-system.md](../systems/kingdom-system.md), [00-auth-screens.md](00-auth-screens.md)
 
 **When:** Field on the **register form**, not a separate post-login screen. Choice is permanent (`User.kingdom_id`); no kingdom switcher after registration.
 
-**Live UI:** `templates/components/auth/register_panel.html.twig` (desktop radio cards + mobile `<select>`). Stimulus `auth_modal` keeps select and radios in sync.
+**Status:** Live on the register panel (desktop radio cards + mobile `<select>`).
+
+**Live UI:** `templates/components/auth/register_panel.html.twig`. Stimulus `auth_modal` keeps select and radios in sync.
 
 ---
 
@@ -40,9 +42,9 @@ There is no separate “confirm kingdom” step, no “show details” expander,
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch, not in the register UI:
+Not a contract:
 
 - Theme / lore copy per kingdom
 - Time zone on the cards

@@ -169,7 +169,7 @@ class SummoningService
             return Race::cases();
         }
 
-        return $this->raceConfig->getCompatibleRaces($theme, 50);
+        return $this->raceConfig->getCompatibleRacesForAdaptation($theme);
     }
 
     /**

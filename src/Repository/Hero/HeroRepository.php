@@ -38,6 +38,26 @@ class HeroRepository extends ServiceEntityRepository
     /**
      * @return list<Hero>
      */
+    public function findCombatReadyByTeam(Team $team): array
+    {
+        /** @var list<Hero> $heroes */
+        $heroes = $this->createQueryBuilder('h')
+            ->where('h.team = :team')
+            ->andWhere('h.role = :role')
+            ->andWhere('h.status = :status')
+            ->setParameter('team', $team)
+            ->setParameter('role', HeroRole::Combatant)
+            ->setParameter('status', HeroStatus::Available)
+            ->orderBy('h.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $heroes;
+    }
+
+    /**
+     * @return list<Hero>
+     */
     public function findCombatantsByTeam(Team $team): array
     {
         /** @var list<Hero> $heroes */

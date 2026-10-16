@@ -1,12 +1,18 @@
 # Authentication Screens (Login / Register / Password Reset)
 
-Reference: [systems/auth-system.md](../systems/auth-system.md), [00-public-pages.md](00-public-pages.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [auth-system.md](../systems/auth-system.md), [00-public-pages.md](00-public-pages.md)
 
 **When:** Before gameplay — unauthenticated users (or logged-in users hitting `/login` / `/register`, who are redirected to the dashboard).
 
+**Status:** Live. Login and register are one guest modal; password reset is standalone pages.
+
+**Live UI:** `templates/auth/_modal.html.twig`, `templates/components/auth/`, `templates/auth/password_reset_request.html.twig`, `templates/auth/password_reset_confirm.html.twig`. Stimulus `auth_modal`, `modal`.
+
 ---
 
-## Presentation — Implemented
+## Implemented
+
+### Presentation
 
 Login and Register are **one auth modal** (`templates/auth/_modal.html.twig`) included from `templates/base.html.twig` for guests. Panels switch via Stimulus `auth_modal` (`openLogin` / `openRegister` / `switchToLogin` / `switchToRegister`).
 
@@ -20,7 +26,7 @@ Kingdom pick lives on the register panel — [01-kingdom-selection.md](01-kingdo
 
 ---
 
-## Register — Implemented
+### Register
 
 **Routes:** `GET, POST /register`, `GET /register/success`, `POST /register/resend-verification`, `GET /verify-email`.
 
@@ -54,15 +60,7 @@ Detail: [auth-system.md](../systems/auth-system.md).
 
 ---
 
-## Register — Planned
-
-- Terms of service / privacy policy links (`auth.terms_agree` exists in translations; **not** on the form)
-- OAuth / social login
-- Client-side (JS) field validation beyond HTML5 `required` / `minlength` / `maxlength`
-
----
-
-## Login — Implemented
+### Login
 
 **Route:** `GET, POST /login` (POST is Symfony `form_login` `check_path`).
 
@@ -88,7 +86,7 @@ Detail: [auth-system.md](../systems/auth-system.md).
 
 ---
 
-## Password reset — Implemented
+### Password reset
 
 **Routes:** `GET, POST /password-reset`, `GET, POST /password-reset/confirm`.
 
@@ -108,7 +106,7 @@ Standalone public pages (`templates/auth/password_reset_request.html.twig`, `pas
 
 ---
 
-## Form validation (live)
+### Form validation (live)
 
 Authoritative layer is **server-side**. HTML5 attributes run in the browser. Stimulus `auth_modal` does **not** validate on blur or clear errors while typing.
 
@@ -151,7 +149,7 @@ Login errors use a single generic message for invalid credentials (does not reve
 
 ---
 
-## Error display — Implemented
+### Error display
 
 - **Field errors (register):** inline under the input after `POST /register` re-renders the modal.
 - **Login:** banner above the form from Symfony authentication error.
@@ -159,12 +157,7 @@ Login errors use a single generic message for invalid credentials (does not reve
 - **No** `alert()` / `confirm()` dialogs.
 - Messages go through translation keys (`validators` / `security` / `messages`).
 
-## Error display — Planned
-
-- JS validation on blur; clear errors while typing; focus first invalid field after submit
-- Dismissible global banner with auto-dismiss timer
-
-### Translation keys (validators domain)
+#### Translation keys (validators domain)
 
 ```
 register.email.required
@@ -191,8 +184,13 @@ global.server_error
 
 ---
 
-## Planned (auth extras)
+## Parked
 
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions (in-session password change is A8.6 — [19-player-profile-settings.md](19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned)). Unique to this screen:
+
+- Terms of service / privacy policy links (`auth.terms_agree` exists in translations; **not** on the form)
 - OAuth / social login
+- Client-side (JS) field validation beyond HTML5 `required` / `minlength` / `maxlength`
+- JS validation on blur; clear errors while typing; focus first invalid field after submit
+- Dismissible global banner with auto-dismiss timer
 - Dedicated handling notes for expired sessions beyond current flashes / login redirect
-- In-session **password change** for logged-in players — not this screen; stay Planned on [19-player-profile-settings.md](19-player-profile-settings.md) (A8.6)

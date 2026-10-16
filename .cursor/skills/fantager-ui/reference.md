@@ -22,6 +22,7 @@
 | `_dashboard.scss` | Dashboard widgets |
 | `_navbar.scss` | Nav, dropdowns |
 | `_sidebar.scss` | Game sidebar, layout shell |
+| `_battle.scss` | Match HUD, hex replay, round log |
 
 ## Layout primitives (`_layout.scss`)
 
@@ -76,6 +77,7 @@
 | `.spell-mastery-grid` | `_spell.scss` | School mastery cells |
 | `.summoning-race-grid` | `_summoning.scss` | Compatible races grid |
 | `.hero-school-mastery__grid` | `_shared.scss` | Hero mastery panel |
+| `.battle-hud-panel` | `_battle.scss` | Replay match HUD (emblems, match type, score) |
 
 ## Twig exceptions (only these utilities)
 

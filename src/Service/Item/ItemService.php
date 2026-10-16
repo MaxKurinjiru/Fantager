@@ -49,6 +49,9 @@ class ItemService
         'mythic' => 80,
     ];
 
+    /** Player/NPC listing suggested price as a fraction of merchant cost for catalog commons. */
+    public const MARKET_MERCHANT_RATIO = 0.7;
+
     public function __construct(
         private readonly ItemRepository $itemRepository,
         private readonly EntityManagerInterface $em,
@@ -76,7 +79,62 @@ class ItemService
     }
 
     /**
-     * Equip an item to a hero's slot. Any item previously in that slot is unequipped.
+     * Slots an item may occupy. Ring items fit either ring slot; dual-wieldable
+     * one-handers fit main_hand or off_hand. Everything else matches slot_type.
+     *
+     * @return list<ItemSlotType>
+     */
+    public static function compatibleSlots(Item $item): array
+    {
+        if (ItemSlotType::Ring === $item->getSlotType()) {
+            return [ItemSlotType::Ring, ItemSlotType::Ring2];
+        }
+
+        if ($item->getSubType()?->isDualWieldable() ?? false) {
+            return [ItemSlotType::MainHand, ItemSlotType::OffHand];
+        }
+
+        return [$item->getSlotType()];
+    }
+
+    public static function occupiesOffHand(Item $item): bool
+    {
+        return $item->getSubType()?->occupiesBothHands() ?? false;
+    }
+
+    /**
+     * Compatible slots that this hero's race may actually use.
+     *
+     * @return list<ItemSlotType>
+     */
+    public function allowedEquipSlots(Item $item, Hero $hero): array
+    {
+        $allowed = [];
+        foreach (self::compatibleSlots($item) as $slot) {
+            if ($this->isSlotAllowedForHero($hero, $item, $slot)) {
+                $allowed[] = $slot;
+            }
+        }
+
+        return $allowed;
+    }
+
+    public function isSlotAllowedForHero(Hero $hero, Item $item, ItemSlotType $slot): bool
+    {
+        foreach ($this->raceConfig->getEquipmentRestrictions($hero->getRace()) as $restriction) {
+            if ($item->getSlotType()->value === $restriction
+                || $item->getCategory()->value === $restriction
+                || $slot->value === $restriction) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Equip an item to a hero's slot. Clears the target slot, and for two-handed
+     * occupancy also clears the other hand.
      *
      * @throws \DomainException
      */
@@ -90,49 +148,77 @@ class ItemService
             throw new UserFacingException('error.item_wrong_team');
         }
 
-        if ($item->getSlotType() !== $slot) {
+        if (!\in_array($slot, self::compatibleSlots($item), true)) {
             throw new UserFacingException('error.item_slot_mismatch', ['%item_slot%' => $item->getSlotType()->value, '%slot%' => $slot->value]);
         }
 
-        // Validate race-specific equipment restrictions
-        $restrictions = $this->raceConfig->getEquipmentRestrictions($hero->getRace());
-        foreach ($restrictions as $restriction) {
-            if ($item->getSlotType()->value === $restriction || $item->getCategory()->value === $restriction) {
-                $raceKey = 'heroes.race_'.$hero->getRace()->value;
-                $translatedRace = $this->translator->trans($raceKey);
-
-                $restrictionKey = $restriction;
-                if (null !== ItemSlotType::tryFrom($restriction)) {
-                    $restrictionKey = 'inventory.slot_'.$restriction;
-                } elseif (null !== ItemCategory::tryFrom($restriction)) {
-                    $restrictionKey = 'inventory.cat_'.$restriction;
-                }
-                $translatedRestriction = $this->translator->trans($restrictionKey);
-
-                throw new UserFacingException('error.item_race_restricted', ['%race%' => $translatedRace, '%restriction%' => $translatedRestriction]);
-            }
+        if (!$this->isSlotAllowedForHero($hero, $item, $slot)) {
+            $this->throwRaceRestricted($hero, $item, $slot);
         }
 
-        // Unequip whatever is currently in that slot for this hero
         $existing = $this->itemRepository->findOneBy([
             'equippedHero' => $hero,
             'equippedSlot' => $slot,
         ]);
-        if (null !== $existing) {
-            $existing->setEquippedHero(null);
-            $existing->setEquippedSlot(null);
+        if (null !== $existing && $existing !== $item) {
+            $this->clearEquipState($existing);
         }
 
-        // Unequip from previous hero if item was equipped elsewhere
+        if (ItemSlotType::MainHand === $slot && self::occupiesOffHand($item)) {
+            $this->clearHeroSlot($hero, ItemSlotType::OffHand, $item);
+        }
+
+        if (ItemSlotType::OffHand === $slot) {
+            $mainHand = $this->itemRepository->findOneBy([
+                'equippedHero' => $hero,
+                'equippedSlot' => ItemSlotType::MainHand,
+            ]);
+            if (null !== $mainHand && $mainHand !== $item && self::occupiesOffHand($mainHand)) {
+                $this->clearEquipState($mainHand);
+            }
+        }
+
         if (null !== $item->getEquippedHero()) {
-            $item->setEquippedHero(null);
-            $item->setEquippedSlot(null);
+            $this->clearEquipState($item);
         }
 
         $item->setEquippedHero($hero);
         $item->setEquippedSlot($slot);
 
         $this->em->flush();
+    }
+
+    /**
+     * Unequip off-hand items that sit next to a two-handed main-hand weapon.
+     * Silent repair for rows created before occupancy was enforced.
+     */
+    public function clearIllegalTwoHandOccupancy(): int
+    {
+        $cleared = 0;
+        $mainHands = $this->itemRepository->findBy(['equippedSlot' => ItemSlotType::MainHand]);
+        foreach ($mainHands as $main) {
+            $hero = $main->getEquippedHero();
+            if (null === $hero || !self::occupiesOffHand($main)) {
+                continue;
+            }
+
+            $offHand = $this->itemRepository->findOneBy([
+                'equippedHero' => $hero,
+                'equippedSlot' => ItemSlotType::OffHand,
+            ]);
+            if (null === $offHand) {
+                continue;
+            }
+
+            $this->clearEquipState($offHand);
+            ++$cleared;
+        }
+
+        if ($cleared > 0) {
+            $this->em->flush();
+        }
+
+        return $cleared;
     }
 
     /**
@@ -146,10 +232,53 @@ class ItemService
             throw new UserFacingException('error.item_not_equipped');
         }
 
+        $this->clearEquipState($item);
+        $this->em->flush();
+    }
+
+    private function clearHeroSlot(Hero $hero, ItemSlotType $slot, Item $except): void
+    {
+        $occupant = $this->itemRepository->findOneBy([
+            'equippedHero' => $hero,
+            'equippedSlot' => $slot,
+        ]);
+        if (null !== $occupant && $occupant !== $except) {
+            $this->clearEquipState($occupant);
+        }
+    }
+
+    private function clearEquipState(Item $item): void
+    {
         $item->setEquippedHero(null);
         $item->setEquippedSlot(null);
+    }
 
-        $this->em->flush();
+    private function throwRaceRestricted(Hero $hero, Item $item, ItemSlotType $slot): never
+    {
+        $raceKey = 'heroes.race_'.$hero->getRace()->value;
+        $translatedRace = $this->translator->trans($raceKey);
+
+        $matched = $slot->value;
+        foreach ($this->raceConfig->getEquipmentRestrictions($hero->getRace()) as $restriction) {
+            if ($item->getSlotType()->value === $restriction
+                || $item->getCategory()->value === $restriction
+                || $slot->value === $restriction) {
+                $matched = $restriction;
+                break;
+            }
+        }
+
+        $restrictionKey = $matched;
+        if (null !== ItemSlotType::tryFrom($matched)) {
+            $restrictionKey = 'inventory.slot_'.$matched;
+        } elseif (null !== ItemCategory::tryFrom($matched)) {
+            $restrictionKey = 'inventory.cat_'.$matched;
+        }
+
+        throw new UserFacingException('error.item_race_restricted', [
+            '%race%' => $translatedRace,
+            '%restriction%' => $this->translator->trans($restrictionKey),
+        ]);
     }
 
     /**
@@ -239,7 +368,11 @@ class ItemService
         return $missing * $ratePerPoint;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * Player-facing item payload. Omits unused `special_effects` (A7.4 / #2).
+     *
+     * @return array<string, mixed>
+     */
     public function serialize(Item $item): array
     {
         return [
@@ -251,10 +384,13 @@ class ItemService
             'durability' => $item->getDurability(),
             'repair_cost' => $this->calculateRepairCost($item),
             'bonuses' => $item->getBonuses(),
-            'special_effects' => $item->getSpecialEffects(),
             'equipped_hero_id' => $item->getEquippedHero()?->getId(),
             'equipped_slot' => $item->getEquippedSlot()?->value,
             'sub_type' => $item->getSubType()?->value,
+            'compatible_slots' => array_map(
+                static fn (ItemSlotType $slot): string => $slot->value,
+                self::compatibleSlots($item),
+            ),
         ];
     }
 
@@ -539,6 +675,27 @@ class ItemService
         $this->em->flush();
 
         return $item;
+    }
+
+    /**
+     * Suggested marketplace gold for an item (NPC listings and player price guidance).
+     * Catalog commons: 70% of merchant cost. Otherwise rarity table.
+     */
+    public function estimateMarketPrice(Item $item): int
+    {
+        $merchantPrice = $this->getBasicItemMerchantPrice($item);
+        if (null !== $merchantPrice) {
+            return max(1, (int) round($merchantPrice * self::MARKET_MERCHANT_RATIO));
+        }
+
+        return max(1, match ($item->getRarity()) {
+            ItemRarity::Common => 75,
+            ItemRarity::Uncommon => 180,
+            ItemRarity::Rare => 400,
+            ItemRarity::Epic => 1000,
+            ItemRarity::Legendary => 2500,
+            ItemRarity::Mythic => 6000,
+        });
     }
 
     /**

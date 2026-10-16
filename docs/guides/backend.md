@@ -7,15 +7,14 @@ One-page reference for AI agents and quick human review.
 
 ## Before you code
 
-**Work queue:** [roadmap/current.md](../roadmap/current.md) — one **unchecked** step at a time. Do not start Milestone 8/9. Do not invent mechanics for **Open** rows in [product/known-issues.md](../product/known-issues.md) (especially #6 XP, #7 chemistry, #8 occupancy, #2 enchanting, #9 combat leftovers).
+Conflict order, Open rows, leftovers: [docs/README.md](../README.md) § Canonical sources. Locks: matching `## Locked:` (index: [known-issues.md](../product/known-issues.md) § Resolved locks).
 
 | Check | Why |
 |-------|-----|
-| [roadmap/current.md](../roadmap/current.md) | Active docs/code work queue |
-| [product/known-issues.md](../product/known-issues.md) | Design first — stop and ask on Open IDs |
-| [systems/README.md](../systems/README.md) § Current Implementation Status | Honest live-contract snapshot (A1.1) |
-| [roadmap/history.md](../roadmap/history.md) | Historical M1–9 only; M1–6 ✅ ≠ no gaps (A1.2) |
-| Matching `systems/*.md` + `screens/*.md` | Domain rules and UI; systems win over `product/overview.md` |
+| [product/known-issues.md](../product/known-issues.md) | Design first — stop and ask on Open IDs. Later decisions: § Later product decisions |
+| Matching `systems/*.md` Remaining work | Unfinished **code** for that feature. Snapshot: [systems/README.md](../systems/README.md) |
+| Matching `systems/*.md` + `screens/*.md` | Domain rules and UI |
+| [roadmap/archive/history.md](../roadmap/archive/history.md) | Chronicle only — do not open unless you need M1–9 history. M1–6 checkmarks ≠ no gaps |
 
 ---
 
@@ -120,23 +119,16 @@ Copy an existing feature in the same domain before inventing new patterns (e.g. 
 - [ ] Schema/entity changes reflected in [architecture/entities.md](../architecture/entities.md) (entities + enums tables)
 - [ ] PHP translation keys in `messages.en.yaml` + `messages.cs.yaml` (or `validators.*.yaml` for form validation)
 - [ ] Domain behavior matches `systems/*.md`; screen matches `screens/*.md`
-- [ ] Implementation status updated in [systems/README.md](../systems/README.md) when feature status changes
+- [ ] Matching `systems/*.md` Remaining work updated when unfinished code remains; later product decisions go in [known-issues.md](../product/known-issues.md) § Later product decisions, not a second checklist
 
 ---
 
 ## Scope guardrails
 
-Do not invent formulas, slots, or UI for Open known-issues. Combat and enchanting stay locked as below; XP, chemistry, and occupancy are the same class of stop.
-
-| Area | Agent note |
-|------|------------|
-| Combat engine | Formulas live in [combat-system.md](../systems/combat-system.md) + `CombatStatCalculator`. Do not invent Haste/Shock initiative, in-combat morale events, race-synergy tables, or `POST /api/v1/combat/simulate` ([product/known-issues.md](../product/known-issues.md) #9). Do not change locked round-200 / fumble / KO≠death. |
-| Item enchanting | Mechanics undefined (no essence). Do not reintroduce essence or ship enchanting until [#2](../product/known-issues.md) is decided. |
-| Hero XP / level | Match XP writes `Hero.xp`; no production `levelUp()`. Do not invent an XP curve or change `Kingdom.level_cap` / `xp_modifier` until [#6](../product/known-issues.md) is decided. |
-| Team chemistry | `TeamChemistryService` is **display-only**. Combat does not read it. Do not add in-combat synergy or Loner combat effects until [#7](../product/known-issues.md) is decided. |
-| Item occupancy | One `ring` slot; `ItemService::equip()` only clears the target slot. Do not implement two-handed occupying both hands, dual-wield, or two rings until [#8](../product/known-issues.md) is decided. |
-| `docs/future/`, `_deferred/` | Out of scope unless the user explicitly requests |
-| Public wiki/news | Mostly planned — [roadmap/current.md](../roadmap/current.md) A8.5 |
+- Do not invent formulas, slots, or UI for **Open** rows in [product/known-issues.md](../product/known-issues.md).
+- Locks: [known-issues.md](../product/known-issues.md) § Resolved locks → matching `## Locked:` in `systems/` or `screens/`. Do not duplicate them here. Highest-risk reminders: [AGENTS.md](../../AGENTS.md).
+- Combat formulas live in [combat-formulas.md](../systems/combat-formulas.md) + `CombatStatCalculator`. Match rules: [combat-system.md](../systems/combat-system.md). Do not change locked round-200 / fumble / KO≠death.
+- `docs/future/` and `_deferred/` are out of scope unless the user explicitly requests them.
 
 ---
 

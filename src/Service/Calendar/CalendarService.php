@@ -25,7 +25,7 @@ class CalendarService
     }
 
     /**
-     * Aggregates recurring ticks, league matches, and team-specific queues.
+     * Aggregates recurring ticks (excluding league/friendly tick types), league fixtures, and the viewer's friendly matches.
      *
      * @return list<array{
      *     id: string,

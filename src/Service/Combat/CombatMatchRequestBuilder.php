@@ -8,6 +8,7 @@ use App\Entity\Formation\Formation;
 use App\Entity\Formation\FormationSlot;
 use App\Entity\Hero\Hero;
 use App\Enum\FormationPosition;
+use App\Enum\ItemSlotType;
 use App\Enum\ItemSubType;
 use App\Enum\MatchType;
 use App\Repository\Item\ItemRepository;
@@ -110,24 +111,29 @@ class CombatMatchRequestBuilder
         $spellPriorities = $slot->getSpellPriorities();
 
         $equippedItems = $this->itemRepository->findBy(['equippedHero' => $hero]);
-        $weaponSubType = null;
+        $weaponSubTypes = [
+            ItemSubType::OneHandedSword,
+            ItemSubType::TwoHandedSword,
+            ItemSubType::OneHandedAxe,
+            ItemSubType::TwoHandedAxe,
+            ItemSubType::OneHandedMace,
+            ItemSubType::TwoHandedMace,
+            ItemSubType::Dagger,
+            ItemSubType::Bow,
+            ItemSubType::Crossbow,
+            ItemSubType::Wand,
+            ItemSubType::Staff,
+        ];
+        $mainHandWeapon = null;
+        $fallbackWeapon = null;
         $armorSubType = null;
         foreach ($equippedItems as $item) {
             $subType = $item->getSubType();
-            if (null === $weaponSubType && in_array($subType, [
-                ItemSubType::OneHandedSword,
-                ItemSubType::TwoHandedSword,
-                ItemSubType::OneHandedAxe,
-                ItemSubType::TwoHandedAxe,
-                ItemSubType::OneHandedMace,
-                ItemSubType::TwoHandedMace,
-                ItemSubType::Dagger,
-                ItemSubType::Bow,
-                ItemSubType::Crossbow,
-                ItemSubType::Wand,
-                ItemSubType::Staff,
-            ], true)) {
-                $weaponSubType = $subType;
+            if (null !== $subType && in_array($subType, $weaponSubTypes, true)) {
+                $fallbackWeapon ??= $subType;
+                if (ItemSlotType::MainHand === $item->getEquippedSlot()) {
+                    $mainHandWeapon = $subType;
+                }
             }
             if (null === $armorSubType && in_array($subType, [
                 ItemSubType::LightArmor,
@@ -137,6 +143,7 @@ class CombatMatchRequestBuilder
                 $armorSubType = $subType;
             }
         }
+        $weaponSubType = $mainHandWeapon ?? $fallbackWeapon;
 
         return new CombatantSnapshot(
             $heroId,

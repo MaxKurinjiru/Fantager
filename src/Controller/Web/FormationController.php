@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
+use App\Entity\Formation\Formation;
+use App\Entity\Hero\Hero;
 use App\Enum\HeroStatus;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Formation\FixtureFormationService;
+use App\Service\Formation\FormationTacticsNormalizer;
+use App\Service\Spell\SpellService;
 use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +27,8 @@ class FormationController extends AbstractController
         private readonly HeroRepository $heroRepository,
         private readonly FormationRepository $formationRepository,
         private readonly FixtureFormationService $fixtureFormationService,
+        private readonly FormationTacticsNormalizer $tacticsNormalizer,
+        private readonly SpellService $spellService,
         private readonly UserMessageTranslator $userMessages,
     ) {
     }
@@ -42,7 +48,7 @@ class FormationController extends AbstractController
 
         $heroes = array_values(array_filter(
             $this->heroRepository->findCombatantsByTeam($team),
-            static fn ($hero) => HeroStatus::Dead !== $hero->getStatus() && HeroStatus::Retired !== $hero->getStatus(),
+            static fn ($hero) => HeroStatus::Dead !== $hero->getStatus() && !$hero->getStatus()->isReserved(),
         ));
         $formations = $this->formationRepository->findSavedByTeam($team);
 
@@ -66,6 +72,94 @@ class FormationController extends AbstractController
             'formations' => $formations,
             'fixture' => $fixture,
             'fixture_assignment' => $fixtureAssignment,
+            'slot_tactics' => $this->slotTacticsForPage($fixtureAssignment, $formations, $request->query->get('formation_id')),
+            'hero_spells' => $this->equippedSpellsByHeroId($heroes),
         ]);
+    }
+
+    /**
+     * @param array<string, mixed>|null $fixtureAssignment
+     * @param list<Formation>           $formations
+     *
+     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>}>
+     */
+    private function slotTacticsForPage(?array $fixtureAssignment, array $formations, mixed $formationId): array
+    {
+        if (null !== $fixtureAssignment) {
+            $source = $fixtureAssignment['assigned_formation'] ?? $fixtureAssignment['effective_formation'] ?? null;
+            if (is_array($source) && isset($source['slots']) && is_iterable($source['slots'])) {
+                return $this->tacticsNormalizer->initialUiStateFromSlots($source['slots']);
+            }
+
+            return $this->tacticsNormalizer->emptyUiState();
+        }
+
+        $selected = $this->resolveSelectedFormation($formations, $formationId);
+        if (null !== $selected) {
+            return $this->tacticsNormalizer->initialUiStateFromSlots($selected->getSlots());
+        }
+
+        return $this->tacticsNormalizer->emptyUiState();
+    }
+
+    /**
+     * @param list<Formation> $formations
+     */
+    private function resolveSelectedFormation(array $formations, mixed $formationId): ?Formation
+    {
+        if (null !== $formationId && '' !== $formationId && 'new' !== $formationId && is_numeric($formationId)) {
+            $id = (int) $formationId;
+            foreach ($formations as $formation) {
+                if ($formation->getId() === $id) {
+                    return $formation;
+                }
+            }
+
+            return null;
+        }
+
+        foreach ($formations as $formation) {
+            if ($formation->isDefault()) {
+                return $formation;
+            }
+        }
+
+        return $formations[0] ?? null;
+    }
+
+    /**
+     * @param list<Hero> $heroes
+     *
+     * @return array<int, list<array{id: int, name: string, type: string}>>
+     */
+    private function equippedSpellsByHeroId(array $heroes): array
+    {
+        $map = [];
+        foreach ($heroes as $hero) {
+            $heroId = $hero->getId();
+            if (null === $heroId) {
+                continue;
+            }
+
+            $equipped = [];
+            foreach ($this->spellService->listForHero($hero) as $heroSpell) {
+                if (!$heroSpell->isEquipped()) {
+                    continue;
+                }
+                $spell = $heroSpell->getSpell();
+                $spellId = $spell->getId();
+                if (null === $spellId) {
+                    continue;
+                }
+                $equipped[] = [
+                    'id' => $spellId,
+                    'name' => $spell->getName(),
+                    'type' => $spell->getType()->value,
+                ];
+            }
+            $map[$heroId] = $equipped;
+        }
+
+        return $map;
     }
 }

@@ -6,7 +6,6 @@ namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
 use App\Entity\Combat\Battle;
-use App\Entity\League\LeagueFixture;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,13 +41,8 @@ class BattleController extends AbstractController
             throw $this->createAccessDeniedException('You are not authorized to view this battle');
         }
 
-        // Find the fixture associated with this battle to display round/kickoff details
-        $fixture = $this->em->getRepository(LeagueFixture::class)->findOneBy(['battle' => $battle]);
-
         return $this->render('battle/index.html.twig', [
             'battle' => $battle,
-            'fixture' => $fixture,
-            'player_team' => $team,
         ]);
     }
 }

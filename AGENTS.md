@@ -6,18 +6,28 @@ Entry point for Cursor agents, Copilot, and other AI assistants working in this 
 
 | Task | Read first | Code / docs to touch |
 |------|------------|----------------------|
-| **Docs vs code alignment** | [docs/roadmap/current.md](docs/roadmap/current.md) → [docs/product/known-issues.md](docs/product/known-issues.md) | Only the files listed on the **current unchecked step** |
+| **Docs vs code conflict** | [docs/README.md](docs/README.md) § Canonical sources | Align to the live source; do not start a new alignment wave |
 | **UI / Twig / SCSS / Stimulus** | [docs/guides/ui.md](docs/guides/ui.md) | `templates/`, `assets/styles/`, `assets/controllers/` |
 | **New or changed API endpoint** | [docs/guides/backend.md](docs/guides/backend.md) → [docs/architecture/api.md](docs/architecture/api.md) | `src/Controller/Api/V1/`, `src/Service/`, [docs/architecture/routes.md](docs/architecture/routes.md) |
 | **Web page / screen** | [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + screen in [docs/screens/](docs/screens/) + [docs/guides/ui.md](docs/guides/ui.md) | `src/Controller/Web/`, `templates/`, often API + Stimulus |
 | **Domain logic / service** | [docs/systems/](docs/systems/) + [docs/architecture/entities.md](docs/architecture/entities.md) | `src/Service/`, `src/Entity/`, `tests/Service/` |
 | **Schema / migration** | [docs/architecture/entities.md](docs/architecture/entities.md) | `migrations/`, entities, repositories |
-| **Bugfix / extend existing feature** | [docs/roadmap/current.md](docs/roadmap/current.md) + [docs/systems/README.md](docs/systems/README.md) § Current Implementation Status + [docs/product/known-issues.md](docs/product/known-issues.md) | Mirror patterns in the same domain |
-| **Stack, Docker, doc index** | [.github/copilot-instructions.md](.github/copilot-instructions.md) | — |
+| **Bugfix / extend existing feature** | Matching `systems/*.md` Remaining work + [docs/product/known-issues.md](docs/product/known-issues.md) § Later product decisions + [docs/screens/](docs/screens/) | Mirror patterns in the same domain |
+| **Domain terms** | [docs/product/glossary.md](docs/product/glossary.md) | — |
+| **Reader progress snapshot** | [docs/product/progress.md](docs/product/progress.md) | Root [README.md](README.md) § Game progress + `progress.md` — not a work queue |
+| **Stack & Docker** | [.github/copilot-instructions.md](.github/copilot-instructions.md) | [docs/guides/local-setup.md](docs/guides/local-setup.md), [docker/README.md](docker/README.md) |
 
 Full vertical slice: backend cheatsheet § Vertical slice + UI cheatsheet when the feature has a UI.
 
-**Live rules vs overview:** `docs/systems/*.md` + [docs/product/known-issues.md](docs/product/known-issues.md) win over [docs/product/overview.md](docs/product/overview.md) until alignment Wave 2. Live UI is [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + Twig, not unchecked wish-lists in [docs/screens/overview-legacy.md](docs/screens/overview-legacy.md).
+Conflict order, Open rows, leftovers: [docs/README.md](docs/README.md) § Canonical sources.
+
+**Locks** live in the matching `systems/*.md` or `screens/*.md` `## Locked:` section (full index: [docs/product/known-issues.md](docs/product/known-issues.md) § Resolved locks). Highest-risk — do not reopen without an explicit product ask:
+
+- **Hero level:** stored `Hero.level` is live truth — do not derive it from `Hero.xp` on read. [hero-system.md](docs/systems/hero-system.md#locked-hero-level-invariant)
+- **Chemistry:** `Team.chemistry` is flavor for matches — combat must not read it. [team-system.md](docs/systems/team-system.md#locked-chemistry-flavor)
+- **Enchanting:** not in the live game — do not reintroduce essence or an enchant UI. [item-system.md](docs/systems/item-system.md#locked-no-enchanting)
+- **Simulate:** do not ship `POST /api/v1/combat/simulate`. [combat-system.md](docs/systems/combat-system.md#locked-no-race-synergy--no-simulate)
+- **Wiki / extra settings:** `GET /wiki` and session password change stay **Planned**. [00-public-pages.md](docs/screens/00-public-pages.md#locked-public-wiki-stays-planned), [19-player-profile-settings.md](docs/screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned)
 
 ## Backend (PHP / Symfony)
 
@@ -66,7 +76,20 @@ docker exec -u apache fantager-web composer phpstan
 
 ## English
 
-Documentation and code comments are in English (see copilot-instructions).
+All documentation, markdown files, and code comments must be in English.
+
+## File changes
+
+When creating, deleting, moving, or renaming files/directories:
+
+1. Update [docs/README.md](docs/README.md) (link the new file in the appropriate section).
+2. If agent routing or locks changed, update this file.
+3. If stack or Docker commands changed, update [.github/copilot-instructions.md](.github/copilot-instructions.md).
+4. Search repo-wide for old references and update stale links.
+
+When adding routes, entities, enums, or features also update [docs/architecture/routes.md](docs/architecture/routes.md), [docs/architecture/entities.md](docs/architecture/entities.md), [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md), the matching `systems/*.md` Remaining work (if unfinished code remains), [docs/product/known-issues.md](docs/product/known-issues.md) § Later product decisions when parking a product choice, the status snapshot in [docs/systems/README.md](docs/systems/README.md), and the reader snapshot in [docs/product/progress.md](docs/product/progress.md) (plus the compact table in [README.md](README.md) § Game progress).
+
+Make small, reversible changes. Do not change DB/backup/CI infrastructure without consulting maintainers.
 
 ## Strict constraints
 

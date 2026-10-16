@@ -27,6 +27,7 @@ class FormationService
         private readonly HeroRepository $heroRepository,
         private readonly LeagueFixtureRepository $fixtureRepository,
         private readonly EntityManagerInterface $em,
+        private readonly FormationTacticsNormalizer $tacticsNormalizer = new FormationTacticsNormalizer(),
     ) {
     }
 
@@ -292,12 +293,38 @@ class FormationService
      */
     private function rebuildSlots(Formation $formation, Team $team, array $slotsData): void
     {
+        $prepared = $this->prepareSlots($team, $slotsData);
+
         foreach ($this->slotRepository->findBy(['formation' => $formation]) as $oldSlot) {
             $this->em->remove($oldSlot);
         }
 
         $this->em->persist($formation);
         $this->em->flush();
+
+        foreach ($prepared as $slotData) {
+            $slot = new FormationSlot();
+            $slot->setFormation($formation);
+            $slot->setPosition($slotData['position']);
+            $slot->setHero($slotData['hero']);
+            $slot->setStrategy($slotData['strategy']);
+            $slot->setSpellPriorities($slotData['spell_priorities']);
+
+            $this->em->persist($slot);
+        }
+
+        $this->em->flush();
+    }
+
+    /**
+     * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
+     *
+     * @return list<array{position: FormationPosition, hero: \App\Entity\Hero\Hero|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}>
+     */
+    private function prepareSlots(Team $team, array $slotsData): array
+    {
+        $prepared = [];
+        $seenHeroIds = [];
 
         foreach ($slotsData as $slotData) {
             $positionValue = $slotData['position'];
@@ -313,19 +340,25 @@ class FormationService
                 if (null === $hero) {
                     throw new UserFacingException('error.formation_hero_not_on_team', ['%id%' => $heroId]);
                 }
+
+                $resolvedId = $hero->getId();
+                if (null !== $resolvedId && isset($seenHeroIds[$resolvedId])) {
+                    throw new UserFacingException('error.formation_duplicate_hero');
+                }
+                if (null !== $resolvedId) {
+                    $seenHeroIds[$resolvedId] = true;
+                }
             }
 
-            $slot = new FormationSlot();
-            $slot->setFormation($formation);
-            $slot->setPosition($position);
-            $slot->setHero($hero);
-            $slot->setStrategy($slotData['strategy']);
-            $slot->setSpellPriorities($slotData['spell_priorities']);
-
-            $this->em->persist($slot);
+            $prepared[] = [
+                'position' => $position,
+                'hero' => $hero,
+                'strategy' => $this->tacticsNormalizer->normalizeStrategy($slotData['strategy']),
+                'spell_priorities' => $this->tacticsNormalizer->normalizeSpellPriorities($slotData['spell_priorities']),
+            ];
         }
 
-        $this->em->flush();
+        return $prepared;
     }
 
     private function removeFormation(Formation $formation): void

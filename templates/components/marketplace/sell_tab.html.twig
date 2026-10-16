@@ -61,13 +61,16 @@
             <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="hero" class="scroll-grid">
                 {% for hero in heroes %}
                     {% set can_sell = hero_can_leave_roster(team, hero) and hero.trainer is null %}
+                    {% set price_guidance = hero_listing_price_guidance(hero) %}
                     <div {% if can_sell %}data-action="click->marketplace#selectEntityToSell"{% endif %}
                          data-entity-id="{{ hero.id }}"
                          data-entity-name="{{ hero.name }}"
                          data-entity-level="{{ hero.level }}"
                          data-entity-age="{{ hero.age }}"
                          data-entity-rarity=""
-                         data-suggested-price="{{ hero_market_price(hero) }}"
+                         data-suggested-price="{{ price_guidance.suggested }}"
+                         data-price-floor="{{ price_guidance.floor }}"
+                         data-price-ceiling="{{ price_guidance.ceiling }}"
                          data-locked="{{ can_sell ? '0' : '1' }}"
                          title="{{ can_sell ? '' : 'heroes.roster_min_hint'|trans({'%min%': constant('App\\Service\\Team\\TeamRosterService::MIN_COMBAT_READY_HEROES'), '%current%': team_combat_ready_count(team)}) }}"
                          class="sell-card {{ can_sell ? '' : 'sell-card--locked' }}">
@@ -91,12 +94,16 @@
             {# Items list #}
             <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="item" class="scroll-grid hidden">
                 {% for item in items %}
+                    {% set price_guidance = item_listing_price_guidance(item) %}
                     <div data-action="click->marketplace#selectEntityToSell"
                          data-entity-id="{{ item.id }}"
                          data-entity-name="{{ item.name }}"
                          data-entity-level="0"
                          data-entity-age="0"
                          data-entity-rarity="{{ item.rarity.value }}"
+                         data-suggested-price="{{ price_guidance.suggested }}"
+                         data-price-floor="{{ price_guidance.floor }}"
+                         data-price-ceiling="{{ price_guidance.ceiling }}"
                          class="sell-card">
                         <div class="entity-row__main">
                             <span class="emoji-icon">🗡️</span>
@@ -117,13 +124,16 @@
             {# Trainers list #}
             <div data-marketplace-target="sellEntitiesContainer" data-sell-cat-name="trainer" class="scroll-grid hidden">
                 {% for trainer in trainers %}
+                    {% set price_guidance = hero_listing_price_guidance(trainer) %}
                     <div data-action="click->marketplace#selectEntityToSell"
                          data-entity-id="{{ trainer.id }}"
                          data-entity-name="{{ trainer.name }}"
                          data-entity-level="0"
                          data-entity-age="{{ trainer.age }}"
                          data-entity-rarity=""
-                         data-suggested-price="{{ hero_market_price(trainer) }}"
+                         data-suggested-price="{{ price_guidance.suggested }}"
+                         data-price-floor="{{ price_guidance.floor }}"
+                         data-price-ceiling="{{ price_guidance.ceiling }}"
                          class="sell-card">
                         <div class="entity-row__main">
                             <span class="emoji-icon">🏋️</span>
@@ -168,11 +178,17 @@
                         {{ 'marketplace.price_gold'|trans }}
                     </label>
                     <div class="marketplace-suggested-price hidden" data-marketplace-target="suggestedPriceRow">
-                        <span class="marketplace-suggested-price__label">{{ 'marketplace.suggested_price'|trans }}:</span>
-                        <span class="marketplace-suggested-price__value" data-marketplace-target="suggestedPriceValue"></span>
-                        <button type="button" class="btn btn-outline btn--sm" data-action="click->marketplace#applySuggestedPrice">
-                            {{ 'marketplace.btn_use_suggested_price'|trans }}
-                        </button>
+                        <div class="marketplace-suggested-price__row">
+                            <span class="marketplace-suggested-price__label">{{ 'marketplace.suggested_price'|trans }}:</span>
+                            <span class="marketplace-suggested-price__value" data-marketplace-target="suggestedPriceValue"></span>
+                            <button type="button" class="btn btn-outline btn--sm" data-action="click->marketplace#applySuggestedPrice">
+                                {{ 'marketplace.btn_use_suggested_price'|trans }}
+                            </button>
+                        </div>
+                        <div class="marketplace-suggested-price__row">
+                            <span class="marketplace-suggested-price__label">{{ 'marketplace.price_range'|trans }}:</span>
+                            <span class="marketplace-suggested-price__range" data-marketplace-target="priceRangeValue"></span>
+                        </div>
                     </div>
                     <div class="form-input-affix">
                         <span class="form-input-affix__icon">🪙</span>
@@ -189,6 +205,7 @@
                     <div class="form-input-affix">
                         <span class="form-input-affix__icon">🪙</span>
                         <input type="number" id="listing-buyout" name="buyout" min="1" placeholder="{{ 'marketplace.buyout_placeholder'|trans }}"
+                               data-marketplace-target="listingBuyoutInput"
                                class="form-input">
                     </div>
                 </div>

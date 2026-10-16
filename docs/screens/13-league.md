@@ -1,12 +1,14 @@
 # League Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#13-league-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [league-system.md](../systems/league-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [league-system.md](../systems/league-system.md)
 
 **When:** Group table, own fixtures, kingdom-wide ranking.
 
-**Status:** Live at `GET /app/league`. Three **English** tabs (translation keys): Group standings, My fixtures, Kingdom leaderboard. Win-streak / derby / relegation-pressure morale are **not** live. Page is server-rendered; JSON also exists under `/api/v1/league/*`.
+**Status:** Live at `GET /app/league`. Three **English** tabs (translation keys): Group standings, My fixtures, Kingdom leaderboard. Win-streak / derby / relegation-pressure morale are **Cut**. Page is server-rendered; JSON also exists under `/api/v1/league/*`.
 
 **Live UI:** `templates/league/index.html.twig`, `templates/components/league/`.
+
+**Lock:** [league-system.md — no league morale fiction](../systems/league-system.md#locked-no-league-morale-fiction)
 
 ---
 
@@ -47,13 +49,14 @@ Team names open the community profile modal (`player-profile`).
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch extras — do not treat as a contract:
+Not a contract:
 
 - Separate “player’s current tier/rank/points” hero block on this page (the table already shows it)
 - Arena-revenue / hero-level leaderboard categories (those were community-sketch lists)
-- League morale modifiers (stripped in Wave 2)
+
+League morale fiction (win-streak / derby / relegation pressure) is **Cut**: [league-system.md](../systems/league-system.md).
 
 ---
 

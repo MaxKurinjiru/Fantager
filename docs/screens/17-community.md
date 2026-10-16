@@ -1,10 +1,11 @@
 # Community Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#17-community-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [community-system.md](../systems/community-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [community-system.md](../systems/community-system.md)
 
 **When:** Kingdom forum, public player/team profiles, and private mail.
 
-**Status:** Live forum hub at `/app/community`. Mail is the **navbar modal**, not a community tab. News is public `/news`. Kingdom rankings are the League **Kingdom Leaderboard** tab — there is no `/api/v1/leaderboards` route. Forum `is_pinned` is **stored and shown** but has **no write API** ([roadmap A6.3](../roadmap/current.md)).
+**Status:** Live forum hub at `/app/community`. Mail is the **navbar modal**, not a community tab. News is public `/news`. Kingdom rankings are the League **Kingdom Leaderboard** tab — there is no `/api/v1/leaderboards` route. Forum `is_pinned` is **stored and shown** when true, but **unsettable** in the app.  
+**Lock:** [community-system.md — forum pin](../systems/community-system.md#locked-forum-pin)
 
 **Live UI:** `templates/community/`, `templates/components/community/`, Stimulus `community_forum`, `community_thread`, `mail`, `player-profile`.
 
@@ -87,16 +88,18 @@ Compose / read dialogs: `templates/components/community/compose_message_modal.ht
 
 ---
 
-## Planned
+Later product decisions (trade / league emails): [known-issues.md](../product/known-issues.md) § Later product decisions. Forum/mail stay in-app; auth + inactivity mail only today.
 
-Original sketch extras — do not treat as a contract:
+## Sketch leftover
+
+Not a contract:
 
 - Community tabs for leaderboards, mail, or news
 - Dedicated `/api/v1/leaderboards` (use League)
-- Pin / unpin in the UI (A6.3)
 - Notable heroes, recent match history, win/loss on the public profile
-- Email notifications for forum/mail (auth + inactivity mail only today)
 - Report / moderator tools beyond author lock and content filter
+
+Pin / unpin in the UI is **Cut**: [Locked: forum pin](../systems/community-system.md#locked-forum-pin).
 
 ---
 

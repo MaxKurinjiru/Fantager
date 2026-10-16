@@ -2,9 +2,11 @@
 
 Reference: [architecture/entities.md](../architecture/entities.md#4-hero-domain), [hero-system.md](hero-system.md), [screens/04-hero-detail.md](../screens/04-hero-detail.md)
 
-Purpose: Document the **hero chronicle** — an append-only per-hero event log shown on the Hero Detail **History** tab.
+Status: Live  
+Screens: [04-hero-detail.md](../screens/04-hero-detail.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
 
----
+Purpose: Document the **hero chronicle** — an append-only per-hero event log shown on the Hero Detail **History** tab.
 
 ## Overview
 
@@ -53,14 +55,14 @@ Entries are **append-only**. Rendering uses the viewer's locale via `HeroChronic
 | `training_completed` | Weekly training tick completed | `TrainingService` |
 | `died` | Hero dismissed or memorialized (incl. permanent combat death) | `GraveyardService` |
 | `spell_learned` | Hero learned a spell | `SpellService` |
+| `levelup` | Stored `Hero.level` increased after match XP | `HeroProgressionService` via `HeroService::levelUp` |
 
 ### Reserved / dormant (enum + service methods exist)
 
 | Type | Notes |
 |------|-------|
-| `levelup` | `HeroChronicleService::recordLevelUp` / `HeroService::levelUp` exist, but no production XP→level path currently calls them |
 | `injured` / `recovered` | Injury system (future) |
-| `retired` | Voluntary retirement (future) |
+| `retired` | Voluntary retirement — **reserved / unused (A6.2)** (`isReserved()`); no writer |
 
 ---
 

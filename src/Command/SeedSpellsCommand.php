@@ -13,7 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:spells:seed',
-    description: 'Seed the database with basic spells for Tiers 1 and 2 across all magic schools',
+    description: 'Seed the database with default spells for Tiers 1–5 across all magic schools',
 )]
 class SeedSpellsCommand extends Command
 {

@@ -7,17 +7,19 @@ namespace App\Service\Notification;
 use App\Entity\Auth\User;
 use App\Entity\Notification\Notification;
 use App\Enum\NotificationType;
-use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 
 class NotificationHelper
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly UserMessageTranslator $userMessages,
     ) {
     }
 
+    /**
+     * Persist an already-rendered title/body (legacy rows / tests).
+     * Production writers use sendTranslatedNotification().
+     */
     public function sendNotification(User $user, NotificationType $type, string $title, string $body): void
     {
         $notification = new Notification();
@@ -31,6 +33,8 @@ class NotificationHelper
     }
 
     /**
+     * Store translation keys + params; NotificationPresenter renders in the reader's locale.
+     *
      * @param array<string, int|string|float> $titleParams
      * @param array<string, int|string|float> $bodyParams
      */
@@ -42,11 +46,15 @@ class NotificationHelper
         array $titleParams = [],
         array $bodyParams = [],
     ): void {
-        $this->sendNotification(
-            $user,
-            $type,
-            $this->userMessages->transForUser($titleKey, $user, $titleParams),
-            $this->userMessages->transForUser($bodyKey, $user, $bodyParams),
-        );
+        $notification = new Notification();
+        $notification->setUser($user);
+        $notification->setType($type);
+        $notification->setTitleKey($titleKey);
+        $notification->setBodyKey($bodyKey);
+        $notification->setTitleParams($titleParams);
+        $notification->setBodyParams($bodyParams);
+
+        $this->em->persist($notification);
+        $this->em->flush();
     }
 }

@@ -344,7 +344,7 @@ class NpcTacticsSimulator
                 // Try to find a matching item in the inventory
                 $foundInInventory = false;
                 foreach ($unequippedItems as $idx => $item) {
-                    if ($item->getSlotType() === $slot && $item->getSubType() === $prefSubType) {
+                    if (\in_array($slot, ItemService::compatibleSlots($item), true) && $item->getSubType() === $prefSubType) {
                         try {
                             $this->itemService->equip($item, $hero, $slot);
                             unset($unequippedItems[$idx]);
@@ -397,18 +397,8 @@ class NpcTacticsSimulator
                         'equippedHero' => $hero,
                         'equippedSlot' => ItemSlotType::MainHand,
                     ]);
-                    if (null !== $mainHand && null !== $mainHand->getSubType()) {
-                        $twoHandedWeapons = [
-                            ItemSubType::TwoHandedSword,
-                            ItemSubType::TwoHandedAxe,
-                            ItemSubType::TwoHandedMace,
-                            ItemSubType::Bow,
-                            ItemSubType::Crossbow,
-                            ItemSubType::Staff,
-                        ];
-                        if (\in_array($mainHand->getSubType(), $twoHandedWeapons, true)) {
-                            continue;
-                        }
+                    if (null !== $mainHand && ItemService::occupiesOffHand($mainHand)) {
+                        continue;
                     }
                 }
 
@@ -423,7 +413,7 @@ class NpcTacticsSimulator
 
                 // Equip the first available item of correct slot type
                 foreach ($unequippedItems as $idx => $item) {
-                    if ($item->getSlotType() === $slot) {
+                    if (\in_array($slot, ItemService::compatibleSlots($item), true)) {
                         try {
                             $this->itemService->equip($item, $hero, $slot);
                             unset($unequippedItems[$idx]);
@@ -545,16 +535,7 @@ class NpcTacticsSimulator
      */
     private function getPreferredOffHandSubType(Hero $hero, ItemSubType $preferredWeapon): ?ItemSubType
     {
-        $twoHandedWeapons = [
-            ItemSubType::TwoHandedSword,
-            ItemSubType::TwoHandedAxe,
-            ItemSubType::TwoHandedMace,
-            ItemSubType::Bow,
-            ItemSubType::Crossbow,
-            ItemSubType::Staff,
-        ];
-
-        if (\in_array($preferredWeapon, $twoHandedWeapons, true)) {
+        if ($preferredWeapon->occupiesBothHands()) {
             return null;
         }
 

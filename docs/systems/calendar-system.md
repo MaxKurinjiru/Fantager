@@ -1,8 +1,12 @@
 # Calendar & Server Ticks System
 
-Reference: [product/overview.md](../product/overview.md#22-calendar--server-ticks), [league-system.md](league-system.md)
+Reference: [product/overview.md](../product/overview.md#calendar-and-ticks), [league-system.md](league-system.md)
 
-Purpose: Document the weekly schedule, automated event sequences, daily/weekly server ticks, and the timeline of a league season.
+Status: Live  
+Screens: [14-calendar.md](../screens/14-calendar.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
+Purpose: Document the weekly schedule, automated event sequences, daily/weekly server ticks, and the timeline of a league season. Dungeon / crafting / world-event ticks are **Deferred** ([future/](../future/)) and are not in the runner.
 
 ---
 

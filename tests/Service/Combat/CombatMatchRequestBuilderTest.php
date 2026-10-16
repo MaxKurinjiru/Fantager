@@ -7,9 +7,12 @@ namespace App\Tests\Service\Combat;
 use App\Entity\Formation\Formation;
 use App\Entity\Formation\FormationSlot;
 use App\Entity\Hero\Hero;
+use App\Entity\Item\Item;
 use App\Entity\Team\Team;
 use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
+use App\Enum\ItemSlotType;
+use App\Enum\ItemSubType;
 use App\Enum\MatchType;
 use App\Enum\Race;
 use App\Repository\Item\ItemRepository;
@@ -70,6 +73,39 @@ class CombatMatchRequestBuilderTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $builder->fromFormations($formationA, $formationB, MatchType::League, 1);
+    }
+
+    public function testWeaponSubTypePrefersMainHandWhenDualWielding(): void
+    {
+        $stats = new DerivedCombatStats(100, 100, 10, 10, 10, 0.1, 10, 0.1, 10, 80.0, 10.0, 5.0);
+        $calculator = $this->createMock(CombatStatCalculator::class);
+        $calculator->method('calculate')->willReturn($stats);
+
+        $offHandDagger = new Item();
+        $offHandDagger->setSlotType(ItemSlotType::MainHand);
+        $offHandDagger->setSubType(ItemSubType::Dagger);
+        $offHandDagger->setEquippedSlot(ItemSlotType::OffHand);
+
+        $mainHandSword = new Item();
+        $mainHandSword->setSlotType(ItemSlotType::MainHand);
+        $mainHandSword->setSubType(ItemSubType::OneHandedSword);
+        $mainHandSword->setEquippedSlot(ItemSlotType::MainHand);
+
+        $itemRepository = $this->createMock(ItemRepository::class);
+        $itemRepository->method('findBy')->willReturn([$offHandDagger, $mainHandSword]);
+
+        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository);
+        $request = $builder->fromFormations(
+            $this->createFullFormation(1, 10),
+            $this->createFullFormation(2, 20),
+            MatchType::League,
+            1,
+        );
+
+        $this->assertSame(
+            ItemSubType::OneHandedSword,
+            $request->getSideA()->getCombatants()[0]->getWeaponSubType(),
+        );
     }
 
     private function createFullFormation(int $teamId, int $heroIdBase): Formation

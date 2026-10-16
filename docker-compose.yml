@@ -9,6 +9,12 @@ services:
       - ./:/var/www/html
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/health | grep -q '\"status\":\"ok\"'"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
     networks:
       - fantager-network
 

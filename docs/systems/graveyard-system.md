@@ -1,10 +1,12 @@
 # Graveyard System
 
-Reference: [product/overview.md](../product/overview.md#213-graveyard-system)
+Reference: [product/overview.md](../product/overview.md#graveyard)
+
+Status: Live  
+Screens: [16-graveyard.md](../screens/16-graveyard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
 
 Purpose: Permanent memorial records for heroes and trainers who leave the team.
-
----
 
 ## Implementation Status
 
@@ -34,9 +36,11 @@ There is **no separate `StaffRecord` entity**. Trainers are `Hero` rows with `ro
 |-------|------------|
 | `dismissed` | Hero or trainer dismissal |
 | `combat_death` | Permanent combat death (elder mortality / resolution layer) |
-| `age` | Reserved |
-| `retired` | Reserved |
-| `death` | Reserved |
+| `age` | **Reserved / unused (A6.2)** — no death-of-old-age tick. Do not write. |
+| `retired` | **Reserved / unused (A6.2)** — no retirement writer. Do not write. |
+| `death` | **Reserved / unused (A6.2)** — live combat deaths use `combat_death`. Do not write. |
+
+`/app/graveyard` cause filters use `MemorialCause::liveCases()` (reserved values omitted). Query params still accept reserved causes so any legacy row can be filtered. Columns are not dropped.
 
 ---
 

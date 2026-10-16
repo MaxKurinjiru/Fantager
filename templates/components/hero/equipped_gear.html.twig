@@ -19,8 +19,11 @@
             {key: 'main_hand', emoji: '⚔️'},
             {key: 'off_hand', emoji: '🛡️'},
             {key: 'ring', emoji: '💍'},
+            {key: 'ring_2', emoji: '💍'},
             {key: 'feet', emoji: '🥾'}
         ] %}
+        {% set main_item = equipped['main_hand'] ?? null %}
+        {% set off_blocked = main_item is not null and main_item.subType is not null and main_item.subType.occupiesBothHands %}
 
         {% for slot in slot_configs %}
             {% set item = equipped[slot.key] ?? null %}
@@ -41,11 +44,12 @@
                     </span>
                 </button>
             {% else %}
+                {% set blocked = slot.key == 'off_hand' and off_blocked %}
                 {# Empty Slot Placeholder #}
-                <button type="button" onclick="document.querySelector('[data-tab=\'hero-tab-equipment\']').click()" class="hero-gear-slot hero-gear-slot--empty">
+                <button type="button" onclick="document.querySelector('[data-tab=\'hero-tab-equipment\']').click()" class="hero-gear-slot hero-gear-slot--empty{% if blocked %} hero-gear-slot--blocked{% endif %}">
                     <span class="hero-gear-slot__label hero-gear-slot__label--faint">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
                     <span class="hero-gear-slot__icon">{{ slot.emoji }}</span>
-                    <span class="hero-gear-slot__empty-hint">{{ 'inventory.empty_slot'|trans }}</span>
+                    <span class="hero-gear-slot__empty-hint">{{ (blocked ? 'inventory.slot_two_hand_held' : 'inventory.empty_slot')|trans }}</span>
                 </button>
             {% endif %}
         {% endfor %}

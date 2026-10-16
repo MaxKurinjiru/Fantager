@@ -1,6 +1,6 @@
 # Training Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#5-training-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [training-system.md](../systems/training-system.md), [06-trainer-management.md](06-trainer-management.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [training-system.md](../systems/training-system.md), [06-trainer-management.md](06-trainer-management.md)
 
 **When:** Configure trainer focus and assign combatants to weekly training.
 
@@ -53,11 +53,11 @@ Gold cost: none. Fatigue load and caps: [training-system.md](../systems/training
 
 ---
 
-## Planned
+## Sketch leftover
 
-Original sketch “View Trainer List” as a **separate** screen — not live; trainers are this page’s first tab.
+Not a contract: original sketch “View Trainer List” as a **separate** screen — trainers are this page’s first tab.
 
-Batch training from the roster is **not** live (A7.7).
+Batch training from the roster is **Cut**. Assign stays per trainer on this page and on hero-detail overview. Lock: [03-hero-roster.md — roster extras](03-hero-roster.md#locked-roster-extras).
 
 ---
 

@@ -10,6 +10,7 @@ Quick map of production PHP layout. Full workflow: [SKILL.md](SKILL.md) · [exam
 |-----------|-------------|------|
 | `App\Controller\Web` | `/`, `/app/*`, auth paths | Twig pages, flashes, redirects |
 | `App\Controller\Api\V1` | `/api/v1/*` | JSON for Stimulus/AJAX |
+| `App\Controller\HealthCheckController` | `/health` | Unauthenticated liveness JSON (A8.3) |
 
 **Traits:** `App\Controller\Api\ApiControllerTrait` — `jsonError`, `jsonException`, `transMessage`
 
@@ -25,20 +26,20 @@ Quick map of production PHP layout. Full workflow: [SKILL.md](SKILL.md) · [exam
 | `Kingdom/` | `KingdomService`, `KingdomInitializationService` | [kingdom-system.md](../../../docs/systems/kingdom-system.md) |
 | `Team/` | `TeamService`, `TeamRosterService`, `FanClubService` | [team-system.md](../../../docs/systems/team-system.md) |
 | `TeamChronicle/` | `TeamChronicleService`, `TeamChroniclePresenter` | [team-chronicle-system.md](../../../docs/systems/team-chronicle-system.md) |
-| `Hero/` | `HeroService`, `HeroGenerator`, `HeroDismissalService` | [hero-system.md](../../../docs/systems/hero-system.md) |
+| `Hero/` | `HeroService`, `HeroProgressionService`, `HeroGenerator`, `HeroDismissalService` | [hero-system.md](../../../docs/systems/hero-system.md) |
 | `Summoning/` | `SummoningService` | [summoning-system.md](../../../docs/systems/summoning-system.md) |
 | `Economy/` | `EconomyService`, `FinancialCrisisService`, `RoyalTreasuryService`, `ArenaRevenueService` | [economy-system.md](../../../docs/systems/economy-system.md) |
 | `Headquarters/` | `HeadquartersService`, `ArenaService`, `HqMaintenanceCalculator` | [headquarters-system.md](../../../docs/systems/headquarters-system.md) |
 | `Training/` | `TrainingService`, `TrainerDismissalService` | [training-system.md](../../../docs/systems/training-system.md) |
 | `Item/` | `ItemService` | [item-system.md](../../../docs/systems/item-system.md) |
 | `Spell/` | `SpellService` | [spell-system.md](../../../docs/systems/spell-system.md) |
-| `Formation/` | `FormationService`, `FixtureFormationService` | [formation-system.md](../../../docs/systems/formation-system.md) |
-| `Marketplace/` | `MarketplaceService` | [marketplace-system.md](../../../docs/systems/marketplace-system.md) |
+| `Formation/` | `FormationService`, `FixtureFormationService`, `MatchLineupService` | [formation-system.md](../../../docs/systems/formation-system.md) |
+| `Marketplace/` | `MarketplaceService`, `MarketplacePriceGuidance` | [marketplace-system.md](../../../docs/systems/marketplace-system.md) |
 | `Community/` | `CommunityService`, `ForumThreadHelper`, `ContentFilterService` | [community-system.md](../../../docs/systems/community-system.md) |
 | `Calendar/` | `CalendarService`, `TickScheduleCalculator`, `KingdomTickRunnerService`, `TickClock` | [calendar-system.md](../../../docs/systems/calendar-system.md) |
 | `League/` | `LeagueService`, `LeagueFixtureScheduler`, `SeasonTransitionService` | [league-system.md](../../../docs/systems/league-system.md) |
 | `Graveyard/` | `GraveyardService`, `GraveyardPresenter` | [graveyard-system.md](../../../docs/systems/graveyard-system.md) |
-| `Notification/` | `NotificationService`, `NotificationHelper` | [notification-system.md](../../../docs/systems/notification-system.md) |
+| `Notification/` | `NotificationService`, `NotificationHelper`, `NotificationPresenter` | [notification-system.md](../../../docs/systems/notification-system.md) |
 | `Config/` | `RaceConfig`, `KingdomInitConfig`, `StatusEffectConfig` | [architecture/entities.md](../../../docs/architecture/entities.md) |
 | `Translation/` | `UserMessageTranslator` | — |
 
@@ -66,7 +67,7 @@ Quick map of production PHP layout. Full workflow: [SKILL.md](SKILL.md) · [exam
 | `Notification/` | `Notification` | `NotificationRepository` |
 | `Combat/` | `Battle` *(scaffold)* | `BattleRepository` |
 
-Enums: `src/Enum/` — backed enums for statuses, types, races (see entity-reference).
+Enums: `src/Enum/` — backed enums for statuses, types, races (see [docs/architecture/entities.md](../../../docs/architecture/entities.md)).
 
 ---
 
@@ -76,6 +77,7 @@ Enums: `src/Enum/` — backed enums for statuses, types, races (see entity-refer
 |------------|-------|
 | `src/Service/{Domain}/*Service.php` | `tests/Service/{Domain}/*Test.php` |
 | `src/Controller/Web/*` | `tests/Controller/Web/*Test.php` (selected) |
+| `src/Controller/HealthCheckController.php` | `tests/Controller/HealthCheckControllerTest.php` |
 | `src/Command/*` | `tests/Command/*Test.php` |
 
 **Pattern:** PHPUnit `TestCase` + mocked dependencies; `#[AllowMockObjectsWithoutExpectations]` when using PHPUnit 11 mocks.
@@ -114,7 +116,7 @@ Enums: `src/Enum/` — backed enums for statuses, types, races (see entity-refer
 | New enum | `docs/architecture/entities.md` § Enums |
 | New domain behavior | `docs/systems/{domain}-system.md` |
 | New screen | `docs/screens/NN-*.md`, `docs/architecture/screen-code-map.md` |
-| Feature shipped / status | `docs/systems/README.md` § Current Implementation Status |
+| Feature shipped / status | Matching `docs/systems/*.md` Remaining work + `docs/systems/README.md` status snapshot + `docs/product/progress.md` (and the compact table in `README.md`). Later product decisions go in `docs/product/known-issues.md` § Later product decisions |
 
 **Automated check (human / CI):** `bash scripts/check-backend-docs.sh` (routes, entities, enums, PHP → YAML keys)
 

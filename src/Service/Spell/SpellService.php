@@ -22,6 +22,10 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class SpellService
 {
+    public const CATALOG_MIN_TIER = 1;
+
+    public const CATALOG_MAX_TIER = 5;
+
     public function __construct(
         private readonly SpellRepository $spellRepository,
         private readonly HeroSpellRepository $heroSpellRepository,
@@ -49,6 +53,24 @@ class SpellService
         }
 
         return $this->spellRepository->findBy($criteria, ['school' => 'ASC', 'tier' => 'ASC']);
+    }
+
+    /** @return list<int> */
+    public static function catalogTiers(): array
+    {
+        return range(self::CATALOG_MIN_TIER, self::CATALOG_MAX_TIER);
+    }
+
+    public static function normalizeCatalogTier(?int $tier): ?int
+    {
+        if (null === $tier) {
+            return null;
+        }
+        if ($tier < self::CATALOG_MIN_TIER || $tier > self::CATALOG_MAX_TIER) {
+            return null;
+        }
+
+        return $tier;
     }
 
     /**
@@ -211,7 +233,8 @@ class SpellService
     }
 
     /**
-     * Seeds the database with default spells if none exist.
+     * Seeds the T1–T5 catalog (two spells per school per tier). Inserts missing
+     * name+school rows and updates fields on existing ones.
      *
      * @return array{inserted: int, skipped: int}
      */
@@ -263,6 +286,72 @@ class SpellService
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 400,
             ],
+            [
+                'name' => 'Plamenomet',
+                'school' => School::Fire,
+                'tier' => 3,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 55],
+                'mana_cost' => 40,
+                'cooldown' => 2,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 800,
+            ],
+            [
+                'name' => 'Ohnivá bouře',
+                'school' => School::Fire,
+                'tier' => 3,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 30, 'apply_effect' => 'burn', 'duration' => 3],
+                'mana_cost' => 45,
+                'cooldown' => 4,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 1000,
+            ],
+            [
+                'name' => 'Pekelný oheň',
+                'school' => School::Fire,
+                'tier' => 4,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 80],
+                'mana_cost' => 55,
+                'cooldown' => 3,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2000,
+            ],
+            [
+                'name' => 'Spalující spirála',
+                'school' => School::Fire,
+                'tier' => 4,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 45, 'double_if_effect' => 'burn'],
+                'mana_cost' => 60,
+                'cooldown' => 4,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2500,
+            ],
+            [
+                'name' => 'Ohnivý meteor',
+                'school' => School::Fire,
+                'tier' => 5,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 120],
+                'mana_cost' => 80,
+                'cooldown' => 4,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 5000,
+            ],
+            [
+                'name' => 'Fénixí hněv',
+                'school' => School::Fire,
+                'tier' => 5,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 70, 'apply_effect' => 'burn', 'duration' => 3],
+                'mana_cost' => 90,
+                'cooldown' => 5,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 6200,
+            ],
 
             // --- WATER ---
             [
@@ -308,6 +397,72 @@ class SpellService
                 'cooldown' => 4,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 450,
+            ],
+            [
+                'name' => 'Příliv',
+                'school' => School::Water,
+                'tier' => 3,
+                'type' => SpellType::Defensive,
+                'effects' => ['heal' => 70],
+                'mana_cost' => 42,
+                'cooldown' => 3,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 850,
+            ],
+            [
+                'name' => 'Ledová klec',
+                'school' => School::Water,
+                'tier' => 3,
+                'type' => SpellType::Utility,
+                'effects' => ['damage' => 22, 'apply_effect' => 'freeze', 'duration' => 1],
+                'mana_cost' => 40,
+                'cooldown' => 4,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 950,
+            ],
+            [
+                'name' => 'Živá voda',
+                'school' => School::Water,
+                'tier' => 4,
+                'type' => SpellType::Defensive,
+                'effects' => ['heal' => 100],
+                'mana_cost' => 58,
+                'cooldown' => 3,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2100,
+            ],
+            [
+                'name' => 'Sněhová bouře',
+                'school' => School::Water,
+                'tier' => 4,
+                'type' => SpellType::Utility,
+                'effects' => ['damage' => 35, 'apply_effect' => 'freeze', 'duration' => 1],
+                'mana_cost' => 55,
+                'cooldown' => 4,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2400,
+            ],
+            [
+                'name' => 'Mořská milost',
+                'school' => School::Water,
+                'tier' => 5,
+                'type' => SpellType::Defensive,
+                'effects' => ['heal' => 150],
+                'mana_cost' => 80,
+                'cooldown' => 4,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 5200,
+            ],
+            [
+                'name' => 'Věčný mráz',
+                'school' => School::Water,
+                'tier' => 5,
+                'type' => SpellType::Utility,
+                'effects' => ['damage' => 50, 'apply_effect' => 'freeze', 'duration' => 1],
+                'mana_cost' => 75,
+                'cooldown' => 5,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 6000,
             ],
 
             // --- AIR ---
@@ -355,6 +510,72 @@ class SpellService
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 300,
             ],
+            [
+                'name' => 'Vír',
+                'school' => School::Air,
+                'tier' => 3,
+                'type' => SpellType::Defensive,
+                'effects' => ['apply_effect' => 'haste', 'duration' => 2],
+                'mana_cost' => 30,
+                'cooldown' => 3,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 750,
+            ],
+            [
+                'name' => 'Bouřkový šíp',
+                'school' => School::Air,
+                'tier' => 3,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 60, 'apply_effect' => 'shock', 'duration' => 2],
+                'mana_cost' => 45,
+                'cooldown' => 3,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 900,
+            ],
+            [
+                'name' => 'Vzdušný štít',
+                'school' => School::Air,
+                'tier' => 4,
+                'type' => SpellType::Defensive,
+                'effects' => ['apply_effect' => 'evasion', 'duration' => 2],
+                'mana_cost' => 42,
+                'cooldown' => 4,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 1900,
+            ],
+            [
+                'name' => 'Hromová pěst',
+                'school' => School::Air,
+                'tier' => 4,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 85, 'apply_effect' => 'shock', 'duration' => 2],
+                'mana_cost' => 62,
+                'cooldown' => 3,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2200,
+            ],
+            [
+                'name' => 'Oko cyklónu',
+                'school' => School::Air,
+                'tier' => 5,
+                'type' => SpellType::Defensive,
+                'effects' => ['apply_effect' => 'haste', 'duration' => 2],
+                'mana_cost' => 55,
+                'cooldown' => 4,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 4800,
+            ],
+            [
+                'name' => 'Nebeský blesk',
+                'school' => School::Air,
+                'tier' => 5,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 125, 'apply_effect' => 'shock', 'duration' => 2],
+                'mana_cost' => 85,
+                'cooldown' => 4,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 5500,
+            ],
 
             // --- EARTH ---
             [
@@ -400,6 +621,72 @@ class SpellService
                 'cooldown' => 2,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 320,
+            ],
+            [
+                'name' => 'Balvan',
+                'school' => School::Earth,
+                'tier' => 3,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 50],
+                'mana_cost' => 38,
+                'cooldown' => 2,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 800,
+            ],
+            [
+                'name' => 'Kamenná pevnost',
+                'school' => School::Earth,
+                'tier' => 3,
+                'type' => SpellType::Defensive,
+                'effects' => ['apply_effect' => 'shield', 'duration' => 3],
+                'mana_cost' => 35,
+                'cooldown' => 3,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 850,
+            ],
+            [
+                'name' => 'Horská pěst',
+                'school' => School::Earth,
+                'tier' => 4,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 70, 'reduce_speed_percent' => 20],
+                'mana_cost' => 50,
+                'cooldown' => 2,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2000,
+            ],
+            [
+                'name' => 'Rozštěpení země',
+                'school' => School::Earth,
+                'tier' => 4,
+                'type' => SpellType::Utility,
+                'effects' => ['damage' => 40, 'apply_effect' => 'petrify', 'duration' => 2],
+                'mana_cost' => 58,
+                'cooldown' => 4,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2300,
+            ],
+            [
+                'name' => 'Zřícení hor',
+                'school' => School::Earth,
+                'tier' => 5,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 100],
+                'mana_cost' => 75,
+                'cooldown' => 3,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 5000,
+            ],
+            [
+                'name' => 'Titanova kůže',
+                'school' => School::Earth,
+                'tier' => 5,
+                'type' => SpellType::Defensive,
+                'effects' => ['apply_effect' => 'shield', 'duration' => 3],
+                'mana_cost' => 60,
+                'cooldown' => 4,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 5400,
             ],
 
             // --- LIGHT ---
@@ -447,6 +734,72 @@ class SpellService
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 400,
             ],
+            [
+                'name' => 'Božská záře',
+                'school' => School::Light,
+                'tier' => 3,
+                'type' => SpellType::Defensive,
+                'effects' => ['heal' => 55, 'holy_damage_vs_undead' => 50],
+                'mana_cost' => 40,
+                'cooldown' => 2,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 850,
+            ],
+            [
+                'name' => 'Posvěcení',
+                'school' => School::Light,
+                'tier' => 3,
+                'type' => SpellType::Defensive,
+                'effects' => ['apply_effect' => 'bless', 'duration' => 2],
+                'mana_cost' => 38,
+                'cooldown' => 3,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 900,
+            ],
+            [
+                'name' => 'Zázrak',
+                'school' => School::Light,
+                'tier' => 4,
+                'type' => SpellType::Defensive,
+                'effects' => ['heal' => 80, 'cleanse_debuffs' => true],
+                'mana_cost' => 58,
+                'cooldown' => 3,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2200,
+            ],
+            [
+                'name' => 'Světlo naděje',
+                'school' => School::Light,
+                'tier' => 4,
+                'type' => SpellType::Defensive,
+                'effects' => ['heal' => 90, 'double_if_low_health' => true],
+                'mana_cost' => 62,
+                'cooldown' => 3,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2500,
+            ],
+            [
+                'name' => 'Nebeská milost',
+                'school' => School::Light,
+                'tier' => 5,
+                'type' => SpellType::Defensive,
+                'effects' => ['heal' => 130, 'holy_damage_vs_undead' => 80],
+                'mana_cost' => 80,
+                'cooldown' => 4,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 5400,
+            ],
+            [
+                'name' => 'Aura světla',
+                'school' => School::Light,
+                'tier' => 5,
+                'type' => SpellType::Defensive,
+                'effects' => ['apply_effect' => 'bless', 'duration' => 2],
+                'mana_cost' => 70,
+                'cooldown' => 4,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 5000,
+            ],
 
             // --- DARK ---
             [
@@ -492,6 +845,72 @@ class SpellService
                 'cooldown' => 2,
                 'required_mastery_tier' => 2,
                 'learning_cost_gold' => 320,
+            ],
+            [
+                'name' => 'Temný paprsek',
+                'school' => School::Dark,
+                'tier' => 3,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 55],
+                'mana_cost' => 40,
+                'cooldown' => 2,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 800,
+            ],
+            [
+                'name' => 'Prokletí',
+                'school' => School::Dark,
+                'tier' => 3,
+                'type' => SpellType::Utility,
+                'effects' => ['apply_effect' => 'curse', 'duration' => 3],
+                'mana_cost' => 35,
+                'cooldown' => 3,
+                'required_mastery_tier' => 3,
+                'learning_cost_gold' => 900,
+            ],
+            [
+                'name' => 'Krvavý obřad',
+                'school' => School::Dark,
+                'tier' => 4,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 50, 'lifesteal_percent' => 50],
+                'mana_cost' => 55,
+                'cooldown' => 3,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2300,
+            ],
+            [
+                'name' => 'Mor',
+                'school' => School::Dark,
+                'tier' => 4,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 25, 'apply_effect' => 'poison', 'duration' => 3],
+                'mana_cost' => 48,
+                'cooldown' => 2,
+                'required_mastery_tier' => 4,
+                'learning_cost_gold' => 2000,
+            ],
+            [
+                'name' => 'Vysátí duše',
+                'school' => School::Dark,
+                'tier' => 5,
+                'type' => SpellType::Offensive,
+                'effects' => ['damage' => 90, 'lifesteal_percent' => 50],
+                'mana_cost' => 80,
+                'cooldown' => 4,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 5600,
+            ],
+            [
+                'name' => 'Věčná tma',
+                'school' => School::Dark,
+                'tier' => 5,
+                'type' => SpellType::Utility,
+                'effects' => ['apply_effect' => 'curse', 'duration' => 3],
+                'mana_cost' => 65,
+                'cooldown' => 4,
+                'required_mastery_tier' => 5,
+                'learning_cost_gold' => 5000,
             ],
         ];
 

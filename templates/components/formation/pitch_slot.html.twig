@@ -6,7 +6,7 @@
 {% set heroes = heroes|default([]) %}
 
 <div data-formation-target="gridSlot" data-position="{{ slot.pos }}" data-hero-id="{{ hero ? hero.id : '' }}"
-     data-action="dragover->formation#slotDragOver dragenter->formation#slotDragEnter dragleave->formation#slotDragLeave drop->formation#slotDrop"
+     data-action="click->formation#selectSlot dragover->formation#slotDragOver dragenter->formation#slotDragEnter dragleave->formation#slotDragLeave drop->formation#slotDrop"
      class="formation-slot">
     <span class="{{ title_class }}">{{ ('formation.slots.' ~ slot.pos)|trans }}</span>
 

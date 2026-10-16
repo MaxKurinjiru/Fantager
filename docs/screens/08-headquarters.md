@@ -1,10 +1,10 @@
 # Headquarters Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#8-headquarters-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [headquarters-system.md](../systems/headquarters-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [headquarters-system.md](../systems/headquarters-system.md)
 
 **When:** Upgrade the seven facilities, set arena race adaptation, open Arena / Summoning panels.
 
-**Status:** Live at `GET /app/hq`. `/app/arena` and `/app/summon` **redirect** here (`?facility=arena` / `?facility=summoning_chamber`). Visual HQ themes, visitor access, morale-over-time, and combat home-advantage are **not** live. `summon_stat_total_cap` may appear as a bonus label but is unread (A6.5).
+**Status:** Live at `GET /app/hq`. `/app/arena` and `/app/summon` **redirect** here (`?facility=arena` / `?facility=summoning_chamber`). `summon_stat_total_cap` is stored/computed and unread — HQ cards and API do **not** show it as a live bonus.
 
 **Live UI:** `templates/hq/index.html.twig`, `templates/components/hq/`.
 
@@ -25,7 +25,7 @@ No dedicated “HQ total level” or theme-preview illustration. `computedTotalL
 
 Cards: training, medical, library, treasury, barracks, summoning chamber, arena. Plus a separate **arena adaptation** card.
 
-Each facility card: name, description, level, current passive bonuses and next-level values, upgrade gold cost, upgrade / downgrade. **Manage** only for training (link to `/app/training`), arena, and summoning chamber (panels).
+Each facility card: name, description, level, current **live** passive bonuses and next-level values, upgrade gold cost, upgrade / downgrade. Summoning Chamber cards show `summon_base_stat_bonus` and `summon_stat_random_bonus` only — not `summon_stat_total_cap`. **Manage** only for training (link to `/app/training`), arena, and summoning chamber (panels).
 
 Upgrade in progress: page banner with completion date; **cancel** in the first hour of an upgrade (`POST /api/v1/hq/cancel-upgrade`). Downgrade-lock-cycle warning when set. One facility operation at a time.
 
@@ -50,16 +50,16 @@ Race `<select>` (or none) → `POST /api/v1/hq/optimize`. Pending / locked state
 
 ---
 
-## Planned
+Later product decisions (HQ themes / visitor access / morale-over-time, combat home-advantage): [known-issues.md](../product/known-issues.md) § Later product decisions.
 
-Original sketch extras — do not treat as a contract:
+## Sketch leftover
 
-- Visual theme preview / customize theme
-- Facility layout editor, visitor access
+Not a contract:
+
+- Facility layout editor
 - Separate passive-bonuses summary board (bonuses are on each card)
-- Combat home-advantage as a live match buff
 
-Arena attendance **graphs** beyond the panel tables: [#4](../product/known-issues.md) / A7.8.
+Arena attendance graphs/history are live in the arena facility panel: [18-arena-management.md](18-arena-management.md#locked-attendance-analytics).
 
 ---
 
@@ -69,4 +69,4 @@ Arena attendance **graphs** beyond the panel tables: [#4](../product/known-issue
 |-------|----------|
 | Page | `templates/hq/index.html.twig` |
 | Cards / panels | `templates/components/hq/` |
-| Stimulus | `hq`, `arena`, `summoning` |
+| Stimulus | `hq`, `arena`, `arena_analytics`, `summoning` |

@@ -7,7 +7,9 @@ namespace App\Twig;
 use App\Entity\Auth\User;
 use App\Entity\Headquarters\Headquarters;
 use App\Entity\Hero\Hero;
+use App\Entity\Item\Item;
 use App\Entity\Team\Team;
+use App\Enum\ItemSlotType;
 use App\Enum\FacilityType;
 use App\Enum\HeroTrait;
 use App\Enum\Race;
@@ -15,8 +17,11 @@ use App\Repository\Hero\HeroRepository;
 use App\Service\Community\CommunityService;
 use App\Service\Config\RaceConfig;
 use App\Service\Economy\FinancialCrisisService;
+use App\Service\Item\ItemService;
+use App\Service\Marketplace\MarketplacePriceGuidance;
 use App\Service\Notification\NotificationService;
 use App\Service\Team\TeamRosterService;
+use App\ValueObject\Marketplace\ListingPriceGuidance;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Extension\AbstractExtension;
@@ -37,6 +42,9 @@ class GameExtension extends AbstractExtension
         private readonly \App\Service\Hero\HeroRatingCalculator $heroRatingCalculator,
         private readonly \App\Service\Hero\HeroSalaryService $heroSalaryService,
         private readonly \App\Service\Economy\TeamPayrollService $teamPayrollService,
+        private readonly \App\Service\Hero\HeroProgressionService $heroProgressionService,
+        private readonly ItemService $itemService,
+        private readonly MarketplacePriceGuidance $marketplacePriceGuidance,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -63,10 +71,22 @@ class GameExtension extends AbstractExtension
             new TwigFunction('hero_rating', $this->getHeroRating(...)),
             new TwigFunction('hero_gold_value', $this->getHeroGoldValue(...)),
             new TwigFunction('hero_market_price', $this->getHeroMarketPrice(...)),
+            new TwigFunction('hero_listing_price_guidance', $this->getHeroListingPriceGuidance(...)),
+            new TwigFunction('item_listing_price_guidance', $this->getItemListingPriceGuidance(...)),
             new TwigFunction('hero_weekly_salary', $this->getHeroWeeklySalary(...)),
+            new TwigFunction('hero_xp_bar', $this->getHeroXpBar(...)),
             new TwigFunction('team_weekly_payroll', $this->getTeamWeeklyPayroll(...)),
             new TwigFunction('hero_trait_js_labels', $this->getHeroTraitJsLabels(...)),
+            new TwigFunction('item_equip_slots', $this->getItemEquipSlots(...)),
         ];
+    }
+
+    /**
+     * @return list<ItemSlotType>
+     */
+    public function getItemEquipSlots(Item $item, Hero $hero): array
+    {
+        return $this->itemService->allowedEquipSlots($item, $hero);
     }
 
     public function getUnreadMailCount(): int
@@ -206,12 +226,30 @@ class GameExtension extends AbstractExtension
 
     public function getHeroMarketPrice(Hero $hero): int
     {
-        return $this->heroRatingCalculator->estimateMarketPrice($hero);
+        return $this->marketplacePriceGuidance->forHero($hero)->getSuggested();
+    }
+
+    public function getHeroListingPriceGuidance(Hero $hero): ListingPriceGuidance
+    {
+        return $this->marketplacePriceGuidance->forHero($hero);
+    }
+
+    public function getItemListingPriceGuidance(Item $item): ListingPriceGuidance
+    {
+        return $this->marketplacePriceGuidance->forItem($item);
     }
 
     public function getHeroWeeklySalary(Hero $hero): int
     {
         return $this->heroSalaryService->calculateWeeklySalary($hero);
+    }
+
+    /**
+     * @return array{xp_for_level: int, xp_for_next_level: int, at_cap: bool, progress_percent: float}
+     */
+    public function getHeroXpBar(Hero $hero): array
+    {
+        return $this->heroProgressionService->xpBar($hero);
     }
 
     /**

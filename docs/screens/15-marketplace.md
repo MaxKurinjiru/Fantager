@@ -1,10 +1,11 @@
 # Marketplace Screen
 
-Reference: [screens/overview-legacy.md](overview-legacy.md#15-marketplace-screen) (historical), [architecture/screen-code-map.md](../architecture/screen-code-map.md), [marketplace-system.md](../systems/marketplace-system.md), [economy-system.md](../systems/economy-system.md)
+Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md), [marketplace-system.md](../systems/marketplace-system.md), [economy-system.md](../systems/economy-system.md)
 
 **When:** Browse, buy, and list heroes, trainers, and items.
 
-**Status:** Live at `GET /app/marketplace`. Ledger is **`/app/finance`**, not a marketplace tab. Price floor/ceiling is **not** live (A7.10). Auctions **are** live (bid API + UI). Hero sell also starts from hero-detail manage menu.
+**Status:** Live at `GET /app/marketplace`. Ledger is **`/app/finance`** ([20-finance.md](20-finance.md)), not a marketplace tab. Listing price band is live. Auctions **are** live (bid API + UI). Hero sell also starts from hero-detail manage menu.  
+**Lock:** [Locked: listing price band](#locked-listing-price-band)
 
 **Live UI:** `templates/marketplace/index.html.twig`, `templates/components/marketplace/`.
 
@@ -31,7 +32,7 @@ Segmented type control. Filters: search, race, level min/max, age phase, rarity 
 ### Other tabs
 
 - Basic equipment: `ItemService::BASIC_EQUIPMENT`, CSRF form
-- Sell: entity picker (hero picker shows trait badge), buy-now vs auction, tax rate
+- Sell: entity picker (hero picker shows trait badge), buy-now vs auction, suggested price + allowed range (−50% / +100%), tax rate
 - My listings: cancel (auctions with bids cannot cancel)
 - History: settled transactions
 
@@ -52,10 +53,9 @@ Hero payloads include nullable `trait` and `ratings`. Fees: `RoyalTreasuryServic
 
 ---
 
-## Planned
+## Locked: listing price band
 
-- Suggested list price from complex rating as a hint only (A7.10)
-- Price floor/ceiling (cut from live overview)
+**#15 Resolved (A7.10 Implement).** Sell tab and hero-detail sell panel show suggested gold and the allowed range. `POST /api/v1/marketplace/listings` rejects prices outside `[floor, ceiling]`. Auction bids are not capped. Do not add a second pricing formula. Spec: [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band).
 
 ---
 
@@ -65,4 +65,4 @@ Hero payloads include nullable `trait` and `ratings`. Fees: `RoyalTreasuryServic
 |-------|----------|
 | Page | `templates/marketplace/index.html.twig` |
 | Tabs | `templates/components/marketplace/` |
-| Stimulus | `marketplace` (`template-card-hero`, `data-marketplace-traits-value`) |
+| Stimulus | `marketplace` (`template-card-hero`, `data-marketplace-traits-value`); hero detail `hero-sell` |

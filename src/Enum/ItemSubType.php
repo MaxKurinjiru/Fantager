@@ -22,4 +22,33 @@ enum ItemSubType: string
     case LightArmor = 'light_armor';
     case MediumArmor = 'medium_armor';
     case HeavyArmor = 'heavy_armor';
+
+    /**
+     * Two-handed occupancy: these occupy main_hand and clear off_hand.
+     * Matches the NPC gear skip list (great weapons, bow, crossbow, staff).
+     */
+    public function occupiesBothHands(): bool
+    {
+        return match ($this) {
+            self::TwoHandedSword,
+            self::TwoHandedAxe,
+            self::TwoHandedMace,
+            self::Bow,
+            self::Crossbow,
+            self::Staff => true,
+            default => false,
+        };
+    }
+
+    /** One-handed melee that may be equipped in main_hand or off_hand. */
+    public function isDualWieldable(): bool
+    {
+        return match ($this) {
+            self::OneHandedSword,
+            self::OneHandedAxe,
+            self::OneHandedMace,
+            self::Dagger => true,
+            default => false,
+        };
+    }
 }

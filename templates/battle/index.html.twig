@@ -8,17 +8,31 @@
         {# Toolbar #}
         <div class="layout-toolbar">
             <h1 class="page-title">{{ 'battle.report_title'|trans }}</h1>
-            <a href="{{ path('app_league') }}" class="btn btn-outline">
-                {{ 'battle.return_to_league'|trans }}
-            </a>
+            {% if battle.matchType.value == 'friendly' %}
+                <a href="{{ path('app_friendly_matches', {tab: 'history'}) }}" class="btn btn-outline">
+                    {{ 'battle.return_to_friendly'|trans }}
+                </a>
+            {% else %}
+                <a href="{{ path('app_league') }}" class="btn btn-outline">
+                    {{ 'battle.return_to_league'|trans }}
+                </a>
+            {% endif %}
         </div>
 
         {# Block 1: Match HUD #}
         <div class="battle-hud-panel">
             <div class="battle-team battle-team--home">
                 <span class="battle-team__name">{{ battle.teamA.name }}</span>
+                <span class="battle-team__emblem emoji-icon" aria-hidden="true">{{ battle.teamA.emblem ?: '🛡️' }}</span>
             </div>
             <div class="battle-score-wrapper">
+                <span class="battle-match-type">
+                    {% if battle.matchType.value == 'friendly' %}
+                        {{ 'battle.match_type_friendly'|trans }}
+                    {% else %}
+                        {{ 'battle.match_type_league'|trans }}
+                    {% endif %}
+                </span>
                 <span class="battle-score">{{ battle.scoreA }} : {{ battle.scoreB }}</span>
                 {% if battle.result.value == 'win_a' %}
                     <span class="battle-badge battle-badge--win">{{ 'battle.winner'|trans }}</span>
@@ -29,6 +43,7 @@
                 {% endif %}
             </div>
             <div class="battle-team battle-team--away">
+                <span class="battle-team__emblem emoji-icon" aria-hidden="true">{{ battle.teamB.emblem ?: '🛡️' }}</span>
                 <span class="battle-team__name">{{ battle.teamB.name }}</span>
             </div>
         </div>
@@ -114,48 +129,6 @@
     </div>
 </div>
 {% endblock %}
-
-{# Macro to render individual slot in the formation grid #}
-{% macro render_slot(combatants, position_name) %}
-    {% set combatant = null %}
-    {% for c in combatants %}
-        {% if c.slot == position_name %}
-            {% set combatant = c %}
-        {% endif %}
-    {% endfor %}
-
-    {% if combatant is not null %}
-        {% set is_ko = combatant.currentHp <= 0 %}
-        {% set max_hp = combatant.derived.maxHp %}
-        {% set current_hp = combatant.currentHp %}
-        {% set hp_pct = max_hp > 0 ? (current_hp / max_hp * 100)|round : 0 %}
-        
-        <div class="combatant-slot {{ is_ko ? 'combatant-slot--ko' : 'combatant-slot--alive' }}">
-            <div class="combatant-avatar">{{ combatant.name|slice(0, 2)|upper }}</div>
-            <div class="combatant-info">
-                <span class="combatant-name">{{ combatant.name }}</span>
-                <span class="combatant-details">{{ ('race.' ~ combatant.race)|trans }} · {{ 'heroes.level'|trans }} {{ combatant.level }}</span>
-                
-                <div class="hp-bar" style="--hp-pct: {{ hp_pct }}%;">
-                    <div class="hp-bar__fill"></div>
-                    <span class="hp-bar__text">{{ current_hp }} / {{ max_hp }}</span>
-                </div>
-                
-                {% if combatant.statusEffects|length > 0 %}
-                    <div class="combatant-effects">
-                        {% for eff in combatant.statusEffects %}
-                            <span class="status-chip status-chip--purple" title="{{ eff.effect }}">{{ eff.effect|slice(0, 3)|upper }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    {% else %}
-        <div class="combatant-slot combatant-slot--empty">
-            <span class="copy-muted">-</span>
-        </div>
-    {% endif %}
-{% endmacro %}
 
 {# Macro to render event logs #}
 {% macro render_event(event, lineup) %}

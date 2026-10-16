@@ -1,21 +1,35 @@
 # Screens
 
-Per-screen UI contracts. **Live UI** is [../architecture/screen-code-map.md](../architecture/screen-code-map.md) plus Twig/Stimulus — not unchecked wish-lists.
+Per-screen UI contracts. **Live UI** is [../architecture/screen-code-map.md](../architecture/screen-code-map.md) plus Twig/Stimulus.
 
-[overview-legacy.md](overview-legacy.md) is a historical catalogue kept for alignment Wave 4. Do not treat it as an implementation contract.
+## File template
 
-Each screen file separates **Implemented** (what Twig/API does) from **Planned**. Wave 4 (A4.1–A4.3) aligned every file in this folder; none is an empty “Sections to fill” template.
+Each screen file opens with:
+
+```markdown
+**When:** who uses this screen, and when
+**Status:** Live at `GET /app/…`
+**Live UI:** `templates/…`
+```
+
+Then **Implemented** (what Twig/API does). Omit a leftover heading when there is nothing to list.
+
+- **Parked** — later product decisions **unique to this screen** and not already in [product/known-issues.md](../product/known-issues.md) § Later product decisions. Do not implement unless the user explicitly asks. Do not list **Cut** here.
+- **Sketch leftover** — original screen sketch extras; not a contract.
+- **Cut / Deferred** belong in `## Locked:` or [`../future/`](../future/), not Parked.
+
+The original screen sketch is parked at [`_deferred/screens-overview-legacy.md`](../../_deferred/screens-overview-legacy.md) — not an implementation contract.
 
 ## Site structure
 
-- **Public** (`/`) — unauthenticated: homepage, news. Login/register open as a **modal** (`/login` and `/register` auto-open it). Password reset is standalone. Wiki is **Planned**.
+- **Public** (`/`) — unauthenticated: homepage, news. Login/register open as a **modal** (`/login` and `/register` auto-open it). Password reset is standalone. Wiki stays **Planned**.
 - **Game** (`/app/*`) — authenticated; Team Dashboard is the default landing page.
 
 ## Screen files
 
 | Doc | Screen |
 |-----|--------|
-| [00-public-pages.md](00-public-pages.md) | Homepage, news (wiki Planned) |
+| [00-public-pages.md](00-public-pages.md) | Homepage, news (wiki stays Planned) |
 | [00-auth-screens.md](00-auth-screens.md) | Login, register, password reset |
 | [01-kingdom-selection.md](01-kingdom-selection.md) | Kingdom selection (registration) |
 | [02-team-dashboard.md](02-team-dashboard.md) | Team dashboard |
@@ -37,4 +51,14 @@ Each screen file separates **Implemented** (what Twig/API does) from **Planned**
 | [17-community.md](17-community.md) | Community |
 | [18-arena-management.md](18-arena-management.md) | Arena (HQ panel) |
 | [18a-friendly-matches.md](18a-friendly-matches.md) | Friendly matches |
-| [19-player-profile-settings.md](19-player-profile-settings.md) | Player profile and settings |
+| [19-player-profile-settings.md](19-player-profile-settings.md) | Player profile and settings (password change / extras stay Planned) |
+| [20-finance.md](20-finance.md) | Finance ledger |
+
+## Shell features (no dedicated screen file)
+
+Navbar / layout UI that is not a numbered screen. Live map: [screen-code-map.md](../architecture/screen-code-map.md) § Notifications & mail.
+
+| Feature | Spec |
+|---------|------|
+| Notifications modal | [notification-system.md](../systems/notification-system.md) |
+| Player mail | [community-system.md](../systems/community-system.md), [17-community.md](17-community.md) |

@@ -18,8 +18,10 @@ use App\Service\Economy\FinancialCrisisService;
 use App\Exception\UserFacingException;
 use App\Service\Hero\HeroRatingCalculator;
 use App\Service\Headquarters\HeadquartersService;
+use App\Service\Marketplace\MarketplacePriceGuidance;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Notification\NotificationHelper;
+use App\ValueObject\Marketplace\ListingPriceGuidance;
 use App\Service\Team\TeamRosterService;
 use App\Service\Team\TeamChemistryService;
 use App\Service\Training\TrainingService;
@@ -51,6 +53,8 @@ class MarketplaceServiceTest extends TestCase
     private $teamChemistryServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&HeroRatingCalculator */
     private $heroRatingCalculatorMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&MarketplacePriceGuidance */
+    private $priceGuidanceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Config\RaceConfig */
     private $raceConfigMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&HeadquartersService */
@@ -70,6 +74,7 @@ class MarketplaceServiceTest extends TestCase
         $this->teamChronicleServiceMock = $this->createMock(\App\Service\TeamChronicle\TeamChronicleService::class);
         $this->teamChemistryServiceMock = $this->createMock(TeamChemistryService::class);
         $this->heroRatingCalculatorMock = $this->createMock(HeroRatingCalculator::class);
+        $this->priceGuidanceMock = $this->createMock(MarketplacePriceGuidance::class);
         $this->raceConfigMock = $this->createMock(\App\Service\Config\RaceConfig::class);
         $this->hqServiceMock = $this->createMock(HeadquartersService::class);
         $this->trainingServiceMock = $this->createMock(TrainingService::class);
@@ -88,6 +93,7 @@ class MarketplaceServiceTest extends TestCase
             $this->teamChronicleServiceMock,
             $this->teamChemistryServiceMock,
             $this->heroRatingCalculatorMock,
+            $this->priceGuidanceMock,
             $this->raceConfigMock,
             $translator,
             $this->hqServiceMock,
@@ -212,6 +218,12 @@ class MarketplaceServiceTest extends TestCase
             ->method('assertCanRemoveCombatReadyHero')
             ->with($seller, $hero);
 
+        $this->priceGuidanceMock
+            ->expects($this->once())
+            ->method('forHero')
+            ->with($hero)
+            ->willReturn(new ListingPriceGuidance(100, 50, 200));
+
         $this->entityManagerMock->expects($this->once())->method('persist');
         $this->entityManagerMock->expects($this->once())->method('flush');
 
@@ -229,5 +241,150 @@ class MarketplaceServiceTest extends TestCase
         $this->assertSame(HeroStatus::Selling, $hero->getStatus());
         $this->assertNull($item->getEquippedHero());
         $this->assertNull($item->getEquippedSlot());
+    }
+
+    public function testCreateListingRejectsPriceBelowFloor(): void
+    {
+        $hero = $this->stubAvailableHeroListing();
+        $this->priceGuidanceMock
+            ->expects($this->once())
+            ->method('forHero')
+            ->with($hero)
+            ->willReturn(new ListingPriceGuidance(100, 50, 200));
+
+        $this->entityManagerMock->expects($this->never())->method('persist');
+        $this->entityManagerMock->expects($this->never())->method('flush');
+
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.marketplace_price_out_of_range');
+
+        $this->marketplaceService->createListing(
+            $hero->getTeam(),
+            ListingType::Hero->value,
+            1,
+            49,
+            null,
+            ListingMode::BuyNow->value,
+            7,
+            new \DateTimeImmutable('now')
+        );
+    }
+
+    public function testCreateListingRejectsPriceAboveCeiling(): void
+    {
+        $hero = $this->stubAvailableHeroListing();
+        $this->priceGuidanceMock
+            ->expects($this->once())
+            ->method('forHero')
+            ->with($hero)
+            ->willReturn(new ListingPriceGuidance(100, 50, 200));
+
+        $this->entityManagerMock->expects($this->never())->method('persist');
+
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.marketplace_price_out_of_range');
+
+        $this->marketplaceService->createListing(
+            $hero->getTeam(),
+            ListingType::Hero->value,
+            1,
+            201,
+            null,
+            ListingMode::BuyNow->value,
+            7,
+            new \DateTimeImmutable('now')
+        );
+    }
+
+    public function testCreateListingAcceptsPriceAtFloor(): void
+    {
+        $hero = $this->stubAvailableHeroListing();
+        $this->priceGuidanceMock
+            ->expects($this->once())
+            ->method('forHero')
+            ->with($hero)
+            ->willReturn(new ListingPriceGuidance(100, 50, 200));
+
+        $this->entityManagerMock->expects($this->once())->method('persist');
+        $this->entityManagerMock->expects($this->once())->method('flush');
+
+        $listing = $this->marketplaceService->createListing(
+            $hero->getTeam(),
+            ListingType::Hero->value,
+            1,
+            50,
+            null,
+            ListingMode::BuyNow->value,
+            7,
+            new \DateTimeImmutable('now')
+        );
+
+        $this->assertSame(50, $listing->getPriceGold());
+        $this->assertSame(HeroStatus::Selling, $hero->getStatus());
+    }
+
+    public function testCreateListingRejectsAuctionBuyoutAboveCeiling(): void
+    {
+        $hero = $this->stubAvailableHeroListing();
+        $this->priceGuidanceMock
+            ->expects($this->once())
+            ->method('forHero')
+            ->with($hero)
+            ->willReturn(new ListingPriceGuidance(100, 50, 200));
+
+        $this->entityManagerMock->expects($this->never())->method('persist');
+
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.marketplace_price_out_of_range');
+
+        $this->marketplaceService->createListing(
+            $hero->getTeam(),
+            ListingType::Hero->value,
+            1,
+            50,
+            201,
+            ListingMode::Auction->value,
+            7,
+            new \DateTimeImmutable('now')
+        );
+    }
+
+    private function stubAvailableHeroListing(): Hero
+    {
+        $kingdom = new Kingdom();
+        $seller = new Team();
+        $seller->setKingdom($kingdom);
+        $hero = new Hero();
+        $hero->setTeam($seller);
+        $hero->setStatus(HeroStatus::Available);
+
+        $heroRepo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        $heroRepo->method('find')->willReturn($hero);
+
+        $itemRepo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        $itemRepo->method('findBy')->willReturn([]);
+
+        $formationSlotRepo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        $formationSlotRepo->method('findBy')->willReturn([]);
+
+        $this->entityManagerMock
+            ->method('getRepository')
+            ->willReturnCallback(function ($className) use ($heroRepo, $itemRepo, $formationSlotRepo) {
+                if ($className === Hero::class) {
+                    return $heroRepo;
+                }
+                if ($className === Item::class) {
+                    return $itemRepo;
+                }
+                if ($className === \App\Entity\Formation\FormationSlot::class) {
+                    return $formationSlotRepo;
+                }
+                throw new \InvalidArgumentException("Unexpected class name: $className");
+            });
+
+        $this->teamRosterServiceMock
+            ->method('assertCanRemoveCombatReadyHero');
+
+        return $hero;
     }
 }

@@ -52,7 +52,9 @@ class SpellController extends AbstractController
         $school = $schoolValue ? School::tryFrom($schoolValue) : null;
 
         $tierValue = $request->query->get('tier');
-        $tier = (null !== $tierValue && '' !== $tierValue) ? (int) $tierValue : null;
+        $tier = (null !== $tierValue && '' !== $tierValue)
+            ? SpellService::normalizeCatalogTier((int) $tierValue)
+            : null;
 
         // Selected Hero context for learning
         $heroId = $request->query->get('hero_id') ? (int) $request->query->get('hero_id') : null;
@@ -85,6 +87,7 @@ class SpellController extends AbstractController
             'selected_school' => $school ? $school->value : null,
             'selected_tier' => $tier,
             'schools' => School::cases(),
+            'catalog_tiers' => SpellService::catalogTiers(),
         ]);
     }
 }

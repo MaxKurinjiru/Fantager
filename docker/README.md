@@ -28,12 +28,15 @@ docker exec -it fantager-web npm run build
 
 5. Open the app at http://localhost:10001
 
+Kingdom seed, test users, ticks, and Messenger workers: [docs/guides/local-setup.md](../docs/guides/local-setup.md).
+
 Database is exposed on host port `10006` and mapped to MariaDB `3306` inside the container.
 
 What this stack does:
 - Uses Apache 2.4 on `php:8.5-apache`.
 - Mounts the whole repository into `/var/www/html`, so Symfony can access `config/`, `src/`, `vendor/` and `public/`.
 - Serves the application from Symfony's standard `public/` document root.
+- `web` healthcheck probes unauthenticated `GET /health` (process liveness, not a database readiness check). Same probe in `docker-compose.prod.yml`.
 
 Notes:
 	- PHP configuration is tuned for local development defaults used by the project.

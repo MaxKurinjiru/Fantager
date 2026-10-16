@@ -38,7 +38,8 @@ function extractTranslationKeys(string $root): array
             foreach ($matches as $match) {
                 $key = $match[1];
                 $domain = $match[2] ?? 'messages';
-                if (str_ends_with($key, '.')) {
+                // Dynamic prefixes: 'training.attr.'.$x, 'heroes.race_'.$race
+                if (str_ends_with($key, '.') || str_ends_with($key, '_')) {
                     continue;
                 }
                 $keys["$domain\t$key"] = ['domain' => $domain, 'key' => $key];

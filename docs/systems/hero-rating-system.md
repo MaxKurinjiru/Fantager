@@ -1,10 +1,20 @@
-# Hero Rating System — Implementation Plan
+# Hero Rating System
 
 Reference: [hero-system.md](hero-system.md), [combat-system.md](combat-system.md), [marketplace-system.md](marketplace-system.md)
 
-Purpose: Define a unified, intrinsic hero value model with two metrics — cross-race **base OVR** and hero-specific **complex rating** — and plan its backend rollout. External influences (equipment, spells, team morale/chemistry, form/fatigue) are excluded by design.
+Status: Live  
+Screens: [03-hero-roster.md](../screens/03-hero-roster.md), [04-hero-detail.md](../screens/04-hero-detail.md), [15-marketplace.md](../screens/15-marketplace.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
 
-**Status:** Implemented (Phases 0–5 complete). Run `php bin/console app:hero-ratings:refresh` after migration to backfill existing heroes.
+Purpose: Two cached **intrinsic** ratings — cross-race **base OVR** (0–100) and **complex rating** (0–9999) for market, salary, and dismiss pay. Equipment, spells, form, fatigue, morale, and team chemistry are excluded by design.
+
+## Parked
+
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this system:
+
+- Rating breakdown payload — API is two integers; do not invent a third field
+- Stat normalization if Human-neutral OVR skews Orc/Giant
+- Simulation-driven YAML calibration (`config/game/hero-rating.yaml` values are live placeholders)
 
 ---
 
@@ -12,20 +22,16 @@ Purpose: Define a unified, intrinsic hero value model with two metrics — cross
 
 | Metric | Range | Purpose |
 |--------|-------|---------|
-| `base_ovr` | 0–100 (FIFA-style) | Fair comparison across all races |
+| `base_ovr` | 0–100 | Fair comparison across races |
 | `complex_rating` | 0–9999 | Marketplace value, dismiss compensation, NPC pricing, hero/trainer salaries |
 
-Both values are **cached on the `Hero` entity** (`base_ovr`, `complex_rating` columns) for fast listing, sorting, and marketplace filters. Cache is refreshed automatically on hero/mastery changes via `HeroRatingCacheSubscriber` (Doctrine `onFlush`). Bulk backfill: `php bin/console app:hero-ratings:refresh`. API exposes **two integers** — no breakdown payload yet.
+Both columns are cached on `Hero` and refreshed by `HeroRatingCacheSubscriber` (Doctrine `onFlush`) when the hero or a mastery row changes. Bulk repair: `php bin/console app:hero-ratings:refresh`.
 
-Gold amounts across the economy should derive from `complex_rating` (recalibrated constants), replacing ad-hoc formulas today in `HeroDismissalService` and `NpcSimulationService`.
+Gold amounts that need an intrinsic hero value use `complex_rating × gold_per_complex_point` (and the role factors below). Listing prices must sit in the suggested band — [marketplace-system.md](marketplace-system.md#locked-listing-price-band).
 
 ---
 
-## Locked Design Decisions
-
-These decisions are final for v1 unless future simulations prove a follow-up change is needed.
-
-### Included inputs
+## Inputs
 
 | Input | `base_ovr` | `complex_rating` |
 |-------|------------|------------------|
@@ -35,99 +41,30 @@ These decisions are final for v1 unless future simulations prove a follow-up cha
 | Trait | no | yes — additive bonus (combat and economic traits) |
 | Weapon / school mastery | no | yes — additive bonus (not tied to equipped loadout) |
 | Attunement | no | no |
-| Spells / spell loadout | no | no (treated like equipment) |
-| Magic capacity | no | no (treated like equipment) |
+| Spells / spell loadout | no | no |
+| Magic capacity | no | no |
 | Age | no | yes — market-value multiplier |
 | Equipment | no | no |
 | Form / fatigue / morale | no | no |
 | Team chemistry / morale | no | no |
 
+Equipping items must not change either rating.
+
 ### Human-neutral base OVR
 
-For `base_ovr`, race is **hard-coded to Human** in derived-stat formulas. Primary attribute values are read from the hero entity as stored (no race-bonus subtraction in v1). If simulations show Orc/Giant skew, stat normalization can be added as a follow-up.
+For `base_ovr`, race is hard-coded to Human in derived-stat formulas. Stored primary attributes are used as-is (no race-bonus subtraction).
 
-### Hybrid heroes (phys + magic)
+### Hybrid score
 
-Compute two weighted scores from the same derived combat stats:
-
-1. **Physical variant** — HP, physical attack, armor, accuracy, dodge, crit, etc.
-2. **Magic variant** — spell power, magic resistance, etc.
-
-Final score for both metrics: **`average(physical_variant, magic_variant)`**, then scale (`base_ovr` → 0–100, `complex_rating` → 0–9999).
+From the same derived combat stats, compute a **physical** weighted sum and a **magic** weighted sum. Final hybrid: `average(physical, magic)`, then scale (`base_ovr` → 0–100, `complex_rating` → 0–9999). CHA has dedicated weights on both paths.
 
 ### Trainers
 
-Same calculator and value object; role-specific rules:
-
-| Aspect | Combatant | Trainer |
-|--------|-----------|---------|
-| `base_ovr` | standard | standard (frozen stats are the main quality signal) |
-| Combat hybrid base in `complex_rating` | full | full |
-| Mastery bonus | full | **0** (trainers do not fight; combat mastery is irrelevant) |
-| Trait bonus | full | full (e.g. Quick Learner / Slacker matter for trainer value) |
-| Age multiplier | yes | yes |
-| Marketplace / salary | `complex_rating × hero factors` | `complex_rating × trainer factors` (separate YAML multipliers, not a duplicate rating) |
-
-### Economy
-
-- **`gold_per_complex_point`** (config) drives dismiss compensation, suggested marketplace price, NPC buy/sell heuristics, and hero/trainer salaries.
-- Combatant dismiss keeps **40%** (`dismiss_compensation_ratio`); trainer dismiss uses **30%** (`trainer_dismiss_compensation_ratio`).
-- Live economy constants are in `config/game/hero-rating.yaml` (`gold_per_complex_point: 0.5`, `hero_salary_factor: 0.02`, `trainer_salary_factor: 0.03`). Numeric calibration is still expected before production.
+Same calculator. Trainers get **0** mastery bonus (they do not fight). Trait and age still apply. Marketplace and salary use the trainer YAML factors, not a second rating.
 
 ---
 
-## Architecture
-
-### New components
-
-```
-config/game/hero-rating.yaml
-src/Config/HeroRatingConfig.php
-src/ValueObject/Hero/HeroRating.php
-src/Service/Hero/HeroRatingCalculator.php
-```
-
-### Cache refresh
-
-| Trigger | Mechanism |
-|---------|-----------|
-| Hero insert/update/delete | `HeroRatingCacheSubscriber` recalculates on flush |
-| Weapon/school mastery change | Subscriber collects parent hero and recalculates |
-| Migration / bulk repair | `app:hero-ratings:refresh` console command |
-
-Marketplace list queries and roster sort/filter use the cached columns directly (`MarketplaceService`, repository queries).
-
-### Refactor existing combat layer
-
-`CombatStatCalculator` gains profile-aware entry points without changing current equipped behaviour:
-
-```
-CombatStatProfile (enum or VO)
-├── Equipped          ← existing calculate(Hero) behaviour (unchanged)
-├── HumanNeutral      ← base_ovr: race = Human, no trait, no items, no mastery, form = 100
-└── FullIntrinsic     ← complex combat base: actual race, no trait/items/mastery, form = 100
-```
-
-Extract shared formula methods so profiles differ only in **inputs**, not duplicated math.
-
-### Mastery bonus (complex only)
-
-- Source: all `WeaponMastery` and `SchoolMastery` rows on the hero.
-- Use **tier** (and optionally XP) — **ignore attunement** and **ignore equipped gear linkage**.
-- Aggregate into a single additive bonus (exact formula in YAML).
-
-### Trait bonus (complex only)
-
-- Map each `HeroTrait` case to an additive bonus or small multiplier contribution.
-- Include non-combat traits (Quick Learner, Audience Favorite, etc.).
-
-### Age multiplier (complex only)
-
-- Apply after combat base + trait + mastery bonuses.
-- Phase buckets from `RaceConfig::resolveAgePhase()` (junior / prime / veteran / elder).
-- Coefficients in YAML (e.g. junior > prime > veteran > elder).
-
-### Rating formula (conceptual)
+## Formula
 
 ```
 derived_stats = CombatStatCalculator::calculateForProfile(hero, profile)
@@ -136,226 +73,59 @@ phys_score  = weighted_sum(derived_stats, physical_weights)
 magic_score = weighted_sum(derived_stats, magic_weights)
 hybrid      = (phys_score + magic_score) / 2
 
-base_ovr = scale_to_100(hybrid)                                    // HumanNeutral profile
+base_ovr = scale_to_100(hybrid)                 // HumanNeutral profile
 
-complex_base = scale_to_9999(hybrid)                               // FullIntrinsic profile
+complex_base = scale_to_9999(hybrid)            // FullIntrinsic profile
 complex_rating = clamp(
     round((complex_base + trait_bonus + mastery_bonus) × age_multiplier),
     0, 9999
 )
 ```
 
-CHA participates in aggregation via dedicated weights in both phys/magic paths (social contribution).
+`CombatStatCalculator` profiles:
+
+| Profile | Use |
+|---------|-----|
+| `Equipped` | Live combat / replay — existing `calculate(Hero)` |
+| `HumanNeutral` | `base_ovr`: race = Human, no trait, no items, no mastery, form = 100 |
+| `FullIntrinsic` | Complex combat base: actual race, no trait/items/mastery, form = 100 |
+
+Mastery bonus (complex, combatants only): all `WeaponMastery` and `SchoolMastery` rows; **tier** only; ignore attunement and equipped gear. Trait bonus: one YAML value per `HeroTrait` (including non-combat traits). Age multiplier: `RaceConfig::resolveAgePhase()` buckets (junior / prime / veteran / elder).
 
 ---
 
-## Configuration (`config/game/hero-rating.yaml`)
+## Economy
 
-Placeholder structure — tune after simulations:
+Live constants: `config/game/hero-rating.yaml` (loaded by `HeroRatingConfig`).
 
-```yaml
-physical_weights:
-  max_hp: 0.12
-  physical_attack: 0.20
-  armor_value: 0.15
-  # accuracy_percent, dodge_percent, crit_percent, base_initiative, cha: ...
+| Constant | Live value | Use |
+|----------|------------|-----|
+| `gold_per_complex_point` | 0.5 | Suggested market price, dismiss estimate |
+| `dismiss_compensation_ratio` | 0.4 | Combatant dismiss pay |
+| `trainer_dismiss_compensation_ratio` | 0.3 | Trainer dismiss pay |
+| `hero_salary_factor` | 0.02 | Weekly combatant salary |
+| `trainer_salary_factor` | 0.03 | Weekly trainer salary |
+| `trainer_market_multiplier` | 1.5 | NPC trainer suggested price |
 
-magic_weights:
-  spell_power: 0.25
-  magic_resistance: 0.20
-  # wil-derived contribution, cha: ...
-
-scale:
-  base_ovr_max: 100
-  complex_rating_max: 9999
-  # reference ceilings for normalizing raw hybrid score before scaling
-
-mastery:
-  points_per_tier: 25          # per weapon/school mastery tier above 1
-
-trait:
-  quick_learner: 120
-  slacker: -80
-  # ... one entry per HeroTrait case
-
-age_multiplier:
-  junior: 1.05
-  prime: 1.00
-  veteran: 0.98
-  elder: 0.95
-
-economy:
-  gold_per_complex_point: 0.5
-  dismiss_compensation_ratio: 0.4
-  trainer_dismiss_compensation_ratio: 0.3
-  hero_salary_factor: 0.02
-  trainer_salary_factor: 0.03
-  trainer_market_multiplier: 1.5
-```
-
-Load via `HeroRatingConfig` service (same pattern as `RaceConfig`).
+Weekly salary: `complex_rating × gold_per_complex_point × role_factor` — [economy-system.md](economy-system.md#weekly-payroll).
 
 ---
 
-## Implementation Phases
+## Cache, API, UI
 
-### Phase 0 — Documentation & config scaffold
-
-**Goal:** Lock spec in repo; no runtime behaviour yet.
-
-- [x] Finalize this document after review.
-- [x] Add `config/game/hero-rating.yaml` with placeholder weights and economy constants.
-- [x] Add `HeroRatingConfig` service + Symfony service binding.
-- [x] Cross-link from [hero-system.md](hero-system.md) § Attribute calculations.
-- [x] Note planned status in [systems/README.md](README.md) implementation table.
-
-**Deliverable:** Config loads; no API changes.
+| Surface | Contract |
+|---------|----------|
+| DB | `hero.base_ovr`, `hero.complex_rating` + indexes |
+| `GET /api/v1/heroes` and hero detail | `ratings.base_ovr`, `ratings.complex_rating` (two integers) |
+| Marketplace listings | same ratings; hero includes `trait`; filter/sort on cached columns |
+| Twig | `hero_rating()`, `hero_gold_value()`, `hero_rating_badge`, detail `ratings_panel` |
+| Graveyard | memorial snapshot includes ratings |
+| Backfill | `app:hero-ratings:refresh` |
 
 ---
 
-### Phase 1 — Core calculator
+## Related code
 
-**Goal:** Pure domain logic with unit tests; no API or economy wiring.
-
-- [x] Create `HeroRating` value object (`getBaseOvr(): int`, `getComplexRating(): int`).
-- [x] Refactor `CombatStatCalculator`:
-  - [x] Extract internal `computeDerivedStats(...)` from item/race/trait/mastery inputs.
-  - [x] Add `calculateForProfile(Hero $hero, CombatStatProfile $profile): DerivedCombatStats`.
-  - [x] Keep public `calculate(Hero $hero)` delegating to `Equipped` profile — **zero behaviour change** for existing callers.
-- [x] Implement `HeroRatingCalculator::calculate(Hero $hero): HeroRating`:
-  - [x] HumanNeutral → `base_ovr`.
-  - [x] FullIntrinsic hybrid base + trait + mastery (role-aware) + age → `complex_rating`.
-  - [x] Trainer: mastery bonus = 0.
-- [x] Unit tests (`tests/Service/Hero/HeroRatingCalculatorTest.php`):
-  - [x] Equipping items does not change either rating.
-  - [x] Same stats, different races → same `base_ovr`, different `complex_rating`.
-  - [x] Trait increases `complex_rating` only.
-  - [x] Mastery increases `complex_rating` only (combatant).
-  - [x] Trainer with masteries → mastery bonus still 0.
-  - [x] Level increase raises both metrics.
-  - [x] Age phase changes `complex_rating` only.
-  - [x] Monotonicity: +1 STR after training does not lower ratings.
-
-**Deliverable:** Green unit tests; calculator callable from DI.
-
----
-
-### Phase 2 — API exposure
-
-**Goal:** Clients can read ratings on hero endpoints.
-
-- [x] Inject `HeroRatingCalculator` into `HeroService`.
-- [x] Extend `HeroService::serialize()`:
-
-  ```php
-  'trait' => $hero->getTrait()?->value,
-  'ratings' => [
-      'base_ovr' => $rating->getBaseOvr(),
-      'complex_rating' => $rating->getComplexRating(),
-  ],
-  ```
-
-- [x] Extend marketplace listing payload in `MarketplaceService` (hero + trainer listings; hero includes `trait`).
-- [x] Optional Twig helper `hero_rating(Hero $hero): HeroRating` in `GameExtension` for templates.
-- [x] Twig helper `hero_trait_js_labels()` for Stimulus trait badges (summoning, marketplace).
-- [x] Player-facing trait badges — see [hero-system.md](hero-system.md) § Player UI.
-- [x] Update [architecture/routes.md](../architecture/routes.md) response shape notes for `GET /api/v1/heroes` and hero detail.
-
-**Deliverable:** JSON includes `trait` and rating fields; trait visible in roster, detail, summoning reveal, and marketplace UI.
-
----
-
-### Phase 3 — Economy integration
-
-**Goal:** Replace legacy value estimates with rating-based gold.
-
-- [x] `HeroDismissalService::estimateHeroValue()` → `complex_rating × gold_per_complex_point`.
-- [x] `TrainerDismissalService` — same pattern.
-- [x] `NpcSimulationService::calculateHeroMarketPrice()` → rating-based suggested price + `trainer_market_multiplier`.
-- [x] `HeroSalaryService` (weekly salary from complex rating).
-- [x] `TeamPayrollService` — weekly payroll tick, ledger entries, unpaid debt on insolvency.
-- [x] Update [team-system.md](team-system.md) dismiss compensation description.
-
-**Deliverable:** Dismiss, NPC market, and salary paths use one config source.
-
----
-
-### Phase 4 — UI
-
-- [x] `hero_rating_badge` Twig component (roster, detail, marketplace card).
-- [x] `ratings_panel` on hero detail overview.
-- [x] i18n: `heroes.rating.*` keys (EN + CS).
-- [x] Marketplace filter/sort by `complex_rating` / `base_ovr`.
-- [x] Twig helpers `hero_rating()`, `hero_gold_value()`.
-
-**Deliverable:** Visible OVR on roster/detail; complex rating on marketplace.
-
----
-
-### Phase 5 — Cache & memorial
-
-- [x] DB columns `base_ovr`, `complex_rating` + indexes.
-- [x] `HeroRatingCacheSubscriber` (Doctrine onFlush).
-- [x] `app:hero-ratings:refresh` backfill command.
-- [x] Graveyard memorial snapshot includes ratings.
-- [ ] API breakdown payload (deferred).
-- [ ] Stat normalization follow-up (deferred until simulation).
-- [ ] Simulation-driven YAML calibration (deferred).
-
----
-
-## Files to Create
-
-| Path | Purpose |
-|------|---------|
-| `config/game/hero-rating.yaml` | Weights, bonuses, economy constants |
-| `src/Config/HeroRatingConfig.php` | YAML loader |
-| `src/ValueObject/Hero/HeroRating.php` | Result VO |
-| `src/Enum/CombatStatProfile.php` | Profile enum (if not inline VO) |
-| `src/Service/Hero/HeroRatingCalculator.php` | Main calculator |
-| `tests/Service/Hero/HeroRatingCalculatorTest.php` | Unit tests |
-
-## Files to Modify
-
-| Path | Change |
-|------|--------|
-| `src/Service/Combat/CombatStatCalculator.php` | Profile-based calculation; extract shared formulas |
-| `src/Service/Hero/HeroService.php` | Serialize ratings |
-| `src/Service/Marketplace/MarketplaceService.php` | Listing payload |
-| `src/Service/Hero/HeroDismissalService.php` | Rating-based estimate |
-| `src/Service/Training/TrainerDismissalService.php` | Rating-based estimate (if applicable) |
-| `src/Service/Team/NpcSimulationService.php` | Rating-based market price |
-| `docs/systems/hero-system.md` | Link to this doc |
-| `docs/systems/README.md` | Implementation status row |
-
----
-
-## Acceptance Criteria
-
-1. `GET /api/v1/heroes` and hero detail return `ratings.base_ovr` and `ratings.complex_rating`.
-2. Equipping items does not change either rating.
-3. Dismiss compensation uses rating-based gold × 40%.
-4. NPC marketplace pricing uses `complex_rating`.
-5. UI shows OVR on roster cards, both ratings on detail and marketplace listings.
-6. Marketplace supports filter/sort by cached `complex_rating` / `base_ovr`.
-7. Run `php bin/console doctrine:migrations:migrate` then `app:hero-ratings:refresh` after deploy.
-
----
-
-## Risks & Mitigations
-
-| Risk | Mitigation |
-|------|------------|
-| Formula duplication vs `CombatStatCalculator` | Single calculator with profiles; shared private methods |
-| Cross-race OVR skew without stat normalization | Document follow-up; v1 uses Human profile only |
-| Economy shock after recalibration | Placeholder `gold_per_complex_point`; tune in simulation before production |
-| Marketplace sort without DB cache | On-demand OK for v1; Phase 5 cache if perf issues |
-| Hybrid averaging undervalues specialists | Weights adjustable in YAML; simulation validates |
-
----
-
-## Related Code
-
-- `HeroRatingCalculator`, `HeroSalaryService`, `HeroRatingCacheSubscriber`
-- `config/game/hero-rating.yaml` — weights and economy constants
-- `php bin/console app:hero-ratings:refresh` — backfill cached columns
+- `HeroRatingCalculator`, `HeroRating` VO, `HeroSalaryService`, `HeroRatingCacheSubscriber`
+- `CombatStatCalculator::calculateForProfile()` / `CombatStatProfile`
+- Tests: `tests/Service/Hero/HeroRatingCalculatorTest.php`

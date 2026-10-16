@@ -106,4 +106,22 @@ class Facility
 
         return $bonuses;
     }
+
+    /**
+     * Live bonuses for HQ cards and API. Omits reserved unread keys (A6.5).
+     *
+     * @return array<string, float|int>
+     */
+    public function getDisplayedPassiveBonuses(): array
+    {
+        return $this->getDisplayedPassiveBonusesAtLevel($this->level);
+    }
+
+    /**
+     * @return array<string, float|int>
+     */
+    public function getDisplayedPassiveBonusesAtLevel(int $level): array
+    {
+        return FacilityType::withoutUnreadBonuses($this->getPassiveBonusesAtLevel($level));
+    }
 }

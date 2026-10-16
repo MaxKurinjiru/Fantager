@@ -2,7 +2,17 @@
 
 Reference: [architecture/entities.md](../architecture/entities.md#team-chronicle-append-only-event-log), [team-system.md](team-system.md), [screens/02-team-dashboard.md](../screens/02-team-dashboard.md)
 
+Status: Live  
+Screens: [02a-team-chronicle.md](../screens/02a-team-chronicle.md), [02-team-dashboard.md](../screens/02-team-dashboard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
 Purpose: Document the **team chronicle** — an append-only event log bound to the `Team` entity, shown on the dashboard and on a dedicated full-history screen.
+
+## Parked
+
+Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this system:
+
+- Ownership-period filter — not live
 
 ---
 
@@ -35,7 +45,7 @@ Table: `team_chronicle` — entity `App\Entity\Team\TeamChronicle`.
 
 Entries are **append-only**. Individual rows are not updated; bulk pruning after a configurable retention period is planned but not implemented yet.
 
-Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter` + `messages.*` keys under `activity.*`).
+Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter` + `messages.*` keys under `activity.*`). Stored race slugs (`starting_roster`, summon, marketplace hero/trainer buy/sell, arena adaptation) translate through `heroes.race_*`.
 
 ---
 
@@ -76,7 +86,11 @@ Rendering uses the **viewer's locale** at display time (`TeamChroniclePresenter`
 | `financial_crisis_state` | Financial crisis level changed | `FinancialCrisisService` |
 | `kingdom_reward_granted` | Royal Treasury distribution received | `RoyalTreasuryService` |
 
-> Note: `hero_retired` is present in `ChronicleEventType` enum and UI category filters for potential future hero retirement mechanics, but is not currently triggered by active services.
+### Reserved / unused (A6.2)
+
+| `ChronicleEventType` | Notes |
+|----------------------|-------|
+| `hero_retired` | Kept on the enum and in the roster **category map** so any legacy row still groups. **No writer.** Omitted from the type-filter dropdown (`liveCases()`). Do not add a retirement hook “for completeness”. |
 
 ### `player_released` reasons (`ChronicleReleaseReason`)
 
@@ -115,7 +129,7 @@ Subject params: `%item%`, `%buyer%`, `%price%`.
 |----------|-------|
 | `ownership` | `team_established`, `player_joined`, `player_released`, `team_renamed` |
 | `competition` | `battle_win`, `battle_loss`, `battle_draw`, `season_ended` |
-| `roster` | `starting_roster`, `hero_levelup`, `hero_died`, `hero_retired`, `training_completed`, `summon_completed`, `hero_dismissed`, `trainer_dismissed`, `spell_learned`, `trainer_promoted` |
+| `roster` | `starting_roster`, `hero_levelup`, `hero_died`, `hero_retired` *(reserved, A6.2)*, `training_completed`, `summon_completed`, `hero_dismissed`, `trainer_dismissed`, `spell_learned`, `trainer_promoted` |
 | `economy` | `item_purchased`, `item_sold`, `hero_purchased`, `hero_sold`, `trainer_purchased`, `trainer_sold`, `facility_upgraded`, `facility_downgraded`, `facility_upgrade_cancelled`, `race_optimization_changed`, `item_dismantled`, `financial_crisis_state`, `kingdom_reward_granted` |
 | `all` | no type restriction |
 

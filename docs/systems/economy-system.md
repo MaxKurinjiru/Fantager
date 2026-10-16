@@ -1,8 +1,12 @@
 # Economy System
 
-Reference: [product/overview.md](../product/overview.md#23-economy-system)
+Reference: [product/overview.md](../product/overview.md#economy)
 
-Purpose: Document currencies, sinks/sources, anti-exploit measures and economic invariants.
+Status: Live  
+Screens: [20-finance.md](../screens/20-finance.md), [02-team-dashboard.md](../screens/02-team-dashboard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none
+
+Purpose: Document currencies, sinks/sources, anti-exploit measures and economic invariants. Later product decisions (diminishing returns): [known-issues.md](../product/known-issues.md) § Later product decisions.
 
 ---
 
@@ -37,9 +41,9 @@ Every gold modification is recorded in the `FinancialRecord` entity.
 
 ### Implemented `FinancialRecordType` values
 
-`league_reward`, `arena_revenue`, `summon_fee`, `marketplace_sale`, `marketplace_purchase`, `marketplace_fee`, `dismantle_gain`, `item_repair`, `spell_learning_cost`, `hq_upgrade_cost`, `hq_maintenance_fee`, `morale_restoration`, `debt_repayment`, `hero_dismissal_compensation`, `trainer_dismissal_compensation`, `hq_downgrade_refund`, `hq_upgrade_refund`, `kingdom_reward`, **`hero_salary`**, **`trainer_salary`**
+`league_reward`, `arena_revenue`, `summon_fee`, `marketplace_sale`, `marketplace_purchase`, `marketplace_fee`, `dismantle_gain`, `item_repair`, `spell_learning_cost`, `hq_upgrade_cost`, `hq_maintenance_fee`, `debt_repayment`, `hero_dismissal_compensation`, `trainer_dismissal_compensation`, `hq_downgrade_refund`, `hq_upgrade_refund`, `kingdom_reward`, **`hero_salary`**, **`trainer_salary`**
 
-`spell_slot_cost` remains in the enum for legacy/history only — magic capacity expands via training; the ledger type is never written.
+**Reserved / unused (A6.2):** `spell_slot_cost` (magic capacity expands via training) and `morale_restoration` (no gold sink). Keep the enum cases and column; do not write them. `/app/finance` type filters use `FinancialRecordType::liveCases()`.
 
 ---
 
@@ -88,6 +92,8 @@ Each team has a **`fan_base`** (default 350, range 0–10 000) that drives arena
 | **Show-up rate** | On demand | Short-term multiplier from reputation, morale, chemistry — used by `ArenaRevenueService` |
 
 Attendance formula (home match): home fans × show-up rate + away fans × 35% travel rate, capped by arena seating capacity.
+
+Payout context (`attendance`, `capacity`, `ticket_price`, opponent) is stored on `FinancialRecord` (`arena_revenue`). The HQ arena panel charts the last **18** of those rows ([#4](../product/known-issues.md) Resolved / A7.8). See [18-arena-management.md](../screens/18-arena-management.md#locked-attendance-analytics).
 
 ---
 
@@ -141,7 +147,7 @@ Economy features are **not** merged into a single page. The sidebar exposes two 
 | `GET /app/marketplace` | `Web\MarketplaceController` | Marketplace tabs: browse, sell, my listings, transaction history, basic equipment |
 | `GET /app/finance` | `Web\FinanceController` | Financial ledger with type/actor filters and overview summary |
 
-See [screens/15-marketplace.md](../screens/15-marketplace.md) and [architecture/routes.md](../architecture/routes.md#economy--marketplace).
+See [screens/20-finance.md](../screens/20-finance.md), [screens/15-marketplace.md](../screens/15-marketplace.md), and [architecture/routes.md](../architecture/routes.md#economy--marketplace).
 
 ---
 
