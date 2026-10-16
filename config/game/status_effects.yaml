@@ -25,6 +25,7 @@ effects:
     type: debuff
     school: Air
     duration_turns: 2
+    # Initiative sort only (not AP). See combat-system.md Speed / Initiative.
     speed_reduction_percent: 30
     stackable: false
 
@@ -91,6 +92,7 @@ effects:
     type: buff
     school: Air
     duration_turns: 2
+    # Initiative sort only (not AP). See combat-system.md Speed / Initiative.
     speed_bonus_percent: 30
     stackable: false
 

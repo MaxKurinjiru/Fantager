@@ -2,9 +2,9 @@
 
 Reference: [screens/overview-legacy.md](overview-legacy.md#12-combatbattle-screen) (historical), [combat-system.md](../systems/combat-system.md), [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
-**When:** Watch a **completed** match. Combat is fully automated — players do **not** issue mid-battle actions. Pre-match behaviour is set on [Formation Setup](07-formation-setup.md) (`approach` now; targeting / spell priorities later — A7.6).
+**When:** Watch a **completed** match. Combat is fully automated — players do **not** issue mid-battle actions. Pre-match behaviour is set on [Formation Setup](07-formation-setup.md) (`approach`, movement goal, per-slot L1/L2 — A7.6 / [#12](../product/known-issues.md)).
 
-**Status:** Implemented at `/app/battles/{id}` (`Web\BattleController`, `templates/battle/index.html.twig`). Post-match replay only (no live / in-progress match UI). HUD extras (logos, match-type label, morale, initiative queue, skip-to-end) stay on the **Still open** list — not live. Leftovers: [#9](../product/known-issues.md) / A7.5.
+**Status:** Implemented at `/app/battles/{id}` (`Web\BattleController`, `templates/battle/index.html.twig`). Post-match replay only (no live / in-progress match UI). Replay HUD lock: [Locked: replay HUD](#locked-replay-hud). Combat leftovers [#9](../product/known-issues.md) Resolved (A7.5).
 
 ---
 
@@ -25,11 +25,12 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#12-combatbattle-scree
 
 **Match HUD**
 
-- Home and away **team names**
+- Home and away **team names** and **emblems** (`Team.emblem`, fallback shield glyph)
+- Match-type label: League or Friendly (`Battle.matchType`; not Arena / Dungeon)
 - Kill score (`scoreA` : `scoreB`)
 - Result badge: winner / loser / draw (from `Battle.result`)
 
-Not in the HUD: team logos, match-type label (League / Friendly / …), morale, remaining-heroes sidebar, formation-integrity meter.
+Not in the HUD: morale widget, initiative queue, remaining-heroes sidebar, formation-integrity meter, skip-to-end, hex debug labels, second formation grid.
 
 **Hex replay** (when `Battle.runState` is present)
 
@@ -47,7 +48,7 @@ Not in the HUD: team logos, match-type label (League / Friendly / …), morale, 
 
 - When `run_state` is null: forfeit copy instead of the canvas (`league.forfeit_desc`)
 
-Participant teams only (access denied otherwise). `LeagueFixture` is loaded in the controller but **not** shown as match-type / round chrome.
+Participant teams only (access denied otherwise). Match type comes from `Battle.matchType`. Do not invent a fixture round number in the HUD.
 
 ### Actions
 
@@ -57,7 +58,7 @@ Replay controls only — **no** Perform Action, target selection, Auto-Battle to
 - Step forward / back
 - Scrubber (seek by round)
 - Speed ×1 / ×2 / ×4
-- Return to League (`/app/league`)
+- Return: League → `/app/league`; Friendly → `/app/friendly-matches` (history tab)
 
 There is **no** skip-to-end button (the scrubber already seeks). No post-match detailed-stats panel on this page.
 
@@ -74,22 +75,17 @@ Canonical `combat_log` format: [combat-system.md — Simulation Contract](../sys
 
 ---
 
+## Locked: replay HUD
+
+**#9 HUD slice (A7.5, 16 Oct 2026).** Live chrome is emblems, League/Friendly label, and a contextual back link. Cut from this screen (do not re-add without a new product decision): morale widget, initiative queue, team-stats sidebar, skip-to-end, hex coordinate debug labels, unused formation-grid sketch.
+
+Kickoff `morale` on the combat snapshot is not a replay HUD. In-combat `morale_change` is **Cut** (#9). Turn order stays in the accordion (`turn_start`); do not add a second initiative queue. Engine, log format, round-200 / fumble / KO≠death stay locked.
+
 ## Still open
 
-Design list, not in steps 2–7 (A7.5 / #9):
+None for this screen. Race synergy and `POST /api/v1/combat/simulate` are **Cut** ([#9](../product/known-issues.md) Resolved / A7.5). Haste/Shock **do** change turn order (initiative sort only). `turn_start.initiative` includes the YAML speed modifier. Do not add an initiative queue HUD.
 
-- Team logos
-- Match-type label
-- Morale indicators
-- Initiative / speed-order queue
-- Team-stats sidebar
-- Skip-to-end button (scrubber already seeks)
-- Log accordion uses event type `spell` (i18n key remains `battle.spell_cast`)
-- Haste/Shock may show as status in the log without changing turn order (see [combat-system.md](../systems/combat-system.md#speed--initiative-init))
-- Hex coordinate debug labels are not drawn on the replay canvas
-- `POST /api/v1/combat/simulate` sandbox
-
-Do not change locked round-200 / fumble / KO≠death rules.
+Log accordion uses event type `spell` (i18n key remains `battle.spell_cast`). Do not change locked round-200 / fumble / KO≠death rules.
 
 ---
 
@@ -98,4 +94,5 @@ Do not change locked round-200 / fumble / KO≠death rules.
 | Piece | Location |
 |-------|----------|
 | Page | `templates/battle/index.html.twig` |
+| Styles | `assets/styles/components/_battle.scss` |
 | Stimulus | `hex_battle_replay` (canvas), `battle_report` (accordion) |

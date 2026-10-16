@@ -320,13 +320,7 @@ class KingdomInitializationService
     {
         $count = (int) ($teamConfig['heroes_per_team'] ?? 10);
 
-        if (Race::Genie === $teamRace) {
-            // Genie starting roster is restricted to Genie only to prevent hostile pairs among various compatible races.
-            $compatibleRaces = [$teamRace];
-        } else {
-            // Limit hero races to those with at least neutral (>=50) affinity to the team's race.
-            $compatibleRaces = $this->raceConfig->getCompatibleRaces($teamRace, 50);
-        }
+        $compatibleRaces = $this->raceConfig->getCompatibleRacesForAdaptation($teamRace);
 
         $heroes = [];
         for ($i = 0; $i < $count; ++$i) {

@@ -50,7 +50,7 @@
   .paperdoll-grid {
     display: grid;
     grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
+    grid-template-rows: repeat(4, 100px);
     gap: 0.75rem;
     justify-content: center;
     align-content: center;
@@ -105,6 +105,11 @@
     &--hands { grid-row: 3; grid-column: 1; }
     &--ring { grid-row: 3; grid-column: 2; }
     &--feet { grid-row: 3; grid-column: 3; }
+    &--ring_2 { grid-row: 4; grid-column: 2; }
+
+    &--blocked {
+      opacity: 0.7;
+    }
 
     // Rarity border colors
     &--rarity-common { border-color: var(--color-border-strong); }

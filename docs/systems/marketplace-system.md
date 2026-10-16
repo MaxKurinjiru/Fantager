@@ -21,6 +21,21 @@ Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction r
 
 ---
 
+## Locked: listing price band
+
+**#15 Resolved (A7.10 Implement).** `createListing` enforces a band around the suggested price. Do not add a second formula, a bid cap, or a listing with no suggested price.
+
+| Rule | Meaning |
+|------|---------|
+| Suggested | Heroes/trainers: `HeroRatingCalculator::estimateMarketPrice()` (`complex_rating × gold_per_complex_point`, trainers × `trainer_market_multiplier`). Items: `ItemService::estimateMarketPrice()` (catalog commons = 70% of merchant cost; otherwise rarity table). Suggested is at least **1** gold. |
+| Floor / ceiling | `floor = max(1, round(suggested × 0.5))` (−50%). `ceiling = max(floor, round(suggested × 2.0))` (+100%). |
+| Enforce | Buy-now price, auction starting price, and optional auction buyout must each lie in `[floor, ceiling]` (`error.marketplace_price_out_of_range`). Still require gold ≥ 1. |
+| Hint | Sell tab and hero-detail sell panel show suggested + allowed range and a “use suggested” button. HTML `min`/`max` match the band. |
+| Not a bid cap | Auction **bids** may exceed the ceiling. NPC listings use suggested, so they stay in band. |
+| Shared | Same suggested path for player UI and NPC sell (`NpcEconomySimulator`). |
+
+---
+
 ## Buy-Now Flow (`buyListing`)
 
 1. **Ownership check:** buyer cannot be the seller.
@@ -104,5 +119,5 @@ Tax rates are kingdom-specific and configured in `kingdom.marketplace_tax_rate`.
 - [Team Chronicle System](team-chronicle-system.md) — `item_purchased` / `item_sold` events
 - [Item System](item-system.md) — merchant purchase flow, item status lifecycle
 - [Economy System](economy-system.md) — gold deduction / credit (`EconomyService`)
-- [NPC Simulation System](npc-simulation-system.md) — NPC buying and selling. Player buys have no race filter. **Genie dual rule:** NPC hero buys use the summoning compatible pool except a Genie-adapted NPC may buy Genie-only ([A7.9](../roadmap/current.md)).
+- [NPC Simulation System](npc-simulation-system.md) — NPC buying and selling. Player buys have no race filter. NPC hero buys use the shared summoning compatible pool ([summoning-system.md](summoning-system.md#locked-genie-summon-pool)).
 - [Headquarters System](headquarters-system.md) — roster and trainer limits

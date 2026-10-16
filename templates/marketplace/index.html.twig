@@ -38,6 +38,7 @@
          'weapon': 'inventory.slot_weapon'|trans,
          'off_hand': 'inventory.slot_off_hand'|trans,
          'ring': 'inventory.slot_ring'|trans,
+         'ring_2': 'inventory.slot_ring_2'|trans,
          'feet': 'inventory.slot_feet'|trans
      }|json_encode|e('html_attr') }}"
      data-marketplace-statuses-value="{{ {
@@ -89,7 +90,8 @@
          'text_loading': 'js_flash.common.text_loading'|trans,
          'hero_level_short': 'js_flash.common.hero_level_short'|trans,
          'page_info': 'news.page_info'|trans,
-         'label_seller_reputation': 'marketplace.label_seller_reputation'|trans
+         'label_seller_reputation': 'marketplace.label_seller_reputation'|trans,
+         'price_out_of_range': 'error.marketplace_price_out_of_range'|trans
      }|json_encode|e('html_attr') }}">
 
     {% set right_content %}

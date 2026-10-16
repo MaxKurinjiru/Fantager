@@ -57,11 +57,12 @@
 
                 {# Tier Filter #}
                 <div class="form-field-group">
-                    <label for="filter-tier" class="form-label">Tier</label>
+                    <label for="filter-tier" class="form-label">{{ 'spells.filter_tier'|trans }}</label>
                     <select id="filter-tier" name="tier" class="form-input form-input--medium" onchange="this.form.submit()">
                         <option value="">{{ 'marketplace.filter_all'|trans }}</option>
-                        <option value="1" {% if selected_tier == 1 %}selected{% endif %}>Tier 1</option>
-                        <option value="2" {% if selected_tier == 2 %}selected{% endif %}>Tier 2</option>
+                        {% for catalog_tier in catalog_tiers %}
+                            <option value="{{ catalog_tier }}" {% if selected_tier == catalog_tier %}selected{% endif %}>{{ 'spells.tier_label'|trans({'%tier%': catalog_tier}) }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 

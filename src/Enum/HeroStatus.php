@@ -11,5 +11,7 @@ enum HeroStatus: string
     case Selling = 'selling';
     case Recovering = 'recovering';
     case Dead = 'dead';
+
+    /** Reserved / unused (A6.2). No production writer; readers treat Retired like Dead for roster queries. */
     case Retired = 'retired';
 }

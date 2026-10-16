@@ -4,7 +4,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#19-player-profile--se
 
 Purpose: Account-level player settings (distinct from team profile settings on the dashboard).
 
-**Status:** Modal UI is live for language, backdrop-close preference, email change, and account deletion. Password change, notification prefs, and privacy stay **Planned** (A8.6).
+**Status:** Modal UI is live for language, backdrop-close preference, email change, and account deletion. Password change, notification prefs, privacy, account-info panel, and connected accounts stay **Planned** (A8.6 keep Planned).
 
 ## Presentation
 
@@ -79,12 +79,12 @@ Account identity fields remain on **`User`** (`email`, `locale`, `display_name`,
   ```
 - **Errors:** `403` (invalid CSRF), `400` (missing/invalid payload)
 
-Future preferences should extend this endpoint (or add PATCH with partial updates) and corresponding columns on `UserSettings`.
+Do not add password-change, notification, or privacy fields here until a later product decision (A8.6 stay Planned). New live UI prefs (like backdrop-close) may still extend this endpoint or add PATCH with partial updates and corresponding columns on `UserSettings`.
 
 ### Related API
 
 - `GET /api/v1/me` — current player identity (not settings); see [auth-system.md](../systems/auth-system.md)
-- Password change / dedicated `/api/v1/settings` bulk endpoints — not implemented; preferences use `POST /app/settings/preferences` above
+- Password change / dedicated `/api/v1/settings` bulk endpoints stay **Planned** (A8.6); preferences use `POST /app/settings/preferences` above
 
 ## Frontend Implementation
 
@@ -113,3 +113,7 @@ Future preferences should extend this endpoint (or add PATCH with partial update
 
 - `tests/Controller/Web/SettingsControllerTest.php` — CSRF and validation for preferences endpoint
 - `tests/Service/Auth/UserSettingsServiceTest.php` — get-or-create behaviour
+
+## Locked: password change / extra settings stay Planned
+
+Session password change, notification prefs, privacy, account-info panel, and connected accounts stay **Planned**. Do not ship a password-change form, per-type notification toggles, privacy flags, or `GET/PUT /api/v1/settings`. Live settings are language, backdrop-close, email change, and account deletion. Forgotten passwords use `/password-reset`. A later product decision is required before adding any of these.

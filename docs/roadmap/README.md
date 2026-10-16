@@ -2,19 +2,11 @@
 
 ## Now
 
-Docs vs code alignment (waves 0–8): **[current.md](current.md)**. One unchecked step at a time. Do not start Milestone 8/9.
+Docs vs code alignment (waves 0–8): **[current.md](current.md)** — **complete**. Do not invent a next alignment step. Do not start Milestone 8/9.
 
 ## Next (design still open)
 
-Decisions in [product/known-issues.md](../product/known-issues.md) before new formulas or slots:
-
-- #6 Hero XP → level curve
-- #7 Team chemistry (display vs combat)
-- #8 Item occupancy (two-handed, dual-wield, rings)
-- #2 Enchanting redesign
-- #9 Combat leftovers (replay HUD, unused trait hooks)
-- #4 Arena analytics UI (alignment A7.8)
-- #10 Formation save validation
+Decisions in [product/known-issues.md](../product/known-issues.md) before new formulas or slots (all numbered rows Resolved). Wave 8 done: A8.1 PHPUnit in CI; A8.2 Playwright **Cut**; A8.3 `GET /health`; A8.4 legacy DB **Parked**; A8.5 public wiki **Planned**; A8.6 password change / extra settings **Planned**.
 
 Per-feature leftover steps belong in the matching `systems/*.md` Remaining work section, not in a second checklist here.
 

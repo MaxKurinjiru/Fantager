@@ -15,6 +15,12 @@ enum FacilityType: string
     case Arena = 'arena';
 
     /**
+     * Computed on Summoning Chamber but unread by HeroGenerator (A6.5).
+     * Live total cap is 60% of per-stat ceilings. Do not show as an HQ bonus.
+     */
+    public const UNREAD_PASSIVE_BONUS_KEYS = ['summon_stat_total_cap'];
+
+    /**
      * Get the passive bonuses for this facility type at a given level.
      *
      * @return array<string, float>
@@ -37,5 +43,26 @@ enum FacilityType: string
         }
 
         return $result;
+    }
+
+    public static function isUnreadPassiveBonus(string $key): bool
+    {
+        return in_array($key, self::UNREAD_PASSIVE_BONUS_KEYS, true);
+    }
+
+    /**
+     * Strip reserved keys so HQ cards and API `passive_bonuses` only show live effects.
+     *
+     * @param array<string, float|int> $bonuses
+     *
+     * @return array<string, float|int>
+     */
+    public static function withoutUnreadBonuses(array $bonuses): array
+    {
+        foreach (self::UNREAD_PASSIVE_BONUS_KEYS as $key) {
+            unset($bonuses[$key]);
+        }
+
+        return $bonuses;
     }
 }

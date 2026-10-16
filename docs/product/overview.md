@@ -47,7 +47,7 @@ A **Kingdom** is a shared game world in one application: rows are scoped by **`k
 | **Marketplace Tax Rate** | Yes | Fee on sales, routed to the Royal Treasury |
 | **Season Length** | Yes | League season is **77 days** (11 weeks) — [calendar-system.md](../systems/calendar-system.md) |
 | **Max Player Capacity** | Yes | Derived from `league_tiers_config` |
-| **Level Cap / XP Modifier** | Unused | Stored on `Kingdom`; no production level-up yet ([known-issues #6](known-issues.md)) |
+| **Level Cap / XP Modifier** | Yes | Cap **20**; `xp_modifier` multiplies match XP at award ([known-issues #6](known-issues.md)) |
 
 ---
 
@@ -79,11 +79,11 @@ Gold is the **sole** live currency. Training has **no gold cost** (fatigue is th
 
 | Live | Not live (do not treat as shipped) |
 |:---|:---|
-| Kingdom marketplace tax → Royal Treasury | **Diminishing returns** on repeated actions (planned in economy-system) |
-| Time-gated match/tick income; scaling HQ upgrade costs | **Price floor / ceiling** and suggested-price algorithms ([A7.10](../roadmap/current.md)) |
+| Kingdom marketplace tax → Royal Treasury; listing price band (−50% / +100% of suggested) | **Diminishing returns** on repeated actions (planned in economy-system) |
+| Time-gated match/tick income; scaling HQ upgrade costs | — |
 | Fatigue / form limits on hero use | **Email / trade anti-fraud** beyond the ledger (auth + inactivity email only) |
 | Hero aging (non-Undead) on daily tick | Cross-kingdom trading |
-| Listings expire on daily reset | Level-banded “early/mid/late game” gold phases (no production `levelUp()`, [#6](known-issues.md)) |
+| Listings expire on daily reset | Level-banded “early/mid/late game” gold phases |
 
 Marketplace: gold-only hero and item listings; seller pays tax; no cross-kingdom trade (`kingdom_id` scope). Details: [marketplace-system.md](../systems/marketplace-system.md).
 
@@ -107,7 +107,7 @@ See [financial-crisis-system.md](../systems/financial-crisis-system.md).
 
 Live rules: [hero-system.md](../systems/hero-system.md). Rating: [hero-rating-system.md](../systems/hero-rating-system.md).
 
-Heroes are roster units: **race**, primary attributes **1–20**, form / fatigue / morale, equipment, and spells. There are **no classes** and **no rarity**. Match XP writes `Hero.xp`; **displayed level does not increase** until an XP curve is designed ([known-issues #6](known-issues.md)). Optional **trait** on generation — [hero-system.md](../systems/hero-system.md#hero-traits).
+Heroes are roster units: **race**, primary attributes **1–20**, form / fatigue / morale, equipment, and spells. There are **no classes** and **no rarity**. Match XP writes lifetime `Hero.xp` and raises stored `Hero.level` on the locked curve ([known-issues #6](known-issues.md)). Optional **trait** on generation — [hero-system.md](../systems/hero-system.md#hero-traits).
 
 ### Playable Races
 
@@ -124,7 +124,7 @@ Heroes are roster units: **race**, primary attributes **1–20**, form / fatigue
 
 ### Race Relationships
 
-Affinities **0–100** live in `config/game/race_relations.yaml`. **Team chemistry** from the matrix is **display-only** until [#7](known-issues.md). In-combat race-synergy tables are **not** in the engine ([#9](known-issues.md)).
+Affinities **0–100** live in `config/game/race_relations.yaml`. **Team chemistry** from the matrix is **flavor for matches** ([#7](known-issues.md) Resolved) — live for dashboard, fan club / attendance, and league tie-break. In-combat race-synergy tables are **Cut** ([#9](known-issues.md) Resolved).
 
 | Range | Tier | Live meaning |
 |:---:|:---|:---|
@@ -132,7 +132,7 @@ Affinities **0–100** live in `config/game/race_relations.yaml`. **Team chemist
 | **70–89** | Positive | Positive chemistry pairing; arena adaptation and training group bonus can include these races |
 | **50–69** | Neutral | No chemistry bonus or penalty |
 | **21–49** | Negative | Reduced chemistry |
-| **0–20** | Hostile | −15 chemistry per hostile pair (display-only until #7). Weekly training applies a group penalty when a hostile pair shares a trainer |
+| **0–20** | Hostile | −15 chemistry per hostile pair (flavor for matches). Weekly training applies a group penalty when a hostile pair shares a trainer |
 
 ### Relationship Matrix
 
@@ -147,9 +147,9 @@ Affinities **0–100** live in `config/game/race_relations.yaml`. **Team chemist
 | **Ent** | 70 | 100 | 30 | 0 | 20 | 40 | 100 | 60 |
 | **Genie** | 80 | 80 | 60 | 60 | 70 | 60 | 60 | 100 |
 
-Live uses of the matrix (not in-combat synergy): summoning compatibility, arena-adaptation training bonus, weekly training **group** modifier, chemistry number on the dashboard.
+Live uses of the matrix (not in-combat synergy): summoning compatibility, arena-adaptation training bonus, weekly training **group** modifier, chemistry number (dashboard, fan club, league tie-break).
 
-**Genie dual rule (live until [A7.9](../roadmap/current.md)):** **Players** use relationship ≥ 50 (Genie scores ≥ 50 with every other race, so a Genie-adapted team can summon all races). **NPC marketplace** hero buys may apply a stricter Genie-only filter. Unifying those paths is a product decision — [summoning-system.md](../systems/summoning-system.md), [npc-simulation-system.md](../systems/npc-simulation-system.md).
+**Genie summon pool ([#14](known-issues.md) Resolved / A7.9):** compatible races use relationship **≥ 50**, except Genie adaptation uses **≥ 80** (live pool: Genie, Human, Elf). Same pool for player summons, NPC daily summons, NPC hero buys, and kingdom starting roster — [summoning-system.md](../systems/summoning-system.md#locked-genie-summon-pool).
 
 ### Primary Attributes
 
@@ -161,7 +161,7 @@ Live uses of the matrix (not in-combat synergy): summoning compatibility, arena-
 | Speed | SPD | Initiative / turn order |
 | Intelligence | INT | Spell power |
 | Willpower | WIL | Magic resistance |
-| Charisma | CHA | Buffers **post-match** morale deltas. Chemistry CHA offset is display-only ([#7](known-issues.md)). No trade or event bonus |
+| Charisma | CHA | Buffers **post-match** morale deltas. Chemistry CHA offset is live in the chemistry formula (feeds fan club / tie-break; not combat). No trade or event bonus |
 | Luck | LCK | Crit, accuracy, dodge in combat. No loot drops or world-event outcomes |
 
 **Range:** integer **1–20** for heroes and trainers. Race flat bonuses and Thursday training stay inside that cap. Formulas: [combat-system.md](../systems/combat-system.md).
@@ -173,7 +173,7 @@ Live uses of the matrix (not in-combat synergy): summoning compatibility, arena-
 | **Age** | Yes — daily tick (non-Undead), KO aging after matches, trainer aging on the training tick |
 | **Form** | Yes — starting HP in combat; Form training recovers it |
 | **Fatigue** | Yes — scales KON in combat; attribute/magic training adds +20; Form training reduces it. Fatigue **100 does not** block the weekly tick |
-| **Morale** | Yes — kickoff outgoing-damage band; post-match updates. Mid-combat morale events are deferred ([#9](known-issues.md)) |
+| **Morale** | Yes — kickoff outgoing-damage band; post-match updates. Mid-combat morale events are Cut ([#9](known-issues.md)) |
 
 ### Equipment & Magic Attributes
 
@@ -184,14 +184,14 @@ Live uses of the matrix (not in-combat synergy): summoning compatibility, arena-
 
 ### Equipment Slots
 
-Live slots (**8**, one ring) — [item-system.md](../systems/item-system.md). Occupancy (two-handed occupying both hands, dual-wield, two rings) is **open** ([#8](known-issues.md)). Until then: `equip()` only clears the target slot.
+Live slots (**9**, two rings) — [item-system.md](../systems/item-system.md#locked-item-occupancy). Occupancy is **locked** ([#8](known-issues.md)).
 
 | Slot | Type |
 |:---|:---|
 | **Main Hand** | Weapon |
-| **Off-Hand** | Shield, Spell Accelerator, or a second weapon (no auto-clear of the other hand) |
+| **Off-Hand** | Shield, Spell Accelerator, or a dual-wielded one-hander |
 | **Armor** | Head, Body, Hands, Feet |
-| **Accessories** | 1 Amulet + **1 Ring** |
+| **Accessories** | 1 Amulet + **2 Rings** |
 
 ### Age System
 
@@ -237,7 +237,7 @@ KO in a match is **not** always permanent death. Post-match: years are added (in
 
 | Live | Not live |
 |:---|:---|
-| League result updates team morale and hero morale (lineup vs reserves) | Mid-combat `morale_change` (ally death, crits, CHA rallies) — [#9](known-issues.md) |
+| League result updates team morale and hero morale (lineup vs reserves) | Mid-combat `morale_change` (ally death, crits, CHA rallies) — **Cut** ([#9](known-issues.md)); Volatile / Battle Hardened copy is flavor |
 | Lineup average CHA **buffers** those post-match deltas | Fleeing / refusing orders |
 | Kickoff **outgoing damage** band from hero morale ([§2.10](#210-combat-system)) | Accuracy / resistance / training-efficiency from morale |
 | Friendly matches skip morale deltas | Win-streak / derby / relegation-pressure morale ([§2.12](#212-league-system)) |
@@ -306,15 +306,15 @@ Live engine hooks only ([combat-system.md](../systems/combat-system.md)). Other 
 | Ent | **Yes** — +20% KON for HP and armor; **7-hex flower** footprint |
 | Genie | No spell-effectiveness race bonus in the engine |
 
-Two-hand / dual-wield occupancy is still [#8](known-issues.md).
+Two-hand / dual-wield occupancy is locked ([#8](known-issues.md)).
 
 ### Level vs match XP
 
 | Mechanic | Live? |
 |:---|:---|
 | **Starting level / age / stats** | Yes — level **1**, age in [Min Age, Max Junior Age], race flat bonuses, attributes 1–20 |
-| **Match XP** | Yes — league and friendly matches add to `Hero.xp` (Library `xp_gain_pct` multiplies that XP only) |
-| **Level-up** | **No** — `HeroService::levelUp()` is never called in production. Displayed level stays at generation ([#6](known-issues.md)) |
+| **Match XP** | Yes — league and friendly matches add to `Hero.xp` (Library `xp_gain_pct` and `Kingdom.xp_modifier` multiply at award) |
+| **Level-up** | Yes — stored `Hero.level` from lifetime XP (package B; training still owns 1–20 stats) ([#6](known-issues.md)) |
 | **XP from training / crafting / events** | **No** — training has no XP; crafting is deferred |
 
 ---
@@ -335,7 +335,7 @@ Training is trainer-centric: configure a trainer’s focus, assign heroes, wait 
 
 Attribute gain uses trainer value, difference, difficulty, Training-facility `training_efficiency_pct`, race `training_speed_modifier`, arena adaptation, group race mix, kingdom `game_speed`, and trait (Quick Learner / Slacker / Perfectionist). Formula: [training-system.md](../systems/training-system.md#1-attribute-training).
 
-**Not in the tick:** age-phase efficiency, hero/team morale, form as a gain penalty, chemistry ([#7](known-issues.md)).
+**Not in the tick:** age-phase efficiency, hero/team morale, form as a gain penalty, chemistry as a training multiplier ([#7](known-issues.md) Resolved — flavor).
 
 ### Trainers
 
@@ -355,7 +355,7 @@ Promotion is **permanent** (cannot fight again; stats frozen). Promote via train
 |:---|:---|
 | Training facility `training_efficiency_pct` | Made-up +5–25% bands |
 | Arena: ×1.10 adapted race, ×1.05 relationship ≥ 70 | Training penalty from arena hostility |
-| Group: +0.05 if another trainee is ≥ 70, −0.15 if ≤ 20 (hostile) | Chemistry as a training multiplier ([#7](known-issues.md)) |
+| Group: +0.05 if another trainee is ≥ 70, −0.15 if ≤ 20 (hostile) | Chemistry as a training multiplier (cut; [#7](known-issues.md) Resolved) |
 | Kingdom `game_speed` | Age-phase / morale / low-form gain tables |
 | Trait training multipliers | Junior “bonus efficiency” |
 
@@ -375,7 +375,7 @@ One player, one team (1:1). NPC teams fill unused kingdom slots until a player c
 | **Minimum to play** | **6** combat-ready heroes (available, not trainers, not dead) |
 | **Understaffed** | No simulation — opponent **3–0**; both sides understaffed → **0–0** draw |
 
-Kickoff eligibility is **roster size**, not “formation saved with 6 unique heroes”. Save rules: [§2.6.1](#261-formation-system).
+Kickoff eligibility is whether the team can **field** 6 unique combat-ready heroes (assigned lineup, else default, else roster fill). Save still allows empty slots. Save rules: [§2.6.1](#261-formation-system).
 
 ### Team Components
 
@@ -394,9 +394,9 @@ Kickoff eligibility is **roster size**, not “formation saved with 6 unique her
 | **Team Morale** | Yes — post-match; not an average of hero morale ([§2.4](#24-hero-system)) |
 | **Team Reputation** | Yes — match results (not world events) |
 | **Win/Loss Record** | Yes |
-| **Team Chemistry** | Display-only from race pairs ([#7](known-issues.md)). Combat does not read it |
+| **Team Chemistry** | Flavor for matches from race pairs ([#7](known-issues.md) Resolved). Combat does not read it. Live for dashboard, fan club, league tie-break |
 
-**Not live:** in-combat race synergy, CHA offset of hostile pairs **in combat**, team-wide buffs from world events.
+**Not live:** in-combat race synergy (Cut, [#9](known-issues.md)), CHA offset of hostile pairs **in combat**, team-wide buffs from world events.
 
 ---
 
@@ -425,22 +425,22 @@ Role labels (melee / ranged / healer) are **not** a saved system — only attrib
 | Formation name; one **default** | Yes |
 | **Approach** (`aggressive` / `balanced` / `defensive`) | Yes — engine uses it for default target order and L0 heal threshold |
 | **Movement goal** (copied onto every slot) | Yes |
-| Per-slot `target_order` / `fallback` | **No** — engine may read L1 JSON if present (NPC tactics can fill it) |
-| Per-slot `spell_priorities` | **No** — UI always saves `[]`; L0 pick or NPC-filled list |
+| Per-slot `target_order` / `fallback` | **Yes** — click a pitch slot (A7.6 / [#12](known-issues.md)). Empty = L0 approach |
+| Per-slot `spell_priorities` | **Yes** — thin L2 for equipped spells. Empty = L0 pick |
 | Action sequences, defend/flee, conditional tactics | **No** — L3 deferred |
 | Clone, suggested/auto-fill formation | **No** |
-| Sandbox `POST /api/v1/combat/simulate` | **No** ([#9](known-issues.md)). **Friendly matches** are a separate live path |
+| Sandbox `POST /api/v1/combat/simulate` | **No** (Cut, [#9](known-issues.md) Resolved). **Friendly matches** are a separate live path |
 
 ### Save vs kickoff
 
-Canonical save rules: [formation-system.md](../systems/formation-system.md#validation-rules). Open decision: [#10](known-issues.md).
+Canonical save rules: [formation-system.md](../systems/formation-system.md#validation-rules). [#10](known-issues.md) resolved (A6.1).
 
 | Check | Live |
 |:---|:---|
 | Saved formation count | Max **4** (temporaries do not count) |
-| Slots on **save** | **0–6** persisted. Duplicate `hero_id` is **not** rejected |
-| Unique 6-hero lineup at save | **Not required** |
-| Match entry | Team must have ≥ 6 combat-ready heroes or the fixture **forfeits** (no simulation) |
+| Slots on **save** | **0–6** persisted. Duplicate `hero_id` is **rejected** (422) |
+| Unique 6-hero lineup at save | **Not required** (empty slots allowed) |
+| Match entry | Kickoff fields 6 unique combat-ready heroes: assigned lineup if match-ready, else default, else roster fill. **Forfeit** only when the team has < 6 combat-ready heroes |
 | During combat | Formation cannot be changed; no substitutions |
 
 ### Approach (engine defaults when `target_order` is empty)
@@ -455,9 +455,9 @@ Canonical save rules: [formation-system.md](../systems/formation-system.md#valid
 
 | Claim | Status |
 |:---|:---|
-| Racial / role **synergy** bonuses | Deferred ([#7](known-issues.md) / [#9](known-issues.md)) |
-| Per-hero targeting essays, dual-wield target lists, Flexible AI | No player editor ([A7.6](../roadmap/current.md)) |
-| Spell-condition editor (On Low Health / On Low Morale / …) | UI writes `[]` |
+| Racial / role **synergy** bonuses | Cut ([#9](known-issues.md) Resolved) |
+| Per-hero targeting essays, dual-wield target lists, Flexible AI | Cut — live editor is ordered enemy slots + fallback ([#12](known-issues.md)) |
+| Spell-condition editor (On Low Health / On Low Morale / …) | Thin L2 only (`always` / ally or self HP below). Morale / `enemy_status` Cut |
 | Mid-match formation switch or substitution | L3 deferred |
 | Suggested formations, clone, simulate sandbox | Not in UI / API |
 
@@ -475,11 +475,11 @@ Each team has one **Headquarters** with **7 facilities** (no Forge). Facilities 
 |:---|:---|
 | **Training** | Weekly attribute-training `training_efficiency_pct` |
 | **Medical** | Daily `fatigue_reduction_pct` and form `recovery_speed_pct` |
-| **Library** | Match XP `xp_gain_pct` only. Does **not** change spell learning cost or school-mastery XP. That XP still does not level up ([#6](known-issues.md)) |
+| **Library** | Match XP `xp_gain_pct` only. Does **not** change spell learning cost or school-mastery XP. That XP now levels heroes ([#6](known-issues.md)) |
 | **Treasury** | `gold_income_pct` on arena ticket gold. No storage-capacity mechanic |
 | **Barracks** | Roster cap: **10 + round(2 × barracks level)**. No team-morale recovery bonus |
-| **Summoning Chamber** | Summon quality (`summon_base_stat_bonus`, `summon_stat_random_bonus`). Cycle limit is `max(1, round(1 × game_speed))` — **not** shortened by upgrades. `summon_stat_total_cap` is stored and **unread** ([A6.5](../roadmap/current.md)) |
-| **Arena** | `ticket_revenue_pct` and seating `arena_capacity` for **home-match ticket gold**. Attendance analytics UI is still open ([#4](known-issues.md)) |
+| **Summoning Chamber** | Summon quality (`summon_base_stat_bonus`, `summon_stat_random_bonus`). Cycle limit is `max(1, round(1 × game_speed))` — **not** shortened by upgrades. `summon_stat_total_cap` is computed, **unread**, and omitted from HQ/API bonus lists (A6.5) |
+| **Arena** | `ticket_revenue_pct` and seating `arena_capacity` for **home-match ticket gold**. Attendance analytics (last 18 payouts) live in the HQ arena panel ([#4](known-issues.md) Resolved) |
 
 ### Arena adaptation
 
@@ -487,7 +487,7 @@ One preferred race (`race_optimization`). Changes wait for the Sunday `race_opti
 
 | Live | Not live |
 |:---|:---|
-| Summoning pool = adapted race plus relationship ≥ 50 (all 8 if unset). Genie can summon all races; NPC marketplace may use a stricter Genie-only filter ([A7.9](../roadmap/current.md)) | Training penalty for hostile races |
+| Summoning pool = adapted race plus relationship ≥ 50 (all 8 if unset). Genie adaptation ≥ 80 → Genie / Human / Elf ([#14](known-issues.md)) | Training penalty for hostile races |
 | Thursday training: ×1.10 same race, ×1.05 relationship ≥ 70, else ×1.0 | Extra fatigue / form / morale decay from adaptation |
 
 ### Upgrades & maintenance
@@ -521,18 +521,18 @@ Live rules: [item-system.md](../systems/item-system.md).
 
 Items carry **attribute bonuses** and **durability**. Live sources: **merchant** (fixed-price basics) and **marketplace** (player listings). Crafting and loot drops are **deferred**.
 
-### Equipment slots (8)
+### Equipment slots (9)
 
-Canonical slots — [item-system.md](../systems/item-system.md). Occupancy (two-handed occupying both hands, dual-wield, two rings) is **open** ([#8](known-issues.md)). Until then: `ItemService::equip()` only clears the **target** slot.
+Canonical slots — [item-system.md](../systems/item-system.md#locked-item-occupancy). Occupancy is **locked** ([#8](known-issues.md)).
 
 | Slot | Type |
 |:---|:---|
 | **Main Hand** | Weapon (`main_hand`) |
-| **Off-Hand** | Shield, Spell Accelerator, or a weapon whose `slot_type` is `off_hand` |
+| **Off-Hand** | Shield, Spell Accelerator, or a dual-wielded one-hander |
 | **Armor** | Head, Body, Hands, Feet |
-| **Accessories** | 1 Amulet + **1 Ring** |
+| **Accessories** | 1 Amulet + **2 Rings** (`ring`, `ring_2`) |
 
-Two-handed `sub_type` values exist on items; they do **not** auto-clear `off_hand`. Giants still cannot equip off-hand; Ents accessories only ([§2.4](#24-hero-system)).
+Two-handed subtypes (`two_handed_*`, bow, crossbow, staff) clear `off_hand`. Giants still cannot equip off-hand; Ents accessories only ([§2.4](#24-hero-system)).
 
 ### Rarity
 
@@ -547,7 +547,7 @@ Two-handed `sub_type` values exist on items; they do **not** auto-clear `off_han
 | Repair | Gold to 100; cost = missing points × rarity rate |
 | Dismantle | Unequipped `available` item → gold scrap by rarity |
 | Marketplace escrow | `status = selling` — cannot equip or dismantle until cancelled |
-| Enchanting | **Not designed** ([#2](known-issues.md)). No essence |
+| Enchanting | **Not in the live game** (A7.4 Cut / [#2](known-issues.md) Resolved). No essence |
 
 ---
 
@@ -564,33 +564,33 @@ Learn for **gold only** (`spell_learning_cost`). No essence. Library HQ does **n
 | **Magic Capacity** | Equipped spell slots **1–5**; Thursday Magic training raises it |
 | **School Mastery** | Per school (Fire, Water, Air, Earth, Light, Dark). Learn requires mastery ≥ spell `required_mastery_tier`. Mastery XP comes from **combat**, not Magic training |
 
-Seeded catalog is **Tier 1–2**. Mastery can still reach **Tier 5**; T3–T5 spells are unused until [A7.11](../roadmap/current.md). Offensive seeded spells set `requires_magical_weapon`.
+Seeded catalog is **Tier 1–5** (two spells per school per tier). Offensive seeded spells set `requires_magical_weapon`. Lock: [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5).
 
 ### Types
 
 `SpellType`: **Offensive**, **Defensive**, **Utility**. Seeded effects include damage, heal, burn/freeze/shock/haste/shield/curse, cleanse, and Dark life drain. There is **no** summon-creature spell. Mid-combat **Resurrection** is **deferred**.
 
-When formation `spell_priorities` is empty, the engine uses the **L0** pick (heal under the approach threshold, else highest-tier offense). Player UI always saves `[]` ([§2.6.1](#261-formation-system)).
+When formation `spell_priorities` is empty, the engine uses the **L0** pick (heal under the approach threshold, else highest-tier offense). Players may set a thin equipped-spell list per slot ([§2.6.1](#261-formation-system), [#12](known-issues.md)).
 
 ### Schools (live hooks only)
 
 | School | Notes |
 |:---|:---|
-| **Fire / Water / Air / Earth** | Seeded T1–T2 as above |
+| **Fire / Water / Air / Earth** | Seeded T1–T5 as above |
 | **Light** | Heal / bless / cleanse; holy extra vs Undead on seeded Light heal. **No** revive |
 | **Dark** | Curse and life drain. External heals from **non-Undead** casters are blocked on Undead ([§2.4](#24-hero-system)) |
 
-INT feeds spell power for everyone. **No** extra Genie/Elf spell-effectiveness race hook in the engine. Haste/Shock may apply as statuses; they do **not** change initiative yet ([#9](known-issues.md)).
+INT feeds spell power for everyone. **No** extra Genie/Elf spell-effectiveness race hook in the engine. Haste/Shock change the per-round initiative **sort** (YAML speed percents, not AP) ([#9](known-issues.md) Haste/Shock lock).
 
 ---
 
 ## 2.10 Combat System
 
-Live rules: [combat-system.md](../systems/combat-system.md). Open leftovers: [#9](known-issues.md).
+Live rules: [combat-system.md](../systems/combat-system.md). Combat leftovers [#9](known-issues.md) Resolved (A7.5).
 
 Turn-based, **fully automated**. Players set formation **before** kickoff; there is no mid-battle input. The UI is a **replay** of `combat_log` at `/app/battles/{id}`. League Tue/Fri and friendly Wed/Sun use the same engine.
 
-**Live inputs:** primary stats, equipment (scaled by durability), form (starting HP), fatigue (effective KON), kickoff morale (outgoing damage), Orc/Ent race hooks ([§2.4](#24-hero-system)). Displayed **level** is in the HP formula but stays at generation until [#6](known-issues.md). **Age** is post-match KO aging / mortality, not an in-combat stat curve.
+**Live inputs:** primary stats, equipment (scaled by durability), form (starting HP), fatigue (effective KON), kickoff morale (outgoing damage), Orc/Ent race hooks ([§2.4](#24-hero-system)). Stored **level** is live truth ([#6](known-issues.md) Resolved). **Age** is post-match KO aging / mortality, not an in-combat stat curve.
 
 ### Combat flow
 
@@ -621,16 +621,16 @@ League table points (Win **3**, Draw **1**, Loss **0**) come from winner / loser
 
 Kickoff **outgoing damage** band on physical and offensive-spell damage (heals unchanged): 80–100 ×1.20, 60–79 ×1.10, 40–59 ×1.00, 20–39 ×0.90, 0–19 ×0.80.
 
-Team morale updates **post-match** from the result. Mid-battle `morale_change` (ally death, crits, CHA rallies) and Volatile / Battle Hardened in-combat hooks are **deferred** ([#9](known-issues.md)).
+Team morale updates **post-match** from the result. Mid-battle `morale_change` (ally death, crits, CHA rallies) and Volatile / Battle Hardened in-combat hooks are **Cut** ([#9](known-issues.md)) — player copy is flavor; `moraleDecayMultiplier` is unused. Kickoff outgoing-damage band still applies.
 
 ### Not live (do not treat as shipped)
 
 | Claim | Status |
 |:---|:---|
-| Replay HUD: logos, match type, morale widget, initiative queue, skip-to-end | Open ([#9](known-issues.md)) |
+| Replay HUD: morale widget, initiative queue, skip-to-end, team-stats sidebar | Cut ([#9](known-issues.md) HUD lock). Live: emblems + League/Friendly label |
 | Combat **home advantage** | Not in the engine (arena is ticket gold only) |
-| Haste +30% / Shock −30% on initiative | Design text only |
-| In-combat race synergy; `POST /api/v1/combat/simulate` | Deferred ([#7](known-issues.md) / [#9](known-issues.md)) |
+| Haste +30% / Shock −30% on initiative | Live on the per-round sort; not AP ([#9](known-issues.md) Haste/Shock lock) |
+| In-combat race synergy; `POST /api/v1/combat/simulate` | Cut ([#9](known-issues.md) Resolved) |
 | Live / in-progress match UI | Replay after completion only |
 
 ---
@@ -648,9 +648,9 @@ Same-kingdom **gold** listings: **hero**, **trainer**, and **item**. No cross-ki
 | Roster / trainer caps | Buy and bid check Barracks / Training limits |
 | Auctions | Gold reserved; settle on `daily_reset` when the listing expires |
 | Merchant | Fixed-price basic items (`POST /app/marketplace/buy-basic`); `fee_amount = 0` |
-| Price floor / ceiling / suggested price | **Not live** ([A7.10](../roadmap/current.md)) |
+| Price band | Suggested gold; floor −50% / ceiling +100%; `createListing` rejects out-of-band prices ([#15](known-issues.md)) |
 
-NPC teams also buy and sell on ticks ([npc-simulation-system.md](../systems/npc-simulation-system.md)). Player marketplace buys have **no** race filter. NPC hero buys score compatible races from the summoning pool, except a Genie-adapted NPC team may buy **Genie-only** (dual rule until [A7.9](../roadmap/current.md)).
+NPC teams also buy and sell on ticks ([npc-simulation-system.md](../systems/npc-simulation-system.md)). Player marketplace buys have **no** race filter. NPC hero buys score compatible races from the shared summoning pool ([#14](known-issues.md)).
 
 ---
 
@@ -676,7 +676,7 @@ Friendly matches are a **separate** live path (Wed/Sun) — [friendly-match-syst
 | Promotion / relegation | Slot counts from `league_tiers_config`; cross-group ties use points → goal difference → wins → player over NPC → reputation → chemistry → team id |
 | Season gold | Auto-credited from tier base × position × season growth × promo/releg modifier. Ledger `league_reward` |
 
-Post-match **morale** is the win / draw / loss (and forfeit) delta, CHA-buffered — [§2.4](#24-hero-system). Chemistry is a **tie-break number only** until [#7](known-issues.md).
+Post-match **morale** is the win / draw / loss (and forfeit) delta, CHA-buffered — [§2.4](#24-hero-system). Chemistry is a **tie-break** (and fan-club) number; it does not affect match simulation ([#7](known-issues.md) Resolved).
 
 ### Not live (do not treat as shipped)
 
@@ -725,12 +725,12 @@ Kingdom-scoped social features. Mail and forum do **not** cross kingdoms.
 | Feature | Live |
 |:---|:---|
 | **In-app mail** | Yes — navbar modal (`/api/v1/messages*`). Player-to-player inbox, not a trade protocol (marketplace is [§2.11](#211-marketplace-system)) |
-| **Forum** | Yes — `/app/community` threads and posts. Author can lock. `is_pinned` is stored but has **no write API** ([A6.3](../roadmap/current.md)) |
+| **Forum** | Yes — `/app/community` threads and posts. Author can lock. `is_pinned` is stored and shown if true, but **unsettable** in the app ([A6.3](../roadmap/current.md) Cut) |
 | **News** | Public `/news` archive. Admin / CMS to create articles is **not** implemented (seed / DB) |
 | **Public profiles** | Same-kingdom player and team profile. Team identity, counts, league record. **Not** a roster of hero form / fatigue / level |
 | **Leaderboards** | Kingdom rankings on `/app/league` (standings API). No `/api/v1/leaderboards` |
 | **Content filter** | Yes — blacklist on mail and forum text |
-| **In-app notifications** | Yes — navbar modal; title/body frozen at **write-time locale** ([A6.4](../roadmap/current.md)) |
+| **In-app notifications** | Yes — navbar modal; title/body rendered at **read-time locale** from keys (same pattern as chronicle) |
 
 ### Email (outbound)
 
@@ -740,14 +740,15 @@ Live outbound mail is **auth and inactivity only**. There is **no** email for tr
 |:---|:---|
 | Registration verify, password reset, email change | Trade / marketplace emails |
 | Inactivity warning (21 days) and team release (28 days) — [player-inactivity-system.md](../systems/player-inactivity-system.md) | League-result or world-event emails |
-| | Per-type notification preference emails ([A8.6](../roadmap/current.md)) |
+| | Per-type notification preference emails ([A8.6](../roadmap/current.md) stay Planned) |
 
 ### Not live (do not treat as shipped)
 
 | Claim | Status |
 |:---|:---|
-| Public wiki CMS (`/wiki`) | Planned ([A8.5](../roadmap/current.md)) |
-| Forum pin / unpin for admins | Field only ([A6.3](../roadmap/current.md)) |
+| Public wiki CMS (`/wiki`) | **Planned** ([A8.5](../roadmap/current.md) stay Planned; later product decision) |
+| Session password change / notification prefs / privacy | **Planned** ([A8.6](../roadmap/current.md) stay Planned; later product decision) |
+| Forum pin / unpin | Cut — field + display only; no write API and no admin pin ([A6.3](../roadmap/current.md)) |
 | Cross-kingdom mail or forum | No |
 | Email alerts for trades / league / events | Not implemented |
 

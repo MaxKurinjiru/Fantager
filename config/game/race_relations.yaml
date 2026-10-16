@@ -2,7 +2,10 @@
 # Values 0-100 representing affinity between races
 # 100 = perfect synergy, 50 = neutral, 0 = deep hostility
 # Symmetric pairs only (alphabetical canonical order: raceA < raceB)
-# Affects: team chemistry, marketplace trading bonuses, formation synergy
+# Affects: team chemistry (dashboard, fan club, league tie-break; not combat),
+#          summoning compatibility (Genie adaptation uses ≥ 80; others ≥ 50),
+#          arena-adaptation training, weekly training group modifier.
+# Does not affect: in-combat race synergy (deferred, known-issues #9), formation synergy (not live).
 #
 # Source: docs/product/overview.md §2.4 — Relationship Matrix
 # 8 races → 28 unique pairs (C(8,2))

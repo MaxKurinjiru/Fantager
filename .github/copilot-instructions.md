@@ -8,9 +8,9 @@
 - **Key design**: [architecture/overview.md](../docs/architecture/overview.md), [architecture/api.md](../docs/architecture/api.md), [architecture/entities.md](../docs/architecture/entities.md)
 - **Domain**: [product/overview.md](../docs/product/overview.md), [calendar-system.md](../docs/systems/calendar-system.md)
 - **Known gaps**: [product/known-issues.md](../docs/product/known-issues.md)
-- **Active work**: [roadmap/current.md](../docs/roadmap/current.md) — docs vs code reconciliation (one step at a time)
+- **Active work**: [roadmap/current.md](../docs/roadmap/current.md) — alignment waves 0–8 complete; remaining leftovers in `systems/` Remaining work and `future/`
 - **Roadmap**: [roadmap/history.md](../docs/roadmap/history.md) — historical Milestones 1–9 (M8/M9 parked)
-- **Deferred (do not use actively)**: [`_deferred/`](../_deferred/) — CHANGELOG.md, CONTRIBUTING.md, and legacy-migration.md; parked until the project reaches a stable version. Design brainstorm: [docs/future/notes.md](../docs/future/notes.md).
+- **Deferred (do not use actively)**: [`_deferred/`](../_deferred/) — CHANGELOG.md and CONTRIBUTING.md (parked until a stable version); `legacy-migration.md` parked until the one-shot old-game import immediately before the first production deploy (A8.4). Design brainstorm: [docs/future/notes.md](../docs/future/notes.md).
 
 ## Repo Facts & Environment
 - **Stack**: PHP 8.5 (Symfony 7.4), MariaDB 11.4, Node >=24 (Webpack Encore, Tailwind CSS).
@@ -35,7 +35,7 @@
   3. Search repo-wide for old references and update stale links.
   When adding routes, entities, enums, or features also update [docs/architecture/routes.md](../docs/architecture/routes.md), [docs/architecture/entities.md](../docs/architecture/entities.md), [docs/architecture/screen-code-map.md](../docs/architecture/screen-code-map.md), and the implementation status table in [docs/systems/README.md](../docs/systems/README.md) where applicable.
 - **Incremental Changes**: Make small, reversible changes. Do not change DB/backup/CI infrastructure without consulting maintainers.
-- **No automatic commands**: Do NOT run PHPUnit, Playwright, PHPStan, PHP-CS-Fixer, php-cs, `bash scripts/check-ui-compliance.sh`, `bash scripts/check-backend-docs.sh`, `npm run build`, or any other test, linter, static analyzer, build, or validation command unless the user explicitly requests it. Same rule for Docker commands used only to verify work (see [AGENTS.md](../AGENTS.md)).
+- **No automatic commands**: Do NOT run PHPUnit, PHPStan, PHP-CS-Fixer, php-cs, `bash scripts/check-ui-compliance.sh`, `bash scripts/check-backend-docs.sh`, `npm run build`, or any other test, linter, static analyzer, build, or validation command unless the user explicitly requests it. Same rule for Docker commands used only to verify work (see [AGENTS.md](../AGENTS.md)).
 - **Strict Frontend Adherence**: When modifying or building any frontend code, templates, or styles, the AI Agent **MUST** strictly adhere to [docs/guides/ui-guidelines.md](../docs/guides/ui-guidelines.md) and [docs/guides/ui.md](../docs/guides/ui.md). See [fantager-ui skill](../.cursor/skills/fantager-ui/SKILL.md).
 - **Strict Backend Adherence**: When modifying PHP, services, or API endpoints, follow [docs/guides/backend.md](../docs/guides/backend.md) and [fantager-backend skill](../.cursor/skills/fantager-backend/SKILL.md). See [AGENTS.md](../AGENTS.md) for task routing.
   - **No inline Tailwind/utility classes in Twig for component-level styling**: Always define semantic BEM-inspired CSS classes (e.g. `.block-name`, `.block-name__element`) and implement their styles inside dedicated component SCSS files under `assets/styles/components/` using `@apply` or custom properties. Exceptions: `hidden`, `sr-only`, `group`.

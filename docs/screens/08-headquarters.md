@@ -4,7 +4,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#8-headquarters-screen
 
 **When:** Upgrade the seven facilities, set arena race adaptation, open Arena / Summoning panels.
 
-**Status:** Live at `GET /app/hq`. `/app/arena` and `/app/summon` **redirect** here (`?facility=arena` / `?facility=summoning_chamber`). Visual HQ themes, visitor access, morale-over-time, and combat home-advantage are **not** live. `summon_stat_total_cap` may appear as a bonus label but is unread (A6.5).
+**Status:** Live at `GET /app/hq`. `/app/arena` and `/app/summon` **redirect** here (`?facility=arena` / `?facility=summoning_chamber`). Visual HQ themes, visitor access, morale-over-time, and combat home-advantage are **not** live. `summon_stat_total_cap` is stored/computed and unread — HQ cards and API do **not** show it as a live bonus (A6.5).
 
 **Live UI:** `templates/hq/index.html.twig`, `templates/components/hq/`.
 
@@ -25,7 +25,7 @@ No dedicated “HQ total level” or theme-preview illustration. `computedTotalL
 
 Cards: training, medical, library, treasury, barracks, summoning chamber, arena. Plus a separate **arena adaptation** card.
 
-Each facility card: name, description, level, current passive bonuses and next-level values, upgrade gold cost, upgrade / downgrade. **Manage** only for training (link to `/app/training`), arena, and summoning chamber (panels).
+Each facility card: name, description, level, current **live** passive bonuses and next-level values, upgrade gold cost, upgrade / downgrade. Summoning Chamber cards show `summon_base_stat_bonus` and `summon_stat_random_bonus` only — not `summon_stat_total_cap`. **Manage** only for training (link to `/app/training`), arena, and summoning chamber (panels).
 
 Upgrade in progress: page banner with completion date; **cancel** in the first hour of an upgrade (`POST /api/v1/hq/cancel-upgrade`). Downgrade-lock-cycle warning when set. One facility operation at a time.
 
@@ -59,7 +59,7 @@ Original sketch extras — do not treat as a contract:
 - Separate passive-bonuses summary board (bonuses are on each card)
 - Combat home-advantage as a live match buff
 
-Arena attendance **graphs** beyond the panel tables: [#4](../product/known-issues.md) / A7.8.
+Arena attendance graphs/history live in the arena facility panel ([#4](../product/known-issues.md) Resolved / A7.8).
 
 ---
 
@@ -69,4 +69,4 @@ Arena attendance **graphs** beyond the panel tables: [#4](../product/known-issue
 |-------|----------|
 | Page | `templates/hq/index.html.twig` |
 | Cards / panels | `templates/components/hq/` |
-| Stimulus | `hq`, `arena`, `summoning` |
+| Stimulus | `hq`, `arena`, `arena_analytics`, `summoning` |

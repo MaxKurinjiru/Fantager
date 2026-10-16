@@ -196,6 +196,7 @@ error:
   invalid_attribute: 'Invalid attribute. Valid values: %values%.'
   unknown_attribute: 'Unknown attribute "%attribute%".'
   marketplace_price_positive: Price or starting bid must be positive.
+  marketplace_price_out_of_range: Price must be between %min% and %max% gold.
   marketplace_buyout_higher: Buyout price must be higher than starting bid.
   marketplace_hero_not_found: Hero not found or does not belong to your team.
   marketplace_hero_only_available: Only available heroes can be listed.
@@ -258,6 +259,7 @@ error:
   formation_max_saved: 'Maximum of %max% saved formations allowed.'
   formation_invalid_position: 'Invalid position "%position%".'
   formation_hero_not_on_team: 'Hero %id% not found in your team.'
+  formation_duplicate_hero: The same hero cannot occupy more than one formation slot.
   formation_not_on_fixture: Team is not part of this fixture.
   formation_only_scheduled: Formation can only be changed for scheduled fixtures.
   formation_not_belong_team: Assigned formation does not belong to the team.
@@ -333,7 +335,7 @@ dashboard:
   morale: Team Morale
   morale_desc: Affects hero training efficiency and combat persistence.
   chemistry: Team Chemistry
-  chemistry_desc: Determines combo triggers and synergy bonuses during battles.
+  chemistry_desc: Roster cohesion from race pairings. Helps fan turnout and breaks league ties. Does not affect matches.
   quick_actions: Quick Actions
   stats: Team Statistics
   reputation: Team Reputation
@@ -795,10 +797,10 @@ heroes:
       desc: "+5% arena ticket revenue when fielded in a match."
     battle_hardened:
       name: Battle Hardened
-      desc: Morale drops half as fast when an ally dies.
+      desc: Composed veteran. Does not change combat; kickoff morale and post-match team morale work like any other hero.
     volatile:
       name: Volatile
-      desc: Morale drops twice as fast when an ally dies.
+      desc: Unsteady temperament. Does not change combat; kickoff morale and post-match team morale work like any other hero.
     slacker:
       name: Slacker
       desc: "-15% attribute training speed."
@@ -819,7 +821,7 @@ heroes:
       desc: "+15% crit chance, but -10% dodge."
     loner:
       name: Loner
-      desc: Ignores both positive and negative race synergy bonuses.
+      desc: Independent fighter. Does not change combat; team chemistry still counts this hero like any other combatant.
     overconfident:
       name: Overconfident
       desc: "+10% physical attack, but -8% accuracy."
@@ -835,7 +837,7 @@ summoning:
   summon_junior: Summon Junior Hero
   summon_junior_desc: "Channel your gold to summon a new hero. The summoned hero's race is chosen based on your arena's adaptation and race relations."
   home_theme: Arena Adaptation
-  arena_theme_desc: "Races are drawn based on your arena's adaptation and their relationship/affinity (>= 50) to the selected race."
+  arena_theme_desc: "Races are drawn based on your arena's adaptation and their relationship/affinity to the selected race (usually ≥ 50; Genie adaptation requires ≥ 80)."
   potential_races: Potential Summonable Races
   portal_title: Summoning Portal
   race_placeholder: "Race"
@@ -1006,6 +1008,7 @@ hq:
   bonus_roster_capacity: Roster Capacity
   bonus_summon_base_stat_bonus: Base Stat Summon Bonus
   bonus_summon_stat_random_bonus: Random Stat Summon Bonus
+  # Reserved / unread (A6.5) — not shown on HQ cards or in API passive_bonuses
   bonus_summon_stat_total_cap: Summon Stat Cap
   bonus_ticket_revenue_pct: Ticket Revenue
   bonus_arena_capacity: Grandstands Capacity
@@ -1126,6 +1129,8 @@ inventory:
   repair: Repair
   dismantle: Dismantle
   equip_slot_btn: Equip Slot
+  equip_into_slot: "Equip %slot%"
+  slot_two_hand_held: Held by two-handed weapon
   rucksack_empty: Rucksack is empty
   rucksack_empty_desc: Buy weapons to fill your guild's storage.
   slot_head: Head
@@ -1136,6 +1141,7 @@ inventory:
   slot_weapon: Weapon
   slot_off_hand: Off-Hand
   slot_ring: Ring
+  slot_ring_2: Ring 2
   slot_feet: Boots/Feet
   rarity_common: Common
   rarity_uncommon: Uncommon
@@ -1162,6 +1168,7 @@ inventory:
 spells:
   title: Spellbook & Academy
   tier_label: "Tier %tier%"
+  filter_tier: Tier
   subtitle: Learn new spell scrolls for your heroes and manage their active combat slots.
   slot_empty: "Slot %slot% Empty"
   academy_desc: "In matches, causes effects depending on the magic school."
@@ -1201,7 +1208,7 @@ formation:
     front_3: Front Right
   delete_btn: Delete
   starting_lineup: Starting Lineup
-  starting_lineup_desc: Arrange 6 heroes on the field positions. Drag heroes from pool or use quick assigns.
+  starting_lineup_desc: Arrange 6 heroes on the field positions. Drag heroes from the pool or use quick assigns. Click a slot to edit targeting and spell priorities.
   back_line: "Back Line (Defense / Support)"
   front_line: "Front Line (Attack / Offense)"
   match_strategy: Match Strategy
@@ -1236,6 +1243,35 @@ formation:
   custom_for_match: Custom lineup for this fixture
   promote_match_formation: Save as my formation
   save_match_lineup: Save lineup for fixture
+  tactics_panel_title: Slot tactics
+  tactics_panel_hint: Click a pitch slot to set targeting and spell priorities. Empty lists use the formation approach and the default spell pick.
+  tactics_select_slot: Select a pitch slot to edit its tactics.
+  tactics_empty_hero: No hero assigned
+  tactics_targeting: Focus order
+  tactics_targeting_hint: Preferred enemy slots in order. Leave empty to use the formation approach.
+  tactics_add_target: Add enemy slot
+  tactics_add: Add
+  tactics_fallback: When the focus list is empty or exhausted
+  tactics_fallback_approach: Use formation approach
+  tactics_fallback_lowest_hp: Lowest remaining HP
+  tactics_fallback_highest_threat: Highest physical attack
+  tactics_spells: Spell priorities
+  tactics_spells_hint: Ordered equipped spells. Leave empty to use the default heal-or-highest-offense pick.
+  tactics_assign_hero_spells: Assign a hero to this slot to set spell priorities.
+  tactics_no_spells: This hero has no equipped spells.
+  tactics_add_spell: Add equipped spell
+  tactics_when: When
+  tactics_when_always: Whenever ready
+  tactics_when_ally_hp: Ally HP below
+  tactics_when_self_hp: Own HP below
+  tactics_threshold: HP threshold (%)
+  tactics_spell_target: Target
+  tactics_target_priority: Current focus
+  tactics_target_lowest_ally: Lowest HP ally
+  tactics_target_self: Self
+  tactics_move_up: Move up
+  tactics_move_down: Move down
+  tactics_remove: Remove
 
 js_flash:
   common:
@@ -1477,6 +1513,12 @@ arena:
   revenue_history: Home Match Revenue
   col_opponent: Opponent
   col_attendance: Attendance
+  analytics_window: Last %count% home-match payouts (window of %window%)
+  analytics_total_gold: Ticket gold in window
+  analytics_avg_attendance: Average attendance
+  analytics_chart_label: Attendance and ticket gold over recent home matches
+  axis_attendance: Attendance
+  axis_gold: Gold
   no_revenue_yet: No home match revenue recorded yet. Payouts occur when league matches are played.
   view_full_ledger: View full financial ledger
   how_it_works: How Arena Revenue Works
@@ -1546,6 +1588,7 @@ marketplace:
   filter_seller_reputation_placeholder: Any
   label_seller_reputation: "Rep. %value%"
   suggested_price: Suggested price
+  price_range: Allowed range
   btn_use_suggested_price: Use suggested
   sort_newest: Newest First
   sort_price_asc: "Price: Low-High"
@@ -1906,6 +1949,9 @@ battle:
   no_team: No Team
   unknown_actor: Unknown
   return_to_league: Return to League
+  return_to_friendly: Return to Friendly Matches
+  match_type_league: League
+  match_type_friendly: Friendly
   error_not_found: Battle not found.
   error_unauthorized: You are not authorized to view this battle.
 

@@ -2,9 +2,9 @@
 
 Reference: [product/overview.md](../product/overview.md#26-team-system)
 
-Status: Live (chemistry display-only until [#7](../product/known-issues.md))  
+Status: Live (chemistry flavor for matches — [#7](../product/known-issues.md) Resolved / A7.2)  
 Screens: [02-team-dashboard.md](../screens/02-team-dashboard.md), [02a-team-chronicle.md](../screens/02a-team-chronicle.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: [known-issues.md](../product/known-issues.md) #7 (chemistry), #10 (formation save)
+Open design: none for chemistry. In-combat race synergy is **Cut** ([#9](../product/known-issues.md) Resolved / A7.5).
 
 Purpose: Document team entities, roster rules, dashboard aggregation, and team-related mechanics.
 
@@ -12,7 +12,7 @@ Purpose: Document team entities, roster rules, dashboard aggregation, and team-r
 
 - [x] Roster of 10, NPC claim on register, dashboard, settings, history chart, chronicle, forfeit if understaffed
 - [x] Chemistry formula written to `Team.chemistry` (dashboard / history)
-- [ ] Chemistry as match modifiers or confirmed flavor-only (Design first → #7 / A7.2)
+- [x] Chemistry confirmed flavor-only for matches (A7.2 / #7) — live for dashboard, fan club, league tie-break
 
 ## Starting Roster
 
@@ -24,7 +24,7 @@ Purpose: Document team entities, roster rules, dashboard aggregation, and team-r
 | **Starting level** | **1** (all newly created heroes) |
 | **Starting age** | Random within **[Min Age, Max Junior Age]** per race |
 
-New teams (including NPC teams at Kingdom initialization) receive 10 heroes at level 1 so they can always field a full 6-hero lineup with substitution depth.
+New teams (including NPC teams at Kingdom initialization) receive 10 heroes at level 1 so they can always field a full 6-hero lineup with substitution depth. Starting-hero races use the same compatible pool as summoning for the team's assigned race ([summoning-system.md](summoning-system.md#locked-genie-summon-pool)).
 
 ## Match Eligibility
 
@@ -84,7 +84,7 @@ Fan club size is **not** in that JSON; the Twig banner reads `Team` directly. Hi
 ## Formation integration
 
 - Each NPC/player team is created with a **default formation**. Saved cap is **4** — [formation-system.md](formation-system.md).
-- Kickoff requires ≥ 6 combat-ready heroes on the **team** (not 6 unique filled slots at save). Understaffed teams forfeit 0–3 (see Match Eligibility). Duplicate `hero_id` on save is open [#10](../product/known-issues.md).
+- Kickoff fields 6 unique combat-ready heroes from the assigned lineup, else the default, else the roster ([formation-system.md](formation-system.md#validation-rules)). Save allows 0–6 slots but rejects duplicate `hero_id`. Understaffed teams (< 6 combat-ready) forfeit 0–3 (see Match Eligibility).
 - Dashboard shows saved formation count; lineup editor is `/app/formation`.
 
 ---
@@ -105,11 +105,11 @@ Morale, chemistry, reputation, gold, and ticket price are **not** player-editabl
 
 ## Summary
 
-Teams aggregate heroes, formations, HQ, and economic resources. Team-level stats include morale, chemistry (display-only until [#7](../product/known-issues.md)), and reputation. Roster depth (10 heroes at start) ensures teams can field 6-hero lineups; understaffed teams forfeit matches automatically.
+Teams aggregate heroes, formations, HQ, and economic resources. Team-level stats include morale, chemistry (flavor for matches; live for fan club and league tie-break — [Locked: chemistry flavor](#locked-chemistry-flavor)), and reputation. Roster depth (10 heroes at start) ensures teams can field 6-hero lineups; understaffed teams forfeit matches automatically.
 
 ## Team-Level Stats
 
-Morale, chemistry, reputation, and **fan club size** (`fan_base`) are team-level attributes. Fan club is a **background mechanic** — no dedicated screen or player management; it drives arena attendance. Current size and the most recent change (`last_fan_base_delta`) appear on the **dashboard banner**. See [economy-system.md](economy-system.md#fan-club--arena-attendance). Chemistry is computed and shown; combat does not read it (see [Team Chemistry](#team-chemistry)).
+Morale, chemistry, reputation, and **fan club size** (`fan_base`) are team-level attributes. Fan club is a **background mechanic** — no dedicated screen or player management; it drives arena attendance. Current size and the most recent change (`last_fan_base_delta`) appear on the **dashboard banner**. See [economy-system.md](economy-system.md#fan-club--arena-attendance). Chemistry is computed and shown; combat does not read it (see [Locked: chemistry flavor](#locked-chemistry-flavor)).
 
 ## Financial Crisis
 
@@ -119,9 +119,17 @@ Recovery options: sell assets on marketplace, dismiss heroes (40% compensation),
 
 See [financial-crisis-system.md](financial-crisis-system.md).
 
+## Locked: chemistry flavor
+
+**#7 Resolved (A7.2 Cut / flavor).** `Team.chemistry` is a roster-derived integer **0–100**. Combat and in-match morale do **not** read it. Do not add match damage, initiative, combo, or training multipliers from this number.
+
+**Live consumers:** dashboard banner and 30-day history, `FanClubService` target fan base and show-up rate (arena attendance), league standings / promotion-relegation **tie-break**.
+
+**Not live:** in-combat race-synergy tables, Loner pairing skip. Those are **Cut** ([#9](../product/known-issues.md) Resolved / A7.5). Loner is still counted in the chemistry formula like any other combatant.
+
 ## Team Chemistry
 
-`TeamChemistryService::recalculate()` writes `Team.chemistry` as an integer **0–100**. The dashboard and `GET /api/v1/teams/{teamId}/history` show it. **Combat does not read it.** In-combat race-synergy tables are deferred ([#9](../product/known-issues.md)). Whether this number stays flavor-only or becomes match modifiers is open ([#7](../product/known-issues.md), A7.2).
+`TeamChemistryService::recalculate()` writes `Team.chemistry` as an integer **0–100**. The dashboard and `GET /api/v1/teams/{teamId}/history` show it. **Combat does not read it.** In-combat race-synergy tables are **Cut** ([#9](../product/known-issues.md) Resolved / A7.5).
 
 **Who is counted:** heroes with `role = combatant` (`HeroRepository::findCombatantsByTeam`). Trainers are excluded. Fewer than 2 combatants → chemistry **50**.
 
@@ -138,7 +146,7 @@ See [financial-crisis-system.md](financial-crisis-system.md).
 - `penalty` = (hostile pair count) × **15**
 - `chemistry` = `round(avg − penalty)`, clamped to 0–100
 
-Recalculated when roster composition changes (kingdom init, summon, dismiss, marketplace hero transfer). The race matrix also feeds summoning, arena adaptation, and weekly training group modifiers; those uses are separate from this stored chemistry number. Summoning uses relationship ≥ 50 for players (Genie can summon all races); NPC marketplace may apply a stricter Genie-only filter ([A7.9](../roadmap/current.md)).
+Recalculated when roster composition changes (kingdom init, summon, dismiss, marketplace hero transfer). The race matrix also feeds summoning, arena adaptation, and weekly training group modifiers; those uses are separate from this stored chemistry number. Summoning / starting roster / NPC hero buys use relationship ≥ 50, except Genie adaptation ≥ 80 ([summoning-system.md](summoning-system.md#locked-genie-summon-pool)).
 
 ## Team Chronicle
 

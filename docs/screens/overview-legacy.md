@@ -15,7 +15,7 @@ Do not implement from the numbered “Displayed Information” lists below. Thos
 
 ## Site Structure
 
-- **Public** (`/`) — Unauthenticated homepage and news archive. Login/register are a **modal** on public pages (`/login` and `/register` auto-open it). Password reset is standalone pages. Public wiki (`/wiki`) is **Planned** (A8.5). See [00-public-pages.md](00-public-pages.md) and [00-auth-screens.md](00-auth-screens.md).
+- **Public** (`/`) — Unauthenticated homepage and news archive. Login/register are a **modal** on public pages (`/login` and `/register` auto-open it). Password reset is standalone pages. Public wiki (`/wiki`) stays **Planned** (A8.5). See [00-public-pages.md](00-public-pages.md) and [00-auth-screens.md](00-auth-screens.md).
 - **Game** (`/app/*`) — Authenticated. Team Dashboard is the default landing page after login.
 
 ---
@@ -82,7 +82,7 @@ Do not implement from the numbered “Displayed Information” lists below. Thos
 ## 2. Team Dashboard (Main Screen)
 **When:** Default screen after login
 
-> **Live contract:** [02-team-dashboard.md](02-team-dashboard.md). SSE stays **Planned**. Chemistry is display-only (#7). Win/loss and league tier/position are **not** on this page. The list below is the original sketch.
+> **Live contract:** [02-team-dashboard.md](02-team-dashboard.md). SSE stays **Planned**. Chemistry is flavor for matches (#7 Resolved). Win/loss and league tier/position are **not** on this page. The list below is the original sketch.
 
 ### Displayed Information:
 - **Team Info Panel:**
@@ -121,7 +121,7 @@ Do not implement from the numbered “Displayed Information” lists below. Thos
 ## 3. Hero Roster Screen
 **When:** Display all team heroes
 
-> **Live contract:** [03-hero-roster.md](03-hero-roster.md). Live card: name, race, level, trait, age, form, fatigue, attributes, inspect, client filter/sort. **Not live:** item icons, morale on the card, tired/training status, quick-action dropdown, batch training, multi-select, level filter. The list below is the original sketch.
+> **Live contract:** [03-hero-roster.md](03-hero-roster.md). Live card: name, race, level, trait, age, form, fatigue, attributes, inspect, client filter/sort. **Cut (A7.7 / #13):** item icons, morale on the card, tired/training status, quick-action dropdown, batch training, multi-select, level filter. The list below is the original sketch.
 
 ### Displayed Information:
 - **Hero List (table/cards):**
@@ -161,7 +161,7 @@ Do not implement from the numbered “Displayed Information” lists below. Thos
 ## 4. Hero Detail Screen
 **When:** Detail view of a specific hero
 
-> **Live contract:** [04-hero-detail.md](04-hero-detail.md). Tabs are overview, equipment, spells, history — **no** Training tab (assignment is on overview). No assign-to-formation. XP bar is display-only (#6). The list below is the original sketch.
+> **Live contract:** [04-hero-detail.md](04-hero-detail.md). Tabs are overview, equipment, spells, history — **no** Training tab (assignment is on overview). No assign-to-formation. XP bar uses the locked curve; level is stored `hero.level` (#6). The list below is the original sketch.
 
 ### Displayed Information:
 - **Hero Header:**
@@ -277,7 +277,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 7. Formation Setup Screen
 **When:** Setting up formations for combat
 
-> **Live contract:** [07-formation-setup.md](07-formation-setup.md). Lineup **drag-and-drop is live**. Synergies, clone, and simulate are **Planned** — not live. Per-hero tactics stay on the Planned table. The lists below mix the live pitch with the original sketch.
+> **Live contract:** [07-formation-setup.md](07-formation-setup.md). Lineup **drag-and-drop is live**. Per-slot L1/L2 tactics are **live** (#12). Synergies are **Cut** (#9). Clone and simulate are **Planned** — not live. The lists below mix the live pitch with the original sketch.
 
 ### Displayed Information:
 - **Formation Selector:**
@@ -298,14 +298,11 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Filter by role, stats, race *(Planned — not in the live pool)*
 - **Strategy Settings Panel:**
   - **Pre-match Approach:** Aggressive / Balanced / Defensive (radio buttons) *(live)*
-  - **Per-Hero Settings (when hero is selected in layout):** *(Planned — A7.6; UI does not edit these)*
-    - **Targeting Priority:** Priority 1-6 or Flexible (dropdown for each priority)
-    - **Action Sequence:** Attack / Cast Spell / Defend / Heal / Buff / Debuff / Auto-Suggest (action order, drag&drop)
-    - **Spell Priority (Formation-level):**
-      - Spell selection (dropdown from known spells)
-      - Casting conditions (On Low Health, On Low Morale, etc.)
-      - Spell targets (Self, Lowest Health, Highest Priority, Area)
-    - **Conditional Tactics:** trigger and action settings
+  - **Per-Hero Settings (when a pitch slot is selected):** *(Live L1 + thin L2 — A7.6 / #12. Not the original sketch.)*
+    - **Targeting Priority:** Ordered enemy slots + fallback *(live)*
+    - **Action Sequence:** Attack / Cast Spell / Defend / Heal / Buff / Debuff / Auto-Suggest *(Cut / L3 deferred)*
+    - **Spell Priority:** Equipped spells; `always` / ally or self HP below; focus / lowest-HP ally / self *(live thin L2)*
+    - **Conditional Tactics:** trigger and action settings *(Cut / L3 deferred)*
 - **Formation Synergy Indicator:** *(Planned — not live)*
   - Race relationship warnings/bonuses
   - Role balance check (tank, damage, support, healer)
@@ -324,7 +321,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 
 ### Backend Requirements:
 - Formation GET/POST/PUT endpoints
-- Formation validation (6 heroes required, unique heroes) *(save allows 0–6 slots and duplicate `hero_id`; kickoff forfeits understaffed teams — #10)*
+- Formation validation (6 heroes required, unique heroes) *(save allows 0–6 slots and rejects duplicate `hero_id`; kickoff fills from assigned → default → roster — #10 / A6.1)*
 - Synergy calculation API *(Planned)*
 - Formation simulation/testing *(Planned)*
 
@@ -424,7 +421,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
   - Visual equipment paperdoll/grid:
     - Main Hand, Off-Hand
     - Head, Body, Hands, Feet
-    - Amulet, Ring *(one ring slot)*
+    - Amulet, Ring, Ring 2 *(two ring slots — #8)*
   - Stat summary with equipment vs. without *(original sketch — not on the equipment tab)*
 
 ### Possible Actions/Buttons:
@@ -435,7 +432,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 - **Dismantle Item** - dismantle for gold (confirm modal)
 - **Craft Item** - navigate to Crafting Screen (if implemented) *(deferred)*
 - **Repair Item** - restore Durability (gold cost)
-- **Enchant Item** - navigate to Enchanting (if implemented) *(#2 — not designed)*
+- **Enchant Item** - not in the live game *(#2 Resolved / A7.4 Cut)*
 - **Filter/Sort** - filtering controls *(not on the live tab)*
 - **Compare Items** - multi-select to compare bonuses *(not live)*
 
@@ -450,7 +447,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 11. Spell Management Screen
 **When:** Managing hero spells
 
-> **Live contract:** [11-spell-management.md](11-spell-management.md). Hero spells are the hero-detail Spells tab; `/app/spells` redirects. Academy is `/app/academy`. Seeded catalog T1–T2 (A7.11). The list below is the original sketch.
+> **Live contract:** [11-spell-management.md](11-spell-management.md). Hero spells are the hero-detail Spells tab; `/app/spells` redirects. Academy is `/app/academy`. Seeded catalog T1–T5 (A7.11 / [#16](../product/known-issues.md)). The list below is the original sketch.
 
 ### Displayed Information:
 - **Hero Selector:**
@@ -497,28 +494,28 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 12. Combat/Battle Screen (Replay Viewer)
 **When:** After a match has been simulated (or while watching a server-generated replay)
 
-> **Live contract:** [12-combat-battle.md](12-combat-battle.md). Combat is **fully automated**. The live HUD is team **names**, kill score, and a result badge plus hex replay + round accordion. **Not live:** logos, match-type label, morale HUD, initiative queue, team-stats sidebar, skip-to-end. Those stay on the screen file’s Still open list (#9 / A7.5). The lists below are the original sketch unless marked.
+> **Live contract:** [12-combat-battle.md](12-combat-battle.md). Combat is **fully automated**. The live HUD is team **names + emblems**, League/Friendly **match-type** label, kill score, result badge, hex replay, and round accordion. **Cut:** morale HUD, initiative queue, team-stats sidebar, skip-to-end, hex debug, formation grid, in-combat `morale_change`, race synergy, simulate sandbox. Haste/Shock change turn order (sort only). #9 / A7.5 Resolved. The lists below are the original sketch unless marked.
 
 ### Displayed Information:
 - **Battle Header:**
-  - Opponent Team Name & Logo *(live: both team **names**; logos are not drawn)*
-  - Match Type (League, Friendly, Dungeon, Arena) *(not on the live HUD)*
+  - Opponent Team Name & Logo *(live: both team **names** and **emblems**)*
+  - Match Type (League, Friendly, Dungeon, Arena) *(live: League / Friendly only; not Arena / Dungeon)*
   - Kill score (0–6 per team; e.g. 3–2). Forfeit: 3–0; double understaffed: 0–0
 - **Combat Area (replay visualization):**
   - Hex canvas over `run_state` + `combat_log` *(live)*
-  - **Front Line vs Front Line** / **Back Line vs Back Line** as a separate formation grid *(original sketch — not a second HUD)*
+  - **Front Line vs Front Line** / **Back Line vs Back Line** as a separate formation grid *(cut — not a second HUD)*
   - Current HP from snapshot + folded log events *(live on canvas)*
   - Status effects icons (buffs/debuffs)
-  - Morale indicator per hero *(not live)*
+  - Morale indicator per hero *(cut — in-combat `morale_change` is Cut; not a HUD)*
 - **Turn Indicator:**
   - Current round number during playback *(live round label)*
   - Active hero highlight
-  - Speed order queue (next turns preview) *(not live)*
+  - Speed order queue (next turns preview) *(cut)*
 - **Combat Log (scrollable feed):**
   - Round accordion of log events *(live)*
   - Damage numbers, spell casts, KOs
-  - Deaths/resurrections / morale changes *(morale-change events are not a live HUD)*
-- **Team Stats (sidebar):** *(not live)*
+  - Deaths/resurrections / morale changes *(morale_change is Cut; not a live HUD)*
+- **Team Stats (sidebar):** *(cut)*
   - Team Morale (value)
   - Remaining Heroes (X/6)
   - Formation integrity indicator
@@ -527,9 +524,9 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 - **Play / Pause** — replay playback only *(live)*
 - **Speed Control** (1x, 2x, 4x) *(live)*
 - **Step forward / back** and round **scrubber** *(live)*
-- **Skip to End** — jump to final result *(not live — scrubber seeks)*
+- **Skip to End** — jump to final result *(cut — scrubber seeks)*
 - **View Detailed Stats** — post-match / summary stats *(not on this page)*
-- **Return to League** after viewing *(live; not a dashboard button)*
+- **Return to League** after viewing *(live; Friendly returns to `/app/friendly-matches`; not a dashboard button)*
 
 *(No Perform Action, target selection, Auto-Battle, or mid-match surrender — combat is not interactive.)*
 
@@ -623,7 +620,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 15. Marketplace Screen
 **When:** Buying and selling heroes, items, trainers
 
-> **Live contract:** [15-marketplace.md](15-marketplace.md). Tabs: browse, basic equipment, sell, my listings, history. Ledger: `/app/finance`. Auctions are live; price floor/ceiling is not.
+> **Live contract:** [15-marketplace.md](15-marketplace.md). Tabs: browse, basic equipment, sell, my listings, history. Ledger: `/app/finance`. Auctions are live. Listing prices must sit in the suggested band (−50% / +100%).
 
 ### Displayed Information:
 - **Marketplace Tabs:**
@@ -711,7 +708,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 17. Community Screen
 **When:** Community features and interactions
 
-> **Live contract:** [17-community.md](17-community.md). Hub is the kingdom **forum** only. Mail is the navbar modal; news is `/news`; rankings are the League kingdom leaderboard. Pin is display-only (A6.3). The list below is the original sketch.
+> **Live contract:** [17-community.md](17-community.md). Hub is the kingdom **forum** only. Mail is the navbar modal; news is `/news`; rankings are the League kingdom leaderboard. Pin is display-only and unsettable (A6.3 Cut). The list below is the original sketch.
 
 ### Displayed Information:
 - **Community Tabs:**
@@ -772,7 +769,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 18. Arena Management Screen (Optional/Extended Feature)
 **When:** Managing home arena for home matches
 
-> **Live contract:** [18-arena-management.md](18-arena-management.md). HQ panel; ticket price + home-match revenue live. Attendance **graphs** stay A7.8. Friendlies: [18a-friendly-matches.md](18a-friendly-matches.md).
+> **Live contract:** [18-arena-management.md](18-arena-management.md). HQ panel; ticket price, home-match revenue, and attendance graphs/history live ([#4](../product/known-issues.md) Resolved). Friendlies: [18a-friendly-matches.md](18a-friendly-matches.md).
 
 ### Displayed Information:
 - **Arena Status:**
@@ -805,7 +802,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 19. Player Profile & Settings Screen
 **When:** Player account settings (navbar → Account Settings modal)
 
-> **Live contract:** [19-player-profile-settings.md](19-player-profile-settings.md). Password change, notification prefs, and privacy stay **Planned** (A8.6).
+> **Live contract:** [19-player-profile-settings.md](19-player-profile-settings.md). Password change, notification prefs, and privacy stay **Planned** (A8.6 keep Planned).
 
 ### Displayed Information:
 - **Language & Display (implemented):**

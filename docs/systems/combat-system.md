@@ -8,7 +8,7 @@ Purpose: Document combat simulation, match eligibility, scoring, derived combat 
 
 ## Automation Model
 
-Combat is **fully automated**. Players configure behaviour **before** the match via the [Formation System](formation-system.md) (`approach` and one formation-wide `movement_goal` in the UI; per-slot `target_order` / `spell_priorities` are read by the engine when present). The engine simulates the entire bout server-side; the UI is a **replay viewer** over `combat_log` — see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
+Combat is **fully automated**. Players configure behaviour **before** the match via the [Formation System](formation-system.md) (`approach`, one formation-wide `movement_goal`, and per-slot L1 `target_order` / L2 `spell_priorities`). The engine simulates the entire bout server-side; the UI is a **replay viewer** over `combat_log` — see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
 There is **no** mid-battle player input (no turn submission, target picking, Auto-Battle toggle, or surrender during simulation). Architecture, log format, wave orchestration, and AI phases: [Simulation Contract](#simulation-contract), [Engine Architecture Decisions](#engine-architecture-decisions), and [Formation AI](#formation-ai-phased).
 
@@ -18,7 +18,7 @@ There is **no** mid-battle player input (no turn submission, target picking, Aut
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Match eligibility & forfeit rules | ✅ Implemented | `LeagueMatchResolutionService::resolveForfeitOutcome()` |
+| Match eligibility & forfeit rules | ✅ Implemented | `MatchLineupService` (assigned → default → roster fill) + `LeagueMatchResolutionService::resolveForfeitOutcome()` |
 | Kill-based scoring & standings | ✅ Implemented | Kill score 0–6; round-200 tie uses the same scores (see [Match Scoring](#match-scoring)) |
 | `Battle` entity persistence | ✅ Implemented | Scores, formations, result enum; `combat_log` from simulation |
 | Post-match side effects | ✅ Implemented | Standings, fan club, team morale, chronicles, mastery XP, `matches_played` / wins, durability, hero XP / form / fatigue, aging → graveyard. Mortality rolls continue the match RNG state |
@@ -26,11 +26,13 @@ There is **no** mid-battle player input (no turn submission, target picking, Aut
 | Simulation contract (VO / API layers) | ✅ Implemented | Formations resolved to snapshots, pure round resolution |
 | Wave / round Messenger orchestration | ✅ Implemented | Cohort lockstep rounds; `MAX_ROUNDS=200`; no wave timeout; `stalled` isolation |
 | Deterministic turn engine | ✅ Implemented | Per-round resolution inside `ProcessCombatRound` via `CombatEngine` |
-| `combat_log` JSON + replay UI | ✅ Implemented | Viewer at `/app/battles/{id}` folds `damage`, `heal_applied`, and `status_tick` and starts from snapshot `currentHp`. Logos, match type, morale, and the initiative queue stay on the design list |
+| `combat_log` JSON + replay UI | ✅ Implemented | Viewer at `/app/battles/{id}` folds `damage`, `heal_applied`, and `status_tick` and starts from snapshot `currentHp`. HUD: emblems + League/Friendly label + contextual back link ([screen 12 lock](../screens/12-combat-battle.md#locked-replay-hud)). Morale widget and initiative queue are cut. |
 | Combat death → graveyard | ✅ Implemented | Aging, elder mortality rolls, `GraveyardService::prepareCombatDeath` + memorial; KO ≠ always permanent death |
-| Formation AI (L0–L2) | 🔄 Partial | Engine reads `target_order`, `fallback`, and spell conditions. Empty `spell_priorities` picks one ready spell. `defensive` holds the front line, then the highest `physicalAttack`. Slot editor for L1/L2 is later, not part of steps 4–7 |
+| Formation AI (L0–L2) | ✅ Implemented | Engine reads `target_order`, `fallback`, and live spell conditions. Empty `spell_priorities` picks one ready spell. `defensive` holds the front line, then the highest `physicalAttack`. Player slot editor is live (A7.6 / [#12](../product/known-issues.md)) |
 
-Status effect config: [config/game/status_effects.yaml](../../config/game/status_effects.yaml) — loaded by `StatusEffectConfig` and used by `CombatEngine` for **durations** and **tick damage/heal percents** (hardcoded fallbacks remain if a key is missing). Other combat modifiers from the YAML (accuracy, skip turn, etc.) are still applied via engine logic where implemented.
+**Match types:** live battles persist `MatchType::League` or `MatchType::Friendly`. `MatchType::Arena` is **reserved / unused (A6.2)** — it is not an arena-facility match and must not be written. Arena as a HQ building is ticket gold only (`ArenaService`).
+
+Status effect config: [config/game/status_effects.yaml](../../config/game/status_effects.yaml) — loaded by `StatusEffectConfig` and used by `CombatEngine` for **durations**, **tick damage/heal percents**, and **Haste/Shock speed percents on the initiative sort** (hardcoded fallbacks remain if a key is missing). Other combat modifiers from the YAML (accuracy, skip turn, etc.) are still applied via engine logic where implemented.
 
 ### Follow-up contract (after 6.1)
 
@@ -46,23 +48,34 @@ Core league simulation (6.1a–d) is in the tree. These steps close the gaps abo
 | **6** | ✅ Replay fold includes `status_tick`; playback starts from snapshot `currentHp`; semantic styles on the battle page |
 | **7** | ✅ Spend the full AP budget on movement; `seek_cover_ranged` retreats to the weapon's max range. Units with `preparationRemaining > 0` stay still |
 
-Explicitly **not** in steps 2–7: per-slot tactic editor, Resurrection (`revive`), in-combat `morale_change`, race-synergy tables, L3 sequences, friendly scheduling, `POST /api/v1/combat/simulate`. Haste +30% / Shock −30% on initiative are design text only; the turn sort does not apply them.
+Explicitly **not** in steps 2–7: Resurrection (`revive`), L3 sequences. Per-slot L1/L2 editor shipped in A7.6. Haste/Shock on the initiative sort is locked ([Speed / Initiative](#speed--initiative-init)). In-combat `morale_change` / Volatile / Battle Hardened is **Cut** (trait copy; engine does not read `moraleDecayMultiplier`). Race synergy and `POST /api/v1/combat/simulate` are **Cut** ([Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)).
+
+## Locked: no race synergy / no simulate
+
+**#9 Resolved (A7.5 Cut, 16 Oct 2026).** Do not add in-combat racial or role synergy tables. Do not ship `POST /api/v1/combat/simulate`.
+
+| Rule | Meaning |
+|------|---------|
+| No synergy tables | Combat does not apply race-pair or role-pair match modifiers. `race_relations.yaml` stays summoning / chemistry / training / arena-adaptation only. |
+| `ignoresRaceSynergy` unused | Serialized on `DerivedCombatStats` (Loner = true). `CombatEngine` does not read it. Loner player copy is flavor. |
+| No sandbox route | `POST /api/v1/combat/simulate` stays Planned (no controller). Friendly matches are the live adjacent path. `CombatEngine::simulate()` stays for tests. |
+| Later | A later product decision is required before in-combat synergy or a sandbox (consequences, opponent, one-shot vs cohort). |
 
 ---
 
 ## Match Eligibility
 
-Before any match is simulated, each team is checked for roster readiness:
+Before any match is simulated, each team is checked for whether it can **field** a kickoff lineup (`MatchLineupService`):
 
 | Condition | Result |
 |-----------|--------|
-| Both teams have ≥ 6 **combat-ready** heroes | Proceed to simulation |
-| Exactly one team has < 6 combat-ready heroes | **Automatic forfeit** — eligible team wins **3–0** (kill score); no simulation |
-| Both teams have < 6 combat-ready heroes | **Automatic draw** — **0–0** kill score; no simulation |
+| Both teams can field 6 unique **combat-ready** heroes | Proceed to simulation |
+| Exactly one team cannot | **Automatic forfeit** — eligible team wins **3–0** (kill score); no simulation |
+| Both teams cannot | **Automatic draw** — **0–0** kill score; no simulation |
 
 **Combat-ready hero:** active status, not a Trainer, not permanently dead (Graveyard).
 
-A team needs 6 combat-ready heroes to **enter** a match, independent of formation lineup configuration. Formation still requires all 6 slots filled when simulating.
+A team forfeits when it has **fewer than 6 combat-ready heroes on the roster**. An incomplete saved formation does not forfeit by itself: kickoff uses the assigned lineup if it already has 6 unique combat-ready heroes; otherwise the default if that is match-ready; otherwise remaining slots are filled from the combat-ready roster. Duplicate `hero_id` is rejected at **save** ([formation-system.md](formation-system.md#validation-rules)).
 
 ---
 
@@ -93,7 +106,7 @@ A team needs 6 combat-ready heroes to **enter** a match, independent of formatio
 
 ## Hexagonal Grid Combat Engine (17×11 Landscape)
 
-Combat takes place on a **17×11 2D Hexagonal Grid** (17 columns wide, q = 0..16; 11 rows tall, r = 0..10) using **Flat-Topped Axial Coordinates `(q, r)`**. `CombatEngine::ENGINE_VERSION` is **6** (a planning turn spends its whole AP budget on movement; `seek_cover_ranged` holds the weapon's max range). Version 5 added fatigue on KON, morale damage bands, Ent armor, and Orc melee vs non-Orcs. Version 4 split defensive targeting. Version 3 added the L0 spell pick. The 17×11 layout itself landed in version 2.
+Combat takes place on a **17×11 2D Hexagonal Grid** (17 columns wide, q = 0..16; 11 rows tall, r = 0..10) using **Flat-Topped Axial Coordinates `(q, r)`**. `CombatEngine::ENGINE_VERSION` is **7** (Haste/Shock YAML speed percents apply to the per-round initiative sort, not AP). Version 6 spent the whole AP budget on movement; `seek_cover_ranged` holds the weapon's max range. Version 5 added fatigue on KON, morale damage bands, Ent armor, and Orc melee vs non-Orcs. Version 4 split defensive targeting. Version 3 added the L0 spell pick. The 17×11 layout itself landed in version 2.
 
 Canonical starting positions are defined in `HexGridService::getInitialHexForSlot()` and mirrored by the battle replay UI. Lane centres are **at least 3 hexes apart** so 7-hex flowers do not overlap. The front row is staggered +1 r vs the back row so a backliner does not share a LoS corridor with its own frontliner.
 
@@ -114,7 +127,7 @@ Most races occupy **1 hex** (the centre). **Ent** and **Giant** occupy a **7-hex
 - All six slots on a side can be Ents/Giants at once — the 17×11 layout is packed for that.
 
 ### Action Points (AP) & Movement
-- **Action Points per Turn:** `AP = 4 + floor(baseInitiative / 5)`, where `baseInitiative = round(Effective_SPD × 2)` (Ents apply ×0.80 before rounding). Equivalent to `4 + floor(round(SPD × 2) / 5)`, not `4 + floor(SPD / 5)`.
+- **Action Points per Turn:** `AP = 4 + floor(baseInitiative / 5)`, where `baseInitiative = round(Effective_SPD × 2)` (Ents apply ×0.80 before rounding). Equivalent to `4 + floor(round(SPD × 2) / 5)`, not `4 + floor(SPD / 5)`. Haste/Shock do **not** change AP.
 - **Movement Cost:** Moving 1 hex costs **2 AP**.
 - **Budget:** On a planning turn the unit spends the whole budget, one hex at a time, and stops early when the movement goal is already met. A unit with `preparationRemaining > 0` does not move.
 - **Armor Fatigue:** `heavy_armor` adds **+2 Fatigue** for each hex moved.
@@ -187,6 +200,7 @@ Combat stats derive from primary attributes (1–20), equipped items, race, form
 - **Unarmed:** `Base_ATK = Effective_STR × 2`
 - **Melee weapon:** `Physical_ATK = Weapon_Damage × (1 + Effective_STR / 15)`
 - **Ranged weapon:** `Physical_ATK = Weapon_Damage × (1 + Effective_DEX / 15)`
+- **Weapon_Damage:** sum of durability-scaled `damage` bonuses on **all** equipped items (dual-wield stacks). Occupancy prevents a two-hander plus an off-hand item ([item-system.md](item-system.md#locked-item-occupancy)). Reach / `weaponSubType` is the **main_hand** weapon, else off-hand
 - **Race:** Orcs deal ×1.20 melee damage against a non-Orc target when the hit resolves (bows, crossbows, staves, and wands do not). There is no penalty for hitting an Orc. Giants +10% main-hand damage; Ents cannot equip weapons
 - **Morale (Equipped profile):** multiplier on outgoing physical and offensive-spell damage, stored as `outgoingDamageMultiplier`. Heals are unchanged
 
@@ -231,9 +245,19 @@ Implemented in `CombatStatCalculator` and the per-round sort in `CombatEngine`:
 baseInitiative = round(Effective_SPD × 2)
 ```
 
-Ents apply ×0.80 to that product before rounding. Each round the turn sort uses `baseInitiative + random_int(-3, 3)`. Equal initiative breaks by ascending `heroId`.
+Ents apply ×0.80 to that product before rounding. That product is stored as `derived.baseInitiative` and is the AP input.
 
-Haste and Shock may appear as `status_applied` in the combat log, but **Haste +30% / Shock −30% are not applied to this initiative roll** (design text only until a later engine version).
+Each round, after status ticks (expired effects are gone), the turn sort uses:
+
+```
+initiative = round(baseInitiative × (1 + speed_bonus_percent/100 − speed_reduction_percent/100)) + random_int(-3, 3)
+```
+
+Percents come from remaining statuses via `status_effects.yaml` (`StatusEffectConfig`). Haste is +30, Shock is −30. Both at once cancel (additive). The modifier is clamped at 0. Equal initiative breaks by ascending `heroId`.
+
+**AP does not use this modifier** — movement AP stays `4 + floor(baseInitiative / 5)`. A Haste applied during a round affects the **next** round's sort (ticks run before the sort). Duration 1 remaining at round start expires in the tick and does not affect that round.
+
+Lock: do not also feed this modifier into AP, stored `baseInitiative`, or a replay HUD queue ([12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud)).
 
 ### Accuracy (ACC)
 
@@ -317,8 +341,8 @@ Each equipped spell's school: **Spell Power +5% per tier above 1** (stacks acros
 | Clutch | HP ≤ 30% → Accuracy +15%, Armor × 1.10 |
 | Glass Jaw | HP ≤ 50% → incoming physical × 1.10 |
 | Perfectionist | Consistent damage (no RNG variance) |
-| Loner | Intended: ignores race synergy matrix. **No in-engine effect yet** — synergy tables are deferred; `ignoresRaceSynergy` is serialized but unused |
-| Volatile / Battle Hardened | Intended: morale decay × 2.0 / × 0.5 on ally death. **No in-combat effect yet** — `morale_change` events are deferred; post-match team morale is separate |
+| Loner | **No in-engine effect** (#9 Cut). Chemistry is flavor for matches ([#7](../product/known-issues.md) Resolved). `ignoresRaceSynergy` is serialized but unused. Player copy matches. |
+| Volatile / Battle Hardened | **No in-combat effect** (#9 Cut). `moraleDecayMultiplier` is serialized but unused. Player copy matches. Kickoff damage band and post-match team morale are unchanged by these traits. No `morale_change` event |
 | Audience Favorite | +5% arena revenue when fielded (handled in `ArenaRevenueService`, not combat engine) |
 
 ---
@@ -333,7 +357,7 @@ Locked design for Milestone 6 Step 6.1 implementation. Align PHP value objects a
 |-------|----------------|
 | League match tick / cohort starter | Eligibility + forfeit; create `Battle` + persisted run state for each non-forfeit fixture at `scheduledAt`; start wave orchestration (see [Wave-based Messenger orchestration](#wave-based-messenger-orchestration)). |
 | `CombatEngine` (per-round) | Pure **per-round** (and per-turn within a round) resolution via `ProcessCombatRound` — no Doctrine fixtures, no standings writes. Input: run state + round number; output: updated state + appended events. |
-| `CombatEngine::simulate()` / `LeagueMatchSimulator` | Legacy one-shot helpers retained for tests/sandbox; **live league path uses wave Messenger**, not a single `simulate()` call. |
+| `CombatEngine::simulate()` / `LeagueMatchSimulator` | One-shot helpers retained for **tests**; **live league path uses wave Messenger**, not a single `simulate()` call. Sandbox API is Cut / Planned ([Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)). |
 | Completion handler (`LeagueMatchResolutionService`) | When a battle reaches `match_end`: persist final scores/log, apply post-match side effects (standings, fan club, morale, chronicles, mastery, aging/graveyard, durability). |
 
 Forfeit outcomes stay **outside** the engine (existing `resolveForfeitOutcome()`).
@@ -387,7 +411,7 @@ MatchOutcome(homeScore, awayScore, isForfeit = false, combatLog = [], seed = nul
 
 - League: deterministic from fixture context, e.g.  
   `seed = hash_to_u32(fixtureId, seasonId?, scheduledAt timestamp, engineVersion)`.
-- Practice / sandbox (`POST /api/v1/combat/simulate`): client may pass `seed`, or server picks random and **returns** it in the result.
+- Practice / sandbox (`POST /api/v1/combat/simulate`): **not live** (A7.5 Cut). If a later sandbox ships, the client may pass `seed`, or the server picks random and **returns** it. Tests seed `CombatEngine::simulate()` directly.
 - Same request + seed + `engineVersion` ⇒ same scores and event stream.
 - Under wave processing, persist **mutable RNG state** derived from the seed between rounds so determinism spans Messenger messages.
 
@@ -463,7 +487,7 @@ To expand combat duration and add tactical depth, each active combatant's turn i
 - **Physical Melee / Unarmed**: 1 round (plan in round N, execute in N+1).
 - **Ranged Bow**: 2 rounds (plan in N, draw/aim in N+1, execute in N+2).
 - **Ranged Crossbow**: 3 rounds (plan in N, draw/load in N+1 & N+2, execute in N+3).
-- **Spells**: Dynamic casting duration based on the spell's tier: `1 + spell.tier` rounds (e.g. Tier 1 = 2 rounds, Tier 2 = 3 rounds).
+- **Spells**: Dynamic casting duration based on the spell's tier: `1 + spell.tier` rounds (e.g. Tier 1 = 2 rounds, Tier 5 = 6 rounds). Catalog T1–T5: [spell-system.md](spell-system.md#locked-catalog-t1t5).
 - A unit with `preparationRemaining > 0` does not move or pick a new action.
 
 ##### Interruption Mechanics
@@ -504,7 +528,7 @@ To expand combat duration and add tactical depth, each active combatant's turn i
 | `version` | Schema version; replay client must understand or refuse |
 | `simulator` | `combat_engine` \| `forfeit` |
 | `seed` | PRNG seed used for this run |
-| `engine_version` | `CombatEngine::ENGINE_VERSION` stamped on the match. 2 introduced the 17×11 grid |
+| `engine_version` | `CombatEngine::ENGINE_VERSION` stamped on the match. 7 = Haste/Shock on initiative sort; 2 introduced the 17×11 grid |
 | `grid` | `{ width, height }` battlefield size for replay |
 | `lineup` | Slot → hero labels for replay UI |
 | `events` | Ordered combat events (appended across waves) |
@@ -536,7 +560,7 @@ Common fields: `t` (monotonic index), `type`; commonly also `round`, `side` (`a`
 | `kill_score` | `score_a`, `score_b` — emit **after each** `ko`, with scores already incremented |
 | `match_end` | `score_a`, `score_b`, `rounds` |
 
-Deferred event types: `morale_change`, `revive`, hybrid `snapshot`. Live streaming of partial logs to clients is deferred (replay-only product UI).
+Deferred event types: `revive`, hybrid `snapshot`. `morale_change` is **Cut** (A7.5 / #9) — do not emit it. Live streaming of partial logs to clients is deferred (replay-only product UI).
 
 Replay reconstructs HP/status by folding `events` — see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
@@ -562,7 +586,7 @@ Engine must **not** write graveyard, hero XP, form, fatigue, or item rows direct
 
 ### Post-match hero rewards
 
-Applied in `LeagueMatchResolutionService::completeBattle()` for a simulated match. A forfeit does not change hero XP, form, or fatigue. Mastery XP is unchanged. There is no level-up curve on hero XP yet; the points are stored on `Hero.xp`.
+Applied in `LeagueMatchResolutionService::completeBattle()` for a simulated match. A forfeit does not change hero XP, form, or fatigue. Mastery XP is unchanged. XP is a lifetime total on `Hero.xp` (never spent). After the award, `HeroProgressionService` raises stored `Hero.level` from the current curve and `Kingdom.level_cap` ([known-issues.md](../product/known-issues.md) #6). Do not derive combat `level` from XP — snapshots read `Hero.level`.
 
 | Event | Effect |
 |-------|--------|
@@ -571,7 +595,7 @@ Applied in `LeagueMatchResolutionService::completeBattle()` for a simulated matc
 | KO the hero caused (physical or spell; a status-tick KO has no killer) | +10 XP each |
 | Was KO'd | extra fatigue +10, extra form −7 |
 
-XP is `round(base × library multiplier)`. The library multiplier is `1 + xp_gain_pct / 100` from the team's Library facility when headquarters bonuses are active. No library, or a financial crisis that suspends HQ bonuses, leaves the multiplier at 1.
+XP is `round(base × library multiplier × kingdom.xp_modifier)`. The library multiplier is `1 + xp_gain_pct / 100` from the team's Library facility when headquarters bonuses are active. No library, or a financial crisis that suspends HQ bonuses, leaves that multiplier at 1. `Kingdom.xp_modifier` defaults to `1.00`. After the write, stored `Hero.level` may increase (A7.1).
 
 The elder mortality roll uses the LCG in `CombatEngine::drawInt()`, starting from `combat_log.result.rng_state` (the generator state after the last combat roll). Every id in `killed_hero_ids` consumes one roll, in that order, before the next id. A missing `rng_state` falls back to the combat-log seed, then to 1. The same log state produces the same graveyard outcome.
 
@@ -617,7 +641,7 @@ If replay seek becomes costly: emit optional `snapshot` events every N turns or 
 | Mid-match formation switch | L3+ |
 | Player surrender / flee during sim | Not applicable (automation model) |
 | Per-turn full state snapshots as primary log | Only if hybrid extension ships |
-| Full racial / role synergy number tables | Can land as flat modifiers after L1 |
+| Full racial / role synergy number tables | **Cut** (A7.5 / #9). Later product decision required |
 | Action-sequence script UI | Layer L3 |
 | Live / in-progress match UI | Explicitly deferred — replay after completion only |
 | Wave wall-clock timeout | Rejected — lockstep without timeout; isolation via `stalled` |
@@ -633,8 +657,8 @@ Combat AI is fully automated. It reads `Formation.approach` and per-slot `strate
 | Layer | Behaviour | UI / data today |
 |-------|-----------|-----------------|
 | **L0** | Approach slot order, plus one ready spell when `spell_priorities` is empty (heal under the yaml threshold, else highest-tier offense). Defensive holds the front line, then highest physical attack | Approach radios and one formation-wide `movement_goal` (copied onto every slot) |
-| **L1** | Per-hero `target_order` (+ `fallback`: `lowest_hp`, `highest_threat`, or approach order) | Engine reads JSON. No slot editor (later, not steps 2–7) |
-| **L2** | `spell_priorities` with `always`, `self_hp_below`, `ally_hp_below` | Engine reads JSON. Formation UI saves `[]`. NPC tactics may fill the list. No editor yet |
+| **L1** | Per-hero `target_order` (+ `fallback`: `lowest_hp`, `highest_threat`, or approach order) | Player slot editor (A7.6 / [#12](../product/known-issues.md)). Empty order = approach |
+| **L2** | `spell_priorities` with `always`, `self_hp_below`, `ally_hp_below` | Thin player editor for equipped spells. Empty list = L0 pick. NPC may still fill lists. `enemy_status` / `lowest_hp_enemy` Cut from UI |
 | **L3** | Explicit action sequences + advanced conditional tactics (sub, formation switch) | Deferred — game-summary design only |
 
 ### Approach weight sketch (L0)
@@ -665,11 +689,11 @@ L0 may use a simpler approach→heuristic path without a full scorer; replace wi
 |-------|-------------|-------------------|
 | **6.1a-0** | ✅ Contract VO + thin one-shot engine + `LeagueMatchSimulator` (placeholder scores) | Stub DI binding |
 | **6.1a** | ✅ Implemented: Persisted run state + **wave Messenger** (cohort lockstep, `MAX_ROUNDS=200`, `stalled`/`ResumeCombat`) + real per-round turn loop + L0 AI + full events | Transitional one-shot league path |
-| **6.1b** | ✅ Engine reads `strategy.target_order` and `fallback`. Slot editor is later | Real “who hits whom” when JSON is present |
+| **6.1b** | ✅ Engine reads `strategy.target_order` and `fallback`. Player editor in A7.6 | Real “who hits whom” when JSON is present |
 | **6.1c** | ✅ Engine reads spell conditions; post-match replay viewer at `/app/battles/{id}` folds status ticks and starts from snapshot HP | [screen 12](../screens/12-combat-battle.md) |
 | **6.1d** | ✅ Combat deaths → aging → permanent death → graveyard; durability loss after battle. Mortality roll continues the match RNG | [graveyard-system.md](graveyard-system.md) |
 | **2–7** | Follow-up contract in [Implementation Status](#follow-up-contract-after-61) | Closes L0 spell pick, defensive targeting, stat formulas, post-match hero XP/form/fatigue, replay fidelity, movement AP |
-| **Later** | L3 sequences UI; L1/L2 slot editor; hybrid snapshots; friendly-match scheduling; synergy tables; Resurrection; optional live UI | Post–core combat |
+| **Later** | L3 sequences UI; hybrid snapshots; Resurrection; optional live UI | Post–core combat |
 
 ---
 
@@ -685,6 +709,6 @@ Combat is a **deterministic, fully automated** simulation. At each calendar kick
 |--------|------|---------|--------|
 | GET | `/api/v1/battles/{id}` | Battle result (after completion) | ✅ Implemented |
 | GET | `/api/v1/battles/{id}/log` | Combat log / replay | ✅ Implemented |
-| POST | `/api/v1/combat/simulate` | Practice/sandbox match (may stay one-shot or enqueue a private cohort) | Planned |
+| POST | `/api/v1/combat/simulate` | Practice/sandbox match | Planned (A7.5 Cut from live leftovers; later product decision) |
 
 See [architecture/routes.md](../architecture/routes.md#combat).

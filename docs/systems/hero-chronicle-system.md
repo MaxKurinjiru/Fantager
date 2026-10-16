@@ -53,14 +53,14 @@ Entries are **append-only**. Rendering uses the viewer's locale via `HeroChronic
 | `training_completed` | Weekly training tick completed | `TrainingService` |
 | `died` | Hero dismissed or memorialized (incl. permanent combat death) | `GraveyardService` |
 | `spell_learned` | Hero learned a spell | `SpellService` |
+| `levelup` | Stored `Hero.level` increased after match XP | `HeroProgressionService` via `HeroService::levelUp` |
 
 ### Reserved / dormant (enum + service methods exist)
 
 | Type | Notes |
 |------|-------|
-| `levelup` | `HeroChronicleService::recordLevelUp` / `HeroService::levelUp` exist, but no production XP→level path currently calls them |
 | `injured` / `recovered` | Injury system (future) |
-| `retired` | Voluntary retirement (future) |
+| `retired` | Voluntary retirement — **reserved / unused (A6.2)**; no writer |
 
 ---
 

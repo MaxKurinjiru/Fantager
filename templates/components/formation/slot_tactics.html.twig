@@ -1,0 +1,100 @@
+{# templates/components/formation/slot_tactics.html.twig #}
+{% set positions = ['front_1', 'front_2', 'front_3', 'back_1', 'back_2', 'back_3'] %}
+
+<div class="game-panel formation-tactics-panel">
+    <h3 class="game-panel__title">{{ 'formation.tactics_panel_title'|trans }}</h3>
+    <p class="copy-muted">{{ 'formation.tactics_panel_hint'|trans }}</p>
+
+    <p data-formation-target="tacticsEmpty" class="copy-muted">{{ 'formation.tactics_select_slot'|trans }}</p>
+
+    <div data-formation-target="tacticsEditor" class="layout-stack layout-stack--sm hidden">
+        <p class="formation-tactics-panel__slot-label">
+            <span data-formation-target="tacticsSlotName"></span>
+            <span data-formation-target="tacticsHeroName" class="copy-secondary"></span>
+        </p>
+
+        <div class="form-field-group">
+            <span class="section-label--xs">{{ 'formation.tactics_targeting'|trans }}</span>
+            <p class="copy-muted">{{ 'formation.tactics_targeting_hint'|trans }}</p>
+            <ol data-formation-target="targetOrderList" class="formation-tactics-list"></ol>
+            <div class="layout-cluster layout-cluster--sm">
+                <label for="formation-add-target" class="sr-only">{{ 'formation.tactics_add_target'|trans }}</label>
+                <select id="formation-add-target" data-formation-target="addTargetSelect" class="form-select">
+                    <option value="">{{ 'formation.tactics_add_target'|trans }}</option>
+                    {% for pos in positions %}
+                        <option value="{{ pos }}">{{ ('formation.slots.' ~ pos)|trans }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#addTarget">
+                    {{ 'formation.tactics_add'|trans }}
+                </button>
+            </div>
+        </div>
+
+        <div class="form-field-group">
+            <label for="formation-fallback" class="section-label--xs">{{ 'formation.tactics_fallback'|trans }}</label>
+            <select id="formation-fallback" data-formation-target="fallbackSelect" data-action="change->formation#changeFallback" class="form-select">
+                <option value="approach">{{ 'formation.tactics_fallback_approach'|trans }}</option>
+                <option value="lowest_hp">{{ 'formation.tactics_fallback_lowest_hp'|trans }}</option>
+                <option value="highest_threat">{{ 'formation.tactics_fallback_highest_threat'|trans }}</option>
+            </select>
+        </div>
+
+        <div class="form-field-group">
+            <span class="section-label--xs">{{ 'formation.tactics_spells'|trans }}</span>
+            <p class="copy-muted">{{ 'formation.tactics_spells_hint'|trans }}</p>
+            <p data-formation-target="spellsNeedHero" class="copy-muted hidden">{{ 'formation.tactics_assign_hero_spells'|trans }}</p>
+            <p data-formation-target="spellsEmpty" class="copy-muted hidden">{{ 'formation.tactics_no_spells'|trans }}</p>
+            <ol data-formation-target="spellPriorityList" class="formation-tactics-list"></ol>
+            <div data-formation-target="addSpellRow" class="layout-cluster layout-cluster--sm">
+                <label for="formation-add-spell" class="sr-only">{{ 'formation.tactics_add_spell'|trans }}</label>
+                <select id="formation-add-spell" data-formation-target="addSpellSelect" class="form-select"></select>
+                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#addSpell">
+                    {{ 'formation.tactics_add'|trans }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template data-formation-target="targetOrderRowTemplate">
+    <li class="formation-tactics-row" data-slot-value="">
+        <span data-slot-label class="formation-tactics-row__label"></span>
+        <div class="layout-cluster layout-cluster--sm">
+            <button type="button" class="btn btn-ghost btn--sm" data-action="click->formation#moveTargetUp" aria-label="{{ 'formation.tactics_move_up'|trans }}">↑</button>
+            <button type="button" class="btn btn-ghost btn--sm" data-action="click->formation#moveTargetDown" aria-label="{{ 'formation.tactics_move_down'|trans }}">↓</button>
+            <button type="button" class="btn btn-ghost btn--sm" data-action="click->formation#removeTarget" aria-label="{{ 'formation.tactics_remove'|trans }}">✕</button>
+        </div>
+    </li>
+</template>
+
+<template data-formation-target="spellPriorityRowTemplate">
+    <li class="formation-tactics-row formation-tactics-row--spell" data-spell-id="">
+        <span data-spell-name class="formation-tactics-row__label"></span>
+        <div class="form-field-group form-field-group--tight">
+            <label class="form-label">{{ 'formation.tactics_when'|trans }}
+                <select data-when-select data-action="change->formation#changeSpellWhen" class="form-select">
+                    <option value="always">{{ 'formation.tactics_when_always'|trans }}</option>
+                    <option value="ally_hp_below">{{ 'formation.tactics_when_ally_hp'|trans }}</option>
+                    <option value="self_hp_below">{{ 'formation.tactics_when_self_hp'|trans }}</option>
+                </select>
+            </label>
+            <label class="form-label" data-threshold-wrap>
+                {{ 'formation.tactics_threshold'|trans }}
+                <input type="number" min="1" max="99" data-threshold-input data-action="change->formation#changeSpellThreshold" class="form-input">
+            </label>
+            <label class="form-label">{{ 'formation.tactics_spell_target'|trans }}
+                <select data-target-select data-action="change->formation#changeSpellTarget" class="form-select">
+                    <option value="priority">{{ 'formation.tactics_target_priority'|trans }}</option>
+                    <option value="lowest_hp_ally">{{ 'formation.tactics_target_lowest_ally'|trans }}</option>
+                    <option value="self">{{ 'formation.tactics_target_self'|trans }}</option>
+                </select>
+            </label>
+        </div>
+        <div class="layout-cluster layout-cluster--sm">
+            <button type="button" class="btn btn-ghost btn--sm" data-action="click->formation#moveSpellUp" aria-label="{{ 'formation.tactics_move_up'|trans }}">↑</button>
+            <button type="button" class="btn btn-ghost btn--sm" data-action="click->formation#moveSpellDown" aria-label="{{ 'formation.tactics_move_down'|trans }}">↓</button>
+            <button type="button" class="btn btn-ghost btn--sm" data-action="click->formation#removeSpell" aria-label="{{ 'formation.tactics_remove'|trans }}">✕</button>
+        </div>
+    </li>
+</template>

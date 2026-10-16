@@ -12,6 +12,10 @@ use Symfony\Component\Yaml\Yaml;
  */
 class RaceConfig
 {
+    public const COMPATIBLE_RACE_MIN = 50;
+
+    public const GENIE_COMPATIBLE_RACE_MIN = 80;
+
     /** @var array<string, array<string, mixed>> */
     private array $data;
 
@@ -115,7 +119,7 @@ class RaceConfig
      *
      * @return list<Race>
      */
-    public function getCompatibleRaces(Race $teamRace, int $minValue = 50): array
+    public function getCompatibleRaces(Race $teamRace, int $minValue = self::COMPATIBLE_RACE_MIN): array
     {
         $compatible = [];
         foreach (Race::cases() as $candidate) {
@@ -125,6 +129,21 @@ class RaceConfig
         }
 
         return $compatible;
+    }
+
+    /**
+     * Compatible races for arena adaptation, summoning, NPC hero buys, and kingdom starting roster.
+     * Genie adaptation uses a higher relationship bar (A7.9 / #14).
+     *
+     * @return list<Race>
+     */
+    public function getCompatibleRacesForAdaptation(Race $adaptedRace): array
+    {
+        $minValue = Race::Genie === $adaptedRace
+            ? self::GENIE_COMPATIBLE_RACE_MIN
+            : self::COMPATIBLE_RACE_MIN;
+
+        return $this->getCompatibleRaces($adaptedRace, $minValue);
     }
 
     /**

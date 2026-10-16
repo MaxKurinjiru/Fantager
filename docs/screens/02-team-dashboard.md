@@ -4,7 +4,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#2-team-dashboard-main
 
 **When:** Default authenticated landing page after login.
 
-**Status:** Live at `GET /app/dashboard`. Chemistry on the banner is **display-only** ([product/known-issues.md](../product/known-issues.md) #7). Server-Sent Events (SSE) stay **Planned**. UI extras from the original sketch (win/loss record, league tier/position on this page) are Wave 7 if product wants them.
+**Status:** Live at `GET /app/dashboard`. Chemistry on the banner is **flavor for matches** ([product/known-issues.md](../product/known-issues.md) #7 Resolved) — it does not change combat. Server-Sent Events (SSE) stay **Planned**. UI extras from the original sketch (win/loss record, league tier/position on this page) are Wave 7 if product wants them.
 
 **Live UI:** `templates/dashboard/index.html.twig` plus `templates/components/dashboard/`.
 
@@ -20,7 +20,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#2-team-dashboard-main
 - Manager display name and kingdom name
 - Morale (value / 100 + bar)
 - Fan club size and last delta (when non-zero)
-- Chemistry (value / 100 + bar) — **display-only**; combat does not read it (#7)
+- Chemistry (value / 100 + bar, `chemistry_desc` tooltip) — **flavor for matches**; combat does not read it (#7 Resolved). Live for fan club / attendance and league tie-break.
 - Reputation (value + bar)
 
 **Finance**

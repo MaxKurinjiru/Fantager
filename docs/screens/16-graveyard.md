@@ -4,7 +4,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#16-graveyard-screen) 
 
 **When:** Review memorials for dismissed heroes/trainers and permanent combat deaths.
 
-**Status:** Live at `GET /app/graveyard`. Writes happen on dismiss and combat death, not from this page. Filter options include reserved `MemorialCause` values `age`, `retired`, `death` (A6.2) that current writers do not emit — live causes are **dismissed** and **combat_death**.
+**Status:** Live at `GET /app/graveyard`. Writes happen on dismiss and combat death, not from this page. Cause filters are live values **dismissed** and **combat_death** (`MemorialCause::liveCases()`). Reserved `age`, `retired`, `death` stay on the enum (A6.2) but are not offered as filter options.
 
 **Live UI:** `templates/graveyard/index.html.twig`.
 

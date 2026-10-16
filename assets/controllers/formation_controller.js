@@ -14,7 +14,21 @@ export default class extends Controller {
         'poolHero',
         'rosterDropZone',
         'alert',
-        'alertMessage'
+        'alertMessage',
+        'tacticsEmpty',
+        'tacticsEditor',
+        'tacticsSlotName',
+        'tacticsHeroName',
+        'targetOrderList',
+        'addTargetSelect',
+        'fallbackSelect',
+        'spellPriorityList',
+        'addSpellSelect',
+        'addSpellRow',
+        'spellsNeedHero',
+        'spellsEmpty',
+        'targetOrderRowTemplate',
+        'spellPriorityRowTemplate'
     ];
 
     static values = {
@@ -34,17 +48,27 @@ export default class extends Controller {
         errorPromote: String,
         promptPromoteName: String,
         levelLabel: String,
-        races: Object
+        races: Object,
+        emptyHero: String,
+        addSpell: String,
+        slotLabels: Object,
+        slotTactics: Object,
+        heroSpells: Object
     };
 
     connect() {
         this.slotsState = {};
+        this.tacticsState = this.cloneTactics(this.hasSlotTacticsValue ? this.slotTacticsValue : {});
+        this.selectedPosition = null;
         this.draggingElement = null;
         this.initializeSlotsState();
+        this.renderTacticsPanel();
     }
 
     disconnect() {
         this.slotsState = {};
+        this.tacticsState = {};
+        this.selectedPosition = null;
         this.draggingElement = null;
     }
 
@@ -265,14 +289,17 @@ export default class extends Controller {
         if (fromPosition && targetHero) {
             this.slotsState[targetPosition] = heroId;
             this.slotsState[fromPosition] = targetHero;
+            this.swapSpellPriorities(fromPosition, targetPosition);
         } else if (fromPosition && !targetHero) {
             this.slotsState[fromPosition] = null;
             this.slotsState[targetPosition] = heroId;
+            this.moveSpellPriorities(fromPosition, targetPosition);
         } else if (targetHero) {
             this.slotsState[targetPosition] = heroId;
             if (fromPosition) {
                 this.slotsState[fromPosition] = null;
             }
+            this.filterSpellPriorities(targetPosition, heroId);
         } else {
             if (fromPosition) {
                 this.slotsState[fromPosition] = null;
@@ -281,11 +308,14 @@ export default class extends Controller {
         }
 
         this.syncUI();
+        this.renderTacticsPanel();
     }
 
     clearSlot(position) {
         this.slotsState[position] = null;
+        this.clearSpellPriorities(position);
         this.syncUI();
+        this.renderTacticsPanel();
     }
 
     startDrag(e, payload) {
@@ -452,12 +482,21 @@ export default class extends Controller {
             ? this.movementGoalSelectTarget.value
             : 'advance_to_melee';
 
-        const slots = Object.entries(this.slotsState).map(([pos, heroId]) => ({
-            position: pos,
-            hero_id: heroId,
-            strategy: { movement_goal: movementGoal },
-            spell_priorities: []
-        }));
+        const slots = Object.entries(this.slotsState).map(([pos, heroId]) => {
+            const tactics = this.ensureTactics(pos);
+            const strategy = { movement_goal: movementGoal };
+            if (tactics.target_order.length > 0) {
+                strategy.target_order = [...tactics.target_order];
+                strategy.fallback = tactics.fallback || 'approach';
+            }
+
+            return {
+                position: pos,
+                hero_id: heroId,
+                strategy,
+                spell_priorities: tactics.spell_priorities.map((row) => ({ ...row }))
+            };
+        });
 
         const assignedCount = slots.filter(s => s.hero_id !== null).length;
         if (assignedCount === 0) {
@@ -621,6 +660,391 @@ export default class extends Controller {
         }
 
         return result;
+    }
+
+    selectSlot(e) {
+        if (e.target.closest('[data-action*="removeHero"]') || e.target.closest('[data-quick-select]')) {
+            return;
+        }
+
+        const slot = e.currentTarget.closest('[data-formation-target="gridSlot"]');
+        if (!slot) {
+            return;
+        }
+
+        this.selectedPosition = slot.dataset.position;
+        this.gridSlotTargets.forEach((gridSlot) => {
+            gridSlot.classList.toggle('formation-slot--selected', gridSlot.dataset.position === this.selectedPosition);
+        });
+        this.renderTacticsPanel();
+    }
+
+    addTarget(e) {
+        e.preventDefault();
+        if (!this.selectedPosition || !this.hasAddTargetSelectTarget) {
+            return;
+        }
+        const value = this.addTargetSelectTarget.value;
+        const tactics = this.ensureTactics(this.selectedPosition);
+        if (!value || tactics.target_order.includes(value)) {
+            return;
+        }
+        tactics.target_order.push(value);
+        this.addTargetSelectTarget.value = '';
+        this.renderTacticsPanel();
+    }
+
+    removeTarget(e) {
+        e.preventDefault();
+        const value = e.currentTarget.closest('[data-slot-value]')?.dataset.slotValue;
+        const tactics = this.selectedTactics();
+        if (!tactics || !value) {
+            return;
+        }
+        tactics.target_order = tactics.target_order.filter((slot) => slot !== value);
+        this.renderTacticsPanel();
+    }
+
+    moveTargetUp(e) {
+        e.preventDefault();
+        this.moveListItem('target_order', e.currentTarget.closest('[data-slot-value]')?.dataset.slotValue, -1);
+    }
+
+    moveTargetDown(e) {
+        e.preventDefault();
+        this.moveListItem('target_order', e.currentTarget.closest('[data-slot-value]')?.dataset.slotValue, 1);
+    }
+
+    changeFallback() {
+        const tactics = this.selectedTactics();
+        if (!tactics || !this.hasFallbackSelectTarget) {
+            return;
+        }
+        tactics.fallback = this.fallbackSelectTarget.value || 'approach';
+    }
+
+    addSpell(e) {
+        e.preventDefault();
+        const tactics = this.selectedTactics();
+        if (!tactics || !this.hasAddSpellSelectTarget) {
+            return;
+        }
+        const spellId = parseInt(this.addSpellSelectTarget.value, 10);
+        if (!spellId || tactics.spell_priorities.some((row) => row.spell_id === spellId)) {
+            return;
+        }
+        const spell = this.heroSpells(this.slotsState[this.selectedPosition]).find((item) => item.id === spellId);
+        const when = spell?.type === 'defensive' ? 'ally_hp_below' : 'always';
+        const row = {
+            spell_id: spellId,
+            when,
+            target: when === 'ally_hp_below' ? 'lowest_hp_ally' : 'priority'
+        };
+        if (when !== 'always') {
+            row.threshold = 40;
+        }
+        tactics.spell_priorities.push(row);
+        this.renderTacticsPanel();
+    }
+
+    removeSpell(e) {
+        e.preventDefault();
+        const spellId = parseInt(e.currentTarget.closest('[data-spell-id]')?.dataset.spellId, 10);
+        const tactics = this.selectedTactics();
+        if (!tactics || !spellId) {
+            return;
+        }
+        tactics.spell_priorities = tactics.spell_priorities.filter((row) => row.spell_id !== spellId);
+        this.renderTacticsPanel();
+    }
+
+    moveSpellUp(e) {
+        e.preventDefault();
+        const spellId = parseInt(e.currentTarget.closest('[data-spell-id]')?.dataset.spellId, 10);
+        this.moveSpell(spellId, -1);
+    }
+
+    moveSpellDown(e) {
+        e.preventDefault();
+        const spellId = parseInt(e.currentTarget.closest('[data-spell-id]')?.dataset.spellId, 10);
+        this.moveSpell(spellId, 1);
+    }
+
+    changeSpellWhen(e) {
+        const tactics = this.selectedTactics();
+        const row = this.spellRowFromEvent(e);
+        if (!tactics || !row) {
+            return;
+        }
+        row.when = e.currentTarget.value;
+        if (row.when === 'always') {
+            delete row.threshold;
+            if (row.target === 'lowest_hp_ally' || row.target === 'self') {
+                row.target = 'priority';
+            }
+        } else {
+            row.threshold = row.threshold || 40;
+            if (row.when === 'ally_hp_below' && row.target === 'priority') {
+                row.target = 'lowest_hp_ally';
+            }
+            if (row.when === 'self_hp_below' && row.target === 'priority') {
+                row.target = 'self';
+            }
+        }
+        this.renderTacticsPanel();
+    }
+
+    changeSpellThreshold(e) {
+        const row = this.spellRowFromEvent(e);
+        if (!row) {
+            return;
+        }
+        const value = parseInt(e.currentTarget.value, 10);
+        row.threshold = Number.isFinite(value) ? Math.max(1, Math.min(99, value)) : 40;
+    }
+
+    changeSpellTarget(e) {
+        const row = this.spellRowFromEvent(e);
+        if (!row) {
+            return;
+        }
+        row.target = e.currentTarget.value;
+    }
+
+    renderTacticsPanel() {
+        if (!this.hasTacticsEmptyTarget || !this.hasTacticsEditorTarget) {
+            return;
+        }
+
+        const position = this.selectedPosition;
+        if (!position) {
+            this.tacticsEmptyTarget.classList.remove('hidden');
+            this.tacticsEditorTarget.classList.add('hidden');
+            return;
+        }
+
+        const tactics = this.ensureTactics(position);
+        const heroId = this.slotsState[position];
+        const heroCard = heroId
+            ? this.poolHeroTargets.find((card) => parseInt(card.dataset.heroId, 10) === heroId)
+            : null;
+
+        this.tacticsEmptyTarget.classList.add('hidden');
+        this.tacticsEditorTarget.classList.remove('hidden');
+        this.tacticsSlotNameTarget.textContent = this.slotLabel(position);
+        this.tacticsHeroNameTarget.textContent = heroCard
+            ? heroCard.dataset.name
+            : (this.hasEmptyHeroValue ? this.emptyHeroValue : '');
+
+        if (this.hasFallbackSelectTarget) {
+            this.fallbackSelectTarget.value = tactics.fallback || 'approach';
+        }
+
+        this.renderTargetOrder(tactics);
+        this.renderSpellPriorities(tactics, heroId);
+    }
+
+    renderTargetOrder(tactics) {
+        if (!this.hasTargetOrderListTarget || !this.hasTargetOrderRowTemplateTarget) {
+            return;
+        }
+
+        this.targetOrderListTarget.replaceChildren();
+        tactics.target_order.forEach((slot) => {
+            const node = this.targetOrderRowTemplateTarget.content.firstElementChild.cloneNode(true);
+            node.dataset.slotValue = slot;
+            node.querySelector('[data-slot-label]').textContent = this.slotLabel(slot);
+            this.targetOrderListTarget.appendChild(node);
+        });
+
+        if (this.hasAddTargetSelectTarget) {
+            Array.from(this.addTargetSelectTarget.options).forEach((option) => {
+                if (!option.value) {
+                    return;
+                }
+                option.hidden = tactics.target_order.includes(option.value);
+            });
+        }
+    }
+
+    renderSpellPriorities(tactics, heroId) {
+        if (!this.hasSpellPriorityListTarget || !this.hasSpellPriorityRowTemplateTarget) {
+            return;
+        }
+
+        const spells = this.heroSpells(heroId);
+        const hasHero = Boolean(heroId);
+
+        if (this.hasSpellsNeedHeroTarget) {
+            this.spellsNeedHeroTarget.classList.toggle('hidden', hasHero);
+        }
+        if (this.hasSpellsEmptyTarget) {
+            this.spellsEmptyTarget.classList.toggle('hidden', !hasHero || spells.length > 0);
+        }
+        if (this.hasAddSpellRowTarget) {
+            this.addSpellRowTarget.classList.toggle('hidden', !hasHero || spells.length === 0);
+        }
+
+        this.spellPriorityListTarget.replaceChildren();
+        if (!hasHero) {
+            return;
+        }
+
+        tactics.spell_priorities = tactics.spell_priorities.filter((row) =>
+            spells.some((spell) => spell.id === row.spell_id)
+        );
+
+        tactics.spell_priorities.forEach((row) => {
+            const spell = spells.find((item) => item.id === row.spell_id);
+            const node = this.spellPriorityRowTemplateTarget.content.firstElementChild.cloneNode(true);
+            node.dataset.spellId = String(row.spell_id);
+            node.querySelector('[data-spell-name]').textContent = spell?.name || `#${row.spell_id}`;
+            const whenSelect = node.querySelector('[data-when-select]');
+            const targetSelect = node.querySelector('[data-target-select]');
+            const thresholdWrap = node.querySelector('[data-threshold-wrap]');
+            const thresholdInput = node.querySelector('[data-threshold-input]');
+            whenSelect.value = row.when;
+            targetSelect.value = row.target;
+            const showThreshold = row.when !== 'always';
+            thresholdWrap.classList.toggle('hidden', !showThreshold);
+            if (showThreshold) {
+                thresholdInput.value = String(row.threshold || 40);
+            }
+            this.spellPriorityListTarget.appendChild(node);
+        });
+
+        if (this.hasAddSpellSelectTarget) {
+            const used = new Set(tactics.spell_priorities.map((row) => row.spell_id));
+            this.addSpellSelectTarget.replaceChildren();
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = this.hasAddSpellValue ? this.addSpellValue : '';
+            this.addSpellSelectTarget.appendChild(placeholder);
+            spells.filter((spell) => !used.has(spell.id)).forEach((spell) => {
+                const option = document.createElement('option');
+                option.value = String(spell.id);
+                option.textContent = spell.name;
+                this.addSpellSelectTarget.appendChild(option);
+            });
+        }
+    }
+
+    ensureTactics(position) {
+        if (!this.tacticsState[position]) {
+            this.tacticsState[position] = {
+                target_order: [],
+                fallback: 'approach',
+                spell_priorities: []
+            };
+        }
+        if (!Array.isArray(this.tacticsState[position].target_order)) {
+            this.tacticsState[position].target_order = [];
+        }
+        if (!Array.isArray(this.tacticsState[position].spell_priorities)) {
+            this.tacticsState[position].spell_priorities = [];
+        }
+        if (!this.tacticsState[position].fallback) {
+            this.tacticsState[position].fallback = 'approach';
+        }
+        return this.tacticsState[position];
+    }
+
+    selectedTactics() {
+        return this.selectedPosition ? this.ensureTactics(this.selectedPosition) : null;
+    }
+
+    slotLabel(position) {
+        if (this.hasSlotLabelsValue && this.slotLabelsValue[position]) {
+            return this.slotLabelsValue[position];
+        }
+        return position;
+    }
+
+    heroSpells(heroId) {
+        if (!heroId || !this.hasHeroSpellsValue) {
+            return [];
+        }
+        return this.heroSpellsValue[heroId] || this.heroSpellsValue[String(heroId)] || [];
+    }
+
+    spellRowFromEvent(e) {
+        const tactics = this.selectedTactics();
+        const spellId = parseInt(e.currentTarget.closest('[data-spell-id]')?.dataset.spellId, 10);
+        if (!tactics || !spellId) {
+            return null;
+        }
+        return tactics.spell_priorities.find((row) => row.spell_id === spellId) || null;
+    }
+
+    moveListItem(key, value, direction) {
+        const tactics = this.selectedTactics();
+        if (!tactics || !value) {
+            return;
+        }
+        const list = tactics[key];
+        const index = list.indexOf(value);
+        const next = index + direction;
+        if (index < 0 || next < 0 || next >= list.length) {
+            return;
+        }
+        [list[index], list[next]] = [list[next], list[index]];
+        this.renderTacticsPanel();
+    }
+
+    moveSpell(spellId, direction) {
+        const tactics = this.selectedTactics();
+        if (!tactics || !spellId) {
+            return;
+        }
+        const list = tactics.spell_priorities;
+        const index = list.findIndex((row) => row.spell_id === spellId);
+        const next = index + direction;
+        if (index < 0 || next < 0 || next >= list.length) {
+            return;
+        }
+        [list[index], list[next]] = [list[next], list[index]];
+        this.renderTacticsPanel();
+    }
+
+    swapSpellPriorities(fromPosition, toPosition) {
+        const from = this.ensureTactics(fromPosition);
+        const to = this.ensureTactics(toPosition);
+        const saved = from.spell_priorities;
+        from.spell_priorities = to.spell_priorities;
+        to.spell_priorities = saved;
+    }
+
+    moveSpellPriorities(fromPosition, toPosition) {
+        const from = this.ensureTactics(fromPosition);
+        const to = this.ensureTactics(toPosition);
+        to.spell_priorities = from.spell_priorities;
+        from.spell_priorities = [];
+    }
+
+    filterSpellPriorities(position, heroId) {
+        const tactics = this.ensureTactics(position);
+        const spells = this.heroSpells(heroId);
+        tactics.spell_priorities = tactics.spell_priorities.filter((row) =>
+            spells.some((spell) => spell.id === row.spell_id)
+        );
+    }
+
+    clearSpellPriorities(position) {
+        this.ensureTactics(position).spell_priorities = [];
+    }
+
+    cloneTactics(raw) {
+        const cloned = {};
+        Object.entries(raw || {}).forEach(([position, value]) => {
+            cloned[position] = {
+                target_order: Array.isArray(value?.target_order) ? [...value.target_order] : [],
+                fallback: value?.fallback || 'approach',
+                spell_priorities: Array.isArray(value?.spell_priorities)
+                    ? value.spell_priorities.map((row) => ({ ...row }))
+                    : []
+            };
+        });
+        return cloned;
     }
 
     getCsrfToken() {

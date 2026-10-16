@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Service\Formation;
 
 use App\Entity\Formation\Formation;
+use App\Entity\Formation\FormationSlot;
+use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
+use App\Enum\FormationApproach;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Formation\FormationSlotRepository;
 use App\Repository\Hero\HeroRepository;
@@ -81,5 +84,145 @@ class FormationServiceTest extends TestCase
         $this->expectException(\DomainException::class);
 
         $service->promoteTemporary($formation, $team, 'Saved', false);
+    }
+
+    public function testSaveRejectsDuplicateHeroIdBeforeRebuildingSlots(): void
+    {
+        $team = new Team();
+        $hero = new Hero();
+        $hero->setTeam($team);
+        $this->setId($hero, 5);
+
+        $heroRepository = $this->createMock(HeroRepository::class);
+        $heroRepository->method('findOneBy')->willReturn($hero);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->never())->method('flush');
+
+        $repository = $this->createMock(FormationRepository::class);
+        $repository->method('countSavedByTeam')->willReturn(0);
+
+        $service = new FormationService(
+            $repository,
+            $this->createMock(FormationSlotRepository::class),
+            $heroRepository,
+            $this->createMock(LeagueFixtureRepository::class),
+            $em,
+        );
+
+        $this->expectException(UserFacingException::class);
+        $this->expectExceptionMessage('error.formation_duplicate_hero');
+
+        $service->save($team, null, 'Lineup', FormationApproach::Balanced, [
+            ['position' => 'front_1', 'hero_id' => 5, 'strategy' => [], 'spell_priorities' => []],
+            ['position' => 'front_2', 'hero_id' => 5, 'strategy' => [], 'spell_priorities' => []],
+        ], false);
+    }
+
+    public function testSaveAllowsEmptySlotsWithUniqueHeroes(): void
+    {
+        $team = new Team();
+        $hero = new Hero();
+        $hero->setTeam($team);
+        $this->setId($hero, 7);
+
+        $heroRepository = $this->createMock(HeroRepository::class);
+        $heroRepository->method('findOneBy')->willReturn($hero);
+
+        $slotRepository = $this->createMock(FormationSlotRepository::class);
+        $slotRepository->method('findBy')->willReturn([]);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->atLeastOnce())->method('flush');
+
+        $repository = $this->createMock(FormationRepository::class);
+        $repository->method('countSavedByTeam')->willReturn(0);
+
+        $service = new FormationService(
+            $repository,
+            $slotRepository,
+            $heroRepository,
+            $this->createMock(LeagueFixtureRepository::class),
+            $em,
+        );
+
+        $formation = $service->save($team, null, 'Draft', FormationApproach::Balanced, [
+            ['position' => 'front_1', 'hero_id' => 7, 'strategy' => [], 'spell_priorities' => []],
+            ['position' => 'front_2', 'hero_id' => null, 'strategy' => [], 'spell_priorities' => []],
+        ], false);
+
+        $this->assertSame('Draft', $formation->getName());
+    }
+
+    public function testSaveSanitizesStrategyAndSpellPriorities(): void
+    {
+        $team = new Team();
+        $hero = new Hero();
+        $hero->setTeam($team);
+        $this->setId($hero, 7);
+
+        $heroRepository = $this->createMock(HeroRepository::class);
+        $heroRepository->method('findOneBy')->willReturn($hero);
+
+        $slotRepository = $this->createMock(FormationSlotRepository::class);
+        $slotRepository->method('findBy')->willReturn([]);
+
+        $persistedSlots = [];
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(function (object $entity) use (&$persistedSlots): void {
+            if ($entity instanceof FormationSlot) {
+                $persistedSlots[] = $entity;
+            }
+        });
+        $em->expects($this->atLeastOnce())->method('flush');
+
+        $repository = $this->createMock(FormationRepository::class);
+        $repository->method('countSavedByTeam')->willReturn(0);
+
+        $service = new FormationService(
+            $repository,
+            $slotRepository,
+            $heroRepository,
+            $this->createMock(LeagueFixtureRepository::class),
+            $em,
+        );
+
+        $service->save($team, null, 'Tactics', FormationApproach::Balanced, [
+            [
+                'position' => 'front_1',
+                'hero_id' => 7,
+                'strategy' => [
+                    'movement_goal' => 'flank_rear',
+                    'target' => 'weakest',
+                    'target_order' => ['back_2', 'front_1'],
+                    'fallback' => 'lowest_hp',
+                ],
+                'spell_priorities' => [
+                    ['spell_id' => 12, 'when' => 'ally_hp_below', 'threshold' => 40, 'target' => 'lowest_hp_ally'],
+                    ['spell_id' => 8, 'when' => 'enemy_status', 'target' => 'priority'],
+                ],
+            ],
+        ], false);
+
+        $this->assertCount(1, $persistedSlots);
+        $this->assertSame([
+            'movement_goal' => 'flank_rear',
+            'target_order' => ['back_2', 'front_1'],
+            'fallback' => 'lowest_hp',
+        ], $persistedSlots[0]->getStrategy());
+        $this->assertSame([
+            [
+                'spell_id' => 12,
+                'when' => 'ally_hp_below',
+                'target' => 'lowest_hp_ally',
+                'threshold' => 40,
+            ],
+        ], $persistedSlots[0]->getSpellPriorities());
+    }
+
+    private function setId(object $entity, int $id): void
+    {
+        $ref = new \ReflectionProperty($entity, 'id');
+        $ref->setValue($entity, $id);
     }
 }

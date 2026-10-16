@@ -4,14 +4,14 @@ Reference: [product/overview.md](../product/overview.md#21-kingdom-system--serve
 
 Status: Live  
 Screens: [01-kingdom-selection.md](../screens/01-kingdom-selection.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: [known-issues.md](../product/known-issues.md) #6 (`Kingdom.level_cap` / `xp_modifier` unused until an XP curve exists)
+Open design: none for XP — [known-issues.md](../product/known-issues.md) #6 Resolved (A7.1).
 
 Purpose: Document the live multi-tenant kingdom model — settings, initialization, query isolation, game-speed multipliers, and the public list API.
 
 ## Remaining work
 
 - [x] Shared DB + `kingdom_id` scoping, init command, registration pick, `GET /api/v1/kingdoms`
-- [ ] `level_cap` / `xp_modifier` production use (Design first → #6 / A7.1)
+- [x] `level_cap` / `xp_modifier` production use (A7.1)
 
 Do not invent a separate process or database per kingdom.
 
@@ -40,7 +40,7 @@ Canonical columns: [entities.md](../architecture/entities.md) § Kingdom Domain.
 
 **Kingdom fields (live):** `name`, `language`, `timezone`, `game_speed`, `marketplace_tax_rate`, `season_length`, `league_tiers_config` (JSON), `royal_treasury_gold`.
 
-**Stored but unused until #6:** `level_cap` (default 100), `xp_modifier` (default `1.00`).
+**Live:** `level_cap` (default **20**), `xp_modifier` (default `1.00`, applied at XP award). See [hero-system.md](hero-system.md#locked-hero-level-invariant).
 
 Player **capacity** is derived from `league_tiers_config`: `sum(tier.groups) × teams_per_group`. There is no separate `max_players` column.
 
@@ -58,7 +58,7 @@ Player **capacity** is derived from `league_tiers_config`: `sum(tier.groups) × 
 | Marketplace tax | Yes | Sale fee → Royal Treasury |
 | Season length | Yes | Stored; season timeline is 77 days in calendar/league |
 | `league_tiers_config` | Yes | Bracket shape + derived player capacity |
-| Level cap / XP modifier | No | Unused until [known-issues.md](../product/known-issues.md) #6 |
+| Level cap / XP modifier | Yes | Cap **20**; `xp_modifier` multiplies match XP at award ([#6](../product/known-issues.md)) |
 
 Crafting boost is **deferred** with the crafting system (`future/`).
 

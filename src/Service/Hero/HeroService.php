@@ -20,6 +20,7 @@ class HeroService
         private readonly HeroRatingCalculator $heroRatingCalculator,
         private readonly HeroChronicleService $heroChronicleService,
         private readonly \App\Service\TeamChronicle\TeamChronicleService $teamChronicleService,
+        private readonly \App\Config\HeroProgressionConfig $heroProgressionConfig,
     ) {
     }
 
@@ -65,8 +66,6 @@ class HeroService
 
         $this->heroChronicleService->recordLevelUp($hero, $oldLevel, $newLevel);
         $this->teamChronicleService->recordHeroLevelup($hero->getTeam(), $hero, $oldLevel, $newLevel);
-
-        $this->em->flush();
     }
 
     /** @return array<string, mixed> */
@@ -74,6 +73,8 @@ class HeroService
     {
         $combatStats = $this->combatStatCalculator->calculate($hero);
         $rating = $this->heroRatingCalculator->calculate($hero);
+        $levelCap = $hero->getTeam()->getKingdom()->getLevelCap();
+        $xpBar = $this->heroProgressionConfig->xpBar($hero->getLevel(), $hero->getXp(), $levelCap);
 
         return [
             'id' => $hero->getId(),
@@ -81,6 +82,9 @@ class HeroService
             'race' => $hero->getRace()->value,
             'level' => $hero->getLevel(),
             'xp' => $hero->getXp(),
+            'xp_for_level' => $xpBar['xp_for_level'],
+            'xp_for_next_level' => $xpBar['xp_for_next_level'],
+            'level_cap' => $levelCap,
             'age' => $hero->getAge(),
             'status' => $hero->getStatus()->value,
             'trait' => $hero->getTrait()?->value,

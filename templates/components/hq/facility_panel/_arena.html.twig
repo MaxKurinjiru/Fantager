@@ -156,9 +156,42 @@
             </div>
             {% endif %}
 
-            <div class="game-panel">
+            <div class="game-panel"
+                 data-controller="arena-analytics"
+                 data-arena-analytics-event-name-value="modal:open-hq-arena"
+                 data-arena-analytics-history-value="{{ status.recent_revenue|json_encode|e('html_attr') }}"
+                 data-arena-analytics-label-attendance-value="{{ 'arena.col_attendance'|trans }}"
+                 data-arena-analytics-label-gold-value="{{ 'finance.col_amount'|trans }}"
+                 data-arena-analytics-axis-attendance-value="{{ 'arena.axis_attendance'|trans }}"
+                 data-arena-analytics-axis-gold-value="{{ 'arena.axis_gold'|trans }}">
                 <h3 class="arena-panel__title">{{ 'arena.revenue_history'|trans }}</h3>
                 {% if status.recent_revenue|length > 0 %}
+                    {% set analytics = status.analytics %}
+                    <p class="arena-hint arena-hint--subtle">{{ 'arena.analytics_window'|trans({
+                        '%count%': analytics.match_count,
+                        '%window%': analytics.window
+                    }) }}</p>
+                    <div class="stat-grid arena-analytics-summary">
+                        <div class="arena-stat-card">
+                            <span class="arena-stat-card__label">{{ 'arena.analytics_total_gold'|trans }}</span>
+                            <span class="arena-stat-card__value">+🪙 {{ analytics.total_gold|number_format(0, '.', ' ') }}</span>
+                        </div>
+                        <div class="arena-stat-card">
+                            <span class="arena-stat-card__label">{{ 'arena.analytics_avg_attendance'|trans }}</span>
+                            <span class="arena-stat-card__value">
+                                {% if analytics.average_attendance is not null %}
+                                    {{ analytics.average_attendance|number_format(0, '.', ' ') }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="arena-analytics-chart">
+                        <canvas data-arena-analytics-target="canvas"
+                                role="img"
+                                aria-label="{{ 'arena.analytics_chart_label'|trans }}"></canvas>
+                    </div>
                     <div class="data-table-wrap">
                         <table class="arena-revenue-table">
                             <thead>
@@ -166,6 +199,8 @@
                                     <th class="arena-revenue-table__th">{{ 'finance.col_date'|trans }}</th>
                                     <th class="arena-revenue-table__th">{{ 'arena.col_opponent'|trans }}</th>
                                     <th class="arena-revenue-table__th">{{ 'arena.ticket_price'|trans }}</th>
+                                    <th class="arena-revenue-table__th">{{ 'arena.col_attendance'|trans }}</th>
+                                    <th class="arena-revenue-table__th">{{ 'arena.col_occupancy'|trans }}</th>
                                     <th class="arena-revenue-table__th">{{ 'finance.col_amount'|trans }}</th>
                                 </tr>
                             </thead>
@@ -175,6 +210,8 @@
                                     <td class="arena-revenue-table__cell-date">{{ row.created_at|date('d.m.Y H:i') }}</td>
                                     <td>{{ row.opponent_name ?? '—' }}</td>
                                     <td>{% if row.ticket_price %}🪙 {{ row.ticket_price }}{% else %}—{% endif %}</td>
+                                    <td>{% if row.attendance is not null %}{{ row.attendance|number_format(0, '.', ' ') }}{% else %}—{% endif %}</td>
+                                    <td>{% if row.occupancy_pct is not null %}{{ row.occupancy_pct }}%{% else %}—{% endif %}</td>
                                     <td class="arena-revenue-table__cell-amount">+🪙 {{ row.amount }}</td>
                                 </tr>
                                 {% endfor %}

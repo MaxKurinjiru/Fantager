@@ -32,6 +32,7 @@ use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroRatingCalculator;
 use App\Service\Notification\NotificationHelper;
+use App\ValueObject\Marketplace\ListingPriceGuidance;
 use App\Service\Team\TeamChemistryService;
 use App\Service\Team\TeamRosterService;
 use App\Service\Training\TrainingService;
@@ -50,6 +51,7 @@ class MarketplaceService
         private readonly \App\Service\TeamChronicle\TeamChronicleService $teamChronicleService,
         private readonly TeamChemistryService $teamChemistryService,
         private readonly HeroRatingCalculator $heroRatingCalculator,
+        private readonly MarketplacePriceGuidance $priceGuidance,
         private readonly RaceConfig $raceConfig,
         private readonly UserMessageTranslator $translator,
         private readonly HeadquartersService $hqService,
@@ -111,6 +113,8 @@ class MarketplaceService
                 throw new UserFacingException('error.marketplace_hero_only_available');
             }
 
+            $this->assertListingPricesInBand($priceGold, $buyoutPriceGold, $this->priceGuidance->forHero($hero));
+
             if (null !== $hero->getTrainer()) {
                 $trainer = $hero->getTrainer();
                 $trainer->removeTrainee($hero);
@@ -145,6 +149,8 @@ class MarketplaceService
                 throw new UserFacingException('error.marketplace_item_only_unequipped');
             }
 
+            $this->assertListingPricesInBand($priceGold, $buyoutPriceGold, $this->priceGuidance->forItem($item));
+
             // Escrow item
             $item->setStatus(ItemStatus::Selling);
             $listing->setItem($item);
@@ -157,6 +163,8 @@ class MarketplaceService
             if (HeroStatus::Available !== $trainer->getStatus()) {
                 throw new UserFacingException('error.trainer_only_active_list');
             }
+
+            $this->assertListingPricesInBand($priceGold, $buyoutPriceGold, $this->priceGuidance->forHero($trainer));
 
             foreach ($trainer->getTrainees() as $hero) {
                 $trainer->removeTrainee($hero);
@@ -177,6 +185,16 @@ class MarketplaceService
         $this->em->flush();
 
         return $listing;
+    }
+
+    private function assertListingPricesInBand(int $priceGold, ?int $buyoutPriceGold, ListingPriceGuidance $guidance): void
+    {
+        if (!$guidance->contains($priceGold) || (null !== $buyoutPriceGold && !$guidance->contains($buyoutPriceGold))) {
+            throw new UserFacingException('error.marketplace_price_out_of_range', [
+                '%min%' => $guidance->getFloor(),
+                '%max%' => $guidance->getCeiling(),
+            ]);
+        }
     }
 
     public function cancelListing(Team $seller, int $listingId): void

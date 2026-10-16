@@ -25,6 +25,25 @@ class RaceConfigTest extends KernelTestCase
         $this->assertSame(80, $this->raceConfig->getMortalityThreshold(Race::Human));
     }
 
+    public function testGenieAdaptationUsesHigherRelationshipBar(): void
+    {
+        $this->assertEqualsCanonicalizing(
+            [Race::Human, Race::Elf, Race::Genie],
+            $this->raceConfig->getCompatibleRacesForAdaptation(Race::Genie),
+        );
+        $this->assertNotContains(Race::Undead, $this->raceConfig->getCompatibleRacesForAdaptation(Race::Genie));
+        $this->assertCount(8, $this->raceConfig->getCompatibleRaces(Race::Genie, RaceConfig::COMPATIBLE_RACE_MIN));
+    }
+
+    public function testNonGenieAdaptationKeepsNeutralRelationshipBar(): void
+    {
+        $this->assertEqualsCanonicalizing(
+            [Race::Human, Race::Elf, Race::Dwarf, Race::Ent, Race::Genie],
+            $this->raceConfig->getCompatibleRacesForAdaptation(Race::Human),
+        );
+        $this->assertNotContains(Race::Orc, $this->raceConfig->getCompatibleRacesForAdaptation(Race::Human));
+    }
+
     public function testResolveAgePhaseUsesMortalityThreshold(): void
     {
         $this->assertSame('Veteran', $this->raceConfig->resolveAgePhase(Race::Human, 79));

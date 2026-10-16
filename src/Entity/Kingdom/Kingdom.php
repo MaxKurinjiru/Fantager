@@ -38,8 +38,8 @@ class Kingdom
     #[ORM\Column(type: 'json')]
     private array $leagueTiersConfig = [];
 
-    #[ORM\Column(options: ['default' => 100])]
-    private int $levelCap = 100;
+    #[ORM\Column(options: ['default' => 20])]
+    private int $levelCap = 20;
 
     #[ORM\Column(type: 'decimal', precision: 3, scale: 2, options: ['default' => '1.00'])]
     private string $xpModifier = '1.00';

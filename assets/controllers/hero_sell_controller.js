@@ -2,13 +2,16 @@ import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
 import { csrfHeaders } from '../utils/csrf.js';
 import { showConfirm } from '../utils/confirm.js';
+import { formatNumber } from '../utils/locale.js';
 
 export default class extends Controller {
-    static targets = ['sellAlert', 'sellAlertMessage', 'modeSelect', 'buyoutContainer', 'priceLabel', 'priceInput', 'suggestedPriceRow', 'suggestedPriceValue'];
+    static targets = ['sellAlert', 'sellAlertMessage', 'modeSelect', 'buyoutContainer', 'priceLabel', 'priceInput', 'buyoutInput', 'suggestedPriceRow', 'suggestedPriceValue'];
 
     static values = {
         heroId: Number,
         suggestedPrice: { type: Number, default: 0 },
+        priceFloor: { type: Number, default: 0 },
+        priceCeiling: { type: Number, default: 0 },
         titleSell: String,
         confirmSell: String,
         errorSell: String,
@@ -16,6 +19,7 @@ export default class extends Controller {
         priceLabelBuyNow: String,
         priceLabelAuction: String,
         textLoading: String,
+        priceOutOfRange: String,
     };
 
     connect() {
@@ -60,9 +64,42 @@ export default class extends Controller {
         return parseInt(raw, 10) || 0;
     }
 
+    _pricesInBand(price, buyout) {
+        const floor = this.priceFloorValue || 0;
+        const ceiling = this.priceCeilingValue || 0;
+        if (floor <= 0 || ceiling <= 0) {
+            return price > 0;
+        }
+        if (price < floor || price > ceiling) {
+            return false;
+        }
+        if (buyout !== null && !Number.isNaN(buyout) && (buyout < floor || buyout > ceiling)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    _priceOutOfRangeMessage() {
+        const template = this.hasPriceOutOfRangeValue ? this.priceOutOfRangeValue : '';
+
+        return template
+            .replace('%min%', formatNumber(this.priceFloorValue))
+            .replace('%max%', formatNumber(this.priceCeilingValue));
+    }
+
     async submit(e) {
         e.preventDefault();
         const form = e.target;
+        const formData = new FormData(form);
+        const priceGold = parseInt(formData.get('price'), 10);
+        const buyoutRaw = formData.get('buyout');
+        const buyoutPriceGold = buyoutRaw ? parseInt(buyoutRaw, 10) : null;
+        if (!this._pricesInBand(priceGold, buyoutPriceGold)) {
+            this.showAlert('error', this._priceOutOfRangeMessage());
+            return;
+        }
+
         const submitBtn = form.querySelector('button[type="submit"]');
 
         const message = this.hasConfirmSellValue
@@ -86,12 +123,11 @@ export default class extends Controller {
         const originalText = submitBtn.textContent;
         submitBtn.textContent = this.textLoadingValue;
 
-        const formData = new FormData(form);
         const payload = {
             type: 'hero',
             entity_id: this.heroIdValue,
-            price_gold: parseInt(formData.get('price'), 10),
-            buyout_price_gold: formData.get('buyout') ? parseInt(formData.get('buyout'), 10) : null,
+            price_gold: priceGold,
+            buyout_price_gold: buyoutPriceGold,
             mode: formData.get('mode'),
             duration_days: parseInt(formData.get('duration'), 10),
         };

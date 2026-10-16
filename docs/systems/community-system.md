@@ -71,7 +71,7 @@ All community interactions are **kingdom-scoped**: players can only send message
 | `author_user_id` | FK → User | Player who created the thread |
 | `author_team_id` | FK → Team (nullable) | Author's team at creation time (snapshot) |
 | `created_at` | datetime | Creation timestamp |
-| `is_pinned` | bool | Whether the thread is pinned (admin use) |
+| `is_pinned` | bool | Stored flag. Listing and UI show pinned threads first when true. **Unsettable** in the app ([A6.3](../roadmap/current.md) Cut): no pin/unpin API, create/lock never set it, no forum admin/moderator role. |
 | `is_locked` | bool | Locked threads do not accept new replies |
 
 **ForumPost:**
@@ -90,6 +90,7 @@ All community interactions are **kingdom-scoped**: players can only send message
 - New threads automatically create the **first post** from the author's body text.
 - Replies to a locked thread are rejected with a `DomainException`.
 - **Thread locking** is available to the thread **author only** via `POST /api/v1/forum/threads/{id}/lock` with `{"lock": true}` or `{"lock": false}`.
+- **Thread pin** is display-only. Do not describe it as admin use. Do not add a pin write path or a forum role without a new product decision.
 - All `title`, `body`, and `category` fields are passed through `ContentFilterService`.
 
 ### API
@@ -101,6 +102,8 @@ All community interactions are **kingdom-scoped**: players can only send message
 | GET | `/api/v1/forum/threads/{id}` | Thread detail including all posts |
 | POST | `/api/v1/forum/threads/{id}/posts` | Reply to a thread (`body` required) |
 | POST | `/api/v1/forum/threads/{id}/lock` | Lock or unlock thread (author only; `{"lock": true/false}`) |
+
+There is **no** pin/unpin route. `is_pinned` stays on the entity for listing/display if a row is already true; the app cannot set it.
 
 ---
 
@@ -172,3 +175,5 @@ Profiles are kingdom-scoped for viewers (same kingdom as the subject).
 | GET | `/news` | Paginated news archive (full content per item; no detail page) |
 
 Homepage links to the archive via `homepage.news_archive_link`. Guest navbar includes a News link.
+
+Admin / CMS to create or edit articles stays **Planned**. Public wiki (`GET /wiki`) stays **Planned** (A8.5) — no controller, no help articles. Live public content is homepage + this archive. Lock: [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned).

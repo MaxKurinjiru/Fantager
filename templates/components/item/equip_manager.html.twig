@@ -39,11 +39,15 @@
                     {key: 'main_hand', emoji: '⚔️'},
                     {key: 'off_hand', emoji: '🛡️'},
                     {key: 'ring', emoji: '💍'},
+                    {key: 'ring_2', emoji: '💍'},
                     {key: 'feet', emoji: '🥾'}
                 ] %}
+                {% set main_item = equipped['main_hand'] ?? null %}
+                {% set off_blocked = main_item is not null and main_item.subType is not null and main_item.subType.occupiesBothHands %}
 
                 {% for slot in slots %}
                     {% set item = equipped[slot.key] ?? null %}
+                    {% set blocked = slot.key == 'off_hand' and off_blocked %}
                     {% if item %}
                         <div class="paperdoll-slot paperdoll-slot--{{ slot.key }} paperdoll-slot--equipped paperdoll-slot--rarity-{{ item.rarity.value }}">
                             {# Unequip Button #}
@@ -59,10 +63,10 @@
                             <span class="paperdoll-slot__equipped-label">{{ 'inventory.equipped'|trans }}</span>
                         </div>
                     {% else %}
-                        <div class="paperdoll-slot paperdoll-slot--{{ slot.key }} paperdoll-slot--empty">
+                        <div class="paperdoll-slot paperdoll-slot--{{ slot.key }} paperdoll-slot--empty{% if blocked %} paperdoll-slot--blocked{% endif %}">
                             <span class="paperdoll-slot__label">{{ ('inventory.slot_' ~ slot.key)|trans }}</span>
                             <span class="paperdoll-slot__icon">{{ slot.emoji }}</span>
-                            <span class="paperdoll-slot__empty-hint">{{ 'inventory.empty_slot'|trans }}</span>
+                            <span class="paperdoll-slot__empty-hint">{{ (blocked ? 'inventory.slot_two_hand_held' : 'inventory.empty_slot')|trans }}</span>
                         </div>
                     {% endif %}
                 {% endfor %}

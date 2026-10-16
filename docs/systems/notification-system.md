@@ -2,9 +2,8 @@
 
 Reference: [architecture/entities.md](../architecture/entities.md#15-notification-domain), [architecture/routes.md](../architecture/routes.md#notifications), [community-system.md](community-system.md)
 
-Status: Live (navbar modal + API; title/body frozen at write-time locale)  
-Screens: navbar modal — [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: unused enum cases (A6.2); read-time translation like chronicle (A6.4)
+Status: Live (navbar modal + API; title/body rendered at **read time** from keys, like chronicle)  
+Screens: navbar modal — [screen-code-map.md](../architecture/screen-code-map.md)
 
 Purpose: In-game alerts for the **logged-in player account** (distinct from team-to-team mail and from the append-only team chronicle).
 
@@ -12,8 +11,8 @@ Purpose: In-game alerts for the **logged-in player account** (distinct from team
 
 - [x] Entity, `NotificationHelper`, read API, navbar modal with unread badge
 - [x] List query contract from `NotificationController` (limit default 10, max 100)
-- [ ] Unused types stay reserved — do not add writers (A6.2)
-- [ ] Locale switch re-renders notifications like chronicle (A6.4)
+- [x] Unused types stay reserved — do not add writers (A6.2)
+- [x] Locale switch re-renders notifications like chronicle (A6.4)
 
 ---
 
@@ -21,9 +20,9 @@ Purpose: In-game alerts for the **logged-in player account** (distinct from team
 
 | Layer | Status |
 |-------|--------|
-| **Entity** | Implemented — `App\Entity\Notification\Notification` |
-| **Write path** | Implemented — `NotificationHelper::sendTranslatedNotification()` |
-| **Read API** | Implemented — `NotificationService`, `Api\V1\NotificationController` |
+| **Entity** | Implemented — `App\Entity\Notification\Notification` (`title_key` / `body_key` + params) |
+| **Write path** | Implemented — `NotificationHelper::sendTranslatedNotification()` stores keys + params |
+| **Read API** | Implemented — `NotificationService`, `NotificationPresenter`, `Api\V1\NotificationController` |
 | **In-game UI** | Implemented — navbar modal + unread badge (`notifications_controller.js`) |
 
 ### Existing write hooks (today)
@@ -48,9 +47,9 @@ These `NotificationType` cases exist in the enum but have **no writers**. Do not
 
 | Enum case | Value | Notes |
 |-----------|-------|--------|
-| `LeagueUpdate` | `league_update` | Unused |
-| `EventStarted` | `event_started` | Unused (world events are deferred) |
-| `SpellLearned` | `spell_learned` | Unused as a notification; team/hero chronicle already records spell learning |
+| `LeagueUpdate` | `league_update` | Reserved / unused |
+| `EventStarted` | `event_started` | Reserved / unused (world events are deferred) |
+| `SpellLearned` | `spell_learned` | Reserved / unused as a notification; team/hero chronicle already records spell learning |
 
 ---
 
@@ -61,7 +60,7 @@ These `NotificationType` cases exist in the enum but have **no writers**. Do not
 | **Scoped to `User`, not `Team`** | Alerts follow the account (inactivity, account-level system messages). Marketplace notifications go to the seller's user via their team ownership. |
 | **Separate from mail** | Mail (`community_message`) is player-to-player communication with optional team snapshot at send time. Notifications are one-way system → player alerts. |
 | **Separate from team chronicle** | Chronicle is append-only **team** history visible across managers. Notifications are ephemeral account alerts with read state. |
-| **Write-time translation (until A6.4)** | `title` and `body` store already-rendered strings in the recipient's locale at send time. Chronicle stores `subject_key` + params and translates at **read** time. Locale switch does **not** re-render existing notifications. A6.4 is the follow-up to match chronicle. |
+| **Read-time translation (A6.4)** | Same pattern as chronicle: store `title_key` / `body_key` + params; `NotificationPresenter` renders in the reader's locale. Locale switch re-renders keyed rows. Pre-A6.4 rows (keys null) keep frozen `title` / `body`. |
 | **Modal UI (not standalone page)** | Matches account settings and mail — opened from navbar, no `/app/notifications` route required initially. |
 | **No email duplication** | Inactivity already sends email; in-app notification is supplementary when the player returns. |
 
@@ -75,14 +74,18 @@ Entity: `App\Entity\Notification\Notification`
 |-------|------|-------|
 | `user_id` | FK → User | Owner |
 | `type` | `NotificationType` enum | Filtering + icon mapping |
-| `title` | string (200) | Headline **already translated** at write time |
-| `body` | text | Full message **already translated** at write time |
+| `title_key` | string (255), nullable | Symfony key under `notification.*`; null on pre-A6.4 rows |
+| `body_key` | string (255), nullable | Same as title_key |
+| `title_params` | JSON | Placeholders for the title key (default `[]`) |
+| `body_params` | JSON | Placeholders for the body key (default `[]`) |
+| `title` | string (200), nullable | Legacy write-time headline; unused when `title_key` is set |
+| `body` | text, nullable | Legacy write-time body; unused when `body_key` is set |
 | `is_read` | bool | Default `false` |
 | `created_at` | datetime | UTC |
 
-There is **no** `title_key` / `body_key` / params column. Index: `(user_id, is_read)`.
+Index: `(user_id, is_read)`.
 
-**Future optional fields** (not required for v1): `action_url` (deep link), `context` (JSON with `listing_id`, etc.). Schema for read-time i18n is A6.4, not live.
+**Future optional fields** (not required for v1): `action_url` (deep link), `context` (JSON with `listing_id`, etc.).
 
 ---
 
@@ -129,18 +132,24 @@ All routes require `ROLE_PLAYER`. Authorization: notification must belong to `ge
 }
 ```
 
-`title` / `body` in the JSON are the stored strings (write-time locale), not translation keys.
+`title` / `body` in the JSON are **rendered** strings in the current user's locale (not the stored keys).
 
 ---
 
-## Translation (write-time, until A6.4)
+## Translation (read-time, A6.4)
+
+Same pattern as team/hero chronicle (`subject_key` + params → presenter).
 
 1. Domain services call `NotificationHelper::sendTranslatedNotification($user, $type, $titleKey, $bodyKey, $titleParams, $bodyParams)`.
-2. `UserMessageTranslator::transForUser()` renders `notification.*` keys with **`$user->getLocale()` at send time**.
-3. The rendered strings are persisted on `Notification.title` / `Notification.body`.
-4. The read API and Stimulus modal display those columns as-is.
+2. The helper persists keys + params. It does **not** translate at send time. `title` / `body` stay null on new rows.
+3. `NotificationPresenter::present($notification, $user->getLocale())` renders `notification.*` keys for the **reader's** locale. Nested params:
+   - `facility` → `hq.facilities_list.{value}.name`
+   - `race` → `heroes.race_{value}` (skip empty / `—`)
+   - `status` / `status_text` → `activity.season_status.{value}` (`retained` maps to `maintained`)
+4. The read API and Stimulus modal display the presenter output.
+5. Rows with null keys (written before A6.4) fall back to the frozen `title` / `body` columns.
 
-Changing language in Account Settings therefore leaves older notifications in the locale they were written in. Chronicle already re-renders on locale switch; notifications do not until A6.4.
+Changing language in Account Settings therefore re-renders keyed notifications, matching chronicle.
 
 ---
 
@@ -148,7 +157,8 @@ Changing language in Account Settings therefore leaves older notifications in th
 
 | Class | Responsibility |
 |-------|----------------|
-| `NotificationHelper` | Write facade. Prefer `sendTranslatedNotification()`; `sendNotification()` persists already-rendered strings (used internally). Each send currently `flush()`es. |
+| `NotificationHelper` | Write facade. Prefer `sendTranslatedNotification()` (keys + params). `sendNotification()` persists already-rendered strings (legacy / tests). Each send currently `flush()`es. |
+| `NotificationPresenter` | Read-time i18n. Renders title/body in the given locale; nested facility / race / season-status params. |
 | `NotificationService` | `listForUser()`, `countForUser()`, `countUnread()`, `markRead()`, `markAllRead()` (bulk update, no 100-cap), `getForUser()` |
 
 Repository methods on `NotificationRepository`:
@@ -183,13 +193,13 @@ Navbar bell + badge are wired in `templates/components/layout/navbar.html.twig`.
 
 - Retention policy: delete read notifications older than 90 days (daily tick or cron)
 - `action_url` deep links (e.g. open economy tab on marketplace sale)
-- Notification preferences in `UserSettings` (per-type toggles) — deferred until email prefs are designed (A8.6)
+- Notification preferences in `UserSettings` (per-type toggles) — stay **Planned** (A8.6 keep Planned; later product decision). Live outbound mail is auth + inactivity only.
 
 ---
 
 ## Tests
 
-Unit coverage: `tests/Service/Notification/NotificationServiceTest.php`. Cross-user access is a 404 from `getForUser()` / `markRead()`.
+Unit coverage: `tests/Service/Notification/NotificationServiceTest.php`, `NotificationPresenterTest.php`, `NotificationHelperTest.php`. Cross-user access is a 404 from `getForUser()` / `markRead()`.
 
 ---
 

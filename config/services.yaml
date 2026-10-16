@@ -26,6 +26,10 @@ services:
     arguments:
       $projectDir: '%kernel.project_dir%'
 
+  App\Config\HeroProgressionConfig:
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+
   App\Service\Config\KingdomInitConfig:
     arguments:
       $projectDir: '%kernel.project_dir%'

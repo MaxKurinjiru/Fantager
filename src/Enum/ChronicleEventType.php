@@ -14,7 +14,10 @@ enum ChronicleEventType: string
     case BattleDraw = 'battle_draw';
     case HeroLevelup = 'hero_levelup';
     case HeroDied = 'hero_died';
+
+    /** Reserved / unused (A6.2). No retirement writer. Do not hook this case for completeness. */
     case HeroRetired = 'hero_retired';
+
     case TrainingCompleted = 'training_completed';
     case ItemPurchased = 'item_purchased';
     case ItemSold = 'item_sold';
@@ -37,4 +40,22 @@ enum ChronicleEventType: string
     case TrainerPromoted = 'trainer_promoted';
     case FinancialCrisisState = 'financial_crisis_state';
     case KingdomRewardGranted = 'kingdom_reward_granted';
+
+    /**
+     * Reserved cases stay on the enum (and DB column) but must not be written.
+     */
+    public function isReserved(): bool
+    {
+        return self::HeroRetired === $this;
+    }
+
+    /**
+     * Player-facing filter options — excludes reserved cases.
+     *
+     * @return list<self>
+     */
+    public static function liveCases(): array
+    {
+        return array_values(array_filter(self::cases(), static fn (self $case): bool => !$case->isReserved()));
+    }
 }

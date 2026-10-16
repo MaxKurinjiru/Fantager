@@ -4,7 +4,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#9-summoning-chamber-s
 
 **When:** Spend a cycle summon to roll a junior hero.
 
-**Status:** Panel inside HQ — not a standalone page. `GET /app/summon` → `/app/hq?facility=summoning_chamber`; history → `&subtab=history`. **Genie dual rule:** players use relationship ≥ 50 (Genie can roll all races); NPC marketplace may apply a stricter Genie-only filter (A7.9). `summon_stat_total_cap` is unused (A6.5).
+**Status:** Panel inside HQ — not a standalone page. `GET /app/summon` → `/app/hq?facility=summoning_chamber`; history → `&subtab=history`. Compatible-race cards follow the shared pool (Genie adaptation ≥ 80 → Genie / Human / Elf; [#14](../product/known-issues.md) Resolved / A7.9). `summon_stat_total_cap` is reserved / unread and is not shown as a chamber bonus (A6.5).
 
 **Live UI:** `templates/components/hq/facility_panel/_summoning.html.twig`, `templates/components/summoning/`.
 
@@ -46,7 +46,6 @@ Original sketch extras — do not treat as a contract:
 
 - Standalone `/app/summon` page (redirects)
 - Explicit min/max age and expected-stat range widgets
-- Player-facing Genie-only filter (decision is A7.9)
 
 ---
 

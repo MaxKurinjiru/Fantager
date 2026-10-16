@@ -1,0 +1,11 @@
+# Cumulative hero level curve (known-issue #6 / A7.1).
+# Changing these values does not relevel heroes until `app:hero-levels:refresh` runs.
+# Stored Hero.level is the live truth — do not derive level from XP on read.
+#
+# C(1) = 0
+# Cost to leave level L = coefficient × (L + 1)
+# Minimum total XP to be level n (n >= 2): C(n) = coefficient × (n × (n + 1) / 2 − 1)
+# Kingdom.level_cap (live default 20) is the storable max; XP may keep growing past C(cap).
+
+curve:
+  coefficient: 400

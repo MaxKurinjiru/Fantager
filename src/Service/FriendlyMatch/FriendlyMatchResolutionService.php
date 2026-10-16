@@ -18,7 +18,6 @@ use App\Enum\HeroStatus;
 use App\Enum\MatchType;
 use App\Enum\MemorialCause;
 use App\Enum\NotificationType;
-use App\Repository\Formation\FormationRepository;
 use App\Repository\FriendlyMatch\FriendlyMatchRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Combat\CombatEngine;
@@ -26,11 +25,11 @@ use App\Service\Combat\CombatMatchRequestBuilder;
 use App\Service\Combat\CombatSeedGenerator;
 use App\Service\Config\RaceConfig;
 use App\Service\Economy\FinancialCrisisService;
+use App\Service\Formation\MatchLineupService;
 use App\Service\Graveyard\GraveyardService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroMasteryService;
 use App\Service\Notification\NotificationHelper;
-use App\Service\Team\TeamRosterService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
@@ -49,8 +48,7 @@ class FriendlyMatchResolutionService
 {
     public function __construct(
         private readonly FriendlyMatchRepository $friendlyMatchRepository,
-        private readonly FormationRepository $formationRepository,
-        private readonly TeamRosterService $teamRosterService,
+        private readonly MatchLineupService $matchLineupService,
         private readonly TeamChronicleService $teamChronicleService,
         private readonly HeroMasteryService $heroMasteryService,
         private readonly HeroChronicleService $heroChronicleService,
@@ -64,6 +62,7 @@ class FriendlyMatchResolutionService
         private readonly NotificationHelper $notificationHelper,
         private readonly HeadquartersRepository $headquartersRepository,
         private readonly FinancialCrisisService $financialCrisisService,
+        private readonly \App\Service\Hero\HeroProgressionService $heroProgressionService,
     ) {
     }
 
@@ -116,31 +115,16 @@ class FriendlyMatchResolutionService
             ];
         }
 
-        // Both teams eligible — resolve formations
-        $homeFormation = $match->getHomeFormation();
-        if (null === $homeFormation) {
-            $homeFormation = $this->formationRepository->findOneBy([
-                'team' => $homeTeam,
-                'isDefault' => true,
-                'isTemporary' => false,
-            ]);
-        }
-
-        $awayFormation = $match->getAwayFormation();
-        if (null === $awayFormation) {
-            $awayFormation = $this->formationRepository->findOneBy([
-                'team' => $awayTeam,
-                'isDefault' => true,
-                'isTemporary' => false,
-            ]);
-        }
+        // Both teams eligible — resolve formations (assigned → default → roster fill)
+        $homeFormation = $this->matchLineupService->resolveForKickoff($homeTeam, $match->getHomeFormation());
+        $awayFormation = $this->matchLineupService->resolveForKickoff($awayTeam, $match->getAwayFormation());
 
         if (!$homeFormation instanceof Formation) {
-            throw new \RuntimeException(sprintf('Home team %d is missing a formation for friendly match %d.', $homeTeam->getId(), $match->getId() ?? 0));
+            throw new \RuntimeException(sprintf('Home team %d cannot field a match-ready lineup for friendly match %d.', $homeTeam->getId(), $match->getId() ?? 0));
         }
 
         if (!$awayFormation instanceof Formation) {
-            throw new \RuntimeException(sprintf('Away team %d is missing a formation for friendly match %d.', $awayTeam->getId(), $match->getId() ?? 0));
+            throw new \RuntimeException(sprintf('Away team %d cannot field a match-ready lineup for friendly match %d.', $awayTeam->getId(), $match->getId() ?? 0));
         }
 
         $seed = $this->seedGenerator->forFriendlyMatch($match);
@@ -430,7 +414,9 @@ class FriendlyMatchResolutionService
             );
         }
 
-        // 8. Mark match completed; null out formations (cleanup)
+        // 8. Drop auto-filled kickoff copies, then mark match completed
+        $this->matchLineupService->discardEphemeralKickoff($battle->getFormationA(), $match->getHomeFormation());
+        $this->matchLineupService->discardEphemeralKickoff($battle->getFormationB(), $match->getAwayFormation());
         $match->setStatus(FriendlyMatchStatus::Completed);
         $match->setHomeFormation(null);
         $match->setAwayFormation(null);
@@ -438,8 +424,8 @@ class FriendlyMatchResolutionService
 
     private function resolveForfeitOutcome(FriendlyMatch $match): ?MatchOutcome
     {
-        $homeEligible = $this->isTeamEligible($match->getHomeTeam());
-        $awayEligible = $this->isTeamEligible($match->getAwayTeam());
+        $homeEligible = $this->isTeamEligible($match->getHomeTeam(), $match->getHomeFormation());
+        $awayEligible = $this->isTeamEligible($match->getAwayTeam(), $match->getAwayFormation());
 
         if ($homeEligible && $awayEligible) {
             return null;
@@ -456,9 +442,9 @@ class FriendlyMatchResolutionService
         return MatchOutcome::forfeit(0, 0);
     }
 
-    private function isTeamEligible(Team $team): bool
+    private function isTeamEligible(Team $team, ?Formation $assigned): bool
     {
-        return $this->teamRosterService->countCombatReadyHeroes($team) >= TeamRosterService::MIN_COMBAT_READY_HEROES;
+        return $this->matchLineupService->canField($team, $assigned);
     }
 
     private function createBattle(
@@ -523,8 +509,8 @@ class FriendlyMatchResolutionService
             $formLoss = 8 + ($wasKo ? 7 : 0);
             $hero->setForm(max(0, $hero->getForm() - $formLoss));
 
-            $xp = (int) round((20 + ($won ? 15 : 0) + (10 * $kills)) * $multiplier);
-            $hero->setXp($hero->getXp() + $xp);
+            $baseXp = 20 + ($won ? 15 : 0) + (10 * $kills);
+            $xp = $this->heroProgressionService->applyMatchXp($hero, $team, $baseXp, $multiplier);
             $awarded += $xp;
         }
 

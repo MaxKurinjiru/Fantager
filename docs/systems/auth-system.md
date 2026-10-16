@@ -4,14 +4,14 @@ Reference: [architecture/overview.md](../architecture/overview.md#security-requi
 
 Status: Live (session email/password)  
 Screens: [00-auth-screens.md](../screens/00-auth-screens.md), [01-kingdom-selection.md](../screens/01-kingdom-selection.md), [19-player-profile-settings.md](../screens/19-player-profile-settings.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: password change / extra notification prefs (A8.6)
+Password change / extra settings stay **Planned** (A8.6 keep Planned)
 
 Purpose: Document authentication, registration, session management, and authorization.
 
 ## Remaining work
 
 - [x] Register (kingdom + nickname + NPC team), email verify, login, logout, password reset, account settings (locale, UI prefs, email change, delete)
-- [ ] Session password change (Design first → A8.6)
+- [ ] Session password change — stays **Planned** (A8.6 keep Planned; later product decision)
 - [ ] Extra security headers (CSP / HSTS / frame options) — deferred; cookies already httpOnly + `secure=auto` + `sameSite=lax`
 - [ ] Dedicated registration/login/session PHPUnit suite (today: `UserSettingsServiceTest`, `PlayerInactivityServiceTest`)
 
@@ -27,6 +27,7 @@ The auth system handles player identity and access control. The player selects a
 - **Session scoping**: `kingdom_id` from the authenticated user scopes all game data; no multi-kingdom switching (a player belongs to exactly one Kingdom).
 - **Authorization**: Role-based (`ROLE_PLAYER`, `ROLE_ADMIN`). Resource ownership is enforced in API/Web controllers (compare `getPlayerTeam()` / user team id to the requested resource). Symfony Security voters are not used yet.
 - **API auth**: Session-based (shared cookies); internal API only, no external consumers
+- **Liveness**: `GET /health` is outside the main firewall (`security: false`). No session, no auth. JSON `{ "status": "ok" }` only (A8.3).
 - **Future**: OAuth2/social login; JWT for public API when exposed externally
 
 ## CSRF Protection
@@ -211,4 +212,4 @@ Web session auth (implemented): register, verify-email, login, logout, password-
 ## Notes
 
 - OAuth2 / social login and JWT for a public API stay **future** (see Approach above).
-- Password change while logged in stays planned (A8.6 / screen 19). Email change and account deletion use signed tokens (routes on [architecture/routes.md](../architecture/routes.md#auth)).
+- Password change while logged in stays **Planned** (A8.6 keep Planned). Forgotten passwords use `/password-reset`. Email change and account deletion use signed tokens (routes on [architecture/routes.md](../architecture/routes.md#auth)). Do not ship a session password-change form, notification prefs, or privacy flags until a later product decision. Lock: [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned).

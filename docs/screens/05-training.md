@@ -57,7 +57,9 @@ Gold cost: none. Fatigue load and caps: [training-system.md](../systems/training
 
 Original sketch “View Trainer List” as a **separate** screen — not live; trainers are this page’s first tab.
 
-Batch training from the roster is **not** live (A7.7).
+## Cut
+
+Batch training from the roster is **Cut** (A7.7 / [#13](../product/known-issues.md) Resolved). Assign stays per trainer on this page and on hero-detail overview.
 
 ---
 

@@ -31,9 +31,9 @@ use App\Service\Hero\HeroMasteryService;
 use App\Service\League\LeagueFixtureCompletionService;
 use App\Service\League\LeagueMatchResolutionService;
 use App\Service\League\LeagueStandingService;
+use App\Service\Formation\MatchLineupService;
 use App\Service\Team\FanClubService;
 use App\Service\Team\TeamMoraleReputationService;
-use App\Service\Team\TeamRosterService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\CombatantSnapshot;
 use App\ValueObject\Combat\CombatMatchRequest;
@@ -93,14 +93,13 @@ class CombatDeathAndDurabilityTest extends TestCase
     {
         $fixtureRepository = $this->createStub(LeagueFixtureRepository::class);
         $standingRepository = $this->createStub(LeagueStandingRepository::class);
-        $teamRosterService = $this->createStub(TeamRosterService::class);
+        $matchLineupService = $this->createStub(MatchLineupService::class);
         $fixtureCompletionService = $this->createStub(LeagueFixtureCompletionService::class);
         $fanClubService = $this->createStub(FanClubService::class);
         $teamMoraleReputationService = $this->createStub(TeamMoraleReputationService::class);
         $teamChronicleService = $this->createStub(TeamChronicleService::class);
         $heroMasteryService = $this->createStub(HeroMasteryService::class);
         $heroChronicleService = $this->createStub(HeroChronicleService::class);
-        $formationRepository = $this->createStub(\App\Repository\Formation\FormationRepository::class);
         $em = $this->createStub(EntityManagerInterface::class);
         $requestBuilder = $this->createStub(CombatMatchRequestBuilder::class);
         $seedGenerator = new CombatSeedGenerator();
@@ -114,7 +113,7 @@ class CombatDeathAndDurabilityTest extends TestCase
         $service = new LeagueMatchResolutionService(
             $fixtureRepository,
             $standingRepository,
-            $teamRosterService,
+            $matchLineupService,
             new LeagueStandingService(),
             $fixtureCompletionService,
             $fanClubService,
@@ -122,7 +121,6 @@ class CombatDeathAndDurabilityTest extends TestCase
             $teamChronicleService,
             $heroMasteryService,
             $heroChronicleService,
-            $formationRepository,
             $em,
             $requestBuilder,
             $seedGenerator,
@@ -133,6 +131,7 @@ class CombatDeathAndDurabilityTest extends TestCase
             $this->createStub(\App\Service\Notification\NotificationHelper::class),
             $this->createStub(\App\Repository\Headquarters\HeadquartersRepository::class),
             $this->createStub(\App\Service\Economy\FinancialCrisisService::class),
+            $this->createStub(\App\Service\Hero\HeroProgressionService::class),
         );
 
 
@@ -376,6 +375,9 @@ class CombatDeathAndDurabilityTest extends TestCase
      */
     private function battleForRewards(Team $homeTeam, Team $awayTeam, Hero $homeHero, Hero $awayHero, array $combatLog): array
     {
+        $this->stubKingdomOn($homeTeam);
+        $this->stubKingdomOn($awayTeam);
+
         $fixture = $this->createStub(LeagueFixture::class);
         $fixture->method('getGroup')->willReturn($this->createStub(LeagueGroup::class));
         $fixture->method('getHomeTeam')->willReturn($homeTeam);
@@ -443,7 +445,7 @@ class CombatDeathAndDurabilityTest extends TestCase
         return new LeagueMatchResolutionService(
             $this->createStub(LeagueFixtureRepository::class),
             $standingRepository,
-            $this->createStub(TeamRosterService::class),
+            $this->createStub(MatchLineupService::class),
             new LeagueStandingService(),
             $this->createStub(LeagueFixtureCompletionService::class),
             $this->createStub(FanClubService::class),
@@ -451,7 +453,6 @@ class CombatDeathAndDurabilityTest extends TestCase
             $this->createStub(TeamChronicleService::class),
             $this->createStub(HeroMasteryService::class),
             $this->createStub(HeroChronicleService::class),
-            $this->createStub(\App\Repository\Formation\FormationRepository::class),
             $em,
             $this->createStub(CombatMatchRequestBuilder::class),
             new CombatSeedGenerator(),
@@ -462,7 +463,24 @@ class CombatDeathAndDurabilityTest extends TestCase
             $this->createStub(\App\Service\Notification\NotificationHelper::class),
             $headquartersRepository,
             $financialCrisisService,
+            $this->heroProgressionForRewards(),
         );
+    }
+
+    private function heroProgressionForRewards(): \App\Service\Hero\HeroProgressionService
+    {
+        return new \App\Service\Hero\HeroProgressionService(
+            new \App\Config\HeroProgressionConfig(dirname(__DIR__, 3)),
+            $this->createStub(\App\Service\Hero\HeroService::class),
+        );
+    }
+
+    private function stubKingdomOn(Team $team): void
+    {
+        $kingdom = $this->createStub(\App\Entity\Kingdom\Kingdom::class);
+        $kingdom->method('getXpModifier')->willReturn('1.00');
+        $kingdom->method('getLevelCap')->willReturn(20);
+        $team->method('getKingdom')->willReturn($kingdom);
     }
 
     private function buildStats(int $hp, int $atk): DerivedCombatStats

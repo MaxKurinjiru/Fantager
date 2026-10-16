@@ -289,12 +289,6 @@ class SeasonTransitionService
 
             // 3. Send Notification to Manager
             if (null !== $team->getUser()) {
-                $statusText = match ($status) {
-                    'promoted' => 'postup',
-                    'relegated' => 'sestup',
-                    default => 'udržení pozice',
-                };
-
                 $this->notificationHelper->sendTranslatedNotification(
                     $team->getUser(),
                     \App\Enum\NotificationType::SeasonEnded,
@@ -304,7 +298,7 @@ class SeasonTransitionService
                     [
                         '%season%' => $currentSeasonNumber,
                         '%position%' => $position,
-                        '%status_text%' => $statusText,
+                        '%status_text%' => $status,
                         '%reward%' => $goldGranted,
                     ]
                 );

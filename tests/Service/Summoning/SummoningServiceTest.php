@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\Summoning;
 
+use App\Entity\Headquarters\Headquarters;
 use App\Entity\Hero\Hero;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
+use App\Enum\Race;
 use App\Service\Config\RaceConfig;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
@@ -128,6 +130,52 @@ class SummoningServiceTest extends TestCase
         $this->assertSame(1, $status['summons_max']);
         // Base cost: 500, inflation: 1 + 0.5 * 1 = 1.5, cost = 750
         $this->assertSame(750, $status['gold_cost']);
+    }
+
+    public function testGetCompatibleRacesForTeamWithoutAdaptationReturnsAllRaces(): void
+    {
+        $team = $this->createTeam(speed: '1.00', gold: 1000, summonsThisCycle: 0);
+
+        $hqRepoMock = $this->createMock(EntityRepository::class);
+        $hqRepoMock->method('findOneBy')->willReturn(null);
+
+        $this->entityManagerMock
+            ->method('getRepository')
+            ->willReturnMap([
+                [Headquarters::class, $hqRepoMock],
+            ]);
+
+        $this->raceConfigMock
+            ->expects($this->never())
+            ->method('getCompatibleRacesForAdaptation');
+
+        $this->assertSame(Race::cases(), $this->service->getCompatibleRacesForTeam($team));
+    }
+
+    public function testGetCompatibleRacesForTeamDelegatesGenieAdaptationBar(): void
+    {
+        $team = $this->createTeam(speed: '1.00', gold: 1000, summonsThisCycle: 0);
+        $hq = new Headquarters();
+        $hq->setTeam($team);
+        $hq->setRaceOptimization(Race::Genie->value);
+
+        $hqRepoMock = $this->createMock(EntityRepository::class);
+        $hqRepoMock->method('findOneBy')->willReturn($hq);
+
+        $this->entityManagerMock
+            ->method('getRepository')
+            ->willReturnMap([
+                [Headquarters::class, $hqRepoMock],
+            ]);
+
+        $expected = [Race::Human, Race::Elf, Race::Genie];
+        $this->raceConfigMock
+            ->expects($this->once())
+            ->method('getCompatibleRacesForAdaptation')
+            ->with(Race::Genie)
+            ->willReturn($expected);
+
+        $this->assertSame($expected, $this->service->getCompatibleRacesForTeam($team));
     }
 
     public function testGetStatusWithFastSpeedScalesLimit(): void

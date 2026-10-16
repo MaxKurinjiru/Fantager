@@ -15,15 +15,13 @@ use App\Enum\LeagueFixtureStatus;
 use App\Enum\MatchType;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueStandingRepository;
-use App\Service\Combat\MatchSimulatorInterface;
 use App\Service\League\LeagueFixtureCompletionService;
 use App\Service\League\LeagueMatchResolutionService;
 use App\Service\League\LeagueStandingService;
+use App\Service\Formation\MatchLineupService;
 use App\Service\Team\FanClubService;
 use App\Service\Team\TeamMoraleReputationService;
-use App\Service\Team\TeamRosterService;
 use App\Service\TeamChronicle\TeamChronicleService;
-use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\Combat\CombatMatchRequestBuilder;
 use App\Service\Combat\CombatSeedGenerator;
@@ -40,8 +38,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
     private $fixtureRepository;
     /** @var \PHPUnit\Framework\MockObject\MockObject&LeagueStandingRepository */
     private $standingRepository;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&TeamRosterService */
-    private $teamRosterService;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&MatchLineupService */
+    private $matchLineupService;
     /** @var \PHPUnit\Framework\MockObject\MockObject&LeagueFixtureCompletionService */
     private $fixtureCompletionService;
     /** @var \PHPUnit\Framework\MockObject\MockObject&FanClubService */
@@ -52,8 +50,6 @@ class LeagueMatchResolutionServiceTest extends TestCase
     private $teamChronicleService;
     /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
     private $em;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Repository\Formation\FormationRepository */
-    private $formationRepository;
     /** @var \PHPUnit\Framework\MockObject\MockObject&CombatMatchRequestBuilder */
     private $requestBuilder;
     /** @var CombatSeedGenerator */
@@ -72,12 +68,11 @@ class LeagueMatchResolutionServiceTest extends TestCase
     {
         $this->fixtureRepository = $this->createMock(LeagueFixtureRepository::class);
         $this->standingRepository = $this->createMock(LeagueStandingRepository::class);
-        $this->teamRosterService = $this->createMock(TeamRosterService::class);
+        $this->matchLineupService = $this->createMock(MatchLineupService::class);
         $this->fixtureCompletionService = $this->createMock(LeagueFixtureCompletionService::class);
         $this->fanClubService = $this->createMock(FanClubService::class);
         $this->teamMoraleReputationService = $this->createMock(TeamMoraleReputationService::class);
         $this->teamChronicleService = $this->createMock(TeamChronicleService::class);
-        $this->formationRepository = $this->createMock(\App\Repository\Formation\FormationRepository::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->requestBuilder = $this->createMock(CombatMatchRequestBuilder::class);
         $this->seedGenerator = new CombatSeedGenerator();
@@ -89,7 +84,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->service = new LeagueMatchResolutionService(
             $this->fixtureRepository,
             $this->standingRepository,
-            $this->teamRosterService,
+            $this->matchLineupService,
             new LeagueStandingService(),
             $this->fixtureCompletionService,
             $this->fanClubService,
@@ -97,7 +92,6 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->teamChronicleService,
             $this->createMock(\App\Service\Hero\HeroMasteryService::class),
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
-            $this->formationRepository,
             $this->em,
             $this->requestBuilder,
             $this->seedGenerator,
@@ -108,6 +102,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->createMock(\App\Service\Notification\NotificationHelper::class),
             $this->createMock(\App\Repository\Headquarters\HeadquartersRepository::class),
             $this->createMock(\App\Service\Economy\FinancialCrisisService::class),
+            $this->createStub(\App\Service\Hero\HeroProgressionService::class),
         );
     }
 
@@ -115,10 +110,9 @@ class LeagueMatchResolutionServiceTest extends TestCase
     public function testResolveFixtureInitializesSimulatingBattle(): void
     {
         [$fixture, $homeStanding, $awayStanding] = $this->createFixtureContext();
-        $this->teamRosterService->method('countCombatReadyHeroes')->willReturn(6);
-
         $formation = new \App\Entity\Formation\Formation();
-        $this->formationRepository->method('findOneBy')->willReturn($formation);
+        $this->matchLineupService->method('canField')->willReturn(true);
+        $this->matchLineupService->method('resolveForKickoff')->willReturn($formation);
 
         $sideA = new \App\ValueObject\Combat\CombatSide(1, 101, \App\Enum\FormationApproach::Balanced, $this->buildCombatants(100));
         $sideB = new \App\ValueObject\Combat\CombatSide(2, 102, \App\Enum\FormationApproach::Balanced, $this->buildCombatants(200));
@@ -170,10 +164,9 @@ class LeagueMatchResolutionServiceTest extends TestCase
     public function testResolveFixtureDoesNotDispatchWaveUntilCohortFullyInitialized(): void
     {
         [$fixture] = $this->createFixtureContext();
-        $this->teamRosterService->method('countCombatReadyHeroes')->willReturn(6);
-
         $formation = new \App\Entity\Formation\Formation();
-        $this->formationRepository->method('findOneBy')->willReturn($formation);
+        $this->matchLineupService->method('canField')->willReturn(true);
+        $this->matchLineupService->method('resolveForKickoff')->willReturn($formation);
 
         $sideA = new \App\ValueObject\Combat\CombatSide(1, 101, \App\Enum\FormationApproach::Balanced, $this->buildCombatants(100));
         $sideB = new \App\ValueObject\Combat\CombatSide(2, 102, \App\Enum\FormationApproach::Balanced, $this->buildCombatants(200));
@@ -262,10 +255,11 @@ class LeagueMatchResolutionServiceTest extends TestCase
     {
         [$fixture, $homeStanding, $awayStanding] = $this->createFixtureContext();
 
-        $this->teamRosterService->method('countCombatReadyHeroes')->willReturnMap([
-            [$fixture->getHomeTeam(), 8],
-            [$fixture->getAwayTeam(), 4],
-        ]);
+        $this->matchLineupService->method('canField')->willReturnCallback(
+            function (Team $team) use ($fixture): bool {
+                return $team === $fixture->getHomeTeam();
+            }
+        );
         $this->standingRepository->method('findOneBy')->willReturnMap([
             [['group' => $fixture->getGroup(), 'team' => $fixture->getHomeTeam()], $homeStanding],
             [['group' => $fixture->getGroup(), 'team' => $fixture->getAwayTeam()], $awayStanding],
@@ -295,7 +289,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
     {
         [$fixture, $homeStanding, $awayStanding] = $this->createFixtureContext();
 
-        $this->teamRosterService->method('countCombatReadyHeroes')->willReturn(3);
+        $this->matchLineupService->method('canField')->willReturn(false);
         $this->standingRepository->method('findOneBy')->willReturnMap([
             [['group' => $fixture->getGroup(), 'team' => $fixture->getHomeTeam()], $homeStanding],
             [['group' => $fixture->getGroup(), 'team' => $fixture->getAwayTeam()], $awayStanding],
@@ -330,7 +324,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $partial->__construct(
             $this->fixtureRepository,
             $this->standingRepository,
-            $this->teamRosterService,
+            $this->matchLineupService,
             new LeagueStandingService(),
             $this->fixtureCompletionService,
             $this->fanClubService,
@@ -338,7 +332,6 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->teamChronicleService,
             $this->createMock(\App\Service\Hero\HeroMasteryService::class),
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
-            $this->formationRepository,
             $this->em,
             $this->requestBuilder,
             $this->seedGenerator,

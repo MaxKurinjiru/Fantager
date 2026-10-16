@@ -65,6 +65,18 @@
      data-formation-error-promote-value="{{ 'js_flash.formation.failed_promote'|trans }}"
      data-formation-prompt-promote-name-value="{{ 'js_flash.formation.prompt_promote_name'|trans }}"
      data-formation-level-label-value="{{ 'js_flash.formation.lvl_short'|trans }}"
+     data-formation-empty-hero-value="{{ 'formation.tactics_empty_hero'|trans }}"
+     data-formation-add-spell-value="{{ 'formation.tactics_add_spell'|trans }}"
+     data-formation-slot-labels-value="{{ {
+         front_1: 'formation.slots.front_1'|trans,
+         front_2: 'formation.slots.front_2'|trans,
+         front_3: 'formation.slots.front_3'|trans,
+         back_1: 'formation.slots.back_1'|trans,
+         back_2: 'formation.slots.back_2'|trans,
+         back_3: 'formation.slots.back_3'|trans
+     }|json_encode }}"
+     data-formation-slot-tactics-value="{{ (slot_tactics|default({}))|json_encode|e('html_attr') }}"
+     data-formation-hero-spells-value="{{ (hero_spells|default({}))|json_encode|e('html_attr') }}"
      data-formation-races-value="{{ {
          human: 'heroes.race_human'|trans,
          elf: 'heroes.race_elf'|trans,
@@ -131,7 +143,14 @@
             <p class="feature-panel__desc">{{ 'formation.starting_lineup_desc'|trans }}</p>
         </div>
 
-        {% include 'components/formation/pitch_grid.html.twig' with { current_slots: current_slots, heroes: heroes } %}
+        <div class="screen-grid">
+            <div class="screen-grid__main">
+                {% include 'components/formation/pitch_grid.html.twig' with { current_slots: current_slots, heroes: heroes } %}
+            </div>
+            <div class="screen-grid__aside">
+                {% include 'components/formation/slot_tactics.html.twig' %}
+            </div>
+        </div>
     </div>
 
     {% include 'components/formation/hero_pool.html.twig' with { heroes: heroes } %}

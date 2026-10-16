@@ -4,7 +4,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#17-community-screen) 
 
 **When:** Kingdom forum, public player/team profiles, and private mail.
 
-**Status:** Live forum hub at `/app/community`. Mail is the **navbar modal**, not a community tab. News is public `/news`. Kingdom rankings are the League **Kingdom Leaderboard** tab — there is no `/api/v1/leaderboards` route. Forum `is_pinned` is **stored and shown** but has **no write API** ([roadmap A6.3](../roadmap/current.md)).
+**Status:** Live forum hub at `/app/community`. Mail is the **navbar modal**, not a community tab. News is public `/news`. Kingdom rankings are the League **Kingdom Leaderboard** tab — there is no `/api/v1/leaderboards` route. Forum `is_pinned` is **stored and shown** when true, but **unsettable** in the app ([roadmap A6.3](../roadmap/current.md) Cut — no pin/unpin API, no admin pin).
 
 **Live UI:** `templates/community/`, `templates/components/community/`, Stimulus `community_forum`, `community_thread`, `mail`, `player-profile`.
 
@@ -93,7 +93,7 @@ Original sketch extras — do not treat as a contract:
 
 - Community tabs for leaderboards, mail, or news
 - Dedicated `/api/v1/leaderboards` (use League)
-- Pin / unpin in the UI (A6.3)
+- Pin / unpin in the UI — **cut** (A6.3): field + display only
 - Notable heroes, recent match history, win/loss on the public profile
 - Email notifications for forum/mail (auth + inactivity mail only today)
 - Report / moderator tools beyond author lock and content filter

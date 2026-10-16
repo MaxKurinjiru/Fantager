@@ -390,17 +390,25 @@
 
   .marketplace-suggested-price {
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+
+  .marketplace-suggested-price__row {
+    display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem 0.75rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--color-text-muted, #9ca3af);
   }
 
-  .marketplace-suggested-price__value {
+  .marketplace-suggested-price__value,
+  .marketplace-suggested-price__range {
     font-weight: 600;
-    color: var(--color-gold, #d4a843);
+    color: var(--color-gold);
   }
 
   .marketplace-card__seller-reputation {

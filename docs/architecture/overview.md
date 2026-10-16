@@ -104,11 +104,10 @@ assets/ (source)
 ### Testing Strategy
 - **Unit Tests**: PHPUnit for Service and Repository layer testing
 - **Integration Tests**: PHPUnit with test database for API endpoint and workflow testing
-- **End-to-End Tests**: Playwright — planned for Phase 3; not yet installed (no `npm run test:e2e` script)
+- **Browser E2E**: Not in the live toolchain (**A8.2 Cut**). No Playwright package, no `playwright.config`, no `npm run test:e2e`. A later product decision is required before adding a browser suite (register → dashboard → training or summon was the sketched first slice).
 - **Coverage Target**: Aspirational 70% on Services and Controllers; current focus is core economy, calendar, league, combat, and service tests under `tests/Service/`
 - **Commands**:
-  - `composer test` — Run PHPUnit
-  - `npm run test:e2e` — Reserved for future Playwright suite
+  - `composer test` — Run PHPUnit (also in CI: `.github/workflows/phpunit.yml` on `src/**/*.php` and `tests/**`)
 
 ### Git Workflow
 - **Branching**: Feature branches from `main` or `develop`
@@ -145,6 +144,9 @@ assets/ (source)
 - Production: all unhandled exceptions and errors reported to Sentry with environment, release, and user context
 - Symfony integration: `Sentry\SentryBundle` registers automatically via Flex; configure DSN in `.env.local` / environment variable `SENTRY_DSN`
 - **Do not log sensitive data** (passwords, tokens) — scrub PII in `before_send` hook using [SentryBeforeSendCallback](../../src/Service/Sentry/SentryBeforeSendCallback.php)
+
+### Liveness
+- **`GET /health`**: unauthenticated JSON `{ "status": "ok" }` (A8.3). Process liveness only — no database ping, no env/version/DSN. Dedicated firewall with `security: false` (no session). `Cache-Control: no-store`. Not a readiness probe.
 
 ### Metrics & APM
 - Response times, error rates, and custom business metrics
@@ -217,7 +219,6 @@ docker exec -it fantager-web php bin/console doctrine:migrations:migrate
 - [x] PHP-CS-Fixer available and configured (`.php-cs-fixer.dist.php`): `docker exec -it fantager-web composer php-cs`
 - [x] PHPStan available via Composer: `docker exec -it fantager-web composer phpstan`
 - [x] PHPUnit available and passing: `docker exec -it fantager-web composer test`
-- [ ] Playwright not yet installed — E2E tests pending
 
 ### Local Environment (Docker)
 - [x] Docker Desktop / Docker Engine installed on host
@@ -226,7 +227,7 @@ docker exec -it fantager-web php bin/console doctrine:migrations:migrate
 - [x] Database accessible from the `fantager-web` container as `db`/`fantager-db` service
 
 ### CI/CD & Deployment
-- [x] GitHub Actions workflows under `.github/workflows/` — PHPStan (`phpstan.yml`), UI compliance, backend-docs checks, deploy. PHPUnit is **not** in CI; run `composer test` locally or in the web container.
+- [x] GitHub Actions workflows under `.github/workflows/` — PHPStan (`phpstan.yml`), PHPUnit (`phpunit.yml`, `composer test`), UI compliance, backend-docs checks, deploy.
 - [ ] Deployment process documented; images/tags and secret management described
 - [x] Database backup strategy documented in [Backups and Recovery](#backups-and-recovery)
 
@@ -309,7 +310,7 @@ Production backups should follow the retention and verification policy in the se
 - [x] Document security and deployment strategy
 - [x] Create technology stack checklist
 - [x] Set up local development environment (Docker + README)
-- [x] GitHub Actions for PHPStan, UI compliance, and backend-docs (PHPUnit still local-only)
+- [x] GitHub Actions for PHPStan, PHPUnit (`composer test`), UI compliance, and backend-docs
 
 ### Phase 2: Implementation ✅ Backend largely done
 - [x] Create Dockerfile and docker-compose.yml
@@ -317,7 +318,6 @@ Production backups should follow the retention and verification policy in the se
 - [x] Implement database schema (init migration covers full current schema)
 - [x] Create Service layer foundation (Auth, Kingdom, Team, Hero, Summoning, Training, HQ, Economy, Item, Spell, Formation)
 - [x] Set up PHPUnit testing framework (`tests/` service and controller coverage; run via `composer test`)
-- [ ] Set up Playwright for E2E tests (not yet installed)
 
 ### Phase 3: Production Readiness (Future)
 - [ ] Deploy to staging environment
@@ -328,4 +328,4 @@ Production backups should follow the retention and verification policy in the se
 
 ---
 
-**Document Status**: Last updated 15 October 2026. Dual-layer route examples match live `/app/heroes` and `POST /api/v1/training/trainers/{id}/assign` (A3.3).
+**Document Status**: Last updated 16 October 2026. Dual-layer route examples match live `/app/heroes` and `POST /api/v1/training/trainers/{id}/assign` (A3.3). Browser E2E / Playwright is A8.2 Cut — not in the live toolchain.

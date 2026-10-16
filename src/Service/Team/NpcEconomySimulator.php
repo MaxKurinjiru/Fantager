@@ -622,12 +622,7 @@ class NpcEconomySimulator
                 } elseif (ListingType::Hero === $listing->getListingType()) {
                     $hero = $listing->getHero();
                     if (null !== $hero && $hero->getLevel() >= 1) {
-                        $theme = $this->summoningService->getArenaRaceTheme($team);
-                        if (Race::Genie === $theme) {
-                            $compatibleRaces = [Race::Genie];
-                        } else {
-                            $compatibleRaces = $this->summoningService->getCompatibleRacesForTeam($team);
-                        }
+                        $compatibleRaces = $this->summoningService->getCompatibleRacesForTeam($team);
 
                         if (\in_array($hero->getRace(), $compatibleRaces, true)) {
                             if (NpcSimulationService::ROLE_MERCENARY_ACADEMY === $role) {
@@ -851,19 +846,7 @@ class NpcEconomySimulator
 
     private function calculateItemMarketPrice(Item $item): int
     {
-        $merchantPrice = $this->itemService->getBasicItemMerchantPrice($item);
-        if (null !== $merchantPrice) {
-            return (int) round($merchantPrice * 0.7);
-        }
-
-        return match ($item->getRarity()) {
-            ItemRarity::Common => 75,
-            ItemRarity::Uncommon => 180,
-            ItemRarity::Rare => 400,
-            ItemRarity::Epic => 1000,
-            ItemRarity::Legendary => 2500,
-            ItemRarity::Mythic => 6000,
-        };
+        return $this->itemService->estimateMarketPrice($item);
     }
 
     private function calculateHeroMarketPrice(Hero $hero): int

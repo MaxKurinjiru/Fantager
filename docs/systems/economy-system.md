@@ -37,9 +37,9 @@ Every gold modification is recorded in the `FinancialRecord` entity.
 
 ### Implemented `FinancialRecordType` values
 
-`league_reward`, `arena_revenue`, `summon_fee`, `marketplace_sale`, `marketplace_purchase`, `marketplace_fee`, `dismantle_gain`, `item_repair`, `spell_learning_cost`, `hq_upgrade_cost`, `hq_maintenance_fee`, `morale_restoration`, `debt_repayment`, `hero_dismissal_compensation`, `trainer_dismissal_compensation`, `hq_downgrade_refund`, `hq_upgrade_refund`, `kingdom_reward`, **`hero_salary`**, **`trainer_salary`**
+`league_reward`, `arena_revenue`, `summon_fee`, `marketplace_sale`, `marketplace_purchase`, `marketplace_fee`, `dismantle_gain`, `item_repair`, `spell_learning_cost`, `hq_upgrade_cost`, `hq_maintenance_fee`, `debt_repayment`, `hero_dismissal_compensation`, `trainer_dismissal_compensation`, `hq_downgrade_refund`, `hq_upgrade_refund`, `kingdom_reward`, **`hero_salary`**, **`trainer_salary`**
 
-`spell_slot_cost` remains in the enum for legacy/history only — magic capacity expands via training; the ledger type is never written.
+**Reserved / unused (A6.2):** `spell_slot_cost` (magic capacity expands via training) and `morale_restoration` (no gold sink). Keep the enum cases and column; do not write them. `/app/finance` type filters use `FinancialRecordType::liveCases()`.
 
 ---
 
@@ -88,6 +88,8 @@ Each team has a **`fan_base`** (default 350, range 0–10 000) that drives arena
 | **Show-up rate** | On demand | Short-term multiplier from reputation, morale, chemistry — used by `ArenaRevenueService` |
 
 Attendance formula (home match): home fans × show-up rate + away fans × 35% travel rate, capped by arena seating capacity.
+
+Payout context (`attendance`, `capacity`, `ticket_price`, opponent) is stored on `FinancialRecord` (`arena_revenue`). The HQ arena panel charts the last **18** of those rows ([#4](../product/known-issues.md) Resolved / A7.8). See [18-arena-management.md](../screens/18-arena-management.md#locked-attendance-analytics).
 
 ---
 

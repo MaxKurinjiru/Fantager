@@ -48,7 +48,8 @@ final class DerivedCombatStats
          */
         private bool $isConsistentDamage = false,
         /**
-         * Pokud true, hrdina ignoruje race relationship synergy bonusy i postihy (Loner).
+         * Reserved in-combat synergy hook (A7.5 / #9 Cut). True for Loner.
+         * Serialized; CombatEngine does not read it.
          */
         private bool $ignoresRaceSynergy = false,
         /** Equipped-profile morale band. 1.0 at morale 40–59. Applied to physical and offensive-spell damage. */

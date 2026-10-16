@@ -35,7 +35,7 @@ enum ChronicleCategory: string
                 ChronicleEventType::StartingRoster,
                 ChronicleEventType::HeroLevelup,
                 ChronicleEventType::HeroDied,
-                ChronicleEventType::HeroRetired,
+                ChronicleEventType::HeroRetired, // reserved / unused (A6.2); kept so any legacy row still groups under roster
                 ChronicleEventType::TrainingCompleted,
                 ChronicleEventType::SummonCompleted,
                 ChronicleEventType::HeroDismissed,

@@ -20,7 +20,6 @@ use App\Enum\HeroStatus;
 use App\Enum\LeagueFixtureStatus;
 use App\Enum\MatchType;
 use App\Enum\MemorialCause;
-use App\Repository\Formation\FormationRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Repository\League\LeagueStandingRepository;
@@ -29,11 +28,11 @@ use App\Service\Combat\CombatMatchRequestBuilder;
 use App\Service\Combat\CombatSeedGenerator;
 use App\Service\Config\RaceConfig;
 use App\Service\Economy\FinancialCrisisService;
+use App\Service\Formation\MatchLineupService;
 use App\Service\Graveyard\GraveyardService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Team\FanClubService;
 use App\Service\Team\TeamMoraleReputationService;
-use App\Service\Team\TeamRosterService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
@@ -44,7 +43,7 @@ class LeagueMatchResolutionService
     public function __construct(
         private readonly LeagueFixtureRepository $fixtureRepository,
         private readonly LeagueStandingRepository $standingRepository,
-        private readonly TeamRosterService $teamRosterService,
+        private readonly MatchLineupService $matchLineupService,
         private readonly LeagueStandingService $standingService,
         private readonly LeagueFixtureCompletionService $fixtureCompletionService,
         private readonly FanClubService $fanClubService,
@@ -52,7 +51,6 @@ class LeagueMatchResolutionService
         private readonly TeamChronicleService $teamChronicleService,
         private readonly \App\Service\Hero\HeroMasteryService $heroMasteryService,
         private readonly HeroChronicleService $heroChronicleService,
-        private readonly FormationRepository $formationRepository,
         private readonly EntityManagerInterface $em,
         private readonly CombatMatchRequestBuilder $requestBuilder,
         private readonly CombatSeedGenerator $seedGenerator,
@@ -63,6 +61,7 @@ class LeagueMatchResolutionService
         private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
         private readonly HeadquartersRepository $headquartersRepository,
         private readonly FinancialCrisisService $financialCrisisService,
+        private readonly \App\Service\Hero\HeroProgressionService $heroProgressionService,
     ) {
     }
 
@@ -170,30 +169,23 @@ class LeagueMatchResolutionService
         $homeTeam = $fixture->getHomeTeam();
         $awayTeam = $fixture->getAwayTeam();
 
-        $homeFormation = $fixture->getHomeFormation();
-        if (null === $homeFormation) {
-            $homeFormation = $this->formationRepository->findOneBy([
-                'team' => $homeTeam,
-                'isDefault' => true,
-                'isTemporary' => false,
-            ]);
-        }
-
-        $awayFormation = $fixture->getAwayFormation();
-        if (null === $awayFormation) {
-            $awayFormation = $this->formationRepository->findOneBy([
-                'team' => $awayTeam,
-                'isDefault' => true,
-                'isTemporary' => false,
-            ]);
-        }
+        $homeFormation = $this->matchLineupService->resolveForKickoff(
+            $homeTeam,
+            $fixture->getHomeFormation(),
+            $fixture,
+        );
+        $awayFormation = $this->matchLineupService->resolveForKickoff(
+            $awayTeam,
+            $fixture->getAwayFormation(),
+            $fixture,
+        );
 
         if (!$homeFormation instanceof Formation) {
-            throw new \RuntimeException(sprintf('Home team %d is missing a formation.', $homeTeam->getId()));
+            throw new \RuntimeException(sprintf('Home team %d cannot field a match-ready lineup.', $homeTeam->getId()));
         }
 
         if (!$awayFormation instanceof Formation) {
-            throw new \RuntimeException(sprintf('Away team %d is missing a formation.', $awayTeam->getId()));
+            throw new \RuntimeException(sprintf('Away team %d cannot field a match-ready lineup.', $awayTeam->getId()));
         }
 
         $seed = $this->seedGenerator->forLeagueFixture($fixture);
@@ -519,8 +511,8 @@ class LeagueMatchResolutionService
 
     private function resolveForfeitOutcome(LeagueFixture $fixture): ?MatchOutcome
     {
-        $homeEligible = $this->isTeamEligible($fixture->getHomeTeam());
-        $awayEligible = $this->isTeamEligible($fixture->getAwayTeam());
+        $homeEligible = $this->isTeamEligible($fixture->getHomeTeam(), $fixture);
+        $awayEligible = $this->isTeamEligible($fixture->getAwayTeam(), $fixture);
 
         if ($homeEligible && $awayEligible) {
             return null;
@@ -537,9 +529,11 @@ class LeagueMatchResolutionService
         return MatchOutcome::forfeit(0, 0);
     }
 
-    private function isTeamEligible(Team $team): bool
+    private function isTeamEligible(Team $team, LeagueFixture $fixture): bool
     {
-        return $this->teamRosterService->countCombatReadyHeroes($team) >= TeamRosterService::MIN_COMBAT_READY_HEROES;
+        $assigned = $fixture->getHomeTeam() === $team ? $fixture->getHomeFormation() : $fixture->getAwayFormation();
+
+        return $this->matchLineupService->canField($team, $assigned);
     }
 
     private function createBattle(
@@ -620,8 +614,8 @@ class LeagueMatchResolutionService
             $formLoss = 8 + ($wasKo ? 7 : 0);
             $hero->setForm(max(0, $hero->getForm() - $formLoss));
 
-            $xp = (int) round((20 + ($won ? 15 : 0) + (10 * $kills)) * $multiplier);
-            $hero->setXp($hero->getXp() + $xp);
+            $baseXp = 20 + ($won ? 15 : 0) + (10 * $kills);
+            $xp = $this->heroProgressionService->applyMatchXp($hero, $team, $baseXp, $multiplier);
             $awarded += $xp;
         }
 

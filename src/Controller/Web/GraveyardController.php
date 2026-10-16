@@ -84,7 +84,7 @@ class GraveyardController extends AbstractController
             'current_race' => $race?->value,
             'current_search' => $search,
             'roles' => HeroRole::cases(),
-            'causes' => MemorialCause::cases(),
+            'causes' => MemorialCause::liveCases(),
             'races' => Race::cases(),
             'page' => $page,
             'total_pages' => $totalPages,

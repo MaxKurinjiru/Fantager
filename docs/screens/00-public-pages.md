@@ -15,7 +15,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md) (historical), [archi
 
 Login/register are a **modal** included from `templates/base.html.twig` for guests. `/login` and `/register` exist as routes that auto-open that modal. Password reset is standalone pages. Modal-on-homepage CTAs are live, not a future enhancement.
 
-Public wiki (`GET /wiki`) has **no controller** — **Planned** (A8.5).
+Public wiki (`GET /wiki`) has **no controller** — **Planned** (A8.5 stay Planned).
 
 ---
 
@@ -91,14 +91,16 @@ Public wiki (`GET /wiki`) has **no controller** — **Planned** (A8.5).
 
 ## News archive — Planned
 
-- Admin interface for creating/editing news (stay Planned; A8.5-adjacent content, not a live CMS)
+- Admin interface for creating/editing news (stay Planned; adjacent to A8.5, not a live CMS)
 
 ---
 
 ## Wiki / Help — Planned
 
-`GET /wiki` is listed in [architecture/routes.md](../architecture/routes.md) as **planned** (A8.5). No Twig, no controller, no search.
+`GET /wiki` is listed in [architecture/routes.md](../architecture/routes.md) as **planned** (A8.5 stay Planned). No Twig, no controller, no entity, no search, no guest-navbar Help link.
 
 Original sketch (not live): help articles, categories, search, back to homepage.
 
-Do not treat wiki as a public-section screen until A8.5 scopes it.
+### Locked: public wiki stays Planned
+
+`GET /wiki` stays **Planned**. Do not ship a wiki CMS, static help pages, categories, search, or a navbar Help link. Live public content is homepage + `/news` (seed / DB; news admin stays Planned). Unused translation key `nav.wiki` may stay for a later slice. A later product decision is required before adding a wiki.

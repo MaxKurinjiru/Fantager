@@ -16,6 +16,9 @@ enum HeroChronicleEventType: string
     case SpellLearned = 'spell_learned';
     case Injured = 'injured';
     case Recovered = 'recovered';
+
+    /** Reserved / unused (A6.2). Same unused retirement mechanic as ChronicleEventType::HeroRetired. */
     case Retired = 'retired';
+
     case Died = 'died';
 }

@@ -47,7 +47,7 @@ Quick reference: which files implement each game screen.
 | [15-marketplace.md](../screens/15-marketplace.md) | `/app/marketplace` | `Web\MarketplaceController` | `Api\V1\MarketplaceController` | `templates/marketplace/` | `marketplace` |
 | [16-graveyard.md](../screens/16-graveyard.md) | `/app/graveyard` | `Web\GraveyardController` | `Api\V1\GraveyardController` | `templates/graveyard/` | — |
 | [17-community.md](../screens/17-community.md) | `/app/community`, `/app/community/threads/{id}` | `Web\CommunityController` | `Api\V1\ForumController`, `Api\V1\MessageController`, `Api\V1\CommunityController` | `templates/community/` | `community_forum`, `community_thread`, `mail`, `player-profile` |
-| [18-arena-management.md](../screens/18-arena-management.md) | `/app/arena` → `/app/hq?facility=arena` | `Web\ArenaController` (redirect), `Web\HeadquartersController` | `Api\V1\ArenaController` | `templates/components/hq/facility_panel/_arena.html.twig` | `hq` |
+| [18-arena-management.md](../screens/18-arena-management.md) | `/app/arena` → `/app/hq?facility=arena` | `Web\ArenaController` (redirect), `Web\HeadquartersController` | `Api\V1\ArenaController` | `templates/components/hq/facility_panel/_arena.html.twig` | `hq`, `arena`, `arena_analytics` |
 | [18a-friendly-matches.md](../screens/18a-friendly-matches.md) | `/app/friendly-matches` | `Web\FriendlyMatchController` | `Api\V1\ArenaController`, `Api\V1\FriendlyMatchFormationController` | `templates/friendly_matches/` | `friendly_matches` |
 | [19-player-profile-settings.md](../screens/19-player-profile-settings.md) | `/app/settings`, account modal | `Web\SettingsController` | `POST /app/settings/*` (JSON from modal) | `templates/components/layout/_account_settings_modal.html.twig` | `account_settings`, `profile_settings`, `modal` |
 
@@ -103,7 +103,8 @@ Quick reference: which files implement each game screen.
 
 | Screen / feature | Status |
 |------------------|--------|
-| Public wiki (`/wiki`) | Planned — [architecture/routes.md](routes.md) |
+| Public wiki (`/wiki`) | **Planned** (A8.5 stay Planned) — no controller. Live public content is homepage + `/news`. Lock: [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned). |
+| Session password change / extra settings | **Planned** (A8.6 stay Planned) — no password-change form or `/api/v1/settings`. Live settings: language, backdrop-close, email change, delete. Lock: [19-player-profile-settings.md](../screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned). |
 | Alliances & Guilds (Milestone 9) | ⏸️ **Deferred / Out of Scope** — [roadmap/history.md](../roadmap/history.md) |
 | Dungeons, Quests, Crafting (Milestone 8) | ⏸️ **Deferred / Out of Scope** — [future/](../future) |
 

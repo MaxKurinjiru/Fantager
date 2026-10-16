@@ -70,7 +70,7 @@ Same calculator and value object; role-specific rules:
 
 ### Economy
 
-- **`gold_per_complex_point`** (config) drives dismiss compensation, suggested marketplace price, NPC buy/sell heuristics, and hero/trainer salaries.
+- **`gold_per_complex_point`** (config) drives dismiss compensation, suggested marketplace price, NPC buy/sell heuristics, and hero/trainer salaries. Player listings must sit in **−50% / +100%** of that suggested price ([marketplace-system.md](marketplace-system.md#locked-listing-price-band), [#15](../product/known-issues.md)).
 - Combatant dismiss keeps **40%** (`dismiss_compensation_ratio`); trainer dismiss uses **30%** (`trainer_dismiss_compensation_ratio`).
 - Live economy constants are in `config/game/hero-rating.yaml` (`gold_per_complex_point: 0.5`, `hero_salary_factor: 0.02`, `trainer_salary_factor: 0.03`). Numeric calibration is still expected before production.
 

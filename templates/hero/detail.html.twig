@@ -22,6 +22,7 @@
 {% for sm in hero.schoolMasteries %}
     {% set masteries = masteries|merge({(sm.school.value): sm.masteryTier}) %}
 {% endfor %}
+{% set sell_price_guidance = hero_listing_price_guidance(hero) %}
 
 <div class="hero-detail-page page-shell" data-controller="hero-rename hero-dismiss hero-sell hero-promote"
      data-hero-rename-hero-id-value="{{ hero.id }}"
@@ -41,7 +42,10 @@
      data-hero-sell-price-label-buy-now-value="{{ 'marketplace.price_gold'|trans }}"
      data-hero-sell-price-label-auction-value="{{ 'marketplace.label_min_bid'|trans }}"
      data-hero-sell-text-loading-value="{{ 'js_flash.common.text_loading'|trans }}"
-     data-hero-sell-suggested-price-value="{{ hero_market_price(hero) }}"
+     data-hero-sell-suggested-price-value="{{ sell_price_guidance.suggested }}"
+     data-hero-sell-price-floor-value="{{ sell_price_guidance.floor }}"
+     data-hero-sell-price-ceiling-value="{{ sell_price_guidance.ceiling }}"
+     data-hero-sell-price-out-of-range-value="{{ 'error.marketplace_price_out_of_range'|trans }}"
      data-hero-promote-hero-id-value="{{ hero.id }}"
      data-hero-promote-title-promote-value="{{ 'training.promote_title'|trans }}"
      data-hero-promote-confirm-promote-value="{{ 'training.promote_confirm'|trans }}"

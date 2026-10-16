@@ -2,6 +2,10 @@
 
 Reference: [product/overview.md](../product/overview.md), [screens/09-summoning-chamber.md](../screens/09-summoning-chamber.md)
 
+Status: Live — Genie adaptation uses relationship ≥ 80 ([#14](../product/known-issues.md) Resolved / A7.9)  
+Screens: [09-summoning-chamber.md](../screens/09-summoning-chamber.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Open design: none for the compatible-race pool. Lock: [Locked: Genie summon pool](#locked-genie-summon-pool).
+
 Purpose: Document summoning mechanics, costs, cooldowns, race selection, and hero generation.
 
 ---
@@ -69,16 +73,30 @@ The race of a summoned hero is **not freely chosen** by the player. It is drawn 
 
 ### Compatible Race Pool
 
-Player summons and NPC daily summons share `SummoningService::getCompatibleRacesForTeam()`:
+Player summons, NPC daily summons, NPC marketplace hero buys, and kingdom starting rosters share `RaceConfig::getCompatibleRacesForAdaptation()` (summoning via `SummoningService::getCompatibleRacesForTeam()`):
 
-1. The active `race_optimization` value from `Headquarters` is the **adapted race**.
+1. The active `race_optimization` value from `Headquarters` is the **adapted race**. Kingdom init uses the team's assigned race (the same value written to HQ).
 2. All 8 races are evaluated against the adapted race using the **relationship matrix** (`config/game/race_relations.yaml`).
 3. Races with a relationship score `>= 50` to the adapted race are included in the pool.
-4. A race always has a self-relationship of `100` and is always included.
-5. If no adaptation is set (`race_optimization = null`), **all 8 races** are in the pool.
-6. One race is drawn uniformly at random from the pool.
+4. **Genie exception:** if the adapted race is Genie, the bar is `>= 80` (live pool: **Genie, Human, Elf**).
+5. A race always has a self-relationship of `100` and is always included.
+6. If no adaptation is set (`race_optimization = null`), **all 8 races** are in the pool.
+7. One race is drawn uniformly at random from the pool.
 
-**Genie dual rule (live until [A7.9](../roadmap/current.md)):** **Players** use relationship ≥ 50 (Genie scores ≥ 50 with every other race, so a Genie-adapted team can summon all races). **NPC marketplace** hero buys may apply a stricter Genie-only filter when the team's arena theme is Genie — [npc-simulation-system.md](npc-simulation-system.md). Do not invent a single Genie rule in code; unifying the paths is a product decision.
+See [Locked: Genie summon pool](#locked-genie-summon-pool).
+
+## Locked: Genie summon pool
+
+**#14 Resolved (A7.9 Implement).** One compatible-race path. Do not restore a Genie-only NPC buy filter or a Genie-only starting roster.
+
+| Rule | Meaning |
+|------|---------|
+| Shared pool | `RaceConfig::getCompatibleRacesForAdaptation()` is the live pool for player summons, NPC daily summons, NPC marketplace **hero** buys, and kingdom starting roster. |
+| Default bar | Relationship **≥ 50** to the adapted race (self always included). Unset adaptation → all 8 races. |
+| Genie bar | Adapted race **Genie** uses **≥ 80**. Live matrix pool: **Genie, Human, Elf**. Undead (70) and the 60-rated races stay out. |
+| Not Genie-only | Do not hardcode `[Genie]` in `NpcEconomySimulator` or kingdom init. Player marketplace buys still have **no** race filter. |
+| Training / chemistry | Unchanged. Training group / arena bonus still uses ≥ 70; hostile chemistry still ≤ 20. |
+| Existing rosters | Heroes already on a Genie-adapted team stay. No refresh job. New summons, NPC buys, and new kingdoms use the ≥ 80 pool. |
 
 ---
 
@@ -109,7 +127,7 @@ Roll = Effective Base + race_stat_bonus[stat] + random_int(0, Effective Random)
 ### Stat Caps
 To prevent both hyper-specialized and perfectly balanced heroes:
 - Each stat is individually capped at `max(1, natural_max - reduction)` where `natural_max = Effective Base + Effective Random + race_bonus` and `reduction = 2 + round((chamber_level - 1) × 0.11)`.
-- The total stat sum is capped at **60% of the sum of all individual ceilings** (minimum 8). Excess is distributed randomly across stats while respecting per-stat minimums.
+- The total stat sum is capped at **60% of the sum of all individual ceilings** (minimum 8). Excess is distributed randomly across stats while respecting per-stat minimums. Chamber `summon_stat_total_cap` is computed but **unread** (A6.5); HQ does not show it as a live bonus.
 
 ### Raw Internal Scaling
 All stats are stored in the database **scaled by ×10** (internal range `10–200`). The generator rolls in the `1–20` external scale and stores `stat_value × 10 + random_int(0, 9)`. Displayed values are `floor(raw / 10)`.

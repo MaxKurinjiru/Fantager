@@ -8,14 +8,14 @@ Each screen file separates **Implemented** (what Twig/API does) from **Planned**
 
 ## Site structure
 
-- **Public** (`/`) — unauthenticated: homepage, news. Login/register open as a **modal** (`/login` and `/register` auto-open it). Password reset is standalone. Wiki is **Planned**.
+- **Public** (`/`) — unauthenticated: homepage, news. Login/register open as a **modal** (`/login` and `/register` auto-open it). Password reset is standalone. Wiki stays **Planned** (A8.5).
 - **Game** (`/app/*`) — authenticated; Team Dashboard is the default landing page.
 
 ## Screen files
 
 | Doc | Screen |
 |-----|--------|
-| [00-public-pages.md](00-public-pages.md) | Homepage, news (wiki Planned) |
+| [00-public-pages.md](00-public-pages.md) | Homepage, news (wiki stays Planned, A8.5) |
 | [00-auth-screens.md](00-auth-screens.md) | Login, register, password reset |
 | [01-kingdom-selection.md](01-kingdom-selection.md) | Kingdom selection (registration) |
 | [02-team-dashboard.md](02-team-dashboard.md) | Team dashboard |
@@ -37,4 +37,4 @@ Each screen file separates **Implemented** (what Twig/API does) from **Planned**
 | [17-community.md](17-community.md) | Community |
 | [18-arena-management.md](18-arena-management.md) | Arena (HQ panel) |
 | [18a-friendly-matches.md](18a-friendly-matches.md) | Friendly matches |
-| [19-player-profile-settings.md](19-player-profile-settings.md) | Player profile and settings |
+| [19-player-profile-settings.md](19-player-profile-settings.md) | Player profile and settings (password change / extras stay Planned, A8.6) |

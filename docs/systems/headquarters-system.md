@@ -48,11 +48,12 @@ Passive bonuses scale **linearly** with the facility level. The bonus value is `
 | Barracks | `roster_capacity` | +2 heroes | +10 heroes (base 10 → 20) |
 | Summoning Chamber | `summon_base_stat_bonus` | +0.4 | +2.0 base stat bonus on summon |
 | Summoning Chamber | `summon_stat_random_bonus` | +1.0 | +5.0 random stat bonus on summon |
-| Summoning Chamber | `summon_stat_total_cap` | +7.0 | +35.0 total stat cap on summon |
 | Arena | `ticket_revenue_pct` | +3.0% | +15% ticket revenue |
 | Arena | `arena_capacity` | +10.0% | +50% seating capacity |
 
 > The `Facility` entity stores a `metadata` (JSON) field. The `getPassiveBonuses()` method on `FacilityType` combines `metadata` with the static per-level values to compute the effective bonuses.
+>
+> **`summon_stat_total_cap` (A6.5):** still computed (`+7.0` per chamber level) and passed into `HeroGenerator`, but **unread**. Live total cap is 60% of per-stat ceilings ([hero-system.md](hero-system.md#hero-generation--stat-capping)). HQ cards and API `passive_bonuses` omit it so it is not shown as an active bonus.
 
 ### Roster Capacity Formula (Barracks)
 
@@ -181,7 +182,7 @@ Processed on **`daily_reset`** tick, same as upgrades. Sets `facility_downgrade_
 
 ## Arena Adaptation
 
-Arena adaptation controls which race the team's arena is configured for. This affects which races are offered in the **Summoning Chamber** (see [Summoning System](summoning-system.md)).
+Arena adaptation controls which race the team's arena is configured for. This affects which races are offered in the **Summoning Chamber** (Genie adaptation uses relationship ≥ 80 — [summoning-system.md](summoning-system.md#locked-genie-summon-pool)).
 
 ### Rules
 
@@ -205,7 +206,7 @@ During the `race_optimization` tick:
 | ------- | --------- | -------------- |
 | `HeadquartersService` | `App\Service\Headquarters` | Facility upgrades/downgrades, arena adaptation requests, passive bonus aggregation |
 | `HqMaintenanceCalculator` | `App\Service\Headquarters` | Weekly HQ maintenance fee calculation |
-| `ArenaService` | `App\Service\Headquarters` | Arena facility status (capacity, fan appeal, projected home-match revenue) — used by HQ panel and `/api/v1/arena` |
+| `ArenaService` | `App\Service\Headquarters` | Arena facility status (capacity, fan appeal, projected home-match revenue, last-18-payout attendance analytics) — used by HQ panel and `/api/v1/arena` |
 
 Ticket payout on match day is handled by `App\Service\Economy\ArenaRevenueService` (economy domain). Combat simulation is a separate domain — see [Combat System](combat-system.md) and the **Domain Boundaries** table in [architecture/entities.md](../architecture/entities.md#domain-boundaries-combat-vs-arena).
 

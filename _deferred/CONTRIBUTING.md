@@ -23,7 +23,6 @@ Tests & quality
 - Run PHP unit tests: `composer test`
 - Run PHP static analysis: `composer phpstan`
 - Run PHP-CS-Fixer / style checks: `composer php-cs` and `composer php-cs-fix`
-- Run E2E tests: `npm run test:e2e`
 
 Pull Requests
 - Open a PR against `main` (or `develop` per project workflow).

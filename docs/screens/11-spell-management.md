@@ -4,9 +4,15 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#11-spell-management-s
 
 **When:** Equip a hero’s spell slots, or buy spells from the Academy.
 
-**Status:** Hero spells live on **Hero Detail → Spells**. `GET /app/spells` **redirects** to that tab (or `/app/heroes` if no `hero_id`). Academy store is `/app/academy`. Seeded catalog is **T1–T2**; mastery can reach T5 (A7.11). No essence / enchanting.
+**Status:** Hero spells live on **Hero Detail → Spells**. `GET /app/spells` **redirects** to that tab (or `/app/heroes` if no `hero_id`). Academy store is `/app/academy`. Seeded catalog is **T1–T5** (A7.11 / [#16](../product/known-issues.md)). No essence. Enchanting is not in the live game (A7.4 / [#2](../product/known-issues.md)).
 
 **Live UI:** `templates/hero/detail.html.twig` (spells tab), `templates/spell/academy.html.twig`, `templates/components/spell/`.
+
+---
+
+## Locked: catalog T1–T5
+
+**#16 Resolved (A7.11 seed).** Academy and hero-detail store show the T1–T5 catalog. Do not add a T6 filter, resurrection, or summon-creature cards. Spec: [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5).
 
 ---
 
@@ -28,7 +34,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#11-spell-management-s
 ### Academy (`GET /app/academy`)
 
 - Trainee `<select>` (`?hero_id=`)
-- School filter, tier filter (**1** and **2** only)
+- School filter, tier filter (**1–5**)
 - Treasury badge
 - Spell cards: description, cooldown, mana, gold cost, learn eligibility vs mastery
 
@@ -44,7 +50,6 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#11-spell-management-s
 
 ## Planned
 
-- Seeded T3–T5 spells, or an explicit “unused tiers” product lock (A7.11)
 - Standalone `/app/spells` page (redirects on purpose)
 
 ---

@@ -25,7 +25,7 @@ use App\ValueObject\Combat\HexCoordinate;
  */
 class CombatEngine
 {
-    public const ENGINE_VERSION = 6;
+    public const ENGINE_VERSION = 7;
 
     /** Hard stop for one-shot and wave/resume combat paths. */
     public const MAX_ROUNDS = 200;
@@ -139,7 +139,7 @@ class CombatEngine
             foreach ($sideData['combatants'] as $combatant) {
                 if ($combatant['currentHp'] > 0) {
                     $initRoll = $this->nextInt($rngState, -3, 3);
-                    $initiative = $combatant['derived']['baseInitiative'] + $initRoll;
+                    $initiative = $this->initiativeForSort($combatant, $initRoll);
 
                     $activeCombatants[] = [
                         'side' => $sideKey,
@@ -1934,6 +1934,49 @@ class CombatEngine
                 'freeze', 'stun' => 1,
                 default => 2,
             };
+        }
+    }
+
+    /**
+     * Per-round turn sort only. AP still uses stored `derived.baseInitiative`.
+     *
+     * @param array<string, mixed> $combatant
+     */
+    private function initiativeForSort(array $combatant, int $initRoll): int
+    {
+        $base = (int) ($combatant['derived']['baseInitiative'] ?? 0);
+        $bonus = 0;
+        $reduction = 0;
+
+        foreach ($combatant['statusEffects'] ?? [] as $eff) {
+            $key = $eff['effect'] ?? '';
+            if (!\is_string($key) || '' === $key) {
+                continue;
+            }
+            $bonus += $this->speedBonusPercent($key);
+            $reduction += $this->speedReductionPercent($key);
+        }
+
+        $modifier = max(0.0, 1.0 + ($bonus / 100.0) - ($reduction / 100.0));
+
+        return (int) round($base * $modifier) + $initRoll;
+    }
+
+    private function speedBonusPercent(string $effect): int
+    {
+        try {
+            return $this->statusEffectConfig->get(StatusEffect::from($effect))->getSpeedBonusPercent();
+        } catch (\Throwable) {
+            return 0;
+        }
+    }
+
+    private function speedReductionPercent(string $effect): int
+    {
+        try {
+            return $this->statusEffectConfig->get(StatusEffect::from($effect))->getSpeedReductionPercent();
+        } catch (\Throwable) {
+            return 0;
         }
     }
 

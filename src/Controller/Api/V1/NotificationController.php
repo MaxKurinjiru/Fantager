@@ -7,6 +7,7 @@ namespace App\Controller\Api\V1;
 use App\Controller\Api\ApiControllerTrait;
 use App\Entity\Auth\User;
 use App\Entity\Notification\Notification;
+use App\Service\Notification\NotificationPresenter;
 use App\Service\Notification\NotificationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,6 +23,7 @@ class NotificationController extends AbstractController
 
     public function __construct(
         private readonly NotificationService $notificationService,
+        private readonly NotificationPresenter $notificationPresenter,
     ) {
     }
 
@@ -38,9 +40,13 @@ class NotificationController extends AbstractController
         $notifications = $this->notificationService->listForUser($user, $unreadOnly, $limit, $page);
         $totalItems = $this->notificationService->countForUser($user, $unreadOnly);
         $totalPages = max(1, (int) ceil($totalItems / $limit));
+        $locale = $user->getLocale();
 
         return $this->json([
-            'items' => array_map([$this, 'serializeNotification'], $notifications),
+            'items' => array_map(
+                fn (Notification $notification) => $this->notificationPresenter->present($notification, $locale),
+                $notifications,
+            ),
             'page' => $page,
             'total_pages' => $totalPages,
             'total_items' => $totalItems,
@@ -79,7 +85,7 @@ class NotificationController extends AbstractController
             return $this->jsonException($e, 404);
         }
 
-        return $this->json($this->serializeNotification($notification));
+        return $this->json($this->notificationPresenter->present($notification, $user->getLocale()));
     }
 
     #[Route('/{id}/read', name: 'api_notifications_mark_read', requirements: ['id' => '\d+'], methods: ['PUT'])]
@@ -94,19 +100,6 @@ class NotificationController extends AbstractController
             return $this->jsonException($e, 404);
         }
 
-        return $this->json($this->serializeNotification($notification));
-    }
-
-    /** @return array<string, mixed> */
-    private function serializeNotification(Notification $notification): array
-    {
-        return [
-            'id' => $notification->getId(),
-            'type' => $notification->getType()->value,
-            'title' => $notification->getTitle(),
-            'body' => $notification->getBody(),
-            'is_read' => $notification->isRead(),
-            'created_at' => $notification->getCreatedAt()->format(\DateTimeInterface::ATOM),
-        ];
+        return $this->json($this->notificationPresenter->present($notification, $user->getLocale()));
     }
 }

@@ -71,8 +71,8 @@
         <div class="facility-card__bonuses-panel">
             <span class="facility-card__bonuses-label">{{ 'hq.passive_effects'|trans }}</span>
             <ul data-facility-bonuses class="facility-card__bonuses">
-                {% set next_bonuses = facility.passiveBonusesAtLevel(facility.level + 1) %}
-                {% for name, value in facility.passiveBonuses %}
+                {% set next_bonuses = facility.displayedPassiveBonusesAtLevel(facility.level + 1) %}
+                {% for name, value in facility.displayedPassiveBonuses %}
                     {% set next_value = next_bonuses[name] ?? null %}
 
                     {# Compute actual/display values #}

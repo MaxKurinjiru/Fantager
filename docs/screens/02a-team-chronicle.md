@@ -14,7 +14,7 @@ Reference: [team-chronicle-system.md](../systems/team-chronicle-system.md), [02-
 
 ### Displayed information
 
-- Filter bar: category, event type, sort (newest / oldest)
+- Filter bar: category, event type (`ChronicleEventType::liveCases()` — `hero_retired` omitted), sort (newest / oldest)
 - Chronological entries: event-type label, localized message (`subject_key` + `subject_params`), timestamp
 - Empty state when nothing matches
 
@@ -34,7 +34,7 @@ No chronicle REST API; page is server-rendered.
 
 ## Planned
 
-None for this screen. Notification locale-at-read is A6.4 (navbar notifications, not chronicle).
+None for this screen. Navbar notifications also render at read time (A6.4).
 
 ---
 

@@ -170,7 +170,7 @@ class HeroGenerator
             $sumOfMaxStats += $maxLimits[$key];
         }
 
-        // The total cap is dynamically set to 60% of the sum of all individual stat ceilings (minimum 8)
+        // Live total cap is 60% of per-stat ceilings. Chamber summon_stat_total_cap is reserved / unread (A6.5).
         $maxTotal = max(8, (int) round($sumOfMaxStats * 0.6));
 
         $rawStats = [];

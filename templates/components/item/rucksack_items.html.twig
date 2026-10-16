@@ -66,12 +66,14 @@
                         </button>
                     {% endif %}
 
-                    {# Equip to selected hero #}
+                    {# Equip to selected hero — one button per allowed slot (rings / dual-wield) #}
                     {% if selected_hero and not is_equipped %}
-                        <button type="button" data-action="click->equipment#equip" data-item-id="{{ item.id }}" data-slot="{{ item.slotType.value }}"
-                                class="btn btn-primary btn--sm">
-                            {{ 'inventory.equip_slot_btn'|trans }}
-                        </button>
+                        {% for slot in item_equip_slots(item, selected_hero) %}
+                            <button type="button" data-action="click->equipment#equip" data-item-id="{{ item.id }}" data-slot="{{ slot.value }}"
+                                    class="btn btn-primary btn--sm">
+                                {{ 'inventory.equip_into_slot'|trans({'%slot%': ('inventory.slot_' ~ slot.value)|trans}) }}
+                            </button>
+                        {% endfor %}
                     {% endif %}
                 </div>
             </div>

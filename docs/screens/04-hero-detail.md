@@ -4,7 +4,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#4-hero-detail-screen)
 
 **When:** Inspect one hero — overview, equipment, spells, history.
 
-**Status:** Live at `GET /app/heroes/{id}`. Tabs: `overview`, `equipment`, `spells`, `history`. There is **no** Training tab (assignment sits on overview). There is **no** “assign to formation” control. XP bar is **display-only** until [#6](../product/known-issues.md). Equipment occupancy is [#8](../product/known-issues.md).
+**Status:** Live at `GET /app/heroes/{id}`. Tabs: `overview`, `equipment`, `spells`, `history`. There is **no** Training tab (assignment sits on overview). There is **no** “assign to formation” control. XP bar uses locked cumulative thresholds; displayed level is stored `hero.level` ([#6](../product/known-issues.md)). Equipment occupancy is locked ([#8](../product/known-issues.md)).
 
 **Live UI:** `templates/hero/detail.html.twig`, `templates/components/hero/`.
 
@@ -17,7 +17,7 @@ Reference: [screens/overview-legacy.md](overview-legacy.md#4-hero-detail-screen)
 - Avatar, status badge, inline rename
 - Race, age + phase, mortality warning
 - Base OVR, complex rating, gold value, weekly salary
-- Level; XP as `hero.xp / (1000 * hero.level)` with a bar — **not** a live level-up threshold (#6)
+- Level from stored `hero.level` (do not derive from XP). XP bar via `hero_xp_bar()` (`C(level)` / `C(level + 1)`) (#6 / A7.1)
 - Form, fatigue, morale bars
 - Trait badge + description when present
 - Manage menu (available combatant): sell, dismiss, promote to trainer (cap / unassigned)
@@ -32,7 +32,7 @@ Match record (`matches_played`, win rate, fallen, training counts) is on the **H
 
 ### Equipment tab
 
-See [10-item-equipment.md](10-item-equipment.md). Eight slots, one ring, click-to-equip.
+See [10-item-equipment.md](10-item-equipment.md). Nine slots, two rings, click-to-equip.
 
 ### Spells tab
 
@@ -69,7 +69,6 @@ Original sketch extras — do not treat as a contract:
 - Dedicated Training tab
 - Quick-add to formation
 - 3D avatar
-- XP bar that actually levels the hero (#6 / A7.1)
 
 ---
 

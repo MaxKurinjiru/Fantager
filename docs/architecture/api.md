@@ -153,7 +153,7 @@ src/
 │   │       ├── TrainingController.php  # /api/v1/training/trainers
 │   │       ├── BattleController.php    # /api/v1/battles
 │   │       └── ...
-│   └── (no HealthCheckController — GET /health is planned, A8.3)
+│   └── HealthCheckController.php       # GET /health (liveness JSON, A8.3)
 ├── Service/
 │   ├── HeroService.php                 # Business logic (Web & API share this)
 │   ├── TrainingService.php

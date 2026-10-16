@@ -14,6 +14,100 @@ Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entit
 - Read matching `docs/systems/*.md` and `docs/screens/*.md`
 - Find an existing feature in the same domain and follow its patterns
 
+## Hero level (locked — #6)
+
+- `Hero.xp` is a lifetime total; never subtract it on level-up.
+- `Hero.level` is the live truth. Do not derive level from XP on read (Twig, API, combat snapshots).
+- After awarding match XP, update stored level with the **current** curve. When the curve or `Kingdom.level_cap` changes, rewrite levels with a migration or job — never lazy-recalc on request.
+- Spec: `docs/systems/hero-system.md` § Locked: hero level invariant. Curve: `config/game/hero-progression.yaml`. Do not invent a new curve on read.
+
+## Team chemistry (locked — #7)
+
+- `Team.chemistry` is flavor for matches. Combat and in-match morale must not read it.
+- Live consumers: dashboard / history, `FanClubService` target and show-up, league standings tie-break.
+- Do not add combat pairing tables or skip Loners in the chemistry formula. In-combat synergy is Cut (#9).
+- Spec: `docs/systems/team-system.md` § Locked: chemistry flavor.
+
+## Item occupancy (locked — #8)
+
+- Nine slots including `ring_2`. Ring items equip in `ring` or `ring_2`.
+- Two-handed subtypes (`two_handed_*`, bow, crossbow, staff) occupy both hands.
+- Dual-wield: one-handed sword/axe/mace and dagger in `off_hand`. Do not add extra swings or targeting lists.
+- Giant/Ent restrictions stay `RaceConfig`. Spec: `docs/systems/item-system.md` § Locked: item occupancy.
+
+## Haste / Shock initiative (locked — #9 slice)
+
+- YAML `speed_bonus_percent` / `speed_reduction_percent` apply to the per-round turn **sort** after status ticks.
+- Do not apply them to AP or stored `derived.baseInitiative`. Additive; clamp modifier at 0.
+- Spec: `docs/systems/combat-system.md` § Speed / Initiative.
+
+## In-combat morale (Cut — #9 slice)
+
+- Do not emit `morale_change`. Combat must not read `moraleDecayMultiplier`.
+- Volatile / Battle Hardened player copy is flavor. Kickoff damage band and post-match morale stay.
+
+## Race synergy / simulate (Cut — #9)
+
+- Do not add in-combat race/role synergy tables. Combat must not read `ignoresRaceSynergy`.
+- Do not ship `POST /api/v1/combat/simulate`. Route stays Planned. Friendly matches are the live adjacent path.
+- Spec: `docs/systems/combat-system.md` § Locked: no race synergy / no simulate.
+
+## Public wiki (Planned — A8.5)
+
+- Do not ship `GET /wiki`, a wiki entity, or a Help navbar link. Route stays Planned.
+- Live public content is homepage + `/news` (seed / DB; no admin CMS).
+- Spec: `docs/screens/00-public-pages.md` § Locked: public wiki stays Planned.
+
+## Password change / extra settings (Planned — A8.6)
+
+- Do not ship session password change, notification prefs, privacy flags, or `GET/PUT /api/v1/settings`.
+- Live settings stay language, backdrop-close, email change, and account deletion. Forgotten passwords use `/password-reset`.
+- Spec: `docs/screens/19-player-profile-settings.md` § Locked: password change / extra settings stay Planned.
+
+## Formation L1/L2 (locked — #12)
+
+- Per-slot `target_order` + `fallback` and thin equipped `spell_priorities` are live.
+- Do not add L3 action sequences or expose `enemy_status` / `lowest_hp_enemy` in the player UI.
+- Save goes through `FormationTacticsNormalizer`. Spec: `docs/systems/formation-system.md` § Locked: L1/L2 editor.
+
+## Roster extras (Cut — #13)
+
+- Do not add batch training, multi-select, or server-side roster filter/sort query params.
+- Train / equip / spells / sell stay on hero detail and `/app/training`, not the roster grid.
+- Spec: `docs/screens/03-hero-roster.md` § Locked: roster extras.
+
+## Genie summon pool (locked — #14)
+
+- Compatible races use relationship ≥ 50, except Genie adaptation ≥ 80 (Genie / Human / Elf).
+- Same pool for player summons, NPC daily summons, NPC marketplace hero buys, and kingdom starting roster.
+- Do not restore a Genie-only NPC buy filter or a Genie-only starting roster.
+- Spec: `docs/systems/summoning-system.md` § Locked: Genie summon pool.
+
+## Marketplace price band (locked — #15)
+
+- Listing buy-now / start / buyout must sit in `[round(suggested × 0.5), round(suggested × 2)]` (min 1 gold).
+- Suggested: heroes/trainers `HeroRatingCalculator::estimateMarketPrice()`; items `ItemService::estimateMarketPrice()`.
+- Auction bids are not capped. Do not add a second pricing formula.
+- Spec: `docs/systems/marketplace-system.md` § Locked: listing price band.
+
+## Spell catalog (locked — #16)
+
+- Seeded library is two spells per school per tier for T1–T5 (`required_mastery_tier` = `tier`).
+- Do not add T6+, resurrection, summon-creature, or new combat effect keys.
+- Combat uses school + type + `spell.tier`. Spec: `docs/systems/spell-system.md` § Locked: catalog T1–T5.
+
+## Arena analytics (locked — #4)
+
+- HQ panel graphs/history from the last 18 `arena_revenue` payouts. Same window for table, chart, and summary.
+- Do not add a new analytics route, season query, snapshot entity, home-advantage, or match results on the table.
+- Spec: `docs/screens/18-arena-management.md` § Locked: attendance analytics.
+
+## Item enchanting (locked — #2)
+
+- Enchanting is not in the live game. Do not reintroduce essence or ship an enchant UI, cost, or combat effect.
+- `Item.special_effects` stays unused. Combat reads `bonuses` only. Do not drop the column in this alignment.
+- Spec: `docs/systems/item-system.md` § Locked: no enchanting. A later product decision is required before adding enchanting.
+
 ## Layering
 
 - **Controllers** (`Controller/Web`, `Controller/Api/V1`): routing, auth, input parsing, response only

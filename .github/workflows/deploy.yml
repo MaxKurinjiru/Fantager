@@ -11,9 +11,12 @@ permissions:
   packages: write
 
 jobs:
-  # Run static analysis and linting before building image
+  # Run static analysis, tests, and linting before building image
   phpstan:
     uses: ./.github/workflows/phpstan.yml
+
+  phpunit:
+    uses: ./.github/workflows/phpunit.yml
 
   ui-compliance:
     uses: ./.github/workflows/ui-compliance.yml
@@ -24,7 +27,7 @@ jobs:
   build:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    needs: [phpstan, ui-compliance, backend-docs]
+    needs: [phpstan, phpunit, ui-compliance, backend-docs]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

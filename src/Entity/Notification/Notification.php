@@ -26,11 +26,27 @@ class Notification
     #[ORM\Column(length: 25, enumType: NotificationType::class)]
     private NotificationType $type;
 
-    #[ORM\Column(length: 200)]
-    private string $title;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $titleKey = null;
 
-    #[ORM\Column(type: 'text')]
-    private string $body;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $bodyKey = null;
+
+    /** @var array<string, mixed> */
+    #[ORM\Column(type: 'json')]
+    private array $titleParams = [];
+
+    /** @var array<string, mixed> */
+    #[ORM\Column(type: 'json')]
+    private array $bodyParams = [];
+
+    /** Legacy write-time string; null on rows written with keys (A6.4). */
+    #[ORM\Column(length: 200, nullable: true)]
+    private ?string $title = null;
+
+    /** Legacy write-time string; null on rows written with keys (A6.4). */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $body = null;
 
     #[ORM\Column(options: ['default' => false])]
     private bool $isRead = false;
@@ -72,24 +88,76 @@ class Notification
         return $this;
     }
 
-    public function getTitle(): string
+    public function getTitleKey(): ?string
+    {
+        return $this->titleKey;
+    }
+
+    public function setTitleKey(?string $titleKey): static
+    {
+        $this->titleKey = $titleKey;
+
+        return $this;
+    }
+
+    public function getBodyKey(): ?string
+    {
+        return $this->bodyKey;
+    }
+
+    public function setBodyKey(?string $bodyKey): static
+    {
+        $this->bodyKey = $bodyKey;
+
+        return $this;
+    }
+
+    /** @return array<string, mixed> */
+    public function getTitleParams(): array
+    {
+        return $this->titleParams;
+    }
+
+    /** @param array<string, mixed> $titleParams */
+    public function setTitleParams(array $titleParams): static
+    {
+        $this->titleParams = $titleParams;
+
+        return $this;
+    }
+
+    /** @return array<string, mixed> */
+    public function getBodyParams(): array
+    {
+        return $this->bodyParams;
+    }
+
+    /** @param array<string, mixed> $bodyParams */
+    public function setBodyParams(array $bodyParams): static
+    {
+        $this->bodyParams = $bodyParams;
+
+        return $this;
+    }
+
+    public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(?string $title): static
     {
         $this->title = $title;
 
         return $this;
     }
 
-    public function getBody(): string
+    public function getBody(): ?string
     {
         return $this->body;
     }
 
-    public function setBody(string $body): static
+    public function setBody(?string $body): static
     {
         $this->body = $body;
 
