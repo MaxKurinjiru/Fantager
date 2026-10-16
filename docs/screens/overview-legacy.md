@@ -585,7 +585,7 @@ Note: Trainers act as training leaders. Their training focus (Attribute, Magic, 
 ## 14. Calendar Screen
 **When:** Displaying the kingdom schedule (server ticks, league fixtures, team training)
 
-> **Live contract:** [14-calendar.md](14-calendar.md). Week feed + filters are live. **Set reminder** stays Planned.
+> **Live contract:** [14-calendar.md](14-calendar.md). Week feed + filters are live. Live types: `system_tick`, `league_match`, `friendly_match`. Per-hero training completions are **not** a feed type. **Set reminder** stays Planned.
 
 ### Displayed Information:
 - **Weekly Calendar Feed:**

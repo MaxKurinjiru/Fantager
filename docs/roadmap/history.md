@@ -133,7 +133,7 @@ Purpose: Historical, step-by-step chronicle of how the playable core was built (
 - **API Contracts**: `PUT /api/v1/formations` (save/update formation), `DELETE /api/v1/formations/{id}`.
 - **Frontend Views**: Drag-and-drop **lineup** grid (formation page). Per-slot L1/L2 tactics editor is live (A7.6 / [#12](../product/known-issues.md)); action-sequence selector stays L3 deferred.
 - **Verification**: Move heroes between positions, verify front/back line constraints (max 6 active).
-- **Status**: ✅ Lineup CRUD complete (`FormationService`, `Web\FormationController`, Stimulus: `formation_controller.js`). **Not shipped:** formation **synergies**. Save allows 0–6 slots and rejects duplicate `hero_id` ([#10](../product/known-issues.md) / A6.1). Kickoff: assigned → default → roster fill; forfeit if < 6 combat-ready.
+- **Status**: ✅ Lineup CRUD complete (`FormationService`, `Web\FormationController`, Stimulus: `formation_controller.js`). **Cut:** formation **synergies** (A7.5 / [#9](../product/known-issues.md) Resolved). Save allows 0–6 slots and rejects duplicate `hero_id` ([#10](../product/known-issues.md) / A6.1). Kickoff: assigned → default → roster fill; forfeit if < 6 combat-ready.
 
 ---
 
@@ -156,7 +156,7 @@ Purpose: Historical, step-by-step chronicle of how the playable core was built (
 - **Frontend Views**:
   - **[NEW]** Community Boards: Integrated discussion boards (categorized by Kingdom and global discussion), global player mail.
 - **Verification**: Create a thread, reply to a thread, view categorized discussion boards.
-- **Status**: ✅ Complete (Entities updated, services and API controllers implemented, and templates/controllers refactored per UI guidelines).
+- **Status**: ✅ Complete (Entities updated, services and API controllers implemented, and templates/controllers refactored per UI guidelines). Forum `is_pinned` is stored and shown when true, but **unsettable** (A6.3 Cut; no pin API).
 
 ---
 
@@ -229,7 +229,7 @@ Purpose: Historical, step-by-step chronicle of how the playable core was built (
 - **Service Layer**: Weekly seating capacity calculations, ticket price elasticity calculations, passive revenue distribution service (`ArenaRevenueService`, `FanClubService`).
 - **API Contracts**: `GET /api/v1/arena`, `POST /api/v1/hq/arena/tickets/price`.
 - **Frontend Views**:
-  - HQ Arena facility panel (`/app/hq?facility=arena`), seating upgrade charts, ticket price sliders, and weekly attendance graphs.
+  - HQ Arena facility panel (`/app/hq?facility=arena`): ticket price and attendance analytics (last 18 payouts — table + chart + summary). **Cut / not live:** seating-upgrade charts, standalone `/app/arena` page, combat home-advantage (A7.8 / [#4](../product/known-issues.md) Resolved).
 - **Verification**: Modify ticket price, trigger weekly ticket revenue command, and confirm revenue scales with formulas.
 - **Status**: ✅ Complete (`ArenaRevenueService`, league-match tick payout, HQ arena panel, ticket price API, friendly match scheduling at `/app/friendly-matches`, and attendance analytics UI — last 18 payouts, A7.8 / [#4](../product/known-issues.md) Resolved).
 
@@ -305,9 +305,9 @@ Purpose: Historical, step-by-step chronicle of how the playable core was built (
 These shipped with the playable core or during alignment. They are **not** an open “ongoing” backlog.
 
 - **CI/CD Pipeline**: PHPStan, UI compliance, backend-docs, and **PHPUnit** (`composer test` via `.github/workflows/phpunit.yml`) run on pull requests that touch matching paths. Deploy waits on the same jobs (A8.1).
-- **Code Quality Tooling**: PHPStan configuration (level 6, zero errors limit) and PHP-CS-Fixer rules are in the repo.
+- **Code Quality Tooling**: PHPStan configuration (level 8) and PHP-CS-Fixer rules are in the repo.
 - **Browser E2E**: **Cut** (A8.2). Playwright is not installed and is not a live claim. Automated tests are PHPUnit. A later product decision is required before a browser suite.
-- **Liveness**: `GET /health` returns `{ "status": "ok" }` without auth, session, or secrets (A8.3). Not a database readiness probe.
+- **Liveness**: `GET /health` returns `{ "status": "ok" }` without auth, session, or secrets (A8.3). Compose `web` probes that path. Not a database readiness probe.
 - **Legacy DB connection**: **Parked** (A8.4). `legacy` Doctrine connection + unused EM stay in `config/packages/doctrine.yaml` for a one-shot import immediately before the first production deploy. No live service injects them. Guide: [`_deferred/legacy-migration.md`](../../_deferred/legacy-migration.md).
 - **Public wiki**: **Planned** (A8.5). No `/wiki` controller. Live public content is homepage + `/news`. A later product decision is required before a wiki CMS or help pages.
 - **Password change / extra settings**: **Planned** (A8.6). Live account settings are language, backdrop-close, email change, and delete. Forgotten passwords use `/password-reset`. A later product decision is required before session password change, notification prefs, or privacy.
@@ -322,14 +322,14 @@ These shipped with the playable core or during alignment. They are **not** an op
 
 | Milestone / Slice | Database / Entities | Service Layer / CLI | API Endpoints | Frontend UI Views | Current Status |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Milestone 1 (Auth & Kingdom)** | ✅ | ✅ | ✅ | ✅ | **Shipped core** — remaining gaps in alignment waves (see [systems/README.md](../systems/README.md)) |
+| **Milestone 1 (Auth & Kingdom)** | ✅ | ✅ | ✅ | ✅ | **Shipped core** — live contract in [systems/README.md](../systems/README.md) |
 | **Milestone 2 (Heroes & Economy)** | ✅ | ✅ | ✅ | ✅ | **Shipped core** — XP→level later in A7.1 ([#6](../product/known-issues.md)) |
 | **Milestone 3 (HQ & Training)** | ✅ | ✅ | ✅ | ✅ | **Shipped core** |
-| **Milestone 4 (Combat Prep)** | ✅ | 🔄 | ✅ | 🔄 | **Shipped core with gaps** — equipment is click-to-equip, **not** inventory DnD (4.1); **no formation synergies** (4.3); occupancy locked [#8](../product/known-issues.md) |
+| **Milestone 4 (Combat Prep)** | ✅ | ✅ | ✅ | 🔄 | **Shipped core with gaps** — equipment is click-to-equip, **not** inventory DnD (4.1); formation synergies **Cut** (4.3 / [#9](../product/known-issues.md)); occupancy locked [#8](../product/known-issues.md) |
 | **Milestone 5 (Marketplace & Forum)**| ✅ | ✅ | ✅ | ✅ | **Shipped core** — forum pin stored/shown but **unsettable** (A6.3 Cut) |
-| **Milestone 6 (Combat & Leagues)** | ✅ | 🔄 | ✅ | 🔄 | **Shipped core (combat MVP)** — [#9](../product/known-issues.md) Resolved (HUD + Haste/Shock locked; morale / synergy / simulate Cut) |
+| **Milestone 6 (Combat & Leagues)** | ✅ | ✅ | ✅ | ✅ | **Shipped core (replay combat)** — [#9](../product/known-issues.md) Resolved (HUD + Haste/Shock locked; morale / synergy / simulate Cut) |
 | **Milestone 7 (Arena Management)** | ✅ | ✅ | ✅ | ✅ | **Shipped core** — revenue, ticket price API, friendlies, HQ attendance analytics ([#4](../product/known-issues.md) Resolved / A7.8). Combat home-advantage stays planned. |
 | **Milestone 8 (Endgame & Crafting)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / parked** (dungeons, crafting, quests in `future/`) |
 | **Milestone 9 (Alliances)** | ⏳ | ⏳ | ⏳ | ⏳ | ⏸️ **Deferred / parked** |
 
-*Last updated: 15 October 2026 — A1.2 honesty pass. Active work: [current.md](current.md).*
+*Last updated: 16 October 2026 — Alignment waves 0–8 complete. This file is the M1–9 chronicle, not a work queue. Leftovers: [current.md](current.md) and each `systems/*.md` Remaining work.*

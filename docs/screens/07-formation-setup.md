@@ -71,7 +71,7 @@ Pitch cards do **not** show a primary-role icon or a full quick-stat grid.
 | GET/PUT | `/api/v1/fixtures/{id}/formation` | Default / saved / custom |
 | POST | `/api/v1/fixtures/{id}/formation/promote` | Custom → saved |
 
-Match **kickoff** uses the assigned lineup if it has 6 unique combat-ready heroes; otherwise the default; otherwise fills from the roster. Forfeit only when the team has < 6 combat-ready heroes ([combat-system.md](../systems/combat-system.md#match-eligibility)). Empty slots are allowed at **save**.
+Match **kickoff** uses the assigned lineup if it has 6 unique combat-ready heroes; otherwise the default; otherwise fills from the roster. Forfeit only when the team has < 6 combat-ready heroes ([combat-system.md](../systems/combat-system.md#match-eligibility)). Empty slots are allowed at **save** (0–6 assigned heroes; the UI does not require a hero).
 
 See `assets/controllers/formation_controller.js` and [formation-system.md](../systems/formation-system.md).
 

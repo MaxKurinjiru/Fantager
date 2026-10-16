@@ -146,7 +146,7 @@ assets/ (source)
 - **Do not log sensitive data** (passwords, tokens) — scrub PII in `before_send` hook using [SentryBeforeSendCallback](../../src/Service/Sentry/SentryBeforeSendCallback.php)
 
 ### Liveness
-- **`GET /health`**: unauthenticated JSON `{ "status": "ok" }` (A8.3). Process liveness only — no database ping, no env/version/DSN. Dedicated firewall with `security: false` (no session). `Cache-Control: no-store`. Not a readiness probe.
+- **`GET /health`**: unauthenticated JSON `{ "status": "ok" }` (A8.3). Process liveness only — no database ping, no env/version/DSN. Dedicated firewall with `security: false` (no session). `Cache-Control: no-store`. Compose `web` (local and prod) healthchecks probe this path. Not a readiness probe.
 
 ### Metrics & APM
 - Response times, error rates, and custom business metrics

@@ -21,4 +21,12 @@ enum HeroChronicleEventType: string
     case Retired = 'retired';
 
     case Died = 'died';
+
+    /**
+     * Reserved cases stay on the enum (and DB column) but must not be written.
+     */
+    public function isReserved(): bool
+    {
+        return self::Retired === $this;
+    }
 }

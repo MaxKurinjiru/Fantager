@@ -32,7 +32,7 @@ Items are represented by the `Item` entity (`src/Entity/Item/Item.php`). Key fie
 | `durability` | int (0–100) | Current durability; decreases after combat |
 | `status` | `ItemStatus` enum | `available` or `selling` (in marketplace escrow) |
 | `bonuses` | JSON | Map of attribute bonuses (e.g. `{"str": 3, "dex": 2}`) |
-| `special_effects` | JSON | Unused / reserved (A7.4). Merchant writes `[]`. Combat does not read it. |
+| `special_effects` | JSON | Unused / reserved (A7.4). Merchant writes `[]`. Combat does not read it. Omitted from item API `serialize()`. |
 
 ---
 
@@ -89,7 +89,7 @@ An item's `slot_type` is its **native** type (`ring` items stay `ring` even when
 |------|---------|
 | Not live | No enchant service, route, or UI. Equipment actions stay equip / unequip / repair / dismantle. |
 | No essence | Team / ledger / spell essence columns were dropped (`Version20261014140000`). Do not add them back. |
-| `special_effects` unused | JSON column stays. Merchant and generators write `[]`. `CombatStatCalculator` reads `bonuses` only. Do not drop the column in this step. |
+| `special_effects` unused | JSON column stays. Merchant and generators write `[]`. `CombatStatCalculator` reads `bonuses` only. Item API `serialize()` omits the key so it does not look live. Do not drop the column. |
 | Later | A later product decision is required before adding enchanting. |
 
 ---
@@ -200,4 +200,4 @@ See [Marketplace System](marketplace-system.md) for listing, bidding, and transa
 - Item generation (loot drops, crafted results) — defined via `CraftingRecipe` entities; actual item generation on crafting completion is deferred (Milestone 8 / future).
 - Durability degradation per battle — ✅ formula above in `LeagueMatchResolutionService`.
 - Occupancy (two-handed / dual-wield / two rings) — ✅ locked above (A7.3 / [#8](../product/known-issues.md)).
-- Enchanting — ✅ cut (A7.4 / [#2](../product/known-issues.md)). Not in the live game. `special_effects` unused.
+- Enchanting — ✅ cut (A7.4 / [#2](../product/known-issues.md)). Not in the live game. `special_effects` unused (omitted from item API).

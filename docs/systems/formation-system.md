@@ -30,7 +30,7 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 
 ## Validation Rules
 
-- **Save:** `FormationService::rebuildSlots()` persists 0–6 slots. Duplicate `hero_id` values are rejected (`error.formation_duplicate_hero`, API 422). Empty slots stay allowed.
+- **Save:** `FormationService::rebuildSlots()` persists 0–6 slots. Duplicate `hero_id` values are rejected (`error.formation_duplicate_hero`, API 422). Empty slots stay allowed, including a fully empty draft (UI and API).
 - **Match-ready (kickoff):** `MatchLineupService` fields 6 unique combat-ready heroes in this order: (1) assigned fixture/friendly formation if all 6 slots are unique combat-ready heroes; (2) else the team default if that is match-ready; (3) else auto-fill remaining empty / duplicate / unready slots from the combat-ready roster (`id` ascending), persisted as a temporary copy (league: `source_fixture_id` for existing cleanup). Forfeit if the team has fewer than 6 combat-ready heroes — see [combat-system.md](combat-system.md#match-eligibility).
 - Team must have ≥ 6 combat-ready heroes to participate in a match at all (see [combat-system.md](combat-system.md#match-eligibility)).
 - Creating or promoting a saved formation fails when the team already has 4 saved formations.
@@ -108,7 +108,7 @@ Ordered list; first matching ready spell wins that evaluation pass (exact preced
 | `lowest_hp_ally` / `self` | That ally, or the caster | Read |
 | `lowest_hp_enemy` | Lowest-HP living enemy | **Cut from player UI (A7.6).** Save sanitizer remaps to `priority` |
 
-Formation-level spell overrides vs hero-equipped fallback follow [product/overview.md](../product/overview.md#combat-strategy-settings) (formation config wins when present).
+Non-empty per-slot `spell_priorities` is evaluated before the L0 pick (equipped spells only). Empty list = L0. Engine: [combat-system.md](combat-system.md#formation-ai-phased). Player editor: [Locked: L1/L2 editor](#locked-l1l2-editor).
 
 ### L3 — deferred
 

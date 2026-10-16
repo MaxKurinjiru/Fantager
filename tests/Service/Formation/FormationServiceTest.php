@@ -154,6 +154,34 @@ class FormationServiceTest extends TestCase
         $this->assertSame('Draft', $formation->getName());
     }
 
+    public function testSaveAllowsFullyEmptySlots(): void
+    {
+        $team = new Team();
+        $slotRepository = $this->createMock(FormationSlotRepository::class);
+        $slotRepository->method('findBy')->willReturn([]);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->atLeastOnce())->method('flush');
+
+        $repository = $this->createMock(FormationRepository::class);
+        $repository->method('countSavedByTeam')->willReturn(0);
+
+        $service = new FormationService(
+            $repository,
+            $slotRepository,
+            $this->createMock(HeroRepository::class),
+            $this->createMock(LeagueFixtureRepository::class),
+            $em,
+        );
+
+        $formation = $service->save($team, null, 'Empty draft', FormationApproach::Balanced, [
+            ['position' => 'front_1', 'hero_id' => null, 'strategy' => [], 'spell_priorities' => []],
+            ['position' => 'front_2', 'hero_id' => null, 'strategy' => [], 'spell_priorities' => []],
+        ], false);
+
+        $this->assertSame('Empty draft', $formation->getName());
+    }
+
     public function testSaveSanitizesStrategyAndSpellPriorities(): void
     {
         $team = new Team();

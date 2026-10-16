@@ -14,4 +14,12 @@ enum HeroStatus: string
 
     /** Reserved / unused (A6.2). No production writer; readers treat Retired like Dead for roster queries. */
     case Retired = 'retired';
+
+    /**
+     * Reserved cases stay on the enum (and DB column) but must not be written.
+     */
+    public function isReserved(): bool
+    {
+        return self::Retired === $this;
+    }
 }

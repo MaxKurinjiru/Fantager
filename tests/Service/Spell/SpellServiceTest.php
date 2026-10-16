@@ -101,9 +101,9 @@ class SpellServiceTest extends TestCase
 
         $result = $this->spellService->seedDefaultSpells();
 
-        $this->assertSame(48, $result['inserted']);
+        $this->assertSame(60, $result['inserted']);
         $this->assertSame(0, $result['skipped']);
-        $this->assertCount(48, $persisted);
+        $this->assertCount(60, $persisted);
 
         $allowedEffectKeys = [
             'damage',

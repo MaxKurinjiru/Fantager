@@ -6,6 +6,8 @@ namespace App\Tests\Enum;
 
 use App\Enum\ChronicleEventType;
 use App\Enum\FinancialRecordType;
+use App\Enum\HeroChronicleEventType;
+use App\Enum\HeroStatus;
 use App\Enum\MatchType;
 use App\Enum\MemorialCause;
 use App\Enum\NotificationType;
@@ -68,5 +70,19 @@ class ReservedEnumCasesTest extends TestCase
         $this->assertTrue(NotificationType::SpellLearned->isReserved());
         $this->assertFalse(NotificationType::BattleResult->isReserved());
         $this->assertFalse(NotificationType::System->isReserved());
+    }
+
+    public function testHeroStatusRetiredIsReserved(): void
+    {
+        $this->assertTrue(HeroStatus::Retired->isReserved());
+        $this->assertFalse(HeroStatus::Dead->isReserved());
+        $this->assertFalse(HeroStatus::Available->isReserved());
+    }
+
+    public function testHeroChronicleRetiredIsReserved(): void
+    {
+        $this->assertTrue(HeroChronicleEventType::Retired->isReserved());
+        $this->assertFalse(HeroChronicleEventType::Died->isReserved());
+        $this->assertFalse(HeroChronicleEventType::Summoned->isReserved());
     }
 }

@@ -368,7 +368,11 @@ class ItemService
         return $missing * $ratePerPoint;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * Player-facing item payload. Omits unused `special_effects` (A7.4 / #2).
+     *
+     * @return array<string, mixed>
+     */
     public function serialize(Item $item): array
     {
         return [
@@ -380,7 +384,6 @@ class ItemService
             'durability' => $item->getDurability(),
             'repair_cost' => $this->calculateRepairCost($item),
             'bonuses' => $item->getBonuses(),
-            'special_effects' => $item->getSpecialEffects(),
             'equipped_hero_id' => $item->getEquippedHero()?->getId(),
             'equipped_slot' => $item->getEquippedSlot()?->value,
             'sub_type' => $item->getSubType()?->value,

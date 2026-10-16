@@ -333,7 +333,7 @@ In-game UI: navbar dropdown → **Notifications** modal (`notifications_controll
 
 ## Infrastructure
 
-Unauthenticated **liveness** only. JSON `{ "status": "ok" }`. No database ping, no env/version/DSN. Dedicated firewall (`security: false`) so probes do not start a session.
+Unauthenticated **liveness** only. JSON `{ "status": "ok" }`. No database ping, no env/version/DSN. Dedicated firewall (`security: false`) so probes do not start a session. Compose `web` healthchecks call this path.
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|

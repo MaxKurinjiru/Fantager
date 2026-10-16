@@ -1008,8 +1008,6 @@ hq:
   bonus_roster_capacity: Roster Capacity
   bonus_summon_base_stat_bonus: Base Stat Summon Bonus
   bonus_summon_stat_random_bonus: Random Stat Summon Bonus
-  # Reserved / unread (A6.5) — not shown on HQ cards or in API passive_bonuses
-  bonus_summon_stat_total_cap: Summon Stat Cap
   bonus_ticket_revenue_pct: Ticket Revenue
   bonus_arena_capacity: Grandstands Capacity
 
@@ -1333,7 +1331,6 @@ js_flash:
     success_sell: Hero listed on the marketplace. Track status under My Listings.
   formation:
     name_empty: Formation name cannot be empty.
-    assign_hero: You must assign at least one hero to the formation.
     saving: Saving...
     failed_save: Failed to save formation.
     success_save: Formation lineup and tactics saved successfully.
@@ -1448,7 +1445,7 @@ league:
 
 calendar:
   title: Calendar & Events
-  subtitle: Kingdom schedule — league matches, training ticks, and team-specific events.
+  subtitle: Kingdom schedule — league matches, friendly matches, and kingdom ticks.
   prev_week: Previous week
   next_week: Next week
   loading: Loading calendar...
@@ -1462,13 +1459,18 @@ calendar:
   filter_show_system: Show system ticks
   type_system_tick: System
   type_league_match: League
-  type_hero_training_history: Training
+  type_friendly_match: Friendly
   status_scheduled: Scheduled
   status_completed: Completed
   status_failed: Failed
+  status_pending: Pending
+  status_processing: Processing
+  status_in_progress: In progress
+  status_declined: Declined
+  status_cancelled: Cancelled
+  status_expired: Expired
   league_fixture_desc: 'League Fixture - Group %group%'
   friendly_match_desc: Friendly Match
-  training_complete_title: 'Training complete: %hero%'
   tick:
     daily_reset_title: Daily Reset & Maintenance
     daily_reset_desc: System cleanup, hero aging reset

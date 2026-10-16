@@ -1284,6 +1284,7 @@ class CombatEngine
             'dodgePercent' => $d->getDodgePercent(),
             'critPercent' => $d->getCritPercent(),
             'critDamageMultiplier' => $d->getCritDamageMultiplier(),
+            // Unused (#9 Cut): kept on the snapshot so replay JSON stays stable; CombatEngine does not read it.
             'moraleDecayMultiplier' => $d->getMoraleDecayMultiplier(),
             'arenaRevenueBonus' => $d->getArenaRevenueBonus(),
             'clutchHpThreshold' => $d->getClutchHpThreshold(),
@@ -1292,6 +1293,7 @@ class CombatEngine
             'glassJawHpThreshold' => $d->getGlassJawHpThreshold(),
             'incomingDamageMultiplier' => $d->getIncomingDamageMultiplier(),
             'isConsistentDamage' => $d->isConsistentDamage(),
+            // Unused (#9 Cut): serialized unused; CombatEngine does not read it.
             'ignoresRaceSynergy' => $d->ignoresRaceSynergy(),
             'outgoingDamageMultiplier' => $d->getOutgoingDamageMultiplier(),
         ];

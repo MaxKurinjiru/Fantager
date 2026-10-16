@@ -17,7 +17,7 @@ Entry point for Cursor agents, Copilot, and other AI assistants working in this 
 
 Full vertical slice: backend cheatsheet § Vertical slice + UI cheatsheet when the feature has a UI.
 
-**Live rules vs overview:** `docs/systems/*.md` + [docs/product/known-issues.md](docs/product/known-issues.md) win over [docs/product/overview.md](docs/product/overview.md) until alignment Wave 2. Live UI is [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + Twig, not unchecked wish-lists in [docs/screens/overview-legacy.md](docs/screens/overview-legacy.md).
+**Live rules vs overview:** `docs/systems/*.md` + [docs/product/known-issues.md](docs/product/known-issues.md) win over [docs/product/overview.md](docs/product/overview.md) on conflict. Live UI is [docs/architecture/screen-code-map.md](docs/architecture/screen-code-map.md) + Twig, not unchecked wish-lists in [docs/screens/overview-legacy.md](docs/screens/overview-legacy.md).
 
 **Hero level (#6 Resolved):** `Hero.level` is the stored live value. Do not derive it from `Hero.xp` on read. Recalc only after XP award (`HeroProgressionService`) or via `app:hero-levels:refresh`. Spec: [docs/systems/hero-system.md](docs/systems/hero-system.md) § Locked: hero level invariant.
 
@@ -25,7 +25,7 @@ Full vertical slice: backend cheatsheet § Vertical slice + UI cheatsheet when t
 
 **Item occupancy (#8 Resolved):** Nine slots (`ring` + `ring_2`). Two-handed weapons occupy both hands. Dual-wield for one-handed melee. Giant/Ent stay `RaceConfig`. Spec: [docs/systems/item-system.md](docs/systems/item-system.md) § Locked: item occupancy.
 
-**Item enchanting (#2 Resolved):** Enchanting is not in the live game. Do not reintroduce essence or ship an enchant UI, cost, or combat effect. `Item.special_effects` stays unused. Spec: [docs/systems/item-system.md](docs/systems/item-system.md) § Locked: no enchanting.
+**Item enchanting (#2 Resolved):** Enchanting is not in the live game. Do not reintroduce essence or ship an enchant UI, cost, or combat effect. `Item.special_effects` stays unused (column kept; item API omits the key). Spec: [docs/systems/item-system.md](docs/systems/item-system.md) § Locked: no enchanting.
 
 **Replay HUD (#9 HUD locked):** Emblems, League/Friendly label, contextual back link. Do not add morale HUD, initiative queue, team-stats sidebar, skip-to-end, hex debug, or a formation grid. Spec: [docs/screens/12-combat-battle.md](docs/screens/12-combat-battle.md) § Locked: replay HUD.
 

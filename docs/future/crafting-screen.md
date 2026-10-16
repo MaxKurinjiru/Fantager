@@ -28,8 +28,4 @@ Backend Requirements:
 - Crafting success calculation (RNG) and failure handling
 - Server tick processing and notifications
 
-Sections to fill:
-- Recipes and ingredient models
-- Crafting queue APIs
-- Success calculations and RNG
-- Implementation notes
+Deferred design notes live in [crafting-system.md](crafting-system.md). This screen file is a sketch, not a live contract.

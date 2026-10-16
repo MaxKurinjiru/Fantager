@@ -39,7 +39,7 @@ Canonical columns: [entities.md](../architecture/entities.md) § Hero Domain.
 | **HeroChronicle** | `hero_chronicle` | Per-hero event log — [hero-chronicle-system.md](hero-chronicle-system.md) |
 | **HeroTrainingHistory** | `hero_training_history` | Weekly training results — [training-system.md](training-system.md) |
 
-**Hero status (`HeroStatus`):** live writers use `available`, `selling`, `dead`. `in_match` and `recovering` have no production setter. `retired` is reserved (exclusion filters treat it like dead — A6.2).
+**Hero status (`HeroStatus`):** live writers use `available`, `selling`, `dead`. `in_match` and `recovering` have no production setter. `retired` is reserved (`isReserved()`; exclusion filters treat it like dead — A6.2).
 
 **Role:** `combatant` or `trainer`. Trainers are the same entity; they do not count toward Barracks roster cap.
 

@@ -48,7 +48,7 @@ class FormationController extends AbstractController
 
         $heroes = array_values(array_filter(
             $this->heroRepository->findCombatantsByTeam($team),
-            static fn ($hero) => HeroStatus::Dead !== $hero->getStatus() && HeroStatus::Retired !== $hero->getStatus(),
+            static fn ($hero) => HeroStatus::Dead !== $hero->getStatus() && !$hero->getStatus()->isReserved(),
         ));
         $formations = $this->formationRepository->findSavedByTeam($team);
 

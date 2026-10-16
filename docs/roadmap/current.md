@@ -32,8 +32,8 @@ Until a later step changes this, conflicts resolve as:
 1. **Live rules:** matching `docs/systems/*.md` + open rows in [product/known-issues.md](../product/known-issues.md)
 2. **Live UI:** [architecture/screen-code-map.md](../architecture/screen-code-map.md) + Twig/Stimulus (not the wish-list in [screens/overview-legacy.md](../screens/overview-legacy.md))
 3. **Routes / schema:** [architecture/routes.md](../architecture/routes.md), [architecture/entities.md](../architecture/entities.md) — keep them true to code
-4. **[product/overview.md](../product/overview.md):** overview only; **systems win** until Wave 2 rewrites it
-5. **[systems/README.md](../systems/README.md) status table:** snapshot; this file is more current while alignment is in progress
+4. **[product/overview.md](../product/overview.md):** overview only; **systems win** on conflict (Wave 2 rewrite landed)
+5. **[systems/README.md](../systems/README.md) status table:** live-contract snapshot; this file is the finished alignment chronicle (waves 0–8)
 
 Do not treat [screens/overview-legacy.md](../screens/overview-legacy.md) or unchecked screen “Displayed Information” lists as implementation contracts.
 
@@ -95,7 +95,7 @@ Do not change game behaviour. Make “Fully Implemented” mean the live contrac
   - Notifications → write-time locale; unused types
 - **Done when:** no row says Fully Implemented if a Wave 2–7 item still contradicts it.
 
-- [x] A1.1 Systems status table
+- [x] A1.1 Systems status table (live Combat row later relabeled **Implemented** after A7.5; HUD locked, synergy/simulate Cut — no longer MVP/partial)
 
 ### A1.2 Historical roadmap banner and M1–6 caveat
 
@@ -142,7 +142,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [product/overview.md](../product/overview.md) §2.4–2.6.1
 - **Cut or reword:** XP/leveling as a live loop → #6. In-combat race synergy as live → deferred. Suggested formations, clone, “all 6 slots required at save”, dual-wield targeting essays that the UI cannot set. Point formation save rules at [formation-system.md](../systems/formation-system.md).
 
-- [x] A2.3 Heroes / formation
+- [x] A2.3 Heroes / formation (later restored live Elf/Dwarf/Giant/Genie/Ent engine hooks that the first pass over-cut as synergy)
 
 ### A2.4 HQ, items, spells, combat, league
 
@@ -158,7 +158,7 @@ Rewrite summary so it does not sell unbuilt mechanics. Prefer **Cut** to live te
 - **Files:** [product/overview.md](../product/overview.md) §2.13–end
 - **Edits:** Graveyard includes **dismissals**, not only combat death. Community: in-app mail/forum live; **email for trades/league** not live (auth + inactivity only). Remove live-looking dungeon/crafting sections or keep a single Deferred pointer.
 
-- [x] A2.5 Graveyard / community / deferred
+- [x] A2.5 Graveyard / community / deferred (A2.1 stub anchors `#215` / `#217` dropped with the single Deferred pointer; `future/` retargeted)
 
 ---
 
@@ -248,7 +248,7 @@ For each screen: **Implemented** = what Twig/API does. **Planned** = the rest. E
 - **Files:** [summoning-system.md](../systems/summoning-system.md) (already notes the split), [npc-simulation-system.md](../systems/npc-simulation-system.md), [product/overview.md](../product/overview.md) if Wave 2 missed it
 - **Done when:** one paragraph states: **players** use relationship ≥ 50 (Genie can summon all races); **NPC marketplace** may apply a stricter Genie-only filter. Product change is A7.9.
 
-- [x] A5.2 Genie dual rule documented everywhere
+- [x] A5.2 Genie dual rule documented everywhere (later superseded by A7.9 / #14: one shared pool, Genie adaptation ≥ 80 — do not restore the player-vs-NPC split)
 
 ### A5.3 Notifications contract
 
@@ -268,7 +268,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 
 - **Action:** Implement (decision: unique at save; kickoff waterfall)
 - **Blocks:** [product/known-issues.md](../product/known-issues.md) #10 — Resolved
-- **Done:** `FormationService::rebuildSlots()` rejects duplicate `hero_id` (422). Empty slots still persist. Kickoff (`MatchLineupService`): assigned if 6 unique combat-ready, else default if match-ready, else roster fill (temporary copy). Forfeit only when the team cannot field 6 combat-ready heroes. Docs + tests updated.
+- **Done:** `FormationService::rebuildSlots()` rejects duplicate `hero_id` (422). Empty slots still persist, including a fully empty draft (API + Formation Setup UI). Kickoff (`MatchLineupService`): assigned if 6 unique combat-ready, else default if match-ready, else roster fill (temporary copy). Forfeit only when the team cannot field 6 combat-ready heroes. Docs + tests updated.
 
 - [x] A6.1 Formation duplicates (decision + execution)
 
@@ -278,7 +278,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 - **Files:** enums + writers + [architecture/entities.md](../architecture/entities.md)
 - **Default (Cut / reserve):** keep enum values, mark **unused**: `MatchType::Arena`, `FinancialRecordType::MoraleRestoration`, `ChronicleEventType::HeroRetired`, `MemorialCause::{Age,Retired,Death}`, `NotificationType::{LeagueUpdate,EventStarted,SpellLearned}`, `FinancialRecordType::SpellSlotCost`.
 - **Do not delete columns** without an explicit migrate step in this item.
-- **Done:** Cases kept (`isReserved()` / `liveCases()`). No writers existed to remove; columns not dropped. Entity-reference + system docs list each as reserved. Finance / graveyard / chronicle type filters omit reserved cases. Related unused retirement cases (`HeroStatus::Retired`, `HeroChronicleEventType::Retired`) documented the same way.
+- **Done:** Cases kept (`isReserved()` / `liveCases()`). No writers existed to remove; columns not dropped. Entity-reference + system docs list each as reserved. Finance / graveyard / chronicle type filters omit reserved cases. Related unused retirement cases (`HeroStatus::Retired`, `HeroChronicleEventType::Retired`) have `isReserved()` the same way.
 
 - [x] A6.2 Reserve unused enums
 
@@ -303,7 +303,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 
 - **Action:** Align docs (code already ignores it) **or** Implement wiring
 - **Default:** keep unread; [hero-system.md](../systems/hero-system.md) already says reserved. Ensure HQ/summary do not show it as an active bonus.
-- **Done:** Field stays on `FacilityType::getPassiveBonuses()` and is still passed into `HeroGenerator`, which ignores it (live total cap is 60% of per-stat ceilings). HQ cards, Stimulus bonus map, and API `passive_bonuses` omit it via `getDisplayedPassiveBonuses()`. Docs mark it reserved/unread.
+- **Done:** Field stays on `FacilityType::getPassiveBonuses()` and is still passed into `HeroGenerator`, which ignores it (live total cap is 60% of per-stat ceilings). HQ cards, Stimulus bonus map, and API `passive_bonuses` omit it via `getDisplayedPassiveBonuses()`. Unused `hq.bonus_summon_stat_total_cap` translation dropped. Docs mark it reserved/unread.
 
 - [x] A6.5 Chamber total-cap unused everywhere
 
@@ -352,7 +352,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 
 - **Action:** Design first → **Cut** (16 Oct 2026)
 - **Must decide:** redesign without essence **or** explicit never.
-- **Done:** Enchanting is not in the live game. No essence. Remaining Enchant Item planned rows cut. `Item.special_effects` stays unused/reserved (combat reads `bonuses` only). Lock: [item-system.md](../systems/item-system.md#locked-no-enchanting). [product/known-issues.md](../product/known-issues.md) #2 Resolved.
+- **Done:** Enchanting is not in the live game. No essence. Remaining Enchant Item planned rows cut. `Item.special_effects` stays unused/reserved (combat reads `bonuses` only; item API omits the key). Lock: [item-system.md](../systems/item-system.md#locked-no-enchanting). [product/known-issues.md](../product/known-issues.md) #2 Resolved.
 
 - [x] A7.4 Enchanting redesign or explicit never
 
@@ -425,7 +425,7 @@ No new combat formulas. Behaviour changes only where the live system doc already
 
 - **Action:** Design first (content) then **seed** (16 Oct 2026)
 - **Locked:** [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) + [product/known-issues.md](../product/known-issues.md) #16.
-  - Two spells per school per tier for **T1–T5** (48). `required_mastery_tier` = `tier`.
+  - Two spells per school per tier for **T1–T5** (60). `required_mastery_tier` = `tier`.
   - Same type mix and effect keys as T1–T2. No resurrection, summon-creature, or new combat formulas.
   - Gold ~2.5× per tier. Academy filter 1–5. Combat still uses school + type + `spell.tier` (cast `1 + tier`).
 - **Done:** `SpellService::seedDefaultSpells()` / `app:spells:seed` (kingdom init). Tests: `SpellServiceTest::testSeedDefaultSpellsCoversTiersOneThroughFive`.
@@ -442,7 +442,7 @@ Do not change game rules. Optional product asks stay Design first.
 
 - **Action:** Implement
 - **Files:** `.github/workflows/` (new or extend `phpstan.yml` caller)
-- **Done:** `.github/workflows/phpunit.yml` runs `composer test` on PRs/pushes that touch `src/**/*.php` or `tests/**` (MariaDB 11.4 service + test migrations). Called from `deploy.yml` before the image build. [history.md](history.md) Cross-Cutting updated.
+- **Done:** `.github/workflows/phpunit.yml` runs `composer test` on PRs/pushes that touch `src/**/*.php`, `tests/**`, `config/**`, `migrations/**`, or Composer/PHPUnit workflow files (MariaDB 11.4 service + test migrations). Also `workflow_call` from `deploy.yml` before the image build. [history.md](history.md) Cross-Cutting updated.
 
 - [x] A8.1 PHPUnit workflow
 
@@ -459,7 +459,7 @@ Do not change game rules. Optional product asks stay Design first.
 
 - **Action:** Implement (16 Oct 2026)
 - **If Implement:** unauthenticated liveness, no secrets.
-- **Done:** `GET /health` returns `{ "status": "ok" }` with `Cache-Control: no-store`. No database ping, no env/version/DSN. Dedicated firewall `security: false` (no session). `HealthCheckController` + `HealthCheckControllerTest`. Route map / API tree / Cross-Cutting updated.
+- **Done:** `GET /health` returns `{ "status": "ok" }` with `Cache-Control: no-store`. No database ping, no env/version/DSN. Dedicated firewall `security: false` (no session). Compose `web` probes this path. `HealthCheckController` + `HealthCheckControllerTest` (direct + HTTP kernel, no session cookie). Route map / API tree / Cross-Cutting updated.
 
 - [x] A8.3 Health route
 
@@ -538,4 +538,4 @@ Do not change game rules. Optional product asks stay Design first.
 | 5 | Wave 6 decisions + execution |
 | 6+ | One Wave 7 ID per session, then Wave 8 |
 
-*Last updated: 16 October 2026 — A8.6 password change / extra settings stay **Planned**. Alignment waves 0–8 complete.*
+*Last updated: 16 October 2026 — Alignment waves 0–8 complete. Honesty leftovers: A5.2 dual Genie rule superseded by A7.9; item API omits unused `special_effects`.*

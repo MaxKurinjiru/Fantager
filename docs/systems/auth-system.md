@@ -27,7 +27,7 @@ The auth system handles player identity and access control. The player selects a
 - **Session scoping**: `kingdom_id` from the authenticated user scopes all game data; no multi-kingdom switching (a player belongs to exactly one Kingdom).
 - **Authorization**: Role-based (`ROLE_PLAYER`, `ROLE_ADMIN`). Resource ownership is enforced in API/Web controllers (compare `getPlayerTeam()` / user team id to the requested resource). Symfony Security voters are not used yet.
 - **API auth**: Session-based (shared cookies); internal API only, no external consumers
-- **Liveness**: `GET /health` is outside the main firewall (`security: false`). No session, no auth. JSON `{ "status": "ok" }` only (A8.3).
+- **Liveness**: `GET /health` is outside the main firewall (`security: false`). No session, no auth. JSON `{ "status": "ok" }` only (A8.3). Compose `web` probes this path.
 - **Future**: OAuth2/social login; JWT for public API when exposed externally
 
 ## CSRF Protection

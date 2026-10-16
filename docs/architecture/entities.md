@@ -20,12 +20,12 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 | **FinancialRecord** as audit log for Team finances                    | Separate entity to record all gold changes (income and expenses), capturing context and actor details.                                                                                                                                       |
 | **SummonCooldown** as columns on Team                                 | 1:1, few fields.                                                                                                                                                                                                                                                    |
 | **ItemAttributeBonus** as JSON column on Item                         | Always read as whole; no cross-item queries needed.                                                                                                                                                                                                                 |
-| **Item.special_effects unused (A7.4 / #2)** | JSON column kept. Merchant writes `[]`. Combat reads `bonuses` only. Do not drop the column in this step. Enchanting is not in the live game. |
+| **Item.special_effects unused (A7.4 / #2)** | JSON column kept. Merchant writes `[]`. Combat reads `bonuses` only. Item API omits the key (`ItemService::serialize()`). Do not drop the column. Enchanting is not in the live game. |
 | **FormationHeroStrategy** as JSON on FormationSlot                    | Complex per-slot config, never queried across slots.                                                                                                                                                                                                                |
 | **FormationSlot unique hero** (application, not DB)                   | Save rejects duplicate `hero_id` on one formation. Empty slots allowed. Kickoff uniqueness is enforced by `MatchLineupService`. `UNIQ_FORMATION_POSITION` is the only DB unique key.                                                                              |
 | **FormationSpellPriority** as JSON on FormationSlot                   | Same reasoning.                                                                                                                                                                                                                                                     |
 | **NotificationPreference** | Dedicated **`UserSettings`** table (`auth_user_settings`), 1:1 with User | UI/interface preferences (modal backdrop, future toggles). Notification email/in-game prefs still **planned**. |
-| **HeroTrainingHistory** as append-only weekly training log            | One row per hero trained during each weekly tick. Used for hero recent activity and calendar history until `team_chronicle.training_completed` is wired.                                                                                                              |
+| **HeroTrainingHistory** as append-only weekly training log            | One row per hero trained during each weekly tick. Used for hero recent activity and calendar history. The same tick also writes `training_completed` on team chronicle and hero chronicle.                                                                         |
 | **Leaderboard** = SQL view / computed                                 | Derived from LeagueStanding, not stored separately.                                                                                                                                                                                                                 |
 | **PlayerProfile** = projection of User+Team                              | Not a DB entity.                                                                                                                                                                                                                                                    |
 | **NPC Team** as `is_npc = true` on Team entity                        | No separate entity needed; NPC and player teams share all fields. `user_id` is NULL for NPC teams.                                                                                                                                                                  |
@@ -92,7 +92,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | **Team**            | id, user_id (nullable), kingdom_id, name, emblem, colors, morale, reputation, chemistry, fan_base, **last_fan_base_delta**, gold, is_npc, last_summon_at, summons_this_cycle, **unpaid_debt**, **crisis_weeks**, **last_recovery_action_at**, **ticket_price** | → User (N:1, nullable — NULL for NPC teams), → Kingdom (N:1) |
 | **FinancialRecord** | id, team_id, type (enum), actor (enum), gold_change, context (JSON), created_at, processed_at (nullable) | → Team (N:1)                                                 |
-| **TeamChronicle**   | id, team_id, type (`ChronicleEventType` enum), subject_key, subject_params (JSON), data (JSON), created_at | → Team (N:1)                                                 |
+| **TeamChronicle**   | id, team_id, type (`ChronicleEventType` enum), subject_key, subject_params (JSON), data (JSON), created_at | → Team (N:1). Append-only; write via `TeamChronicleService` only. Behaviour: [team-chronicle-system.md](../systems/team-chronicle-system.md). |
 | **TeamSummonHistory** | id, team_id, race_selected, hero_id, gold_cost, summoned_at | → Team (N:1), → Hero (N:1)                                   |
 | **TeamDailySnapshot** | id, team_id, recorded_at (date), morale, reputation, chemistry, fan_base | → Team (N:1); table `team_daily_snapshot`; unique on (team_id, recorded_at); used to power the team history chart (last 30 days of morale/reputation/chemistry/fan_base trends) |
 
@@ -115,7 +115,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 | Entity                  | Key Fields                                                                                                                                              | Relationships                |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | **Hero (Trainer role)** | Trainers are heroes with `role = trainer`. Fields: `training_type` (nullable enum), `target_attribute` (nullable string), trainee assignments via `hero.trainer_id` | → Team, has many trainee Heroes |
-| **HeroTrainingHistory** | id, hero_id, training_type (enum), target_attribute (nullable), trainer_id (nullable), stat_gain (nullable), completed_at                               | → Hero (trainee), → Hero (trainer, optional). Append-only log written after each weekly training tick. Supplemented by `hero_chronicle.training_completed` entries. |
+| **HeroTrainingHistory** | id, hero_id, training_type (enum), target_attribute (nullable), trainer_id (nullable), stat_gain (nullable), completed_at                               | → Hero (trainee), → Hero (trainer, optional). Append-only log written after each weekly training tick. Same tick writes `training_completed` on team and hero chronicle. |
 
 
 ### 6. Formation Domain
@@ -141,7 +141,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 
 | Entity   | Key Fields                                                                                                                                                     | Relationships                |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **Item** | id, owner_team_id, equipped_hero_id, equipped_slot, name, slot_type (enum), sub_type (nullable `ItemSubType`), category (enum), rarity (enum), durability, status (enum), bonuses (JSON), special_effects (JSON, unused / reserved — A7.4) | → Team, → Hero (if equipped) |
+| **Item** | id, owner_team_id, equipped_hero_id, equipped_slot, name, slot_type (enum), sub_type (nullable `ItemSubType`), category (enum), rarity (enum), durability, status (enum), bonuses (JSON), special_effects (JSON, unused / reserved — A7.4; omitted from item API) | → Team, → Hero (if equipped) |
 
 
 ### 9. Spell Domain
@@ -212,23 +212,11 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 
 ### Team Chronicle (append-only event log)
 
-Table: `team_chronicle` — entity `App\Entity\Team\TeamChronicle`.
+Fields: [Team Domain](#3-team-domain) (`TeamChronicle`). Full writer map, categories, and UI: [team-chronicle-system.md](../systems/team-chronicle-system.md).
 
-| Entity          | Key Fields                                                                                              | Relationships |
-| --------------- | ------------------------------------------------------------------------------------------------------- | ------------- |
-| **TeamChronicle** | id, team_id, type (`ChronicleEventType` enum), subject_key, subject_params (JSON), data (JSON), created_at | → Team        |
-
-
-- `type` — enum value used for filtering and grouping (e.g. ownership, competition, roster).
-- `subject_key` — Symfony translation key (e.g. `activity.player_joined`, `activity.season_ended`); rendered in the player's locale at display time via `TeamChroniclePresenter`.
-- `subject_params` — JSON map of parameters injected into the translation string (e.g. `{"player": "Alice"}`, `{"season": "1", "tier": "T1"}`).
-- `data` — full machine-readable context for detailed views or future processing (e.g. `user_id`, `hero_id`, `gold`, `reason`).
-- Entries are **append-only**; never updated or deleted individually (bulk retention pruning planned, not implemented).
-- **Write path:** `TeamChronicleService` only (do not persist `TeamChronicle` directly from feature services).
-- **Read path:** `TeamChronicleRepository` + `TeamChroniclePresenter`; dashboard shows last 5 entries; full history at `GET /app/chronicle`.
-- **Implemented types today:** see the full writer map in [team-chronicle-system.md](../systems/team-chronicle-system.md) (ownership, battles, roster, marketplace, HQ, crisis, rewards, etc.). `ChronicleEventType::HeroRetired` (`hero_retired`) is **reserved / unused** (A6.2) — kept on the enum and in the roster category map so any legacy row still groups; **no writer** and omitted from the type-filter dropdown.
-
-See [team-chronicle-system.md](../systems/team-chronicle-system.md) for full behaviour.
+- Append-only table `team_chronicle`. Do not persist the entity from feature services — `TeamChronicleService` only.
+- Read: `TeamChroniclePresenter` (dashboard last 5; `GET /app/chronicle`).
+- `ChronicleEventType::HeroRetired` (`hero_retired`) is **reserved / unused** (A6.2).
 
 ---
 
@@ -251,18 +239,18 @@ See [team-chronicle-system.md](../systems/team-chronicle-system.md) for full beh
 
 41 files in `src/Enum/`. The table below matches that set. Deferred `DungeonResult` / `CraftingStatus` are **not** PHP enums (see [Deferred Concepts](#deferred-concepts)).
 
-**Reserved / unused (A6.2, locked):** keep the cases in code and the DB columns; do not add writers or combat/economy hooks “for completeness”. Player-facing filter dropdowns use `liveCases()` (reserved cases omitted). `MatchType::Arena`, `FinancialRecordType::MoraleRestoration`, `FinancialRecordType::SpellSlotCost`, `ChronicleEventType::HeroRetired`, `MemorialCause::{Age, Retired, Death}`, `NotificationType::{LeagueUpdate, EventStarted, SpellLearned}`. Related unused retirement cases with no production writer: `HeroStatus::Retired`, `HeroChronicleEventType::Retired` (readers treat `HeroStatus::Retired` like Dead for roster queries).
+**Reserved / unused (A6.2, locked):** keep the cases in code and the DB columns; do not add writers or combat/economy hooks “for completeness”. Player-facing filter dropdowns use `liveCases()` (reserved cases omitted). `MatchType::Arena`, `FinancialRecordType::MoraleRestoration`, `FinancialRecordType::SpellSlotCost`, `ChronicleEventType::HeroRetired`, `MemorialCause::{Age, Retired, Death}`, `NotificationType::{LeagueUpdate, EventStarted, SpellLearned}`. Related unused retirement cases with no production writer, marked `isReserved()` the same way: `HeroStatus::Retired`, `HeroChronicleEventType::Retired` (readers treat `HeroStatus::Retired` like Dead for roster queries).
 
 | Enum                | Values                                                                                                                                                                                                                                            |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Race`              | human, elf, dwarf, orc, undead, giant, ent, genie. Ent and Giant use a 7-hex combat footprint (see [combat-system.md](../systems/combat-system.md#unit-footprint-size)). |
-| `HeroStatus`        | available, in_match, selling, recovering, dead; **retired (reserved / unused — no writer; readers treat it like dead)**                                                                                                                                                                                               |
+| `HeroStatus`        | available, in_match, selling, recovering, dead; **retired (reserved / unused — `isReserved()`; no writer; readers treat it like dead)**                                                                                                                                                                                               |
 | `HeroTrait`         | quick_learner, clutch, audience_favorite, battle_hardened, volatile, slacker, fragile, glass_jaw, berserker, glass_cannon, reckless, loner, overconfident, perfectionist (nullable on Hero; ~60% assign chance at generation). UI: [hero-system.md](../systems/hero-system.md) § Player UI |
 | `School`            | fire, water, air, earth, light, dark                                                                                                                                                                                                              |
 | `SpellType`         | offensive, defensive, utility                                                                                                                                                                                                                     |
 | `ItemSlotType`      | main_hand, off_hand, head, body, hands, feet, amulet, ring, ring_2                                                                                                                                                                                   |
 | `ChronicleEventType`   | team_established, player_joined, player_released, battle_win, battle_loss, battle_draw, hero_levelup, hero_died, **hero_retired (reserved / unused)**, training_completed, item_purchased, item_sold, summon_completed, season_ended, hero_dismissed, trainer_dismissed, hero_purchased, hero_sold, trainer_purchased, trainer_sold, team_renamed, facility_upgraded, facility_downgraded, facility_upgrade_cancelled, race_optimization_changed, starting_roster, spell_learned, item_dismantled, trainer_promoted, financial_crisis_state, kingdom_reward_granted |
-| `HeroChronicleEventType` | summoned, transferred, renamed, match_played, levelup, mastery_gained, training_completed, spell_learned, injured, recovered, died; **retired (reserved / unused)** |
+| `HeroChronicleEventType` | summoned, transferred, renamed, match_played, levelup, mastery_gained, training_completed, spell_learned, injured, recovered, died; **retired (reserved / unused — `isReserved()`)** |
 | `ChronicleReleaseReason` | inactivity, bankruptcy, unverified_registration, account_deleted (stored in `data.reason`; used with `player_released`) |
 | `ChronicleCategory` | all, ownership, competition, roster, economy (UI filter groups; not stored on rows) |
 | `ItemCategory`      | weapon, shield, spell_accelerator, armor, accessory, material *(material unused — deferred crafting; not a live `CraftingMaterial` entity)*                                                                                                        |
@@ -305,9 +293,9 @@ See [team-chronicle-system.md](../systems/team-chronicle-system.md) for full beh
 | Category                   | Count  |
 | -------------------------- | ------ |
 | DB entities (implemented) | 38     |
-| Config-based (not DB)      | 5      |
+| Config-based (not DB)      | 6      |
 | PHP enums (`src/Enum`)     | 41     |
-| **Total modeled concepts** | **84** |
+| **Total modeled concepts** | **85** |
 
 
 ---

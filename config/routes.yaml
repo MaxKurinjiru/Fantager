@@ -13,3 +13,7 @@ controllers_api:
   resource: ../src/Controller/Api/V1/
   type: attribute
 
+# Infra lives next to Web/API, not under those trees — import the file, not src/Controller/.
+controllers_health:
+  resource: ../src/Controller/HealthCheckController.php
+  type: attribute

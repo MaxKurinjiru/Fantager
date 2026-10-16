@@ -1,6 +1,6 @@
 # Systems (live domain rules)
 
-Canonical **gameplay contracts**. On conflict with [product/overview.md](../product/overview.md), this folder wins until alignment Wave 2.
+Canonical **gameplay contracts**. On conflict with [product/overview.md](../product/overview.md), this folder wins.
 
 Open design questions: [product/known-issues.md](../product/known-issues.md) — do not invent mechanics for **Open** rows.
 
@@ -54,7 +54,7 @@ Do not duplicate Remaining work in the roadmap. [../roadmap/README.md](../roadma
 
 ## Current Implementation Status
 
-Honest snapshot of the **live contract**. “Fully Implemented” means no open Wave 2–7 gap still contradicts that row. Remaining gaps are in Notes with known-issue / alignment pointers. Alignment waves 0–8 are complete ([../roadmap/current.md](../roadmap/current.md)).
+Honest snapshot of the **live contract**. “Fully Implemented” means that row’s live rules have no remaining Cut / Planned / reserved contradiction in Notes. Remaining gaps stay in Notes. Alignment waves 0–8 are complete ([../roadmap/current.md](../roadmap/current.md)).
 
 | Feature / Area | Service Layer | Web UI / Controllers | API (V1) Endpoints | Status / Notes |
 | :--- | :--- | :--- | :--- | :--- |
@@ -70,7 +70,7 @@ Honest snapshot of the **live contract**. “Fully Implemented” means no open 
 | **Items** | Implemented | Implemented | Implemented | Inventory, equip/unequip, dismantle. Nine slots (`ring` + `ring_2`); two-handed occupancy and dual-wield locked (A7.3 / [#8](../product/known-issues.md)). Enchanting not in the live game (A7.4 / [#2](../product/known-issues.md) Resolved). Equipment is hero-detail tab, not inventory DnD. |
 | **Spells** | Implemented | Implemented | Implemented | Library, learning, slot equip. Seeded catalog T1–T5 (two per school per tier) (A7.11 / [#16](../product/known-issues.md)). No essence. |
 | **Leagues** | Implemented | Implemented | Implemented | `LeagueFixtureScheduler`, `SeasonTransitionService`, standings, lockstep match tick. Win-streak / derby / relegation-pressure morale, veteran leadership, junior bonus XP not live. |
-| **Combat** | **MVP / partial** | Replay | Implemented | Engine + replay: wave lockstep (max 200, `stalled` isolation), L0 spell pick, L1/L2 JSON + player editor (A7.6 / [#12](../product/known-issues.md)), defensive targeting, fatigue/morale/Orc/Ent formulas, post-match XP/form/fatigue, snapshot HP playback, full AP movement. HUD: emblems + match type (morale/queue/sidebar/skip cut). Haste/Shock on initiative sort (`ENGINE_VERSION` 7), not AP. [#9](../product/known-issues.md) Resolved (A7.5): morale / race synergy / simulate Cut. `MatchType::Arena` reserved, unused (A6.2). See [combat-system.md](combat-system.md#follow-up-contract-after-61). |
+| **Combat** | Implemented | Replay | Implemented | Fully automated engine + post-match replay (no live input). Wave lockstep (max 200, `stalled` isolation), L0 spell pick, L1/L2 JSON + player editor (A7.6 / [#12](../product/known-issues.md)), defensive targeting, fatigue/morale/Orc/Ent formulas, post-match XP/form/fatigue, snapshot HP playback, full AP movement. HUD: emblems + match type (morale/queue/sidebar/skip cut). Haste/Shock on initiative sort (`ENGINE_VERSION` 7), not AP. [#9](../product/known-issues.md) Resolved (A7.5): morale / race synergy / simulate Cut. `MatchType::Arena` reserved, unused (A6.2). See [combat-system.md](combat-system.md#follow-up-contract-after-61). |
 | **World Events** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** — see [world-events-system.md](../future/world-events-system.md). |
 | **Dungeons** | Not Implemented | Not Implemented | Not Implemented | ⏸️ **Deferred / Out of Scope** (Milestone 8) — see [dungeon-system.md](../future/dungeon-system.md). Backend removed from codebase. |
 | **Marketplace** | Implemented | Implemented | Implemented | Listings with ratings and **trait**; filter/sort by value and OVR. Player buys have no race filter. NPC hero buys use the shared summoning pool (A7.9 / [#14](../product/known-issues.md)). Listing prices must sit in the suggested band (−50% / +100%) (A7.10 / [#15](../product/known-issues.md)). |

@@ -485,6 +485,23 @@ class ItemServiceTest extends TestCase
         $this->assertSame(180, $this->itemService->estimateMarketPrice($item));
     }
 
+    public function testSerializeOmitsUnusedSpecialEffects(): void
+    {
+        $item = new Item();
+        $item->setName('Test Sword');
+        $item->setSlotType(ItemSlotType::MainHand);
+        $item->setCategory(ItemCategory::Weapon);
+        $item->setRarity(ItemRarity::Common);
+        $item->setDurability(100);
+        $item->setSpecialEffects(['unused' => true]);
+
+        $payload = $this->itemService->serialize($item);
+
+        $this->assertArrayNotHasKey('special_effects', $payload);
+        $this->assertArrayHasKey('bonuses', $payload);
+        $this->assertSame(['unused' => true], $item->getSpecialEffects());
+    }
+
     /**
      * @param array<string, Item> $equippedBySlot
      */

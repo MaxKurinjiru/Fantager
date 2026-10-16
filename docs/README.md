@@ -4,7 +4,7 @@ Pick a view. This file is an index, not a status table.
 
 **Live rules:** `systems/*.md` + [product/known-issues.md](product/known-issues.md).  
 **Live UI:** [architecture/screen-code-map.md](architecture/screen-code-map.md) + Twig.  
-**Overview vs live:** [product/overview.md](product/overview.md) loses to `systems/` until alignment Wave 2.  
+**Overview vs live:** [product/overview.md](product/overview.md) loses to `systems/` on conflict.  
 **Active work:** [roadmap/current.md](roadmap/current.md) — alignment waves 0–8 complete; remaining leftovers in `systems/` Remaining work and `future/`.
 
 ## Views
@@ -18,12 +18,12 @@ Pick a view. This file is an index, not a status table.
 
 ## Canonical sources
 
-Until alignment Wave 2–4 change this, conflicts resolve as:
+Conflicts resolve as:
 
 1. **Live rules:** matching `systems/*.md` + open rows in [product/known-issues.md](product/known-issues.md)
 2. **Live UI:** [architecture/screen-code-map.md](architecture/screen-code-map.md) + Twig/Stimulus (not [screens/overview-legacy.md](screens/overview-legacy.md))
 3. **Routes / schema:** [architecture/routes.md](architecture/routes.md), [architecture/entities.md](architecture/entities.md)
-4. **[product/overview.md](product/overview.md):** overview only; **systems win** until Wave 2
+4. **[product/overview.md](product/overview.md):** overview only; **systems win** on conflict
 5. **[systems/README.md](systems/README.md) status table:** snapshot; [roadmap/current.md](roadmap/current.md) is the finished alignment chronicle (waves 0–8)
 
 ## How to use

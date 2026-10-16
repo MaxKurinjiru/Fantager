@@ -35,7 +35,6 @@ export default class extends Controller {
         fixtureId: Number,
         isMatchPrep: Boolean,
         errorEmpty: String,
-        errorAssign: String,
         textSaving: String,
         errorSave: String,
         successSave: String,
@@ -497,12 +496,6 @@ export default class extends Controller {
                 spell_priorities: tactics.spell_priorities.map((row) => ({ ...row }))
             };
         });
-
-        const assignedCount = slots.filter(s => s.hero_id !== null).length;
-        if (assignedCount === 0) {
-            this.showAlert('error', this.errorAssignValue);
-            return;
-        }
 
         btn.disabled = true;
         const originalText = btn.textContent;

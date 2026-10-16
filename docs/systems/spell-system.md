@@ -23,11 +23,11 @@ Purpose: Document spell schools, mastery, learning, equip slots, and academy UI.
 
 ## Locked: catalog T1–T5
 
-**#16 Resolved (A7.11 seed).** The live library is **two spells per school per tier** for tiers **1–5** (48 spells). `required_mastery_tier` equals `tier`. Do not add T6+, resurrection, summon-creature, or new combat effect keys.
+**#16 Resolved (A7.11 seed).** The live library is **two spells per school per tier** for tiers **1–5** (60 spells). `required_mastery_tier` equals `tier`. Do not add T6+, resurrection, summon-creature, or new combat effect keys.
 
 | Rule | Meaning |
 |------|---------|
-| Shape | 6 schools × 5 tiers × 2 spells. Fire is offensive; Light is defensive (heal / bless / cleanse; **no** revive); Dark is offensive / curse / drain / poison (**no** heal); Water heal + freeze; Air haste / shock / evasion; Earth shield / petrify / damage. |
+| Shape | 6 schools × 5 tiers × 2 spells (**60**). Fire is offensive; Light is defensive (heal / bless / cleanse; **no** revive); Dark is offensive / curse / drain / poison (**no** heal); Water heal + freeze; Air haste / shock / evasion; Earth shield / petrify / damage. |
 | Mastery | Learn needs school mastery ≥ spell tier. Combat mastery XP still reaches T5. |
 | Combat | Engine uses **school + type + `spell.tier`**, not a new formula. Damage `spellPower × (1 + tier × 0.15)`; heal `spellPower × (1 + tier × 0.10)`. Cast duration stays `1 + tier` (T5 = 6 rounds). `effects` JSON is catalog flavor (same keys as T1–T2). Offensive spells set `requires_magical_weapon`. |
 | Gold | T1 ~100–150, T2 ~300–450, T3 ~750–1100, T4 ~1900–2500, T5 ~4800–6200 (~2.5× per tier). |

@@ -1007,8 +1007,6 @@ hq:
   bonus_roster_capacity: Kapacita soupisky
   bonus_summon_base_stat_bonus: Bonus k zákl. atributům vyvolání
   bonus_summon_stat_random_bonus: Náhodný bonus atributů vyvolání
-  # Reserved / unread (A6.5) — not shown on HQ cards or in API passive_bonuses
-  bonus_summon_stat_total_cap: Limit atributů vyvolání
   bonus_ticket_revenue_pct: Příjmy ze vstupného
   bonus_arena_capacity: Kapacita tribun
 
@@ -1332,7 +1330,6 @@ js_flash:
     success_sell: Hrdina byl vystaven na trh. Sledujte stav v sekci Moje nabídky.
   formation:
     name_empty: Název formace nemůže být prázdný.
-    assign_hero: Musíte k formaci přiřadit alespoň jednoho hrdinu.
     saving: Ukládání...
     failed_save: Nepodařilo se uložit formaci.
     success_save: Sestava a taktika formace byly úspěšně uloženy.
@@ -1447,7 +1444,7 @@ league:
 
 calendar:
   title: Kalendář a události
-  subtitle: Plán království — ligové zápasy, tréninkové ticky a týmové události.
+  subtitle: Plán království — ligové zápasy, přátelské zápasy a ticky království.
   prev_week: Předchozí týden
   next_week: Další týden
   loading: Načítání kalendáře...
@@ -1461,13 +1458,18 @@ calendar:
   filter_show_system: Zobrazit systémové ticky
   type_system_tick: Systém
   type_league_match: Liga
-  type_hero_training_history: Trénink
+  type_friendly_match: Přátelský
   status_scheduled: Naplánováno
   status_completed: Dokončeno
   status_failed: Selhalo
+  status_pending: Čeká
+  status_processing: Zpracovává se
+  status_in_progress: Probíhá
+  status_declined: Odmítnuto
+  status_cancelled: Zrušeno
+  status_expired: Vypršelo
   league_fixture_desc: 'Ligový zápas — skupina %group%'
   friendly_match_desc: Přátelský zápas
-  training_complete_title: 'Trénink dokončen: %hero%'
   tick:
     daily_reset_title: Denní reset a údržba
     daily_reset_desc: Systémové čištění, reset stárnutí hrdinů

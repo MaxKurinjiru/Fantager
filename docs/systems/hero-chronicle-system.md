@@ -60,7 +60,7 @@ Entries are **append-only**. Rendering uses the viewer's locale via `HeroChronic
 | Type | Notes |
 |------|-------|
 | `injured` / `recovered` | Injury system (future) |
-| `retired` | Voluntary retirement — **reserved / unused (A6.2)**; no writer |
+| `retired` | Voluntary retirement — **reserved / unused (A6.2)** (`isReserved()`); no writer |
 
 ---
 

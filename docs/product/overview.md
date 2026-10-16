@@ -1,6 +1,6 @@
 # Game systems overview
 
-> **Overview only — not the live contract.** On conflict, matching `docs/systems/*.md` and open rows in [known-issues.md](known-issues.md) win. Deferred design lives in [`docs/future/`](../future/), not in the core TOC below.
+> **Overview only — not the live contract.** On conflict, matching `docs/systems/*.md` wins. Design locks: [known-issues.md](known-issues.md). Deferred design lives in [`docs/future/`](../future/), not in the core TOC below.
 
 ## Game Premise
 
@@ -40,14 +40,15 @@ A **Kingdom** is a shared game world in one application: rows are scoped by **`k
 
 | Setting | Live? | Purpose |
 |:---|:---|:---|
-| **Main Language** | Yes | Primary interface language |
+| **Language** | Yes | Default UI locale for new users in this kingdom |
 | **Time Zone** | Yes | Tick schedule in kingdom-local time |
-| **Game Speed** | Yes | Scales some tick effects (aging, fan-club drift, …) |
-| **Starting roster** | Yes | **10 heroes** per team at creation — [2.6](#26-team-system) |
+| **Game Speed** | Yes | Scales some tick effects (aging, fan-club drift, …), not the tick clock |
 | **Marketplace Tax Rate** | Yes | Fee on sales, routed to the Royal Treasury |
-| **Season Length** | Yes | League season is **77 days** (11 weeks) — [calendar-system.md](../systems/calendar-system.md) |
+| **Season Length** | Yes | Stored; live season is **77 days** (11 weeks) — [calendar-system.md](../systems/calendar-system.md) |
 | **Max Player Capacity** | Yes | Derived from `league_tiers_config` |
 | **Level Cap / XP Modifier** | Yes | Cap **20**; `xp_modifier` multiplies match XP at award ([known-issues #6](known-issues.md)) |
+
+Starting heroes (**10** at creation) are an init constant, not a Kingdom setting — [§2.6](#26-team-system). Crafting Boost is deferred with crafting (`future/`).
 
 ---
 
@@ -95,7 +96,7 @@ When weekly HQ maintenance (or payroll) cannot be paid, unpaid amounts accumulat
 |-------|--------|
 | **Warning** | Outstanding debt; player notified |
 | **Restricted** (≥ 2 weeks) | HQ passive bonuses suspended; upgrades, summoning, and marketplace purchases blocked |
-| **Bankruptcy** (≥ 6 weeks, debt ≥ 4× weekly maintenance, no recovery) | Team released to NPC pool; player cooldown before claiming a new team |
+| **Bankruptcy** (≥ 6 crisis weeks, debt ≥ 4× weekly maintenance + payroll, gold = 0, no recent recovery) | Team released to NPC pool; player cooldown before claiming a new team |
 
 **Recovery paths:** marketplace sales, hero dismissal (40% value), facility downgrade (25% refund on completion).
 
@@ -272,7 +273,7 @@ Races receive inherent **flat integer bonuses** to primary attributes (applied d
 
 **Ent KON +4:** Ents’ elevated Constitution bonus reflects their natural bark armor. This is the highest single-stat bonus in the game.
 
-> *These flat values are the canonical source of truth — see `config/game/races.yaml`. During hero generation the bonus is added to each rolled stat (before capping).*
+> *Flat bonuses live in `config/game/races.yaml` (canonical). During hero generation the bonus is added to each rolled stat (before capping).*
 
 #### Race-Specific Training Modifiers
 
@@ -293,18 +294,18 @@ Race `training_speed_modifier` applies to **attribute training** on the Thursday
 
 #### Race-Specific Combat Bonuses
 
-Live engine hooks only ([combat-system.md](../systems/combat-system.md)). Other flavour bonuses below are **not** in the engine.
+Live **engine** hooks only ([combat-system.md](../systems/combat-system.md)). In-combat **pair/role synergy** from the relationship matrix is Cut ([#9](known-issues.md)). YAML `combat_bonus` flavour that the engine does not apply stays out.
 
 | Race | Live in combat? |
 |:---|:---|
-| Human | No extra XP or combat bonus in the engine |
-| Elf | No accuracy/dodge race bonus in the engine |
-| Dwarf | No armor/crit race bonus in the engine |
-| Orc | **Yes** — +20% melee vs non-Orcs when the hit resolves |
+| Human | No extra XP from victories; no combat race hook |
+| Elf | **Yes** — +10 accuracy, +10 dodge |
+| Dwarf | **Yes** — +15% armor value. No crit-resistance race hook |
+| Orc | **Yes** — +20% melee vs non-Orcs when the hit resolves. No penalty vs Orcs |
 | Undead | External heals from non-Undead casters are blocked. No poison-immunity race hook |
-| Giant | **7-hex flower** footprint. No extra main-hand damage bonus in the engine |
-| Ent | **Yes** — +20% KON for HP and armor; **7-hex flower** footprint |
-| Genie | No spell-effectiveness race bonus in the engine |
+| Giant | **Yes** — +10% main-hand weapon damage; **7-hex flower** footprint |
+| Ent | **Yes** — +20% KON for HP and armor; ×0.80 initiative; **7-hex flower** footprint |
+| Genie | **Yes** — +15% spell power; +15% spell crit on offensive spells |
 
 Two-hand / dual-wield occupancy is locked ([#8](known-issues.md)).
 
@@ -580,7 +581,7 @@ When formation `spell_priorities` is empty, the engine uses the **L0** pick (hea
 | **Light** | Heal / bless / cleanse; holy extra vs Undead on seeded Light heal. **No** revive |
 | **Dark** | Curse and life drain. External heals from **non-Undead** casters are blocked on Undead ([§2.4](#24-hero-system)) |
 
-INT feeds spell power for everyone. **No** extra Genie/Elf spell-effectiveness race hook in the engine. Haste/Shock change the per-round initiative **sort** (YAML speed percents, not AP) ([#9](known-issues.md) Haste/Shock lock).
+INT feeds spell power for everyone. Genie +15% spell power and +15% spell crit on offensive spells ([§2.4](#24-hero-system)). Elf has no spell-effectiveness race hook. Haste/Shock change the per-round initiative **sort** (YAML speed percents, not AP) ([#9](known-issues.md) Haste/Shock lock).
 
 ---
 
@@ -590,7 +591,11 @@ Live rules: [combat-system.md](../systems/combat-system.md). Combat leftovers [#
 
 Turn-based, **fully automated**. Players set formation **before** kickoff; there is no mid-battle input. The UI is a **replay** of `combat_log` at `/app/battles/{id}`. League Tue/Fri and friendly Wed/Sun use the same engine.
 
-**Live inputs:** primary stats, equipment (scaled by durability), form (starting HP), fatigue (effective KON), kickoff morale (outgoing damage), Orc/Ent race hooks ([§2.4](#24-hero-system)). Stored **level** is live truth ([#6](known-issues.md) Resolved). **Age** is post-match KO aging / mortality, not an in-combat stat curve.
+**Live inputs:** primary stats, equipment (scaled by durability), form (starting HP), fatigue (effective KON), kickoff morale (outgoing damage), race hooks in [§2.4](#24-hero-system). Stored **level** is live truth ([#6](known-issues.md) Resolved). **Age** is post-match KO aging / mortality, not an in-combat stat curve.
+
+**Haste/Shock (live):** YAML `speed_bonus_percent` / `speed_reduction_percent` apply to the per-round initiative **sort** after ticks, not to AP ([#9](known-issues.md)).
+
+**Replay HUD (live):** emblems, League/Friendly label, contextual back link ([12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud)).
 
 ### Combat flow
 
@@ -627,10 +632,9 @@ Team morale updates **post-match** from the result. Mid-battle `morale_change` (
 
 | Claim | Status |
 |:---|:---|
-| Replay HUD: morale widget, initiative queue, skip-to-end, team-stats sidebar | Cut ([#9](known-issues.md) HUD lock). Live: emblems + League/Friendly label |
+| Replay HUD extras (morale widget, initiative queue, skip-to-end, team-stats sidebar, hex debug, unused formation grid) | Cut ([#9](known-issues.md) HUD lock) |
 | Combat **home advantage** | Not in the engine (arena is ticket gold only) |
-| Haste +30% / Shock −30% on initiative | Live on the per-round sort; not AP ([#9](known-issues.md) Haste/Shock lock) |
-| In-combat race synergy; `POST /api/v1/combat/simulate` | Cut ([#9](known-issues.md) Resolved) |
+| In-combat race **synergy** (pair/role tables); `POST /api/v1/combat/simulate` | Cut ([#9](known-issues.md) Resolved). Individual race hooks in [§2.4](#24-hero-system) stay live |
 | Live / in-progress match UI | Replay after completion only |
 
 ---
@@ -772,4 +776,4 @@ Do not implement unless the user explicitly asks.
 
 **End of overview**
 
-> Live rules: `docs/systems/*.md`. Open design: [known-issues.md](known-issues.md). Active work: [roadmap/current.md](../roadmap/current.md).
+> Live rules: `docs/systems/*.md`. Design locks: [known-issues.md](known-issues.md). Alignment chronicle: [roadmap/current.md](../roadmap/current.md).

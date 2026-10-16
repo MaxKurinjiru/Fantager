@@ -281,7 +281,7 @@ export default class extends Controller {
         const key = {
             system_tick: 'type_system_tick',
             league_match: 'type_league_match',
-            hero_training_history: 'type_hero_training_history',
+            friendly_match: 'type_friendly_match',
         }[type];
         return key ? this.translationsValue[key] : type;
     }
