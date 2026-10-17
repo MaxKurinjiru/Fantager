@@ -12,4 +12,4 @@ Parked until an explicit product ask. **Single index:** [product/known-issues.md
 
 - Milestone 8: dungeons, quests, crafting — [`../future/`](../future/)
 - Milestone 9: alliances and guilds — [archive/history.md](archive/history.md)
-- Repo meta and the original screen sketch — [`_deferred/`](../../_deferred/)
+- Repo meta, the original screen sketch, and the original systems summary — [`_deferred/`](../../_deferred/)

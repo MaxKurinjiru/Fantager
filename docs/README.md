@@ -61,6 +61,6 @@ Not a work queue. Do not implement unless the user explicitly asks.
 | Later product decisions (wiki, SSE, …) | [product/known-issues.md](product/known-issues.md) § Later product decisions |
 | Milestone 8 + world events | [future/](future/) |
 | Milestone 9 alliances / guilds | [roadmap/archive/history.md](roadmap/archive/history.md) |
-| Repo meta and original screen sketch | [`_deferred/`](../_deferred/) |
+| Repo meta, original screen sketch, and original systems summary | [`_deferred/`](../_deferred/) |
 
 **Cut** decisions live in `## Locked:` (index: [product/known-issues.md](product/known-issues.md) § Resolved locks), not in this table. Unfinished **code** for a live feature lives in that system’s Remaining work.
