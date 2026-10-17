@@ -39,7 +39,8 @@ php bin/console app:league:resolve-pending-fixtures --kingdom-id=<id>
 
 | File | Purpose |
 |------|---------|
-| `kingdom.defaults.json` | Kingdom entity settings (language, timezone, game_speed, level_cap, xp_modifier, marketplace_tax_rate, season_length) |
+| `kingdom.defaults.json` | Kingdom entity settings other than the preset (language, timezone, season_length). Hero level cap is `HeroProgressionConfig::LEVEL_CAP`. Marketplace tax is `MarketplaceService::TAX_RATE_PERCENT` |
+| `pace-presets.json` | Required world presets (`classic`, `fast_season`, `short_careers`, `rich_world`, `test`), including `xp_modifier`. `app:kingdom:initialize --pace` copies one set onto the new kingdom |
 | `league_tiers.defaults.json` | `league_tiers_config` — teams_per_group, 3 tiers (T1/T2/T3) with groups, promotion/relegation slots, reward placeholders |
 | `season.defaults.json` | First `LeagueSeason` (season_number, start_offset_days, status_when_started, status_when_future) |
 | `team.defaults.json` | NPC team starting state: resources (gold), morale, reputation, chemistry, heroes_per_team, roster_races, default formation |

@@ -41,12 +41,12 @@ class HeroProgressionServiceTest extends TestCase
 
     public function testLevelForXpUsesCapAndDoesNotSpendXp(): void
     {
-        $this->assertSame(1, $this->config->levelForXp(799, 20));
-        $this->assertSame(2, $this->config->levelForXp(800, 20));
-        $this->assertSame(2, $this->config->levelForXp(1999, 20));
-        $this->assertSame(3, $this->config->levelForXp(2000, 20));
-        $this->assertSame(20, $this->config->levelForXp(90000, 20));
-        $this->assertSame(10, $this->config->levelForXp(90000, 10));
+        $this->assertSame(20, $this->config->getLevelCap());
+        $this->assertSame(1, $this->config->levelForXp(799));
+        $this->assertSame(2, $this->config->levelForXp(800));
+        $this->assertSame(2, $this->config->levelForXp(1999));
+        $this->assertSame(3, $this->config->levelForXp(2000));
+        $this->assertSame(20, $this->config->levelForXp(90000));
     }
 
     public function testApplyMatchXpMultipliesLibraryAndKingdomModifierThenLevels(): void
@@ -107,7 +107,6 @@ class HeroProgressionServiceTest extends TestCase
         $kingdom->setName('Test');
         $kingdom->setLanguage('en');
         $kingdom->setTimezone('UTC');
-        $kingdom->setLevelCap(20);
         $kingdom->setXpModifier('2.00');
 
         $team = new Team();

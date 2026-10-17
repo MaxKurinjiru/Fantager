@@ -14,7 +14,7 @@ One-line index. Rules live in the linked spec.
 
 Live rules: [kingdom-system.md](../systems/kingdom-system.md).
 
-A **Kingdom** is a shared game world: rows are scoped by `kingdom_id`, not a separate process. Players pick one Kingdom at registration. Season length is **77 days**; `level_cap` is **20**.
+A **Kingdom** is a shared game world: rows are scoped by `kingdom_id`, not a separate process. Players pick one Kingdom at registration. Season length is **77 days**. Hero level cap is **20** (`HeroProgressionConfig::LEVEL_CAP`), the same in every kingdom.
 
 ### Calendar and ticks
 

@@ -91,12 +91,12 @@
             {% endif %}
         </div>
 
-        {# Kingdom selection #}
+        {# Kingdom selection — summary on the form, list lives in the picker modal. #}
         <div class="auth-form__field">
-            <label for="modal_reg_kingdom" class="form-label">
+            <span class="form-label" id="modal-reg-kingdom-label">
                 {{ 'auth.choose_kingdom'|trans }}
                 <span class="copy-muted">{{ 'auth.kingdom_permanent_warn'|trans }}</span>
-            </label>
+            </span>
             {% if modal_errors.kingdom is defined %}
                 <p class="form-error" role="alert">{{ modal_errors.kingdom|trans([], 'validators') }}</p>
             {% endif %}
@@ -105,49 +105,41 @@
                 <div class="alert alert-warning" role="alert">{{ 'auth.kingdom_no_available'|trans }}</div>
                 <input type="hidden" name="kingdom_id" id="modal_reg_kingdom" value="0">
             {% else %}
-                {# Compact mobile select dropdown #}
-                <div class="kingdom-select-mobile">
-                    <select name="kingdom_id" id="modal_reg_kingdom" class="form-input" data-action="change->auth-modal#syncKingdomSelect">
-                        <option value="" disabled {{ (modal_form_data.kingdom_id ?? 0) == 0 ? 'selected' : '' }}>
-                            {{ 'auth.choose_kingdom'|trans }}
-                        </option>
-                        {% for entry in modal_kingdoms %}
-                            {% set k    = entry.kingdom %}
-                            {% set full = entry.capacity > 0 and entry.playerCount >= entry.capacity %}
-                            <option value="{{ k.id }}"
-                                    {{ full ? 'disabled' : '' }}
-                                    {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'selected' : '' }}>
-                                {{ k.name }} ({{ k.language }} &bull; {{ k.gameSpeed }}x &bull; {{ entry.playerCount }}{% if entry.capacity > 0 %}/{{ entry.capacity }}{% endif %})
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                {# Detailed desktop radio cards #}
-                <div class="kingdom-list kingdom-list--desktop">
+                {% set selected_id = modal_form_data.kingdom_id|default(0) %}
+                {% set selected_entry = modal_kingdoms|filter(entry => entry.kingdom.id == selected_id)|first %}
+                <input type="hidden"
+                       name="kingdom_id"
+                       id="modal_reg_kingdom"
+                       value="{{ selected_entry ? selected_entry.kingdom.id : 0 }}"
+                       data-auth-modal-target="kingdomId">
+                <button type="button"
+                        class="kingdom-picker-trigger"
+                        data-auth-modal-target="kingdomTrigger"
+                        data-action="click->auth-modal#openKingdomPicker"
+                        aria-haspopup="dialog"
+                        aria-controls="kingdom-picker-dialog"
+                        aria-labelledby="modal-reg-kingdom-label">
+                    <span data-auth-modal-target="kingdomPlaceholder"
+                          class="{{ selected_entry ? 'hidden' : '' }}">
+                        <span class="kingdom-picker-placeholder">{{ 'auth.kingdom_pick_placeholder'|trans }}</span>
+                    </span>
                     {% for entry in modal_kingdoms %}
-                        {% set k    = entry.kingdom %}
+                        {% set k = entry.kingdom %}
                         {% set full = entry.capacity > 0 and entry.playerCount >= entry.capacity %}
-                        <label for="modal_reg_kingdom_radio_{{ k.id }}"
-                               class="kingdom-card {{ full ? 'kingdom-card--disabled' : '' }} {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'kingdom-card--selected' : '' }}">
-                            <input type="radio" name="kingdom_id" id="modal_reg_kingdom_radio_{{ k.id }}" value="{{ k.id }}"
-                                   {{ full ? 'disabled' : '' }}
-                                   {{ (modal_form_data.kingdom_id ?? 0) == k.id ? 'checked' : '' }}
-                                   data-action="change->auth-modal#syncKingdomRadio"
-                                   class="kingdom-card__radio">
-                            <div>
-                                <div class="kingdom-card__title">{{ k.name }}</div>
-                                <div class="kingdom-card__meta">
-                                    {{ 'auth.kingdom_language'|trans }} {{ k.language }} &bull;
-                                    {{ 'auth.kingdom_speed'|trans }} {{ k.gameSpeed }}x &bull;
-                                    {{ 'auth.kingdom_season'|trans }} {{ k.seasonLength }} {{ 'auth.kingdom_days'|trans }} &bull;
-                                    {{ 'auth.kingdom_players'|trans }} {{ entry.playerCount }}{% if entry.capacity > 0 %}/{{ entry.capacity }}{% endif %}
-                                    {% if full %}&bull; <span class="copy-status-error">{{ 'auth.kingdom_full'|trans }}</span>{% endif %}
-                                </div>
-                            </div>
-                        </label>
+                        <span data-auth-modal-target="kingdomSummary"
+                              data-kingdom-id="{{ k.id }}"
+                              class="{{ k.id == selected_id ? '' : 'hidden' }}">
+                            <span class="kingdom-card">
+                                {% include 'components/auth/_kingdom_facts.html.twig' with {
+                                    k: k,
+                                    entry: entry,
+                                    full: full,
+                                    show_change: true
+                                } %}
+                            </span>
+                        </span>
                     {% endfor %}
-                </div>
+                </button>
             {% endif %}
         </div>
 

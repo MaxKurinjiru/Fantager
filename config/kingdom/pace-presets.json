@@ -1,0 +1,53 @@
+{
+  "_comment": "Required world preset. app:kingdom:initialize --pace copies these values, including xp_modifier. Marketplace tax is MarketplaceService::TAX_RATE_PERCENT, not a preset.",
+  "classic": {
+    "training_speed": "1.00",
+    "recovery_speed": "1.00",
+    "aging_speed": "1.00",
+    "construction_speed": "1.00",
+    "economy_scale": "1.00",
+    "fan_pace": "1.00",
+    "summon_cap": 1,
+    "xp_modifier": "1.00"
+  },
+  "fast_season": {
+    "training_speed": "1.50",
+    "recovery_speed": "1.50",
+    "aging_speed": "1.00",
+    "construction_speed": "2.00",
+    "economy_scale": "1.00",
+    "fan_pace": "1.00",
+    "summon_cap": 1,
+    "xp_modifier": "1.00"
+  },
+  "short_careers": {
+    "training_speed": "1.00",
+    "recovery_speed": "1.00",
+    "aging_speed": "2.00",
+    "construction_speed": "1.00",
+    "economy_scale": "1.00",
+    "fan_pace": "1.00",
+    "summon_cap": 1,
+    "xp_modifier": "1.00"
+  },
+  "rich_world": {
+    "training_speed": "1.00",
+    "recovery_speed": "1.00",
+    "aging_speed": "1.00",
+    "construction_speed": "1.00",
+    "economy_scale": "1.50",
+    "fan_pace": "1.25",
+    "summon_cap": 1,
+    "xp_modifier": "1.00"
+  },
+  "test": {
+    "training_speed": "3.00",
+    "recovery_speed": "3.00",
+    "aging_speed": "0.50",
+    "construction_speed": "5.00",
+    "economy_scale": "1.00",
+    "fan_pace": "1.00",
+    "summon_cap": 2,
+    "xp_modifier": "1.00"
+  }
+}

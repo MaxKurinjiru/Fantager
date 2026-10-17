@@ -19,6 +19,7 @@ use App\Enum\FacilityType;
 use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
 use App\Enum\LeagueSeasonStatus;
+use App\Enum\PacePreset;
 use App\Enum\Race;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Service\Config\KingdomInitConfig;
@@ -55,7 +56,12 @@ class KingdomInitializationService
      *
      * @throws \DomainException when kingdom name already exists or config is invalid
      */
-    public function initialize(string $name, bool $testMode = false, ?int $startOffsetDaysOverride = null): array
+    public function initialize(
+        string $name,
+        bool $testMode = false,
+        ?int $startOffsetDaysOverride = null,
+        string $pacePreset = 'classic',
+    ): array
     {
         $name = trim($name);
         if ('' === $name) {
@@ -70,6 +76,7 @@ class KingdomInitializationService
         $this->spellService->seedDefaultSpells();
 
         $kingdomSettings = $this->initConfig->kingdom();
+        $pace = $this->requirePacePreset($pacePreset);
         $leagueConfig = $this->initConfig->leagueTiers();
         $seasonConfig = $this->initConfig->season();
         $teamConfig = $this->initConfig->team();
@@ -87,7 +94,7 @@ class KingdomInitializationService
             throw new \DomainException('league_tiers.defaults.json: tiers must not be empty.');
         }
 
-        $kingdom = $this->createKingdom($name, $kingdomSettings, $leagueConfig);
+        $kingdom = $this->createKingdom($name, $kingdomSettings, $leagueConfig, $pacePreset, $pace);
         $season = $this->createSeason($kingdom, $kingdomSettings, $seasonConfig, $testMode, $startOffsetDaysOverride);
 
         $teamIndex = 0;
@@ -158,23 +165,72 @@ class KingdomInitializationService
     /**
      * @param array<string, mixed> $settings
      * @param array<string, mixed> $leagueConfig
+     * @param array<string, mixed> $pace
      */
-    private function createKingdom(string $name, array $settings, array $leagueConfig): Kingdom
+    private function createKingdom(string $name, array $settings, array $leagueConfig, string $pacePreset, array $pace): Kingdom
     {
+        $preset = PacePreset::from($pacePreset);
         $kingdom = new Kingdom();
         $kingdom->setName($name);
         $kingdom->setLanguage((string) $settings['language']);
         $kingdom->setTimezone((string) $settings['timezone']);
-        $kingdom->setGameSpeed((string) $settings['game_speed']);
-        $kingdom->setMarketplaceTaxRate((string) $settings['marketplace_tax_rate']);
+        $kingdom->setPacePreset($preset);
+        $kingdom->setTrainingSpeed($this->requiredDecimal($pace, 'training_speed'));
+        $kingdom->setRecoverySpeed($this->requiredDecimal($pace, 'recovery_speed'));
+        $kingdom->setAgingSpeed($this->requiredDecimal($pace, 'aging_speed'));
+        $kingdom->setConstructionSpeed($this->requiredDecimal($pace, 'construction_speed'));
+        $kingdom->setEconomyScale($this->requiredDecimal($pace, 'economy_scale'));
+        $kingdom->setFanPace($this->requiredDecimal($pace, 'fan_pace'));
+        $kingdom->setSummonCap($this->requiredSummonCap($pace));
         $kingdom->setSeasonLength((int) $settings['season_length']);
-        $kingdom->setLevelCap((int) $settings['level_cap']);
-        $kingdom->setXpModifier((string) $settings['xp_modifier']);
+        $kingdom->setXpModifier($this->requiredDecimal($pace, 'xp_modifier'));
         $kingdom->setLeagueTiersConfig($leagueConfig);
 
         $this->em->persist($kingdom);
 
         return $kingdom;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function requirePacePreset(string $pacePreset): array
+    {
+        $preset = PacePreset::tryFrom($pacePreset);
+        $catalog = $this->initConfig->pacePresets();
+        if (null === $preset || !isset($catalog[$preset->value])) {
+            throw new \DomainException(sprintf(
+                'Unknown pace preset "%s". Expected one of: %s.',
+                $pacePreset,
+                implode(', ', array_map(static fn (PacePreset $case): string => $case->value, PacePreset::cases())),
+            ));
+        }
+
+        return $catalog[$preset->value];
+    }
+
+    /**
+     * @param array<string, mixed> $pace
+     */
+    private function requiredDecimal(array $pace, string $key): string
+    {
+        if (!isset($pace[$key]) || !is_numeric($pace[$key]) || (float) $pace[$key] <= 0) {
+            throw new \DomainException(sprintf('Pace preset is missing a positive "%s".', $key));
+        }
+
+        return number_format((float) $pace[$key], 2, '.', '');
+    }
+
+    /**
+     * @param array<string, mixed> $pace
+     */
+    private function requiredSummonCap(array $pace): int
+    {
+        if (!isset($pace['summon_cap']) || !is_numeric($pace['summon_cap'])) {
+            throw new \DomainException('Pace preset is missing "summon_cap".');
+        }
+
+        return max(1, (int) $pace['summon_cap']);
     }
 
     /**

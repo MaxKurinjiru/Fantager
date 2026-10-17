@@ -33,13 +33,13 @@ Canonical columns: [entities.md](../architecture/entities.md) § Kingdom Domain.
 | **Kingdom** | `kingdom` | World settings and Royal Treasury balance |
 | **KingdomTickLog** | `kingdom_tick_log` | Idempotent tick executions (see [calendar-system.md](calendar-system.md)) |
 
-**Kingdom fields (live):** `name`, `language`, `timezone`, `game_speed`, `marketplace_tax_rate`, `season_length`, `league_tiers_config` (JSON), `royal_treasury_gold`.
+**Kingdom fields (live):** `name`, `language`, `timezone`, `pace_preset`, `training_speed`, `recovery_speed`, `aging_speed`, `construction_speed`, `economy_scale`, `fan_pace`, `summon_cap`, `xp_modifier` (copied from the pace preset), `season_length`, `league_tiers_config` (JSON), `royal_treasury_gold`.
 
-**Live:** `level_cap` (default **20**), `xp_modifier` (default `1.00`, applied at XP award). See [hero-system.md](hero-system.md#locked-hero-level-invariant).
+**Live:** Hero level cap is `HeroProgressionConfig::LEVEL_CAP` (**20**). Marketplace tax is `MarketplaceService::TAX_RATE_PERCENT` (**10**). Neither is a kingdom column. See [hero-system.md](hero-system.md#locked-hero-level-invariant).
 
 Player **capacity** is derived from `league_tiers_config`: `sum(tier.groups) × teams_per_group`. There is no separate `max_players` column.
 
-`season_length` defaults to **28** in the entity; live seasons are **77 days** (11 weeks) via calendar/league scheduling — [calendar-system.md](calendar-system.md).
+`season_length` is **77** days (11 weeks). The entity default, the database column, bootstrap JSON, and the season end date all use that value — [calendar-system.md](calendar-system.md).
 
 ---
 
@@ -49,11 +49,12 @@ Player **capacity** is derived from `league_tiers_config`: `sum(tier.groups) × 
 |---------|-------|--------|
 | Language | Yes | Default UI locale for new users in this kingdom |
 | Timezone | Yes | Tick wall-clock in kingdom-local time |
-| Game speed | Yes | Multiplier on some tick/economy effects (not the tick clock itself) — see below |
-| Marketplace tax | Yes | Sale fee → Royal Treasury |
-| Season length | Yes | Stored; season timeline is 77 days in calendar/league |
+| Pace preset | Yes | Required. `classic`, `fast_season`, `short_careers`, `rich_world`, or `test`. Copies the pace numbers below at creation. Does not move the tick clock |
+| Marketplace tax | Constant | `MarketplaceService::TAX_RATE_PERCENT` is **10** everywhere. Not stored on the kingdom |
+| Season length | Yes | **77** days (11 weeks). Sets the season end date at creation and at the next-season handoff |
 | `league_tiers_config` | Yes | Bracket shape + derived player capacity |
-| Level cap / XP modifier | Yes | Cap **20**; `xp_modifier` multiplies match XP at award ([#6](../product/known-issues.md)) |
+| XP modifier | Yes | Copied from the pace preset. Multiplies match XP at award, together with the Library bonus ([#6](../product/known-issues.md)). Independent of training speed |
+| Pace values | Yes | Required decimals and summon cap, copied from the preset. See [Pace presets](#pace-presets) |
 
 Crafting boost is **deferred** with the crafting system (`future/`).
 
@@ -64,20 +65,36 @@ Crafting boost is **deferred** with the crafting system (`future/`).
 - **One shared MariaDB** with `kingdom_id` on world-scoped tables. There is no per-kingdom database or process.
 - **No player transfer** between kingdoms after registration.
 - **No cross-kingdom** league fixtures, marketplace listings, mail, or forum threads.
-- Tick workers iterate kingdoms independently (`app:ticks:run` / `KingdomTickRunnerService`) so each world’s timezone and `game_speed` apply.
+- Tick workers iterate kingdoms independently (`app:ticks:run` / `KingdomTickRunnerService`) so each world’s timezone applies. Pace values scale magnitudes, not the clock.
 
 “Server provisioning” and cross-kingdom migration are **not implemented** and are not planned in this alignment wave.
 
 ---
 
-## Game speed
+## Pace presets
 
-`Kingdom.game_speed` is a decimal (default `1.00`). Scheduled ticks still fire at the calendar times in [calendar-system.md](calendar-system.md). Speed scales **magnitudes**, for example:
+There is no `game_speed`. Every kingdom stores `pace_preset` plus the seven pace values. Creation (`--pace`, default `classic`) copies the numbers from `config/kingdom/pace-presets.json`. A kingdom cannot be initialized without a known preset. Scheduled ticks still fire at the calendar times in [calendar-system.md](calendar-system.md). Pace scales **magnitudes**. A non-positive multiplier is treated as `1` when read. Resolution lives in `KingdomPace`.
 
-- Daily **aging** increment (`round(1 × game_speed)` on `Hero.age` raw tenths; Undead excluded)
-- **Summon** cap per weekly cycle (`max(1, round(1 × game_speed))`)
-- HQ **upgrade duration** (shorter at higher speed)
-- HQ **maintenance**, training gains, **fan-club** drift / match deltas, arena-related scaling
+| Preset | Training | Recovery | Aging | Construction | Economy | Fans | Summons |
+|--------|----------|----------|-------|--------------|---------|------|---------|
+| `classic` | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1 |
+| `fast_season` | 1.50 | 1.50 | 1.00 | 2.00 | 1.00 | 1.00 | 1 |
+| `short_careers` | 1.00 | 1.00 | 2.00 | 1.00 | 1.00 | 1.00 | 1 |
+| `rich_world` | 1.00 | 1.00 | 1.00 | 1.00 | 1.50 | 1.25 | 1 |
+| `test` | 3.00 | 3.00 | 0.50 | 5.00 | 1.00 | 1.00 | 2 |
+
+| Pace | Column | Effect |
+|------|--------|--------|
+| Training | `training_speed` | Attribute gains and their cap, magic-capacity gain, form gained from rest training |
+| Recovery | `recovery_speed` | Daily fatigue drop (`round(10 × pace)`) and form gain (`round(5 × pace)`), before Medical Wing bonuses |
+| Aging | `aging_speed` | Daily hero age `round(1 × pace)` on raw tenths (Undead excluded). Trainer age on the training tick `round(10 × pace)` |
+| Construction | `construction_speed` | HQ upgrade duration `(target_level × 24 h) / pace` and downgrade duration `(current_level × 12 h) / pace` |
+| Economy | `economy_scale` | Arena ticket gold and weekly HQ maintenance, same multiplier |
+| Fans | `fan_pace` | Daily fan-base drift and the win / loss / draw fan delta |
+| Summons | `summon_cap` | Integer cap per weekly cycle, minimum 1 |
+| Match XP | `xp_modifier` | Multiplies match XP after the Library bonus. Every current preset stores `1.00` |
+
+The registration card shows the preset name and season length. It does not show pace numbers, XP, or tax. Marketplace tax is `MarketplaceService::TAX_RATE_PERCENT`. Hero level cap is `HeroProgressionConfig::LEVEL_CAP`. Season length is not part of the preset.
 
 Full tick list: [calendar-system.md](calendar-system.md#weekly-server-tick-schedule). Dungeon and crafting ticks are deferred, not in the runner.
 
@@ -85,11 +102,11 @@ Full tick list: [calendar-system.md](calendar-system.md#weekly-server-tick-sched
 
 ## Kingdom initialization
 
-Admin/console: `php bin/console app:kingdom:initialize "Name"` (`InitializeKingdomCommand` → `KingdomInitializationService`). Settings come from `config/kingdom/*.defaults.json`.
+Admin/console: `php bin/console app:kingdom:initialize "Name" --pace=classic` (`InitializeKingdomCommand` → `KingdomInitializationService`). World settings come from `config/kingdom/*.defaults.json`. Pace numbers come from `config/kingdom/pace-presets.json`.
 
 When a new Kingdom is created, in order:
 
-1. **Kingdom is persisted** with language, timezone, game speed, tax, season length, `league_tiers_config`, etc.
+1. **Kingdom is persisted** with language, timezone, the chosen pace preset and its pace values, tax, season length, `league_tiers_config`, etc.
 2. **First `LeagueSeason`** is created (`season_number = 1`). `LeagueTier` and `LeagueGroup` rows are built from `league_tiers_config` — the bracket skeleton exists but is empty until teams are placed.
 3. **NPC teams** fill every group (`is_npc = true`, `user_id = NULL`): generated name/emblem, `LeagueStanding`, chronicle `team_established`.
 4. **Heroes** — **10 per team**, generated with Summoning Chamber bonuses from the new HQ (`KingdomInitializationService::extractChamberBonuses()`). Each team also gets a default formation.
@@ -114,7 +131,15 @@ Kingdoms **without an active season are omitted** from the list (not a `has_acti
   "name": "Main Kingdom",
   "language": "en",
   "timezone": "Europe/Prague",
-  "game_speed": "1.00",
+  "pace_preset": "classic",
+  "training_speed": "1.00",
+  "recovery_speed": "1.00",
+  "aging_speed": "1.00",
+  "construction_speed": "1.00",
+  "economy_scale": "1.00",
+  "fan_pace": "1.00",
+  "summon_cap": 1,
+  "xp_modifier": "1.00",
   "season_length": 77,
   "capacity": 60,
   "player_count": 12
@@ -134,9 +159,10 @@ Related (other systems): `GET /api/v1/kingdom/{id}/calendar` — [calendar-syste
 | Entity | `src/Entity/Kingdom/Kingdom.php`, `KingdomTickLog.php` |
 | List / capacity / active season | `App\Service\Kingdom\KingdomService` |
 | Bootstrap | `App\Service\Kingdom\KingdomInitializationService`, `app:kingdom:initialize` |
+| Pace resolution | `App\Service\Kingdom\KingdomPace` |
 | Tick runner | `KingdomTickRunnerService`, `ExecuteSingleTickHandler` |
 | Config | `config/kingdom/*.defaults.json` |
 | API | `Api\V1\KingdomController` |
 | Register pick | `RegistrationService` + [01-kingdom-selection.md](../screens/01-kingdom-selection.md) |
 
-**Tests:** tick runner/log — `tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php`, `tests/Repository/KingdomTickLogRepositoryTest.php`. No dedicated `KingdomService` unit test file yet.
+**Tests:** pace resolution — `tests/Service/Kingdom/KingdomPaceTest.php`. Tick runner/log — `tests/Service/Calendar/ProcessKingdomTicksHandlerTest.php`, `tests/Repository/KingdomTickLogRepositoryTest.php`. No dedicated `KingdomService` unit test file yet.

@@ -18,7 +18,7 @@ Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entit
 
 - `Hero.xp` is a lifetime total; never subtract it on level-up.
 - `Hero.level` is the live truth. Do not derive level from XP on read (Twig, API, combat snapshots).
-- After awarding match XP, update stored level with the **current** curve. When the curve or `Kingdom.level_cap` changes, rewrite levels with a migration or job — never lazy-recalc on request.
+- After awarding match XP, update stored level with the **current** curve. When the curve or `HeroProgressionConfig::LEVEL_CAP` changes, rewrite levels with a migration or job — never lazy-recalc on request. Do not store the cap on `Kingdom`.
 - Spec: `docs/systems/hero-system.md` § Locked: hero level invariant. Curve: `config/game/hero-progression.yaml`. Do not invent a new curve on read.
 
 ## Team chemistry (locked — #7)

@@ -16,10 +16,10 @@ The game world operates on automated server ticks executed at scheduled times. T
 
 | Day | Time | Event / Tick | Action Details |
 |:---|:---|:---|:---|
-| **Daily** | 00:00 | **Daily Reset & Maintenance** | Cleanup stale match formations, fan club evolution, expired marketplace listings, completed HQ facility upgrades, **hero and trainer aging** (non-Undead; age increment scales with `game_speed`), mastery decay, and season pre-creation on Monday of Week 11. **NPC Simulation:** runs daily roster maintenance (dismissal of negative-trait heroes, roster recycling, summoning). On Tuesday and Friday, runs NPC marketplace actions (buying/selling). On Tuesday, runs NPC training queue configuration. |
+| **Daily** | 00:00 | **Daily Reset & Maintenance** | Cleanup stale match formations, fan club evolution, expired marketplace listings, completed HQ facility upgrades, **hero aging** (non-Undead; age increment scales with stored `aging_speed`), mastery decay, and season pre-creation on Monday of Week 11. **NPC Simulation:** runs daily roster maintenance (dismissal of negative-trait heroes, roster recycling, summoning). On Tuesday and Friday, runs NPC marketplace actions (buying/selling). On Tuesday, runs NPC training queue configuration. |
 | **Daily** | 03:30 | **Inactive Registration Cleanup** | Remove team assignments and delete unverified player accounts older than 1 day. |
 | **Daily** | 03:45 | **Inactive Player Cleanup** | Release teams from verified players inactive for 28+ days. |
-| **Daily** | 04:00 | **Fatigue & Form Recovery** | Recovery tick for hero fatigue and form (passive restoration). |
+| **Daily** | 04:00 | **Fatigue & Form Recovery** | Recovery tick for hero fatigue and form (passive restoration). Magnitude scales with stored `recovery_speed`, then Medical Wing bonuses. |
 | **Tuesday** | 18:00 | **League Match (Mid-Week)** | Process scheduled mid-week league fixtures. **Implemented:** tactics simulation, home-team arena ticket revenue, deterministic round-by-round combat resolution, mastery XP, hero XP, form, fatigue, team morale, aging. |
 | **Wednesday** | 18:00 | **Friendly Match** | Process accepted PvP friendly matches at this window. Same combat engine as league; no standings/ticket revenue. See [friendly-match-system.md](friendly-match-system.md). |
 | **Thursday** | 10:00 | **Weekly Training** | Process active trainer assignments. Calculate stat gains (non-linear formulas, raw x10 scaling) and apply to heroes. |
@@ -43,7 +43,7 @@ To provide players with time to prepare rosters, adjust strategies, and play fri
 Consequently, the entire season spans **11 weeks (77 days)**.
 
 > [!NOTE]
-> The default `season_length` of 28 days (4 weeks) is extended to **77 days** to accommodate the preparation week, 18 rounds of league play, and the post-season transition phase in Week 11.
+> `season_length` is **77 days** (11 weeks): the preparation week, 18 rounds of league play, and the post-season transition in Week 11.
 
 ### Chronological Season Timeline
 

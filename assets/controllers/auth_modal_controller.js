@@ -3,7 +3,19 @@ import { isCloseModalOnBackdropEnabled } from '../utils/user_preferences.js';
 import { registerModalHistory, unregisterModalHistory } from '../utils/modal_history.js';
 
 export default class extends Controller {
-    static targets = ['overlay', 'loginPanel', 'registerPanel'];
+    static targets = [
+        'overlay',
+        'loginPanel',
+        'registerPanel',
+        'kingdomPicker',
+        'kingdomTrigger',
+        'kingdomId',
+        'kingdomPlaceholder',
+        'kingdomSummary',
+        'kingdomLanguage',
+        'kingdomFilterEmpty',
+        'kingdomChoice',
+    ];
     static values  = { open: String };
 
     connect() {
@@ -82,6 +94,10 @@ export default class extends Controller {
             return;
         }
 
+        if (this._isKingdomPickerOpen()) {
+            this.closeKingdomPicker(null, fromPopState);
+        }
+
         this.overlayTarget.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
         document.removeEventListener('keydown', this._escHandler);
@@ -91,7 +107,150 @@ export default class extends Controller {
     }
 
     _onEsc(e) {
-        if (e.key === 'Escape') this._hide();
+        if (e.key !== 'Escape') {
+            return;
+        }
+
+        if (this._isKingdomPickerOpen()) {
+            e.preventDefault();
+            this.closeKingdomPicker();
+            return;
+        }
+
+        this._hide();
+    }
+
+    openKingdomPicker(event) {
+        if (event) {
+            event.preventDefault();
+        }
+        if (!this.hasKingdomPickerTarget || this._isKingdomPickerOpen()) {
+            return;
+        }
+
+        this.kingdomPickerTarget.classList.remove('hidden');
+        this.kingdomPickerTarget.setAttribute('aria-hidden', 'false');
+        this._setAuthDialogInert(true);
+
+        if (this.hasKingdomLanguageTarget) {
+            this.kingdomLanguageTarget.value = '';
+        }
+        this.filterKingdoms();
+
+        if (!this._kingdomHistoryEntry) {
+            this._kingdomHistoryEntry = registerModalHistory((fromPopState) => this.closeKingdomPicker(null, fromPopState));
+        }
+
+        const focusTarget = this.hasKingdomLanguageTarget
+            ? this.kingdomLanguageTarget
+            : this.kingdomPickerTarget.querySelector('button, [href], input, select, textarea');
+        focusTarget?.focus();
+    }
+
+    closeKingdomPicker(event, fromPopState = false) {
+        if (event && typeof event.preventDefault === 'function') {
+            event.preventDefault();
+        }
+        if (!this._isKingdomPickerOpen()) {
+            return;
+        }
+
+        this.kingdomPickerTarget.classList.add('hidden');
+        this.kingdomPickerTarget.setAttribute('aria-hidden', 'true');
+        this._setAuthDialogInert(false);
+        this._clearKingdomHistory(fromPopState);
+        this.kingdomTriggerTarget?.focus();
+    }
+
+    closeKingdomPickerBackdrop(event) {
+        if (event.target === event.currentTarget && isCloseModalOnBackdropEnabled()) {
+            this.closeKingdomPicker(event);
+        }
+    }
+
+    filterKingdoms() {
+        if (!this.hasKingdomChoiceTarget) {
+            return;
+        }
+
+        const language = this.hasKingdomLanguageTarget ? this.kingdomLanguageTarget.value : '';
+        let visible = 0;
+
+        this.kingdomChoiceTargets.forEach((choice) => {
+            const match = language === '' || choice.dataset.kingdomLanguage === language;
+            choice.classList.toggle('hidden', !match);
+            if (match) {
+                visible += 1;
+            }
+        });
+
+        if (this.hasKingdomFilterEmptyTarget) {
+            this.kingdomFilterEmptyTarget.classList.toggle('hidden', visible !== 0);
+        }
+    }
+
+    selectKingdom(event) {
+        event.preventDefault();
+        const choice = event.currentTarget;
+        if (choice.disabled) {
+            return;
+        }
+
+        const id = choice.dataset.kingdomId;
+        if (!id || !this.hasKingdomIdTarget) {
+            return;
+        }
+
+        this.kingdomIdTarget.value = id;
+        if (this.hasKingdomPlaceholderTarget) {
+            this.kingdomPlaceholderTarget.classList.add('hidden');
+        }
+        this.kingdomSummaryTargets.forEach((summary) => {
+            summary.classList.toggle('hidden', summary.dataset.kingdomId !== id);
+        });
+        this.kingdomChoiceTargets.forEach((option) => {
+            const selected = option.dataset.kingdomId === id;
+            const card = option.querySelector('.kingdom-card');
+            if (!card) {
+                return;
+            }
+            card.classList.toggle('kingdom-card--selected', selected);
+            card.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        });
+        this.closeKingdomPicker();
+    }
+
+    _isKingdomPickerOpen() {
+        return this.hasKingdomPickerTarget && !this.kingdomPickerTarget.classList.contains('hidden');
+    }
+
+    _setAuthDialogInert(inert) {
+        if (!this.hasOverlayTarget) {
+            return;
+        }
+
+        const dialog = this.overlayTarget.querySelector('.modal-box');
+        if (!dialog) {
+            return;
+        }
+
+        if (inert) {
+            dialog.setAttribute('aria-hidden', 'true');
+            dialog.setAttribute('inert', '');
+            return;
+        }
+
+        dialog.removeAttribute('aria-hidden');
+        dialog.removeAttribute('inert');
+    }
+
+    _clearKingdomHistory(fromPopState) {
+        if (!this._kingdomHistoryEntry) {
+            return;
+        }
+
+        unregisterModalHistory(this._kingdomHistoryEntry, fromPopState);
+        this._kingdomHistoryEntry = null;
     }
 
     _clearHistory(fromPopState) {
@@ -125,40 +284,4 @@ export default class extends Controller {
         }
     }
 
-    syncKingdomSelect(e) {
-        const val = e.target.value;
-        const radios = this.element.querySelectorAll('input[type="radio"][name="kingdom_id"]');
-        radios.forEach(radio => {
-            radio.checked = (radio.value === val);
-
-            const label = radio.closest('label');
-            if (label) {
-                if (radio.checked) {
-                    label.classList.add('kingdom-card--selected');
-                } else {
-                    label.classList.remove('kingdom-card--selected');
-                }
-            }
-        });
-    }
-
-    syncKingdomRadio(e) {
-        const val = e.target.value;
-        const select = this.element.querySelector('select[name="kingdom_id"]');
-        if (select) {
-            select.value = val;
-        }
-
-        const radios = this.element.querySelectorAll('input[type="radio"][name="kingdom_id"]');
-        radios.forEach(radio => {
-            const label = radio.closest('label');
-            if (label) {
-                if (radio.checked) {
-                    label.classList.add('kingdom-card--selected');
-                } else {
-                    label.classList.remove('kingdom-card--selected');
-                }
-            }
-        });
-    }
 }

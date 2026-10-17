@@ -59,7 +59,7 @@ When a new Kingdom is created, the league is set up automatically as part of Kin
 2. **`LeagueTier` and `LeagueGroup` rows** are created from `league_tiers_config` — the bracket skeleton exists but is empty.
 3. **NPC teams are created and immediately placed** into groups — each new NPC team gets a `LeagueStanding` row in its assigned group in the same step. All groups are filled before the Kingdom opens.
 4. **Heroes are generated** and assigned to each NPC team — **10 heroes per team** so every team is fully staffed from day one.
-5. **Fixtures are scheduled** according to the Kingdom's game speed and season length.
+5. **Fixtures are scheduled** from the season start, the kingdom timezone, and the 77-day season length. Pace does not move match times.
 
 When a real player takes over an NPC team, they inherit that team's existing league standing and fixtures. There is no mid-season re-seeding.
 

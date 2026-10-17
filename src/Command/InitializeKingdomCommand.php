@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Enum\PacePreset;
 use App\Service\Calendar\KingdomTickRunnerService;
 use App\Service\Kingdom\KingdomInitializationService;
 use App\Service\Kingdom\KingdomService;
@@ -64,6 +65,15 @@ class InitializeKingdomCommand extends Command
                 .'Example for ~1 month of history: --test --start-offset-days=-21',
             )
             ->addOption(
+                'pace',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Pace preset copied onto the new kingdom. One of: '
+                .implode(', ', array_map(static fn (PacePreset $case): string => $case->value, PacePreset::cases()))
+                .'. Default: classic.',
+                PacePreset::Classic->value,
+            )
+            ->addOption(
                 'catch-up-ticks',
                 null,
                 InputOption::VALUE_NONE,
@@ -78,6 +88,7 @@ class InitializeKingdomCommand extends Command
         $name = (string) $input->getArgument('name');
         $testMode = (bool) $input->getOption('test');
         $catchUpTicks = (bool) $input->getOption('catch-up-ticks');
+        $pacePreset = (string) $input->getOption('pace');
 
         $startOffsetDaysOverride = null;
         $startOffsetDaysRaw = $input->getOption('start-offset-days');
@@ -98,7 +109,7 @@ class InitializeKingdomCommand extends Command
         }
 
         try {
-            $result = $this->initializationService->initialize($name, $testMode, $startOffsetDaysOverride);
+            $result = $this->initializationService->initialize($name, $testMode, $startOffsetDaysOverride, $pacePreset);
         } catch (\DomainException $e) {
             $io->error($e->getMessage());
 
@@ -109,9 +120,10 @@ class InitializeKingdomCommand extends Command
         $capacity = $this->kingdomService->calculateCapacity($kingdom);
 
         $io->success(sprintf(
-            'Kingdom "%s" (id=%d) initialized: %d NPC teams, %d heroes, capacity %d.',
+            'Kingdom "%s" (id=%d, pace=%s) initialized: %d NPC teams, %d heroes, capacity %d.',
             $kingdom->getName(),
             $kingdom->getId(),
+            $kingdom->getPacePreset()->value,
             $result['teams'],
             $result['heroes'],
             $capacity,
@@ -156,7 +168,7 @@ class InitializeKingdomCommand extends Command
             }
         }
 
-        $io->note('Defaults loaded from config/kingdom/*.defaults.json — edit those files to tune bootstrap values.');
+        $io->note('World defaults: config/kingdom/*.defaults.json. Pace values: config/kingdom/pace-presets.json.');
 
         return Command::SUCCESS;
     }

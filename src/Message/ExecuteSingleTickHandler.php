@@ -23,6 +23,7 @@ use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
 use App\Service\Formation\FixtureFormationService;
 use App\Service\Headquarters\HeadquartersService;
+use App\Service\Kingdom\KingdomPace;
 use App\Service\Marketplace\MarketplaceService;
 use App\Service\Team\FanClubService;
 use App\Service\Team\NpcSimulationService;
@@ -266,8 +267,7 @@ class ExecuteSingleTickHandler
 
     private function processFatigueRecoveryForTeam(Team $team): void
     {
-        $kingdom = $team->getKingdom();
-        $speed = (float) $kingdom->getGameSpeed();
+        $speed = KingdomPace::recovery($team->getKingdom());
 
         $fatigueReductionPct = 0.0;
         $recoverySpeedPct = 0.0;
@@ -402,11 +402,7 @@ class ExecuteSingleTickHandler
         $this->hqService->processFacilityUpgradesTick($kingdom, $scheduledAt, $team);
 
         // Update hero and trainer aging
-        $speed = (float) $kingdom->getGameSpeed();
-        if ($speed <= 0.0) {
-            $speed = 1.0;
-        }
-        $ageIncrement = (int) round(1 * $speed);
+        $ageIncrement = (int) round(KingdomPace::aging($kingdom));
 
         if ($ageIncrement > 0) {
             // Fetch all heroes for this team that are not Undead

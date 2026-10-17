@@ -55,4 +55,76 @@
     </div>{# /modal box #}
 </div>{# /overlay #}
 
+{% if modal_kingdoms is not empty %}
+    {% set kingdom_languages = modal_kingdoms
+        |map(entry => entry.kingdom.language)
+        |reduce((unique, language) => language in unique ? unique : unique|merge([language]), []) %}
+    <div data-auth-modal-target="kingdomPicker"
+         class="hidden modal-overlay modal-overlay--stacked"
+         data-action="click->auth-modal#closeKingdomPickerBackdrop"
+         aria-hidden="true">
+        <div class="modal-box modal-box--spacious"
+             id="kingdom-picker-dialog"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="kingdom-picker-title"
+             tabindex="-1">
+            <button type="button"
+                    data-action="click->auth-modal#closeKingdomPicker"
+                    class="modal-close"
+                    aria-label="{{ 'modal.close'|trans }}">
+                <span aria-hidden="true" class="modal-close__icon">✕</span>
+                <span class="sr-only">{{ 'modal.close'|trans }}</span>
+            </button>
+
+            <div class="modal-header">
+                <h2 id="kingdom-picker-title" class="modal-header__title">{{ 'auth.kingdom_picker_title'|trans }}</h2>
+            </div>
+
+            <div class="modal-body">
+                <div>
+                    <label for="kingdom-language-filter" class="form-label">{{ 'auth.kingdom_filter_language'|trans }}</label>
+                    <select id="kingdom-language-filter"
+                            class="form-input"
+                            data-auth-modal-target="kingdomLanguage"
+                            data-action="change->auth-modal#filterKingdoms">
+                        <option value="">{{ 'auth.kingdom_filter_all'|trans }}</option>
+                        {% for language in kingdom_languages %}
+                            <option value="{{ language }}">{{ language }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <p data-auth-modal-target="kingdomFilterEmpty"
+                   class="copy-muted hidden"
+                   role="status">{{ 'auth.kingdom_filter_empty'|trans }}</p>
+
+                <div class="kingdom-list">
+                    {% set selected_id = modal_form_data.kingdom_id|default(0) %}
+                    {% for entry in modal_kingdoms %}
+                        {% set k = entry.kingdom %}
+                        {% set full = entry.capacity > 0 and entry.playerCount >= entry.capacity %}
+                        <div data-auth-modal-target="kingdomChoice"
+                             data-kingdom-id="{{ k.id }}"
+                             data-kingdom-language="{{ k.language }}">
+                            <button type="button"
+                                    class="kingdom-card {{ full ? 'kingdom-card--disabled' : '' }} {{ k.id == selected_id ? 'kingdom-card--selected' : '' }}"
+                                    data-kingdom-id="{{ k.id }}"
+                                    data-action="click->auth-modal#selectKingdom"
+                                    aria-pressed="{{ k.id == selected_id ? 'true' : 'false' }}"
+                                    {{ full ? 'disabled' : '' }}>
+                                {% include 'components/auth/_kingdom_facts.html.twig' with {
+                                    k: k,
+                                    entry: entry,
+                                    full: full
+                                } %}
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
 {% endif %}

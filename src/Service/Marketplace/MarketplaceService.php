@@ -42,6 +42,9 @@ use SortDirection;
 
 class MarketplaceService
 {
+    /** Seller fee percent. Same in every kingdom. */
+    public const TAX_RATE_PERCENT = 10.0;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EconomyService $economyService,
@@ -320,9 +323,7 @@ class MarketplaceService
 
         $seller = $listing->getSellerTeam();
 
-        // Calculate tax fee based on Kingdom configuration
-        $taxRate = (float) $listing->getKingdom()->getMarketplaceTaxRate();
-        $tax = (int) floor(($buyoutPrice * $taxRate) / 100);
+        $tax = $this->taxAmount($buyoutPrice);
         $payout = $buyoutPrice - $tax;
 
         // Deduct gold from buyer
@@ -570,8 +571,7 @@ class MarketplaceService
                 $seller = $listing->getSellerTeam();
 
                 // Calculate tax fee
-                $taxRate = (float) $listing->getKingdom()->getMarketplaceTaxRate();
-                $tax = (int) floor(($winningBidAmount * $taxRate) / 100);
+                $tax = $this->taxAmount($winningBidAmount);
                 $payout = $winningBidAmount - $tax;
 
                 // Gold is already deducted from winner's wallet as reservation, so we just pay seller
@@ -1173,5 +1173,10 @@ class MarketplaceService
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    private function taxAmount(int $price): int
+    {
+        return (int) floor(($price * self::TAX_RATE_PERCENT) / 100);
     }
 }

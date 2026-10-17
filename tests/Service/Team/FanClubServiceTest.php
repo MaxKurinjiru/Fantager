@@ -139,7 +139,7 @@ class FanClubServiceTest extends TestCase
     public function testEvolveFanBaseDriftsTowardTargetWithSpeed(): void
     {
         $kingdom = new Kingdom();
-        $kingdom->setGameSpeed('2.00');
+        $kingdom->setFanPace('2.00');
 
         $team = new Team();
         $team->setKingdom($kingdom);
@@ -160,7 +160,7 @@ class FanClubServiceTest extends TestCase
     public function testApplyMatchResultAdjustsFanBaseWithSpeed(): void
     {
         $kingdom = new Kingdom();
-        $kingdom->setGameSpeed('2.50');
+        $kingdom->setFanPace('2.50');
 
         $team = new Team();
         $team->setKingdom($kingdom);

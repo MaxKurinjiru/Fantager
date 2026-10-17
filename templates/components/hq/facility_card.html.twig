@@ -18,7 +18,7 @@
 {% set is_changing = hq and hq.upgradingFacility and hq.upgradingFacility.type.value == key %}
 {% set upgrade_blocked = crisis.level in ['restricted', 'bankruptcy_pending'] %}
 {% set target_level = facility.level + 1 %}
-{% set speed = team.kingdom.gameSpeed %}
+{% set speed = kingdom_pace(team.kingdom, 'construction') %}
 {% set duration_hours = speed > 0 ? ((target_level * 24) / speed)|round(1) : (target_level * 24) %}
 
 {% set is_facility_locked = (key == 'training' and is_locked|default(false))

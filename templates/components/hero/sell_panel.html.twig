@@ -3,7 +3,7 @@
 {% set team = team|default(null) %}
 {% if hero and team and hero.status.value == 'available' %}
     {% set can_leave = hero_can_leave_roster(team, hero) %}
-    {% set tax_rate = team.kingdom.marketplaceTaxRate %}
+    {% set tax_rate = constant('App\\Service\\Marketplace\\MarketplaceService::TAX_RATE_PERCENT') %}
     <div class="layout-stack layout-stack--form">
         <p class="hero-panel__desc">{{ 'heroes.sell_desc'|trans }}</p>
         {% if not can_leave %}

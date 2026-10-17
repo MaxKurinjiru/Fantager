@@ -43,7 +43,7 @@ Public wiki (`GET /wiki`) has **no controller** — **Planned**. Lock: [Locked: 
 - **Login** — `click->auth-modal#openLogin` (href `/login` as fallback)
 - **Enter game** — if already authenticated, link to `/app/dashboard`
 - **News archive** — `GET /news`
-- Guest navbar: logo (home), News, locale dropdown, Login
+- Guest navbar: logo (home), locale dropdown, Login
 
 **Backend**
 
