@@ -79,11 +79,19 @@ class CombatDeathAndDurabilityTest extends TestCase
         $this->assertArrayHasKey('result', $log);
         $this->assertArrayHasKey('killed_hero_ids', $log['result']);
         $this->assertArrayHasKey('item_hit_counts', $log['result']);
+        $this->assertArrayHasKey('contribution_by_hero_id', $log['result']);
 
         // Victim (hero 21) should be in killed_hero_ids
         $this->assertContains(21, $log['result']['killed_hero_ids']);
         $this->assertGreaterThanOrEqual(1, array_sum($log['result']['kills_by_hero_id']));
         $this->assertArrayHasKey('rng_state', $log['result']);
+
+        // The 1 HP victim contributes at least that one point. Overkill is not extra HP.
+        $damageHp = 0;
+        foreach ($log['result']['contribution_by_hero_id'] as $row) {
+            $damageHp += (int) ($row['damage_hp'] ?? 0);
+        }
+        $this->assertGreaterThanOrEqual(1, $damageHp);
 
         // Item hit counts should have registered hits on hero 21
         $this->assertArrayHasKey('21', $log['result']['item_hit_counts']);
@@ -308,6 +316,65 @@ class CombatDeathAndDurabilityTest extends TestCase
         $this->assertSame(20, $ko->getXp());
         $this->assertSame(85, $ko->getForm());
         $this->assertSame(25, $ko->getFatigue());
+    }
+
+    public function testCompleteBattleAddsContributionXpOnTopOfTheKoBonus(): void
+    {
+        $homeTeam = $this->createStub(Team::class);
+        $awayTeam = $this->createStub(Team::class);
+
+        $hq = new \App\Entity\Headquarters\Headquarters();
+        $hq->setTeam($homeTeam);
+        $library = new \App\Entity\Headquarters\Facility();
+        $library->setType(\App\Enum\FacilityType::Library);
+        $library->setLevel(1);
+        $hq->addFacility($library);
+
+        $headquartersRepository = $this->createStub(\App\Repository\Headquarters\HeadquartersRepository::class);
+        $headquartersRepository->method('findOneBy')->willReturnCallback(
+            static fn (array $criteria) => ($criteria['team'] ?? null) === $homeTeam ? $hq : null
+        );
+        $crisis = $this->createStub(\App\Service\Economy\FinancialCrisisService::class);
+        $crisis->method('areHqBonusesActive')->willReturn(true);
+
+        $raceConfig = $this->createStub(RaceConfig::class);
+        $raceConfig->method('isAtOrAboveMortalityThreshold')->willReturn(false);
+
+        $winner = $this->persistentHero(11);
+        $ko = $this->persistentHero(21);
+
+        $setup = $this->battleForRewards($homeTeam, $awayTeam, $winner, $ko, [
+            'result' => [
+                'killed_hero_ids' => [21],
+                'kills_by_hero_id' => ['11' => 1],
+                'contribution_by_hero_id' => [
+                    '11' => [
+                        'damage_hp' => 100,
+                        'heal_hp' => 50,
+                        'status_hp' => 48,
+                        'status_levels' => 10,
+                        'ko_levels' => 8,
+                        'utility_casts' => 2,
+                    ],
+                ],
+                'item_hit_counts' => [],
+                'rng_state' => 1,
+            ],
+        ]);
+        $service = $this->resolutionService(
+            $raceConfig,
+            $headquartersRepository,
+            $crisis,
+            $this->createStub(GraveyardService::class),
+            $setup['fixture'],
+        );
+        $service->completeBattle($setup['battle']);
+
+        // Win + KO of a level-8 hero + 100 damage HP + 50 heal HP + 48 status HP
+        // + a non-tick status on a level-10 target + two utility casts.
+        // 20+15+80+10+5+5+20+4 = 159. Library level 1 is +3%: round(159 * 1.03) = 164.
+        $this->assertSame(164, $winner->getXp());
+        $this->assertSame(20, $ko->getXp());
     }
 
     public function testMortalityRollContinuesTheMatchRng(): void

@@ -101,6 +101,30 @@ class HeroProgressionServiceTest extends TestCase
         $this->assertSame(100.0, $bar['progress_percent']);
     }
 
+    public function testMatchBaseXpScalesWithHpAndKeepsTheKoBonus(): void
+    {
+        // 1 XP per 10 HP. An early ~90 HP bar is 9 XP; a late ~780 HP bar is 78 XP.
+        $early = $this->service->matchBaseXp(true, 0, ['damage_hp' => 90]);
+        $late = $this->service->matchBaseXp(true, 0, ['damage_hp' => 780]);
+
+        $this->assertSame(20 + 15 + 9, $early);
+        $this->assertSame(20 + 15 + 78, $late);
+
+        // status_hp is half of one listed run, per cast. 48 HP → 5 XP.
+        // Non-tick status is 2 XP times target level. KO is 10 XP times victim level.
+        $caster = $this->service->matchBaseXp(false, 1, [
+            'damage_hp' => 100,
+            'heal_hp' => 50,
+            'status_hp' => 48,
+            'status_levels' => 10,
+            'ko_levels' => 8,
+            'utility_casts' => 2,
+        ]);
+        $this->assertSame(20 + 80 + 10 + 5 + 5 + 20 + 4, $caster);
+        $this->assertSame(20, $this->service->matchBaseXp(false, 0, []));
+        $this->assertSame(30, $this->service->matchBaseXp(false, 1, []));
+    }
+
     private function createHero(): Hero
     {
         $kingdom = new Kingdom();

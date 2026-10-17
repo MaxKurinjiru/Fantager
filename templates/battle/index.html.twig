@@ -157,8 +157,17 @@
             </span>
         {% elseif event.type == 'ko' %}
             {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+            {% set killer_name = (event.killer_side is defined and event.killer_slot is defined and lineup[event.killer_side] is defined and lineup[event.killer_side][event.killer_slot] is defined) ? lineup[event.killer_side][event.killer_slot].name : null %}
             <span class="battle-event-badge battle-event-badge--ko">
-                {{ 'battle.ko'|trans({'%hero%': hero_name}) }}
+                {% if killer_name and event.effect is defined %}
+                    {{ 'battle.ko_by_effect'|trans({
+                        '%hero%': hero_name,
+                        '%killer%': killer_name,
+                        '%effect%': ('status_effects.' ~ event.effect)|trans
+                    }) }}
+                {% else %}
+                    {{ 'battle.ko'|trans({'%hero%': hero_name}) }}
+                {% endif %}
             </span>
         {% elseif event.type == 'spell' %}
             {% set caster_name = (event.caster_side is defined and event.caster_slot is defined and lineup[event.caster_side] is defined and lineup[event.caster_side][event.caster_slot] is defined) ? lineup[event.caster_side][event.caster_slot].name : 'battle.unknown_actor'|trans %}
@@ -192,7 +201,7 @@
             <span class="battle-event-text">
                 {{ 'battle.status_applied'|trans({
                     '%target%': target_name,
-                    '%effect%': event.effect|trans,
+                    '%effect%': ('status_effects.' ~ event.effect)|trans,
                     '%duration%': event.duration
                 }) }}
             </span>
@@ -201,7 +210,7 @@
             <span class="battle-event-text battle-event-text--italic">
                 {{ 'battle.status_tick'|trans({
                     '%target%': target_name,
-                    '%effect%': event.effect|trans,
+                    '%effect%': ('status_effects.' ~ event.effect)|trans,
                     '%amount%': event.amount,
                     '%hp%': event.hp_after
                 }) }}
@@ -211,7 +220,7 @@
             <span class="battle-event-text battle-event-text--muted">
                 {{ 'battle.status_expired'|trans({
                     '%target%': target_name,
-                    '%effect%': event.effect|trans
+                    '%effect%': ('status_effects.' ~ event.effect)|trans
                 }) }}
             </span>
         {% elseif event.type == 'skip_turn' %}

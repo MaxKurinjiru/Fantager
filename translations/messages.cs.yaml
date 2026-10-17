@@ -1953,6 +1953,7 @@ battle:
   crit: "Kritický zásah!"
   damage_dealt: "%target% utrpěl %amount% %source% poškození (zbývá %hp% HP)"
   ko: "%hero% byl vyřazen z boje (KO)!"
+  ko_by_effect: "%hero% byl vyřazen efektem %effect%, který seslal %killer%"
   spell_cast: "%caster% sesílá kouzlo %spell% na %target%"
   heal_applied: "%target% je vyléčen o %amount% HP (nyní %hp% HP)"
   heal_blocked: "Léčení cíle %target% bylo zablokováno (%reason%)"
@@ -2013,6 +2014,24 @@ friendly:
   status_declined: Odmítnuto
   status_cancelled: Zrušeno
   status_expired: Vypršelo
+
+status_effects:
+  burn: Spálení
+  freeze: Zmrazení
+  shock: Šok
+  petrify: Zkamenění
+  blind: Oslepení
+  curse: Kletba
+  stun: Omráčení
+  poison: Jed
+  shield: Štít
+  regeneration: Regenerace
+  haste: Zrychlení
+  bless: Požehnání
+  fury: Zuřivost
+  shadow_cloak: Stínový plášť
+  taunt: Provokace
+  silence: Umlčení
 
 
 

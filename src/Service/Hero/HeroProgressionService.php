@@ -10,6 +10,16 @@ use App\Entity\Team\Team;
 
 class HeroProgressionService
 {
+    public const PARTICIPATION_XP = 20;
+    public const WIN_XP = 15;
+    public const KO_XP = 10;
+    /** One XP for each HP_PER_XP of damage, healing, or credited status. */
+    public const XP_PER_HP_STEP = 1;
+    public const HP_PER_XP = 10;
+    public const UTILITY_CAST_XP = 2;
+    /** Legacy logs stored thousandths of a health bar before XP scaled with raw HP. */
+    public const BAR_MILLIS = 1000;
+
     public function __construct(
         private readonly HeroProgressionConfig $config,
         private readonly HeroService $heroService,
@@ -19,6 +29,50 @@ class HeroProgressionService
     public function getConfig(): HeroProgressionConfig
     {
         return $this->config;
+    }
+
+    /**
+     * Base match XP before library and kingdom multipliers.
+     *
+     * Damage and healing are HP actually removed or restored. Each 10 HP is 1 XP,
+     * so a larger health bar pays more. Status HP is half the
+     * effect's listed full duration, credited on every successful cast including
+     * a refresh. A KO pays 10 XP times the victim's level (`ko_levels`). A
+     * non-tick status pays 2 XP times the target's level (`status_levels`).
+     * A missing contribution map awards nothing extra. Logs that only have a
+     * kill count or `status_applies` treat each one as level 1. Logs that only
+     * have bar millis keep the older per-bar rate.
+     *
+     * @param array<string, mixed> $contribution
+     */
+    public function matchBaseXp(bool $won, int $kills, array $contribution = []): int
+    {
+        $utilityCasts = max(0, (int) ($contribution['utility_casts'] ?? 0));
+        $statusLevels = array_key_exists('status_levels', $contribution)
+            ? max(0, (int) $contribution['status_levels'])
+            : max(0, (int) ($contribution['status_applies'] ?? 0));
+        $koLevels = array_key_exists('ko_levels', $contribution)
+            ? max(0, (int) $contribution['ko_levels'])
+            : max(0, $kills);
+        $usesHp = array_key_exists('damage_hp', $contribution)
+            || array_key_exists('heal_hp', $contribution)
+            || array_key_exists('status_hp', $contribution);
+
+        if ($usesHp) {
+            $fromActions = $this->hpXp(max(0, (int) ($contribution['damage_hp'] ?? 0)))
+                + $this->hpXp(max(0, (int) ($contribution['heal_hp'] ?? 0)))
+                + $this->hpXp(max(0, (int) ($contribution['status_hp'] ?? 0)));
+        } else {
+            $fromActions = $this->barXp(max(0, (int) ($contribution['damage_millis'] ?? 0)))
+                + $this->barXp(max(0, (int) ($contribution['heal_millis'] ?? 0)));
+        }
+
+        return self::PARTICIPATION_XP
+            + ($won ? self::WIN_XP : 0)
+            + (self::KO_XP * $koLevels)
+            + $fromActions
+            + (self::UTILITY_CAST_XP * $utilityCasts)
+            + (self::UTILITY_CAST_XP * $statusLevels);
     }
 
     /**
@@ -72,5 +126,15 @@ class HeroProgressionService
     public function xpBar(Hero $hero): array
     {
         return $this->config->xpBar($hero->getLevel(), $hero->getXp());
+    }
+
+    private function barXp(int $millis): int
+    {
+        return (int) round($millis * 10 / self::BAR_MILLIS);
+    }
+
+    private function hpXp(int $hp): int
+    {
+        return (int) round($hp * self::XP_PER_HP_STEP / self::HP_PER_XP);
     }
 }

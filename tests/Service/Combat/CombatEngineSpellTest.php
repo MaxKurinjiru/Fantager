@@ -74,6 +74,7 @@ class CombatEngineSpellTest extends TestCase
         $statusAppliedEvent = $this->findEvent($events, 'status_applied');
         $this->assertNotNull($statusAppliedEvent);
         $this->assertSame('burn', $statusAppliedEvent['effect']);
+        $this->assertSame(100, $statusAppliedEvent['source_hero_id']);
     }
 
     public function testDefensiveSpellHealAndUndeadBlocked(): void

@@ -399,10 +399,11 @@ class LeagueMatchResolutionService
         }
 
         $killsByHeroId = $resultData['kills_by_hero_id'] ?? [];
+        $contributionByHeroId = $resultData['contribution_by_hero_id'] ?? [];
         $killedSet = array_fill_keys(array_map('intval', $killedHeroIds), true);
         $xpTotal = 0;
-        $xpTotal += $this->applySideRewards($homeFormation, $homeTeam, BattleResult::WinA === $battleResult, $killedSet, $killsByHeroId);
-        $xpTotal += $this->applySideRewards($awayFormation, $awayTeam, BattleResult::WinB === $battleResult, $killedSet, $killsByHeroId);
+        $xpTotal += $this->applySideRewards($homeFormation, $homeTeam, BattleResult::WinA === $battleResult, $killedSet, $killsByHeroId, $contributionByHeroId);
+        $xpTotal += $this->applySideRewards($awayFormation, $awayTeam, BattleResult::WinB === $battleResult, $killedSet, $killsByHeroId, $contributionByHeroId);
         $battle->setXpAwarded($xpTotal);
 
         $rngState = (int) ($resultData['rng_state'] ?? $combatLog['seed'] ?? 1);
@@ -578,8 +579,9 @@ class LeagueMatchResolutionService
     }
 
     /**
-     * @param array<int, true>             $killedSet
-     * @param array<string|int, int|mixed> $killsByHeroId
+     * @param array<int, true>                            $killedSet
+     * @param array<string|int, int|mixed>                $killsByHeroId
+     * @param array<string|int, array<string, mixed>>     $contributionByHeroId
      */
     private function applySideRewards(
         ?Formation $formation,
@@ -587,6 +589,7 @@ class LeagueMatchResolutionService
         bool $won,
         array $killedSet,
         array $killsByHeroId,
+        array $contributionByHeroId,
     ): int {
         if (null === $formation) {
             return 0;
@@ -607,6 +610,10 @@ class LeagueMatchResolutionService
 
             $wasKo = isset($killedSet[$heroId]);
             $kills = (int) ($killsByHeroId[(string) $heroId] ?? $killsByHeroId[$heroId] ?? 0);
+            $contribution = $contributionByHeroId[(string) $heroId] ?? $contributionByHeroId[$heroId] ?? [];
+            if (!is_array($contribution)) {
+                $contribution = [];
+            }
 
             $fatigue = $hero->getFatigue() + 15 + ($wasKo ? 10 : 0);
             $hero->setFatigue(min(100, $fatigue));
@@ -614,7 +621,7 @@ class LeagueMatchResolutionService
             $formLoss = 8 + ($wasKo ? 7 : 0);
             $hero->setForm(max(0, $hero->getForm() - $formLoss));
 
-            $baseXp = 20 + ($won ? 15 : 0) + (10 * $kills);
+            $baseXp = $this->heroProgressionService->matchBaseXp($won, $kills, $contribution);
             $xp = $this->heroProgressionService->applyMatchXp($hero, $team, $baseXp, $multiplier);
             $awarded += $xp;
         }
