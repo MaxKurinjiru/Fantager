@@ -224,7 +224,6 @@ class TrainingServiceTest extends TestCase
     {
         $team = $this->createMock(Team::class);
         $kingdom = $this->createMock(Kingdom::class);
-        $kingdom->method('getGameSpeed')->willReturn('1.00');
         $team->method('getKingdom')->willReturn($kingdom);
         $hero = new Hero();
         $hero->setRole(HeroRole::Combatant);
@@ -277,7 +276,6 @@ class TrainingServiceTest extends TestCase
     {
         $team = $this->createMock(Team::class);
         $kingdom = $this->createMock(Kingdom::class);
-        $kingdom->method('getGameSpeed')->willReturn('1.00');
         $team->method('getKingdom')->willReturn($kingdom);
         $hero = new Hero();
         $hero->setRole(HeroRole::Combatant);
@@ -388,7 +386,6 @@ class TrainingServiceTest extends TestCase
     {
         $team = $this->createMock(Team::class);
         $kingdom = $this->createMock(Kingdom::class);
-        $kingdom->method('getGameSpeed')->willReturn('1.00');
         $team->method('getKingdom')->willReturn($kingdom);
         
         $hero = new Hero();
@@ -437,7 +434,6 @@ class TrainingServiceTest extends TestCase
     {
         $team = $this->createMock(Team::class);
         $kingdom = $this->createMock(Kingdom::class);
-        $kingdom->method('getGameSpeed')->willReturn('1.00');
         $team->method('getKingdom')->willReturn($kingdom);
         
         $hero = new Hero();
@@ -492,7 +488,6 @@ class TrainingServiceTest extends TestCase
     {
         $team = $this->createMock(Team::class);
         $kingdom = $this->createMock(Kingdom::class);
-        $kingdom->method('getGameSpeed')->willReturn('1.00');
         $team->method('getKingdom')->willReturn($kingdom);
         
         $hero = new Hero();
@@ -557,7 +552,6 @@ class TrainingServiceTest extends TestCase
     {
         $team = $this->createMock(Team::class);
         $kingdom = $this->createMock(Kingdom::class);
-        $kingdom->method('getGameSpeed')->willReturn('1.00');
         $team->method('getKingdom')->willReturn($kingdom);
         
         $hero = new Hero();
@@ -622,7 +616,6 @@ class TrainingServiceTest extends TestCase
     {
         $team = $this->createMock(Team::class);
         $kingdom = $this->createMock(Kingdom::class);
-        $kingdom->method('getGameSpeed')->willReturn('1.00');
         $team->method('getKingdom')->willReturn($kingdom);
 
         $hero = new Hero();
@@ -654,7 +647,6 @@ class TrainingServiceTest extends TestCase
     {
         $team = $this->createMock(Team::class);
         $kingdom = $this->createMock(Kingdom::class);
-        $kingdom->method('getGameSpeed')->willReturn('1.00');
         $team->method('getKingdom')->willReturn($kingdom);
 
         $hero = new Hero();

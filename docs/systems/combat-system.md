@@ -376,7 +376,7 @@ Engine must **not** write graveyard, hero XP, form, fatigue, or item rows direct
 
 ### Post-match hero rewards
 
-Applied in `LeagueMatchResolutionService::completeBattle()` for a simulated match. A forfeit does not change hero XP, form, or fatigue. Mastery XP is unchanged. XP is a lifetime total on `Hero.xp` (never spent). After the award, `HeroProgressionService` raises stored `Hero.level` from the current curve and `Kingdom.level_cap` ([known-issues.md](../product/known-issues.md) #6). Do not derive combat `level` from XP — snapshots read `Hero.level`.
+Applied in `LeagueMatchResolutionService::completeBattle()` for a simulated match. A forfeit does not change hero XP, form, or fatigue. Mastery XP is unchanged. XP is a lifetime total on `Hero.xp` (never spent). After the award, `HeroProgressionService` raises stored `Hero.level` from the current curve and `HeroProgressionConfig::LEVEL_CAP` ([known-issues.md](../product/known-issues.md) #6). Do not derive combat `level` from XP — snapshots read `Hero.level`.
 
 | Event | Effect |
 |-------|--------|
@@ -385,7 +385,7 @@ Applied in `LeagueMatchResolutionService::completeBattle()` for a simulated matc
 | KO the hero caused (physical or spell; a status-tick KO has no killer) | +10 XP each |
 | Was KO'd | extra fatigue +10, extra form −7 |
 
-XP is `round(base × library multiplier × kingdom.xp_modifier)`. The library multiplier is `1 + xp_gain_pct / 100` from the team's Library facility when headquarters bonuses are active. No library, or a financial crisis that suspends HQ bonuses, leaves that multiplier at 1. `Kingdom.xp_modifier` defaults to `1.00`. After the write, stored `Hero.level` may increase — [hero-system.md](hero-system.md#locked-hero-level-invariant).
+XP is `round(base × library multiplier × kingdom.xp_modifier)`. The library multiplier is `1 + xp_gain_pct / 100` from the team's Library facility when headquarters bonuses are active. No library, or a financial crisis that suspends HQ bonuses, leaves that multiplier at 1. `Kingdom.xp_modifier` is copied from the pace preset (every current preset is `1.00`). After the write, stored `Hero.level` may increase — [hero-system.md](hero-system.md#locked-hero-level-invariant).
 
 The elder mortality roll uses the LCG in `CombatEngine::drawInt()`, starting from `combat_log.result.rng_state` (the generator state after the last combat roll). Every id in `killed_hero_ids` consumes one roll, in that order, before the next id. A missing `rng_state` falls back to the combat-log seed, then to 1. The same log state produces the same graveyard outcome.
 

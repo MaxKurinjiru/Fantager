@@ -8,6 +8,7 @@ use App\Entity\Auth\User;
 use App\Entity\Headquarters\Headquarters;
 use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
+use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
 use App\Enum\ItemSlotType;
 use App\Enum\FacilityType;
@@ -17,6 +18,7 @@ use App\Repository\Hero\HeroRepository;
 use App\Service\Community\CommunityService;
 use App\Service\Config\RaceConfig;
 use App\Service\Economy\FinancialCrisisService;
+use App\Service\Kingdom\KingdomPace;
 use App\Service\Item\ItemService;
 use App\Service\Marketplace\MarketplacePriceGuidance;
 use App\Service\Notification\NotificationService;
@@ -78,7 +80,19 @@ class GameExtension extends AbstractExtension
             new TwigFunction('team_weekly_payroll', $this->getTeamWeeklyPayroll(...)),
             new TwigFunction('hero_trait_js_labels', $this->getHeroTraitJsLabels(...)),
             new TwigFunction('item_equip_slots', $this->getItemEquipSlots(...)),
+            new TwigFunction('kingdom_pace', $this->getKingdomPace(...)),
+            new TwigFunction('kingdom_summon_cap', $this->getKingdomSummonCap(...)),
         ];
+    }
+
+    public function getKingdomPace(Kingdom $kingdom, string $name): float
+    {
+        return KingdomPace::pace($kingdom, $name);
+    }
+
+    public function getKingdomSummonCap(Kingdom $kingdom): int
+    {
+        return KingdomPace::summonCap($kingdom);
     }
 
     /**

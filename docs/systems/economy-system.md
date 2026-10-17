@@ -20,7 +20,7 @@ Purpose: Document currencies, sinks/sources, anti-exploit measures and economic 
 
 ## Economic Controls
 
-- Marketplace tax percentage per kingdom (`Kingdom.marketplace_tax_rate`)
+- Marketplace tax is `MarketplaceService::TAX_RATE_PERCENT` (**10**), the same in every kingdom
 - Diminishing returns on repeated activities (planned)
 - Time-gated income and scaling HQ upgrade costs
 - All gold changes recorded in `FinancialRecord` audit log
@@ -73,7 +73,7 @@ Kingdom-level gold pool that collects fees and redistributes a capped share to a
 
 Runs as the **kingdom-scoped** WeeklyReset log **after** all team-scoped WeeklyReset ticks (maintenance, payroll, crisis) at the same timestamp finish — see [calendar-system.md](calendar-system.md).
 
-**Arena ticket revenue** also applies home-lineup **Audience Favorite** bonuses (`+5%` per fielded hero with the trait) in `ArenaRevenueService`.
+**Arena ticket revenue** is multiplied by the kingdom's stored `economy_scale` and also applies home-lineup **Audience Favorite** bonuses (`+5%` per fielded hero with the trait) in `ArenaRevenueService`. Weekly HQ maintenance uses the same `economy_scale`.
 
 ---
 
@@ -87,8 +87,8 @@ Each team has a **`fan_base`** (default 350, range 0–10 000) that drives arena
 
 | Mechanism | Tick | Effect |
 |-----------|------|--------|
-| **Daily evolution** | `daily_reset` | `fan_base` drifts toward a target from reputation, morale, chemistry; drift magnitude scales with kingdom `game_speed` |
-| **Match result delta** | League match | Win +12, loss −10, draw +2 — applied in `LeagueMatchResolutionService` |
+| **Daily evolution** | `daily_reset` | `fan_base` drifts toward a target from reputation, morale, chemistry; drift magnitude scales with stored `fan_pace` |
+| **Match result delta** | League match | Win +12, loss −10, draw +2, each multiplied by `fan_pace` — applied in `LeagueMatchResolutionService` |
 | **Show-up rate** | On demand | Short-term multiplier from reputation, morale, chemistry — used by `ArenaRevenueService` |
 
 Attendance formula (home match): home fans × show-up rate + away fans × 35% travel rate, capped by arena seating capacity.

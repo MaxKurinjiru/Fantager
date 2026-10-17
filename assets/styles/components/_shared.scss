@@ -335,38 +335,73 @@
       color: var(--color-text-primary);
     }
 
-    &__meta {
+    &__body {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+    }
+
+    &__meta,
+    &__rules {
       @apply text-xs;
       color: var(--color-text-muted);
     }
+
+    &__change {
+      @apply text-xs;
+      color: var(--color-brand-400);
+    }
+  }
+
+  button.kingdom-card {
+    width: 100%;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+  }
+
+  .kingdom-card.hidden,
+  .kingdom-picker-placeholder.hidden {
+    display: none;
+  }
+
+  .kingdom-picker-trigger {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 3px solid var(--focus-ring-color);
+      outline-offset: 2px;
+      border-radius: var(--radius-lg);
+    }
+
+    .kingdom-card {
+      width: 100%;
+    }
+  }
+
+  .kingdom-picker-placeholder {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background-color: color-mix(in srgb, var(--color-surface-raised) 40%, transparent);
+    color: var(--color-text-muted);
   }
 
   .kingdom-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-  }
-
-  .kingdom-select-mobile {
-    display: block;
-    margin-bottom: 0.5rem;
-
-    @media (min-width: 640px) {
-      display: none;
-    }
-  }
-
-  .kingdom-list--desktop {
-    display: none;
-
-    @media (min-width: 640px) {
-      display: block;
-    }
-  }
-
-  .kingdom-card__radio {
-    margin-top: 0.25rem;
-    accent-color: var(--color-brand-400);
   }
 
   .alert-box--compact {

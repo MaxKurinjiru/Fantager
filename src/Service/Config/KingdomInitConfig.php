@@ -55,6 +55,36 @@ class KingdomInitConfig
         return $this->load('headquarters.defaults.json');
     }
 
+    /**
+     * Pace catalogs are not *.defaults.json. Every key must be a PacePreset value.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function pacePresets(): array
+    {
+        $path = $this->projectDir.self::CONFIG_DIR.'/pace-presets.json';
+        $raw = file_get_contents($path);
+        if (false === $raw) {
+            throw new \RuntimeException(sprintf('Cannot read kingdom pace presets: %s', $path));
+        }
+
+        /** @var array<string, mixed> $decoded */
+        $decoded = json_decode($raw, true, flags: JSON_THROW_ON_ERROR);
+        /** @var array<string, mixed> $stripped */
+        $stripped = $this->stripMetaKeys($decoded);
+
+        $presets = [];
+        foreach ($stripped as $key => $value) {
+            if (!is_string($key) || !is_array($value)) {
+                throw new \RuntimeException('pace-presets.json must be an object of preset objects.');
+            }
+            /** @var array<string, mixed> $value */
+            $presets[$key] = $value;
+        }
+
+        return $presets;
+    }
+
     /** @return array<string, mixed> */
     private function load(string $filename): array
     {

@@ -113,13 +113,13 @@ Full upgrade gold is deducted from the team and paid to the **Royal Treasury** (
 
 ### Upgrade Duration Formula
 
-The time for an upgrade is proportional to the **target level** and inversely proportional to the kingdom's **game speed**:
+The time for an upgrade is proportional to the **target level** and inversely proportional to the kingdom's stored **construction speed**:
 
 ```
-Duration (seconds) = (target_level × 24 × 3600) / game_speed
+Duration (seconds) = (target_level × 24 × 3600) / construction_speed
 ```
 
-This means upgrading to level 2 takes **2 real days** at game speed 1.0, upgrading to level 5 takes **5 days**, etc.
+This means upgrading to level 2 takes **2 real days** at construction speed 1.0, upgrading to level 5 takes **5 days**, etc.
 
 ### Upgrade Completion
 
@@ -136,14 +136,14 @@ HQ maintenance is charged on the **`weekly_reset` tick** (Sunday 23:59).
 ```
 HQ fee     = 50 + (total_level × 3)
 Facilities = Σ (base_fee[type] × facility_level)
-HQ scaled  = round(HQ fee × game_speed)
-Fac scaled = round(Facilities × game_speed)
+HQ scaled  = round(HQ fee × economy_scale)
+Fac scaled = round(Facilities × economy_scale)
 Total      = HQ scaled + Fac scaled
 ```
 
 Each component is rounded separately, then summed (the displayed breakdown always adds up to the charged total).
 
-### Base facility fees (gold per level / week, before `game_speed`)
+### Base facility fees (gold per level / week, before `economy_scale`)
 
 | Facility | Fee |
 |----------|-----|
@@ -155,7 +155,7 @@ Each component is rounded separately, then summed (the displayed breakdown alway
 | Summoning Chamber | 40 |
 | Arena | 45 |
 
-**Example:** All facilities at level 1, `game_speed = 1.0` → total **271 gold/week**.
+**Example:** All facilities at level 1, `economy_scale = 1.0` → total **271 gold/week**.
 
 Gold actually collected for maintenance is paid to the **Royal Treasury** (`RoyalTreasuryContributionSource::HqMaintenanceFee`).
 
@@ -173,7 +173,7 @@ Teams in financial difficulty can downgrade facilities to reduce weekly maintena
 
 - Only **one facility change** (upgrade or downgrade) at a time
 - Minimum level = **1**
-- Duration: `current_level × 12 hours / game_speed` (shorter than upgrades)
+- Duration: `current_level × 12 hours / construction_speed` (shorter than upgrades; same pace as upgrades)
 - **No upfront cost**; on completion, a **25% refund** of the last level's upgrade cost is paid
 - A **lock cycle** prevents another downgrade until the next `weekly_reset` tick
 - Downgrade is always allowed, including during financial restrictions

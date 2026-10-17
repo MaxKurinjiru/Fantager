@@ -33,11 +33,10 @@ Summoning is blocked if `hero_count >= roster_limit`.
 Each team may only summon a limited number of heroes per **weekly cycle**. The limit resets every Sunday at 23:59 as part of the `weekly_reset` tick.
 
 ```
-Max Summons per Cycle = round(1 × game_speed)
-                      minimum: 1
+Max Summons per Cycle = summon_cap (minimum 1)
 ```
 
-At default game speed (`1.0`): **1 summon per cycle**.
+`classic` stores **1** summon per cycle. The value is copied from the pace preset at kingdom creation.
 
 ---
 

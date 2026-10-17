@@ -2,9 +2,5 @@
     "_comment": "Placeholder defaults for Kingdom entity fields (except runtime name).",
     "language": "cs",
     "timezone": "Europe/Prague",
-    "game_speed": "1.00",
-    "marketplace_tax_rate": "10.00",
-    "season_length": 77,
-    "level_cap": 20,
-    "xp_modifier": "1.00"
+    "season_length": 77
 }

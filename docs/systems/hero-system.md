@@ -49,7 +49,7 @@ Race age data lives in `config/game/races.yaml` under each race's `age` block. D
 
 **Implementation:** `RaceConfig::getMortalityThreshold()`, `resolveAgePhase()`, `isAtOrAboveMortalityThreshold()`. Twig helpers: `hero_age_phase()`, `hero_mortality_threshold()`, `hero_at_mortality_threshold()`.
 
-**Daily aging** (Daily Reset tick): non-Undead heroes gain `round(1 × game_speed)` on `age` raw. At speed `1.00` that is **0.1 displayed years per day**. Undead do not age.
+**Daily aging** (Daily Reset tick): non-Undead heroes gain `round(1 × aging_speed)` on `age` raw. At pace `1.00` that is **0.1 displayed years per day**. Undead do not age. Trainers take an extra `round(10 × aging_speed)` on the weekly training tick.
 
 **Combat KO aging** (league and friendly resolution): each KO in a match adds escalating full years (`sum 1..D` KOs → years × 10 on raw). **Permanent death** only for elders at/above the mortality threshold: chance `5% + 4%` per year above the threshold, capped at 100%. A KO is not always death ([known-issues.md](../product/known-issues.md) #1 / #9). Permanent deaths write a graveyard memorial and remove the live hero — [graveyard-system.md](graveyard-system.md).
 
@@ -147,16 +147,16 @@ Package **B** (locked with #6, 16 Oct 2026):
 
 - Level is career identity. Combat HP already uses `level * 30 + KON * 12 * raceFactor`. Level-up does **not** grant attribute points and does **not** raise the training cap **1–20**.
 - Library `xp_gain_pct` stays (`1 + pct / 100` on match XP).
-- `Kingdom.xp_modifier` multiplies XP **at award time** (already baked into stored XP; changing the modifier does not relevel anyone until a job, and should not).
-- `Kingdom.level_cap` live target **20**. XP may keep growing past the cap so a later cap raise can unlock levels via job.
+- `Kingdom.xp_modifier` is copied from the pace preset at creation and multiplies XP **at award time** (already baked into stored XP; changing the stored modifier does not relevel anyone until a job, and should not). It is not a separate kingdom setting.
+- Hero level cap is `HeroProgressionConfig::LEVEL_CAP` (**20**). It is not a kingdom setting. XP may keep growing past the cap so a later raise of that constant can unlock levels via job.
 - Cumulative cost to leave level `L` (need this much **more** total XP than `C(L)`): `400 × (L + 1)`. So 1→2 needs **800** total XP, 2→3 needs **2000** total, 3→4 needs **3600**. General minimum total XP to *be* level `n` (`n >= 2`): `C(n) = 400 × (n × (n + 1) / 2 − 1)`. `C(1) = 0`. `C(20) = 83600`.
 - XP bar: progress inside the current stored level, using `C(level)` and `C(level + 1)` (`hero_xp_bar()` / API `xp_for_level`, `xp_for_next_level`).
 
-Live writers: `HeroProgressionService::applyMatchXp()` (league and friendly resolution) raises stored level and writes chronicle `levelup` / `hero_levelup`. Formula or `level_cap` changes: `php bin/console app:hero-levels:refresh` (no chronicle). Curve YAML: `config/game/hero-progression.yaml`.
+Live writers: `HeroProgressionService::applyMatchXp()` (league and friendly resolution) raises stored level and writes chronicle `levelup` / `hero_levelup`. Formula or `LEVEL_CAP` changes: `php bin/console app:hero-levels:refresh` (no chronicle). Curve coefficient: `config/game/hero-progression.yaml`. Cap: `HeroProgressionConfig::LEVEL_CAP`.
 
 ### Hero level vs match XP
 
-League and friendly matches add to `Hero.xp` (Library `xp_gain_pct` and `Kingdom.xp_modifier` multiply at award). After the write, `HeroProgressionService` updates stored `Hero.level` from the current curve and cap. XP is never spent. Tracked in [product/known-issues.md](../product/known-issues.md) #6 (Resolved).
+League and friendly matches add to `Hero.xp` (Library `xp_gain_pct` and the preset-copied `Kingdom.xp_modifier` multiply at award). After the write, `HeroProgressionService` updates stored `Hero.level` from the current curve and cap. XP is never spent. Tracked in [product/known-issues.md](../product/known-issues.md) #6 (Resolved).
 
 ## Weapon & Magic School Mastery
 
@@ -288,7 +288,7 @@ Combatant CHA also feeds team chemistry (flavor for matches — live for dashboa
 | GET | `/app/heroes` | Roster (server-rendered) |
 | GET | `/app/heroes/{id}` | Detail (tabs: overview, equipment, spells) |
 | GET | `/api/v1/heroes` | List; includes `trait`, `ratings.base_ovr`, `ratings.complex_rating` (`HeroService::serialize()`) |
-| GET | `/api/v1/heroes/{id}` | Full detail; `level` is stored; `xp_for_level` / `xp_for_next_level` / `level_cap` from the curve |
+| GET | `/api/v1/heroes/{id}` | Full detail; `level` is stored; `xp_for_level` / `xp_for_next_level` / `level_cap` (`HeroProgressionConfig::LEVEL_CAP`) |
 | PUT | `/api/v1/heroes/{id}` | Rename |
 | POST | `/api/v1/heroes/{id}/dismiss` | Dismiss → graveyard + compensation |
 | PUT | `/api/v1/heroes/{heroId}/equipment` | Equip / unequip |

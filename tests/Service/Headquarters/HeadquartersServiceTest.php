@@ -179,7 +179,6 @@ class HeadquartersServiceTest extends TestCase
     {
         $team = new Team();
         $kingdom = new Kingdom();
-        $kingdom->setGameSpeed('1.00');
         $team->setKingdom($kingdom);
 
         $hq = new Headquarters();
@@ -418,7 +417,6 @@ class HeadquartersServiceTest extends TestCase
     public function testCancelUpgradeRefundsGoldAndTreasury(): void
     {
         $kingdom = new Kingdom();
-        $kingdom->setGameSpeed('1.00');
         $team = new Team();
         $team->setKingdom($kingdom);
 

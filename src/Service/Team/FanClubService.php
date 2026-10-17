@@ -8,6 +8,7 @@ use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
 use App\Enum\MatchResult;
 use App\Repository\Team\TeamRepository;
+use App\Service\Kingdom\KingdomPace;
 
 class FanClubService
 {
@@ -104,12 +105,8 @@ class FanClubService
 
         $speed = 1.0;
         try {
-            $kingdom = $team->getKingdom();
-            $speed = (float) $kingdom->getGameSpeed();
+            $speed = KingdomPace::fans($team->getKingdom());
         } catch (\Throwable) {
-            $speed = 1.0;
-        }
-        if ($speed <= 0.0) {
             $speed = 1.0;
         }
 
@@ -133,12 +130,8 @@ class FanClubService
 
         $speed = 1.0;
         try {
-            $kingdom = $team->getKingdom();
-            $speed = (float) $kingdom->getGameSpeed();
+            $speed = KingdomPace::fans($team->getKingdom());
         } catch (\Throwable) {
-            $speed = 1.0;
-        }
-        if ($speed <= 0.0) {
             $speed = 1.0;
         }
 

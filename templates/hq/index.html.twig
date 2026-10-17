@@ -63,7 +63,7 @@
         {% set can_cancel_banner = false %}
         {% if hq.facilityOperation and hq.facilityOperation.value == 'upgrade' and hq.upgradeCompletedAt %}
             {% set target_level = hq.upgradingFacility.level + 1 %}
-            {% set speed = team.kingdom.gameSpeed %}
+            {% set speed = kingdom_pace(team.kingdom, 'construction') %}
             {% set duration_seconds = speed > 0 ? ((target_level * 24 * 3600) / speed)|round : (target_level * 24 * 3600) %}
             {% set completed_timestamp = hq.upgradeCompletedAt|date('U') + hq.upgradeCompletedAt|date('Z') %}
             {% set started_timestamp = completed_timestamp - duration_seconds %}

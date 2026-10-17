@@ -480,7 +480,6 @@ class CombatDeathAndDurabilityTest extends TestCase
     {
         $kingdom = $this->createStub(\App\Entity\Kingdom\Kingdom::class);
         $kingdom->method('getXpModifier')->willReturn('1.00');
-        $kingdom->method('getLevelCap')->willReturn(20);
         $team->method('getKingdom')->willReturn($kingdom);
     }
 

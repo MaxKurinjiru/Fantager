@@ -8,6 +8,9 @@ use Symfony\Component\Yaml\Yaml;
 
 class HeroProgressionConfig
 {
+    /** Highest stored hero level. Not a kingdom setting. */
+    public const LEVEL_CAP = 20;
+
     private int $coefficient;
 
     public function __construct(string $projectDir)
@@ -23,6 +26,11 @@ class HeroProgressionConfig
         return $this->coefficient;
     }
 
+    public function getLevelCap(): int
+    {
+        return self::LEVEL_CAP;
+    }
+
     /**
      * Minimum lifetime XP required to *be* this stored level.
      */
@@ -36,9 +44,9 @@ class HeroProgressionConfig
         return $this->coefficient * intdiv($level * ($level + 1), 2) - $this->coefficient;
     }
 
-    public function levelForXp(int $xp, int $cap): int
+    public function levelForXp(int $xp): int
     {
-        $cap = max(1, $cap);
+        $cap = self::LEVEL_CAP;
         $xp = max(0, $xp);
         $level = 1;
         while ($level < $cap && $xp >= $this->cumulativeXpForLevel($level + 1)) {
@@ -53,10 +61,10 @@ class HeroProgressionConfig
      *
      * @return array{xp_for_level: int, xp_for_next_level: int, at_cap: bool, progress_percent: float}
      */
-    public function xpBar(int $storedLevel, int $xp, int $cap): array
+    public function xpBar(int $storedLevel, int $xp): array
     {
         $level = max(1, $storedLevel);
-        $cap = max(1, $cap);
+        $cap = self::LEVEL_CAP;
         $atCap = $level >= $cap;
         $xpForLevel = $this->cumulativeXpForLevel($level);
         $xpForNext = $atCap ? $xpForLevel : $this->cumulativeXpForLevel($level + 1);

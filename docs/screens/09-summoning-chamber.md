@@ -15,7 +15,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 ### Cycle header
 
-- Summons used / max this cycle (kingdom game speed)
+- Summons used / max this cycle (stored `summon_cap` from the kingdom pace preset)
 - Gold cost per summon
 - Summon button disabled with translated reason when unavailable (limit, roster full, etc.)
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Headquarters;
 
 use App\Entity\Headquarters\Headquarters;
+use App\Service\Kingdom\KingdomPace;
 
 final class HqMaintenanceCalculator
 {
@@ -39,13 +40,8 @@ final class HqMaintenanceCalculator
 
         $speed = 1.0;
         try {
-            $team = $hq->getTeam();
-            $kingdom = $team->getKingdom();
-            $speed = (float) $kingdom->getGameSpeed();
+            $speed = KingdomPace::economy($hq->getTeam()->getKingdom());
         } catch (\Throwable) {
-            $speed = 1.0;
-        }
-        if ($speed <= 0.0) {
             $speed = 1.0;
         }
 

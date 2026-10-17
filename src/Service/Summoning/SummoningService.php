@@ -17,6 +17,7 @@ use App\Service\Economy\RoyalTreasuryService;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroGenerator;
+use App\Service\Kingdom\KingdomPace;
 use App\Service\Team\TeamChemistryService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,7 +25,6 @@ use Doctrine\ORM\EntityManagerInterface;
 class SummoningService
 {
     private const BASE_GOLD_COST = 500;
-    private const MAX_SUMMONS_PER_CYCLE = 1;
 
     public function __construct(
         private readonly HeroGenerator $heroGenerator,
@@ -78,7 +78,7 @@ class SummoningService
     {
         $cost = $this->getGoldCost($team);
         $used = $team->getSummonsThisCycle();
-        $maxSummons = (int) max(1, round(self::MAX_SUMMONS_PER_CYCLE * (float) $team->getKingdom()->getGameSpeed()));
+        $maxSummons = KingdomPace::summonCap($team->getKingdom());
 
         $rosterLimit = $this->hqService->getRosterLimit($team);
         $heroCount = $this->em->getRepository(Hero::class)->countActiveCombatantsByTeam($team);
@@ -204,7 +204,7 @@ class SummoningService
             throw new UserFacingException('error.summoning_roster_full');
         }
 
-        $maxSummons = (int) max(1, round(self::MAX_SUMMONS_PER_CYCLE * (float) $team->getKingdom()->getGameSpeed()));
+        $maxSummons = KingdomPace::summonCap($team->getKingdom());
         if ($team->getSummonsThisCycle() >= $maxSummons) {
             throw new UserFacingException('error.summoning_limit_reached');
         }

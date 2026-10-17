@@ -33,7 +33,6 @@ class KingdomTickLogRepositoryTest extends KernelTestCase
         $kingdom = new Kingdom();
         $kingdom->setName('Stale Test Kingdom');
         $kingdom->setLanguage('cs');
-        $kingdom->setGameSpeed('1.0');
         $kingdom->setTimezone('UTC');
         $this->kingdom = $kingdom;
 
