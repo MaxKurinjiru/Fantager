@@ -581,7 +581,7 @@ class LeagueMatchResolutionService
     /**
      * @param array<int, true>                            $killedSet
      * @param array<string|int, int|mixed>                $killsByHeroId
-     * @param array<string|int, array<string, mixed>>     $contributionByHeroId
+     * @param array<string|int, mixed>                    $contributionByHeroId
      */
     private function applySideRewards(
         ?Formation $formation,
