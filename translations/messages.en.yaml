@@ -1954,6 +1954,7 @@ battle:
   crit: "Critical Hit!"
   damage_dealt: "%target% takes %amount% %source% damage (%hp% HP left)"
   ko: "%hero% has been knocked out (KO)!"
+  ko_by_effect: "%hero% was knocked out by %killer%'s %effect%"
   spell_cast: "%caster% casts %spell% on %target%"
   heal_applied: "%target% is healed for %amount% HP (%hp% HP left)"
   heal_blocked: "%target%'s healing was blocked (%reason%)"
@@ -2007,5 +2008,23 @@ friendly:
   status_declined: Declined
   status_cancelled: Cancelled
   status_expired: Expired
+
+status_effects:
+  burn: Burn
+  freeze: Freeze
+  shock: Shock
+  petrify: Petrify
+  blind: Blind
+  curse: Curse
+  stun: Stun
+  poison: Poison
+  shield: Shield
+  regeneration: Regeneration
+  haste: Haste
+  bless: Bless
+  fury: Fury
+  shadow_cloak: Shadow Cloak
+  taunt: Taunt
+  silence: Silence
 
 

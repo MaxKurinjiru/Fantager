@@ -100,6 +100,7 @@ class CombatEngine
             'combatLog' => [],
             'killedHeroIds' => [],
             'killsByHeroId' => [],
+            'contributionByHeroId' => [],
             'itemHitCounts' => [],
             'grid' => [
                 'width' => HexGridService::GRID_WIDTH,
@@ -575,6 +576,7 @@ class CombatEngine
                 'score_b' => $runState['scoreB'],
                 'killed_hero_ids' => $runState['killedHeroIds'],
                 'kills_by_hero_id' => $runState['killsByHeroId'] ?? [],
+                'contribution_by_hero_id' => $runState['contributionByHeroId'] ?? [],
                 'item_hit_counts' => $runState['itemHitCounts'],
                 'rng_state' => $runState['rngState'],
             ],
@@ -1345,12 +1347,39 @@ class CombatEngine
     /**
      * @param array<string, mixed> $runState
      */
-    private function recordKill(array &$runState, int $killerHeroId): void
+    private function recordKill(array &$runState, int $killerHeroId, int $victimLevel): void
     {
         $key = (string) $killerHeroId;
         $counts = $runState['killsByHeroId'] ?? [];
         $counts[$key] = ((int) ($counts[$key] ?? 0)) + 1;
         $runState['killsByHeroId'] = $counts;
+        $this->addContribution($runState, $killerHeroId, 'ko_levels', max(1, $victimLevel));
+    }
+
+    /**
+     * @param array<string, mixed> $runState
+     */
+    private function addContribution(array &$runState, int $heroId, string $field, int $amount): void
+    {
+        if ($heroId <= 0 || $amount <= 0) {
+            return;
+        }
+
+        if (!isset($runState['contributionByHeroId']) || !is_array($runState['contributionByHeroId'])) {
+            $runState['contributionByHeroId'] = [];
+        }
+
+        $key = (string) $heroId;
+        $row = $runState['contributionByHeroId'][$key] ?? [
+            'damage_hp' => 0,
+            'heal_hp' => 0,
+            'status_hp' => 0,
+            'status_levels' => 0,
+            'ko_levels' => 0,
+            'utility_casts' => 0,
+        ];
+        $row[$field] = (int) ($row[$field] ?? 0) + $amount;
+        $runState['contributionByHeroId'][$key] = $row;
     }
 
     /**
@@ -1368,18 +1397,31 @@ class CombatEngine
 
                 $activeEffects = [];
                 $expiredEffects = [];
+                $killerHeroId = null;
+                $killerEffect = null;
+                $killerSide = null;
+                $killerSlot = null;
 
                 foreach ($combatant['statusEffects'] as $eff) {
                     $effect = $eff['effect'];
                     $duration = $eff['duration'] - 1;
+                    $sourceHeroId = (int) ($eff['sourceHeroId'] ?? 0);
 
                     // Tick actions (DOT/HOT percents from status_effects.yaml)
                     $tickDamagePct = $this->getTickDamagePercent($effect);
                     if ($tickDamagePct > 0) {
+                        $hpBefore = (int) $combatant['currentHp'];
                         $damage = (int) max(1, floor($combatant['derived']['maxHp'] * ($tickDamagePct / 100.0)));
-                        $combatant['currentHp'] = max(0, $combatant['currentHp'] - $damage);
+                        $combatant['currentHp'] = max(0, $hpBefore - $damage);
 
-                        $roundEvents[] = [
+                        if ($hpBefore > 0 && $combatant['currentHp'] <= 0 && null === $killerHeroId) {
+                            $killerHeroId = $sourceHeroId;
+                            $killerEffect = $effect;
+                            $killerSide = isset($eff['sourceSide']) ? (string) $eff['sourceSide'] : null;
+                            $killerSlot = isset($eff['sourceSlot']) ? (string) $eff['sourceSlot'] : null;
+                        }
+
+                        $tickEvent = [
                             't' => count($runState['events']) + count($roundEvents),
                             'type' => 'status_tick',
                             'side' => $sideKey,
@@ -1389,13 +1431,17 @@ class CombatEngine
                             'amount' => $damage,
                             'hp_after' => $combatant['currentHp'],
                         ];
+                        if ($sourceHeroId > 0) {
+                            $tickEvent['source_hero_id'] = $sourceHeroId;
+                        }
+                        $roundEvents[] = $tickEvent;
                     } elseif ('regeneration' === $effect) {
                         if ('undead' !== $combatant['race']) {
                             $healPct = $this->getTickHealPercent($effect);
                             $heal = (int) max(1, floor($combatant['derived']['maxHp'] * ($healPct / 100.0)));
                             $combatant['currentHp'] = min($combatant['derived']['maxHp'], $combatant['currentHp'] + $heal);
 
-                            $roundEvents[] = [
+                            $tickEvent = [
                                 't' => count($runState['events']) + count($roundEvents),
                                 'type' => 'status_tick',
                                 'side' => $sideKey,
@@ -1405,15 +1451,27 @@ class CombatEngine
                                 'amount' => $heal,
                                 'hp_after' => $combatant['currentHp'],
                             ];
+                            if ($sourceHeroId > 0) {
+                                $tickEvent['source_hero_id'] = $sourceHeroId;
+                            }
+                            $roundEvents[] = $tickEvent;
                         }
                     }
 
                     // Check expiration
                     if ($duration > 0) {
-                        $activeEffects[] = [
+                        $kept = [
                             'effect' => $effect,
                             'duration' => $duration,
                         ];
+                        if ($sourceHeroId > 0) {
+                            $kept['sourceHeroId'] = $sourceHeroId;
+                        }
+                        if (isset($eff['sourceSide'], $eff['sourceSlot'])) {
+                            $kept['sourceSide'] = (string) $eff['sourceSide'];
+                            $kept['sourceSlot'] = (string) $eff['sourceSlot'];
+                        }
+                        $activeEffects[] = $kept;
                     } else {
                         $expiredEffects[] = $effect;
                     }
@@ -1434,7 +1492,6 @@ class CombatEngine
 
                 // Check KO from status tick damage (e.g. burn, poison)
                 if ($combatant['currentHp'] <= 0) {
-                    // Give score to opponent (no killer — status-tick KO awards no kill XP)
                     $opposingSideKey = 'a' === $sideKey ? 'b' : 'a';
                     if ('a' === $opposingSideKey) {
                         ++$runState['scoreA'];
@@ -1442,13 +1499,23 @@ class CombatEngine
                         ++$runState['scoreB'];
                     }
 
-                    $roundEvents[] = [
+                    $koEvent = [
                         't' => count($runState['events']) + count($roundEvents),
                         'type' => 'ko',
                         'side' => $sideKey,
                         'slot' => $combatant['slot'],
                         'hero_id' => $combatant['heroId'],
                     ];
+                    if (null !== $killerHeroId && $killerHeroId > 0) {
+                        $koEvent['killer_hero_id'] = $killerHeroId;
+                        $koEvent['effect'] = $killerEffect;
+                        if (null !== $killerSide && null !== $killerSlot) {
+                            $koEvent['killer_side'] = $killerSide;
+                            $koEvent['killer_slot'] = $killerSlot;
+                        }
+                        $this->recordKill($runState, $killerHeroId, max(1, (int) ($combatant['level'] ?? 1)));
+                    }
+                    $roundEvents[] = $koEvent;
                     $runState['killedHeroIds'][] = $combatant['heroId'];
 
                     $roundEvents[] = [
@@ -1664,9 +1731,12 @@ class CombatEngine
         $netDamage = (int) round($damage * (1.0 - $armorReduction) * $incomingMult);
         $netDamage = max(1, $netDamage);
 
-        // 5. Apply damage
-        $target['currentHp'] = max(0, $target['currentHp'] - $netDamage);
+        // 5. Apply damage. XP uses HP actually removed, so overkill does not fill another bar.
+        $hpBefore = (int) $target['currentHp'];
+        $effectiveDamage = min($netDamage, $hpBefore);
+        $target['currentHp'] = max(0, $hpBefore - $netDamage);
         $this->updateCombatant($runState, $opposingSideKey, $targetSlot, $target);
+        $this->addContribution($runState, (int) $actor['heroId'], 'damage_hp', $effectiveDamage);
 
         $roundEvents[] = [
             'target_side' => $opposingSideKey,
@@ -1697,7 +1767,7 @@ class CombatEngine
                 'killer_hero_id' => $actor['heroId'],
             ];
 
-            $this->recordKill($runState, (int) $actor['heroId']);
+            $this->recordKill($runState, (int) $actor['heroId'], max(1, (int) ($target['level'] ?? 1)));
 
             // Track killed heroes for combat death pipeline
             $runState['killedHeroIds'][] = $target['heroId'];
@@ -1792,8 +1862,11 @@ class CombatEngine
                 $netDamage = 1;
             }
 
-            $target['currentHp'] = max(0, $target['currentHp'] - $netDamage);
+            $hpBefore = (int) $target['currentHp'];
+            $effectiveDamage = min($netDamage, $hpBefore);
+            $target['currentHp'] = max(0, $hpBefore - $netDamage);
             $this->updateCombatant($runState, $targetSide, $targetSlot, $target);
+            $this->addContribution($runState, (int) $caster['heroId'], 'damage_hp', $effectiveDamage);
 
             $roundEvents[] = [
                 't' => count($runState['events']) + count($roundEvents),
@@ -1810,7 +1883,7 @@ class CombatEngine
 
             $statusEffect = $this->getOffensiveStatusForSchool($school);
             if (null !== $statusEffect) {
-                $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $statusEffect, $roundEvents);
+                $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $statusEffect, $roundEvents, (int) $caster['heroId'], $casterSide, $casterSlot);
             }
 
             if ($target['currentHp'] <= 0) {
@@ -1828,7 +1901,7 @@ class CombatEngine
                     'hero_id' => $target['heroId'],
                     'killer_hero_id' => $caster['heroId'],
                 ];
-                $this->recordKill($runState, (int) $caster['heroId']);
+                $this->recordKill($runState, (int) $caster['heroId'], max(1, (int) ($target['level'] ?? 1)));
                 $runState['killedHeroIds'][] = $target['heroId'];
 
                 $roundEvents[] = [
@@ -1862,9 +1935,12 @@ class CombatEngine
                     $healAmount = 0;
                 }
 
-                $maxHp = $target['derived']['maxHp'];
-                $target['currentHp'] = min($maxHp, $target['currentHp'] + $healAmount);
+                $maxHp = max(1, (int) $target['derived']['maxHp']);
+                $hpBefore = (int) $target['currentHp'];
+                $effectiveHeal = min($healAmount, max(0, $maxHp - $hpBefore));
+                $target['currentHp'] = min($maxHp, $hpBefore + $healAmount);
                 $this->updateCombatant($runState, $targetSide, $targetSlot, $target);
+                $this->addContribution($runState, (int) $caster['heroId'], 'heal_hp', $effectiveHeal);
 
                 $roundEvents[] = [
                     't' => count($runState['events']) + count($roundEvents),
@@ -1878,12 +1954,13 @@ class CombatEngine
 
             $statusEffect = $this->getDefensiveStatusForSchool($school);
             if (null !== $statusEffect) {
-                $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $statusEffect, $roundEvents);
+                $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $statusEffect, $roundEvents, (int) $caster['heroId'], $casterSide, $casterSlot);
             }
         } elseif ('utility' === $spellType) {
+            $this->addContribution($runState, (int) $caster['heroId'], 'utility_casts', 1);
             $statusEffect = $this->getUtilityStatusForSchool($school);
             if (null !== $statusEffect) {
-                $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $statusEffect, $roundEvents);
+                $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $statusEffect, $roundEvents, (int) $caster['heroId'], $casterSide, $casterSlot);
             }
         }
     }
@@ -1893,12 +1970,15 @@ class CombatEngine
      * @param array<mixed> $combatant
      * @param array<mixed> $roundEvents
      */
-    private function applyStatusEffect(array &$runState, string $side, string $slot, array $combatant, string $effect, array &$roundEvents): void
+    private function applyStatusEffect(array &$runState, string $side, string $slot, array $combatant, string $effect, array &$roundEvents, int $sourceHeroId, string $sourceSide, string $sourceSlot): void
     {
         $found = false;
         foreach ($combatant['statusEffects'] as &$eff) {
             if ($eff['effect'] === $effect) {
                 $eff['duration'] = $this->getDurationForStatus($effect);
+                $eff['sourceHeroId'] = $sourceHeroId;
+                $eff['sourceSide'] = $sourceSide;
+                $eff['sourceSlot'] = $sourceSlot;
                 $found = true;
                 break;
             }
@@ -1909,8 +1989,13 @@ class CombatEngine
             $combatant['statusEffects'][] = [
                 'effect' => $effect,
                 'duration' => $this->getDurationForStatus($effect),
+                'sourceHeroId' => $sourceHeroId,
+                'sourceSide' => $sourceSide,
+                'sourceSlot' => $sourceSlot,
             ];
         }
+
+        $this->creditStatusApplication($runState, $sourceHeroId, $effect, $combatant);
 
         $this->updateCombatant($runState, $side, $slot, $combatant);
 
@@ -1921,7 +2006,38 @@ class CombatEngine
             'target_slot' => $slot,
             'effect' => $effect,
             'duration' => $this->getDurationForStatus($effect),
+            'source_hero_id' => $sourceHeroId,
+            'source_side' => $sourceSide,
+            'source_slot' => $sourceSlot,
         ];
+    }
+
+    /**
+     * Every successful cast pays, including a refresh of the same effect.
+     * Damage and heal over time pay half of one full listed run. A status
+     * with no tick pays 2 XP per target level. Regeneration on an undead
+     * still pays that half run, even though the ticks themselves do not heal.
+     *
+     * @param array<string, mixed> $runState
+     * @param array<string, mixed> $combatant
+     */
+    private function creditStatusApplication(array &$runState, int $sourceHeroId, string $effect, array $combatant): void
+    {
+        $tickDamage = $this->getTickDamagePercent($effect);
+        $tickHeal = $this->getTickHealPercent($effect);
+        $tickPct = $tickDamage > 0 ? $tickDamage : $tickHeal;
+        if ($tickPct <= 0) {
+            $level = max(1, (int) ($combatant['level'] ?? 1));
+            $this->addContribution($runState, $sourceHeroId, 'status_levels', $level);
+
+            return;
+        }
+
+        $maxHp = max(1, (int) ($combatant['derived']['maxHp'] ?? 1));
+        $ticks = max(1, $this->getDurationForStatus($effect));
+        $perTick = (int) max(1, floor($maxHp * ($tickPct / 100.0)));
+        $credit = (int) round($perTick * $ticks / 2);
+        $this->addContribution($runState, $sourceHeroId, 'status_hp', $credit);
     }
 
     private function getDurationForStatus(string $effect): int

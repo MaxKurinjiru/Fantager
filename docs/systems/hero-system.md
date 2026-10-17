@@ -156,7 +156,7 @@ Live writers: `HeroProgressionService::applyMatchXp()` (league and friendly reso
 
 ### Hero level vs match XP
 
-League and friendly matches add to `Hero.xp` (Library `xp_gain_pct` and the preset-copied `Kingdom.xp_modifier` multiply at award). After the write, `HeroProgressionService` updates stored `Hero.level` from the current curve and cap. XP is never spent. Tracked in [product/known-issues.md](../product/known-issues.md) #6 (Resolved).
+League and friendly matches add to `Hero.xp` (Library `xp_gain_pct` and the preset-copied `Kingdom.xp_modifier` multiply at award). Base XP is participation (20), a win (15), 10 XP times the level of each hero KO'd, 1 XP per 10 HP of damage or healing actually dealt, half of one listed damage-or-heal-over-time run on every successful cast (same HP rate, including regeneration on undead and including a refresh), and 2 XP times the target's level for a non-tick status or 2 XP for a utility cast. After the write, `HeroProgressionService` updates stored `Hero.level` from the current curve and cap. XP is never spent. Tracked in [product/known-issues.md](../product/known-issues.md) #6 (Resolved). Award table: [combat-system.md](combat-system.md#post-match-hero-rewards).
 
 ## Weapon & Magic School Mastery
 

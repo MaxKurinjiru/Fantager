@@ -309,7 +309,15 @@ To expand combat duration and add tactical depth, each active combatant's turn i
     "b": { }
   },
   "events": [ ],
-  "result": { "score_a": 4, "score_b": 2 }
+  "result": {
+    "score_a": 4,
+    "score_b": 2,
+    "killed_hero_ids": [],
+    "kills_by_hero_id": {},
+    "contribution_by_hero_id": {},
+    "item_hit_counts": {},
+    "rng_state": 1
+  }
 }
 ```
 
@@ -322,7 +330,7 @@ To expand combat duration and add tactical depth, each active combatant's turn i
 | `grid` | `{ width, height }` battlefield size for replay |
 | `lineup` | Slot → hero labels for replay UI |
 | `events` | Ordered combat events (appended across waves) |
-| `result` | Final kill scores (also mirrored on `Battle.score_a/b`) |
+| `result` | Final kill scores (also mirrored on `Battle.score_a/b`), `killed_hero_ids`, `kills_by_hero_id`, `contribution_by_hero_id` (damage/heal thousandths of a health bar plus utility casts, for match XP), `item_hit_counts`, `rng_state` |
 
 ### Event types and payloads
 
@@ -345,8 +353,8 @@ Common fields: `t` (monotonic index), `type`; commonly also `round`, `side` (`a`
 | `hit` / `miss` / `crit` | Follows the preceding action event in order |
 | `damage` | `target_side`, `target_slot`, `amount`, `hp_after`, `source` (`physical` \| `magical` \| `dot`) |
 | `heal_applied` | Same shape as `damage` where applicable |
-| `status_applied` / `status_tick` / `status_expired` | `effect`, optional `stacks` |
-| `ko` | `side`, `slot`, `hero_id` — awards +1 kill to the opposing side |
+| `status_applied` / `status_tick` / `status_expired` | `effect`, optional `stacks`. `status_applied` and damage/heal ticks also carry `source_hero_id` (and side/slot on apply) |
+| `ko` | `side`, `slot`, `hero_id` — awards +1 kill to the opposing side. A damage-over-time KO also has `killer_hero_id`, `effect`, `killer_side`, `killer_slot` |
 | `kill_score` | `score_a`, `score_b` — emit **after each** `ko`, with scores already incremented |
 | `match_end` | `score_a`, `score_b`, `rounds` |
 
@@ -382,10 +390,14 @@ Applied in `LeagueMatchResolutionService::completeBattle()` for a simulated matc
 |-------|--------|
 | Participated | fatigue +15 (cap 100), form −8 (floor 0), +20 XP |
 | Won the match | +15 XP |
-| KO the hero caused (physical or spell; a status-tick KO has no killer) | +10 XP each |
+| KO the hero caused (physical hit, offensive spell, or a damage-over-time tick) | +10 XP times the victim's level. The tick's `ko` event names `killer_hero_id` and `effect`. A tick with no stored caster still scores the KO and awards no kill XP |
+| Damage dealt | +1 XP per 10 HP actually removed. Overkill past remaining HP does not count. Physical hits and offensive spells both count. A larger health bar therefore pays more than a small one |
+| Healing | +1 XP per 10 HP actually restored. Overheal does not count |
+| Status cast | Every successful application pays, including a refresh on the same target. Damage or heal over time (burn, poison, regeneration): half of one listed full run, converted at 1 XP per 10 HP. Regeneration on an undead pays that same half run, even though the ticks do not heal. A status with no tick (stun, shield, haste, and the rest) is +2 XP times the target's level. Later ticks are not paid again |
+| Utility spell cast | +2 XP each. Offensive and healing spells are paid through damage and healing, not this flat bonus |
 | Was KO'd | extra fatigue +10, extra form −7 |
 
-XP is `round(base × library multiplier × kingdom.xp_modifier)`. The library multiplier is `1 + xp_gain_pct / 100` from the team's Library facility when headquarters bonuses are active. No library, or a financial crisis that suspends HQ bonuses, leaves that multiplier at 1. `Kingdom.xp_modifier` is copied from the pace preset (every current preset is `1.00`). After the write, stored `Hero.level` may increase — [hero-system.md](hero-system.md#locked-hero-level-invariant).
+XP is `round(base × library multiplier × kingdom.xp_modifier)`. Base is participation + win + 10 XP times each victim's level + 1 XP per 10 HP of damage, healing, or credited status + 2 XP times target level for a non-tick status + 2 XP per utility cast (`HeroProgressionService::matchBaseXp()`). The combat log stores `result.contribution_by_hero_id` (`damage_hp`, `heal_hp`, `status_hp`, `status_levels`, `ko_levels`, `utility_casts`). A log without that map awards only participation, win, and 10 XP per KO. Older logs that only stored `damage_millis` / `heal_millis` still pay 10 XP per full bar. The library multiplier is `1 + xp_gain_pct / 100` from the team's Library facility when headquarters bonuses are active. No library, or a financial crisis that suspends HQ bonuses, leaves that multiplier at 1. `Kingdom.xp_modifier` is copied from the pace preset (every current preset is `1.00`). After the write, stored `Hero.level` may increase — [hero-system.md](hero-system.md#locked-hero-level-invariant).
 
 The elder mortality roll uses the LCG in `CombatEngine::drawInt()`, starting from `combat_log.result.rng_state` (the generator state after the last combat roll). Every id in `killed_hero_ids` consumes one roll, in that order, before the next id. A missing `rng_state` falls back to the combat-log seed, then to 1. The same log state produces the same graveyard outcome.
 

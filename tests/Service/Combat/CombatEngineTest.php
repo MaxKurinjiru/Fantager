@@ -217,6 +217,39 @@ class CombatEngineTest extends TestCase
         $this->assertLessThanOrEqual(73, $aInit);
     }
 
+    public function testStatusTickKoCreditsTheCaster(): void
+    {
+        $engine = new CombatEngine();
+        $runState = $this->equalInitFronts($engine, [], [[
+            'effect' => 'poison',
+            'duration' => 4,
+            'sourceHeroId' => 100,
+            'sourceSide' => 'a',
+            'sourceSlot' => 'front_1',
+        ]]);
+        $this->tuneFront($runState, 'sideB', static function (array &$combatant): void {
+            $combatant['currentHp'] = 1;
+        });
+
+        $events = $engine->simulateRound($runState, 1);
+
+        $ko = null;
+        foreach ($events as $event) {
+            if ('ko' === ($event['type'] ?? '') && 'b' === ($event['side'] ?? '')) {
+                $ko = $event;
+                break;
+            }
+        }
+
+        $this->assertNotNull($ko);
+        $this->assertSame(100, $ko['killer_hero_id']);
+        $this->assertSame('poison', $ko['effect']);
+        $this->assertSame('a', $ko['killer_side']);
+        $this->assertSame('front_1', $ko['killer_slot']);
+        $this->assertSame(1, $runState['killsByHeroId']['100']);
+        $this->assertSame(5, $runState['contributionByHeroId']['100']['ko_levels']);
+    }
+
     public function testHasteAndShockCancelOnInitiative(): void
     {
         $engine = new CombatEngine();
