@@ -12,7 +12,7 @@ Old `docs/*.md` root names were stubs after the 15 Oct 2026 layout. Those stubs 
 
 | Old path | Canonical |
 |----------|-----------|
-| `docs/game-summary.md` | [product/overview.md](../../product/overview.md) |
+| `docs/game-summary.md` | Live index: [product/overview.md](../../product/overview.md). Original full text: [`_deferred/game-summary-legacy.md`](../../../_deferred/game-summary-legacy.md) |
 | `docs/known-issues.md` | [product/known-issues.md](../../product/known-issues.md) |
 | `docs/api-design.md` | [architecture/api.md](../../architecture/api.md) |
 | `docs/arch-spec.md` | [architecture/overview.md](../../architecture/overview.md) |

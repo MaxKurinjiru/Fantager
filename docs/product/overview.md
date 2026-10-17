@@ -1,6 +1,6 @@
 # Game systems overview
 
-> **Overview only — not the live contract.** Conflict order: [docs/README.md](../README.md) § Canonical sources. Open design: [known-issues.md](known-issues.md). Deferred design: [`docs/future/`](../future/).
+> **Overview only — not the live contract.** Conflict order: [docs/README.md](../README.md) § Canonical sources. Open design: [known-issues.md](known-issues.md). Deferred design: [`docs/future/`](../future/). Original full text (15 Oct 2026, before this file was cut to an index): [`_deferred/game-summary-legacy.md`](../../_deferred/game-summary-legacy.md).
 
 ## Game Premise
 

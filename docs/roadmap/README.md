@@ -18,7 +18,7 @@ Deferred design and repo meta — not the Later product-decisions table.
 
 - Milestone 8: dungeons, quests, crafting — [`../future/`](../future/)
 - Milestone 9: alliances and guilds — [archive/history.md](archive/history.md)
-- Repo meta (CHANGELOG, CONTRIBUTING) and the original screen sketch — [`_deferred/`](../../_deferred/)
+- Repo meta (CHANGELOG, CONTRIBUTING), the original screen sketch, and the original systems summary — [`_deferred/`](../../_deferred/)
 
 ## Archive (not a work queue)
 
