@@ -47,11 +47,24 @@ auth:
   password_confirm: Potvrzení hesla
   display_name: Herní přezdívka
   choose_kingdom: Vybrat království
+  kingdom_pick_placeholder: Vyberte království
+  kingdom_picker_title: Výběr království
+  kingdom_change: Změnit
+  kingdom_filter_language: Jazyk
+  kingdom_filter_all: Všechny jazyky
+  kingdom_filter_empty: Žádné království tento jazyk nepoužívá.
   kingdom_permanent_warn: "(trvalé — nelze změnit)"
   kingdom_no_available: Žádná království nejsou k dispozici. Zkuste to brzy znovu.
   kingdom_full: Plné
   kingdom_language: "Jazyk:"
-  kingdom_speed: "Rychlost:"
+  kingdom_timezone: "Pásmo:"
+  kingdom_pace: "Tempo:"
+  pace_preset:
+    classic: Klasika
+    fast_season: Rychlá sezóna
+    short_careers: Krátké kariéry
+    rich_world: Bohatý svět
+    test: Zkušební
   kingdom_season: "Sezóna:"
   kingdom_days: dní
   kingdom_players: "Hráči:"

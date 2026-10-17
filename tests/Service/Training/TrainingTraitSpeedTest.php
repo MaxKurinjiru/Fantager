@@ -57,7 +57,6 @@ class TrainingTraitSpeedTest extends TestCase
 
 
         $kingdom = $this->createMock(\App\Entity\Kingdom\Kingdom::class);
-        $kingdom->method('getGameSpeed')->willReturn('1.00');
         $kingdom->method('getTimezone')->willReturn('Europe/Prague');
 
         $team = $this->createMock(Team::class);

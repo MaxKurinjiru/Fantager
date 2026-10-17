@@ -16,6 +16,7 @@ use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
+use App\Service\Kingdom\KingdomPace;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\TeamChronicle\TeamChronicleService;
@@ -378,11 +379,10 @@ class TrainingService
 
             // Active trainers age by a stronger jump during the training tick (combat death equivalent)
 
-            $speed = (float) $trainer->getTeam()->getKingdom()->getGameSpeed();
-            if ($speed <= 0.0) {
-                $speed = 1.0;
-            }
-            $trainerAgeIncrement = (int) round(10 * $speed);
+            $kingdom = $trainer->getTeam()->getKingdom();
+            $aging = KingdomPace::aging($kingdom);
+            $speed = KingdomPace::training($kingdom);
+            $trainerAgeIncrement = (int) round(10 * $aging);
             if ($trainerAgeIncrement > 0) {
                 $trainer->setAgeRaw($trainer->getAgeRaw() + $trainerAgeIncrement);
             }

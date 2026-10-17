@@ -17,6 +17,7 @@ use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
+use App\Service\Kingdom\KingdomPace;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -146,10 +147,7 @@ class HeadquartersService
         );
 
         $targetLevel = $facility->getLevel() + 1;
-        $speed = (float) $team->getKingdom()->getGameSpeed();
-        if ($speed <= 0.0) {
-            $speed = 1.0;
-        }
+        $speed = KingdomPace::construction($team->getKingdom());
         $seconds = (int) round(($targetLevel * 24 * 3600) / $speed);
         $completedAt = $now->modify(sprintf('+%d seconds', $seconds));
 
@@ -187,10 +185,7 @@ class HeadquartersService
         }
 
         $targetLevel = $facility->getLevel() + 1;
-        $speed = (float) $team->getKingdom()->getGameSpeed();
-        if ($speed <= 0.0) {
-            $speed = 1.0;
-        }
+        $speed = KingdomPace::construction($team->getKingdom());
 
         $seconds = (int) round(($targetLevel * 24 * 3600) / $speed);
         $startedAt = $completedAt->modify(sprintf('-%d seconds', $seconds));
@@ -268,10 +263,7 @@ class HeadquartersService
             throw new UserFacingException('error.hq_facility_min_level');
         }
 
-        $speed = (float) $team->getKingdom()->getGameSpeed();
-        if ($speed <= 0.0) {
-            $speed = 1.0;
-        }
+        $speed = KingdomPace::construction($team->getKingdom());
         $seconds = (int) round(($facility->getLevel() * 12 * 3600) / $speed);
         $completedAt = $now->modify(sprintf('+%d seconds', $seconds));
 

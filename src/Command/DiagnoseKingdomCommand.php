@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Entity\Kingdom\Kingdom;
 use App\Repository\Kingdom\KingdomRepository;
+use App\Service\Kingdom\KingdomPace;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -90,7 +91,20 @@ class DiagnoseKingdomCommand extends Command
 
         $io->definitionList(
             ['Timezone' => $kingdom->getTimezone()],
-            ['Game Speed' => $kingdom->getGameSpeed()],
+            ['Pace preset' => $kingdom->getPacePreset()->value],
+            ['Training / Recovery / Aging' => sprintf(
+                '%s / %s / %s',
+                KingdomPace::format(KingdomPace::training($kingdom)),
+                KingdomPace::format(KingdomPace::recovery($kingdom)),
+                KingdomPace::format(KingdomPace::aging($kingdom)),
+            )],
+            ['Construction / Economy / Fans' => sprintf(
+                '%s / %s / %s',
+                KingdomPace::format(KingdomPace::construction($kingdom)),
+                KingdomPace::format(KingdomPace::economy($kingdom)),
+                KingdomPace::format(KingdomPace::fans($kingdom)),
+            )],
+            ['Summon cap' => (string) KingdomPace::summonCap($kingdom)],
             ['Language' => $kingdom->getLanguage()],
             ['Royal Treasury Gold' => $kingdom->getRoyalTreasuryGold().' gold'],
             ['Season Length' => $kingdom->getSeasonLength().' days']

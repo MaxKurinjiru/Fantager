@@ -73,8 +73,7 @@ class HeroService
     {
         $combatStats = $this->combatStatCalculator->calculate($hero);
         $rating = $this->heroRatingCalculator->calculate($hero);
-        $levelCap = $hero->getTeam()->getKingdom()->getLevelCap();
-        $xpBar = $this->heroProgressionConfig->xpBar($hero->getLevel(), $hero->getXp(), $levelCap);
+        $xpBar = $this->heroProgressionConfig->xpBar($hero->getLevel(), $hero->getXp());
 
         return [
             'id' => $hero->getId(),
@@ -84,7 +83,7 @@ class HeroService
             'xp' => $hero->getXp(),
             'xp_for_level' => $xpBar['xp_for_level'],
             'xp_for_next_level' => $xpBar['xp_for_next_level'],
-            'level_cap' => $levelCap,
+            'level_cap' => $this->heroProgressionConfig->getLevelCap(),
             'age' => $hero->getAge(),
             'status' => $hero->getStatus()->value,
             'trait' => $hero->getTrait()?->value,

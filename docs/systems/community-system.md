@@ -189,6 +189,6 @@ Profiles are kingdom-scoped for viewers (same kingdom as the subject).
 |--------|------|---------|
 | GET | `/news` | Paginated news archive (full content per item; no detail page) |
 
-Homepage links to the archive via `homepage.news_archive_link`. Guest navbar includes a News link.
+Homepage links to the archive via `homepage.news_archive_link`. The guest navbar does not link to news.
 
 Admin / CMS to create or edit articles stays **Planned**. Public wiki (`GET /wiki`) stays **Planned** (A8.5) — no controller, no help articles. Live public content is homepage + this archive. Lock: [00-public-pages.md](../screens/00-public-pages.md#locked-public-wiki-stays-planned).

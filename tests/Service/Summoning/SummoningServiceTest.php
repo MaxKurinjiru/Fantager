@@ -74,7 +74,7 @@ class SummoningServiceTest extends TestCase
 
     public function testGetStatusWithZeroSummonsOnNormalSpeedIsAvailable(): void
     {
-        $team = $this->createTeam(speed: '1.00', gold: 1000, summonsThisCycle: 0);
+        $team = $this->createTeam(gold: 1000, summonsThisCycle: 0);
 
         $this->hqServiceMock
             ->method('getRosterLimit')
@@ -103,7 +103,7 @@ class SummoningServiceTest extends TestCase
 
     public function testGetStatusWithOneSummonOnNormalSpeedIsReached(): void
     {
-        $team = $this->createTeam(speed: '1.00', gold: 1000, summonsThisCycle: 1);
+        $team = $this->createTeam(gold: 1000, summonsThisCycle: 1);
 
         $this->hqServiceMock
             ->method('getRosterLimit')
@@ -134,7 +134,7 @@ class SummoningServiceTest extends TestCase
 
     public function testGetCompatibleRacesForTeamWithoutAdaptationReturnsAllRaces(): void
     {
-        $team = $this->createTeam(speed: '1.00', gold: 1000, summonsThisCycle: 0);
+        $team = $this->createTeam(gold: 1000, summonsThisCycle: 0);
 
         $hqRepoMock = $this->createMock(EntityRepository::class);
         $hqRepoMock->method('findOneBy')->willReturn(null);
@@ -154,7 +154,7 @@ class SummoningServiceTest extends TestCase
 
     public function testGetCompatibleRacesForTeamDelegatesGenieAdaptationBar(): void
     {
-        $team = $this->createTeam(speed: '1.00', gold: 1000, summonsThisCycle: 0);
+        $team = $this->createTeam(gold: 1000, summonsThisCycle: 0);
         $hq = new Headquarters();
         $hq->setTeam($team);
         $hq->setRaceOptimization(Race::Genie->value);
@@ -178,10 +178,9 @@ class SummoningServiceTest extends TestCase
         $this->assertSame($expected, $this->service->getCompatibleRacesForTeam($team));
     }
 
-    public function testGetStatusWithFastSpeedScalesLimit(): void
+    public function testGetStatusUsesStoredSummonCap(): void
     {
-        // speed = 2.0 -> limit = round(1 * 2) = 2
-        $team = $this->createTeam(speed: '2.00', gold: 1000, summonsThisCycle: 1);
+        $team = $this->createTeam(gold: 1000, summonsThisCycle: 1, summonCap: 2);
 
         $this->hqServiceMock
             ->method('getRosterLimit')
@@ -207,10 +206,10 @@ class SummoningServiceTest extends TestCase
         $this->assertSame(2, $status['summons_max']);
     }
 
-    private function createTeam(string $speed, int $gold, int $summonsThisCycle): Team
+    private function createTeam(int $gold, int $summonsThisCycle, int $summonCap = 1): Team
     {
         $kingdom = new Kingdom();
-        $kingdom->setGameSpeed($speed);
+        $kingdom->setSummonCap($summonCap);
 
         $team = new Team();
         $team->setKingdom($kingdom);

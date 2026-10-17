@@ -1,0 +1,17 @@
+{# Kingdom identity and the rules that differ between worlds. Expects `k`, `entry`, `full`. #}
+<span class="kingdom-card__body">
+    <span class="kingdom-card__title">{{ k.name }}</span>
+    <span class="kingdom-card__meta">
+        {{ 'auth.kingdom_language'|trans }} {{ k.language }} &bull;
+        {{ 'auth.kingdom_timezone'|trans }} {{ k.timezone|replace({'_': ' '}) }} &bull;
+        {{ 'auth.kingdom_players'|trans }} {{ entry.playerCount }}{% if entry.capacity > 0 %}/{{ entry.capacity }}{% endif %}
+        {% if full %}&bull; <span class="copy-status-error">{{ 'auth.kingdom_full'|trans }}</span>{% endif %}
+    </span>
+    <span class="kingdom-card__meta kingdom-card__rules">
+        {{ 'auth.kingdom_pace'|trans }} {{ ('auth.pace_preset.' ~ k.pacePreset.value)|trans }} &bull;
+        {{ 'auth.kingdom_season'|trans }} {{ k.seasonLength }} {{ 'auth.kingdom_days'|trans }}
+    </span>
+    {% if show_change|default(false) %}
+        <span class="kingdom-card__change">{{ 'auth.kingdom_change'|trans }}</span>
+    {% endif %}
+</span>

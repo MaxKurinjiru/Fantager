@@ -46,11 +46,11 @@ Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction r
    - If listing type is `Hero`: `countActiveCombatantsByTeam(buyer) >= rosterLimit` → throws `error.marketplace_buy_roster_full`.
    - If listing type is `Trainer`: `countActiveTrainersByTeam(buyer) >= trainerLimit` → throws `error.marketplace_buy_trainer_limit_reached`.
 3. **Price check:** listing must have a `buyout_price_gold` set.
-4. **Gold check:** buyer must have sufficient gold for the **buyout price only** (kingdom tax is not charged to the buyer).
+4. **Gold check:** buyer must have sufficient gold for the **buyout price only** (the marketplace tax is not charged to the buyer).
 5. **Atomic settlement** (`MarketplaceService::buyListing`):
    - Gold deducted from buyer via `EconomyService::deductGold` (`MarketplacePurchase`) for `buyout_price` only.
    - Seller credited the full buyout via `EconomyService::addGold` (`MarketplaceSale`).
-   - Tax = `floor(buyout × kingdom.marketplace_tax_rate / 100)` is then deducted from the **seller** (`MarketplaceFee`) and paid to the kingdom treasury.
+   - Tax = `floor(buyout × MarketplaceService::TAX_RATE_PERCENT / 100)` is then deducted from the **seller** (`MarketplaceFee`) and paid to the kingdom treasury. The rate is **10** in every kingdom.
    - Ownership transferred (`hero.team` or `item.owner_team_id` updated).
    - `MarketplaceTransaction` persisted with `entity_name` snapshot (`amount` = buyout, `fee_amount` = tax).
    - For items: `TeamChronicleService::recordItemPurchased` (buyer) and `recordItemSold` (seller).
@@ -99,7 +99,7 @@ When a team buys a fixed-price basic item from the in-game merchant (not from an
 
 ## Fee / Tax Calculation
 
-Tax rates are kingdom-specific and configured in `kingdom.marketplace_tax_rate`. The buyer pays the listed buyout; the fee is taken from the **seller’s** settlement (seller is credited the buyout, then taxed).
+The tax rate is `MarketplaceService::TAX_RATE_PERCENT` (**10**), not a kingdom setting. The buyer pays the listed buyout; the fee is taken from the **seller’s** settlement (seller is credited the buyout, then taxed).
 
 ---
 

@@ -14,6 +14,7 @@ use App\Enum\FinancialRecordType;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\League\LeagueFixtureRepository;
+use App\Service\Kingdom\KingdomPace;
 use App\Service\Team\FanClubService;
 
 class ArenaRevenueService
@@ -157,12 +158,8 @@ class ArenaRevenueService
         $baseRevenue = $attendanceData['attendance'] * $ticketPrice;
         $speed = 1.0;
         try {
-            $kingdom = $homeTeam->getKingdom();
-            $speed = (float) $kingdom->getGameSpeed();
+            $speed = KingdomPace::economy($homeTeam->getKingdom());
         } catch (\Throwable) {
-            $speed = 1.0;
-        }
-        if ($speed <= 0.0) {
             $speed = 1.0;
         }
 

@@ -62,7 +62,7 @@ Every Thursday at 10:00, the server processes the training tick for all trainers
 ### 1. Attribute Training
 Trains a primary attribute (STR, DEX, KON, SPD, INT, WIL, CHA, LCK).
 - **Gain Calculation**:
-  `Raw Gain (external scale) = ((Base Gain + Trainer Bonus + Difference Bonus) / Difficulty Factor) * (1 + Facility Efficiency) * Race Modifier * Arena Bonus * Group Modifier * Game Speed * Trait Modifier`
+  `Raw Gain (external scale) = ((Base Gain + Trainer Bonus + Difference Bonus) / Difficulty Factor) * (1 + Facility Efficiency) * Race Modifier * Arena Bonus * Group Modifier * Training Speed * Trait Modifier`
   Where:
   - **Base Gain**: `1.0`
   - **Trainer Bonus**: `max(0.0, (TrainerStatExternal - 10) * 0.05)`
@@ -72,22 +72,24 @@ Trains a primary attribute (STR, DEX, KON, SPD, INT, WIL, CHA, LCK).
   - **Race Modifier**: `training_speed_modifier` from `races.yaml`
   - **Arena Bonus**: `1.10` (+10%) if hero race matches HQ arena optimization race; `1.05` (+5%) if race relationship >= 70; else `1.0`
   - **Group Modifier**: `1.0` base; `+0.05` (+5%) if trainer has a trainee with compatible race (relationship >= 70); `-0.15` (-15%) if hostile race (relationship <= 20)
-  - **Game Speed**: `game_speed` multiplier from Kingdom settings
+  - **Training Speed**: stored kingdom `training_speed` (copied from the pace preset)
   - **Trait Modifier**: `1.20` for QuickLearner (+20%), `0.85` for Slacker (-15%), `0.90` for Perfectionist (-10%)
 
   The final raw gain (internal scale x10) is:
-  `Raw Gain (internal scale) = max(1, min(9 * Game Speed, round(Raw Gain (external scale) * 10)))`
+  `Raw Gain (internal scale) = max(1, min(9 * Training Speed, round(Raw Gain (external scale) * 10)))`
   Capped so raw stat does not exceed trainer's raw stat cap.
 - **Fatigue Impact**: Adds **+20 fatigue** (capped at 100) only when `gainRaw > 0` (no fatigue when already at the trainer’s raw-stat cap).
 
 ### 2. Magic Training
-Increases a hero's Magic Capacity by `max(1, round(1 × game_speed))` (capped at a maximum of 5 slots). At `game_speed = 1.0` this is +1 per week.
+Increases a hero's Magic Capacity by `max(1, round(1 × training_speed))` (capped at a maximum of 5 slots). At training speed `1.0` this is +1 per week.
 - **Fatigue Impact**: Adds **+20 fatigue** (capped at 100) only when capacity actually increased (no fatigue at the max of 5). Fatigue is **not** scaled by game speed.
 
 ### 3. Form Training (Resting)
 Helps a hero recover physical conditioning and rest.
-- **Form Impact**: Increases form by `round(20 × game_speed)` (capped at 100).
+- **Form Impact**: Increases form by `round(20 × training_speed)` (capped at 100).
 - **Fatigue Impact**: Decreases fatigue by **-20** (floor at 0). Fatigue reduction is **not** scaled by game speed.
+
+Active trainers also age on this tick by `round(10 × aging_speed)` raw tenths. That jump uses the stored aging pace, not training speed.
 
 At the end of the tick, a `HeroTrainingHistory` row is persisted for each trained hero (append-only log for hero activity and calendar history).
 

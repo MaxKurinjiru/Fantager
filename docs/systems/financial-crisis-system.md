@@ -63,7 +63,7 @@ The system uses four crisis levels:
 
 - Only **one facility change** (upgrade or downgrade) at a time
 - Minimum facility level = **1**
-- Duration: `current_level × 12 hours / game_speed`
+- Duration: `current_level × 12 hours / construction_speed` (stored pace from the kingdom preset)
 - **No upfront cost**; partial refund paid on completion
 - **Lock cycle** for 1 week after downgrade (prevents upgrade/downgrade cycling)
 - Downgrade always allowed (even during restrictions)

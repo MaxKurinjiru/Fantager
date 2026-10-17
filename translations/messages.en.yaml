@@ -47,11 +47,24 @@ auth:
   password_confirm: Confirm password
   display_name: Game Nickname
   choose_kingdom: Choose Kingdom
+  kingdom_pick_placeholder: Select a kingdom
+  kingdom_picker_title: Choose a kingdom
+  kingdom_change: Change
+  kingdom_filter_language: Language
+  kingdom_filter_all: All languages
+  kingdom_filter_empty: No kingdoms use this language.
   kingdom_permanent_warn: "(permanent — cannot be changed)"
   kingdom_no_available: No kingdoms are available yet. Please check back later.
   kingdom_full: Full
   kingdom_language: "Language:"
-  kingdom_speed: "Speed:"
+  kingdom_timezone: "Timezone:"
+  kingdom_pace: "Pace:"
+  pace_preset:
+    classic: Classic
+    fast_season: Fast season
+    short_careers: Short careers
+    rich_world: Rich world
+    test: Test
   kingdom_season: "Season:"
   kingdom_days: days
   kingdom_players: "Players:"

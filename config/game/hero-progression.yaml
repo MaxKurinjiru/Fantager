@@ -5,7 +5,8 @@
 # C(1) = 0
 # Cost to leave level L = coefficient × (L + 1)
 # Minimum total XP to be level n (n >= 2): C(n) = coefficient × (n × (n + 1) / 2 − 1)
-# Kingdom.level_cap (live default 20) is the storable max; XP may keep growing past C(cap).
+# Stored hero level cannot pass HeroProgressionConfig::LEVEL_CAP (20).
+# XP may keep growing past C(cap). Raising the constant needs app:hero-levels:refresh.
 
 curve:
   coefficient: 400

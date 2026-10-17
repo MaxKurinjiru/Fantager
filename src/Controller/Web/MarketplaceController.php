@@ -61,7 +61,7 @@ class MarketplaceController extends AbstractController
             'heroes' => $assets['heroes'],
             'items' => $assets['items'],
             'trainers' => $assets['trainers'],
-            'taxRate' => (float) $team->getKingdom()->getMarketplaceTaxRate(),
+            'taxRate' => MarketplaceService::TAX_RATE_PERCENT,
             'sell_hero_id' => $sellHeroId,
             'basic_items' => ItemService::BASIC_EQUIPMENT,
         ]);

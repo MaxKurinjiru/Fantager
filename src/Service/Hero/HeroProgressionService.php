@@ -42,7 +42,7 @@ class HeroProgressionService
      */
     public function syncFromXp(Hero $hero, Team $team): void
     {
-        $computed = $this->config->levelForXp($hero->getXp(), $team->getKingdom()->getLevelCap());
+        $computed = $this->config->levelForXp($hero->getXp());
         $current = $hero->getLevel();
         if ($computed > $current) {
             $this->heroService->levelUp($hero, $computed - $current);
@@ -54,7 +54,7 @@ class HeroProgressionService
      */
     public function recalcStoredLevel(Hero $hero, Team $team): bool
     {
-        $computed = $this->config->levelForXp($hero->getXp(), $team->getKingdom()->getLevelCap());
+        $computed = $this->config->levelForXp($hero->getXp());
         if ($computed === $hero->getLevel()) {
             return false;
         }
@@ -71,10 +71,6 @@ class HeroProgressionService
      */
     public function xpBar(Hero $hero): array
     {
-        return $this->config->xpBar(
-            $hero->getLevel(),
-            $hero->getXp(),
-            $hero->getTeam()->getKingdom()->getLevelCap(),
-        );
+        return $this->config->xpBar($hero->getLevel(), $hero->getXp());
     }
 }
