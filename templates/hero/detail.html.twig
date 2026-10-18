@@ -48,7 +48,7 @@
      data-hero-sell-price-out-of-range-value="{{ 'error.marketplace_price_out_of_range'|trans }}"
      data-hero-promote-hero-id-value="{{ hero.id }}"
      data-hero-promote-title-promote-value="{{ 'training.promote_title'|trans }}"
-     data-hero-promote-confirm-promote-value="{{ 'training.promote_confirm'|trans }}"
+     data-hero-promote-confirm-promote-value="{{ 'training.promote_confirm'|trans }}{% if training_service.trainerWeeksUntilMortality(hero) > 0 %} {{ 'training.promote_career'|trans({'%weeks%': training_service.trainerWeeksUntilMortality(hero)}) }}{% endif %}"
      data-hero-promote-error-promote-value="{{ 'training.error_promote'|trans }}"
      data-hero-promote-success-promote-value="{{ 'training.success_promote'|trans }}"
      data-hero-promote-text-loading-value="{{ 'js_flash.common.text_loading'|trans }}"
@@ -201,6 +201,8 @@
                                 </div>
 
                                 {# Forecast #}
+                                {% set fatigueDelta = training_service.projectedFatigueDelta(hero.trainer, hero) %}
+                                {% set formGain = training_service.projectedFormGain(hero.trainer, hero) %}
                                 <div class="training-hero-dashboard__forecast">
                                     <h4 class="training-section-title">{{ 'training.forecast'|trans }} ({{ next_lock_formatted }})</h4>
                                     <div class="forecast-indicators">
@@ -208,12 +210,10 @@
                                             <span class="forecast-label">{{ 'heroes.fatigue'|trans }}:</span>
                                             <span class="forecast-values">
                                                 {{ hero.fatigue }}% &rarr;
-                                                {% if hero.trainer.trainingType %}
-                                                    {% if hero.trainer.trainingType.value == 'form' %}
-                                                        <span class="copy-status-success">{{ max(0, hero.fatigue - 20) }}%</span>
-                                                    {% else %}
-                                                        <span class="copy-status-error">{{ min(100, hero.fatigue + 20) }}%</span>
-                                                    {% endif %}
+                                                {% if fatigueDelta < 0 %}
+                                                    <span class="copy-status-success">{{ max(0, hero.fatigue + fatigueDelta) }}%</span>
+                                                {% elseif fatigueDelta > 0 %}
+                                                    <span class="copy-status-error">{{ min(100, hero.fatigue + fatigueDelta) }}%</span>
                                                 {% else %}
                                                     <span>{{ hero.fatigue }}%</span>
                                                 {% endif %}
@@ -223,8 +223,8 @@
                                             <span class="forecast-label">{{ 'heroes.combat_form'|trans }}:</span>
                                             <span class="forecast-values">
                                                 {{ hero.form }}% &rarr;
-                                                {% if hero.trainer.trainingType and hero.trainer.trainingType.value == 'form' %}
-                                                    <span class="copy-status-success copy-strong">{{ min(100, hero.form + 20) }}%</span>
+                                                {% if formGain > 0 %}
+                                                    <span class="copy-status-success copy-strong">{{ min(100, hero.form + formGain) }}%</span>
                                                 {% else %}
                                                     <span>{{ hero.form }}%</span>
                                                 {% endif %}

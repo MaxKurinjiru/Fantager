@@ -21,7 +21,7 @@ Trainer limit: `2 + floor((trainingFacilityLevel - 1) / 2)`. Shown as a count/li
 ### Displayed information (trainer card)
 
 - Name, race (icon + translated name)
-- Age, age phase, mortality-threshold warning when at or above the race threshold
+- Age, age phase, weeks until the mortality threshold (weekly trainer aging plus daily aging for non-Undead), mortality-threshold warning when at or above the race threshold
 - Frozen primary attributes (STR, DEX, KON, SPD, INT, WIL, CHA, LCK) via `compact_attributes`
 - Slot occupancy vs limit (`3 + floor((trainingFacilityLevel - 1) / 2)`)
 - Focus type / target attribute and assigned trainees (see [05-training.md](05-training.md))
@@ -33,7 +33,7 @@ There is **no** selected-trainer detail pane, age-progression timeline, or marke
 
 | Action | How |
 |--------|-----|
-| Promote combatant → trainer | Select an `available` combatant and confirm. `POST /api/v1/training/trainers/promote` (`hero_id`). No Veteran+ gate; no specialty pick — stats freeze as-is. Unequips items and clears formation slots. |
+| Promote combatant → trainer | Select an `available` combatant and confirm. The confirm states how many weeks remain until the mortality threshold at the current pace. `POST /api/v1/training/trainers/promote` (`hero_id`). No Veteran+ gate; no specialty pick — stats freeze as-is. Unequips items and clears formation slots. |
 | Dismiss trainer | Confirm on the card. `POST /api/v1/training/trainers/{id}/dismiss` → memorial via `GraveyardService`. Blocked while `selling`. |
 | Buy / sell trainer | **Marketplace** (`/app/marketplace` browse `trainer` / sell tab) — not a button on the trainer card |
 

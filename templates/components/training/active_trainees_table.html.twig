@@ -82,22 +82,22 @@
                                     &mdash;
                                 {% endif %}
                             </td>
+                            {% set fatigueDelta = trainingService.projectedFatigueDelta(trainer, hero) %}
+                            {% set formGain = trainingService.projectedFormGain(trainer, hero) %}
                             <td class="data-table__col--center">
                                 {{ hero.fatigue }}% &rarr;
-                                {% if trainer.trainingType %}
-                                    {% if trainer.trainingType.value == 'form' %}
-                                        <span class="data-table__forecast--positive">{{ max(0, hero.fatigue - 20) }}%</span>
-                                    {% else %}
-                                        <span class="data-table__forecast--negative">{{ min(100, hero.fatigue + 20) }}%</span>
-                                    {% endif %}
+                                {% if fatigueDelta < 0 %}
+                                    <span class="data-table__forecast--positive">{{ max(0, hero.fatigue + fatigueDelta) }}%</span>
+                                {% elseif fatigueDelta > 0 %}
+                                    <span class="data-table__forecast--negative">{{ min(100, hero.fatigue + fatigueDelta) }}%</span>
                                 {% else %}
                                     <span>{{ hero.fatigue }}%</span>
                                 {% endif %}
                             </td>
                             <td class="data-table__col--center">
                                 {{ hero.form }}% &rarr;
-                                {% if trainer.trainingType and trainer.trainingType.value == 'form' %}
-                                    <span class="data-table__forecast--positive data-table__forecast--bold">{{ min(100, hero.form + 20) }}%</span>
+                                {% if formGain > 0 %}
+                                    <span class="data-table__forecast--positive data-table__forecast--bold">{{ min(100, hero.form + formGain) }}%</span>
                                 {% else %}
                                     <span>{{ hero.form }}%</span>
                                 {% endif %}

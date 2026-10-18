@@ -31,7 +31,32 @@ class TrainingService
     /** Trainable primary attribute names. */
     private const PRIMARY_ATTRIBUTES = ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'];
 
+    /** School XP from a trainer whose higher of INT and WIL is 10, before pace. */
     public const MAGIC_TRAINING_SCHOOL_XP = 5;
+
+    /** Form points restored by a trainer with KON 10, before training pace. */
+    public const FORM_TRAINING_BASE = 20;
+
+    /** Fatigue removed by form training from a KON-10 trainer. Not scaled by training pace. */
+    public const FORM_FATIGUE_RELIEF = 20;
+
+    /** Fatigue from attribute training, and from magic training that still raises capacity. */
+    public const TRAINING_FATIGUE = 20;
+
+    /** Fatigue from magic training once capacity is already at 5 and only school XP is granted. */
+    public const MAGIC_AT_CAP_FATIGUE = 10;
+
+    /**
+     * Weeks for a trainer at the race minimum age to reach the mortality threshold
+     * at aging pace 1.00, ignoring daily aging. Two seasons (77 days = 11 weeks).
+     */
+    public const TRAINER_CAREER_WEEKS = 22;
+
+    /** Race relationship treated as neutral for the training-group modifier. */
+    private const GROUP_RELATIONSHIP_NEUTRAL = 50;
+
+    /** Each relationship point away from neutral moves the group modifier by this much (50 points = 5%). */
+    private const GROUP_RELATIONSHIP_STEP = 0.001;
 
     public function __construct(
         private readonly HeroRepository $heroRepository,
@@ -390,23 +415,28 @@ class TrainingService
                 }
             }
 
-            // Active trainers age by a stronger jump during the training tick (combat death equivalent)
-
             $kingdom = $trainer->getTeam()->getKingdom();
-            $aging = KingdomPace::aging($kingdom);
             $speed = KingdomPace::training($kingdom);
-            $trainerAgeIncrement = (int) round(10 * $aging);
-            if ($trainerAgeIncrement > 0) {
-                $trainer->setAgeRaw($trainer->getAgeRaw() + $trainerAgeIncrement);
+
+            $trainees = [];
+            foreach ($trainer->getTrainees() as $hero) {
+                if (HeroStatus::Dead !== $hero->getStatus()) {
+                    $trainees[] = $hero;
+                }
+            }
+
+            // A configured trainer with nobody to teach does not take the weekly age jump.
+            if ([] !== $trainees) {
+                $trainerAgeIncrement = $this->trainerWeeklyAgeRaw($trainer);
+                if ($trainerAgeIncrement > 0) {
+                    $trainer->setAgeRaw($trainer->getAgeRaw() + $trainerAgeIncrement);
+                }
             }
 
             $type = $trainer->getTrainingType();
             /** @var TrainingType $type — only trainers with non-null type are queried */
             $attribute = $trainer->getTargetAttribute();
-            foreach ($trainer->getTrainees() as $hero) {
-                if (HeroStatus::Dead === $hero->getStatus()) {
-                    continue;
-                }
+            foreach ($trainees as $hero) {
 
                 $gainRaw = 0;
                 $gainExt = 0;
@@ -454,31 +484,7 @@ class TrainingService
                             }
                         }
 
-                        $groupMod = 1.0;
-                        $otherTrainees = [];
-                        foreach ($trainer->getTrainees() as $other) {
-                            if ($other !== $hero && HeroStatus::Dead !== $other->getStatus()) {
-                                $otherTrainees[] = $other;
-                            }
-                        }
-                        if (count($otherTrainees) > 0) {
-                            $hasCompatible = false;
-                            $hasHostile = false;
-                            foreach ($otherTrainees as $other) {
-                                $rel = $this->raceConfig->getRelationship($hero->getRace(), $other->getRace());
-                                if ($rel >= 70) {
-                                    $hasCompatible = true;
-                                } elseif ($rel <= 20) {
-                                    $hasHostile = true;
-                                }
-                            }
-                            if ($hasCompatible) {
-                                $groupMod += 0.05;
-                            }
-                            if ($hasHostile) {
-                                $groupMod -= 0.15;
-                            }
-                        }
+                        $groupMod = $this->groupModifier($hero, $trainees);
 
                         $finalRawGainExt = $baseGainScaled * (1.0 + $facilityEfficiency) * $raceMod * $arenaBonus * $groupMod * $speed;
 
@@ -487,7 +493,7 @@ class TrainingService
                         $finalRawGainExt *= $traitMult;
 
                         $gainRaw = (int) round($finalRawGainExt * 10);
-                        $gainRaw = max(1, min((int) round(9 * $speed), $gainRaw));
+                        $gainRaw = max(1, min($this->attributeGainCapRaw($trainerStatExt, $speed), $gainRaw));
 
                         if ($heroStatRaw + $gainRaw > $cap) {
                             $gainRaw = max(0, $cap - $heroStatRaw);
@@ -499,7 +505,7 @@ class TrainingService
 
                     // Fatigue only when the hero actually gained (not when already at trainer cap)
                     if ($gainRaw > 0) {
-                        $hero->setFatigue(min(100, $hero->getFatigue() + 20));
+                        $hero->setFatigue(min(100, $hero->getFatigue() + self::TRAINING_FATIGUE));
                     }
                 } elseif (TrainingType::Magic === $type) {
                     $school = $this->resolveTrainingSchool($trainer);
@@ -512,24 +518,23 @@ class TrainingService
                     }
 
                     if (null !== $school) {
-                        $this->heroMasteryService->recordSchoolExercise($hero, $school, self::MAGIC_TRAINING_SCHOOL_XP, $now);
+                        $this->heroMasteryService->recordSchoolExercise($hero, $school, $this->magicSchoolXp($trainer), $now);
                     }
 
-                    // Capacity gain and school XP both spend fatigue, including at the slot cap.
-                    if ($gainRaw > 0 || null !== $school) {
-                        $hero->setFatigue(min(100, $hero->getFatigue() + 20));
+                    $fatigueCost = $this->magicFatigueCost($gainRaw > 0, null !== $school);
+                    if ($fatigueCost > 0) {
+                        $hero->setFatigue(min(100, $hero->getFatigue() + $fatigueCost));
                     }
                 } elseif (TrainingType::Form === $type) {
                     $form = $hero->getForm();
                     if ($form < 100) {
-                        $recovery = (int) round(20 * $speed);
+                        $recovery = $this->formRecoveryAmount($trainer);
                         $newForm = min(100, $form + $recovery);
                         $hero->setForm($newForm);
                         $gainRaw = $newForm - $form;
                     }
 
-                    // Recovery training reduces fatigue by 20 (floor at 0)
-                    $hero->setFatigue(max(0, $hero->getFatigue() - 20));
+                    $hero->setFatigue(max(0, $hero->getFatigue() - $this->formFatigueRelief($trainer)));
                 }
 
                 $history = new HeroTrainingHistory();
@@ -568,6 +573,139 @@ class TrainingService
         }
 
         $this->em->flush();
+    }
+
+    /**
+     * Raw tenths added on the training tick. Scales with the race's span from minimum age
+     * to the mortality threshold, so a trainer promoted young has about TRAINER_CAREER_WEEKS
+     * of these jumps at aging pace 1.00. Returns 0 when the span is empty.
+     */
+    public function trainerWeeklyAgeRaw(Hero $trainer): int
+    {
+        $aging = KingdomPace::aging($trainer->getTeam()->getKingdom());
+        $milestones = $this->raceConfig->getAge($trainer->getRace());
+        $spanYears = $milestones['mortality_threshold'] - $milestones['min'];
+        if ($spanYears <= 0) {
+            return 0;
+        }
+
+        return max(0, (int) round(($spanYears / self::TRAINER_CAREER_WEEKS) * $aging * 10));
+    }
+
+    /**
+     * Calendar weeks until the mortality threshold, counting the weekly trainer jump
+     * and, for races that age daily, seven daily increments. Undead skip the daily part.
+     */
+    public function trainerWeeksUntilMortality(Hero $trainer): int
+    {
+        $perWeek = $this->trainerWeeklyAgeRaw($trainer);
+        if (Race::Undead !== $trainer->getRace()) {
+            $perWeek += (int) round(KingdomPace::aging($trainer->getTeam()->getKingdom())) * 7;
+        }
+        if ($perWeek <= 0) {
+            return 0;
+        }
+
+        $thresholdRaw = $this->raceConfig->getAge($trainer->getRace())['mortality_threshold'] * 10;
+        $remaining = $thresholdRaw - $trainer->getAgeRaw();
+        if ($remaining <= 0) {
+            return 0;
+        }
+
+        return (int) ceil($remaining / $perWeek);
+    }
+
+    public function projectedFatigueDelta(Hero $trainer, Hero $hero): int
+    {
+        $type = $trainer->getTrainingType();
+        if (null === $type) {
+            return 0;
+        }
+
+        return match ($type) {
+            TrainingType::Form => -$this->formFatigueRelief($trainer),
+            TrainingType::Magic => $this->magicFatigueCost(
+                $hero->getMagicCapacity() < 5,
+                null !== $this->resolveTrainingSchool($trainer),
+            ),
+            TrainingType::Attribute => $this->canBenefitFromAttributeTraining($hero, $trainer) ? self::TRAINING_FATIGUE : 0,
+        };
+    }
+
+    public function projectedFormGain(Hero $trainer, Hero $hero): int
+    {
+        if (TrainingType::Form !== $trainer->getTrainingType() || $hero->getForm() >= 100) {
+            return 0;
+        }
+
+        return min(100 - $hero->getForm(), $this->formRecoveryAmount($trainer));
+    }
+
+    private function attributeGainCapRaw(int $trainerStatExternal, float $speed): int
+    {
+        $cap = 9 + max(0, $trainerStatExternal - 10);
+
+        return max(1, (int) round($cap * $speed));
+    }
+
+    /**
+     * @param list<Hero> $trainees living trainees of this trainer, including $hero
+     */
+    private function groupModifier(Hero $hero, array $trainees): float
+    {
+        $sum = 0;
+        $count = 0;
+        foreach ($trainees as $other) {
+            if ($other === $hero) {
+                continue;
+            }
+            $sum += $this->raceConfig->getRelationship($hero->getRace(), $other->getRace());
+            ++$count;
+        }
+        if (0 === $count) {
+            return 1.0;
+        }
+
+        $average = $sum / $count;
+
+        return 1.0 + (($average - self::GROUP_RELATIONSHIP_NEUTRAL) * self::GROUP_RELATIONSHIP_STEP);
+    }
+
+    private function trainerStatFactor(int $externalStat): float
+    {
+        return max(0, $externalStat) / 10;
+    }
+
+    private function magicSchoolXp(Hero $trainer): int
+    {
+        $speed = KingdomPace::training($trainer->getTeam()->getKingdom());
+        $stat = max($trainer->getIntel(), $trainer->getWil());
+
+        return max(1, (int) round(self::MAGIC_TRAINING_SCHOOL_XP * $this->trainerStatFactor($stat) * $speed));
+    }
+
+    private function magicFatigueCost(bool $capacityIncreased, bool $schoolGranted): int
+    {
+        if ($capacityIncreased) {
+            return self::TRAINING_FATIGUE;
+        }
+        if ($schoolGranted) {
+            return self::MAGIC_AT_CAP_FATIGUE;
+        }
+
+        return 0;
+    }
+
+    private function formRecoveryAmount(Hero $trainer): int
+    {
+        $speed = KingdomPace::training($trainer->getTeam()->getKingdom());
+
+        return (int) round(self::FORM_TRAINING_BASE * $speed * $this->trainerStatFactor($trainer->getKon()));
+    }
+
+    private function formFatigueRelief(Hero $trainer): int
+    {
+        return (int) round(self::FORM_FATIGUE_RELIEF * $this->trainerStatFactor($trainer->getKon()));
     }
 
     private function resolveTrainingSchool(Hero $trainer): ?School

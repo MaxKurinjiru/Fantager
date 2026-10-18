@@ -91,6 +91,12 @@ class TrainingTraitSpeedTest extends TestCase
         $trainer->addTrainee($hero);
 
         $raceConfigMock->method('getTrainingSpeedModifier')->willReturn(1.0);
+        $raceConfigMock->method('getAge')->willReturn([
+            'min' => 16,
+            'max_junior' => 20,
+            'prime_limit' => 50,
+            'mortality_threshold' => 80,
+        ]);
         $hqRepositoryMock->method('findOneBy')->willReturn(null);
 
         $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
@@ -125,9 +131,8 @@ class TrainingTraitSpeedTest extends TestCase
      * QuickLearner dostane alespoň stejný gain jako hrdina bez traitu,
      * a při nízkém základním gainu (pod capem) dostane o ~20 % více.
      *
-     * Poznámka: TrainingService aplikuje cap `min(9 * speed, gainRaw)`.
-     * Pokud je base gain již na capu (9), QuickLearner gain je také 9 (cap).
-     * V tomto testu ověřujeme hlavně, že QuickLearner NIKDY nezíská méně než no-trait hrdina.
+     * The weekly raw cap is 9 + max(0, trainer stat − 10), so a stat-15 trainer
+     * no longer clips the QuickLearner bonus down to the old flat cap of 9.
      */
     public function testQuickLearnerGainsMoreOrEqualThanNoTrait(): void
     {
