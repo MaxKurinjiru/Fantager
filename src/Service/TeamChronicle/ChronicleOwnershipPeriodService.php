@@ -57,7 +57,9 @@ class ChronicleOwnershipPeriodService
      */
     public function build(array $markers): array
     {
+        /** @var list<array{key: string, kind: string, name: string|null, user_id: int|null, from: \DateTimeImmutable, from_inclusive: bool, to: \DateTimeImmutable|null, to_inclusive: bool, current: bool}> $periods */
         $periods = [];
+        /** @var array{key: string, kind: string, name: string|null, user_id: int|null, from: \DateTimeImmutable, from_inclusive: bool, to: \DateTimeImmutable|null, to_inclusive: bool, current: bool}|null $open */
         $open = null;
 
         foreach ($markers as $marker) {
@@ -106,7 +108,7 @@ class ChronicleOwnershipPeriodService
     }
 
     /**
-     * @param list<array<string, mixed>> $periods
+     * @param list<array{key: string, kind: string, name: string|null, user_id: int|null, from: \DateTimeImmutable, from_inclusive: bool, to: \DateTimeImmutable|null, to_inclusive: bool, current: bool}> $periods
      */
     public function windowFor(array $periods, string $key): ?ChroniclePeriodWindow
     {
@@ -115,22 +117,15 @@ class ChronicleOwnershipPeriodService
         }
 
         foreach ($periods as $period) {
-            if (($period['key'] ?? null) !== $key) {
+            if ($period['key'] !== $key) {
                 continue;
             }
 
-            $from = $period['from'] ?? null;
-            if (!$from instanceof \DateTimeImmutable) {
-                return null;
-            }
-
-            $to = $period['to'] ?? null;
-
             return new ChroniclePeriodWindow(
-                $from,
-                (bool) ($period['from_inclusive'] ?? true),
-                $to instanceof \DateTimeImmutable ? $to : null,
-                (bool) ($period['to_inclusive'] ?? false),
+                $period['from'],
+                $period['from_inclusive'],
+                $period['to'],
+                $period['to_inclusive'],
             );
         }
 
@@ -138,8 +133,8 @@ class ChronicleOwnershipPeriodService
     }
 
     /**
-     * @param array<string, mixed>|null        $open
-     * @param list<array<string, mixed>>       $periods
+     * @param array{key: string, kind: string, name: string|null, user_id: int|null, from: \DateTimeImmutable, from_inclusive: bool, to: \DateTimeImmutable|null, to_inclusive: bool, current: bool}|null $open
+     * @param list<array{key: string, kind: string, name: string|null, user_id: int|null, from: \DateTimeImmutable, from_inclusive: bool, to: \DateTimeImmutable|null, to_inclusive: bool, current: bool}> $periods
      *
      * @return null
      */
