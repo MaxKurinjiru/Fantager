@@ -48,6 +48,20 @@
                     </select>
                 </div>
 
+                <div class="{% if trainer.trainingType is null or trainer.trainingType.value != 'magic' %}hidden{% endif %}"
+                     data-training-school-select-container="{{ trainer.id }}">
+                    <label for="trainer-school-{{ trainer.id }}" class="form-label">{{ 'training.school_label'|trans }}</label>
+                    <select id="trainer-school-{{ trainer.id }}" class="form-input"
+                            data-trainer-id="{{ trainer.id }}"
+                            {% if isLocked or trainer.status.value != 'available' %}disabled{% endif %}>
+                        {% for schoolKey in ['fire', 'water', 'air', 'earth', 'light', 'dark'] %}
+                            <option value="{{ schoolKey }}" {% if trainer.targetAttribute == schoolKey %}selected{% endif %}>
+                                {{ ('school.' ~ schoolKey)|trans }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <div class="{% if trainer.trainingType is null or trainer.trainingType.value != 'attribute' %}hidden{% endif %}"
                      data-training-attr-select-container="{{ trainer.id }}">
                     <label for="trainer-attr-{{ trainer.id }}" class="form-label">{{ 'training.attr_label'|trans }}</label>
@@ -106,7 +120,10 @@
                                         </span>
                                     {% elseif trainer.trainingType and trainer.trainingType.value == 'magic' %}
                                         <span class="copy-secondary">
-                                            {{ 'training.type_magic'|trans }}: 
+                                            {{ 'training.type_magic'|trans }}
+                                            {% if trainer.targetAttribute %}
+                                                ({{ ('school.' ~ trainer.targetAttribute)|trans }})
+                                            {% endif %}:
                                             <span class="training-progress-value{% if hero.magicCapacity >= 5 %} training-progress-value--capped{% endif %}">
                                                 {{ hero.magicCapacity }} / 5
                                             </span>

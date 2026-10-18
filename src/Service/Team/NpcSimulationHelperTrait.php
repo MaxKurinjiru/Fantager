@@ -30,7 +30,6 @@ trait NpcSimulationHelperTrait
         }
 
         return \in_array($trait, [
-            HeroTrait::Volatile,
             HeroTrait::Slacker,
             HeroTrait::Fragile,
             HeroTrait::GlassJaw,

@@ -81,8 +81,11 @@ Trains a primary attribute (STR, DEX, KON, SPD, INT, WIL, CHA, LCK).
 - **Fatigue Impact**: Adds **+20 fatigue** (capped at 100) only when `gainRaw > 0` (no fatigue when already at the trainer’s raw-stat cap).
 
 ### 2. Magic Training
+The trainer’s `targetAttribute` stores a magic school (`fire`, `water`, `air`, `earth`, `light`, `dark`). Each completed week grants **5 XP** to that school (`TrainingService::MAGIC_TRAINING_SCHOOL_XP`) and counts as exercise for school decay. Weapon attunement is unchanged.
 Increases a hero's Magic Capacity by `max(1, round(1 × training_speed))` (capped at a maximum of 5 slots). At training speed `1.0` this is +1 per week.
-- **Fatigue Impact**: Adds **+20 fatigue** (capped at 100) only when capacity actually increased (no fatigue at the max of 5). Fatigue is **not** scaled by game speed.
+- **Fatigue Impact**: Adds **+20 fatigue** (capped at 100) when capacity increased or school XP was granted, including at the slot cap of 5. Fatigue is **not** scaled by game speed.
+
+Every hero the weekly tick actually processes (attribute, magic, or form, including a zero stat gain) also receives **8** base hero XP (`HeroProgressionService::TRAINING_PARTICIPATION_XP`). Library `xp_gain_pct` and `Kingdom.xp_modifier` multiply it the same way as match XP, and stored level follows the same curve and cap of 20.
 
 ### 3. Form Training (Resting)
 Helps a hero recover physical conditioning and rest.

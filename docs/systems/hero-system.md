@@ -51,7 +51,9 @@ Race age data lives in `config/game/races.yaml` under each race's `age` block. D
 
 **Daily aging** (Daily Reset tick): non-Undead heroes gain `round(1 × aging_speed)` on `age` raw. At pace `1.00` that is **0.1 displayed years per day**. Undead do not age. Trainers take an extra `round(10 × aging_speed)` on the weekly training tick.
 
-**Combat KO aging** (league and friendly resolution): each KO in a match adds escalating full years (`sum 1..D` KOs → years × 10 on raw). **Permanent death** only for elders at/above the mortality threshold: chance `5% + 4%` per year above the threshold, capped at 100%. A KO is not always death ([known-issues.md](../product/known-issues.md) #1 / #9). Permanent deaths write a graveyard memorial and remove the live hero — [graveyard-system.md](graveyard-system.md).
+**Combat KO aging** (league and friendly resolution): each KO in a match adds escalating full years (`sum 1..D` KOs → years × 10 on raw). Battle Hardened halves that year total, rounded down (one KO adds 0 years). **Permanent death** only for elders at/above the mortality threshold: chance `5% + 4%` per year above the threshold, capped at 100%. Volatile adds 10 percentage points to that chance. A KO is not always death ([known-issues.md](../product/known-issues.md) #1 / #9). Permanent deaths write a graveyard memorial and remove the live hero — [graveyard-system.md](graveyard-system.md).
+
+A knockout that does not kill leaves the hero `available`. On top of the usual match fatigue and form loss, it adds fatigue **+30** and form **−15**. At recovery pace `1.00` that extra bruise clears in about three daily recovery ticks. The hero can still be fielded.
 
 **Dismiss** is a player action (`POST /api/v1/heroes/{id}/dismiss`), not combat: 40% compensation, memorial `dismissed`, entity deleted. Team must keep ≥ 6 available combatants. See [team-system.md](team-system.md#hero-dismissal).
 
@@ -191,12 +193,13 @@ Source of truth: `HeroMasteryService`. To gain weapon-mastery XP efficiently, he
 - **Combat (League Match)** — `processMatchParticipation`:
   - Equipped gear types: **+50** attunement progress (capped at 100), then weapon XP = `round(BASE_MATCH_XP × attunement / 100)` with `BASE_MATCH_XP = 30` (uses attunement **after** the +50).
   - Equipped spell schools: **+15 XP** fixed (no attunement on schools).
-- **Weekly Magic training** — **not implemented** for mastery/attunement. `TrainingType::Magic` only raises the hero’s **magic capacity** (and fatigue); it does not call `HeroMasteryService`.
-- **Daily Decay** — `processDailyDecayTick` (Daily Reset):
-  - **Unused gear types:** lose **20 absolute attunement points** (not 20%), then XP decay = `round(20 × (1 − attunement / 100))` using attunement **after** that decay (`BASE_DECAY_XP = 20`). At 100% attunement, unused styles still lose 20 attunement but **0 XP** that day.
-  - **Unused magic schools:** lose **10 XP** per day (fixed; no attunement).
-  - If XP drops below the threshold for the current tier, the hero levels down in that mastery (down to a minimum of Tier 1).
-  - Swapping gear does *not* instantly reset attunement. Inactive gear styles decay gradually day-by-day.
+- **Weekly Magic training** — raises magic capacity (max 5) and grants **5 XP** to the school stored on the trainer’s `targetAttribute`. It does not change weapon attunement. The same week also grants hero participation XP (see [training-system.md](training-system.md)).
+- **Daily Decay** — `processDailyDecayTick` (Daily Reset). A style or school exercised in the last **7 days** (match for weapons; match or magic training for schools) does not decay. A row with no exercise timestamp is stamped and skipped once, so the first tick after deploy does not wipe existing masteries.
+  - After the grace window, gear loses **10** attunement, then XP decay = `round(20 × (1 − attunement / 100))` using attunement **after** that drop. If `last_gain_xp` is set, the XP loss is also capped at 25% of that gain.
+  - Schools lose **10 XP**, with the same 25% cap when `last_gain_xp` is set.
+  - For **14 days** after the last exercise, XP cannot fall below the current tier’s minimum, so a short bench spell does not demote the tier.
+  - After 14 days, XP can cross the tier floor and the tier drops (minimum Tier 1).
+  - Swapping gear does not reset attunement. A style used in a match stays protected for 7 days even after it is unequipped.
 
 ## Hero Traits
 
@@ -218,13 +221,12 @@ Enum: `App\Enum\HeroTrait` — authoritative source of all modifiers.
 | Quick Learner | `quick_learner` | +20% attribute training speed |
 | Clutch | `clutch` | When HP ≤ 30%: +15% accuracy, armor ×1.10 |
 | Audience Favorite | `audience_favorite` | +5% arena ticket revenue when fielded |
-| Battle Hardened | `battle_hardened` | No live combat morale effect ([#9](../product/known-issues.md) Cut) |
+| Battle Hardened | `battle_hardened` | Knockout aging is halved, rounded down |
 
 #### Negative (pure downside)
 
 | Trait | Key | Effect |
 |-------|-----|--------|
-| Volatile | `volatile` | No live combat morale effect ([#9](../product/known-issues.md) Cut). NPC lineup still treats it as a purely negative trait |
 | Slacker | `slacker` | -15% attribute training speed |
 | Fragile | `fragile` | -10% max HP |
 | Glass Jaw | `glass_jaw` | When HP ≤ 50%: incoming physical damage ×1.10 |
@@ -233,10 +235,11 @@ Enum: `App\Enum\HeroTrait` — authoritative source of all modifiers.
 
 | Trait | Key | Positive | Negative |
 |-------|-----|----------|----------|
+| Volatile | `volatile` | +10% outgoing damage | +10 percentage points on the elder knockout death chance |
 | Berserker | `berserker` | Crit +15%, crit damage 2.0× | Accuracy -8% |
 | Glasscannon | `glass_cannon` | Spell power +15% | Armor -10% |
 | Reckless | `reckless` | Crit +15% | Dodge -10% |
-| Loner | `loner` | No live combat pairing effect (synergy tables Cut, [#9](../product/known-issues.md) Resolved) | Still counted in team chemistry |
+| Loner | `loner` | +8% outgoing damage when this hero is the only one of their race in the match lineup | Still counted in team chemistry |
 | Overconfident | `overconfident` | Physical attack +10% | Accuracy -8% |
 | Perfectionist | `perfectionist` | Consistent (non-random) damage | Training speed -10% |
 
@@ -256,8 +259,8 @@ Traits are **visible to players** wherever hero identity is shown. Heroes with `
 **Badge styling** (`assets/styles/components/_hero.scss`):
 
 - `.hero-trait-badge--positive` — green (Quick Learner, Clutch, Audience Favorite, Battle Hardened)
-- `.hero-trait-badge--negative` — red (Volatile, Slacker, Fragile, Glass Jaw)
-- `.hero-trait-badge--mixed` — amber (Berserker, Glass Cannon, Reckless, Loner, Overconfident, Perfectionist)
+- `.hero-trait-badge--negative` — red (Slacker, Fragile, Glass Jaw)
+- `.hero-trait-badge--mixed` — amber (Volatile, Berserker, Glass Cannon, Reckless, Loner, Overconfident, Perfectionist)
 
 Category comes from `HeroTrait::getCategory()`; icon from `HeroTrait::getIcon()`. Tooltip and panel body use the translated description key.
 
@@ -272,7 +275,7 @@ Category comes from `HeroTrait::getCategory()`; icon from `HeroTrait::getIcon()`
 `DerivedCombatStats` carries trait metadata for the combat engine. Full formulas: [combat-formulas.md](combat-formulas.md).
 
 - Immediate modifiers (HP, attack, accuracy, crit, dodge, spell power, armor) are applied in `CombatStatCalculator`.
-- Situational modifiers (clutch threshold, glass jaw threshold, consistent damage) are passed as metadata and applied by the combat engine at runtime. Morale-decay flags and race-synergy flags are serialized but unused ([#9](../product/known-issues.md) Cut).
+- Situational modifiers (clutch threshold, glass jaw threshold, consistent damage) are passed as metadata and applied by the combat engine at runtime. Volatile’s outgoing-damage multiplier is applied with the other trait modifiers. Loner’s sole-race bonus is applied when the match lineup is built. Morale-decay flags and race-synergy flags stay serialized and unused ([#9](../product/known-issues.md) Cut).
 - Arena revenue bonus is consumed by `ArenaRevenueService` (not the combat engine).
 
 Per-hero match history: [hero-chronicle-system.md](hero-chronicle-system.md). League fixtures resolve through wave Messenger + `CombatEngine` (see [combat-system.md](combat-system.md)).

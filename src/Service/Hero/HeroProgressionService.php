@@ -11,6 +11,8 @@ use App\Entity\Team\Team;
 class HeroProgressionService
 {
     public const PARTICIPATION_XP = 20;
+    /** Weekly training participation. 40% of a match appearance, before library and kingdom modifiers. */
+    public const TRAINING_PARTICIPATION_XP = 8;
     public const WIN_XP = 15;
     public const KO_XP = 10;
     /** One XP for each HP_PER_XP of damage, healing, or credited status. */
@@ -89,6 +91,14 @@ class HeroProgressionService
         }
 
         return max(0, $xp);
+    }
+
+    /**
+     * Bench progression for a completed weekly training. Same curve, cap, and multipliers as match XP.
+     */
+    public function applyTrainingParticipation(Hero $hero, Team $team, float $libraryMultiplier): int
+    {
+        return $this->applyMatchXp($hero, $team, self::TRAINING_PARTICIPATION_XP, $libraryMultiplier);
     }
 
     /**

@@ -8,7 +8,7 @@ use App\Enum\MatchType;
 use App\Service\Combat\CombatEngine;
 
 /**
- * Pure input for {@see \App\Service\Combat\CombatEngine}.
+ * Pure input for {@see CombatEngine}.
  */
 final class CombatMatchRequest
 {

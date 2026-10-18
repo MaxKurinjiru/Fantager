@@ -26,7 +26,7 @@ Per card, for training itself:
 
 - Focus type: Idle, Attribute, Magic, Form (`<select>`; Attribute reveals target STR–LCK)
 - Save focus → `POST /api/v1/training/trainers/{id}/configure` (`type`, `attribute`)
-- Assigned trainees: name (link to hero detail), level, fatigue, form, cap progress (attribute vs trainer frozen stat, or magic capacity / 5, or form/idle copy)
+- Assigned trainees: name (link to hero detail), level, fatigue, form, cap progress (attribute vs trainer frozen stat, magic school plus capacity / 5, or form/idle copy)
 - Unassign → `POST /api/v1/training/trainers/{id}/unassign` (`hero_id`)
 - Assign `<select>` of available combatants with no trainer when a slot is free → `POST /api/v1/training/trainers/{id}/assign`
 

@@ -27,24 +27,26 @@ class HeroRatingCalculator
             $hero,
             CombatStatProfile::HumanNeutral,
         );
-        $hybridForOvr = $this->computeHybridScore($humanNeutralStats, $hero->getCha(), $hero->getWil());
+        $raceFactor = $this->heroRatingConfig->getRacePhysicalFactor($hero->getRace()->value);
+        $hybridForOvr = $this->computeHybridScore($humanNeutralStats, $hero->getCha(), $hero->getWil(), $raceFactor);
         $baseOvr = $this->scaleToRange($hybridForOvr, $this->heroRatingConfig->getBaseOvrMax());
 
         $intrinsicStats = $this->combatStatCalculator->calculateForProfile(
             $hero,
             CombatStatProfile::FullIntrinsic,
         );
-        $hybridForComplex = $this->computeHybridScore($intrinsicStats, $hero->getCha(), $hero->getWil());
+        $hybridForComplex = $this->computeHybridScore($intrinsicStats, $hero->getCha(), $hero->getWil(), $raceFactor);
         $complexBase = $this->scaleToRange($hybridForComplex, $this->heroRatingConfig->getComplexRatingMax());
 
         $traitBonus = $this->heroRatingConfig->getTraitBonus($hero->getTrait());
         $masteryBonus = $hero->isTrainer() ? 0 : $this->computeMasteryBonus($hero);
+        $spellKnowledgeBonus = $this->computeSpellKnowledgeBonus($hero);
 
         $agePhase = $this->raceConfig->resolveAgePhase($hero->getRace(), $hero->getAge());
         $ageMultiplier = $this->heroRatingConfig->getAgeMultiplier($agePhase);
 
         $complexRating = (int) round(
-            ($complexBase + $traitBonus + $masteryBonus) * $ageMultiplier
+            ($complexBase + $traitBonus + $masteryBonus + $spellKnowledgeBonus) * $ageMultiplier
         );
         $complexRating = max(0, min($this->heroRatingConfig->getComplexRatingMax(), $complexRating));
 
@@ -72,7 +74,7 @@ class HeroRatingCalculator
         return $goldValue;
     }
 
-    private function computeHybridScore(DerivedCombatStats $stats, int $cha, int $wil): float
+    private function computeHybridScore(DerivedCombatStats $stats, int $cha, int $wil, float $racePhysicalFactor): float
     {
         $ceilings = $this->heroRatingConfig->getReferenceCeilings();
         $physicalWeights = $this->heroRatingConfig->getPhysicalWeights();
@@ -80,7 +82,12 @@ class HeroRatingCalculator
 
         $physicalScore = 0.0;
         $physicalScore += $this->weightedContribution('max_hp', $stats->getMaxHp(), $ceilings, $physicalWeights);
-        $physicalScore += $this->weightedContribution('physical_attack', $stats->getPhysicalAttack(), $ceilings, $physicalWeights);
+        $physicalScore += $this->weightedContribution(
+            'physical_attack',
+            $stats->getPhysicalAttack() * $racePhysicalFactor,
+            $ceilings,
+            $physicalWeights,
+        );
         $physicalScore += $this->weightedContribution('armor_value', $stats->getArmorValue(), $ceilings, $physicalWeights);
         $physicalScore += $this->weightedContribution('base_initiative', $stats->getBaseInitiative(), $ceilings, $physicalWeights);
         $physicalScore += $this->weightedContribution('accuracy_percent', $stats->getAccuracyPercent(), $ceilings, $physicalWeights);
@@ -156,6 +163,19 @@ class HeroRatingCalculator
             if ($tier > 1) {
                 $bonus += ($tier - 1) * $pointsPerTier;
             }
+        }
+
+        return $bonus;
+    }
+
+    private function computeSpellKnowledgeBonus(Hero $hero): int
+    {
+        $bonus = $hero->getMagicCapacity() * $this->heroRatingConfig->getPointsPerCapacity();
+
+        foreach ($hero->getHeroSpells() as $heroSpell) {
+            $tier = max(1, $heroSpell->getSpell()->getTier());
+            $bonus += $this->heroRatingConfig->getPointsPerSpell()
+                + ($tier * $this->heroRatingConfig->getPointsPerSpellTier());
         }
 
         return $bonus;

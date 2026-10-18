@@ -171,4 +171,12 @@ final class DerivedCombatStats
     {
         return $this->outgoingDamageMultiplier;
     }
+
+    public function withOutgoingDamageMultiplier(float $outgoingDamageMultiplier): self
+    {
+        $copy = clone $this;
+        $copy->outgoingDamageMultiplier = $outgoingDamageMultiplier;
+
+        return $copy;
+    }
 }

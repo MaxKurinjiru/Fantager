@@ -61,8 +61,7 @@ class KingdomInitializationService
         bool $testMode = false,
         ?int $startOffsetDaysOverride = null,
         string $pacePreset = 'classic',
-    ): array
-    {
+    ): array {
         $name = trim($name);
         if ('' === $name) {
             throw new \DomainException('Kingdom name cannot be empty.');
@@ -199,11 +198,7 @@ class KingdomInitializationService
         $preset = PacePreset::tryFrom($pacePreset);
         $catalog = $this->initConfig->pacePresets();
         if (null === $preset || !isset($catalog[$preset->value])) {
-            throw new \DomainException(sprintf(
-                'Unknown pace preset "%s". Expected one of: %s.',
-                $pacePreset,
-                implode(', ', array_map(static fn (PacePreset $case): string => $case->value, PacePreset::cases())),
-            ));
+            throw new \DomainException(sprintf('Unknown pace preset "%s". Expected one of: %s.', $pacePreset, implode(', ', array_map(static fn (PacePreset $case): string => $case->value, PacePreset::cases()))));
         }
 
         return $catalog[$preset->value];

@@ -34,6 +34,12 @@ class WeaponMastery
     #[ORM\Column(options: ['default' => 0])]
     private int $attunementProgress = 0;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastExercisedAt = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $lastGainXp = 0;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -95,6 +101,30 @@ class WeaponMastery
     public function setAttunementProgress(int $attunementProgress): static
     {
         $this->attunementProgress = $attunementProgress;
+
+        return $this;
+    }
+
+    public function getLastExercisedAt(): ?\DateTimeImmutable
+    {
+        return $this->lastExercisedAt;
+    }
+
+    public function setLastExercisedAt(?\DateTimeImmutable $lastExercisedAt): static
+    {
+        $this->lastExercisedAt = $lastExercisedAt;
+
+        return $this;
+    }
+
+    public function getLastGainXp(): int
+    {
+        return $this->lastGainXp;
+    }
+
+    public function setLastGainXp(int $lastGainXp): static
+    {
+        $this->lastGainXp = $lastGainXp;
 
         return $this;
     }

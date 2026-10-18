@@ -66,6 +66,9 @@
                                             <div class="training-progress-cap-label training-progress-cap-label--table">{{ 'training.capped'|trans }}</div>
                                         {% endif %}
                                     {% elseif trainer.trainingType.value == 'magic' %}
+                                        {% if trainer.targetAttribute %}
+                                            <span class="copy-secondary">{{ ('school.' ~ trainer.targetAttribute)|trans }}</span>
+                                        {% endif %}
                                         <span class="training-progress-value{% if hero.magicCapacity >= 5 %} training-progress-value--capped{% endif %}">
                                             {{ hero.magicCapacity }} / 5
                                         </span>

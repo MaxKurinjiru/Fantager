@@ -206,4 +206,13 @@ class HeroTraitTest extends TestCase
         $this->assertSame(1.00, HeroTrait::Berserker->getMoraleDecayMultiplier());
         $this->assertSame(2.00, HeroTrait::Volatile->getMoraleDecayMultiplier());
     }
+
+    public function testVolatileIsADamageTradeoffAndLonerHitsHarderAlone(): void
+    {
+        $this->assertSame('mixed', HeroTrait::Volatile->getCategory());
+        $this->assertSame(1.10, HeroTrait::Volatile->getOutgoingDamageMultiplier());
+        $this->assertSame('mixed', HeroTrait::Loner->getCategory());
+        $this->assertSame(1.08, HeroTrait::Loner->getSoleRaceDamageMultiplier());
+        $this->assertSame('positive', HeroTrait::BattleHardened->getCategory());
+    }
 }

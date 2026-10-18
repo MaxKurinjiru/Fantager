@@ -24,7 +24,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 - Compact primary attributes (STR, DEX, KON, SPD, INT, WIL, CHA, LCK)
 - Compact combat stats (HP, ATK, SP, DEF, RES, INIT)
 - Base OVR rating badge
-- Status badge: `available`, `in_match`, `selling`, `recovering`, `dead` (not “tired” / “training”)
+- Status badge: `available`, `selling`, `dead` are the statuses the game writes. `in_match` and `recovering` stay on the enum and are not offered in the filter.
 - **Inspect** → `/app/heroes/{id}`
 
 Morale is stored on the card as a `data-morale` sort key only — **not** shown as a value or icon. Equipped-item icons are **not** on the card.
@@ -37,7 +37,7 @@ Rendered in the filter bar; `roster_filter` hides/sorts already-rendered cards.
 |---------|-------------|
 | Text search | Name |
 | Race | All races, or one of the eight playable races |
-| Status | available, in_match, selling, recovering, dead |
+| Status | available, selling, dead |
 | Sort | name, level, base OVR, age, morale (hidden field), form, STR, DEX, KON, SPD, INT |
 
 There is **no** level filter control. Sort does not include WIL / CHA / LCK.

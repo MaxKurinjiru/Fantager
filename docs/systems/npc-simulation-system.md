@@ -31,7 +31,7 @@ Tactics simulation runs automatically for both teams during the `league_match` t
   - `Glasscannon` and `Reckless` boost back-row score by +20% (multiplier `1.20`) and penalize front-row placement by -15% (multiplier `0.85`).
   - `Clutch` boosts front-row score by +10% (multiplier `1.10`).
   - `Fragile` and `GlassJaw` penalize front-row placement by -20% (multiplier `0.80`).
-  - Purely negative traits (`Volatile`, `Slacker`, `Fragile`, `GlassJaw`) heavily penalize both front and back row placement by -90% (multiplier `0.10`) to prefer benching them.
+  - Purely negative traits (`Slacker`, `Fragile`, `GlassJaw`) heavily penalize both front and back row placement by -90% (multiplier `0.10`) to prefer benching them. Volatile is a mixed trait and is not in this list.
 - **Auto-Equip:** NPC teams automatically scan their unequipped inventory and equip the best gear matching the active lineup's preferred weapon and armor masteries.
 
 ---
@@ -51,7 +51,7 @@ Training setups for NPC teams are simulated on **Tuesday 00:00:00 (during Daily 
 To mimic realistic player progression and preserve a stable NPC budget, non-tactical decisions are split between daily resets, twice-weekly marketplace ticks, and weekly resets.
 
 ### Daily Actions (Daily Reset - 00:00:00)
-- **Proactive Dismissal & Trainer Promotion:** Evaluates non-trainer available heroes carrying purely negative traits (`Slacker`, `Volatile`, `Fragile`, `GlassJaw`). If a negative-trait hero has a raw attribute stat >= 75% of the team's highest combatant stat (min 5.0), they are promoted to a **Trainer** first (using `TrainingService::applyTrainerPromotion()`), provided trainer slots are available. Otherwise, they are dismissed to prevent degrading team performance.
+- **Proactive Dismissal & Trainer Promotion:** Evaluates non-trainer available heroes carrying purely negative traits (`Slacker`, `Fragile`, `GlassJaw`). If a negative-trait hero has a raw attribute stat >= 75% of the team's highest combatant stat (min 5.0), they are promoted to a **Trainer** first (using `TrainingService::applyTrainerPromotion()`), provided trainer slots are available. Otherwise, they are dismissed to prevent degrading team performance. Volatile is not in this list.
 - **Roster Recycling:** If the roster is full and at least one hero is listed for sale, dismisses the worst available combatant to make room for a new summon.
 - **Summoning:** Summons a new hero via `SummoningService` (`getStatus` then `summon`) if combatant count <= rosterLimit - 1, the weekly cycle limit is not reached (`summons_used < summons_max`), and gold permits (summoning cost + 150 gold safety buffer). Race pick uses the same compatible pool as players ([summoning-system.md](summoning-system.md#locked-genie-summon-pool)).
 

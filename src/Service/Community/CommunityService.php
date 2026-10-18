@@ -11,7 +11,6 @@ use App\Entity\Community\Message;
 use App\Entity\Kingdom\Kingdom;
 use App\Exception\UserFacingException;
 use Doctrine\ORM\EntityManagerInterface;
-use SortDirection;
 
 class CommunityService
 {
@@ -153,7 +152,7 @@ class CommunityService
             ->andWhere('u.isVerified = true')
             ->setParameter('kingdom', $kingdom)
             ->setParameter('userId', $user->getId())
-            ->orderBy('u.displayName', SortDirection::Ascending)
+            ->orderBy('u.displayName', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 

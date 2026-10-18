@@ -207,6 +207,7 @@ error:
   trainer_only_active_unassign: Svěřence lze odebrat pouze aktivnímu trenérovi.
   training_trainer_limit_reached: Byl dosažen limit počtu trenérů pro váš tým.
   invalid_attribute: 'Neplatný atribut. Povolené hodnoty: %values%.'
+  invalid_school: 'Neplatná škola magie. Povolené hodnoty: %values%.'
   unknown_attribute: 'Neznámý atribut "%attribute%".'
   marketplace_price_positive: Cena nebo vyvolávací cena musí být kladná.
   marketplace_price_out_of_range: Cena musí být mezi %min% a %max% zlatými.
@@ -809,10 +810,10 @@ heroes:
       desc: "+5 % příjem ze vstupného na aréně, když je nasazen v zápase."
     battle_hardened:
       name: Zocelený bojem
-      desc: Zkušený a klidný. Nemění souboj; kickoff morálka i týmová morálka po zápase platí jako u kteréhokoli jiného hrdiny.
+      desc: Knockout přidá jen polovinu obvyklých let, zaokrouhleno dolů. Jeden knockout nepřidá žádný rok.
     volatile:
       name: Vrtkavý
-      desc: Neklidná povaha. Nemění souboj; kickoff morálka i týmová morálka po zápase platí jako u kteréhokoli jiného hrdiny.
+      desc: "+10 % poškození. Na prahu úmrtnosti je trvalá smrt po knockoutu o 10 procentních bodů pravděpodobnější."
     slacker:
       name: Flákač
       desc: "-15 % rychlost tréninku atributů."
@@ -833,7 +834,7 @@ heroes:
       desc: "+15 % šance na krit, ale -10 % úhyb."
     loner:
       name: Samotář
-      desc: Samostatný bojovník. Nemění souboj; týmová chemie ho počítá jako každého jiného bojovníka.
+      desc: "+8 % poškození, když je v zápasové sestavě jediný své rasy. Týmová chemie ho pořád počítá."
     overconfident:
       name: Přehnaně sebevědomý
       desc: "+10 % fyzický útok, ale -8 % přesnost."
@@ -1063,6 +1064,7 @@ training:
   type_form: Zotavení
   trainer: Trenér
   attr_label: Atribut
+  school_label: Škola magie
   attr:
     str: Síla
     str_desc: Zvyšuje fyzickou sílu a poškození útokem.

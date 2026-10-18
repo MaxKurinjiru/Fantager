@@ -424,7 +424,7 @@ class ExecuteSingleTickHandler
         // Process Daily Decay for Hero Mastery
         $combatants = $this->heroRepository->findCombatantsByTeam($team);
         foreach ($combatants as $hero) {
-            $this->heroMasteryService->processDailyDecayTick($hero);
+            $this->heroMasteryService->processDailyDecayTick($hero, $scheduledAt);
         }
 
         // Check if we need to pre-create the next season (Option A: Monday of Week 11)

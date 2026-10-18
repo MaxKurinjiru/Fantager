@@ -207,6 +207,7 @@ error:
   trainer_only_active_unassign: Trainees can only be unassigned from active trainers.
   training_trainer_limit_reached: Trainer limit reached for your team.
   invalid_attribute: 'Invalid attribute. Valid values: %values%.'
+  invalid_school: 'Invalid magic school. Valid values: %values%.'
   unknown_attribute: 'Unknown attribute "%attribute%".'
   marketplace_price_positive: Price or starting bid must be positive.
   marketplace_price_out_of_range: Price must be between %min% and %max% gold.
@@ -810,10 +811,10 @@ heroes:
       desc: "+5% arena ticket revenue when fielded in a match."
     battle_hardened:
       name: Battle Hardened
-      desc: Composed veteran. Does not change combat; kickoff morale and post-match team morale work like any other hero.
+      desc: A knockout adds only half the usual years of age, rounded down. One knockout adds no years.
     volatile:
       name: Volatile
-      desc: Unsteady temperament. Does not change combat; kickoff morale and post-match team morale work like any other hero.
+      desc: "+10% damage. At the mortality threshold, a knockout is 10 percentage points more likely to be permanent."
     slacker:
       name: Slacker
       desc: "-15% attribute training speed."
@@ -834,7 +835,7 @@ heroes:
       desc: "+15% crit chance, but -10% dodge."
     loner:
       name: Loner
-      desc: Independent fighter. Does not change combat; team chemistry still counts this hero like any other combatant.
+      desc: "+8% damage when this hero is the only one of their race in the match lineup. Team chemistry still counts them."
     overconfident:
       name: Overconfident
       desc: "+10% physical attack, but -8% accuracy."
@@ -1064,6 +1065,7 @@ training:
   type_form: Recovery
   trainer: Trainer
   attr_label: Attribute
+  school_label: Magic school
   attr:
     str: Strength
     str_desc: Increases physical power and attack damage.

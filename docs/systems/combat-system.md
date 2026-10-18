@@ -26,7 +26,7 @@ Kickoff uses `MatchLineupService` (assigned → default → roster fill) and `Le
 
 Status effect config: [config/game/status_effects.yaml](../../config/game/status_effects.yaml) — loaded by `StatusEffectConfig` and used by `CombatEngine` for **durations**, **tick damage/heal percents**, and **Haste/Shock speed percents on the initiative sort** (hardcoded fallbacks remain if a key is missing). Other combat modifiers from the YAML (accuracy, skip turn, etc.) are applied via engine logic where implemented. Formulas: [combat-formulas.md](combat-formulas.md). Haste/Shock: [combat-formulas.md — Speed / Initiative](combat-formulas.md#speed--initiative-init).
 
-Locked live rules: round-200 kill-score end, preparation length, fumble-without-retarget. Resurrection (`revive`) and L3 sequences stay out. In-combat `morale_change` / Volatile / Battle Hardened is **Cut**. Race synergy and `POST /api/v1/combat/simulate` are **Cut**. Replay HUD: [12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud).
+Locked live rules: round-200 kill-score end, preparation length, fumble-without-retarget. Resurrection (`revive`) and L3 sequences stay out. In-combat `morale_change` is **Cut**. Volatile’s damage bonus and Battle Hardened’s knockout aging are live and do not use morale. Race synergy tables and `POST /api/v1/combat/simulate` are **Cut**. Replay HUD: [12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud).
 
 ## Locked: no race synergy / no simulate
 
@@ -35,7 +35,7 @@ Locked live rules: round-200 kill-score end, preparation length, fumble-without-
 | Rule | Meaning |
 |------|---------|
 | No synergy tables | Combat does not apply race-pair or role-pair match modifiers. `race_relations.yaml` stays summoning / chemistry / training / arena-adaptation only. |
-| `ignoresRaceSynergy` unused | Serialized on `DerivedCombatStats` (Loner = true). `CombatEngine` does not read it. Loner player copy is flavor. |
+| `ignoresRaceSynergy` unused | Serialized on `DerivedCombatStats` (Loner = true). `CombatEngine` does not read it. A Loner who is the only hero of their race in the match lineup gets +8% outgoing damage at lineup build. Chemistry still counts them. |
 | No sandbox route | `POST /api/v1/combat/simulate` is **Cut** (no controller). Do not ship a sandbox. Friendly matches are the live adjacent path. `CombatEngine::simulate()` stays for tests. |
 | Reopen | Explicit product ask required before in-combat synergy or a sandbox (consequences, opponent, one-shot vs cohort). |
 
@@ -395,7 +395,7 @@ Applied in `LeagueMatchResolutionService::completeBattle()` for a simulated matc
 | Healing | +1 XP per 10 HP actually restored. Overheal does not count |
 | Status cast | Every successful application pays, including a refresh on the same target. Damage or heal over time (burn, poison, regeneration): half of one listed full run, converted at 1 XP per 10 HP. Regeneration on an undead pays that same half run, even though the ticks do not heal. A status with no tick (stun, shield, haste, and the rest) is +2 XP times the target's level. Later ticks are not paid again |
 | Utility spell cast | +2 XP each. Offensive and healing spells are paid through damage and healing, not this flat bonus |
-| Was KO'd | extra fatigue +10, extra form −7 |
+| Was KO'd | extra fatigue +30, extra form −15. Hero stays `available`. |
 
 XP is `round(base × library multiplier × kingdom.xp_modifier)`. Base is participation + win + 10 XP times each victim's level + 1 XP per 10 HP of damage, healing, or credited status + 2 XP times target level for a non-tick status + 2 XP per utility cast (`HeroProgressionService::matchBaseXp()`). The combat log stores `result.contribution_by_hero_id` (`damage_hp`, `heal_hp`, `status_hp`, `status_levels`, `ko_levels`, `utility_casts`). A log without that map awards only participation, win, and 10 XP per KO. Older logs that only stored `damage_millis` / `heal_millis` still pay 10 XP per full bar. The library multiplier is `1 + xp_gain_pct / 100` from the team's Library facility when headquarters bonuses are active. No library, or a financial crisis that suspends HQ bonuses, leaves that multiplier at 1. `Kingdom.xp_modifier` is copied from the pace preset (every current preset is `1.00`). After the write, stored `Hero.level` may increase — [hero-system.md](hero-system.md#locked-hero-level-invariant).
 

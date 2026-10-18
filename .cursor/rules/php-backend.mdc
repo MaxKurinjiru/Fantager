@@ -44,11 +44,12 @@ Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entit
 ## In-combat morale (Cut — #9 slice)
 
 - Do not emit `morale_change`. Combat must not read `moraleDecayMultiplier`.
-- Volatile / Battle Hardened player copy is flavor. Kickoff damage band and post-match morale stay.
+- Volatile’s +10% outgoing damage and Battle Hardened’s halved knockout years are live. They are not morale. Kickoff damage band and post-match morale stay.
 
 ## Race synergy / simulate (Cut — #9)
 
 - Do not add in-combat race/role synergy tables. Combat must not read `ignoresRaceSynergy`.
+- Loner +8% outgoing damage applies only when that hero is the only one of their race in the match lineup. Chemistry still counts Loners.
 - Do not ship `POST /api/v1/combat/simulate`. The route is **Cut** (no controller). Friendly matches are the live adjacent path.
 - Spec: `docs/systems/combat-system.md` § Locked: no race synergy / no simulate.
 

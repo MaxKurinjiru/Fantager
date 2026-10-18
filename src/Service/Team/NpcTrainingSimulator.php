@@ -101,7 +101,7 @@ class NpcTrainingSimulator
             });
 
             // Exclude purely negative-trait heroes from trainer promotion:
-            // They have no place as trainers either (Slacker/Volatile/Fragile/GlassJaw)
+            // They have no place as trainers either (Slacker/Fragile/GlassJaw)
             // unless the team is desperate (no other candidates).
             $promotionCandidatesPositive = array_filter(
                 $promotionCandidates,
@@ -259,7 +259,7 @@ class NpcTrainingSimulator
             ],
             NpcSimulationService::ROLE_ROYAL_COLLECTOR => [
                 ['type' => TrainingType::Attribute, 'attribute' => 'int'],
-                ['type' => TrainingType::Magic, 'attribute' => null],
+                ['type' => TrainingType::Magic, 'attribute' => \App\Enum\School::Fire->value],
             ],
             NpcSimulationService::ROLE_SCAVENGER_CLAN => [
                 ['type' => TrainingType::Attribute, 'attribute' => 'spd'],

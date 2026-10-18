@@ -29,6 +29,7 @@ use App\Service\Formation\MatchLineupService;
 use App\Service\Graveyard\GraveyardService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroMasteryService;
+use App\Service\Hero\KnockoutOutcome;
 use App\Service\Notification\NotificationHelper;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\MatchOutcome;
@@ -340,7 +341,8 @@ class FriendlyMatchResolutionService
                     continue;
                 }
 
-                $yearsToAdd = (int) ($deathsInMatch * ($deathsInMatch + 1) / 2);
+                $knockout = new KnockoutOutcome();
+                $yearsToAdd = $knockout->yearsAdded($deathsInMatch, $hero->getTrait());
                 $hero->setAgeRaw($hero->getAgeRaw() + ($yearsToAdd * 10));
 
                 $isElder = $this->raceConfig->isAtOrAboveMortalityThreshold($hero->getRace(), $hero->getAge());
@@ -350,8 +352,7 @@ class FriendlyMatchResolutionService
                     $threshold = $this->raceConfig->getMortalityThreshold($hero->getRace());
                     $yearsAboveThreshold = $hero->getAge() - $threshold;
 
-                    $deathChance = 0.05 + (0.04 * max(0, $yearsAboveThreshold));
-                    $deathChance = min(1.0, $deathChance);
+                    $deathChance = $knockout->permanentDeathChance($yearsAboveThreshold, $hero->getTrait());
 
                     foreach ($rollsByHero[$heroId] ?? [] as $roll) {
                         if ($roll < (int) ($deathChance * 100)) {
@@ -474,9 +475,9 @@ class FriendlyMatchResolutionService
     }
 
     /**
-     * @param array<int, true>                        $killedSet
-     * @param array<string|int, int|mixed>            $killsByHeroId
-     * @param array<string|int, mixed>                $contributionByHeroId
+     * @param array<int, true>             $killedSet
+     * @param array<string|int, int|mixed> $killsByHeroId
+     * @param array<string|int, mixed>     $contributionByHeroId
      */
     private function applySideRewards(
         ?Formation $formation,
@@ -510,10 +511,10 @@ class FriendlyMatchResolutionService
                 $contribution = [];
             }
 
-            $fatigue = $hero->getFatigue() + 15 + ($wasKo ? 10 : 0);
+            $fatigue = $hero->getFatigue() + KnockoutOutcome::PARTICIPATION_FATIGUE + ($wasKo ? KnockoutOutcome::KNOCKOUT_EXTRA_FATIGUE : 0);
             $hero->setFatigue(min(100, $fatigue));
 
-            $formLoss = 8 + ($wasKo ? 7 : 0);
+            $formLoss = KnockoutOutcome::PARTICIPATION_FORM_LOSS + ($wasKo ? KnockoutOutcome::KNOCKOUT_EXTRA_FORM_LOSS : 0);
             $hero->setForm(max(0, $hero->getForm() - $formLoss));
 
             $baseXp = $this->heroProgressionService->matchBaseXp($won, $kills, $contribution);

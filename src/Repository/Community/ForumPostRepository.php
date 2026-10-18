@@ -8,7 +8,6 @@ use App\Entity\Community\ForumPost;
 use App\Entity\Community\ForumThread;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<ForumPost>
@@ -25,7 +24,7 @@ class ForumPostRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->where('p.thread = :thread')
             ->setParameter('thread', $thread)
-            ->orderBy('p.createdAt', SortDirection::Ascending)
+            ->orderBy('p.createdAt', \SortDirection::Ascending)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -39,7 +38,7 @@ class ForumPostRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->where('p.thread = :thread')
             ->setParameter('thread', $thread)
-            ->orderBy('p.createdAt', SortDirection::Ascending)
+            ->orderBy('p.createdAt', \SortDirection::Ascending)
             ->setFirstResult((($page - 1) * $limit) + 1)
             ->setMaxResults($limit)
             ->getQuery()

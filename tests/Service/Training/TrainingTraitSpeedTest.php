@@ -52,7 +52,9 @@ class TrainingTraitSpeedTest extends TestCase
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             $entityManagerMock,
             $this->createMock(\App\Service\Notification\NotificationHelper::class),
-            $financialCrisisServiceMock
+            $financialCrisisServiceMock,
+            $this->createMock(\App\Service\Hero\HeroMasteryService::class),
+            $this->createMock(\App\Service\Hero\HeroProgressionService::class),
         );
 
 

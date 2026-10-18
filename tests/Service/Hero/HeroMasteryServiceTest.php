@@ -152,78 +152,87 @@ class HeroMasteryServiceTest extends TestCase
         $this->assertSame(65, $sm->getXp());
     }
 
-    public function testDailyDecayTickDecaysInactiveGearAndSchools(): void
+    public function testDailyDecaySkipsAStyleExercisedThisWeekAndProtectsTier(): void
     {
         $hero = new Hero();
+        $now = new \DateTimeImmutable('2026-10-18 00:00:00');
 
-        // 1. Setup active weapon mastery (OneHandedSword, stays intact)
-        $wmActive = new WeaponMastery();
-        $wmActive->setHero($hero);
-        $wmActive->setStyle(ItemSubType::OneHandedSword);
-        $wmActive->setXp(120);
-        $wmActive->setMasteryTier(2);
-        $wmActive->setAttunementProgress(100);
-        $hero->getWeaponMasteries()->add($wmActive);
+        $recent = new WeaponMastery();
+        $recent->setHero($hero);
+        $recent->setStyle(ItemSubType::OneHandedSword);
+        $recent->setXp(120);
+        $recent->setMasteryTier(2);
+        $recent->setAttunementProgress(100);
+        $recent->setLastExercisedAt($now->modify('-2 days'));
+        $recent->setLastGainXp(30);
+        $hero->getWeaponMasteries()->add($recent);
 
-        // 2. Setup inactive weapon mastery (Shield, decays)
-        $wmInactive = new WeaponMastery();
-        $wmInactive->setHero($hero);
-        $wmInactive->setStyle(ItemSubType::Shield);
-        $wmInactive->setXp(105); // Just crossed T2 threshold (100)
-        $wmInactive->setMasteryTier(2);
-        $wmInactive->setAttunementProgress(50);
-        $hero->getWeaponMasteries()->add($wmInactive);
+        $protected = new WeaponMastery();
+        $protected->setHero($hero);
+        $protected->setStyle(ItemSubType::Shield);
+        $protected->setXp(105);
+        $protected->setMasteryTier(2);
+        $protected->setAttunementProgress(50);
+        $protected->setLastExercisedAt($now->modify('-10 days'));
+        $protected->setLastGainXp(30);
+        $hero->getWeaponMasteries()->add($protected);
 
-        // 3. Setup active magic mastery (Fire, stays intact)
-        $smActive = new SchoolMastery();
-        $smActive->setHero($hero);
-        $smActive->setSchool(School::Fire);
-        $smActive->setXp(80);
-        $smActive->setMasteryTier(1);
-        $hero->getSchoolMasteries()->add($smActive);
+        $school = new SchoolMastery();
+        $school->setHero($hero);
+        $school->setSchool(School::Water);
+        $school->setXp(105);
+        $school->setMasteryTier(2);
+        $school->setLastExercisedAt($now->modify('-10 days'));
+        $school->setLastGainXp(15);
+        $hero->getSchoolMasteries()->add($school);
 
-        // 4. Setup inactive magic mastery (Water, decays)
-        $smInactive = new SchoolMastery();
-        $smInactive->setHero($hero);
-        $smInactive->setSchool(School::Water);
-        $smInactive->setXp(105); // Just crossed T2 threshold (100)
-        $smInactive->setMasteryTier(2);
-        $hero->getSchoolMasteries()->add($smInactive);
+        $this->masteryService->processDailyDecayTick($hero, $now);
 
-        // Mock equipped items: Only sword is equipped
-        $item = new Item();
-        $item->setSubType(ItemSubType::OneHandedSword);
-        $this->itemRepositoryMock->expects($this->once())
-            ->method('findBy')
-            ->willReturn([$item]);
+        $this->assertSame(100, $recent->getAttunementProgress());
+        $this->assertSame(120, $recent->getXp());
 
-        // Mock equipped spells: Only Fire is equipped
-        $spell = new Spell();
-        $spell->setSchool(School::Fire);
-        $hs = new HeroSpell();
-        $hs->setSpell($spell);
-        $hs->setIsEquipped(true);
-        $hero->getHeroSpells()->add($hs);
+        // Attunement still drops. XP loss is capped at 25% of the last gain and cannot cross the tier floor.
+        $this->assertSame(40, $protected->getAttunementProgress());
+        $this->assertSame(100, $protected->getXp());
+        $this->assertSame(2, $protected->getMasteryTier());
 
-        $this->masteryService->processDailyDecayTick($hero);
+        // School decay cap is round(15 * 0.25) = 4, so 105 drops to 101 and stays above the tier floor.
+        $this->assertSame(101, $school->getXp());
+        $this->assertSame(2, $school->getMasteryTier());
+    }
 
-        // Active weapon mastery remains unchanged
-        $this->assertSame(100, $wmActive->getAttunementProgress());
-        $this->assertSame(120, $wmActive->getXp());
-        $this->assertSame(2, $wmActive->getMasteryTier());
+    public function testDailyDecayCanDropATierAfterTheProtectionWindow(): void
+    {
+        $hero = new Hero();
+        $now = new \DateTimeImmutable('2026-10-18 00:00:00');
 
-        // Inactive weapon mastery decays
-        $this->assertSame(30, $wmInactive->getAttunementProgress()); // 50 - 20 = 30
-        // xpDecay = round(BASE_DECAY_XP * (1 - 30/100)) = round(20 * 0.7) = 14 → 105 - 14 = 91
-        $this->assertSame(91, $wmInactive->getXp());
-        $this->assertSame(1, $wmInactive->getMasteryTier()); // Levels down to T1 (91 < 100)
+        $weapon = new WeaponMastery();
+        $weapon->setHero($hero);
+        $weapon->setStyle(ItemSubType::Shield);
+        $weapon->setXp(105);
+        $weapon->setMasteryTier(2);
+        $weapon->setAttunementProgress(50);
+        $weapon->setLastExercisedAt($now->modify('-15 days'));
+        $weapon->setLastGainXp(0);
+        $hero->getWeaponMasteries()->add($weapon);
 
-        // Active school mastery remains unchanged
-        $this->assertSame(80, $smActive->getXp());
-        $this->assertSame(1, $smActive->getMasteryTier());
+        $school = new SchoolMastery();
+        $school->setHero($hero);
+        $school->setSchool(School::Water);
+        $school->setXp(105);
+        $school->setMasteryTier(2);
+        $school->setLastExercisedAt($now->modify('-15 days'));
+        $school->setLastGainXp(0);
+        $hero->getSchoolMasteries()->add($school);
 
-        // Inactive school mastery decays
-        $this->assertSame(95, $smInactive->getXp()); // 105 - 10 = 95
-        $this->assertSame(1, $smInactive->getMasteryTier()); // Levels down to T1 (95 < 100)
+        $this->masteryService->processDailyDecayTick($hero, $now);
+
+        $this->assertSame(40, $weapon->getAttunementProgress());
+        // xpDecay = round(20 * (1 - 40/100)) = 12 → 105 - 12 = 93, tier 1
+        $this->assertSame(93, $weapon->getXp());
+        $this->assertSame(1, $weapon->getMasteryTier());
+
+        $this->assertSame(95, $school->getXp());
+        $this->assertSame(1, $school->getMasteryTier());
     }
 }

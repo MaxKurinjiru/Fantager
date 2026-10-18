@@ -37,6 +37,19 @@ class HeroMasteryService
      */
     public const BASE_DECAY_XP = 20;
 
+    public const ATTUNEMENT_DECAY = 10;
+
+    public const SCHOOL_DECAY_XP = 10;
+
+    /** No decay while the style or school was exercised inside this many days. */
+    public const DECAY_GRACE_DAYS = 7;
+
+    /** XP cannot fall through the current tier floor inside this many days since last exercise. */
+    public const TIER_PROTECTION_DAYS = 14;
+
+    /** Daily XP loss is also capped at this fraction of the last XP gain, when that gain is known. */
+    public const DECAY_GAIN_FRACTION = 0.25;
+
     public function __construct(
         private readonly ItemRepository $itemRepository,
         private readonly WeaponMasteryRepository $weaponMasteryRepository,
@@ -87,27 +100,53 @@ class HeroMasteryService
      * Increases attunement progress, and awards XP for equipped weapon types and magic schools.
      * Weapon mastery XP gain scales with attunement: fully attuned = BASE_MATCH_XP, zero = 0 XP.
      */
-    public function processMatchParticipation(Hero $hero): void
+    public function processMatchParticipation(Hero $hero, ?\DateTimeImmutable $now = null): void
     {
+        $now = $now ?? new \DateTimeImmutable();
         $equippedSubTypes = $this->getEquippedSubTypes($hero);
 
-        // Weapon mastery & attunement
+        // Weapon mastery & attunement. Attunement stays match-only.
         foreach ($equippedSubTypes as $subType) {
             $mastery = $this->getOrCreateWeaponMastery($hero, $subType);
             $mastery->setAttunementProgress(min(100, $mastery->getAttunementProgress() + 50));
             $xpGain = (int) round(self::BASE_MATCH_XP * $mastery->getAttunementProgress() / 100);
             if ($xpGain > 0) {
                 $this->addWeaponMasteryXp($hero, $subType, $xpGain);
+                $mastery->setLastGainXp($xpGain);
             }
+            $mastery->setLastExercisedAt($now);
         }
 
         // Magic mastery — fixed XP, no attunement mechanic
         $equippedSchools = $this->getEquippedSpellSchools($hero);
         foreach ($equippedSchools as $school) {
-            $this->addSchoolMasteryXp($hero, $school, 15);
+            $this->recordSchoolExercise($hero, $school, 15, $now);
         }
 
         $this->em->flush();
+    }
+
+    /**
+     * Weekly magic training grants a small amount of school XP and counts as exercise for decay.
+     */
+    public function recordSchoolExercise(Hero $hero, School $school, int $xpGain, \DateTimeImmutable $now): void
+    {
+        if ($xpGain > 0) {
+            $this->addSchoolMasteryXp($hero, $school, $xpGain);
+        } else {
+            $this->getOrCreateSchoolMastery($hero, $school);
+        }
+
+        foreach ($hero->getSchoolMasteries() as $mastery) {
+            if ($mastery->getSchool() === $school) {
+                $mastery->setLastExercisedAt($now);
+                if ($xpGain > 0) {
+                    $mastery->setLastGainXp($xpGain);
+                }
+
+                return;
+            }
+        }
     }
 
     /**
@@ -116,38 +155,97 @@ class HeroMasteryService
      * full attunement = 0 XP lost. Attunement itself decays at a fixed rate.
      * School mastery uses fixed decay (no attunement mechanic).
      */
-    public function processDailyDecayTick(Hero $hero): void
+    public function processDailyDecayTick(Hero $hero, ?\DateTimeImmutable $now = null): void
     {
-        $equippedSubTypes = $this->getEquippedSubTypes($hero);
-        $equippedSchools = $this->getEquippedSpellSchools($hero);
+        $now = $now ?? new \DateTimeImmutable();
 
-        // 1. Decay inactive Weapon Masteries
         foreach ($hero->getWeaponMasteries() as $wm) {
-            if (!in_array($wm->getStyle(), $equippedSubTypes, true)) {
-                // Decay attunement
-                $wm->setAttunementProgress(max(0, $wm->getAttunementProgress() - 20));
-
-                // Decay XP: inversely proportional to attunement (lower attunement = faster decay)
-                $xpDecay = (int) round(self::BASE_DECAY_XP * (1 - $wm->getAttunementProgress() / 100));
-                if ($xpDecay > 0) {
-                    $newXp = max(0, $wm->getXp() - $xpDecay);
-                    $wm->setXp($newXp);
-                    $this->recalculateWeaponMasteryTier($wm);
-                }
-            }
+            $this->decayWeaponMastery($wm, $now);
         }
 
-        // 2. Decay inactive School Masteries — fixed rate, no attunement mechanic
         foreach ($hero->getSchoolMasteries() as $sm) {
-            if (!in_array($sm->getSchool(), $equippedSchools, true)) {
-                // Decay XP
-                $newXp = max(0, $sm->getXp() - 10);
-                $sm->setXp($newXp);
-                $this->recalculateSchoolMasteryTier($sm);
-            }
+            $this->decaySchoolMastery($sm, $now);
         }
 
         $this->em->flush();
+    }
+
+    private function decayWeaponMastery(WeaponMastery $mastery, \DateTimeImmutable $now): void
+    {
+        if ($this->skipDecayBecauseRecent($mastery->getLastExercisedAt(), $now)) {
+            if (null === $mastery->getLastExercisedAt()) {
+                $mastery->setLastExercisedAt($now);
+            }
+
+            return;
+        }
+
+        $mastery->setAttunementProgress(max(0, $mastery->getAttunementProgress() - self::ATTUNEMENT_DECAY));
+
+        $xpDecay = (int) round(self::BASE_DECAY_XP * (1 - $mastery->getAttunementProgress() / 100));
+        $xpDecay = $this->capDecayToLastGain($xpDecay, $mastery->getLastGainXp());
+        if ($xpDecay <= 0) {
+            return;
+        }
+
+        $mastery->setXp($this->applyXpDecay($mastery->getXp(), $mastery->getMasteryTier(), $xpDecay, $mastery->getLastExercisedAt(), $now));
+        $this->recalculateWeaponMasteryTier($mastery);
+    }
+
+    private function decaySchoolMastery(SchoolMastery $mastery, \DateTimeImmutable $now): void
+    {
+        if ($this->skipDecayBecauseRecent($mastery->getLastExercisedAt(), $now)) {
+            if (null === $mastery->getLastExercisedAt()) {
+                $mastery->setLastExercisedAt($now);
+            }
+
+            return;
+        }
+
+        $xpDecay = $this->capDecayToLastGain(self::SCHOOL_DECAY_XP, $mastery->getLastGainXp());
+        if ($xpDecay <= 0) {
+            return;
+        }
+
+        $mastery->setXp($this->applyXpDecay($mastery->getXp(), $mastery->getMasteryTier(), $xpDecay, $mastery->getLastExercisedAt(), $now));
+        $this->recalculateSchoolMasteryTier($mastery);
+    }
+
+    /**
+     * A null timestamp starts the clock without decaying, so existing rows are not wiped on the first tick after deploy.
+     */
+    private function skipDecayBecauseRecent(?\DateTimeImmutable $lastExercisedAt, \DateTimeImmutable $now): bool
+    {
+        if (null === $lastExercisedAt) {
+            return true;
+        }
+
+        return $this->exercisedWithinDays($lastExercisedAt, $now, self::DECAY_GRACE_DAYS);
+    }
+
+    private function capDecayToLastGain(int $xpDecay, int $lastGainXp): int
+    {
+        if ($lastGainXp <= 0) {
+            return $xpDecay;
+        }
+
+        return min($xpDecay, (int) round($lastGainXp * self::DECAY_GAIN_FRACTION));
+    }
+
+    private function applyXpDecay(int $xp, int $tier, int $xpDecay, ?\DateTimeImmutable $lastExercisedAt, \DateTimeImmutable $now): int
+    {
+        $newXp = max(0, $xp - $xpDecay);
+        if (null !== $lastExercisedAt && $this->exercisedWithinDays($lastExercisedAt, $now, self::TIER_PROTECTION_DAYS)) {
+            $floor = self::MASTERY_LEVEL_XP[$tier] ?? 0;
+            $newXp = max($newXp, min($xp, $floor));
+        }
+
+        return $newXp;
+    }
+
+    private function exercisedWithinDays(\DateTimeImmutable $lastExercisedAt, \DateTimeImmutable $now, int $days): bool
+    {
+        return ($now->getTimestamp() - $lastExercisedAt->getTimestamp()) < ($days * 86400);
     }
 
     /**

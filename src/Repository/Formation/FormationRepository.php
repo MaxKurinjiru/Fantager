@@ -9,7 +9,6 @@ use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<Formation>
@@ -28,8 +27,8 @@ class FormationRepository extends ServiceEntityRepository
             ->where('f.team = :team')
             ->andWhere('f.isTemporary = false')
             ->setParameter('team', $team)
-            ->orderBy('f.isDefault', SortDirection::Descending)
-            ->addOrderBy('f.id', SortDirection::Ascending)
+            ->orderBy('f.isDefault', \SortDirection::Descending)
+            ->addOrderBy('f.id', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

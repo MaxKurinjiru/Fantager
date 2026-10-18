@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Entity\Hero\Hero;
+use App\Entity\Hero\HeroSpell;
 use App\Entity\Hero\SchoolMastery;
 use App\Entity\Hero\WeaponMastery;
 use App\Service\Hero\HeroRatingCalculator;
@@ -75,7 +76,7 @@ class HeroRatingCacheSubscriber
             return;
         }
 
-        if ($entity instanceof WeaponMastery || $entity instanceof SchoolMastery) {
+        if ($entity instanceof WeaponMastery || $entity instanceof SchoolMastery || $entity instanceof HeroSpell) {
             $hero = $entity->getHero();
             $id = spl_object_id($hero);
             $heroes[$id] = $hero;

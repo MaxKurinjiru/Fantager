@@ -203,6 +203,7 @@ Each equipped spell's school: **Spell Power +5% per tier above 1** (stacks acros
 | Clutch | HP ≤ 30% → Accuracy +15%, Armor × 1.10 |
 | Glass Jaw | HP ≤ 50% → incoming physical × 1.10 |
 | Perfectionist | Consistent damage (no RNG variance) |
-| Loner | **No in-engine effect** (#9 Cut). Chemistry is flavor for matches ([#7](../product/known-issues.md) Resolved). `ignoresRaceSynergy` is serialized but unused. Player copy matches. |
-| Volatile / Battle Hardened | **No in-combat effect** (#9 Cut). `moraleDecayMultiplier` is serialized but unused. Player copy matches. Kickoff damage band and post-match team morale are unchanged by these traits. No `morale_change` event |
+| Loner | +8% outgoing damage when the hero is the only one of their race in that side’s match lineup. Chemistry still counts them ([#7](../product/known-issues.md) Resolved). `ignoresRaceSynergy` stays serialized and unread. |
+| Volatile | +10% outgoing damage (physical and offensive spells). At the mortality threshold, knockout death chance is 10 percentage points higher. `moraleDecayMultiplier` stays serialized and unread. No `morale_change` event. |
+| Battle Hardened | Knockout year total is halved, rounded down. No in-combat morale effect. `moraleDecayMultiplier` stays serialized and unread. No `morale_change` event. |
 | Audience Favorite | +5% arena revenue when fielded (handled in `ArenaRevenueService`, not combat engine) |

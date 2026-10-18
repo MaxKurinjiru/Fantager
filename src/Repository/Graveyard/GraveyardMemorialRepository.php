@@ -11,7 +11,6 @@ use App\Enum\MemorialCause;
 use App\Enum\Race;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<GraveyardMemorial>
@@ -31,8 +30,8 @@ class GraveyardMemorialRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('m')
             ->where('m.team = :team')
             ->setParameter('team', $team)
-            ->orderBy('m.departedAt', SortDirection::Descending)
-            ->addOrderBy('m.id', SortDirection::Descending);
+            ->orderBy('m.departedAt', \SortDirection::Descending)
+            ->addOrderBy('m.id', \SortDirection::Descending);
 
         if (null !== $role) {
             $qb->andWhere('m.roleAtDeparture = :role')
@@ -70,8 +69,8 @@ class GraveyardMemorialRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('m')
             ->where('m.team = :team')
             ->setParameter('team', $team)
-            ->orderBy('m.departedAt', SortDirection::Descending)
-            ->addOrderBy('m.id', SortDirection::Descending);
+            ->orderBy('m.departedAt', \SortDirection::Descending)
+            ->addOrderBy('m.id', \SortDirection::Descending);
 
         if (null !== $role) {
             $qb->andWhere('m.roleAtDeparture = :role')

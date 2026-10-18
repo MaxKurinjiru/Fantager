@@ -13,8 +13,7 @@ Purpose: Two cached **intrinsic** ratings — cross-race **base OVR** (0–100) 
 Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this system:
 
 - Rating breakdown payload — API is two integers; do not invent a third field
-- Stat normalization if Human-neutral OVR skews Orc/Giant
-- Simulation-driven YAML calibration (`config/game/hero-rating.yaml` values are live placeholders)
+- Simulation-driven YAML calibration (`config/game/hero-rating.yaml` weights are still placeholders; reference ceilings are the unarmed maxima)
 
 ---
 
@@ -37,12 +36,12 @@ Gold amounts that need an intrinsic hero value use `complex_rating × gold_per_c
 |-------|------------|------------------|
 | 8 primary attributes (STR–LCK, including CHA) | yes | yes |
 | Level | yes | yes |
-| Race | forced **Human** in combat formulas (no racial combat passives) | actual race + combat passives |
+| Race | Human formulas, plus a discounted physical factor for Orc (×1.10) and Giant (×1.05) | actual race + combat passives, plus the same Orc/Giant factor |
 | Trait | no | yes — additive bonus (combat and economic traits) |
 | Weapon / school mastery | no | yes — additive bonus (not tied to equipped loadout) |
 | Attunement | no | no |
-| Spells / spell loadout | no | no |
-| Magic capacity | no | no |
+| Learned spells | no | yes — small surcharge from spell tier, equipped or not |
+| Magic capacity | no | yes — small surcharge per point |
 | Age | no | yes — market-value multiplier |
 | Equipment | no | no |
 | Form / fatigue / morale | no | no |
@@ -77,7 +76,7 @@ base_ovr = scale_to_100(hybrid)                 // HumanNeutral profile
 
 complex_base = scale_to_9999(hybrid)            // FullIntrinsic profile
 complex_rating = clamp(
-    round((complex_base + trait_bonus + mastery_bonus) × age_multiplier),
+    round((complex_base + trait_bonus + mastery_bonus + spell_knowledge_bonus) × age_multiplier),
     0, 9999
 )
 ```
@@ -90,7 +89,7 @@ complex_rating = clamp(
 | `HumanNeutral` | `base_ovr`: race = Human, no trait, no items, no mastery, form = 100 |
 | `FullIntrinsic` | Complex combat base: actual race, no trait/items/mastery, form = 100 |
 
-Mastery bonus (complex, combatants only): all `WeaponMastery` and `SchoolMastery` rows; **tier** only; ignore attunement and equipped gear. Trait bonus: one YAML value per `HeroTrait` (including non-combat traits). Age multiplier: `RaceConfig::resolveAgePhase()` buckets (junior / prime / veteran / elder).
+Mastery bonus (complex, combatants only): all `WeaponMastery` and `SchoolMastery` rows; **tier** only; ignore attunement and equipped gear. Spell knowledge (complex, combatants and trainers): `magic_capacity × 12`, plus `6 + 2 × tier` for each learned spell. Orc and Giant physical attack is multiplied by `race_physical_factor` before weighting, in both profiles. Reference ceilings for attack, spell power, armor, and resistance are the unarmed maxima (Giant/Orc attack ceiling is 44 so the ×1.10 factor is not clipped). Trait bonus: one YAML value per `HeroTrait`. Age multiplier: `RaceConfig::resolveAgePhase()` buckets (junior / prime / veteran / elder). Economy constants (`gold_per_complex_point`, salary, dismiss) are unchanged by this weight pass.
 
 ---
 
