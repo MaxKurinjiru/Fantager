@@ -78,7 +78,7 @@ class KingdomInitConfig
             if (!is_string($key) || !is_array($value)) {
                 throw new \RuntimeException('pace-presets.json must be an object of preset objects.');
             }
-            /** @var array<string, mixed> $value */
+            /* @var array<string, mixed> $value */
             $presets[$key] = $value;
         }
 

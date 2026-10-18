@@ -6,9 +6,11 @@ namespace App\Tests\Service\Hero;
 
 use App\Config\HeroRatingConfig;
 use App\Entity\Hero\Hero;
+use App\Entity\Hero\HeroSpell;
 use App\Entity\Hero\SchoolMastery;
 use App\Entity\Hero\WeaponMastery;
 use App\Entity\Item\Item;
+use App\Entity\Spell\Spell;
 use App\Enum\HeroRole;
 use App\Enum\HeroTrait;
 use App\Enum\ItemSubType;
@@ -198,6 +200,41 @@ class HeroRatingCalculatorTest extends TestCase
             (int) round($goldValue * $this->heroRatingConfig->getTrainerMarketMultiplier()),
             $marketPrice
         );
+    }
+
+    public function testOrcAndGiantRatingsIncludeADiscountedPhysicalPassive(): void
+    {
+        // Age 30 is prime for Human, Orc, and Giant, so the age multiplier does not decide the order.
+        $human = $this->calculator->calculate($this->createHero(Race::Human, 5, 30));
+        $orc = $this->calculator->calculate($this->createHero(Race::Orc, 5, 30));
+        $giant = $this->calculator->calculate($this->createHero(Race::Giant, 5, 30));
+
+        $this->assertGreaterThanOrEqual($human->getBaseOvr(), $orc->getBaseOvr());
+        $this->assertGreaterThanOrEqual($human->getBaseOvr(), $giant->getBaseOvr());
+        $this->assertGreaterThan($human->getComplexRating(), $giant->getComplexRating());
+        $this->assertGreaterThan($giant->getComplexRating(), $orc->getComplexRating());
+    }
+
+    public function testSpellKnowledgeRaisesComplexRatingWithoutEquipment(): void
+    {
+        $empty = $this->createHero(Race::Human);
+        $mage = $this->createHero(Race::Human);
+        $mage->setMagicCapacity(5);
+
+        $spell = new Spell();
+        $spell->setSchool(School::Fire);
+        $spell->setTier(5);
+        $known = new HeroSpell();
+        $known->setHero($mage);
+        $known->setSpell($spell);
+        $known->setIsEquipped(false);
+        $mage->getHeroSpells()->add($known);
+
+        $emptyRating = $this->calculator->calculate($empty);
+        $mageRating = $this->calculator->calculate($mage);
+
+        $this->assertSame($emptyRating->getBaseOvr(), $mageRating->getBaseOvr());
+        $this->assertGreaterThan($emptyRating->getComplexRating(), $mageRating->getComplexRating());
     }
 
     private function createHero(Race $race = Race::Human, int $level = 5, int $displayAge = 18): Hero

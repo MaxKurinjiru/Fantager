@@ -289,6 +289,7 @@ class CombatStatCalculator
             $dodgePercent = min(50.0, $dodgePercent + $trait->getDodgeBonus());
 
             $physDamageReduction = $armorValue / ($armorValue + 100.0);
+            $outgoingDamageMultiplier *= $trait->getOutgoingDamageMultiplier();
         }
 
         return new DerivedCombatStats(

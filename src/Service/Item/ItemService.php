@@ -275,10 +275,7 @@ class ItemService
             $restrictionKey = 'inventory.cat_'.$matched;
         }
 
-        throw new UserFacingException('error.item_race_restricted', [
-            '%race%' => $translatedRace,
-            '%restriction%' => $this->translator->trans($restrictionKey),
-        ]);
+        throw new UserFacingException('error.item_race_restricted', ['%race%' => $translatedRace, '%restriction%' => $this->translator->trans($restrictionKey)]);
     }
 
     /**

@@ -32,13 +32,12 @@ use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroRatingCalculator;
 use App\Service\Notification\NotificationHelper;
-use App\ValueObject\Marketplace\ListingPriceGuidance;
 use App\Service\Team\TeamChemistryService;
 use App\Service\Team\TeamRosterService;
 use App\Service\Training\TrainingService;
 use App\Service\Translation\UserMessageTranslator;
+use App\ValueObject\Marketplace\ListingPriceGuidance;
 use Doctrine\ORM\EntityManagerInterface;
-use SortDirection;
 
 class MarketplaceService
 {
@@ -194,10 +193,7 @@ class MarketplaceService
     private function assertListingPricesInBand(int $priceGold, ?int $buyoutPriceGold, ListingPriceGuidance $guidance): void
     {
         if (!$guidance->contains($priceGold) || (null !== $buyoutPriceGold && !$guidance->contains($buyoutPriceGold))) {
-            throw new UserFacingException('error.marketplace_price_out_of_range', [
-                '%min%' => $guidance->getFloor(),
-                '%max%' => $guidance->getCeiling(),
-            ]);
+            throw new UserFacingException('error.marketplace_price_out_of_range', ['%min%' => $guidance->getFloor(), '%max%' => $guidance->getCeiling()]);
         }
     }
 
@@ -921,25 +917,25 @@ class MarketplaceService
         $sort = $filters['sort'] ?? 'newest';
         switch ($sort) {
             case 'price_asc':
-                $qb->orderBy('l.priceGold', SortDirection::Ascending);
+                $qb->orderBy('l.priceGold', \SortDirection::Ascending);
                 break;
             case 'price_desc':
-                $qb->orderBy('l.priceGold', SortDirection::Descending);
+                $qb->orderBy('l.priceGold', \SortDirection::Descending);
                 break;
             case 'rating_desc':
                 $qb->leftJoin('l.hero', 'h_sort');
-                $qb->orderBy('h_sort.complexRating', SortDirection::Descending);
+                $qb->orderBy('h_sort.complexRating', \SortDirection::Descending);
                 break;
             case 'ovr_desc':
                 $qb->leftJoin('l.hero', 'h_sort');
-                $qb->orderBy('h_sort.baseOvr', SortDirection::Descending);
+                $qb->orderBy('h_sort.baseOvr', \SortDirection::Descending);
                 break;
             case 'expires_asc':
-                $qb->orderBy('l.expiresAt', SortDirection::Ascending);
+                $qb->orderBy('l.expiresAt', \SortDirection::Ascending);
                 break;
             case 'newest':
             default:
-                $qb->orderBy('l.id', SortDirection::Descending);
+                $qb->orderBy('l.id', \SortDirection::Descending);
                 break;
         }
 
@@ -999,7 +995,7 @@ class MarketplaceService
         $qb = $this->em->getRepository(MarketplaceTransaction::class)->createQueryBuilder('t')
             ->where('t.buyerTeam = :team OR t.sellerTeam = :team')
             ->setParameter('team', $team)
-            ->orderBy('t.id', SortDirection::Descending);
+            ->orderBy('t.id', \SortDirection::Descending);
 
         if (null !== $page && null !== $limit) {
             $qb->setFirstResult(($page - 1) * $limit)

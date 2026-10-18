@@ -22,10 +22,11 @@ magic_weights:
 # Reference ceilings for normalizing derived stats (level 20, primary stat 20).
 reference_ceilings:
   max_hp: 900
-  physical_attack: 80
-  spell_power: 90
-  armor_value: 50
-  magic_resistance: 60
+  # Unarmed ceilings (level 20, primary stat 20, racial multiplier, no items).
+  physical_attack: 44
+  spell_power: 60
+  armor_value: 36
+  magic_resistance: 40
   base_initiative: 50
   accuracy_percent: 120
   dodge_percent: 50
@@ -42,19 +43,31 @@ scale:
 mastery:
   points_per_tier: 25
 
+# Half of the hit-time racial passives that derived stats never see.
+# Orc +20% melee applies only versus non-Orcs. Giant +10% needs a weapon.
+race_physical_factor:
+  orc: 1.10
+  giant: 1.05
+
+# Small intrinsic surcharge. Equipment and attunement stay out.
+spell_knowledge:
+  points_per_capacity: 12
+  points_per_spell: 6
+  points_per_spell_tier: 2
+
 trait:
   quick_learner: 150
   clutch: 80
   audience_favorite: 120
   battle_hardened: 90
-  volatile: -100
+  volatile: 15
   slacker: -120
   fragile: -80
   glass_jaw: -60
   berserker: 40
   glass_cannon: 50
   reckless: 30
-  loner: 0
+  loner: 20
   overconfident: 35
   perfectionist: 20
 

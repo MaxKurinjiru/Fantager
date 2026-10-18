@@ -8,17 +8,21 @@ use App\Entity\Hero\Hero;
 use App\Entity\Hero\HeroTrainingHistory;
 use App\Entity\Item\Item;
 use App\Entity\Team\Team;
+use App\Enum\FacilityType;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use App\Enum\Race;
+use App\Enum\School;
 use App\Enum\TrainingType;
 use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
-use App\Service\Kingdom\KingdomPace;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Hero\HeroChronicleService;
+use App\Service\Hero\HeroMasteryService;
+use App\Service\Hero\HeroProgressionService;
+use App\Service\Kingdom\KingdomPace;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -26,6 +30,8 @@ class TrainingService
 {
     /** Trainable primary attribute names. */
     private const PRIMARY_ATTRIBUTES = ['str', 'dex', 'kon', 'spd', 'int', 'wil', 'cha', 'lck'];
+
+    public const MAGIC_TRAINING_SCHOOL_XP = 5;
 
     public function __construct(
         private readonly HeroRepository $heroRepository,
@@ -36,6 +42,8 @@ class TrainingService
         private readonly EntityManagerInterface $em,
         private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
         private readonly FinancialCrisisService $financialCrisisService,
+        private readonly HeroMasteryService $heroMasteryService,
+        private readonly HeroProgressionService $heroProgressionService,
     ) {
     }
 
@@ -70,7 +78,7 @@ class TrainingService
 
         $trainingLevel = 1;
         foreach ($hq->getFacilities() as $facility) {
-            if (\App\Enum\FacilityType::Training === $facility->getType()) {
+            if (FacilityType::Training === $facility->getType()) {
                 $trainingLevel = $facility->getLevel();
                 break;
             }
@@ -94,7 +102,7 @@ class TrainingService
 
         $trainingLevel = 1;
         foreach ($hq->getFacilities() as $facility) {
-            if (\App\Enum\FacilityType::Training === $facility->getType()) {
+            if (FacilityType::Training === $facility->getType()) {
                 $trainingLevel = $facility->getLevel();
                 break;
             }
@@ -116,7 +124,7 @@ class TrainingService
 
         return match ($type) {
             TrainingType::Attribute => $this->canBenefitFromAttributeTraining($trainee, $trainer),
-            TrainingType::Magic => $trainee->getMagicCapacity() < 5,
+            TrainingType::Magic => null !== $this->resolveTrainingSchool($trainer),
             TrainingType::Form => $trainee->getForm() < 100,
         };
     }
@@ -223,8 +231,13 @@ class TrainingService
                 if (null === $attribute || !in_array($attribute, self::PRIMARY_ATTRIBUTES, true)) {
                     throw new UserFacingException('error.invalid_attribute', ['%values%' => implode(', ', self::PRIMARY_ATTRIBUTES)]);
                 }
+            } elseif (TrainingType::Magic === $type) {
+                if (null === $attribute || null === School::tryFrom($attribute)) {
+                    $schools = array_map(static fn (School $school): string => $school->value, School::cases());
+                    throw new UserFacingException('error.invalid_school', ['%values%' => implode(', ', $schools)]);
+                }
             } else {
-                $attribute = null; // for magic and form
+                $attribute = null; // form
             }
         } else {
             $attribute = null; // idle
@@ -419,7 +432,7 @@ class TrainingService
                         $facilityEfficiency = 0.0;
                         if (null !== $hq && $this->financialCrisisService->areHqBonusesActive($hero->getTeam())) {
                             foreach ($hq->getFacilities() as $fac) {
-                                if (\App\Enum\FacilityType::Training === $fac->getType()) {
+                                if (FacilityType::Training === $fac->getType()) {
                                     $bonuses = $fac->getPassiveBonuses();
                                     $facilityEfficiency = ($bonuses['training_efficiency_pct'] ?? 3.0) / 100.0;
                                     break;
@@ -489,6 +502,7 @@ class TrainingService
                         $hero->setFatigue(min(100, $hero->getFatigue() + 20));
                     }
                 } elseif (TrainingType::Magic === $type) {
+                    $school = $this->resolveTrainingSchool($trainer);
                     $cap = $hero->getMagicCapacity();
                     if ($cap < 5) {
                         $magicIncrement = (int) max(1, round(1 * $speed));
@@ -497,8 +511,12 @@ class TrainingService
                         $gainRaw = $newCap - $cap;
                     }
 
-                    // Fatigue only when magic capacity increased
-                    if ($gainRaw > 0) {
+                    if (null !== $school) {
+                        $this->heroMasteryService->recordSchoolExercise($hero, $school, self::MAGIC_TRAINING_SCHOOL_XP, $now);
+                    }
+
+                    // Capacity gain and school XP both spend fatigue, including at the slot cap.
+                    if ($gainRaw > 0 || null !== $school) {
                         $hero->setFatigue(min(100, $hero->getFatigue() + 20));
                     }
                 } elseif (TrainingType::Form === $type) {
@@ -540,10 +558,44 @@ class TrainingService
                     $attribute,
                     TrainingType::Attribute === $type ? $gainExt : $gainRaw
                 );
+
+                $this->heroProgressionService->applyTrainingParticipation(
+                    $hero,
+                    $hero->getTeam(),
+                    $this->libraryXpMultiplier($hero->getTeam()),
+                );
             }
         }
 
         $this->em->flush();
+    }
+
+    private function resolveTrainingSchool(Hero $trainer): ?School
+    {
+        $raw = $trainer->getTargetAttribute();
+        if (null === $raw) {
+            return null;
+        }
+
+        return School::tryFrom($raw);
+    }
+
+    private function libraryXpMultiplier(Team $team): float
+    {
+        $hq = $this->hqRepository->findOneBy(['team' => $team]);
+        if (null === $hq || !$this->financialCrisisService->areHqBonusesActive($team)) {
+            return 1.0;
+        }
+
+        foreach ($hq->getFacilities() as $facility) {
+            if (FacilityType::Library === $facility->getType()) {
+                $pct = (float) ($facility->getPassiveBonuses()['xp_gain_pct'] ?? 0);
+
+                return 1.0 + ($pct / 100.0);
+            }
+        }
+
+        return 1.0;
     }
 
     private function getHeroStatByName(Hero $hero, string $attr): int

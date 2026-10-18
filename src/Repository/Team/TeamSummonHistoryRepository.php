@@ -9,7 +9,6 @@ use App\Entity\Team\Team;
 use App\Entity\Team\TeamSummonHistory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<TeamSummonHistory>
@@ -37,17 +36,17 @@ class TeamSummonHistoryRepository extends ServiceEntityRepository
 
         switch ($sort) {
             case 'date-asc':
-                $qb->orderBy('s.summonedAt', SortDirection::Ascending);
+                $qb->orderBy('s.summonedAt', \SortDirection::Ascending);
                 break;
             case 'cost-desc':
-                $qb->orderBy('s.goldCost', SortDirection::Descending);
+                $qb->orderBy('s.goldCost', \SortDirection::Descending);
                 break;
             case 'cost-asc':
-                $qb->orderBy('s.goldCost', SortDirection::Ascending);
+                $qb->orderBy('s.goldCost', \SortDirection::Ascending);
                 break;
             case 'date-desc':
             default:
-                $qb->orderBy('s.summonedAt', SortDirection::Descending);
+                $qb->orderBy('s.summonedAt', \SortDirection::Descending);
                 break;
         }
 

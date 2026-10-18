@@ -47,13 +47,13 @@ export default class extends Controller {
         const select = e.currentTarget;
         const trainerId = select.dataset.trainerId;
         const container = this.element.querySelector(`[data-training-attr-select-container="${trainerId}"]`);
-        
+        const schoolContainer = this.element.querySelector(`[data-training-school-select-container="${trainerId}"]`);
+
         if (container) {
-            if (select.value === 'attribute') {
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-            }
+            container.classList.toggle('hidden', select.value !== 'attribute');
+        }
+        if (schoolContainer) {
+            schoolContainer.classList.toggle('hidden', select.value !== 'magic');
         }
     }
 
@@ -68,9 +68,15 @@ export default class extends Controller {
         // Find selects
         const typeSelect = this.element.querySelector(`select[data-trainer-id="${trainerId}"][data-action*="onFocusTypeChange"]`);
         const attrSelect = this.element.querySelector(`[data-training-attr-select-container="${trainerId}"] select`);
+        const schoolSelect = this.element.querySelector(`[data-training-school-select-container="${trainerId}"] select`);
 
         const type = typeSelect ? typeSelect.value : null;
-        const attribute = attrSelect ? attrSelect.value : null;
+        let attribute = null;
+        if (type === 'attribute' && attrSelect) {
+            attribute = attrSelect.value;
+        } else if (type === 'magic' && schoolSelect) {
+            attribute = schoolSelect.value;
+        }
 
         btn.disabled = true;
         const originalText = btn.textContent;

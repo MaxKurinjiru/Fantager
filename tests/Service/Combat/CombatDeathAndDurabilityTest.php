@@ -312,10 +312,10 @@ class CombatDeathAndDurabilityTest extends TestCase
         $this->assertSame(92, $winner->getForm());
         $this->assertSame(15, $winner->getFatigue());
 
-        // Loss, no kills, no library, knocked out: 20 XP, form −15, fatigue 25.
+        // Loss, no kills, no library, knocked out: 20 XP, form −23, fatigue 45.
         $this->assertSame(20, $ko->getXp());
-        $this->assertSame(85, $ko->getForm());
-        $this->assertSame(25, $ko->getFatigue());
+        $this->assertSame(77, $ko->getForm());
+        $this->assertSame(45, $ko->getFatigue());
     }
 
     public function testCompleteBattleAddsContributionXpOnTopOfTheKoBonus(): void

@@ -8,6 +8,7 @@ use App\Entity\Formation\Formation;
 use App\Entity\Formation\FormationSlot;
 use App\Entity\Hero\Hero;
 use App\Enum\FormationPosition;
+use App\Enum\HeroTrait;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemSubType;
 use App\Enum\MatchType;
@@ -50,19 +51,26 @@ class CombatMatchRequestBuilder
             throw new \InvalidArgumentException('Formation team must be persisted (have an id).');
         }
 
+        /** @var array<string, FormationSlot> $slotsByPosition */
         $slotsByPosition = [];
         foreach ($formation->getSlots() as $slot) {
             $slotsByPosition[$slot->getPosition()->value] = $slot;
         }
 
-        $combatants = [];
+        $raceCounts = [];
         foreach (FormationPosition::cases() as $position) {
             $slot = $slotsByPosition[$position->value] ?? null;
-            if (!$slot instanceof FormationSlot || null === $slot->getHero()) {
+            $hero = $slot?->getHero();
+            if (!$slot instanceof FormationSlot || !$hero instanceof Hero) {
                 throw new \InvalidArgumentException(sprintf('Formation %d is missing a hero in slot %s.', $formation->getId() ?? 0, $position->value));
             }
+            $raceCounts[$hero->getRace()->value] = ($raceCounts[$hero->getRace()->value] ?? 0) + 1;
+        }
 
-            $combatants[] = $this->buildCombatant($slot);
+        $combatants = [];
+        foreach (FormationPosition::cases() as $position) {
+            $slot = $slotsByPosition[$position->value];
+            $combatants[] = $this->buildCombatant($slot, $raceCounts);
         }
 
         return new CombatSide(
@@ -73,7 +81,10 @@ class CombatMatchRequestBuilder
         );
     }
 
-    private function buildCombatant(FormationSlot $slot): CombatantSnapshot
+    /**
+     * @param array<string, int> $raceCounts
+     */
+    private function buildCombatant(FormationSlot $slot, array $raceCounts): CombatantSnapshot
     {
         /** @var Hero $hero */
         $hero = $slot->getHero();
@@ -145,6 +156,14 @@ class CombatMatchRequestBuilder
         }
         $weaponSubType = $mainHandWeapon ?? $fallbackWeapon;
 
+        $derived = $this->combatStatCalculator->calculate($hero);
+        $trait = $hero->getTrait();
+        if (HeroTrait::Loner === $trait && 1 === ($raceCounts[$hero->getRace()->value] ?? 0)) {
+            $derived = $derived->withOutgoingDamageMultiplier(
+                $derived->getOutgoingDamageMultiplier() * $trait->getSoleRaceDamageMultiplier()
+            );
+        }
+
         return new CombatantSnapshot(
             $heroId,
             $hero->getName(),
@@ -154,7 +173,7 @@ class CombatMatchRequestBuilder
             $hero->getForm(),
             $hero->getFatigue(),
             $hero->getMorale(),
-            $this->combatStatCalculator->calculate($hero),
+            $derived,
             $slot->getStrategy(),
             $spellPriorities,
             $spells,

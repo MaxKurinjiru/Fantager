@@ -108,8 +108,6 @@ class FormationTacticsNormalizer
     }
 
     /**
-     * @param mixed $strategy
-     *
      * @return array<string, mixed>
      */
     public function normalizeStrategy(mixed $strategy): array

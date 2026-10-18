@@ -22,6 +22,13 @@ class HeroRatingConfig
     private int $complexRatingMax;
     private int $masteryPointsPerTier;
 
+    /** @var array<string, float> */
+    private array $racePhysicalFactors;
+
+    private int $pointsPerCapacity;
+    private int $pointsPerSpell;
+    private int $pointsPerSpellTier;
+
     /** @var array<string, int> */
     private array $traitBonuses;
 
@@ -50,6 +57,12 @@ class HeroRatingConfig
 
         $mastery = $parsed['mastery'] ?? [];
         $this->masteryPointsPerTier = (int) ($mastery['points_per_tier'] ?? 25);
+        $this->racePhysicalFactors = $this->floatMap($parsed['race_physical_factor'] ?? []);
+
+        $spellKnowledge = $parsed['spell_knowledge'] ?? [];
+        $this->pointsPerCapacity = (int) ($spellKnowledge['points_per_capacity'] ?? 12);
+        $this->pointsPerSpell = (int) ($spellKnowledge['points_per_spell'] ?? 6);
+        $this->pointsPerSpellTier = (int) ($spellKnowledge['points_per_spell_tier'] ?? 2);
 
         $this->traitBonuses = [];
         foreach ($parsed['trait'] ?? [] as $key => $value) {
@@ -98,6 +111,26 @@ class HeroRatingConfig
     public function getMasteryPointsPerTier(): int
     {
         return $this->masteryPointsPerTier;
+    }
+
+    public function getRacePhysicalFactor(string $race): float
+    {
+        return $this->racePhysicalFactors[$race] ?? 1.0;
+    }
+
+    public function getPointsPerCapacity(): int
+    {
+        return $this->pointsPerCapacity;
+    }
+
+    public function getPointsPerSpell(): int
+    {
+        return $this->pointsPerSpell;
+    }
+
+    public function getPointsPerSpellTier(): int
+    {
+        return $this->pointsPerSpellTier;
     }
 
     public function getTraitBonus(?HeroTrait $trait): int

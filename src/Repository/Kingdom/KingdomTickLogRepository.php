@@ -10,7 +10,6 @@ use App\Entity\Kingdom\KingdomTickLog;
 use App\Enum\TickType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<KingdomTickLog>
@@ -62,7 +61,7 @@ class KingdomTickLogRepository extends ServiceEntityRepository
         }
 
         /** @var KingdomTickLog|null $latest */
-        $latest = $qb->orderBy('l.scheduledAt', SortDirection::Descending)
+        $latest = $qb->orderBy('l.scheduledAt', \SortDirection::Descending)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();

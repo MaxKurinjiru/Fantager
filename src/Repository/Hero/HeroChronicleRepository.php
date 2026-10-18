@@ -8,7 +8,6 @@ use App\Entity\Hero\Hero;
 use App\Entity\Hero\HeroChronicle;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<HeroChronicle>
@@ -36,7 +35,7 @@ class HeroChronicleRepository extends ServiceEntityRepository
                 ->setParameter('heroId', $hero);
         }
 
-        return $qb->orderBy('a.createdAt', SortDirection::Descending)
+        return $qb->orderBy('a.createdAt', \SortDirection::Descending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

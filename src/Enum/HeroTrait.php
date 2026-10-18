@@ -13,12 +13,12 @@ enum HeroTrait: string
     case BattleHardened = 'battle_hardened';
 
     // ── Negativní traity ────────────────────────────────────────────────────
-    case Volatile = 'volatile';
     case Slacker = 'slacker';
     case Fragile = 'fragile';
     case GlassJaw = 'glass_jaw';
 
     // ── Smíšené traity (tradeoff) ───────────────────────────────────────────
+    case Volatile = 'volatile';
     case Berserker = 'berserker';
     case Glasscannon = 'glass_cannon';
     case Reckless = 'reckless';
@@ -33,7 +33,7 @@ enum HeroTrait: string
     {
         return match ($this) {
             self::QuickLearner, self::Clutch, self::AudienceFavorite, self::BattleHardened => 'positive',
-            self::Volatile, self::Slacker, self::Fragile, self::GlassJaw => 'negative',
+            self::Slacker, self::Fragile, self::GlassJaw => 'negative',
             default => 'mixed',
         };
     }
@@ -168,6 +168,29 @@ enum HeroTrait: string
         return match ($this) {
             self::Berserker => 2.00,
             default => 1.50,
+        };
+    }
+
+    /**
+     * Multiplier on physical and offensive-spell damage. Neutral = 1.0.
+     * Volatile hits harder; the mortality downside is applied after a knockout.
+     */
+    public function getOutgoingDamageMultiplier(): float
+    {
+        return match ($this) {
+            self::Volatile => 1.10,
+            default => 1.00,
+        };
+    }
+
+    /**
+     * Damage multiplier when this Loner is the only hero of their race in the match lineup.
+     */
+    public function getSoleRaceDamageMultiplier(): float
+    {
+        return match ($this) {
+            self::Loner => 1.08,
+            default => 1.00,
         };
     }
 

@@ -11,6 +11,7 @@ use App\Entity\Item\Item;
 use App\Entity\Team\Team;
 use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
+use App\Enum\HeroTrait;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemSubType;
 use App\Enum\MatchType;
@@ -106,6 +107,36 @@ class CombatMatchRequestBuilderTest extends TestCase
             ItemSubType::OneHandedSword,
             $request->getSideA()->getCombatants()[0]->getWeaponSubType(),
         );
+    }
+
+    public function testLonerDealsMoreDamageWhenAloneInTheirRace(): void
+    {
+        $stats = new DerivedCombatStats(100, 100, 10, 10, 10, 0.1, 10, 0.1, 10, 80.0, 10.0, 5.0);
+        $calculator = $this->createMock(CombatStatCalculator::class);
+        $calculator->method('calculate')->willReturn($stats);
+
+        $itemRepository = $this->createMock(ItemRepository::class);
+        $itemRepository->method('findBy')->willReturn([]);
+
+        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository);
+        $formation = $this->createFullFormation(1, 10);
+        foreach ($formation->getSlots() as $slot) {
+            if (FormationPosition::Front1 === $slot->getPosition()) {
+                $slot->getHero()?->setTrait(HeroTrait::Loner);
+                $slot->getHero()?->setRace(Race::Elf);
+            }
+        }
+
+        $request = $builder->fromFormations(
+            $formation,
+            $this->createFullFormation(2, 20),
+            MatchType::League,
+            1,
+        );
+
+        $combatants = $request->getSideA()->getCombatants();
+        $this->assertEqualsWithDelta(1.08, $combatants[0]->getDerived()->getOutgoingDamageMultiplier(), 0.0001);
+        $this->assertSame(1.0, $combatants[1]->getDerived()->getOutgoingDamageMultiplier());
     }
 
     private function createFullFormation(int $teamId, int $heroIdBase): Formation

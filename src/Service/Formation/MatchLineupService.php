@@ -68,7 +68,7 @@ class MatchLineupService
             return;
         }
 
-        if (null !== $assigned && $assigned->getId() !== null && $assigned->getId() === $used->getId()) {
+        if (null !== $assigned && null !== $assigned->getId() && $assigned->getId() === $used->getId()) {
             return;
         }
 

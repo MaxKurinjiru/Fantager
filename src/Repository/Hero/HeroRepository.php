@@ -10,7 +10,6 @@ use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<Hero>
@@ -49,7 +48,7 @@ class HeroRepository extends ServiceEntityRepository
             ->setParameter('team', $team)
             ->setParameter('role', HeroRole::Combatant)
             ->setParameter('status', HeroStatus::Available)
-            ->orderBy('h.id', SortDirection::Ascending)
+            ->orderBy('h.id', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
