@@ -22,6 +22,7 @@
      data-training-error-dismiss-value="{{ 'js_flash.training.failed_dismiss'|trans }}"
      data-training-success-dismiss-value="{{ 'js_flash.training.success_dismiss'|trans }}"
      data-training-confirm-promote-value="{{ 'training.promote_confirm'|trans }}"
+     data-training-promote-career-value="{{ 'training.promote_career'|trans }}"
      data-training-error-promote-value="{{ 'training.error_promote'|trans }}"
      data-training-success-promote-value="{{ 'training.success_promote'|trans }}"
      data-training-title-promote-value="{{ 'training.promote_title'|trans }}"
@@ -113,7 +114,7 @@
                         <option value="">-- {{ 'training.select_trainee'|trans }} --</option>
                         {% for hero in heroes %}
                             {% if hero.role.value == 'combatant' and hero.status.value == 'available' %}
-                                <option value="{{ hero.id }}">
+                                <option value="{{ hero.id }}" data-weeks="{{ trainingService.trainerWeeksUntilMortality(hero) }}">
                                     {{ hero.name }} &bull; Lvl {{ hero.level }}
                                 </option>
                             {% endif %}
@@ -148,7 +149,8 @@
     <div id="active-tab" class="tab-content hidden">
         {% include 'components/training/active_trainees_table.html.twig' with {
             trainers: trainers,
-            isLocked: isLocked
+            isLocked: isLocked,
+            trainingService: trainingService
         } %}
     </div>
 

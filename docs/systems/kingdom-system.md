@@ -85,9 +85,9 @@ There is no `game_speed`. Every kingdom stores `pace_preset` plus the seven pace
 
 | Pace | Column | Effect |
 |------|--------|--------|
-| Training | `training_speed` | Attribute gains and their cap, magic-capacity gain, form gained from rest training |
+| Training | `training_speed` | Attribute gains and their cap, magic-capacity gain, magic school XP, form gained from rest training |
 | Recovery | `recovery_speed` | Daily fatigue drop (`round(10 × pace)`) and form gain (`round(5 × pace)`), before Medical Wing bonuses |
-| Aging | `aging_speed` | Daily hero age `round(1 × pace)` on raw tenths (Undead excluded). Trainer age on the training tick `round(10 × pace)` |
+| Aging | `aging_speed` | Daily hero age `round(1 × pace)` on raw tenths (Undead excluded). Trainer age on the training tick scales the race span `(mortality_threshold - min_age) / 22` by this pace |
 | Construction | `construction_speed` | HQ upgrade duration `(target_level × 24 h) / pace` and downgrade duration `(current_level × 12 h) / pace` |
 | Economy | `economy_scale` | Arena ticket gold and weekly HQ maintenance, same multiplier |
 | Fans | `fan_pace` | Daily fan-base drift and the win / loss / draw fan delta |

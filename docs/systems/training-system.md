@@ -41,7 +41,7 @@ During the lock period, players cannot configure trainers, assign heroes, or una
 | **Single Active Training** | A hero can be assigned to at most one Trainer. While assigned, the hero's status remains `Available` (training is a parallel activity, not a blocking state, similar to being assigned to a formation slot). A hero can still be selected for match lineups while training. |
 | **Attribute Cap** | A hero cannot train a primary attribute beyond the Trainer's frozen value for that attribute. |
 | **No monetary cost** | Training has no Gold cost. It is instead balanced by a high fatigue load. |
-| **Trainer aging** | Trainers age during each weekly tick by the same amount a hero would age from a combat death (applies to all races, including Undead). |
+| **Trainer aging** | A trainer with at least one living trainee ages on the weekly tick by a share of the race span from minimum age to the mortality threshold (22 weeks at pace 1.00 from minimum age, before daily aging). Applies to every race, including Undead. A configured trainer with no living trainees does not take the jump. |
 | **Auto-unequip on promotion** | When a combatant is promoted to trainer role (`TrainingService::promoteToTrainer`), all items equipped on that hero are automatically unequipped (set to `Available`). The same unequip step also applies when a trainer is listed for sale on the marketplace. |
 
 ## Hero Creation Age
@@ -71,28 +71,29 @@ Trains a primary attribute (STR, DEX, KON, SPD, INT, WIL, CHA, LCK).
   - **Facility Efficiency**: `training_efficiency_pct / 100` (passive bonus from Training facility, defaults to 0.03)
   - **Race Modifier**: `training_speed_modifier` from `races.yaml`
   - **Arena Bonus**: `1.10` (+10%) if hero race matches HQ arena optimization race; `1.05` (+5%) if race relationship >= 70; else `1.0`
-  - **Group Modifier**: `1.0` base; `+0.05` (+5%) if trainer has a trainee with compatible race (relationship >= 70); `-0.15` (-15%) if hostile race (relationship <= 20)
+  - **Group Modifier**: `1.0` when the trainee has no living partners. Otherwise `1.0 + (averageRelationship - 50) * 0.001`, where the average is **this hero's** race relationship with each other living trainee. Relationship 100 is +5%, 50 is neutral, 0 is -5%. A hostile partner lowers only the heroes who have that low relationship.
   - **Training Speed**: stored kingdom `training_speed` (copied from the pace preset)
   - **Trait Modifier**: `1.20` for QuickLearner (+20%), `0.85` for Slacker (-15%), `0.90` for Perfectionist (-10%)
 
   The final raw gain (internal scale x10) is:
-  `Raw Gain (internal scale) = max(1, min(9 * Training Speed, round(Raw Gain (external scale) * 10)))`
+  `Raw Gain (internal scale) = max(1, min(Attribute Cap, round(Raw Gain (external scale) * 10)))`
+  Where **Attribute Cap** = `max(1, round((9 + max(0, TrainerStatExternal - 10)) * Training Speed))`. A trainer at 10 or below keeps the old ceiling of 9 raw (0.9 displayed) at pace 1.0. Each point above 10 raises that ceiling by 1 raw before pace, so a stat-20 trainer caps at 19 raw.
   Capped so raw stat does not exceed trainer's raw stat cap.
 - **Fatigue Impact**: Adds **+20 fatigue** (capped at 100) only when `gainRaw > 0` (no fatigue when already at the trainer’s raw-stat cap).
 
 ### 2. Magic Training
-The trainer’s `targetAttribute` stores a magic school (`fire`, `water`, `air`, `earth`, `light`, `dark`). Each completed week grants **5 XP** to that school (`TrainingService::MAGIC_TRAINING_SCHOOL_XP`) and counts as exercise for school decay. Weapon attunement is unchanged.
-Increases a hero's Magic Capacity by `max(1, round(1 × training_speed))` (capped at a maximum of 5 slots). At training speed `1.0` this is +1 per week.
-- **Fatigue Impact**: Adds **+20 fatigue** (capped at 100) when capacity increased or school XP was granted, including at the slot cap of 5. Fatigue is **not** scaled by game speed.
+The trainer’s `targetAttribute` stores a magic school (`fire`, `water`, `air`, `earth`, `light`, `dark`). Each completed week grants school XP of `max(1, round(5 × (max(INT, WIL) / 10) × training_speed))` (`TrainingService::MAGIC_TRAINING_SCHOOL_XP` is the base 5, for a trainer whose higher of INT and WIL is 10). That XP counts as exercise for school decay. Weapon attunement is unchanged.
+Increases a hero's Magic Capacity by `max(1, round(1 × training_speed))` (capped at a maximum of 5 slots). At training speed `1.0` this is +1 per week. Capacity gain does not use the trainer's INT or WIL.
+- **Fatigue Impact**: Adds **+20 fatigue** when capacity increased. Once capacity is already 5, school XP still applies and adds **+10 fatigue** (`MAGIC_AT_CAP_FATIGUE`). No school and no capacity gain adds no fatigue. Fatigue is **not** scaled by game speed or by the trainer's magic stat.
 
 Every hero the weekly tick actually processes (attribute, magic, or form, including a zero stat gain) also receives **8** base hero XP (`HeroProgressionService::TRAINING_PARTICIPATION_XP`). Library `xp_gain_pct` and `Kingdom.xp_modifier` multiply it the same way as match XP, and stored level follows the same curve and cap of 20.
 
 ### 3. Form Training (Resting)
 Helps a hero recover physical conditioning and rest.
-- **Form Impact**: Increases form by `round(20 × training_speed)` (capped at 100).
-- **Fatigue Impact**: Decreases fatigue by **-20** (floor at 0). Fatigue reduction is **not** scaled by game speed.
+- **Form Impact**: Increases form by `round(20 × training_speed × (KON / 10))` (capped at 100). KON 10 restores 20 at pace 1.0. KON 20 restores 40.
+- **Fatigue Impact**: Decreases fatigue by `round(20 × (KON / 10))` (floor at 0). Fatigue reduction uses the trainer's KON and is **not** scaled by game speed.
 
-Active trainers also age on this tick by `round(10 × aging_speed)` raw tenths. That jump uses the stored aging pace, not training speed.
+A trainer with at least one living trainee ages on this tick by `round(((mortality_threshold - min_age) / 22) × aging_speed × 10)` raw tenths. The 22 weeks are two seasons at pace 1.00 for a trainer who starts at the race minimum age, ignoring daily aging. A configured trainer with no living trainees does not take this jump. The jump uses the stored aging pace, not training speed. The trainer card and the promote confirm show calendar weeks until the mortality threshold, and that count also includes seven daily age increments for every race except Undead.
 
 At the end of the tick, a `HeroTrainingHistory` row is persisted for each trained hero (append-only log for hero activity and calendar history).
 

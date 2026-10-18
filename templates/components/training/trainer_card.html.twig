@@ -13,6 +13,10 @@
                         {{ race_icon(trainer.race) }} {{ ('heroes.race_' ~ trainer.race.value)|trans }} &bull; 
                         {{ 'heroes.age'|trans }}: {{ trainer.age }} {{ 'heroes.years'|trans }} 
                         ({{ ('heroes.age_phase.' ~ hero_age_phase(trainer)|lower)|trans }} {{ hero_age_phase_icon(trainer) }})
+                        {% set careerWeeks = trainingService.trainerWeeksUntilMortality(trainer) %}
+                        {% if careerWeeks > 0 %}
+                            &bull; {{ 'training.weeks_until_mortality'|trans({'%weeks%': careerWeeks}) }}
+                        {% endif %}
                         {% if hero_at_mortality_threshold(trainer) %}
                             <span class="trainer-card__mortality-warning" title="{{ 'heroes.mortality_threshold_warning'|trans({'%threshold%': hero_mortality_threshold(trainer)}) }}">
                                 ⚠️ {{ 'training.mortality_warning'|trans }}

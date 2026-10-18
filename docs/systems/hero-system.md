@@ -49,7 +49,7 @@ Race age data lives in `config/game/races.yaml` under each race's `age` block. D
 
 **Implementation:** `RaceConfig::getMortalityThreshold()`, `resolveAgePhase()`, `isAtOrAboveMortalityThreshold()`. Twig helpers: `hero_age_phase()`, `hero_mortality_threshold()`, `hero_at_mortality_threshold()`.
 
-**Daily aging** (Daily Reset tick): non-Undead heroes gain `round(1 × aging_speed)` on `age` raw. At pace `1.00` that is **0.1 displayed years per day**. Undead do not age. Trainers take an extra `round(10 × aging_speed)` on the weekly training tick.
+**Daily aging** (Daily Reset tick): non-Undead heroes gain `round(1 × aging_speed)` on `age` raw. At pace `1.00` that is **0.1 displayed years per day**. Undead do not age. Trainers with at least one living trainee take an extra weekly jump scaled to the race span from minimum age to the mortality threshold (`(mortality_threshold - min_age) / 22` displayed years at pace 1.00). See [training-system.md](training-system.md).
 
 **Combat KO aging** (league and friendly resolution): each KO in a match adds escalating full years (`sum 1..D` KOs → years × 10 on raw). Battle Hardened halves that year total, rounded down (one KO adds 0 years). **Permanent death** only for elders at/above the mortality threshold: chance `5% + 4%` per year above the threshold, capped at 100%. Volatile adds 10 percentage points to that chance. A KO is not always death ([known-issues.md](../product/known-issues.md) #1 / #9). Permanent deaths write a graveyard memorial and remove the live hero — [graveyard-system.md](graveyard-system.md).
 
@@ -193,7 +193,7 @@ Source of truth: `HeroMasteryService`. To gain weapon-mastery XP efficiently, he
 - **Combat (League Match)** — `processMatchParticipation`:
   - Equipped gear types: **+50** attunement progress (capped at 100), then weapon XP = `round(BASE_MATCH_XP × attunement / 100)` with `BASE_MATCH_XP = 30` (uses attunement **after** the +50).
   - Equipped spell schools: **+15 XP** fixed (no attunement on schools).
-- **Weekly Magic training** — raises magic capacity (max 5) and grants **5 XP** to the school stored on the trainer’s `targetAttribute`. It does not change weapon attunement. The same week also grants hero participation XP (see [training-system.md](training-system.md)).
+- **Weekly Magic training** — raises magic capacity (max 5) and grants school XP scaled by the trainer's higher of INT and WIL (5 XP when that stat is 10). It does not change weapon attunement. The same week also grants hero participation XP (see [training-system.md](training-system.md)).
 - **Daily Decay** — `processDailyDecayTick` (Daily Reset). A style or school exercised in the last **7 days** (match for weapons; match or magic training for schools) does not decay. A row with no exercise timestamp is stamped and skipped once, so the first tick after deploy does not wipe existing masteries.
   - After the grace window, gear loses **10** attunement, then XP decay = `round(20 × (1 − attunement / 100))` using attunement **after** that drop. If `last_gain_xp` is set, the XP loss is also capped at 25% of that gain.
   - Schools lose **10 XP**, with the same 25% cap when `last_gain_xp` is set.

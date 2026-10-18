@@ -29,6 +29,7 @@ export default class extends Controller {
         successDismiss: String,
         titleDismiss: String,
         confirmPromote: String,
+        promoteCareer: String,
         errorPromote: String,
         successPromote: String,
         titlePromote: String
@@ -341,9 +342,11 @@ export default class extends Controller {
 
         if (!heroId) return;
 
-        const message = this.hasConfirmPromoteValue
-            ? this.confirmPromoteValue
-            : 'Are you sure you want to permanently convert this hero to a trainer?';
+        const weeks = select.selectedOptions[0]?.dataset.weeks ?? '';
+        let message = this.hasConfirmPromoteValue ? this.confirmPromoteValue : '';
+        if (message && weeks !== '' && Number(weeks) > 0 && this.hasPromoteCareerValue) {
+            message = `${message} ${this.promoteCareerValue.replace('%weeks%', weeks)}`;
+        }
 
         if (!await showConfirm(
             this.titlePromoteValue || 'Promote Hero to Trainer',

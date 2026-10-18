@@ -34,11 +34,11 @@ A hero stays `available` while training (not a roster “training” status).
 
 ### Active trainees tab
 
-Table of every assigned hero: name/level/compact stats, trainer, focus, cap, fatigue forecast, form forecast, unassign. Idle trainers with no trainees yield an empty state.
+Table of every assigned hero: name/level/compact stats, trainer, focus, cap, fatigue forecast, form forecast, unassign. Forecasts come from `TrainingService` (form gain and rest scale with the trainer's KON; magic fatigue is +20 while capacity can still rise and +10 once it is at 5). Idle trainers with no trainees yield an empty state.
 
 ### Hero detail (overview)
 
-If assigned: trainer identity, focus, cap bar, fatigue/form forecast, unassign, link to this screen. If not: compact trainer cards with assign. Same lock and APIs.
+If assigned: trainer identity, focus, cap bar, fatigue/form forecast (same projections as the trainees table), unassign, link to this screen. If not: compact trainer cards with assign. Same lock and APIs. Promote confirm includes weeks until the mortality threshold.
 
 ### Backend
 

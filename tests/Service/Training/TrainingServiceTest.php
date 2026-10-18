@@ -16,8 +16,10 @@ use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
 use App\Enum\HeroTrait;
 use App\Enum\Race;
+use App\Enum\School;
 use App\Enum\TrainingType;
 use App\Repository\Headquarters\HeadquartersRepository;
+use App\Service\Hero\HeroMasteryService;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
 use App\Exception\UserFacingException;
@@ -40,6 +42,8 @@ class TrainingServiceTest extends TestCase
     private $teamChronicleServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&EntityManagerInterface */
     private $entityManagerMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&HeroMasteryService */
+    private $heroMasteryMock;
     private TrainingService $trainingService;
 
     protected function setUp(): void
@@ -47,6 +51,12 @@ class TrainingServiceTest extends TestCase
         $this->heroRepositoryMock = $this->createMock(HeroRepository::class);
         $this->hqRepositoryMock = $this->createMock(HeadquartersRepository::class);
         $this->raceConfigMock = $this->createMock(RaceConfig::class);
+        $this->raceConfigMock->method('getAge')->willReturn([
+            'min' => 16,
+            'max_junior' => 20,
+            'prime_limit' => 50,
+            'mortality_threshold' => 80,
+        ]);
         $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
 
@@ -62,7 +72,7 @@ class TrainingServiceTest extends TestCase
             $this->entityManagerMock,
             $this->createMock(\App\Service\Notification\NotificationHelper::class),
             $financialCrisisServiceMock,
-            $this->createMock(\App\Service\Hero\HeroMasteryService::class),
+            $this->heroMasteryMock = $this->createMock(HeroMasteryService::class),
             $this->createMock(\App\Service\Hero\HeroProgressionService::class),
         );
     }
@@ -238,6 +248,10 @@ class TrainingServiceTest extends TestCase
         $trainer = new Hero();
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
         $trainer->setAgeRaw(250);
         $trainer->setTrainingType(TrainingType::Attribute);
         $trainer->setTargetAttribute('str');
@@ -289,6 +303,10 @@ class TrainingServiceTest extends TestCase
         $trainer = new Hero();
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
         $trainer->setAgeRaw(250);
         $trainer->setTrainingType(TrainingType::Form);
         $trainer->addTrainee($hero);
@@ -401,6 +419,10 @@ class TrainingServiceTest extends TestCase
         $trainer = new Hero();
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
         $trainer->setAgeRaw(250);
         $trainer->setTrainingType(TrainingType::Attribute);
         $trainer->setTargetAttribute('str');
@@ -449,6 +471,10 @@ class TrainingServiceTest extends TestCase
         $trainer = new Hero();
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
         $trainer->setAgeRaw(250);
         $trainer->setTrainingType(TrainingType::Attribute);
         $trainer->setTargetAttribute('str');
@@ -511,6 +537,10 @@ class TrainingServiceTest extends TestCase
         $trainer = new Hero();
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
         $trainer->setAgeRaw(250);
         $trainer->setTrainingType(TrainingType::Attribute);
         $trainer->setTargetAttribute('str');
@@ -575,6 +605,10 @@ class TrainingServiceTest extends TestCase
         $trainer = new Hero();
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
         $trainer->setAgeRaw(250);
         $trainer->setTrainingType(TrainingType::Attribute);
         $trainer->setTargetAttribute('str');
@@ -631,6 +665,10 @@ class TrainingServiceTest extends TestCase
         $trainer = new Hero();
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
         $trainer->setAgeRaw(250);
         $trainer->setTrainingType(TrainingType::Attribute);
         $trainer->setTargetAttribute('str');
@@ -661,6 +699,10 @@ class TrainingServiceTest extends TestCase
         $trainer = new Hero();
         $trainer->setRole(HeroRole::Trainer);
         $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
         $trainer->setAgeRaw(250);
         $trainer->setTrainingType(TrainingType::Magic);
         $trainer->addTrainee($hero);
@@ -671,5 +713,240 @@ class TrainingServiceTest extends TestCase
 
         $this->assertSame(5, $hero->getMagicCapacity());
         $this->assertSame(10, $hero->getFatigue());
+    }
+
+    public function testAttributeGainCapRisesWithTrainerStat(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setRace(Race::Human);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setStrRaw(50);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
+        $trainer->setAgeRaw(200);
+        $trainer->setTrainingType(TrainingType::Attribute);
+        $trainer->setTargetAttribute('str');
+        $trainer->setStrRaw(200);
+        $trainer->addTrainee($hero);
+
+        $this->raceConfigMock->method('getTrainingSpeedModifier')->willReturn(1.0);
+        $this->mockTrainerQueryResult([$trainer]);
+
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable('2026-06-04 10:00:00'));
+
+        // Uncapped formula is 11 raw. The old flat cap of 9 would have clipped it.
+        $this->assertSame(61, $hero->getStrRaw());
+    }
+
+    public function testGroupModifierUsesEachHeroRelationship(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $elf = $this->makeTrainee($team, Race::Elf, 60);
+        $human = $this->makeTrainee($team, Race::Human, 60);
+        $orc = $this->makeTrainee($team, Race::Orc, 60);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
+        $trainer->setAgeRaw(200);
+        $trainer->setTrainingType(TrainingType::Attribute);
+        $trainer->setTargetAttribute('str');
+        $trainer->setStrRaw(200);
+        $trainer->addTrainee($elf);
+        $trainer->addTrainee($human);
+        $trainer->addTrainee($orc);
+
+        $this->raceConfigMock->method('getTrainingSpeedModifier')->willReturn(1.0);
+        $this->raceConfigMock->method('getRelationship')->willReturnCallback(
+            static function (Race $a, Race $b): int {
+                $pair = [$a->value, $b->value];
+                sort($pair);
+
+                return match ($pair) {
+                    ['elf', 'human'] => 100,
+                    ['elf', 'orc'], ['human', 'orc'] => 0,
+                    default => 100,
+                };
+            }
+        );
+        $this->mockTrainerQueryResult([$trainer]);
+
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable('2026-06-04 10:00:00'));
+
+        // Elf and Human average 50 (neutral). Orc averages 0 (−5%).
+        $this->assertSame(70, $elf->getStrRaw());
+        $this->assertSame(70, $human->getStrRaw());
+        $this->assertSame(69, $orc->getStrRaw());
+    }
+
+    public function testMagicSchoolXpScalesWithTrainerStat(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setRace(Race::Human);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setMagicCapacity(2);
+        $hero->setFatigue(10);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(200);
+        $trainer->setWilRaw(50);
+        $trainer->setAgeRaw(200);
+        $trainer->setTrainingType(TrainingType::Magic);
+        $trainer->setTargetAttribute(School::Fire->value);
+        $trainer->addTrainee($hero);
+
+        $now = new \DateTimeImmutable('2026-06-04 10:00:00');
+        $this->heroMasteryMock->expects($this->once())
+            ->method('recordSchoolExercise')
+            ->with($hero, School::Fire, 10, $now);
+        $this->mockTrainerQueryResult([$trainer]);
+
+        $this->trainingService->processTrainingTick($now);
+
+        $this->assertSame(3, $hero->getMagicCapacity());
+        $this->assertSame(30, $hero->getFatigue());
+    }
+
+    public function testMagicAtCapacityCostsLessFatigue(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setRace(Race::Human);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setMagicCapacity(5);
+        $hero->setFatigue(10);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(100);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
+        $trainer->setAgeRaw(200);
+        $trainer->setTrainingType(TrainingType::Magic);
+        $trainer->setTargetAttribute(School::Water->value);
+        $trainer->addTrainee($hero);
+
+        $this->mockTrainerQueryResult([$trainer]);
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable('2026-06-04 10:00:00'));
+
+        $this->assertSame(5, $hero->getMagicCapacity());
+        $this->assertSame(20, $hero->getFatigue());
+    }
+
+    public function testFormTrainingScalesWithConstitution(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setRace(Race::Human);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setForm(40);
+        $hero->setFatigue(50);
+
+        $trainer = new Hero();
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setTeam($team);
+        $trainer->setRace(Race::Human);
+        $trainer->setKonRaw(200);
+        $trainer->setIntelRaw(100);
+        $trainer->setWilRaw(100);
+        $trainer->setAgeRaw(200);
+        $trainer->setTrainingType(TrainingType::Form);
+        $trainer->addTrainee($hero);
+
+        $this->mockTrainerQueryResult([$trainer]);
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable('2026-06-04 10:00:00'));
+
+        $this->assertSame(80, $hero->getForm());
+        $this->assertSame(10, $hero->getFatigue());
+    }
+
+    public function testTrainerAgesByRaceSpanOnlyWhenTeaching(): void
+    {
+        $team = $this->createMock(Team::class);
+        $kingdom = $this->createMock(Kingdom::class);
+        $team->method('getKingdom')->willReturn($kingdom);
+
+        $hero = $this->makeTrainee($team, Race::Human, 100);
+        $teaching = new Hero();
+        $teaching->setRole(HeroRole::Trainer);
+        $teaching->setTeam($team);
+        $teaching->setRace(Race::Human);
+        $teaching->setKonRaw(100);
+        $teaching->setIntelRaw(100);
+        $teaching->setWilRaw(100);
+        $teaching->setAgeRaw(160);
+        $teaching->setTrainingType(TrainingType::Form);
+        $teaching->addTrainee($hero);
+
+        $idle = new Hero();
+        $idle->setRole(HeroRole::Trainer);
+        $idle->setTeam($team);
+        $idle->setRace(Race::Human);
+        $idle->setAgeRaw(160);
+        $idle->setTrainingType(TrainingType::Attribute);
+        $idle->setTargetAttribute('str');
+
+        $this->raceConfigMock->method('getTrainingSpeedModifier')->willReturn(1.0);
+        $this->assertSame(18, $this->trainingService->trainerWeeksUntilMortality($teaching));
+
+        $this->mockTrainerQueryResult([$teaching, $idle]);
+        $this->trainingService->processTrainingTick(new \DateTimeImmutable('2026-06-04 10:00:00'));
+
+        // Human span 64 years / 22 weeks = 2.909 years = 29 raw tenths.
+        $this->assertSame(189, $teaching->getAgeRaw());
+        $this->assertSame(160, $idle->getAgeRaw());
+    }
+
+    private function makeTrainee(Team $team, Race $race, int $strRaw): Hero
+    {
+        $hero = new Hero();
+        $hero->setRole(HeroRole::Combatant);
+        $hero->setTeam($team);
+        $hero->setRace($race);
+        $hero->setStatus(HeroStatus::Available);
+        $hero->setStrRaw($strRaw);
+
+        return $hero;
     }
 }
