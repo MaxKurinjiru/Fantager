@@ -67,7 +67,7 @@ Reference: [architecture/api.md](api.md), [architecture/screen-code-map.md](scre
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
 | GET | `/app/dashboard` | Web\DashboardController | Team Dashboard (main game screen) |
-| GET | `/app/chronicle` | Web\TeamChronicleController | Full team chronicle with category/type/sort filters |
+| GET | `/app/chronicle` | Web\TeamChronicleController | Full team chronicle with category/type/period/sort filters |
 | GET | `/api/v1/teams/{teamId}/dashboard` | Api\V1\TeamController | Aggregated dashboard data |
 | GET | `/api/v1/teams/{teamId}/history` | Api\V1\TeamController | Last 30-day daily snapshots (morale, reputation, chemistry, fan_base) for team history chart |
 | POST | `/api/v1/teams/{teamId}/settings` | Api\V1\TeamController | Update team name/emblem/colors |
@@ -240,6 +240,7 @@ The community hub web page and messaging/forum API are implemented. Kingdom-wide
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
+| GET | `/app/teams/{id}` | Web\CommunityController | Public team card (same kingdom) |
 | GET | `/app/community` | Web\CommunityController | Kingdom discussion board (thread list) |
 | GET | `/app/community/threads/{id}` | Web\CommunityController | Thread detail with replies |
 | GET | `/api/v1/players/{id}/profile` | Api\V1\CommunityController | Public player profile |

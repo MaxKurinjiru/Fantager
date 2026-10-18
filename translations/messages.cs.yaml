@@ -379,6 +379,14 @@ dashboard:
   home_arena: Domácí aréna
   league_this_week: Liga tento týden
   no_week_match: Tento týden žádný zápas
+  record: Bilance
+  record_line: "%wins%–%draws%–%losses% · %points% b."
+  league_place: "%group% · %position%. z %size%"
+  league_position: "%position%. z %size%"
+  lineup_forfeit_assigned: "Formace nastavená na tento zápas (%formation%) má %ready% ze 6 bojeschopných hrdinů. Zápas skončí kontumací 0–3."
+  lineup_forfeit_default: "Na zápas není nastavená formace a výchozí (%formation%) má %ready% ze 6 bojeschopných hrdinů. Zápas skončí kontumací 0–3."
+  lineup_forfeit_no_formation: "Na tento zápas není žádná formace. Skončí kontumací 0–3."
+  lineup_autofill: "Výchozí formace (%formation%) není připravená (%ready% ze 6). Prázdná místa se před výkopem doplní z bojeschopných hrdinů."
 
 chronicle:
   title: Kronika týmu
@@ -391,6 +399,11 @@ chronicle:
   filter_type: Typ události
   filter_type_all: Všechny typy
   filter_sort: Řazení
+  filter_period: Manažer
+  period_all: Všichni manažeři
+  period_now: teď
+  period_player: "%name% (%from% – %to%)"
+  period_npc: "NPC (%from% – %to%)"
   sort_date_desc: Od nejnovějších
   sort_date_asc: Od nejstarších
   category:
@@ -1827,6 +1840,11 @@ community:
   profile_league: "Liga"
   profile_tier: "Divize"
   profile_position: "Pozice"
+  profile_record: "Bilance"
+  profile_goal_difference: "Rozdíl skóre"
+  open_team_card: "Karta týmu"
+  team_card_title: "Karta týmu"
+  team_card_subtitle: "Veřejná identita týmu, fanklub a ligové postavení. Zlato a morálka zůstávají soukromé."
   profile_member_since: "Hráč od:"
 
 email:

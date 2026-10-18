@@ -53,12 +53,12 @@ Not listed: backend loops (NPC simulation, inactivity, tick runner), parked poli
 | Dashboard | Banner (name, emblem, colors, manager, morale, fans, chemistry, reputation) | ✅ | [02-team-dashboard.md](../screens/02-team-dashboard.md) |
 | Dashboard | Finance snapshot + crisis banner | ✅ | [02-team-dashboard.md](../screens/02-team-dashboard.md), [20-finance.md](../screens/20-finance.md) |
 | Dashboard | Last 5 chronicle entries | ✅ | [02-team-dashboard.md](../screens/02-team-dashboard.md) |
-| Dashboard | League this week + prepare formation | ✅ | [02-team-dashboard.md](../screens/02-team-dashboard.md) |
+| Dashboard | League place, record, and this week's fixtures | ✅ | [02-team-dashboard.md](../screens/02-team-dashboard.md) |
 | Dashboard | Quick stats and quick actions | ✅ | [02-team-dashboard.md](../screens/02-team-dashboard.md) |
 | Dashboard | 30-day history chart (morale, reputation, chemistry, fans) | ✅ | [02-team-dashboard.md](../screens/02-team-dashboard.md) |
 | Dashboard | Edit team profile (name, emblem, colors) | ✅ | [02-team-dashboard.md](../screens/02-team-dashboard.md) |
 | Dashboard | Live SSE updates | 📋 | [known-issues.md](known-issues.md) § Later product decisions |
-| Team chronicle | Full read-only log | ✅ | [02a-team-chronicle.md](../screens/02a-team-chronicle.md) |
+| Team chronicle | Full read-only log, filterable by manager period | ✅ | [02a-team-chronicle.md](../screens/02a-team-chronicle.md) |
 | Chemistry | Flavor for matches, fan club / attendance, league tie-break | ✅ | [team-system.md](../systems/team-system.md#locked-chemistry-flavor) |
 | Chemistry | Combat reads chemistry | ✂️ | [team-system.md](../systems/team-system.md#locked-chemistry-flavor) |
 
@@ -184,7 +184,7 @@ Seven facilities. Forge is not live (crafting is ⏳).
 | Forum | Player-set pin | ✂️ | [community-system.md](../systems/community-system.md#locked-forum-pin) |
 | Mail | Inbox / sent, compose, unread badge (navbar) | ✅ | [17-community.md](../screens/17-community.md) |
 | Mail | Trade / league emails | 📋 | [known-issues.md](known-issues.md) § Later product decisions |
-| Profiles | Public player / team profile modal | ✅ | [17-community.md](../screens/17-community.md) |
+| Profiles | Public player / team profile modal and team card | ✅ | [17-community.md](../screens/17-community.md) |
 | Notifications | Navbar modal + unread badge | ✅ | [notification-system.md](../systems/notification-system.md) |
 | Graveyard | Memorial list, filters, detail (dismiss + combat death) | ✅ | [16-graveyard.md](../screens/16-graveyard.md) |
 

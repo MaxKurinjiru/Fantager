@@ -151,6 +151,7 @@ Implemented via `PlayerProfileService` and `Api\V1\CommunityController`:
 |--------|------|---------|
 | GET | `/api/v1/players/{id}/profile` | Public player profile (`User` + team projection) |
 | GET | `/api/v1/teams/{id}/profile` | Public team profile |
+| GET | `/app/teams/{id}` | Public team card (same payload, server-rendered) |
 
 Profiles are kingdom-scoped for viewers (same kingdom as the subject).
 

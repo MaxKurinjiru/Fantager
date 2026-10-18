@@ -379,6 +379,14 @@ dashboard:
   home_arena: Home Arena
   league_this_week: League this week
   no_week_match: No match this week
+  record: Record
+  record_line: "%wins%–%draws%–%losses% · %points% pts"
+  league_place: "%group% · %position% of %size%"
+  league_position: "%position% of %size%"
+  lineup_forfeit_assigned: "The formation set for this match (%formation%) has %ready% of 6 combat-ready heroes. The match will be forfeited 0–3."
+  lineup_forfeit_default: "No formation is set for this match, and the default (%formation%) has %ready% of 6 combat-ready heroes. The match will be forfeited 0–3."
+  lineup_forfeit_no_formation: "This match has no formation to field. It will be forfeited 0–3."
+  lineup_autofill: "The default formation (%formation%) is not ready (%ready% of 6). Kickoff will fill the gaps from combat-ready heroes."
 
 chronicle:
   title: Team Chronicle
@@ -391,6 +399,11 @@ chronicle:
   filter_type: Event type
   filter_type_all: All types
   filter_sort: Sort
+  filter_period: Manager
+  period_all: All managers
+  period_now: now
+  period_player: "%name% (%from% – %to%)"
+  period_npc: "NPC (%from% – %to%)"
   sort_date_desc: Newest first
   sort_date_asc: Oldest first
   category:
@@ -1828,6 +1841,11 @@ community:
   profile_league: "League"
   profile_tier: "Division"
   profile_position: "Position"
+  profile_record: "Record"
+  profile_goal_difference: "Goal difference"
+  open_team_card: "Team card"
+  team_card_title: "Team card"
+  team_card_subtitle: "Public team identity, fan club, and league standing. Gold and morale stay private."
   profile_member_since: "Member since:"
 
 email:

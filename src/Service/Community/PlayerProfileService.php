@@ -53,40 +53,7 @@ class PlayerProfileService
         $subject = $team->getUser();
         $isOwnProfile = $subject && ($subject->getId() === $viewer->getId());
 
-        // League standing
-        $leagueData = null;
-        $kingdom = $team->getKingdom();
-        $season = $this->leagueService->getCurrentSeason($kingdom);
-        if (null !== $season) {
-            $standing = $this->leagueService->findStandingForTeam($season, $team);
-            if (null !== $standing) {
-                $form = $this->leagueService->getTeamForm($team, $season, 5);
-                $group = $standing->getGroup();
-
-                // Compute position within the group
-                $sortedStandings = $this->leagueService->getSortedStandings($group);
-                $position = 1;
-                foreach ($sortedStandings as $index => $s) {
-                    if ($s->getTeam()->getId() === $team->getId()) {
-                        $position = $index + 1;
-                        break;
-                    }
-                }
-
-                $leagueData = [
-                    'tier_name' => $group->getTier()->getTierName(),
-                    'group_name' => $group->getGroupName(),
-                    'position' => $position,
-                    'points' => $standing->getPoints(),
-                    'played' => $standing->getPlayed(),
-                    'wins' => $standing->getWins(),
-                    'draws' => $standing->getDraws(),
-                    'losses' => $standing->getLosses(),
-                    'goal_difference' => $standing->getGoalDifference(),
-                    'form' => $form,
-                ];
-            }
-        }
+        $leagueData = $this->leagueService->summarizeStanding($team);
 
         // Roster counts (public info only)
         $combatantCount = count($this->heroRepository->findCombatantsByTeam($team));

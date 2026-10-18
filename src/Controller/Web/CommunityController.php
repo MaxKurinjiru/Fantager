@@ -6,8 +6,10 @@ namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
 use App\Entity\Community\ForumThread;
+use App\Exception\UserFacingException;
 use App\Repository\Community\ForumThreadRepository;
 use App\Service\Community\ForumThreadHelper;
+use App\Service\Community\PlayerProfileService;
 use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,6 +26,7 @@ class CommunityController extends AbstractController
     public function __construct(
         private readonly ForumThreadRepository $threadRepository,
         private readonly ForumThreadHelper $threadHelper,
+        private readonly PlayerProfileService $profileService,
         private readonly UserMessageTranslator $userMessages,
         private readonly \App\Repository\Community\ForumPostRepository $postRepository,
     ) {
@@ -82,6 +85,27 @@ class CommunityController extends AbstractController
             'page' => $page,
             'total_pages' => $totalPages,
             'total' => $totalRegular,
+        ]);
+    }
+
+    #[Route('/app/teams/{id}', name: 'app_team_profile', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function teamProfile(int $id): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        try {
+            $team = $this->profileService->findTeam($user, $id);
+            $profile = $this->profileService->getProfileByTeam($team, $user);
+        } catch (UserFacingException $e) {
+            $this->addFlash('error', $this->userMessages->fromException($e));
+
+            return $this->redirectToRoute('app_dashboard');
+        }
+
+        return $this->render('community/team_profile.html.twig', [
+            'team' => $user->getTeam(),
+            'profile' => $profile,
         ]);
     }
 

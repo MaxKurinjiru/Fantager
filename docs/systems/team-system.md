@@ -23,11 +23,13 @@ New teams (including NPC teams at Kingdom initialization) receive 10 heroes at l
 
 ## Match Eligibility
 
-If a team has fewer than 6 combat-ready heroes when a fixture is processed:
+When a fixture is processed, a team that cannot field its kickoff formation loses without simulation:
 
+- **Player:** the formation assigned to the match, or the default when none is assigned, must already contain 6 unique combat-ready heroes. A short assigned formation is a forfeit. Empty slots are not filled from the roster.
+- **NPC:** the default formation is used. `NpcTacticsSimulator` rewrites that formation and does not assign a fixture lineup. If it is short, kickoff fills the gaps from the combat-ready roster. Forfeit only when that fill still cannot place 6 heroes.
 - The match is **not simulated**
-- The understaffed team **automatically loses** with kill score **0–3** (opponent receives 3–0)
-- If **both** teams are understaffed: **0–0 draw**
+- The team that cannot field **automatically loses** with kill score **0–3** (opponent receives 3–0)
+- If **both** teams cannot field: **0–0 draw**
 
 See [combat-system.md](combat-system.md#match-eligibility) for full rules.
 
@@ -63,23 +65,37 @@ Web: `GET /app/dashboard` (server-rendered banner includes **fan_base** and `las
 
 | Block | Fields |
 |-------|--------|
-| `team` | `id`, `name`, `emblem`, `colors`, `morale`, `reputation`, `chemistry` |
+| `team` | `id`, `name`, `emblem`, `colors`, `morale`, `reputation`, `chemistry`, `fan_base`, `last_fan_base_delta` |
 | `resources` | `gold` |
 | `heroes` | `total` combatants, `available`, `in_training` (has a trainer) |
 | `headquarters` | `total_level`, `initialized`, arena adaptation + lock flags |
 | `formations` | saved `count` |
 | `summoning` | `summons_this_cycle`, `last_summon_at` |
-| `next_match` / `week_matches` | upcoming league fixtures |
+| `next_match` / `week_matches` | upcoming league fixtures. Unfinished fixtures include `lineup` from `MatchLineupService::preview()` |
+| `league` | current season place and record (`LeagueService::summarizeStanding()`), or `null` |
 | `financial_crisis` | status from `FinancialCrisisService` |
 
-Fan club size is **not** in that JSON; the Twig banner reads `Team` directly. History chart: `GET /api/v1/teams/{teamId}/history` (30 daily snapshots). SSE dashboard updates stay **planned** (A4.2).
+History chart: `GET /api/v1/teams/{teamId}/history` (30 daily snapshots). SSE dashboard updates stay **planned** (A4.2).
+
+`lineup` on an unfinished fixture:
+
+| Field | Meaning |
+|-------|---------|
+| `source` | `assigned`, `default`, or `roster` — the formation kickoff will actually use |
+| `formation_name` | Name of that formation, or of the short saved formation when kickoff must fill or forfeit |
+| `ready_slots` | Unique combat-ready heroes already in that formation (6 when it is match-ready) |
+| `will_forfeit` | Player: the assigned formation, or the default when none is assigned, is not match-ready. NPC: the default cannot be completed from the roster |
+| `uses_default_fallback` | Always false. An assigned player formation does not fall through to the default |
+| `will_autofill` | NPC only: the default is short and the combat-ready roster can still place 6 |
+
+The dashboard warns from this object. A short formation assigned to the match is a forfeit for a player team.
 
 ---
 
 ## Formation integration
 
 - Each NPC/player team is created with a **default formation**. Saved cap is **4** — [formation-system.md](formation-system.md).
-- Kickoff fields 6 unique combat-ready heroes from the assigned lineup, else the default, else the roster ([formation-system.md](formation-system.md#validation-rules)). Save allows 0–6 slots but rejects duplicate `hero_id`. Understaffed teams (< 6 combat-ready) forfeit 0–3 (see Match Eligibility).
+- Kickoff fields the assigned formation, or the default when none is assigned. Players forfeit if that formation is not match-ready. NPCs play the default and may fill a short one from the roster ([formation-system.md](formation-system.md#validation-rules)). Save allows 0–6 slots but rejects duplicate `hero_id`.
 - Dashboard shows saved formation count; lineup editor is `/app/formation`.
 
 ---
@@ -100,7 +116,7 @@ Morale, chemistry, reputation, gold, and ticket price are **not** player-editabl
 
 ## Summary
 
-Teams aggregate heroes, formations, HQ, and economic resources. Team-level stats include morale, chemistry (flavor for matches; live for fan club and league tie-break — [Locked: chemistry flavor](#locked-chemistry-flavor)), and reputation. Roster depth (10 heroes at start) ensures teams can field 6-hero lineups; understaffed teams forfeit matches automatically.
+Teams aggregate heroes, formations, HQ, and economic resources. Team-level stats include morale, chemistry (flavor for matches; live for fan club and league tie-break — [Locked: chemistry flavor](#locked-chemistry-flavor)), and reputation. Roster depth (10 heroes at start) gives teams a 6-hero lineup. A player forfeits when the formation that will start is incomplete. An NPC plays the default formation and forfeits only when that formation cannot be completed from the roster.
 
 ## Team-Level Stats
 

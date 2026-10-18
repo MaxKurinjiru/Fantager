@@ -8,14 +8,6 @@ Open design: none
 
 Purpose: Document the **team chronicle** — an append-only event log bound to the `Team` entity, shown on the dashboard and on a dedicated full-history screen.
 
-## Parked
-
-Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this system:
-
-- Ownership-period filter — not live
-
----
-
 ## Overview
 
 The chronicle answers: **“What happened to this team over time?”** — not “what happened to the current player account?”
@@ -26,7 +18,7 @@ The chronicle answers: **“What happened to this team over time?”** — not �
 | **Player notifications** | `notification` | Per **user**; unread state, immediate alerts |
 | **Financial ledger** | `team_financial_record` | Per **team**; gold audit trail |
 
-A single `Team` row can be owned by many players over its lifetime (`user_id` set/cleared, `is_npc` toggled). Chronicle entries from previous managers remain visible to the next manager unless filtered in UI (no ownership-period filter yet).
+A single `Team` row can be owned by many players over its lifetime (`user_id` set/cleared, `is_npc` toggled). Chronicle entries from previous managers stay visible. The full chronicle page can narrow them to one manager or NPC stretch (`?period=`).
 
 ---
 
@@ -141,7 +133,8 @@ Subject params: `%item%`, `%buyer%`, `%price%`.
 |-------|----------------|
 | `TeamChronicleService` | Create and persist chronicle entries (single write entry point). Depends on `EntityManagerInterface`, `TickClock`, and `UserMessageTranslator`. |
 | `TeamChroniclePresenter` | Load entries, translate messages, attach icons and type labels |
-| `TeamChronicleRepository` | `findRecentByTeam()`, `findByTeamFiltered()` |
+| `ChronicleOwnershipPeriodService` | Build manager / NPC stretches and the `?period=` window |
+| `TeamChronicleRepository` | `findRecentByTeam()`, `findByTeamFiltered()`, `findOwnershipMarkers()` |
 
 Do **not** instantiate `TeamChronicle` directly in feature code — call `TeamChronicleService` so keys and `data` shape stay consistent.
 
@@ -171,6 +164,14 @@ Query parameters:
 | `category` | `all`, `ownership`, `competition`, `roster`, `economy` |
 | `type` | any `ChronicleEventType` value, or empty = all |
 | `sort` | `date-desc` (default), `date-asc` |
+| `period` | empty = all managers. Otherwise the key of one ownership stretch from `ChronicleOwnershipPeriodService` |
+
+Ownership stretches are built from `team_established`, `player_joined`, and `player_released` (oldest first):
+
+- A **player** stretch starts at `player_joined` (inclusive) and ends at the next `player_released` (inclusive). The join and release rows belong to that manager.
+- An **NPC** stretch runs from `team_established` until the first join, and again after each release until the next join. The release row stays on the manager who left; events after it belong to NPC.
+- The open stretch (current manager, or NPC if the team is unclaimed) has no end.
+- An unknown `period` value is ignored and the page shows every event.
 
 Filters auto-submit via `form-auto-submit` Stimulus controller.
 

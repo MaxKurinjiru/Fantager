@@ -182,6 +182,60 @@ class LeagueService
         return $groups;
     }
 
+    /**
+     * Current-season table row for a team: place in group, record, and recent form.
+     *
+     * @return array{
+     *     tier_name: string,
+     *     group_name: string,
+     *     position: int,
+     *     group_size: int,
+     *     played: int,
+     *     wins: int,
+     *     draws: int,
+     *     losses: int,
+     *     points: int,
+     *     goal_difference: int,
+     *     form: list<string>
+     * }|null
+     */
+    public function summarizeStanding(Team $team): ?array
+    {
+        $season = $this->getCurrentSeason($team->getKingdom());
+        if (null === $season) {
+            return null;
+        }
+
+        $standing = $this->findStandingForTeam($season, $team);
+        if (null === $standing) {
+            return null;
+        }
+
+        $group = $standing->getGroup();
+        $sorted = $this->getSortedStandings($group);
+        $position = 1;
+        foreach ($sorted as $index => $row) {
+            if ($row->getTeam()->getId() === $team->getId()) {
+                $position = $index + 1;
+                break;
+            }
+        }
+
+        return [
+            'tier_name' => $group->getTier()->getTierName(),
+            'group_name' => $group->getGroupName(),
+            'position' => $position,
+            'group_size' => count($sorted),
+            'played' => $standing->getPlayed(),
+            'wins' => $standing->getWins(),
+            'draws' => $standing->getDraws(),
+            'losses' => $standing->getLosses(),
+            'points' => $standing->getPoints(),
+            'goal_difference' => $standing->getGoalDifference(),
+            'form' => $this->getTeamForm($team, $season, 5),
+        ];
+    }
+
     public function findStandingForTeam(LeagueSeason $season, Team $team): ?LeagueStanding
     {
         /** @var LeagueStanding|null $standing */

@@ -15,7 +15,15 @@ use App\Service\Team\TeamRosterService;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Kickoff lineup: assigned formation if match-ready, else default, else roster fill.
+ * Kickoff lineup.
+ *
+ * Player: the formation assigned to the match, or the default when none is assigned.
+ * That formation must already be match-ready. An incomplete one forfeits. There is
+ * no fall-through to the default and no roster fill.
+ *
+ * NPC: always the default formation. NpcTacticsSimulator rewrites that formation
+ * and does not assign a fixture lineup. If the default is short, empty slots are
+ * filled from the combat-ready roster.
  */
 class MatchLineupService
 {
@@ -29,6 +37,55 @@ class MatchLineupService
     public function canField(Team $team, ?Formation $assigned): bool
     {
         return null !== $this->plan($team, $assigned);
+    }
+
+    /**
+     * Read-only kickoff assessment. Does not persist an auto-filled copy.
+     *
+     * Player forfeit: the assigned formation, or the default when none is assigned,
+     * is not match-ready. NPC forfeit: the default cannot be completed from the roster.
+     *
+     * @return array{
+     *     source: string,
+     *     formation_name: string|null,
+     *     ready_slots: int,
+     *     will_forfeit: bool,
+     *     will_autofill: bool,
+     *     uses_default_fallback: bool
+     * }
+     */
+    public function preview(Team $team, ?Formation $assigned): array
+    {
+        if (null !== $assigned && $assigned->getTeam()->getId() !== $team->getId()) {
+            $assigned = null;
+        }
+
+        if ($team->isNpc()) {
+            $default = $this->formationService->findDefaultForTeam($team);
+            $ready = null !== $default && $this->isMatchReady($default);
+            $canField = null !== $this->plan($team, $assigned);
+
+            return [
+                'source' => $ready ? 'default' : 'roster',
+                'formation_name' => $default?->getName(),
+                'ready_slots' => $ready ? 6 : (null !== $default ? $this->countCombatReadySlots($default) : 0),
+                'will_forfeit' => !$canField,
+                'will_autofill' => !$ready && $canField,
+                'uses_default_fallback' => false,
+            ];
+        }
+
+        $chosen = $assigned ?? $this->formationService->findDefaultForTeam($team);
+        $ready = null !== $chosen && $this->isMatchReady($chosen);
+
+        return [
+            'source' => null !== $assigned ? 'assigned' : (null !== $chosen ? 'default' : 'none'),
+            'formation_name' => $chosen?->getName(),
+            'ready_slots' => $ready ? 6 : (null !== $chosen ? $this->countCombatReadySlots($chosen) : 0),
+            'will_forfeit' => !$ready,
+            'will_autofill' => false,
+            'uses_default_fallback' => false,
+        ];
     }
 
     /**
@@ -89,26 +146,26 @@ class MatchLineupService
             $assigned = null;
         }
 
-        if (null !== $assigned && $this->isMatchReady($assigned)) {
-            return ['formation' => $assigned, 'persist' => false];
+        if ($team->isNpc()) {
+            $default = $this->formationService->findDefaultForTeam($team);
+            if (null !== $default && $this->isMatchReady($default)) {
+                return ['formation' => $default, 'persist' => false];
+            }
+
+            $filled = $this->buildFilledClone($team, $default);
+            if (null === $filled) {
+                return null;
+            }
+
+            return ['formation' => $filled, 'persist' => true];
         }
 
-        $default = $this->formationService->findDefaultForTeam($team);
-        if (
-            null !== $default
-            && $default !== $assigned
-            && $this->isMatchReady($default)
-        ) {
-            return ['formation' => $default, 'persist' => false];
+        $chosen = $assigned ?? $this->formationService->findDefaultForTeam($team);
+        if (null !== $chosen && $this->isMatchReady($chosen)) {
+            return ['formation' => $chosen, 'persist' => false];
         }
 
-        $template = $assigned ?? $default;
-        $filled = $this->buildFilledClone($team, $template);
-        if (null === $filled) {
-            return null;
-        }
-
-        return ['formation' => $filled, 'persist' => true];
+        return null;
     }
 
     /**
@@ -138,6 +195,34 @@ class MatchLineupService
         }
 
         return 6 === count($used) ? $used : null;
+    }
+
+    private function countCombatReadySlots(Formation $formation): int
+    {
+        $team = $formation->getTeam();
+        $byPosition = [];
+        foreach ($formation->getSlots() as $slot) {
+            $byPosition[$slot->getPosition()->value] = $slot->getHero();
+        }
+
+        $used = [];
+        $count = 0;
+        foreach (FormationPosition::cases() as $position) {
+            $hero = $byPosition[$position->value] ?? null;
+            if (!$hero instanceof Hero) {
+                continue;
+            }
+
+            $heroId = $hero->getId();
+            if (null === $heroId || isset($used[$heroId]) || !$this->isUsableHero($hero, $team)) {
+                continue;
+            }
+
+            $used[$heroId] = true;
+            ++$count;
+        }
+
+        return $count;
     }
 
     private function buildFilledClone(Team $team, ?Formation $template): ?Formation

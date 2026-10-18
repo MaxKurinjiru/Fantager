@@ -56,11 +56,25 @@
                     <span class="db-banner-premium__meta-label">{{ 'dashboard.manager'|trans }}:</span>
                     <span class="db-banner-premium__meta-value">{{ user.displayName }}</span>
                 </div>
-                <div class="db-banner-premium__badge db-banner-premium__badge--kingdom">
-                    <span class="badge-icon" aria-hidden="true">🏰</span>
-                    <span class="db-banner-premium__meta-label">{{ 'dashboard.kingdom'|trans }}:</span>
-                    <span class="db-banner-premium__meta-value">{{ team.kingdom.name }}</span>
-                </div>
+                {% if dashboard.league %}
+                    <a href="{{ path('app_league') }}" class="db-banner-premium__badge db-banner-premium__badge--kingdom">
+                        <span class="badge-icon" aria-hidden="true">🏆</span>
+                        <span class="db-banner-premium__meta-value">{{ 'dashboard.league_place'|trans({
+                            '%group%': dashboard.league.group_name,
+                            '%position%': dashboard.league.position,
+                            '%size%': dashboard.league.group_size
+                        }) }}</span>
+                    </a>
+                    <div class="db-banner-premium__badge db-banner-premium__badge--kingdom">
+                        <span class="db-banner-premium__meta-label">{{ 'dashboard.record'|trans }}:</span>
+                        <span class="db-banner-premium__meta-value">{{ 'dashboard.record_line'|trans({
+                            '%wins%': dashboard.league.wins,
+                            '%draws%': dashboard.league.draws,
+                            '%losses%': dashboard.league.losses,
+                            '%points%': dashboard.league.points
+                        }) }}</span>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
