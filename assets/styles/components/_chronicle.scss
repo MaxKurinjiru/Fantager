@@ -64,7 +64,7 @@
   }
 
   .chronicle-filters__grid {
-    @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+    @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4;
   }
 
   .chronicle-filters__field {

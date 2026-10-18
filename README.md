@@ -43,12 +43,12 @@ Player-facing snapshot: **domain → block → feature**. **Not a contract** —
 | Dashboard | Banner (name, emblem, colors, manager, morale, fans, chemistry, reputation) | ✅ |
 | Dashboard | Finance snapshot + crisis banner | ✅ |
 | Dashboard | Last 5 chronicle entries | ✅ |
-| Dashboard | League this week + prepare formation | ✅ |
+| Dashboard | League place, record, and this week's fixtures | ✅ |
 | Dashboard | Quick stats and quick actions | ✅ |
 | Dashboard | 30-day history chart (morale, reputation, chemistry, fans) | ✅ |
 | Dashboard | Edit team profile (name, emblem, colors) | ✅ |
 | Dashboard | Live SSE updates | 📋 |
-| Team chronicle | Full read-only log | ✅ |
+| Team chronicle | Full read-only log, filterable by manager period | ✅ |
 | Chemistry | Flavor for matches, fan club / attendance, league tie-break | ✅ |
 | Chemistry | Combat reads chemistry | ✂️ |
 
@@ -174,7 +174,7 @@ Seven facilities. Forge is not live (crafting is ⏳).
 | Forum | Player-set pin | ✂️ |
 | Mail | Inbox / sent, compose, unread badge (navbar) | ✅ |
 | Mail | Trade / league emails | 📋 |
-| Profiles | Public player / team profile modal | ✅ |
+| Profiles | Public player / team profile modal and team card | ✅ |
 | Notifications | Navbar modal + unread badge | ✅ |
 | Graveyard | Memorial list, filters, detail (dismiss + combat death) | ✅ |
 

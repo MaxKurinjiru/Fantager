@@ -22,7 +22,7 @@ There is **no** mid-battle player input (no turn submission, target picking, Aut
 
 ## Live surface
 
-Kickoff uses `MatchLineupService` (assigned → default → roster fill) and `LeagueMatchResolutionService::resolveForfeitOutcome()`. Live battles persist `MatchType::League` or `MatchType::Friendly`. `MatchType::Arena` is **reserved / unused** — it is not an arena-facility match and must not be written. Arena as a HQ building is ticket gold only (`ArenaService`).
+Kickoff uses `MatchLineupService` (player: assigned formation, or the default when none is assigned; NPC: default, then roster fill) and `LeagueMatchResolutionService::resolveForfeitOutcome()`. Live battles persist `MatchType::League` or `MatchType::Friendly`. `MatchType::Arena` is **reserved / unused** — it is not an arena-facility match and must not be written. Arena as a HQ building is ticket gold only (`ArenaService`).
 
 Status effect config: [config/game/status_effects.yaml](../../config/game/status_effects.yaml) — loaded by `StatusEffectConfig` and used by `CombatEngine` for **durations**, **tick damage/heal percents**, and **Haste/Shock speed percents on the initiative sort** (hardcoded fallbacks remain if a key is missing). Other combat modifiers from the YAML (accuracy, skip turn, etc.) are applied via engine logic where implemented. Formulas: [combat-formulas.md](combat-formulas.md). Haste/Shock: [combat-formulas.md — Speed / Initiative](combat-formulas.md#speed--initiative-init).
 
@@ -53,7 +53,7 @@ Before any match is simulated, each team is checked for whether it can **field**
 
 **Combat-ready hero:** active status, not a Trainer, not permanently dead (Graveyard).
 
-A team forfeits when it has **fewer than 6 combat-ready heroes on the roster**. An incomplete saved formation does not forfeit by itself: kickoff uses the assigned lineup if it already has 6 unique combat-ready heroes; otherwise the default if that is match-ready; otherwise remaining slots are filled from the combat-ready roster. Duplicate `hero_id` is rejected at **save** ([formation-system.md](formation-system.md#validation-rules)).
+A **player** forfeits when the formation that will start is not match-ready: the one assigned to the fixture, or the team default when the assignment is empty. An incomplete assigned formation does not fall back to the default, and empty slots are not filled from the roster. An **NPC** forfeits only when the default formation cannot be completed to 6 unique combat-ready heroes from the roster. NPC tactics keep that default current and do not assign a separate match formation. Duplicate `hero_id` is rejected at **save** ([formation-system.md](formation-system.md#validation-rules)).
 
 ---
 

@@ -340,7 +340,7 @@ class FixtureFormationService
         return $fixture;
     }
 
-    private function getAssignedFormation(LeagueFixture $fixture, Team $team): ?Formation
+    public function getAssignedFormation(LeagueFixture $fixture, Team $team): ?Formation
     {
         if ($fixture->getHomeTeam()->getId() === $team->getId()) {
             return $fixture->getHomeFormation();

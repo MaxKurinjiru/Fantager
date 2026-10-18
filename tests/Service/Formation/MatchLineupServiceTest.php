@@ -35,7 +35,7 @@ class MatchLineupServiceTest extends TestCase
         $this->assertTrue($service->canField($team, $assigned));
     }
 
-    public function testFallsBackToDefaultWhenAssignedIsIncomplete(): void
+    public function testPlayerForfeitsWhenAssignedFormationIsIncomplete(): void
     {
         $team = $this->createTeam(1);
         $assigned = $this->createEmptyFormation($team, 'Custom');
@@ -43,22 +43,25 @@ class MatchLineupServiceTest extends TestCase
         $default->setIsDefault(true);
 
         $service = $this->createService($team, [], $default);
-        $resolved = $service->resolveForKickoff($team, $assigned);
 
-        $this->assertSame($default, $resolved);
+        $this->assertFalse($service->canField($team, $assigned));
+        $this->assertNull($service->resolveForKickoff($team, $assigned));
     }
 
-    public function testFillsRemainingSlotsFromRosterWhenNeitherLineupIsReady(): void
+    public function testNpcIgnoresAssignmentAndFillsAShortDefaultFromTheRoster(): void
     {
         $team = $this->createTeam(1);
+        $team->setIsNpc(true);
         $kept = $this->createHero($team, 1);
-        $assigned = $this->createEmptyFormation($team, 'Draft');
+        $assigned = $this->createMatchReadyFormation($team, 40);
+        $default = $this->createEmptyFormation($team, 'Draft');
+        $default->setIsDefault(true);
         $slot = new FormationSlot();
         $slot->setPosition(FormationPosition::Front1);
         $slot->setHero($kept);
         $slot->setStrategy(['movement_goal' => 'advance_to_melee']);
         $slot->setSpellPriorities([]);
-        $assigned->addSlot($slot);
+        $default->addSlot($slot);
 
         $bench = [$kept];
         for ($i = 2; $i <= 6; ++$i) {
@@ -69,7 +72,7 @@ class MatchLineupServiceTest extends TestCase
         $em->expects($this->once())->method('persist');
         $em->expects($this->once())->method('flush');
 
-        $service = $this->createService($team, $bench, null, $em);
+        $service = $this->createService($team, $bench, $default, $em);
         $fixture = new LeagueFixture();
         $resolved = $service->resolveForKickoff($team, $assigned, $fixture);
 
@@ -88,6 +91,67 @@ class MatchLineupServiceTest extends TestCase
         $this->assertSame([1, 2, 3, 4, 5, 6], $heroIds);
     }
 
+    public function testPreviewReportsAssignedFormationWhenItIsMatchReady(): void
+    {
+        $team = $this->createTeam(1);
+        $assigned = $this->createMatchReadyFormation($team, 10);
+
+        $preview = $this->createService($team, [], null)->preview($team, $assigned);
+
+        $this->assertSame('assigned', $preview['source']);
+        $this->assertSame(6, $preview['ready_slots']);
+        $this->assertFalse($preview['will_forfeit']);
+        $this->assertFalse($preview['will_autofill']);
+        $this->assertFalse($preview['uses_default_fallback']);
+    }
+
+    public function testPreviewForfeitsAShortAssignedFormationEvenWhenTheDefaultIsReady(): void
+    {
+        $team = $this->createTeam(1);
+        $assigned = $this->createEmptyFormation($team, 'Custom');
+        $default = $this->createMatchReadyFormation($team, 20);
+        $default->setIsDefault(true);
+
+        $preview = $this->createService($team, [], $default)->preview($team, $assigned);
+
+        $this->assertSame('assigned', $preview['source']);
+        $this->assertSame('Custom', $preview['formation_name']);
+        $this->assertTrue($preview['will_forfeit']);
+        $this->assertFalse($preview['will_autofill']);
+        $this->assertFalse($preview['uses_default_fallback']);
+    }
+
+    public function testPreviewDoesNotAutofillAPlayerRoster(): void
+    {
+        $team = $this->createTeam(1);
+        $assigned = $this->createEmptyFormation($team, 'Draft');
+        $bench = [];
+        for ($i = 1; $i <= 6; ++$i) {
+            $bench[] = $this->createHero($team, $i);
+        }
+
+        $preview = $this->createService($team, $bench, null)->preview($team, $assigned);
+
+        $this->assertSame('assigned', $preview['source']);
+        $this->assertTrue($preview['will_forfeit']);
+        $this->assertFalse($preview['will_autofill']);
+    }
+
+    public function testPreviewForfeitsWhenRosterCannotCompleteTheFormation(): void
+    {
+        $team = $this->createTeam(1);
+        $bench = [];
+        for ($i = 1; $i <= 5; ++$i) {
+            $bench[] = $this->createHero($team, $i);
+        }
+
+        $preview = $this->createService($team, $bench, null)->preview($team, null);
+
+        $this->assertTrue($preview['will_forfeit']);
+        $this->assertFalse($preview['will_autofill']);
+        $this->assertNull($preview['formation_name']);
+    }
+
     public function testCannotFieldWhenFewerThanSixCombatReadyHeroes(): void
     {
         $team = $this->createTeam(1);
@@ -101,9 +165,10 @@ class MatchLineupServiceTest extends TestCase
         $this->assertNull($service->resolveForKickoff($team, null));
     }
 
-    public function testSkipsDuplicateAndUnreadyAssignedHeroesWhenFilling(): void
+    public function testNpcFillSkipsDuplicateAndUnreadyHeroesOnTheDefault(): void
     {
         $team = $this->createTeam(1);
+        $team->setIsNpc(true);
         $readyA = $this->createHero($team, 1);
         $unready = $this->createHero($team, 99);
         $unready->setStatus(HeroStatus::Recovering);
@@ -133,8 +198,8 @@ class MatchLineupServiceTest extends TestCase
         $em->expects($this->once())->method('persist');
         $em->expects($this->once())->method('flush');
 
-        $service = $this->createService($team, $bench, null, $em);
-        $resolved = $service->resolveForKickoff($team, $assigned);
+        $service = $this->createService($team, $bench, $assigned, $em);
+        $resolved = $service->resolveForKickoff($team, null);
 
         $this->assertInstanceOf(Formation::class, $resolved);
         $ids = [];

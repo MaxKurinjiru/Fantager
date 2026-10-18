@@ -18,7 +18,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 **Team banner** (`team_banner.html.twig`)
 
 - Team name, emblem, primary/secondary colors
-- Manager display name and kingdom name
+- Manager display name
+- Current league group and place (links to `/app/league`) and the season record (wins–draws–losses and points), when the team has a standing
 - Morale (value / 100 + bar)
 - Fan club size and last delta (when non-zero)
 - Chemistry (value / 100 + bar, `chemistry_desc` tooltip) — **flavor for matches**; combat does not read it. Live for fan club / attendance and league tie-break.
@@ -39,6 +40,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 - Up to two fixtures this week (home/away, schedule, score if completed, formation status)
 - Prepare-formation link for unfinished fixtures (`/app/formation?fixture_id=`)
+- Opponent name links to that team's public card
+- Lineup warning on unfinished fixtures. A formation assigned to the match must already be complete, otherwise the match is forfeited 0–3. When none is assigned, the same rule applies to the default formation. Players do not get empty slots filled from the roster.
 - Link to league fixtures tab
 
 **Quick stats** (links)
@@ -66,7 +69,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 - Name, emblem picker, primary/secondary colors
 - `POST /api/v1/teams/{teamId}/settings`
 
-Not on this page: win/loss record, current league tier & position, a dedicated “next match” card (`templates/components/dashboard/next_match.html.twig` exists but is **not** included — week-match cards cover upcoming fixtures).
+Not on this page: a dedicated “next match” card (`templates/components/dashboard/next_match.html.twig` exists but is **not** included — week-match cards cover upcoming fixtures). Win/loss record and league place are on the banner.
 
 ### Actions
 
@@ -97,8 +100,6 @@ Later product decisions (dashboard SSE): [known-issues.md](../product/known-issu
 
 Not a contract:
 
-- Win/loss record on the dashboard
-- Current league tier and position on the dashboard
 - Dedicated shortcuts to Training, Marketplace, and League as first-class quick-action tiles (league/finance/heroes are reached via other blocks)
 
 ---

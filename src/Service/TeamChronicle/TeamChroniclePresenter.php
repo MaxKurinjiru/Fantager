@@ -61,6 +61,7 @@ class TeamChroniclePresenter
         ?int $limit = null,
         ?int $offset = null,
         ?string $locale = null,
+        ?ChroniclePeriodWindow $period = null,
     ): array {
         $entries = $this->teamChronicleRepository->findByTeamFiltered(
             $team,
@@ -69,6 +70,7 @@ class TeamChroniclePresenter
             $sort,
             $limit,
             $offset,
+            $period,
         );
 
         return array_map(

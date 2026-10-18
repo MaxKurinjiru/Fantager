@@ -81,8 +81,16 @@
                             <strong class="js-profile-position">—</strong>
                         </div>
                         <div class="player-profile-modal__league-row">
+                            <span class="copy-muted">{{ 'community.profile_record'|trans }}</span>
+                            <strong class="js-profile-record">—</strong>
+                        </div>
+                        <div class="player-profile-modal__league-row">
                             <span class="copy-muted">{{ 'league.col_points'|trans }}</span>
                             <strong class="js-profile-points">—</strong>
+                        </div>
+                        <div class="player-profile-modal__league-row">
+                            <span class="copy-muted">{{ 'community.profile_goal_difference'|trans }}</span>
+                            <strong class="js-profile-goal-difference">—</strong>
                         </div>
                         <div class="player-profile-modal__league-row">
                             <span class="copy-muted">{{ 'league.col_form'|trans }}</span>
@@ -97,6 +105,9 @@
                         {{ 'community.profile_member_since'|trans }}
                         <time class="js-profile-member-since"></time>
                     </p>
+                    <a class="js-profile-card-link link hidden"
+                       data-url-template="{{ path('app_team_profile', { id: 0 }) }}"
+                       href="#">{{ 'community.open_team_card'|trans }}</a>
                     <button type="button"
                             class="js-profile-message-btn btn btn-primary hidden"
                             data-action="click->player-profile#openCompose"

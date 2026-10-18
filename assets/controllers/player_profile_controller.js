@@ -122,9 +122,13 @@ export default class extends Controller {
         if (leagueSection) {
             if (data.league) {
                 leagueSection.classList.remove('hidden');
-                this._setStat(modal, '.js-profile-tier', `${data.league.tier_name} / ${data.league.group_name}`);
+                this._setStat(modal, '.js-profile-tier', data.league.group_name);
                 this._setStat(modal, '.js-profile-position', `#${data.league.position}`);
+                this._setStat(modal, '.js-profile-record', `${data.league.wins}–${data.league.draws}–${data.league.losses}`);
                 this._setStat(modal, '.js-profile-points', data.league.points);
+                const goalDifference = data.league.goal_difference;
+                const goalText = goalDifference > 0 ? `+${goalDifference}` : `${goalDifference}`;
+                this._setStat(modal, '.js-profile-goal-difference', goalText);
 
                 // Form badges
                 const formContainer = modal.querySelector('.js-profile-form');
@@ -146,6 +150,14 @@ export default class extends Controller {
             } else {
                 leagueSection.classList.add('hidden');
             }
+        }
+
+        const cardLink = modal.querySelector('.js-profile-card-link');
+        if (cardLink && data.team?.id && cardLink.dataset.urlTemplate) {
+            cardLink.href = cardLink.dataset.urlTemplate.replace(/\/0$/, `/${data.team.id}`);
+            cardLink.classList.remove('hidden');
+        } else if (cardLink) {
+            cardLink.classList.add('hidden');
         }
 
         // Message button

@@ -19,7 +19,7 @@
                 <select id="group-select" name="groupId" data-action="change->form-auto-submit#submit" class="form-input league-group-select">
                     {% for g in groups %}
                         <option value="{{ g.id }}" {% if selectedGroup and selectedGroup.id == g.id %}selected{% endif %}>
-                            {{ g.tier.tierName }} — {{ g.groupName }}
+                            {{ g.groupName }}
                         </option>
                     {% endfor %}
                 </select>

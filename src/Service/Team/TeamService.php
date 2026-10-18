@@ -15,6 +15,8 @@ use App\Repository\Hero\HeroRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Formation\FixtureFormationService;
+use App\Service\Formation\MatchLineupService;
+use App\Service\League\LeagueService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -27,6 +29,8 @@ class TeamService
         private readonly LeagueFixtureRepository $leagueFixtureRepository,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly FixtureFormationService $fixtureFormationService,
+        private readonly MatchLineupService $matchLineupService,
+        private readonly LeagueService $leagueService,
         private readonly TeamChronicleService $teamChronicleService,
         private readonly EntityManagerInterface $em,
     ) {
@@ -69,6 +73,8 @@ class TeamService
                 'morale' => $team->getMorale(),
                 'reputation' => $team->getReputation(),
                 'chemistry' => $team->getChemistry(),
+                'fan_base' => $team->getFanBase(),
+                'last_fan_base_delta' => $team->getLastFanBaseDelta(),
             ],
             'resources' => [
                 'gold' => $team->getGold(),
@@ -94,6 +100,7 @@ class TeamService
             ],
             'next_match' => $nextFixture ? $this->serializeFixture($nextFixture, $team) : null,
             'week_matches' => $weekMatches,
+            'league' => $this->leagueService->summarizeStanding($team),
             'financial_crisis' => $this->financialCrisisService->getStatus($team),
         ];
     }
@@ -165,6 +172,10 @@ class TeamService
             'scheduled_at' => $fixture->getScheduledAt()->format(\DateTimeInterface::ATOM),
             'group_name' => $fixture->getGroup()->getGroupName(),
             'formation' => $this->serializeFixtureFormation($fixture, $team),
+            'lineup' => $isCompleted ? null : $this->matchLineupService->preview(
+                $team,
+                $this->fixtureFormationService->getAssignedFormation($fixture, $team),
+            ),
             'score' => $isCompleted && null !== $battle ? [
                 'home' => $battle->getScoreA(),
                 'away' => $battle->getScoreB(),

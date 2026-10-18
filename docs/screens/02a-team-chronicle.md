@@ -14,7 +14,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 ### Displayed information
 
-- Filter bar: category, event type (`ChronicleEventType::liveCases()` — `hero_retired` omitted), sort (newest / oldest)
+- Filter bar: category, event type (`ChronicleEventType::liveCases()` — `hero_retired` omitted), manager/NPC period (`?period=`), sort (newest / oldest)
 - Chronological entries: event-type label, localized message (`subject_key` + `subject_params`), timestamp
 - Empty state when nothing matches
 

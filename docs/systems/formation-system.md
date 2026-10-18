@@ -24,7 +24,7 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 ## Validation Rules
 
 - **Save:** `FormationService::rebuildSlots()` persists 0–6 slots. Duplicate `hero_id` values are rejected (`error.formation_duplicate_hero`, API 422). Empty slots stay allowed, including a fully empty draft (UI and API).
-- **Match-ready (kickoff):** `MatchLineupService` fields 6 unique combat-ready heroes in this order: (1) assigned fixture/friendly formation if all 6 slots are unique combat-ready heroes; (2) else the team default if that is match-ready; (3) else auto-fill remaining empty / duplicate / unready slots from the combat-ready roster (`id` ascending), persisted as a temporary copy (league: `source_fixture_id` for existing cleanup). Forfeit if the team has fewer than 6 combat-ready heroes — see [combat-system.md](combat-system.md#match-eligibility).
+- **Match-ready (kickoff):** `MatchLineupService`. A **player** fields the formation assigned to the fixture or friendly match. When none is assigned, they field the team default. That formation must already have 6 unique combat-ready heroes. An incomplete one forfeits. Kickoff does not fall through from an assigned formation to the default, and it does not fill empty slots from the roster. An **NPC** always fields the default formation (`NpcTacticsSimulator` rewrites that formation and does not assign a fixture lineup). If the default is short, empty / duplicate / unready slots are filled from the combat-ready roster (`id` ascending) and persisted as a temporary copy (league: `source_fixture_id` for existing cleanup). Forfeit when that fill cannot place 6 heroes — see [combat-system.md](combat-system.md#match-eligibility).
 - Team must have ≥ 6 combat-ready heroes to participate in a match at all (see [combat-system.md](combat-system.md#match-eligibility)).
 - Creating or promoting a saved formation fails when the team already has 4 saved formations.
 
@@ -137,6 +137,6 @@ Formations are 6-slot layouts (3 front, 3 back) with formation-wide `approach` a
 
 ## Implementation Notes
 
-- Player UI and fixture assignment still read via `FixtureFormationService::resolveFormation()` (assigned or default, unrepaired). **Kickoff / simulation** uses `MatchLineupService::resolveForKickoff()` so the engine always receives 6 unique combat-ready heroes. Finalize fixtures via `LeagueFixtureCompletionService::complete()`.
+- Player UI and fixture assignment still read via `FixtureFormationService::resolveFormation()` (assigned or default, unrepaired). **Kickoff / simulation** uses `MatchLineupService::resolveForKickoff()`. A player lineup is used as saved; an NPC short default may be copied and filled before the engine runs. Finalize fixtures via `LeagueFixtureCompletionService::complete()`.
 - Temporary formation cleanup runs in `LeagueFixtureCompletionService::complete()` **after** the fixture is `Completed` (and after post-match rewards have used Battle formation FKs). Do **not** clean up on `LeagueMatch` kickoff while combat is still simulating. `DailyReset` is an orphan safety net.
 - Deleting a temporary formation clears fixture FKs; battle formation FKs use `ON DELETE SET NULL`.

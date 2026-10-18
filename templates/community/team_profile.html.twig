@@ -1,0 +1,123 @@
+{% extends 'layouts/game.html.twig' %}
+
+{% block title %}{{ profile.team.name }} — {{ 'community.team_card_title'|trans }} — Fantager{% endblock %}
+
+{% block body %}
+<div class="page-shell">
+    {% include 'components/ui/page_header.html.twig' with {
+        title: 'community.team_card_title',
+        subtitle: 'community.team_card_subtitle'
+    } %}
+
+    <article class="player-profile-modal game-panel">
+        <header class="player-profile-modal__header">
+            {% if profile.team.colors %}
+                <div class="player-profile-modal__color-bar" style="--profile-color-primary: {{ profile.team.colors.primary|default('') }}; --profile-color-secondary: {{ profile.team.colors.secondary|default('') }};" aria-hidden="true"></div>
+            {% endif %}
+            <div class="player-profile-modal__identity">
+                <span class="player-profile-modal__emblem" aria-hidden="true">{{ profile.team.emblem }}</span>
+                <div>
+                    <h2 class="player-profile-modal__team-name">{{ profile.team.name }}</h2>
+                    <p class="player-profile-modal__player-name copy-muted">
+                        {% if profile.user %}
+                            {{ profile.user.display_name }}
+                        {% else %}
+                            {{ 'dashboard.npc'|trans }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </header>
+
+        <section class="player-profile-modal__section" aria-label="{{ 'community.profile_team_stats'|trans }}">
+            <h3 class="player-profile-modal__section-title">{{ 'community.profile_team_stats'|trans }}</h3>
+            <div class="player-profile-modal__stats">
+                <div class="player-profile-modal__stat">
+                    <span class="player-profile-modal__stat-key">{{ 'dashboard.fan_base'|trans }}</span>
+                    <span class="player-profile-modal__stat-value">{{ profile.team.fan_base }}</span>
+                </div>
+                <div class="player-profile-modal__stat">
+                    <span class="player-profile-modal__stat-key">{{ 'dashboard.reputation'|trans }}</span>
+                    <span class="player-profile-modal__stat-value">{{ profile.team.reputation }}</span>
+                </div>
+                <div class="player-profile-modal__stat">
+                    <span class="player-profile-modal__stat-key">{{ 'community.profile_combatants'|trans }}</span>
+                    <span class="player-profile-modal__stat-value">{{ profile.team.combatant_count }}</span>
+                </div>
+                <div class="player-profile-modal__stat">
+                    <span class="player-profile-modal__stat-key">{{ 'community.profile_trainers'|trans }}</span>
+                    <span class="player-profile-modal__stat-value">{{ profile.team.trainer_count }}</span>
+                </div>
+            </div>
+        </section>
+
+        {% if profile.league %}
+            <section class="player-profile-modal__section" aria-label="{{ 'community.profile_league'|trans }}">
+                <h3 class="player-profile-modal__section-title">{{ 'community.profile_league'|trans }}</h3>
+                <div class="player-profile-modal__league">
+                    <div class="player-profile-modal__league-row">
+                        <span class="copy-muted">{{ 'community.profile_tier'|trans }}</span>
+                        <strong>{{ profile.league.group_name }}</strong>
+                    </div>
+                    <div class="player-profile-modal__league-row">
+                        <span class="copy-muted">{{ 'community.profile_position'|trans }}</span>
+                        <strong>{{ 'dashboard.league_position'|trans({
+                            '%position%': profile.league.position,
+                            '%size%': profile.league.group_size
+                        }) }}</strong>
+                    </div>
+                    <div class="player-profile-modal__league-row">
+                        <span class="copy-muted">{{ 'community.profile_record'|trans }}</span>
+                        <strong>{{ profile.league.wins }}–{{ profile.league.draws }}–{{ profile.league.losses }}</strong>
+                    </div>
+                    <div class="player-profile-modal__league-row">
+                        <span class="copy-muted">{{ 'league.col_points'|trans }}</span>
+                        <strong>{{ profile.league.points }}</strong>
+                    </div>
+                    <div class="player-profile-modal__league-row">
+                        <span class="copy-muted">{{ 'community.profile_goal_difference'|trans }}</span>
+                        <strong>{% if profile.league.goal_difference > 0 %}+{% endif %}{{ profile.league.goal_difference }}</strong>
+                    </div>
+                    <div class="player-profile-modal__league-row">
+                        <span class="copy-muted">{{ 'league.col_form'|trans }}</span>
+                        <div class="league-form-badges">
+                            {% if profile.league.form is empty %}
+                                <span class="league-form-empty">—</span>
+                            {% else %}
+                                {% for result in profile.league.form %}
+                                    {% if result == 'W' %}
+                                        <span class="league-form-badge league-form-badge--win" title="{{ 'league.form_win_hint'|trans }}">W</span>
+                                    {% elseif result == 'D' %}
+                                        <span class="league-form-badge league-form-badge--draw" title="{{ 'league.form_draw_hint'|trans }}">D</span>
+                                    {% else %}
+                                        <span class="league-form-badge league-form-badge--loss" title="{{ 'league.form_loss_hint'|trans }}">L</span>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+
+        <div class="player-profile-modal__footer">
+            {% if profile.user %}
+                <p class="player-profile-modal__member-since copy-muted">
+                    {{ 'community.profile_member_since'|trans }}
+                    <time datetime="{{ profile.user.member_since }}">{{ profile.user.member_since|date('Y-m-d') }}</time>
+                </p>
+            {% endif %}
+            {% if profile.can_message %}
+                <button type="button"
+                        class="btn btn-primary"
+                        data-action="click->player-profile#openCompose"
+                        data-receiver-user-id="{{ profile.user.id }}"
+                        data-receiver-name="{{ profile.user.display_name }}"
+                        aria-label="{{ 'community.send_message_aria'|trans }}">
+                    {{ 'community.send_message'|trans }}
+                </button>
+            {% endif %}
+        </div>
+    </article>
+</div>
+{% endblock %}

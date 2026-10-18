@@ -171,6 +171,10 @@
     @apply flex flex-wrap items-center justify-center sm:justify-start gap-2.5;
   }
 
+  a.db-banner-premium__badge {
+    text-decoration: none;
+  }
+
   .db-banner-premium__badge {
     @apply text-xs font-semibold px-2.5 py-1 rounded-lg border transition-all duration-200 select-none flex items-center gap-1.5;
     background-color: color-mix(in srgb, var(--color-surface-base) 65%, transparent);

@@ -116,7 +116,7 @@ class FriendlyMatchResolutionService
             ];
         }
 
-        // Both teams eligible — resolve formations (assigned → default → roster fill)
+        // Both teams eligible — player: assigned or default; NPC: default, then roster fill
         $homeFormation = $this->matchLineupService->resolveForKickoff($homeTeam, $match->getHomeFormation());
         $awayFormation = $this->matchLineupService->resolveForKickoff($awayTeam, $match->getAwayFormation());
 

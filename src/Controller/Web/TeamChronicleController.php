@@ -7,6 +7,7 @@ namespace App\Controller\Web;
 use App\Entity\Auth\User;
 use App\Enum\ChronicleCategory;
 use App\Enum\ChronicleEventType;
+use App\Service\TeamChronicle\ChronicleOwnershipPeriodService;
 use App\Service\TeamChronicle\TeamChroniclePresenter;
 use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,6 +21,7 @@ class TeamChronicleController extends AbstractController
 {
     public function __construct(
         private readonly TeamChroniclePresenter $teamChroniclePresenter,
+        private readonly ChronicleOwnershipPeriodService $ownershipPeriods,
         private readonly UserMessageTranslator $userMessages,
         private readonly \App\Repository\Team\TeamChronicleRepository $chronicleRepository,
     ) {
@@ -51,11 +53,18 @@ class TeamChronicleController extends AbstractController
             $sort = 'date-desc';
         }
 
+        $periods = $this->ownershipPeriods->listForTeam($team);
+        $periodKey = $request->query->getString('period');
+        $period = $this->ownershipPeriods->windowFor($periods, $periodKey);
+        if (null === $period) {
+            $periodKey = '';
+        }
+
         $page = max(1, (int) $request->query->get('page', 1));
         $limit = 30;
         $offset = ($page - 1) * $limit;
 
-        $total = $this->chronicleRepository->countByTeamFiltered($team, $type, $category);
+        $total = $this->chronicleRepository->countByTeamFiltered($team, $type, $category, $period);
         $totalPages = max(1, (int) ceil($total / $limit));
 
         if ($page > $totalPages && $total > 0) {
@@ -70,6 +79,7 @@ class TeamChronicleController extends AbstractController
             $limit,
             $offset,
             $user->getLocale(),
+            $period,
         );
 
         return $this->render('team_chronicle/index.html.twig', [
@@ -78,6 +88,8 @@ class TeamChronicleController extends AbstractController
             'current_type' => $type?->value,
             'current_category' => $category->value,
             'current_sort' => $sort,
+            'current_period' => $periodKey,
+            'periods' => $periods,
             'types' => ChronicleEventType::liveCases(),
             'categories' => ChronicleCategory::cases(),
             'page' => $page,

@@ -33,12 +33,13 @@ New thread modal: title, category, body → `POST /api/v1/forum/threads`. Reply 
 
 ### Public profiles (modal)
 
-Opened from author names, league tables, and similar `player-profile` buttons. Same kingdom only.
+Opened from author names, league tables, and similar `player-profile` buttons. Same kingdom only. The modal links to the full card at `GET /app/teams/{id}`.
 
 - `GET /api/v1/players/{id}/profile`
 - `GET /api/v1/teams/{id}/profile`
+- `GET /app/teams/{id}` — server-rendered card (identity, fan club, reputation, roster counts, league place, record, goal difference, form). Opponent names on the dashboard open this page.
 
-NPC teams have no public player profile (404). Payload **excludes** gold, debt, chemistry, and morale. Typical body:
+A player id with no team is 404. NPC teams have no user, so the player route 404s; the team route and the card still render, with the manager line reading NPC. Payload **excludes** gold, debt, chemistry, and morale. Typical body:
 
 ```json
 {
@@ -50,8 +51,9 @@ NPC teams have no public player profile (404). Payload **excludes** gold, debt, 
     "combatant_count": 8, "trainer_count": 2
   },
   "league": {
-    "tier_name": "T1", "group_name": "Group A", "position": 3,
+    "tier_name": "T1", "group_name": "Group A", "position": 3, "group_size": 8,
     "points": 15, "played": 6, "wins": 5, "draws": 0, "losses": 1,
+    "goal_difference": 7,
     "form": ["W", "W", "L", "W", "W"]
   },
   "is_own_profile": false,
@@ -59,7 +61,7 @@ NPC teams have no public player profile (404). Payload **excludes** gold, debt, 
 }
 ```
 
-Modal: team identity, fan base, reputation, combatant/trainer counts, league block when present, member since. **Send message** (`community.send_message`) opens the mail compose dialog with the recipient prefilled (`modal:open-compose`).
+Modal and team card: team identity, fan base, reputation, combatant/trainer counts, league block when present (division, place, record, points, goal difference, form), member since. **Send message** (`community.send_message`) opens the mail compose dialog with the recipient prefilled (`modal:open-compose`). The card page uses the same action.
 
 ### Private mail (navbar)
 
@@ -96,7 +98,7 @@ Not a contract:
 
 - Community tabs for leaderboards, mail, or news
 - Dedicated `/api/v1/leaderboards` (use League)
-- Notable heroes, recent match history, win/loss on the public profile
+- Notable heroes and a recent-match list on the public profile (record, place, and form are live)
 - Report / moderator tools beyond author lock and content filter
 
 Pin / unpin in the UI is **Cut**: [Locked: forum pin](../systems/community-system.md#locked-forum-pin).
