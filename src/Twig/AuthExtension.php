@@ -26,7 +26,7 @@ class AuthExtension extends AbstractExtension
         ];
     }
 
-    /** @return array<int, array{kingdom: object, playerCount: int, capacity: int}> */
+    /** @return array<int, array{kingdom: object, playerCount: int, capacity: int, activeSeason: object}> */
     public function getKingdoms(): array
     {
         return $this->kingdomService->listWithCapacity();

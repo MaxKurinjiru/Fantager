@@ -54,15 +54,8 @@ class LeagueController extends AbstractController
         }
 
         $seasonIdStr = $request->query->get('seasonId');
-        $season = null;
-        if (null !== $seasonIdStr && is_numeric($seasonIdStr)) {
-            /** @var LeagueSeason|null $season */
-            $season = $this->em->getRepository(LeagueSeason::class)->find((int) $seasonIdStr);
-        }
-
-        if (null === $season) {
-            $season = $this->leagueService->getCurrentSeason($kingdom);
-        }
+        $seasonId = null !== $seasonIdStr && is_numeric($seasonIdStr) ? (int) $seasonIdStr : null;
+        $season = $this->leagueService->resolveSeason($kingdom, $seasonId);
 
         if (null === $season) {
             return $this->json([

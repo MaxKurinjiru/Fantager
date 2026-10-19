@@ -21,7 +21,7 @@ For each kingdom from `KingdomService::listWithCapacity()` (Twig `auth_kingdoms(
 - Timezone (IANA id, underscores shown as spaces)
 - Current player count / total capacity (capacity from `league_tiers_config`; e.g. `23/60`)
 - Full kingdoms: disabled control + “full” copy
-- Rules on the card: pace preset name (Classic, Fast season, Short careers, Rich world, Test) and season length (days). Numeric paces, XP, tax, and the hero level cap are not shown. Tax is **10** everywhere. XP is stored from the preset (`1.00` on every current preset)
+- Rules on the card: pace preset name (Classic, Fast season, Short careers, Rich world, Test), season length (days), and the season number, labeled **Season:** (`KingdomService::listWithCapacity()` → `activeSeason`). Numeric paces, XP, tax, and the hero level cap are not shown. Tax is **10** everywhere. XP is stored from the preset (`1.00` on every current preset)
 
 Permanent-choice warning next to the field. If the list is empty, a warning and a hidden `kingdom_id=0`.
 
@@ -40,7 +40,7 @@ There is no separate “confirm kingdom” step and no “show details” expand
 
 - Register POST writes `kingdom_id` on the new user (`RegistrationService`)
 - Server checks the kingdom exists and has capacity
-- `GET /api/v1/kingdoms` (`Api\V1\KingdomController`) returns the same list as JSON: `id`, `name`, `language`, `timezone`, `pace_preset`, `training_speed`, `recovery_speed`, `aging_speed`, `construction_speed`, `economy_scale`, `fan_pace`, `summon_cap`, `xp_modifier`, `season_length`, `capacity`, `player_count` — used as a public API, **not** fetched by the register Twig (server-rendered). Pace values are required and come from the preset chosen at kingdom creation
+- `GET /api/v1/kingdoms` (`Api\V1\KingdomController`) returns the same list as JSON: `id`, `name`, `language`, `timezone`, `pace_preset`, `training_speed`, `recovery_speed`, `aging_speed`, `construction_speed`, `economy_scale`, `fan_pace`, `summon_cap`, `xp_modifier`, `season_length`, `capacity`, `player_count`, `active_season_number` — used as a public API, **not** fetched by the register Twig (server-rendered). Pace values are required and come from the preset chosen at kingdom creation. `active_season_number` is the season currently in progress
 
 ---
 

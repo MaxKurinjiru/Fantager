@@ -142,7 +142,8 @@ Kingdoms **without an active season are omitted** from the list (not a `has_acti
   "xp_modifier": "1.00",
   "season_length": 77,
   "capacity": 60,
-  "player_count": 12
+  "player_count": 12,
+  "active_season_number": 3
 }
 ```
 

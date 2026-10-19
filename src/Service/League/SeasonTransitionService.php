@@ -38,6 +38,7 @@ class SeasonTransitionService
         private readonly EconomyService $economyService,
         private readonly TeamChronicleService $teamChronicleService,
         private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
+        private readonly LeagueGroupSeeder $groupSeeder,
     ) {
     }
 
@@ -120,7 +121,7 @@ class SeasonTransitionService
     }
 
     /**
-     * Finalizes current season, processes transitions, shuffles and seeds next season, then activates it.
+     * Finalizes current season, processes transitions, seeds next season, then activates it.
      */
     public function executeTransition(Kingdom $kingdom): void
     {
@@ -147,8 +148,6 @@ class SeasonTransitionService
         }
 
         $currentSeasonNumber = $currentSeason->getSeasonNumber();
-        $leagueConfig = $kingdom->getLeagueTiersConfig();
-        $teamsPerGroup = max(1, (int) ($leagueConfig['teams_per_group'] ?? 10));
 
         // Sort both seasons' tiers to match them up (index 0 is highest tier, e.g., T1)
         $currentTiers = $this->getSortedTiers($currentSeason);
@@ -305,20 +304,21 @@ class SeasonTransitionService
             }
         }
 
-        // Shuffle teams and seed them into groups of their new tiers for the upcoming season
-        // Map new tier ID -> list of Teams
-        $teamsInUpcomingTier = [];
+        // Seed each new tier by previous finishing place. Shuffle stays inside a strength pot.
+        /** @var array<int, list<array{team: Team, position: int, standing: LeagueStanding}>> $entriesByTier */
+        $entriesByTier = [];
         foreach ($teamToNewTier as $teamId => $newTier) {
             $newTierId = $newTier->getId();
-            if (null === $newTierId) {
+            if (null === $newTierId || !isset($teamStandingDetails[$teamId])) {
                 continue;
-            }
-            if (!isset($teamsInUpcomingTier[$newTierId])) {
-                $teamsInUpcomingTier[$newTierId] = [];
             }
             /** @var Team $team */
             $team = $this->em->getReference(Team::class, $teamId);
-            $teamsInUpcomingTier[$newTierId][] = $team;
+            $entriesByTier[$newTierId][] = [
+                'team' => $team,
+                'position' => $teamStandingDetails[$teamId]['position'],
+                'standing' => $teamStandingDetails[$teamId]['standing'],
+            ];
         }
 
         foreach ($upcomingTiers as $upTier) {
@@ -326,17 +326,17 @@ class SeasonTransitionService
             if (null === $upTierId) {
                 continue;
             }
-            $teams = $teamsInUpcomingTier[$upTierId] ?? [];
-            shuffle($teams); // Shuffling to prevent identical matchups every season
-
             $groups = $upTier->getGroups()->toArray();
-            // Sort groups by ID or name to make seeding deterministic per groups
             usort($groups, fn (LeagueGroup $a, LeagueGroup $b) => $a->getId() <=> $b->getId());
 
-            $chunks = array_chunk($teams, $teamsPerGroup);
+            $seeded = $this->groupSeeder->distribute(
+                $entriesByTier[$upTierId] ?? [],
+                count($groups),
+                $this->compareStandings(...),
+            );
+
             foreach ($groups as $gIdx => $group) {
-                $chunk = $chunks[$gIdx] ?? [];
-                foreach ($chunk as $team) {
+                foreach ($seeded[$gIdx] ?? [] as $team) {
                     $standing = new LeagueStanding();
                     $standing->setGroup($group);
                     $standing->setTeam($team);

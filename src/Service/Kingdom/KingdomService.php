@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Kingdom;
 
 use App\Entity\Kingdom\Kingdom;
+use App\Entity\League\LeagueSeason;
 use App\Enum\LeagueSeasonStatus;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Repository\League\LeagueSeasonRepository;
@@ -19,20 +20,25 @@ class KingdomService
     ) {
     }
 
-    /** @return list<array{kingdom: Kingdom, capacity: int, playerCount: int}> */
+    /** @return list<array{kingdom: Kingdom, capacity: int, playerCount: int, activeSeason: LeagueSeason}> */
     public function listWithCapacity(): array
     {
         $kingdoms = $this->kingdomRepository->findAll();
         $result = [];
 
         foreach ($kingdoms as $kingdom) {
-            if (!$this->hasActiveSeason($kingdom)) {
+            $activeSeason = $this->seasonRepository->findOneBy([
+                'kingdom' => $kingdom,
+                'status' => LeagueSeasonStatus::Active,
+            ]);
+            if (null === $activeSeason) {
                 continue;
             }
             $result[] = [
                 'kingdom' => $kingdom,
                 'capacity' => $this->calculateCapacity($kingdom),
                 'playerCount' => $this->teamRepository->countPlayersByKingdom((int) $kingdom->getId()),
+                'activeSeason' => $activeSeason,
             ];
         }
 

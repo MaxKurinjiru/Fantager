@@ -192,8 +192,8 @@ Both the Web dashboard (`/app/league`) and the REST API (`/api/v1/league/*`) are
 
 | Method | Path | Controller | Purpose |
 |--------|------|-----------|---------|
-| GET | `/app/league` | Web\LeagueController | League page showing group standings, fixtures, and global leaderboard |
-| GET | `/api/v1/league/standings` | Api\V1\LeagueController | Current group standings and kingdom-wide leaderboard |
+| GET | `/app/league` | Web\LeagueController | League page: group standings, fixtures, kingdom leaderboard. Query `tab`, `groupId`, `seasonId` (active or completed season in this kingdom) |
+| GET | `/api/v1/league/standings` | Api\V1\LeagueController | Group standings for the active season, or `seasonId` when that season belongs to the kingdom |
 | GET | `/api/v1/league/fixtures` | Api\V1\LeagueController | Fixture schedule for group or team |
 | GET | `/api/v1/league/seasons` | Api\V1\LeagueController | Kingdom season history |
 | POST | `/api/v1/league/process-season` | Api\V1\LeagueController | Season transition trigger (Admin only) |

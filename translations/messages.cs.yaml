@@ -66,6 +66,7 @@ auth:
     rich_world: Bohatý svět
     test: Zkušební
   kingdom_season: "Sezóna:"
+  kingdom_active_season: "Sezóna: %number%"
   kingdom_days: dní
   kingdom_players: "Hráči:"
   remember_me: Zapamatovat si mě
@@ -1434,6 +1435,16 @@ league:
   title: Liga a žebříčky
   subtitle: Přehled ligových tabulek, zápasů a globálního pořadí v království.
   select_group: Vyberte skupinu
+  select_season: Vyberte sezónu
+  season_option: "Sezóna %number% — %status%"
+  season_status_active: Probíhá
+  season_status_completed: Ukončená
+  viewing_archive: Tahle sezóna je ukončená. Tabulka a výsledky jsou konečné.
+  archive_result: "Skončili jste na %position%. místě ve skupině %group% (%tier%)."
+  archive_status_promoted: Postup.
+  archive_status_relegated: Sestup.
+  archive_status_retained: Zůstali jste v úrovni.
+  archive_reward: "Odměna sezóny: %gold% zlata."
   no_active_season: Žádná aktivní sezóna
   no_active_season_desc: V tomto království momentálně neprobíhá žádná aktivní ligová sezóna. Zkontrolujte prosím stav později.
   tab_standings: Tabulka skupiny

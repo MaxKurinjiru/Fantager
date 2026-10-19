@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1;
 
 use App\Controller\Api\ApiControllerTrait;
+use App\Entity\League\LeagueSeason;
 use App\Service\Kingdom\KingdomService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,6 +27,8 @@ class KingdomController extends AbstractController
 
         $data = array_map(static function (array $entry): array {
             $k = $entry['kingdom'];
+            /** @var LeagueSeason $activeSeason */
+            $activeSeason = $entry['activeSeason'];
 
             return [
                 'id' => $k->getId(),
@@ -44,6 +47,7 @@ class KingdomController extends AbstractController
                 'xp_modifier' => $k->getXpModifier(),
                 'capacity' => $entry['capacity'],
                 'player_count' => $entry['playerCount'],
+                'active_season_number' => $activeSeason->getSeasonNumber(),
             ];
         }, $kingdoms);
 

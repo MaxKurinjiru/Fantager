@@ -143,7 +143,8 @@ Seven facilities. Forge is not live (crafting is ⏳).
 | Standings | Group table (W/D/L, GD, points, last-5, promo/releg) | ✅ |
 | Standings | Group fixtures + score link to replay | ✅ |
 | My fixtures | Own season matches + prepare formation | ✅ |
-| Kingdom leaderboard | All teams in the active season | ✅ |
+| Kingdom leaderboard | All teams in the selected season | ✅ |
+| Season archive | Finished seasons: table, fixtures, place, tier move, gold | ✅ |
 | League | Win-streak / derby / relegation-pressure morale | ✂️ |
 | Calendar | Week navigation, team-only / system-tick toggles | ✅ |
 | Calendar | League fixtures + own friendlies in the feed | ✅ |

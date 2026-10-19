@@ -4,7 +4,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Group table, own fixtures, kingdom-wide ranking.
 
-**Status:** Live at `GET /app/league`. Three **English** tabs (translation keys): Group standings, My fixtures, Kingdom leaderboard. Win-streak / derby / relegation-pressure morale are **Cut**. Page is server-rendered; JSON also exists under `/api/v1/league/*`.
+**Status:** Live at `GET /app/league`. Three **English** tabs (translation keys): Group standings, My fixtures, Kingdom leaderboard. A season selector opens finished seasons (final table, own results, place, tier move, gold). Win-streak / derby / relegation-pressure morale are **Cut**. Page is server-rendered; JSON also exists under `/api/v1/league/*`.
 
 **Live UI:** `templates/league/index.html.twig`, `templates/components/league/`.
 
@@ -16,11 +16,16 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 ### Header
 
-- Active season number and start/end dates
-- Group `<select>` (`?groupId=`) — all groups in the season, by tier
-- Empty state when there is no active season
+- Season `<select>` (`?seasonId=`) — active and completed seasons in the kingdom, newest first. A scheduled shell is omitted. Unknown id falls back to the active season, then the newest finished season
+- Selected season number and start/end dates
+- Group `<select>` (`?groupId=`) — all groups in the selected season, by tier
+- Empty state when the kingdom has no active or finished season
 
-Query: `tab` = `standings` | `my-fixtures` | `leaderboard`.
+Query: `tab` = `standings` | `my-fixtures` | `leaderboard`. `seasonId` and `groupId` stay on the tab links. Changing season drops a group id that belongs to another season.
+
+### Season archive
+
+Choosing a **completed** season keeps the three tabs (final group table, that season's own matches, kingdom leaderboard). Formation prep and fill-from-roster are hidden. A banner states the season is finished and, for the viewer's team, the place, group, tier, promotion/relegation/retained status, and gold from the `season_ended` chronicle.
 
 ### Group standings (`tab=standings`)
 
