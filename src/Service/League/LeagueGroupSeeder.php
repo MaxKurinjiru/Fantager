@@ -17,8 +17,8 @@ class LeagueGroupSeeder
 {
     /**
      * @param list<array{team: Team, position: int, standing: LeagueStanding}> $entries
-     * @param callable(LeagueStanding, LeagueStanding): int                     $compareStandings
-     * @param null|callable(list<Team>): list<Team>                            $shuffleTeams
+     * @param callable(LeagueStanding, LeagueStanding): int                    $compareStandings
+     * @param callable(list<Team>): list<Team>|null                            $shuffleTeams
      *
      * @return list<list<Team>> index-aligned with the destination groups
      */

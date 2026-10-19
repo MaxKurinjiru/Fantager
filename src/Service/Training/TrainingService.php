@@ -437,7 +437,6 @@ class TrainingService
             /** @var TrainingType $type — only trainers with non-null type are queried */
             $attribute = $trainer->getTargetAttribute();
             foreach ($trainees as $hero) {
-
                 $gainRaw = 0;
                 $gainExt = 0;
 

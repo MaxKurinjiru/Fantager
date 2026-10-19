@@ -84,4 +84,5 @@ bash scripts/check-ui-compliance.sh
 bash scripts/check-backend-docs.sh
 docker exec -u apache fantager-web composer test
 docker exec -u apache fantager-web composer phpstan
+docker exec -u apache fantager-web composer php-cs
 ```

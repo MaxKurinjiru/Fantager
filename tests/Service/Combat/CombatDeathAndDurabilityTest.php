@@ -141,6 +141,7 @@ class CombatDeathAndDurabilityTest extends TestCase
             $this->createStub(\App\Repository\Headquarters\HeadquartersRepository::class),
             $this->createStub(\App\Service\Economy\FinancialCrisisService::class),
             $this->createStub(\App\Service\Hero\HeroProgressionService::class),
+            $this->createStub(\App\Service\Team\TeamChemistryService::class),
         );
 
 
@@ -532,6 +533,7 @@ class CombatDeathAndDurabilityTest extends TestCase
             $headquartersRepository,
             $financialCrisisService,
             $this->heroProgressionForRewards(),
+            $this->createStub(\App\Service\Team\TeamChemistryService::class),
         );
     }
 

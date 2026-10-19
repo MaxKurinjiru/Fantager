@@ -10,7 +10,7 @@
   }
 
   .graveyard-summary {
-    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+    @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4;
   }
 
   .graveyard-summary__card {
@@ -68,6 +68,10 @@
   .graveyard-detail__meta {
     @apply flex flex-wrap gap-3 text-xs;
     color: var(--color-text-secondary);
+  }
+
+  .graveyard-detail__links {
+    @apply flex flex-wrap gap-3;
   }
 
   .graveyard-detail__stats {
@@ -133,9 +137,22 @@
     color: var(--color-text-secondary);
   }
 
+  .graveyard-entry__links {
+    @apply flex flex-wrap gap-3;
+  }
+
   .graveyard-entry__link {
     @apply text-[11px] font-bold uppercase tracking-wide no-underline;
     color: var(--color-brand-400);
+  }
+
+  .graveyard-pagination {
+    @apply flex flex-wrap items-center justify-center gap-4 pt-2;
+  }
+
+  .graveyard-pagination__info {
+    @apply text-sm;
+    color: var(--color-text-secondary);
   }
 
   .graveyard-empty {

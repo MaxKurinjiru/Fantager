@@ -1,0 +1,55 @@
+name: PHP-CS
+
+on:
+  workflow_call:
+  pull_request:
+    paths:
+      - 'src/**/*.php'
+      - 'bin/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - '.php-cs-fixer.dist.php'
+      - '.github/workflows/php-cs.yml'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/**/*.php'
+      - 'bin/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - '.php-cs-fixer.dist.php'
+
+jobs:
+  php-cs:
+    name: PHP-CS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run PHP-CS-Fixer
+        run: composer php-cs

@@ -432,11 +432,23 @@ graveyard:
   apply_filters: Použít
   clear_filters: Zrušit filtry
   empty: Zatím žádné památníky.
+  empty_desc: Propuštění hrdinové a trenéři i hrdinové padlí v boji se zapisují sem.
+  empty_filtered_title: Žádný odpovídající památník
   empty_filtered: Vybraným filtrům neodpovídá žádný památník.
   view_detail: Zobrazit detail
+  view_hero: Zobrazit hrdinu
+  view_trainer: Zobrazit trenéra
+  view_history: Zobrazit historii
   close_detail: Zavřít detail
   age: Věk
   final_level: Finální level
+  matches_played: Zápasy
+  matches_won: Výhry
+  combats_fallen: Pády
+  pagination: Stránkování hřbitova
+  prev_page: Předchozí
+  next_page: Další
+  page_info: "Strana %page% z %total%"
   role:
     combatant: Hrdina
     trainer: Trenér

@@ -133,10 +133,8 @@ class ChronicleOwnershipPeriodService
     }
 
     /**
-     * @param array{key: string, kind: string, name: string|null, user_id: int|null, from: \DateTimeImmutable, from_inclusive: bool, to: \DateTimeImmutable|null, to_inclusive: bool, current: bool}|null $open
+     * @param array{key: string, kind: string, name: string|null, user_id: int|null, from: \DateTimeImmutable, from_inclusive: bool, to: \DateTimeImmutable|null, to_inclusive: bool, current: bool}|null  $open
      * @param list<array{key: string, kind: string, name: string|null, user_id: int|null, from: \DateTimeImmutable, from_inclusive: bool, to: \DateTimeImmutable|null, to_inclusive: bool, current: bool}> $periods
-     *
-     * @return null
      */
     private function close(?array $open, array &$periods, \DateTimeImmutable $at, bool $inclusive): null
     {

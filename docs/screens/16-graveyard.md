@@ -14,21 +14,21 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 ### Summary
 
-- Total memorials, average age at departure (or —)
+- Total memorials, average age at departure (or —), count per live cause (dismissed, combat death)
 
 ### Filters (GET, auto-submit)
 
-Role, cause, race, name search. Pagination.
+Role, cause, race, name search. Pagination keeps the current page on detail open and close.
 
 ### List
 
-Each entry: name, role badge, trait if any, date, race, final level, age, cause, **View detail** (`?id=`).
+Each entry: name, role badge, trait if any, date, race, final level, age, cause, matches played, wins, times fallen, **View detail** (`?id=`). When the hero row still exists: **View hero** / **View trainer** and **View history** (`/app/heroes/{id}`, history tab).
 
 ### Detail (`?id=`)
 
-Name, race, role, cause, trait, date, age, final level, final stats. Close returns to the filtered list.
+Name, race, role, cause, trait, date, age, final level, matches, wins, times fallen, final stats. Same profile links. Close returns to the filtered list on the same page.
 
-Empty state when the filter matches nothing.
+Empty state when the team has no memorials. A different empty state when filters match nothing.
 
 ### Backend
 
@@ -38,7 +38,7 @@ Empty state when the filter matches nothing.
 | GET | `/api/v1/graveyard` |
 | GET | `/api/v1/graveyard/{id}` |
 
-Writers: `POST /api/v1/heroes/{id}/dismiss`, `POST /api/v1/training/trainers/{id}/dismiss`, `LeagueMatchResolutionService` → `GraveyardService` (`MemorialCause::CombatDeath`).
+Writers: `POST /api/v1/heroes/{id}/dismiss`, `POST /api/v1/training/trainers/{id}/dismiss`, league and friendly resolution → `GraveyardService` (`MemorialCause::CombatDeath`). Dismissal and combat death set status `dead` and keep the hero row.
 
 ---
 

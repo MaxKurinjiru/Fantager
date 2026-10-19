@@ -72,7 +72,15 @@ class HeroRepository extends ServiceEntityRepository
     public function findTrainersByTeam(Team $team): array
     {
         /** @var list<Hero> $trainers */
-        $trainers = $this->findBy(['team' => $team, 'role' => HeroRole::Trainer]);
+        $trainers = $this->createQueryBuilder('h')
+            ->where('h.team = :team')
+            ->andWhere('h.role = :role')
+            ->andWhere('h.status NOT IN (:deadStatuses)')
+            ->setParameter('team', $team)
+            ->setParameter('role', HeroRole::Trainer)
+            ->setParameter('deadStatuses', [HeroStatus::Dead, HeroStatus::Retired])
+            ->getQuery()
+            ->getResult();
 
         return $trainers;
     }
@@ -83,8 +91,10 @@ class HeroRepository extends ServiceEntityRepository
             ->select('COUNT(h.id)')
             ->where('h.team = :team')
             ->andWhere('h.role = :role')
+            ->andWhere('h.status NOT IN (:deadStatuses)')
             ->setParameter('team', $team)
             ->setParameter('role', HeroRole::Trainer)
+            ->setParameter('deadStatuses', [HeroStatus::Dead, HeroStatus::Retired])
             ->getQuery()
             ->getSingleScalarResult();
     }

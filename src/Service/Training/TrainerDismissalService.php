@@ -79,7 +79,7 @@ class TrainerDismissalService
         $this->teamChronicleService->recordTrainerDismissed($team, $trainer, $compensation);
 
         $this->financialCrisisService->recordRecoveryAction($team);
-        $this->graveyardService->removeHero($trainer);
+        $trainer->setStatus(HeroStatus::Dead);
         $this->em->flush();
 
         return $compensation;

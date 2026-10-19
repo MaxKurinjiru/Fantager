@@ -432,11 +432,23 @@ graveyard:
   apply_filters: Apply
   clear_filters: Clear filters
   empty: No memorial records yet.
+  empty_desc: Dismissed heroes and trainers, and heroes who die in combat, are recorded here.
+  empty_filtered_title: No matching memorials
   empty_filtered: No memorials match the selected filters.
   view_detail: View detail
+  view_hero: View hero
+  view_trainer: View trainer
+  view_history: View history
   close_detail: Close detail
   age: Age
   final_level: Final level
+  matches_played: Matches
+  matches_won: Wins
+  combats_fallen: Times fallen
+  pagination: Graveyard pages
+  prev_page: Previous
+  next_page: Next
+  page_info: "Page %page% of %total%"
   role:
     combatant: Hero
     trainer: Trainer

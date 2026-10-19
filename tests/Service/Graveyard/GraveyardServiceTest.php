@@ -48,6 +48,9 @@ class GraveyardServiceTest extends TestCase
         $hero->setChaRaw(28);
         $hero->setLckRaw(25);
         $hero->setTrait(HeroTrait::QuickLearner);
+        $hero->setMatchesPlayed(12);
+        $hero->setMatchesWon(7);
+        $hero->setCombatsFallen(3);
 
         $record = $service->createMemorial($hero, $team, MemorialCause::Dismissed);
 
@@ -63,5 +66,8 @@ class GraveyardServiceTest extends TestCase
 
         $serialized = $service->serializeMemorial($record);
         $this->assertSame(HeroTrait::QuickLearner, $serialized['trait']);
+        $this->assertSame(12, $serialized['matches_played']);
+        $this->assertSame(7, $serialized['matches_won']);
+        $this->assertSame(3, $serialized['combats_fallen']);
     }
 }
