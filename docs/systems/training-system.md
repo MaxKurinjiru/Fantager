@@ -106,6 +106,6 @@ All mutating routes validate the lock state.
 - `POST /api/v1/training/trainers/{id}/configure` — Configure trainer focus (request parameters: `type`, `attribute`).
 - `POST /api/v1/training/trainers/{id}/assign` — Assign a hero to a trainer's slot (request parameter: `hero_id`).
 - `POST /api/v1/training/trainers/{id}/unassign` — Remove assignment of hero from trainer (request parameter: `hero_id`).
-- `POST /api/v1/training/trainers/{id}/dismiss` — Dismiss trainer for partial compensation.
+- `POST /api/v1/training/trainers/{id}/dismiss` — Dismiss trainer for partial compensation. Status becomes `dead`; the row stays and drops out of the trainer list and the cap.
 
 

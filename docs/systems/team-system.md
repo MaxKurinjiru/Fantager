@@ -144,7 +144,7 @@ See [financial-crisis-system.md](financial-crisis-system.md).
 
 `TeamChemistryService::recalculate()` writes `Team.chemistry` as an integer **0–100**. The dashboard and `GET /api/v1/teams/{teamId}/history` show it. **Combat does not read it.** In-combat race-synergy tables are **Cut** ([#9](../product/known-issues.md) Resolved / A7.5).
 
-**Who is counted:** heroes with `role = combatant` (`HeroRepository::findCombatantsByTeam`). Trainers are excluded. Fewer than 2 combatants → chemistry **50**.
+**Who is counted:** heroes with `role = combatant` and a living status (`HeroRepository::findCombatantsByTeam`, then drop `dead` and reserved `retired`). Trainers are excluded. Fewer than 2 living combatants → chemistry **50**.
 
 **Pair score** for each unordered pair of combatants:
 
@@ -159,7 +159,7 @@ See [financial-crisis-system.md](financial-crisis-system.md).
 - `penalty` = (hostile pair count) × **15**
 - `chemistry` = `round(avg − penalty)`, clamped to 0–100
 
-Recalculated when roster composition changes (kingdom init, summon, dismiss, marketplace hero transfer). The race matrix also feeds summoning, arena adaptation, and weekly training group modifiers; those uses are separate from this stored chemistry number. Summoning / starting roster / NPC hero buys use relationship ≥ 50, except Genie adaptation ≥ 80 ([summoning-system.md](summoning-system.md#locked-genie-summon-pool)).
+Recalculated when roster composition changes (kingdom init, summon, dismiss, permanent combat death in league and friendly matches, marketplace hero transfer). The race matrix also feeds summoning, arena adaptation, and weekly training group modifiers; those uses are separate from this stored chemistry number. Summoning / starting roster / NPC hero buys use relationship ≥ 50, except Genie adaptation ≥ 80 ([summoning-system.md](summoning-system.md#locked-genie-summon-pool)).
 
 ## Team Chronicle
 
@@ -184,8 +184,8 @@ Players can dismiss available heroes via `POST /api/v1/heroes/{id}/dismiss`:
 
 - Compensation = **40%** of estimated hero value (`complex_rating` × `gold_per_complex_point` from [hero-rating-system.md](hero-rating-system.md))
 - Team must retain at least **6 combat-ready** heroes (status `available`)
-- Hero must be unassigned from trainer before dismissal
-- Hero is permanently removed (unlike marketplace sale)
+- Trainer assignment, formation slots, and equipped items are cleared; spells, masteries, and training history stay
+- Hero status becomes `dead`. Profile and chronicle remain at `/app/heroes/{id}` (unlike a marketplace sale, the hero cannot be fielded again)
 
 ## APIs
 

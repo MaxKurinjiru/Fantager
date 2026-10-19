@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
+use App\Entity\Graveyard\GraveyardMemorial;
+use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\MemorialCause;
 use App\Enum\Race;
+use App\Repository\Hero\HeroRepository;
 use App\Service\Graveyard\GraveyardPresenter;
 use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +24,7 @@ class GraveyardController extends AbstractController
 {
     public function __construct(
         private readonly GraveyardPresenter $graveyardPresenter,
+        private readonly HeroRepository $heroRepository,
         private readonly UserMessageTranslator $userMessages,
     ) {
     }
@@ -74,11 +78,14 @@ class GraveyardController extends AbstractController
             ? $this->graveyardPresenter->findForTeam($detailId, $team)
             : null;
 
+        $memorials = $this->graveyardPresenter->presentListForTeam($team, $role, $cause, $race, $search, $page, $limit);
+
         return $this->render('graveyard/index.html.twig', [
             'team' => $team,
             'summary' => $this->graveyardPresenter->presentSummary($team),
-            'memorials' => $this->graveyardPresenter->presentListForTeam($team, $role, $cause, $race, $search, $page, $limit),
+            'memorials' => $memorials,
             'selected_memorial' => $selectedMemorial,
+            'profile_hero_ids' => $this->profileHeroIds($team, $memorials, $selectedMemorial),
             'current_role' => $role?->value,
             'current_cause' => $cause?->value,
             'current_race' => $race?->value,
@@ -89,5 +96,47 @@ class GraveyardController extends AbstractController
             'page' => $page,
             'total_pages' => $totalPages,
         ]);
+    }
+
+    /**
+     * Hero ids that still belong to this team, so memorial links skip deleted rows.
+     *
+     * @param list<array<string, mixed>> $memorials
+     *
+     * @return array<int, true>
+     */
+    private function profileHeroIds(Team $team, array $memorials, ?GraveyardMemorial $selectedMemorial): array
+    {
+        $ids = [];
+        foreach ($memorials as $memorial) {
+            $heroId = $memorial['original_hero_id'] ?? null;
+            if (is_int($heroId) && $heroId > 0) {
+                $ids[$heroId] = true;
+            }
+        }
+
+        $selectedId = $selectedMemorial?->getOriginalHeroId();
+        if (null !== $selectedId && $selectedId > 0) {
+            $ids[$selectedId] = true;
+        }
+
+        if ([] === $ids) {
+            return [];
+        }
+
+        $heroes = $this->heroRepository->findBy([
+            'id' => array_keys($ids),
+            'team' => $team,
+        ]);
+
+        $present = [];
+        foreach ($heroes as $hero) {
+            $heroId = $hero->getId();
+            if (null !== $heroId) {
+                $present[$heroId] = true;
+            }
+        }
+
+        return $present;
     }
 }

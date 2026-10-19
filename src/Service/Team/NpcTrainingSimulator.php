@@ -53,7 +53,9 @@ class NpcTrainingSimulator
             $trainees = [];
             foreach ($teamHeroes as $h) {
                 if ($h->isTrainer()) {
-                    $trainers[] = $h;
+                    if (HeroStatus::Available === $h->getStatus()) {
+                        $trainers[] = $h;
+                    }
                 } else {
                     $trainees[] = $h;
                 }

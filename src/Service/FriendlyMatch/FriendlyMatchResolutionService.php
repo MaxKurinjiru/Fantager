@@ -31,6 +31,7 @@ use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroMasteryService;
 use App\Service\Hero\KnockoutOutcome;
 use App\Service\Notification\NotificationHelper;
+use App\Service\Team\TeamChemistryService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\MatchOutcome;
 use Doctrine\ORM\EntityManagerInterface;
@@ -64,6 +65,7 @@ class FriendlyMatchResolutionService
         private readonly HeadquartersRepository $headquartersRepository,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly \App\Service\Hero\HeroProgressionService $heroProgressionService,
+        private readonly TeamChemistryService $teamChemistryService,
     ) {
     }
 
@@ -327,6 +329,8 @@ class FriendlyMatchResolutionService
         }
 
         // 6. KO aging + permanent death (same as league)
+        /** @var array<int, Team> $teamsToRecalculate */
+        $teamsToRecalculate = [];
         if (!empty($killedHeroIds)) {
             $rollsByHero = [];
             foreach ($killedHeroIds as $rawId) {
@@ -367,6 +371,7 @@ class FriendlyMatchResolutionService
                     $this->graveyardService->recordMemorial($hero, $hero->getTeam(), MemorialCause::CombatDeath);
                     $this->teamChronicleService->recordHeroDied($hero->getTeam(), $hero, MemorialCause::CombatDeath->value);
                     $hero->setStatus(HeroStatus::Dead);
+                    $teamsToRecalculate[spl_object_id($hero->getTeam())] = $hero->getTeam();
 
                     if (null !== $hero->getTeam()->getUser()) {
                         $opponent = $hero->getTeam()->getId() === $homeTeam->getId() ? $awayTeam : $homeTeam;
@@ -381,6 +386,10 @@ class FriendlyMatchResolutionService
                     }
                 }
             }
+        }
+
+        foreach ($teamsToRecalculate as $affectedTeam) {
+            $this->teamChemistryService->recalculate($affectedTeam);
         }
 
         // 7. Match result notifications

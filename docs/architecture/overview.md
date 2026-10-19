@@ -46,7 +46,7 @@ Frontend source is `assets/` (Stimulus controllers, SCSS). `npm run build` write
 | PHPUnit | `composer test` — services and controllers under `tests/` |
 | Docs vs code | `bash scripts/check-backend-docs.sh` (routes, entities, enums, i18n) |
 | UI compliance | `bash scripts/check-ui-compliance.sh` |
-| CI | GitHub Actions: PHPStan, PHPUnit, UI compliance, backend-docs, deploy |
+| CI | GitHub Actions: PHPStan, PHP-CS, PHPUnit, UI compliance, backend-docs, deploy |
 
 Browser E2E / Playwright is **Cut** (A8.2). Do not add a Playwright suite unless the user explicitly asks.
 

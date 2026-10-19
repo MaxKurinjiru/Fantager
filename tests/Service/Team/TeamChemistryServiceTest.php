@@ -6,6 +6,7 @@ namespace App\Tests\Service\Team;
 
 use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
+use App\Enum\HeroStatus;
 use App\Enum\Race;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
@@ -154,5 +155,42 @@ class TeamChemistryServiceTest extends TestCase
         // Hostility penalty: 2 * 15 = 30.
         // Final: round(33.33 - 30) = 3.
         $this->assertSame(3, $team->getChemistry());
+    }
+
+    public function testRecalculateIgnoresDepartedCombatants(): void
+    {
+        $team = new Team();
+
+        $livingA = new Hero();
+        $livingA->setRace(Race::Human);
+        $livingA->setChaRaw(100);
+        $livingA->setStatus(HeroStatus::Available);
+
+        $livingB = new Hero();
+        $livingB->setRace(Race::Elf);
+        $livingB->setChaRaw(100);
+        $livingB->setStatus(HeroStatus::Available);
+
+        $departed = new Hero();
+        $departed->setRace(Race::Orc);
+        $departed->setChaRaw(100);
+        $departed->setStatus(HeroStatus::Dead);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findCombatantsByTeam')->willReturn([$livingA, $livingB, $departed]);
+
+        $raceConfig = $this->createMock(RaceConfig::class);
+        $raceConfig->expects($this->once())
+            ->method('getRelationship')
+            ->with(Race::Human, Race::Elf)
+            ->willReturn(80);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->once())->method('flush');
+
+        $service = new TeamChemistryService($heroRepo, $raceConfig, $em);
+        $service->recalculate($team);
+
+        $this->assertSame(80, $team->getChemistry());
     }
 }

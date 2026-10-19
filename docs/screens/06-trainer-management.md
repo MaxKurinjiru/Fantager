@@ -34,7 +34,7 @@ There is **no** selected-trainer detail pane, age-progression timeline, or marke
 | Action | How |
 |--------|-----|
 | Promote combatant → trainer | Select an `available` combatant and confirm. The confirm states how many weeks remain until the mortality threshold at the current pace. `POST /api/v1/training/trainers/promote` (`hero_id`). No Veteran+ gate; no specialty pick — stats freeze as-is. Unequips items and clears formation slots. |
-| Dismiss trainer | Confirm on the card. `POST /api/v1/training/trainers/{id}/dismiss` → memorial via `GraveyardService`. Blocked while `selling`. |
+| Dismiss trainer | Confirm on the card. `POST /api/v1/training/trainers/{id}/dismiss` → memorial via `GraveyardService`, status `dead`. The trainer leaves this page and the trainer cap. Profile stays at `/app/heroes/{id}`. Blocked while `selling`. |
 | Buy / sell trainer | **Marketplace** (`/app/marketplace` browse `trainer` / sell tab) — not a button on the trainer card |
 
 Hero-detail manage menu also offers **Promote** when the hero is an available combatant, has no trainer assignment, and the team is under the trainer cap (`hero-promote`).

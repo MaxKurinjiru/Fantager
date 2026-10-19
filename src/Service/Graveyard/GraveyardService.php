@@ -85,19 +85,8 @@ class GraveyardService
             $hero->setTrainer(null);
         }
 
-        foreach ($hero->getHeroSpells()->toArray() as $heroSpell) {
-            $this->em->remove($heroSpell);
-        }
-
-        foreach ($hero->getSchoolMasteries()->toArray() as $mastery) {
-            $this->em->remove($mastery);
-        }
-
-        /** @var list<\App\Entity\Hero\HeroTrainingHistory> $historyEntries */
-        $historyEntries = $this->em->getRepository(\App\Entity\Hero\HeroTrainingHistory::class)->findBy(['hero' => $hero]);
-        foreach ($historyEntries as $entry) {
-            $this->em->remove($entry);
-        }
+        // Spells, school masteries, and training history stay so the hero profile
+        // and chronicle remain readable after dismissal, same as combat death.
     }
 
     public function prepareTrainerRemoval(Hero $trainer): void
@@ -114,16 +103,11 @@ class GraveyardService
     }
 
     /**
-     * Prepare a hero who died in combat.
+     * Detach a hero who died in combat from the active roster.
      *
-     * Unlike prepareHeroRemoval() (used for dismiss), this:
-     * - Does NOT delete the Hero entity — hero remains in DB with status=Dead
-     * - Does NOT remove spells, masteries, or training history
-     * - Removes the hero from all formation slots
-     * - Detaches the hero from their trainer (if training)
-     * - Cancels any active marketplace listings
-     *
-     * Call setStatus(HeroStatus::Dead) on the hero after this.
+     * Clears formation slots, trainer assignment, equipped items, and marketplace
+     * listings. Spells, school masteries, and training history stay. The caller
+     * sets status to dead; the hero row is not deleted.
      */
     public function prepareCombatDeath(Hero $hero): void
     {
@@ -151,13 +135,8 @@ class GraveyardService
         // 4. Cancel active hero/trainer marketplace listings and refund reserved bids
         $this->marketplaceService->forceCancelActiveListingsForHero($hero);
 
-        // NOTE: spells, school masteries, and training history are intentionally kept
-        // so the graveyard memorial can display the hero's full profile history.
-    }
-
-    public function removeHero(Hero $hero): void
-    {
-        $this->em->remove($hero);
+        // NOTE: spells, school masteries, and training history stay so the hero
+        // profile and chronicle remain readable after death.
     }
 
     /**
@@ -206,6 +185,9 @@ class GraveyardService
             'date' => $record->getDepartedAt()->format('Y-m-d'),
             'original_hero_id' => $record->getOriginalHeroId(),
             'trait' => $record->getTrait(),
+            'matches_played' => $record->getMatchesPlayed(),
+            'matches_won' => $record->getMatchesWon(),
+            'combats_fallen' => $record->getCombatsFallen(),
         ];
     }
 }

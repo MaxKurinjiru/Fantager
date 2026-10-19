@@ -90,7 +90,7 @@ class HeroDismissalService
         $this->teamChronicleService->recordHeroDismissed($team, $hero, $compensation);
 
         $this->financialCrisisService->recordRecoveryAction($team);
-        $this->graveyardService->removeHero($hero);
+        $hero->setStatus(HeroStatus::Dead);
         $this->em->flush();
 
         $this->teamChemistryService->recalculate($team);

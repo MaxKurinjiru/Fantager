@@ -72,4 +72,39 @@ class TrainerDismissalServiceTest extends TestCase
 
         $service->dismiss($team, $trainer);
     }
+
+    public function testDismissKeepsTrainerAndMarksDead(): void
+    {
+        $graveyard = $this->createMock(GraveyardService::class);
+        $graveyard->expects($this->once())->method('prepareTrainerRemoval');
+        $graveyard->expects($this->once())->method('recordMemorial');
+
+        $ratingCalculator = $this->createMock(HeroRatingCalculator::class);
+        $ratingCalculator->method('estimateGoldValue')->willReturn(0);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->once())->method('flush');
+
+        $service = new TrainerDismissalService(
+            $graveyard,
+            $this->createMock(EconomyService::class),
+            $this->createMock(FinancialCrisisService::class),
+            $this->createMock(TeamChronicleService::class),
+            $ratingCalculator,
+            new HeroRatingConfig(dirname(__DIR__, 3)),
+            $em,
+        );
+
+        $team = new Team();
+        $trainer = new Hero();
+        $trainer->setTeam($team);
+        $trainer->setName('Coach');
+        $trainer->setRace(Race::Human);
+        $trainer->setRole(HeroRole::Trainer);
+        $trainer->setStatus(HeroStatus::Available);
+
+        $service->dismiss($team, $trainer);
+
+        $this->assertSame(HeroStatus::Dead, $trainer->getStatus());
+    }
 }

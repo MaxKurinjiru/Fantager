@@ -4,7 +4,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Inspect one hero — overview, equipment, spells, history.
 
-**Status:** Live at `GET /app/heroes/{id}`. Tabs: `overview`, `equipment`, `spells`, `history`. There is **no** Training tab (assignment sits on overview). There is **no** “assign to formation” control. XP bar uses locked cumulative thresholds; displayed level is stored `hero.level`.  
+**Status:** Live at `GET /app/heroes/{id}`. Tabs: `overview`, `equipment`, `spells`, `history`. There is **no** Training tab (assignment sits on overview). There is **no** “assign to formation” control. XP bar uses locked cumulative thresholds; displayed level is stored `hero.level`. A hero with status `dead` (combat death or dismissal) stays on this URL, including the history tab. The graveyard links here while the row exists.  
 **Lock:** [hero-system.md — hero level invariant](../systems/hero-system.md#locked-hero-level-invariant), [item-system.md — item occupancy](../systems/item-system.md#locked-item-occupancy)
 
 **Live UI:** `templates/hero/detail.html.twig`, `templates/components/hero/`.

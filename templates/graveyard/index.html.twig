@@ -24,6 +24,12 @@
                 {% endif %}
             </span>
         </div>
+        {% for cause in causes %}
+            <div class="graveyard-summary__card">
+                <span class="graveyard-summary__label">{{ ('graveyard.cause.' ~ cause.value)|trans }}</span>
+                <span class="graveyard-summary__value">{{ summary.by_cause[cause.value]|default(0) }}</span>
+            </div>
+        {% endfor %}
     </div>
 
     <form method="GET" action="{{ path('app_graveyard') }}" class="graveyard-filters" data-controller="form-auto-submit">
@@ -84,7 +90,7 @@
         <section class="graveyard-detail" aria-labelledby="graveyard-detail-title">
             <div class="graveyard-detail__header">
                 <h2 id="graveyard-detail-title" class="graveyard-detail__title">{{ selected_memorial.name }}</h2>
-                <a href="{{ path('app_graveyard', { role: current_role, cause: current_cause, race: current_race, search: current_search }) }}"
+                <a href="{{ path('app_graveyard', { role: current_role, cause: current_cause, race: current_race, search: current_search, page: page }) }}"
                    class="graveyard-detail__close">{{ 'graveyard.close_detail'|trans }}</a>
             </div>
             <div class="graveyard-detail__meta">
@@ -101,19 +107,33 @@
                 {% if selected_memorial.finalLevel %}
                     <div><dt>{{ 'graveyard.final_level'|trans }}</dt><dd>{{ selected_memorial.finalLevel }}</dd></div>
                 {% endif %}
+                <div><dt>{{ 'graveyard.matches_played'|trans }}</dt><dd>{{ selected_memorial.matchesPlayed }}</dd></div>
+                <div><dt>{{ 'graveyard.matches_won'|trans }}</dt><dd>{{ selected_memorial.matchesWon }}</dd></div>
+                <div><dt>{{ 'graveyard.combats_fallen'|trans }}</dt><dd>{{ selected_memorial.combatsFallen }}</dd></div>
                 {% for stat_key, stat_value in selected_memorial.finalStats %}
                     <div><dt>{{ ('graveyard.stat.' ~ stat_key)|trans }}</dt><dd>{{ stat_value }}</dd></div>
                 {% endfor %}
             </dl>
+            {% if selected_memorial.originalHeroId and profile_hero_ids[selected_memorial.originalHeroId]|default(false) %}
+                <div class="graveyard-detail__links">
+                    <a href="{{ path('app_heroes_detail', { id: selected_memorial.originalHeroId }) }}" class="graveyard-entry__link">
+                        {{ (selected_memorial.roleAtDeparture.value == 'trainer' ? 'graveyard.view_trainer' : 'graveyard.view_hero')|trans }}
+                    </a>
+                    <a href="{{ path('app_heroes_detail', { id: selected_memorial.originalHeroId, tab: 'history' }) }}" class="graveyard-entry__link">
+                        {{ 'graveyard.view_history'|trans }}
+                    </a>
+                </div>
+            {% endif %}
         </section>
     {% endif %}
 
     <div class="graveyard-list">
         {% if memorials is empty %}
+            {% set filters_active = current_role or current_cause or current_race or current_search %}
             <div class="graveyard-empty">
                 <div class="graveyard-empty__emoji">🪦</div>
-                <h3 class="graveyard-empty__title">{{ 'graveyard.empty'|trans }}</h3>
-                <p class="graveyard-empty__desc">{{ 'graveyard.empty_filtered'|trans }}</p>
+                <h3 class="graveyard-empty__title">{{ (filters_active ? 'graveyard.empty_filtered_title' : 'graveyard.empty')|trans }}</h3>
+                <p class="graveyard-empty__desc">{{ (filters_active ? 'graveyard.empty_filtered' : 'graveyard.empty_desc')|trans }}</p>
             </div>
         {% else %}
             {% for memorial in memorials %}
@@ -135,14 +155,28 @@
                             {% endif %}
                             &bull; {{ 'graveyard.age'|trans }} {{ memorial.age }} {{ 'graveyard.years_suffix'|trans }}
                             &bull; {{ ('graveyard.cause.' ~ memorial.cause)|trans }}
+                            &bull; {{ 'graveyard.matches_played'|trans }} {{ memorial.matches_played }}
+                            &bull; {{ 'graveyard.matches_won'|trans }} {{ memorial.matches_won }}
+                            &bull; {{ 'graveyard.combats_fallen'|trans }} {{ memorial.combats_fallen }}
                         </p>
-                        <a href="{{ path('app_graveyard', {
-                            id: memorial.id,
-                            role: current_role,
-                            cause: current_cause,
-                            race: current_race,
-                            search: current_search
-                        }) }}" class="graveyard-entry__link">{{ 'graveyard.view_detail'|trans }}</a>
+                        <div class="graveyard-entry__links">
+                            <a href="{{ path('app_graveyard', {
+                                id: memorial.id,
+                                role: current_role,
+                                cause: current_cause,
+                                race: current_race,
+                                search: current_search,
+                                page: page
+                            }) }}" class="graveyard-entry__link">{{ 'graveyard.view_detail'|trans }}</a>
+                            {% if memorial.original_hero_id and profile_hero_ids[memorial.original_hero_id]|default(false) %}
+                                <a href="{{ path('app_heroes_detail', { id: memorial.original_hero_id }) }}" class="graveyard-entry__link">
+                                    {{ (memorial.type == 'trainer' ? 'graveyard.view_trainer' : 'graveyard.view_hero')|trans }}
+                                </a>
+                                <a href="{{ path('app_heroes_detail', { id: memorial.original_hero_id, tab: 'history' }) }}" class="graveyard-entry__link">
+                                    {{ 'graveyard.view_history'|trans }}
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </article>
             {% endfor %}
@@ -150,21 +184,21 @@
     </div>
 
     {% if total_pages > 1 %}
-        <nav class="news-pagination">
+        <nav class="graveyard-pagination" aria-label="{{ 'graveyard.pagination'|trans }}">
             {% if page > 1 %}
-                <a href="{{ path('app_graveyard', app.request.query.all|merge({page: page - 1})) }}" class="btn btn-outline btn--sm">{{ 'news.prev_page'|trans }}</a>
+                <a href="{{ path('app_graveyard', app.request.query.all|merge({page: page - 1})) }}" class="btn btn-outline btn--sm">{{ 'graveyard.prev_page'|trans }}</a>
             {% else %}
-                <button class="btn btn-outline btn--sm" disabled>{{ 'news.prev_page'|trans }}</button>
+                <button class="btn btn-outline btn--sm" disabled>{{ 'graveyard.prev_page'|trans }}</button>
             {% endif %}
 
-            <span class="news-pagination__info">
-                {{ 'news.page_info'|trans({'%page%': page, '%total%': total_pages}) }}
+            <span class="graveyard-pagination__info">
+                {{ 'graveyard.page_info'|trans({'%page%': page, '%total%': total_pages}) }}
             </span>
 
             {% if page < total_pages %}
-                <a href="{{ path('app_graveyard', app.request.query.all|merge({page: page + 1})) }}" class="btn btn-outline btn--sm">{{ 'news.next_page'|trans }}</a>
+                <a href="{{ path('app_graveyard', app.request.query.all|merge({page: page + 1})) }}" class="btn btn-outline btn--sm">{{ 'graveyard.next_page'|trans }}</a>
             {% else %}
-                <button class="btn btn-outline btn--sm" disabled>{{ 'news.next_page'|trans }}</button>
+                <button class="btn btn-outline btn--sm" disabled>{{ 'graveyard.next_page'|trans }}</button>
             {% endif %}
         </nav>
     {% endif %}

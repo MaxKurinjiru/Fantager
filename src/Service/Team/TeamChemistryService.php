@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service\Team;
 
+use App\Entity\Hero\Hero;
 use App\Entity\Team\Team;
+use App\Enum\HeroStatus;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\RaceConfig;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,7 +22,10 @@ class TeamChemistryService
 
     public function recalculate(Team $team): void
     {
-        $heroes = $this->heroRepository->findCombatantsByTeam($team);
+        $heroes = array_values(array_filter(
+            $this->heroRepository->findCombatantsByTeam($team),
+            static fn (Hero $hero): bool => HeroStatus::Dead !== $hero->getStatus() && !$hero->getStatus()->isReserved(),
+        ));
         $count = count($heroes);
 
         if ($count < 2) {

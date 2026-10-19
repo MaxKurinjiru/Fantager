@@ -103,6 +103,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->createMock(\App\Repository\Headquarters\HeadquartersRepository::class),
             $this->createMock(\App\Service\Economy\FinancialCrisisService::class),
             $this->createStub(\App\Service\Hero\HeroProgressionService::class),
+            $this->createStub(\App\Service\Team\TeamChemistryService::class),
         );
     }
 
@@ -343,6 +344,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
             $this->createMock(\App\Repository\Headquarters\HeadquartersRepository::class),
             $this->createMock(\App\Service\Economy\FinancialCrisisService::class),
             $this->createStub(\App\Service\Hero\HeroProgressionService::class),
+            $this->createStub(\App\Service\Team\TeamChemistryService::class),
         );
 
         $partial->expects($this->once())

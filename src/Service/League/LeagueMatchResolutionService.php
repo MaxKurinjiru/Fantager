@@ -33,6 +33,7 @@ use App\Service\Graveyard\GraveyardService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\KnockoutOutcome;
 use App\Service\Team\FanClubService;
+use App\Service\Team\TeamChemistryService;
 use App\Service\Team\TeamMoraleReputationService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\ValueObject\Combat\MatchOutcome;
@@ -63,6 +64,7 @@ class LeagueMatchResolutionService
         private readonly HeadquartersRepository $headquartersRepository,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly \App\Service\Hero\HeroProgressionService $heroProgressionService,
+        private readonly TeamChemistryService $teamChemistryService,
     ) {
     }
 
@@ -415,6 +417,8 @@ class LeagueMatchResolutionService
         // 8. Process combat deaths and aging. Every KO consumes one mortality roll
         // in killed_hero_ids order, including heroes who are not elders, so a later
         // elder sees the same generator state for the same log.
+        /** @var array<int, Team> $teamsToRecalculate */
+        $teamsToRecalculate = [];
         if (!empty($killedHeroIds)) {
             $rollsByHero = [];
             foreach ($killedHeroIds as $rawId) {
@@ -455,6 +459,7 @@ class LeagueMatchResolutionService
                     $this->graveyardService->recordMemorial($hero, $hero->getTeam(), MemorialCause::CombatDeath);
                     $this->teamChronicleService->recordHeroDied($hero->getTeam(), $hero, MemorialCause::CombatDeath->value);
                     $hero->setStatus(HeroStatus::Dead);
+                    $teamsToRecalculate[spl_object_id($hero->getTeam())] = $hero->getTeam();
 
                     if (null !== $hero->getTeam()->getUser()) {
                         $opponent = $hero->getTeam()->getId() === $homeTeam->getId() ? $awayTeam : $homeTeam;
@@ -469,6 +474,10 @@ class LeagueMatchResolutionService
                     }
                 }
             }
+        }
+
+        foreach ($teamsToRecalculate as $affectedTeam) {
+            $this->teamChemistryService->recalculate($affectedTeam);
         }
 
         // Send match result notifications to managers
