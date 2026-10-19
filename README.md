@@ -91,6 +91,7 @@ Equipment and spells on hero detail are under **Items and spells**.
 | Tactics | Per-slot L1 target order + thin L2 spell priorities | ✅ |
 | Tactics | L3 sequences / synergy tables / simulate sandbox | ✂️ |
 | Match prep | Assign lineup to a league fixture | ✅ |
+| Match prep | Match-ready panel + fill empty slots from roster | ✅ |
 | Engine | Fully automated match (kill score 0–6, round 200 cap) | ✅ |
 | Engine | Combat home-advantage | 📋 |
 | Engine | In-combat race synergy | ✂️ |

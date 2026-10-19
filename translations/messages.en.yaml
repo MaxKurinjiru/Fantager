@@ -276,6 +276,9 @@ error:
   formation_duplicate_hero: The same hero cannot occupy more than one formation slot.
   formation_not_on_fixture: Team is not part of this fixture.
   formation_only_scheduled: Formation can only be changed for scheduled fixtures.
+  formation_fill_player_only: Only player teams can fill a lineup from the roster.
+  formation_fill_already_ready: This lineup already has 6 combat-ready heroes.
+  formation_fill_cannot_complete: Not enough combat-ready heroes to fill empty slots. Keep at least 6 available combatants.
   formation_not_belong_team: Assigned formation does not belong to the team.
   formation_no_match_to_promote: No match-specific formation to promote.
   financial_crisis_blocked: 'This action is blocked during financial restrictions (%level%). Sell assets, dismiss heroes, or downgrade facilities to recover.'
@@ -1300,6 +1303,16 @@ formation:
   tactics_move_up: Move up
   tactics_move_down: Move down
   tactics_remove: Remove
+  match_ready:
+    title: Match-ready lineup
+    count: "%ready% of 6 combat-ready slots"
+    ok: "%formation% is match-ready. Kickoff will field this lineup."
+    fill: Fill empty slots from roster
+    cannot_fill: Not enough combat-ready heroes to complete this lineup. Summon, heal, or assign a different formation.
+    issue_empty: Empty slot
+    issue_duplicate: "%name% is already in this lineup"
+    issue_trainer: "%name% is a trainer"
+    issue_unready: "%name% is not combat-ready (%status%)"
 
 js_flash:
   common:
@@ -1371,6 +1384,9 @@ js_flash:
     success_promote: Match formation saved to your formations.
     failed_promote: Failed to save match formation.
     prompt_promote_name: Match formation
+    filling: Filling...
+    failed_fill: Failed to fill the lineup from the roster.
+    success_fill: Empty slots filled from combat-ready heroes.
     lvl_short: Lvl
   inventory:
     equipping: Equipping...

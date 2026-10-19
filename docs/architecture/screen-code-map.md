@@ -30,19 +30,19 @@ Quick reference: which files implement each game screen.
 
 | Screen doc | Web route(s) | Web controller | Primary API controller(s) | Twig | Stimulus |
 |------------|--------------|----------------|---------------------------|------|----------|
-| [02-team-dashboard.md](../screens/02-team-dashboard.md) | `/app/dashboard` | `Web\DashboardController` | `Api\V1\TeamController` (`/dashboard`, `/settings`, `/history`) | `templates/dashboard/`, `templates/components/dashboard/` | `dashboard_banner`, `modal` (team profile), `profile_settings`, `team_history_chart` |
+| [02-team-dashboard.md](../screens/02-team-dashboard.md) | `/app/dashboard` | `Web\DashboardController` | `Api\V1\TeamController` (`/dashboard`, `/settings`, `/history`); `Api\V1\FixtureFormationController` (`/formation/fill-roster`) | `templates/dashboard/`, `templates/components/dashboard/`, `templates/components/formation/match_ready_panel.html.twig` | `dashboard_banner`, `modal` (team profile), `profile_settings`, `team_history_chart`, `match_ready` |
 | [02a-team-chronicle.md](../screens/02a-team-chronicle.md) | `/app/chronicle` | `Web\TeamChronicleController` | — (server-rendered) | `templates/team_chronicle/` | — |
 | [03-hero-roster.md](../screens/03-hero-roster.md) | `/app/heroes` | `Web\HeroController` | `Api\V1\HeroController` (list JSON; roster is server-rendered + client filter) | `templates/hero/roster.html.twig`, `components/hero/card.html.twig` | `roster_filter` |
 | [04-hero-detail.md](../screens/04-hero-detail.md) | `/app/heroes/{id}` | `Web\HeroController` | `Api\V1\HeroController`, `Api\V1\ItemController`, `Api\V1\SpellController` | `templates/hero/detail.html.twig`, `components/hero/` (`trait_badge`, `combat_stats`, `recent_activity`, …) | `hero_rename`, `hero_dismiss`, `hero_sell`, `equipment`, `spellbook` |
 | [05-training.md](../screens/05-training.md) | `/app/training` | `Web\TrainingController` | `Api\V1\TrainingController` | `templates/training/` | `training` |
 | [06-trainer-management.md](../screens/06-trainer-management.md) | `/app/training` (same page) | `Web\TrainingController` | `Api\V1\TrainingController` | `templates/components/training/` | `training` |
-| [07-formation-setup.md](../screens/07-formation-setup.md) | `/app/formation` | `Web\FormationController` | `Api\V1\FormationController`, `Api\V1\FixtureFormationController` | `templates/formation/`, `templates/components/formation/` | `formation` |
+| [07-formation-setup.md](../screens/07-formation-setup.md) | `/app/formation` | `Web\FormationController` | `Api\V1\FormationController`, `Api\V1\FixtureFormationController` | `templates/formation/`, `templates/components/formation/` | `formation`, `match_ready` |
 | [08-headquarters.md](../screens/08-headquarters.md) | `/app/hq` | `Web\HeadquartersController` | `Api\V1\HeadquartersController` | `templates/hq/`, `templates/components/hq/` | `hq` |
 | [09-summoning-chamber.md](../screens/09-summoning-chamber.md) | `/app/summon` → HQ panel, `/app/summon/history` | `Web\SummoningController` (redirect), `Web\HeadquartersController` | `Api\V1\SummoningController` | `templates/components/hq/facility_panel/_summoning.html.twig`, `templates/components/summoning/` | `summoning` |
 | [10-item-equipment.md](../screens/10-item-equipment.md) | `/app/inventory` (redirects → `/app/heroes/{id}?tab=equipment` or `/app/heroes`) | `Web\ItemController` | `Api\V1\ItemController` | `templates/hero/detail.html.twig` (`tab=equipment`), `templates/components/item/` | `equipment` (click-to-equip; no DnD) |
 | [11-spell-management.md](../screens/11-spell-management.md) | `/app/spells` (redirects → `/app/heroes/{id}?tab=spells`), `/app/academy` | `Web\SpellController` | `Api\V1\SpellController` | `templates/spell/academy.html.twig`, `templates/hero/detail.html.twig` | `spellbook` |
 | [12-combat-battle.md](../screens/12-combat-battle.md) | `/app/battles/{id}` | `Web\BattleController` | `Api\V1\BattleController` | `templates/battle/` | `hex_battle_replay`, `battle_report` |
-| [13-league.md](../screens/13-league.md) | `/app/league` | `Web\LeagueController` | — (fixtures/standings server-rendered) | `templates/league/`, `templates/components/league/` | `formation` (match prep) |
+| [13-league.md](../screens/13-league.md) | `/app/league` | `Web\LeagueController` | `Api\V1\FixtureFormationController` (`/formation/fill-roster`) | `templates/league/`, `templates/components/league/`, `templates/components/formation/match_ready_panel.html.twig` | `form-auto-submit`, `league-fixtures`, `player-profile`, `match_ready` |
 | [14-calendar.md](../screens/14-calendar.md) | `/app/calendar` | `Web\CalendarController` | `Api\V1\CalendarController` | `templates/calendar/` | `calendar` |
 | [15-marketplace.md](../screens/15-marketplace.md) | `/app/marketplace` | `Web\MarketplaceController` | `Api\V1\MarketplaceController` | `templates/marketplace/` | `marketplace` |
 | [16-graveyard.md](../screens/16-graveyard.md) | `/app/graveyard` | `Web\GraveyardController` | `Api\V1\GraveyardController` | `templates/graveyard/` | — |
@@ -72,7 +72,7 @@ Quick reference: which files implement each game screen.
 | Chronicle | `TeamChronicleService`, `TeamChroniclePresenter` | `tests/Service/TeamChronicle/` |
 | Heroes | `HeroService`, `HeroGenerator`, `HeroDismissalService`, `HeroChronicleService`, `HeroChroniclePresenter` | `tests/Service/Hero/` *(add as needed)* |
 | Training | `TrainingService`, `TrainerDismissalService` | `tests/Service/Training/` |
-| Formation | `FormationService`, `FixtureFormationService` | `tests/Service/Formation/` |
+| Formation | `FormationService`, `FixtureFormationService`, `MatchLineupService` | `tests/Service/Formation/` |
 | HQ | `HeadquartersService`, `ArenaService`, `HqMaintenanceCalculator` | `tests/Service/Headquarters/` |
 | Summoning | `SummoningService` | `tests/Service/Summoning/` |
 | Items | `ItemService` | `tests/Service/Item/` |

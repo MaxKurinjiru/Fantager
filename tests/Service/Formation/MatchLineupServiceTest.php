@@ -121,6 +121,77 @@ class MatchLineupServiceTest extends TestCase
         $this->assertFalse($preview['uses_default_fallback']);
     }
 
+    public function testPreviewOffersPlayerFillWhenRosterCanComplete(): void
+    {
+        $team = $this->createTeam(1);
+        $assigned = $this->createEmptyFormation($team, 'Draft');
+        $bench = [];
+        for ($i = 1; $i <= 6; ++$i) {
+            $bench[] = $this->createHero($team, $i);
+        }
+
+        $preview = $this->createService($team, $bench, null)->preview($team, $assigned);
+
+        $this->assertSame('assigned', $preview['source']);
+        $this->assertTrue($preview['will_forfeit']);
+        $this->assertFalse($preview['will_autofill']);
+        $this->assertTrue($preview['can_fill']);
+        $this->assertCount(6, $preview['slots']);
+        $this->assertSame('empty', $preview['slots'][0]['issue']);
+    }
+
+    public function testProposeRosterFillBuildsSixCombatReadySlots(): void
+    {
+        $team = $this->createTeam(1);
+        $kept = $this->createHero($team, 1);
+        $assigned = $this->createEmptyFormation($team, 'Draft');
+        $slot = new FormationSlot();
+        $slot->setPosition(FormationPosition::Front1);
+        $slot->setHero($kept);
+        $slot->setStrategy(['movement_goal' => 'advance_to_melee']);
+        $slot->setSpellPriorities([]);
+        $assigned->addSlot($slot);
+
+        $bench = [$kept];
+        for ($i = 2; $i <= 6; ++$i) {
+            $bench[] = $this->createHero($team, $i);
+        }
+
+        $proposal = $this->createService($team, $bench, null)->proposeRosterFill($team, $assigned);
+
+        $this->assertSame('Draft', $proposal['name']);
+        $this->assertCount(6, $proposal['slots']);
+        $ids = array_column($proposal['slots'], 'hero_id');
+        sort($ids);
+        $this->assertSame([1, 2, 3, 4, 5, 6], $ids);
+        $this->assertSame('advance_to_melee', $proposal['slots'][0]['strategy']['movement_goal']);
+    }
+
+    public function testProposeRosterFillFailsWhenRosterCannotComplete(): void
+    {
+        $team = $this->createTeam(1);
+        $bench = [];
+        for ($i = 1; $i <= 5; ++$i) {
+            $bench[] = $this->createHero($team, $i);
+        }
+
+        $this->expectException(\App\Exception\UserFacingException::class);
+        $this->expectExceptionMessage('error.formation_fill_cannot_complete');
+
+        $this->createService($team, $bench, null)->proposeRosterFill($team, null);
+    }
+
+    public function testProposeRosterFillRejectsMatchReadyFormation(): void
+    {
+        $team = $this->createTeam(1);
+        $assigned = $this->createMatchReadyFormation($team, 10);
+
+        $this->expectException(\App\Exception\UserFacingException::class);
+        $this->expectExceptionMessage('error.formation_fill_already_ready');
+
+        $this->createService($team, [], null)->proposeRosterFill($team, $assigned);
+    }
+
     public function testPreviewDoesNotAutofillAPlayerRoster(): void
     {
         $team = $this->createTeam(1);

@@ -113,6 +113,7 @@ Training is not a hero-id POST. Live trainer assign/promote: [Training & Trainer
 | DELETE | `/api/v1/formations/{id}` | Api\V1\FormationController | Delete saved formation |
 | GET | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Fixture formation assignment state |
 | PUT | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Assign default / saved / custom lineup |
+| POST | `/api/v1/fixtures/{id}/formation/fill-roster` | Api\V1\FixtureFormationController | Fill empty / unready kickoff slots from the combat-ready roster (match-specific formation) |
 | POST | `/api/v1/fixtures/{id}/formation/promote` | Api\V1\FixtureFormationController | Promote temporary match lineup to saved |
 | POST | `/api/v1/formations/simulate` | — | Simulation preview — **Cut** (no controller; [#9](../product/known-issues.md) / combat simulate lock) |
 

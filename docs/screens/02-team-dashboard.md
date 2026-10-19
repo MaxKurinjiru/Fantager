@@ -41,7 +41,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 - Up to two fixtures this week (home/away, schedule, score if completed, formation status)
 - Prepare-formation link for unfinished fixtures (`/app/formation?fixture_id=`)
 - Opponent name links to that team's public card
-- Lineup warning on unfinished fixtures. A formation assigned to the match must already be complete, otherwise the match is forfeited 0–3. When none is assigned, the same rule applies to the default formation. Players do not get empty slots filled from the roster.
+- Match-ready panel on unfinished fixtures (`ready_slots` / 6, per-slot issues). A formation assigned to the match must already be complete, otherwise the match is forfeited 0–3. When none is assigned, the same rule applies to the default formation. Players do not get empty slots filled at kickoff; **Fill empty slots from roster** writes a match-specific formation when the combat-ready bench can complete the lineup.
 - Link to league fixtures tab
 
 **Quick stats** (links)
@@ -77,6 +77,7 @@ Not on this page: a dedicated “next match” card (`templates/components/dashb
 - Open 30-day history chart (banner stats)
 - Navigate via stats, quick actions, chronicle, finance, and week-match links
 - Prepare formation for a listed unfinished fixture
+- Fill empty kickoff slots from the combat-ready roster (when the panel offers it)
 
 ### Backend
 
@@ -112,4 +113,4 @@ Not a contract:
 | Banner / crisis / week matches / stats / actions | `templates/components/dashboard/` |
 | Profile modal | `templates/dashboard/_team_profile_modal.html.twig` |
 | History modal | `templates/dashboard/_team_history_modal.html.twig` |
-| Stimulus | `dashboard_banner`, `modal` (team profile), `profile_settings`, `team_history_chart` |
+| Stimulus | `dashboard_banner`, `modal` (team profile), `profile_settings`, `team_history_chart`, `match_ready` |

@@ -101,6 +101,7 @@ Equipment and spells on hero detail are listed under **Items and spells**.
 | Tactics | Per-slot L1 target order + thin L2 spell priorities | ✅ | [formation-system.md](../systems/formation-system.md#locked-l1l2-editor) |
 | Tactics | L3 sequences / synergy tables / simulate sandbox | ✂️ | [formation-system.md](../systems/formation-system.md), [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) |
 | Match prep | Assign lineup to a league fixture | ✅ | [07-formation-setup.md](../screens/07-formation-setup.md) |
+| Match prep | Match-ready panel + fill empty slots from roster | ✅ | [07-formation-setup.md](../screens/07-formation-setup.md), [team-system.md](../systems/team-system.md) |
 | Engine | Fully automated match (kill score 0–6, round 200 cap) | ✅ | [combat-system.md](../systems/combat-system.md) |
 | Engine | Combat home-advantage | 📋 | [known-issues.md](known-issues.md) § Later product decisions |
 | Engine | In-combat race synergy | ✂️ | [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) |

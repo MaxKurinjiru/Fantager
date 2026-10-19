@@ -78,6 +78,7 @@
 | `.summoning-race-grid` | `_summoning.scss` | Compatible races grid |
 | `.hero-school-mastery__grid` | `_shared.scss` | Hero mastery panel |
 | `.battle-hud-panel` | `_battle.scss` | Replay match HUD (emblems, match type, score) |
+| `.match-ready-panel` | `_formation.scss` | Kickoff slot status + fill-from-roster |
 
 ## Twig exceptions (only these utilities)
 

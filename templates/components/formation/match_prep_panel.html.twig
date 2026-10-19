@@ -37,4 +37,13 @@
             </button>
         {% endif %}
     </div>
+
+    {% if fixture_lineup is defined and fixture_lineup %}
+        {% include 'components/formation/match_ready_panel.html.twig' with {
+            lineup: fixture_lineup,
+            fixture_id: fixture.id,
+            compact: false,
+            allow_fill: fixture.status.value == 'scheduled'
+        } %}
+    {% endif %}
 </div>

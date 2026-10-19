@@ -15,6 +15,7 @@ use App\Repository\Formation\FormationRepository;
 use App\Repository\League\LeagueFixtureRepository;
 use App\Service\Formation\FixtureFormationService;
 use App\Service\Formation\FormationService;
+use App\Service\Formation\MatchLineupService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -118,6 +119,7 @@ class FixtureFormationServiceTest extends TestCase
             $this->createMock(FormationRepository::class),
             $this->createMock(LeagueFixtureRepository::class),
             $em,
+            $this->createMock(MatchLineupService::class),
         );
         $service->assignDefault($fixture, $homeTeam);
 
@@ -148,6 +150,7 @@ class FixtureFormationServiceTest extends TestCase
             $formationRepository,
             $this->createMock(LeagueFixtureRepository::class),
             $this->createMock(EntityManagerInterface::class),
+            $this->createMock(MatchLineupService::class),
         );
 
         $service->cleanupTemporaryFormationsAfterCompletion($fixture);
@@ -190,6 +193,7 @@ class FixtureFormationServiceTest extends TestCase
             $formationRepository,
             $fixtureRepository,
             $em,
+            $this->createMock(MatchLineupService::class),
         );
 
         $removed = $service->cleanupStaleTemporaryFormationsForKingdom($kingdom);
@@ -230,6 +234,7 @@ class FixtureFormationServiceTest extends TestCase
             $formationRepository,
             $this->createMock(LeagueFixtureRepository::class),
             $this->createMock(EntityManagerInterface::class),
+            $this->createMock(MatchLineupService::class),
         );
 
         $state = $service->getAssignmentState($fixture, $homeTeam);
@@ -238,6 +243,52 @@ class FixtureFormationServiceTest extends TestCase
         $this->assertNull($state['assignment']['formation_id']);
         $this->assertSame($defaultFormation->getId(), $state['effective_formation']['id']);
         $this->assertSame(FormationService::MAX_SAVED_FORMATIONS, $state['saved_limit']);
+    }
+
+    public function testFillFromRosterWritesMatchSpecificFormation(): void
+    {
+        $homeTeam = $this->createTeam(1);
+        $awayTeam = $this->createTeam(2);
+        $defaultFormation = $this->createSavedFormation($homeTeam, true);
+        $fixture = $this->createFixture($homeTeam, $awayTeam);
+        $filled = $this->createTemporaryFormation($homeTeam);
+
+        $slots = [
+            ['position' => 'front_1', 'hero_id' => 1, 'strategy' => [], 'spell_priorities' => []],
+        ];
+
+        $lineup = $this->createMock(MatchLineupService::class);
+        $lineup->expects($this->once())
+            ->method('proposeRosterFill')
+            ->with($homeTeam, $defaultFormation)
+            ->willReturn([
+                'name' => 'Default',
+                'approach' => FormationApproach::Balanced,
+                'slots' => $slots,
+            ]);
+
+        $formationService = $this->createMock(FormationService::class);
+        $formationService->method('findDefaultForTeam')->willReturn($defaultFormation);
+        $formationService->expects($this->once())
+            ->method('createTemporary')
+            ->with($homeTeam, $fixture, 'Default', FormationApproach::Balanced, $slots)
+            ->willReturn($filled);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->once())->method('flush');
+
+        $service = new FixtureFormationService(
+            $formationService,
+            $this->createMock(FormationRepository::class),
+            $this->createMock(LeagueFixtureRepository::class),
+            $em,
+            $lineup,
+        );
+
+        $result = $service->fillFromRoster($fixture, $homeTeam);
+
+        $this->assertSame($filled, $result);
+        $this->assertSame($filled, $fixture->getHomeFormation());
     }
 
     private function createService(?Formation $defaultFormation): FixtureFormationService
@@ -251,6 +302,7 @@ class FixtureFormationServiceTest extends TestCase
             $this->createMock(FormationRepository::class),
             $this->createMock(LeagueFixtureRepository::class),
             $this->createMock(EntityManagerInterface::class),
+            $this->createMock(MatchLineupService::class),
         );
     }
 

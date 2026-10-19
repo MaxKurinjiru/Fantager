@@ -78,6 +78,97 @@
     }
   }
 
+  .match-ready-panel {
+    @apply flex flex-col gap-3 w-full;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 70%, transparent);
+
+    &--compact {
+      margin-top: 0.75rem;
+    }
+
+    &--forfeit {
+      border-color: color-mix(in srgb, var(--color-error-border) 50%, transparent);
+    }
+
+    &--ready {
+      border-color: color-mix(in srgb, var(--color-success-border) 40%, transparent);
+    }
+  }
+
+  .match-ready-panel__header {
+    @apply flex flex-col gap-2;
+  }
+
+  .match-ready-panel__title {
+    @apply m-0 text-sm;
+    color: var(--color-text-primary);
+  }
+
+  .match-ready-panel__count {
+    @apply m-0 text-xs;
+    color: var(--color-text-secondary);
+  }
+
+  .match-ready-panel__progress {
+    width: 100%;
+  }
+
+  .match-ready-panel__summary {
+    @apply m-0;
+  }
+
+  .match-ready-panel__slots {
+    @apply m-0 p-0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    list-style: none;
+
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .match-ready-slot {
+    @apply flex flex-col gap-0.5 text-xs;
+    padding: 0.35rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+    background-color: color-mix(in srgb, var(--color-surface-base) 70%, transparent);
+
+    &--ok {
+      border-color: color-mix(in srgb, var(--color-success-border) 35%, transparent);
+    }
+
+    &--empty,
+    &--duplicate,
+    &--trainer,
+    &--unready {
+      border-color: color-mix(in srgb, var(--color-error-border) 40%, transparent);
+    }
+  }
+
+  .match-ready-slot__position {
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .match-ready-slot__detail {
+    color: var(--color-text-primary);
+  }
+
+  .match-ready-panel__actions {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .match-ready-panel__hint {
+    @apply m-0;
+  }
+
   .formation-section {
     @apply space-y-4;
   }
