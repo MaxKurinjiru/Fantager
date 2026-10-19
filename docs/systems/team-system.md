@@ -87,15 +87,17 @@ History chart: `GET /api/v1/teams/{teamId}/history` (30 daily snapshots). SSE da
 | `will_forfeit` | Player: the assigned formation, or the default when none is assigned, is not match-ready. NPC: the default cannot be completed from the roster |
 | `uses_default_fallback` | Always false. An assigned player formation does not fall through to the default |
 | `will_autofill` | NPC only: the default is short and the combat-ready roster can still place 6 |
+| `can_fill` | Player only: the kickoff formation is short and the combat-ready roster can still place 6. Kickoff does not fill; the player uses **Fill empty slots from roster** |
+| `slots` | Six positions with `hero_id`, `hero_name`, `status`, and `issue` (`ok` / `empty` / `duplicate` / `trainer` / `unready`) |
 
-The dashboard warns from this object. A short formation assigned to the match is a forfeit for a player team.
+The dashboard, league My fixtures, and formation match-prep show this as a **match-ready panel**. A short formation assigned to the match is a forfeit for a player team unless they fill it before kickoff.
 
 ---
 
 ## Formation integration
 
 - Each NPC/player team is created with a **default formation**. Saved cap is **4** — [formation-system.md](formation-system.md).
-- Kickoff fields the assigned formation, or the default when none is assigned. Players forfeit if that formation is not match-ready. NPCs play the default and may fill a short one from the roster ([formation-system.md](formation-system.md#validation-rules)). Save allows 0–6 slots but rejects duplicate `hero_id`.
+- Kickoff fields the assigned formation, or the default when none is assigned. Players forfeit if that formation is not match-ready. Before kickoff they can **explicitly** fill empty / unready slots from the combat-ready roster (`POST /api/v1/fixtures/{id}/formation/fill-roster`), which writes a match-specific formation and does not change the saved default. NPCs play the default and may fill a short one from the roster at kickoff ([formation-system.md](formation-system.md#validation-rules)). Save allows 0–6 slots but rejects duplicate `hero_id`.
 - Dashboard shows saved formation count; lineup editor is `/app/formation`.
 
 ---
@@ -194,6 +196,7 @@ Players can dismiss available heroes via `POST /api/v1/heroes/{id}/dismiss`:
 | GET | `/api/v1/teams/{teamId}/dashboard` | Aggregation above |
 | POST | `/api/v1/teams/{teamId}/settings` | Name / emblem / colors |
 | GET | `/api/v1/teams/{teamId}/history` | Last 30 days of `TeamDailySnapshot` |
+| POST | `/api/v1/fixtures/{id}/formation/fill-roster` | Player fill of a short kickoff lineup (match-specific formation) |
 
 Canonical list: [architecture/routes.md](../architecture/routes.md).
 

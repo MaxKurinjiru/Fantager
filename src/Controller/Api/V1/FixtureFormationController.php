@@ -104,6 +104,35 @@ class FixtureFormationController extends AbstractController
     }
 
     /**
+     * Fill empty / unready kickoff slots from the combat-ready roster into a match-specific lineup.
+     */
+    #[Route('/{id}/formation/fill-roster', name: 'api_fixture_formation_fill_roster', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function fillRoster(int $id, Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('api', $request->headers->get('X-CSRF-Token'))) {
+            return $this->jsonError('error.invalid_csrf', 403);
+        }
+
+        $team = $this->getPlayerTeam();
+        if (null === $team) {
+            return $this->jsonError('error.no_team', 422);
+        }
+
+        $fixture = $this->fixtureFormationService->findFixtureForTeam($id, $team);
+        if (null === $fixture) {
+            return $this->jsonError('error.fixture_not_found', 404);
+        }
+
+        try {
+            $this->fixtureFormationService->fillFromRoster($fixture, $team);
+
+            return $this->json($this->fixtureFormationService->getAssignmentState($fixture, $team));
+        } catch (\DomainException|\InvalidArgumentException $e) {
+            return $this->jsonException($e, 422);
+        }
+    }
+
+    /**
      * Promote the current match-specific formation to a saved player formation.
      *
      * Body: { "name": "My Formation", "is_default": false }

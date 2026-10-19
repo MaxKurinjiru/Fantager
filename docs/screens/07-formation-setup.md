@@ -25,6 +25,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 - Opponent name and kickoff time
 - Assign default / a saved formation / keep a custom match lineup
+- Match-ready panel (`ready_slots` / 6, per-slot empty / unready / duplicate issues)
+- Fill empty slots from the combat-ready roster (writes a custom match lineup; does not edit the saved default)
 - Promote custom match lineup to a saved formation
 - Does **not** show the opponent’s formation
 
@@ -59,7 +61,7 @@ Pitch cards do **not** show a primary-role icon or a full quick-stat grid.
 - Save (`PUT /api/v1/formations`, or fixture formation PUT in match prep)
 - Set as default (checkbox on save)
 - Create / delete saved formation
-- In match prep: change assignment mode; promote custom lineup
+- In match prep: change assignment mode; fill from roster; promote custom lineup
 
 ### Backend
 
@@ -70,9 +72,10 @@ Pitch cards do **not** show a primary-role icon or a full quick-stat grid.
 | PUT | `/api/v1/formations` | Upsert; 0–6 slots; duplicate `hero_id` rejected (422) |
 | DELETE | `/api/v1/formations/{id}` | |
 | GET/PUT | `/api/v1/fixtures/{id}/formation` | Default / saved / custom |
+| POST | `/api/v1/fixtures/{id}/formation/fill-roster` | Fill empty / unready slots from the combat-ready roster |
 | POST | `/api/v1/fixtures/{id}/formation/promote` | Custom → saved |
 
-Match **kickoff** uses the assigned lineup if it has 6 unique combat-ready heroes; otherwise the default; otherwise fills from the roster. Forfeit only when the team has < 6 combat-ready heroes ([combat-system.md](../systems/combat-system.md#match-eligibility)). Empty slots are allowed at **save** (0–6 assigned heroes; the UI does not require a hero).
+Match **kickoff** uses the assigned lineup if it has 6 unique combat-ready heroes; otherwise the team default. Kickoff does **not** fill a player roster. Forfeit when that formation is short ([combat-system.md](../systems/combat-system.md#match-eligibility)). Empty slots are allowed at **save** (0–6 assigned heroes; the UI does not require a hero). Before kickoff, **Fill empty slots from roster** writes a match-specific formation using the same fill order as NPC kickoff (`id` ascending).
 
 See `assets/controllers/formation_controller.js` and [formation-system.md](../systems/formation-system.md).
 

@@ -1,0 +1,103 @@
+{# templates/components/formation/match_ready_panel.html.twig #}
+{% set lineup = lineup|default(null) %}
+{% set fixture_id = fixture_id|default(null) %}
+{% set compact = compact|default(false) %}
+{% set allow_fill = allow_fill|default(false) %}
+
+{% if lineup %}
+    {% set ready = lineup.ready_slots|default(0) %}
+    {% set will_forfeit = lineup.will_forfeit|default(false) %}
+    {% set can_fill = lineup.can_fill|default(false) %}
+    {% set slots = lineup.slots|default([]) %}
+    {% set pct = ready * 100 / 6 %}
+
+    <div class="match-ready-panel{% if compact %} match-ready-panel--compact{% endif %}{% if will_forfeit %} match-ready-panel--forfeit{% else %} match-ready-panel--ready{% endif %}"
+         data-controller="match-ready"
+         {% if fixture_id %}data-match-ready-fixture-id-value="{{ fixture_id }}"{% endif %}
+         data-match-ready-text-filling-value="{{ 'js_flash.formation.filling'|trans }}"
+         data-match-ready-error-fill-value="{{ 'js_flash.formation.failed_fill'|trans }}"
+         data-match-ready-success-fill-value="{{ 'js_flash.formation.success_fill'|trans }}">
+        {% include 'components/ui/alert_box.html.twig' with {
+            target: 'match-ready',
+            classes: 'alert-box--compact',
+            close_action: 'match-ready#closeAlert'
+        } %}
+
+        <div class="match-ready-panel__header">
+            <div class="match-ready-panel__status">
+                <h3 class="match-ready-panel__title">{{ 'formation.match_ready.title'|trans }}</h3>
+                <p class="match-ready-panel__count">
+                    {{ 'formation.match_ready.count'|trans({'%ready%': ready}) }}
+                </p>
+            </div>
+            {% include 'components/ui/progress_bar.html.twig' with {
+                percentage: pct,
+                container_class: 'ui-progress match-ready-panel__progress',
+                progress_class: will_forfeit ? 'ui-progress__fill ui-progress__fill--penalty' : 'ui-progress__fill ui-progress__fill--accent'
+            } %}
+        </div>
+
+        {% if will_forfeit %}
+            <p class="alert alert-error match-ready-panel__summary" role="alert">
+                {% if lineup.source == 'assigned' and lineup.formation_name %}
+                    {{ 'dashboard.lineup_forfeit_assigned'|trans({
+                        '%formation%': lineup.formation_name,
+                        '%ready%': ready
+                    }) }}
+                {% elseif lineup.formation_name %}
+                    {{ 'dashboard.lineup_forfeit_default'|trans({
+                        '%formation%': lineup.formation_name,
+                        '%ready%': ready
+                    }) }}
+                {% else %}
+                    {{ 'dashboard.lineup_forfeit_no_formation'|trans }}
+                {% endif %}
+            </p>
+        {% else %}
+            <p class="alert alert-success match-ready-panel__summary" role="status">
+                {{ 'formation.match_ready.ok'|trans({
+                    '%formation%': lineup.formation_name|default('—')
+                }) }}
+            </p>
+        {% endif %}
+
+        {% if slots is not empty %}
+            <ul class="match-ready-panel__slots">
+                {% for slot in slots %}
+                    <li class="match-ready-slot match-ready-slot--{{ slot.issue }}">
+                        <span class="match-ready-slot__position">{{ ('formation.slots.' ~ slot.position)|trans }}</span>
+                        <span class="match-ready-slot__detail">
+                            {% if slot.issue == 'empty' %}
+                                {{ 'formation.match_ready.issue_empty'|trans }}
+                            {% elseif slot.issue == 'duplicate' %}
+                                {{ 'formation.match_ready.issue_duplicate'|trans({'%name%': slot.hero_name|default('—')}) }}
+                            {% elseif slot.issue == 'trainer' %}
+                                {{ 'formation.match_ready.issue_trainer'|trans({'%name%': slot.hero_name|default('—')}) }}
+                            {% elseif slot.issue == 'unready' %}
+                                {{ 'formation.match_ready.issue_unready'|trans({
+                                    '%name%': slot.hero_name|default('—'),
+                                    '%status%': slot.status ? ('heroes.status_' ~ slot.status)|trans : '—'
+                                }) }}
+                            {% else %}
+                                {{ slot.hero_name }}
+                            {% endif %}
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if will_forfeit and can_fill and fixture_id and allow_fill %}
+            <div class="match-ready-panel__actions">
+                <button type="button"
+                        class="btn btn-primary btn--sm"
+                        data-action="click->match-ready#fill"
+                        data-match-ready-target="fillButton">
+                    {{ 'formation.match_ready.fill'|trans }}
+                </button>
+            </div>
+        {% elseif will_forfeit and not can_fill %}
+            <p class="copy-muted match-ready-panel__hint">{{ 'formation.match_ready.cannot_fill'|trans }}</p>
+        {% endif %}
+    </div>
+{% endif %}

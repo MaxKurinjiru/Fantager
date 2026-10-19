@@ -276,6 +276,9 @@ error:
   formation_duplicate_hero: Stejný hrdina nemůže stát ve více slotech formace.
   formation_not_on_fixture: Tým není součástí tohoto zápasu.
   formation_only_scheduled: Formaci lze měnit pouze u naplánovaných zápasů.
+  formation_fill_player_only: Sestavu ze soupisky může doplnit jen hráčský tým.
+  formation_fill_already_ready: Tato sestava už má 6 bojeschopných hrdinů.
+  formation_fill_cannot_complete: Není dost bojeschopných hrdinů na doplnění prázdných míst. Tým musí mít alespoň 6 dostupných bojovníků.
   formation_not_belong_team: Přiřazená formace nepatří k týmu.
   formation_no_match_to_promote: Neexistuje formace pro zápas k uložení.
   financial_crisis_blocked: 'Tato akce je během finančních restrikcí (%level%) blokována. Prodejte majetek, propusťte hrdiny nebo snižte úroveň zařízení.'
@@ -1299,6 +1302,16 @@ formation:
   tactics_move_up: Posunout nahoru
   tactics_move_down: Posunout dolů
   tactics_remove: Odebrat
+  match_ready:
+    title: Sestava k výkopu
+    count: "%ready% ze 6 bojeschopných slotů"
+    ok: "%formation% je připravená. Při výkopu nastoupí tato sestava."
+    fill: Doplnit prázdná místa ze soupisky
+    cannot_fill: Není dost bojeschopných hrdinů na doplnění sestavy. Vyvolejte, uzdravte, nebo zvolte jinou formaci.
+    issue_empty: Prázdný slot
+    issue_duplicate: "%name% už v sestavě je"
+    issue_trainer: "%name% je trenér"
+    issue_unready: "%name% není bojeschopný (%status%)"
 
 js_flash:
   common:
@@ -1370,6 +1383,9 @@ js_flash:
     success_promote: Formace pro zápas byla uložena mezi vaše formace.
     failed_promote: Nepodařilo se uložit formaci pro zápas.
     prompt_promote_name: Formace pro zápas
+    filling: Doplňuji...
+    failed_fill: Doplnění sestavy ze soupisky selhalo.
+    success_fill: Prázdná místa se doplnila z bojeschopných hrdinů.
     lvl_short: Lvl
   inventory:
     equipping: Vybavování...

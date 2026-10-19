@@ -384,6 +384,15 @@
                                     </div>
 
                                     {% if not is_completed %}
+                                        {% set lineup = fixtureLineups[f.id]|default(null) %}
+                                        {% if lineup %}
+                                            {% include 'components/formation/match_ready_panel.html.twig' with {
+                                                lineup: lineup,
+                                                fixture_id: f.id,
+                                                compact: true,
+                                                allow_fill: f.status.value == 'scheduled'
+                                            } %}
+                                        {% endif %}
                                         <div class="fixture-card__formation-row">
                                             {% include 'components/league/fixture_formation_status.html.twig' with {
                                                 formation: fixtureFormations[f.id]|default(null)

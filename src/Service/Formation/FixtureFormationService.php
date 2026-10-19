@@ -22,6 +22,7 @@ class FixtureFormationService
         private readonly FormationRepository $formationRepository,
         private readonly LeagueFixtureRepository $fixtureRepository,
         private readonly EntityManagerInterface $em,
+        private readonly MatchLineupService $matchLineupService,
     ) {
     }
 
@@ -302,6 +303,29 @@ class FixtureFormationService
         $this->em->flush();
 
         return $formation;
+    }
+
+    /**
+     * Fill empty, duplicate, and unready kickoff slots from the combat-ready roster.
+     * Writes a match-specific temporary formation so the saved default is left unchanged.
+     *
+     * @throws \DomainException
+     */
+    public function fillFromRoster(LeagueFixture $fixture, Team $team): Formation
+    {
+        $this->assertEditable($fixture, $team);
+
+        $assigned = $this->getAssignedFormation($fixture, $team);
+        $template = $assigned ?? $this->formationService->findDefaultForTeam($team);
+        $proposal = $this->matchLineupService->proposeRosterFill($team, $template);
+
+        return $this->saveMatchSpecificFormation(
+            $fixture,
+            $team,
+            $proposal['name'],
+            $proposal['approach'],
+            $proposal['slots'],
+        );
     }
 
     /**

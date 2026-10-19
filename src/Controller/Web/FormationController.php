@@ -12,6 +12,7 @@ use App\Repository\Formation\FormationRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Formation\FixtureFormationService;
 use App\Service\Formation\FormationTacticsNormalizer;
+use App\Service\Formation\MatchLineupService;
 use App\Service\Spell\SpellService;
 use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,6 +28,7 @@ class FormationController extends AbstractController
         private readonly HeroRepository $heroRepository,
         private readonly FormationRepository $formationRepository,
         private readonly FixtureFormationService $fixtureFormationService,
+        private readonly MatchLineupService $matchLineupService,
         private readonly FormationTacticsNormalizer $tacticsNormalizer,
         private readonly SpellService $spellService,
         private readonly UserMessageTranslator $userMessages,
@@ -54,14 +56,21 @@ class FormationController extends AbstractController
 
         $fixture = null;
         $fixtureAssignment = null;
+        $fixtureLineup = null;
         $fixtureId = $request->query->get('fixture_id');
         if (null !== $fixtureId && '' !== $fixtureId && is_numeric($fixtureId)) {
             $fixture = $this->fixtureFormationService->findFixtureForTeam((int) $fixtureId, $team);
             if (null !== $fixture) {
                 try {
                     $fixtureAssignment = $this->fixtureFormationService->getAssignmentState($fixture, $team);
+                    $fixtureLineup = $this->matchLineupService->preview(
+                        $team,
+                        $this->fixtureFormationService->getAssignedFormation($fixture, $team),
+                    );
                 } catch (\DomainException) {
                     $fixture = null;
+                    $fixtureAssignment = null;
+                    $fixtureLineup = null;
                 }
             }
         }
@@ -72,6 +81,7 @@ class FormationController extends AbstractController
             'formations' => $formations,
             'fixture' => $fixture,
             'fixture_assignment' => $fixtureAssignment,
+            'fixture_lineup' => $fixtureLineup,
             'slot_tactics' => $this->slotTacticsForPage($fixtureAssignment, $formations, $request->query->get('formation_id')),
             'hero_spells' => $this->equippedSpellsByHeroId($heroes),
         ]);

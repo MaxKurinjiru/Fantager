@@ -31,7 +31,7 @@ Query: `tab` = `standings` | `my-fixtures` | `leaderboard`.
 
 ### My fixtures (`tab=my-fixtures`)
 
-Own season matches as cards: date, names (profiles), score or VS, completed/pending, formation status + **Prepare formation** → `/app/formation?fixture_id=` for unfinished.
+Own season matches as cards: date, names (profiles), score or VS, completed/pending, match-ready panel, formation status + **Prepare formation** → `/app/formation?fixture_id=` for unfinished. Fill-from-roster uses `POST /api/v1/fixtures/{id}/formation/fill-roster`.
 
 ### Kingdom leaderboard (`tab=leaderboard`)
 
@@ -66,4 +66,4 @@ League morale fiction (win-streak / derby / relegation pressure) is **Cut**: [le
 |-------|----------|
 | Page | `templates/league/index.html.twig` |
 | Formation chip | `templates/components/league/fixture_formation_status.html.twig` |
-| Stimulus | `form-auto-submit`, `league-fixtures`, `player-profile`, `formation` (match prep via formation page) |
+| Stimulus | `form-auto-submit`, `league-fixtures`, `player-profile`, `match_ready` |

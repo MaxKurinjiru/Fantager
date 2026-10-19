@@ -55,30 +55,12 @@
                         </div>
 
                         {% if match.lineup and not is_completed %}
-                            {% if match.lineup.will_forfeit %}
-                                <p class="alert alert-error fixture-card__lineup-alert" role="alert">
-                                    {% if match.lineup.source == 'assigned' and match.lineup.formation_name %}
-                                        {{ 'dashboard.lineup_forfeit_assigned'|trans({
-                                            '%formation%': match.lineup.formation_name,
-                                            '%ready%': match.lineup.ready_slots
-                                        }) }}
-                                    {% elseif match.lineup.formation_name %}
-                                        {{ 'dashboard.lineup_forfeit_default'|trans({
-                                            '%formation%': match.lineup.formation_name,
-                                            '%ready%': match.lineup.ready_slots
-                                        }) }}
-                                    {% else %}
-                                        {{ 'dashboard.lineup_forfeit_no_formation'|trans }}
-                                    {% endif %}
-                                </p>
-                            {% elseif match.lineup.will_autofill %}
-                                <p class="alert alert-warning fixture-card__lineup-alert" role="status">
-                                    {{ 'dashboard.lineup_autofill'|trans({
-                                        '%formation%': match.lineup.formation_name|default('—'),
-                                        '%ready%': match.lineup.ready_slots
-                                    }) }}
-                                </p>
-                            {% endif %}
+                            {% include 'components/formation/match_ready_panel.html.twig' with {
+                                lineup: match.lineup,
+                                fixture_id: match.id,
+                                compact: true,
+                                allow_fill: match.status == 'scheduled'
+                            } %}
                         {% endif %}
 
                         <div class="fixture-card__meta">
