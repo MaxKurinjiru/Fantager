@@ -134,10 +134,14 @@ For relegation comparison, the ranking is inverted (lowest points, goal differen
 
 
 ### 5. Seeding and Group Assignment for the Next Season
-Once the set of teams for each Tier T in the next season is finalized (remaining + promoted + relegated), they are distributed into the groups of Tier T:
-- To prevent teams from playing the exact same opponents every season, group assignments are shuffled.
-- The system gathers all teams assigned to Tier T for the next season.
-- The teams are shuffled randomly and then distributed in a round-robin sequence into groups 1 ... G of Tier T, ensuring each group receives exactly 10 teams.
+Once the set of teams for each Tier T in the next season is finalized (remaining + promoted + relegated), `LeagueGroupSeeder` deals them into the groups of Tier T by previous finishing place:
+
+1. Rank every team entering Tier T by its **previous group position** (1st before 10th). Teams that finished in the same place are ordered with the [Global Standing Comparison Formula](#4-global-standing-comparison-formula).
+2. Cut that ranking into **strength pots** of size G (the number of groups in Tier T). The first pot is the G best seeds, the next pot the following G, and so on.
+3. Shuffle **inside each pot only**, so neighbours of similar strength are not locked to the same group every season.
+4. Deal one team from each pot into each group (groups ordered by id). Every group receives one team from each strength band and, when the tier is full, exactly `teams_per_group` teams.
+
+A tier with a single group keeps every team. They already play each other, so the pot shuffle does not change the opponent set.
 
 ## Reward Distribution
 
@@ -207,7 +211,7 @@ Group tables and the kingdom-wide ranking are **live**, not a leftover sketch.
 - **Kingdom leaderboard** (web tab `leaderboard`): all teams in the **active** season, same tie-breakers as [Global Standing Comparison Formula](#4-global-standing-comparison-formula) (points, GD, wins, real player before NPC, reputation, chemistry, team id). Columns include group name; no form column.
 - There is **no** `GET /api/v1/leaderboards` route. Community does not own a second ranking API.
 
-Web page is server-rendered (`Web\LeagueController`); JSON is optional for the same data. Empty state when the kingdom has no active season. Full UI: [13-league.md](../screens/13-league.md).
+Web page is server-rendered (`Web\LeagueController`); JSON is optional for the same data. Empty state when the kingdom has no active or finished season. The page season selector lists **active and completed** seasons (`?seasonId=`). A scheduled shell is omitted. An unknown id falls back to the active season, then the newest finished season. On a finished season the page shows that season's table, fixtures, and leaderboard, plus the viewer's place, promotion/relegation status, and gold from the `season_ended` chronicle. Full UI: [13-league.md](../screens/13-league.md).
 
 Veteran leadership and junior bonus XP are **not live**. Win-streak / derby / relegation-pressure morale is **Cut** — [Locked: no league morale fiction](#locked-no-league-morale-fiction).
 
@@ -240,6 +244,7 @@ Win-streak, derby, and relegation-pressure morale are **Cut**. Do not add them. 
 | Entities | `LeagueSeason`, `LeagueTier`, `LeagueGroup`, `LeagueStanding`, `LeagueFixture` |
 | Read API / web aggregation | `App\Service\League\LeagueService` (`getSortedStandings`, `getGlobalLeaderboard`, `getTeamForm`) |
 | Fixtures | `LeagueFixtureScheduler` (Berger), `LeagueFixtureKickoffMatcher` |
+| Next-season groups | `LeagueGroupSeeder` (pots by previous place; shuffle inside each pot) |
 | Match tick | `LeagueMatchResolutionService` → combat → `LeagueFixtureCompletionService` |
 | End of season | `SeasonTransitionService` |
 | Web | `Web\LeagueController`, `templates/league/` |

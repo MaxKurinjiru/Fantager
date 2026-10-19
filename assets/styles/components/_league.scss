@@ -17,7 +17,31 @@
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
-  .league-group-form { @apply flex items-center gap-2; }
+  .league-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .league-archive-banner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, var(--color-surface-base) 80%, transparent);
+  }
+  .league-archive-banner__lead {
+    margin: 0;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+  .league-archive-banner__detail {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
   .league-group-select {
     @apply py-2 text-sm;
     background-color: var(--color-surface-base);

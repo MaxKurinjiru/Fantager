@@ -9,7 +9,8 @@
     </span>
     <span class="kingdom-card__meta kingdom-card__rules">
         {{ 'auth.kingdom_pace'|trans }} {{ ('auth.pace_preset.' ~ k.pacePreset.value)|trans }} &bull;
-        {{ 'auth.kingdom_season'|trans }} {{ k.seasonLength }} {{ 'auth.kingdom_days'|trans }}
+        {{ 'auth.kingdom_season'|trans }} {{ k.seasonLength }} {{ 'auth.kingdom_days'|trans }} &bull;
+        {{ 'auth.kingdom_active_season'|trans({'%number%': entry.activeSeason.seasonNumber}) }}
     </span>
     {% if show_change|default(false) %}
         <span class="kingdom-card__change">{{ 'auth.kingdom_change'|trans }}</span>

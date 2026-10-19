@@ -10,6 +10,8 @@ use App\Entity\League\LeagueGroup;
 use App\Entity\League\LeagueSeason;
 use App\Entity\League\LeagueStanding;
 use App\Entity\Team\Team;
+use App\Entity\Team\TeamChronicle;
+use App\Enum\ChronicleEventType;
 use App\Enum\LeagueFixtureStatus;
 use App\Enum\LeagueSeasonStatus;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +35,107 @@ class LeagueService
         ]);
 
         return $season;
+    }
+
+    /**
+     * Active and finished seasons, newest first. A scheduled shell is omitted.
+     *
+     * @return list<LeagueSeason>
+     */
+    public function listBrowsableSeasons(Kingdom $kingdom): array
+    {
+        /** @var list<LeagueSeason> $seasons */
+        $seasons = $this->em->getRepository(LeagueSeason::class)->findBy(
+            ['kingdom' => $kingdom],
+            ['seasonNumber' => 'DESC'],
+        );
+
+        return array_values(array_filter(
+            $seasons,
+            static fn (LeagueSeason $season): bool => LeagueSeasonStatus::Scheduled !== $season->getStatus(),
+        ));
+    }
+
+    /**
+     * Season to show on the league page. An unknown id falls back to the active season,
+     * then to the newest finished season.
+     */
+    public function resolveSeason(Kingdom $kingdom, ?int $seasonId): ?LeagueSeason
+    {
+        $seasons = $this->listBrowsableSeasons($kingdom);
+        if (null !== $seasonId) {
+            foreach ($seasons as $season) {
+                if ($season->getId() === $seasonId) {
+                    return $season;
+                }
+            }
+        }
+
+        foreach ($seasons as $season) {
+            if (LeagueSeasonStatus::Active === $season->getStatus()) {
+                return $season;
+            }
+        }
+
+        return $seasons[0] ?? null;
+    }
+
+    /**
+     * Place, tier move, and gold for a team in one season.
+     * Place comes from that season's table. Status and gold come from the season-ended chronicle.
+     *
+     * @return array{
+     *     position: int,
+     *     group_name: string,
+     *     tier_name: string,
+     *     status: string|null,
+     *     gold: int|null
+     * }|null
+     */
+    public function summarizeSeasonResult(Team $team, LeagueSeason $season): ?array
+    {
+        $standing = $this->findStandingForTeam($season, $team);
+        if (null === $standing) {
+            return null;
+        }
+
+        $group = $standing->getGroup();
+        $sorted = $this->getSortedStandings($group);
+        $position = 1;
+        foreach ($sorted as $index => $row) {
+            if ($row->getTeam()->getId() === $team->getId()) {
+                $position = $index + 1;
+                break;
+            }
+        }
+
+        $status = null;
+        $gold = null;
+        /** @var list<TeamChronicle> $events */
+        $events = $this->em->getRepository(TeamChronicle::class)->findBy(
+            ['team' => $team, 'type' => ChronicleEventType::SeasonEnded],
+            ['createdAt' => 'DESC'],
+        );
+        foreach ($events as $event) {
+            if ((int) ($event->getSubjectParams()['season'] ?? 0) !== $season->getSeasonNumber()) {
+                continue;
+            }
+            $data = $event->getData();
+            $rawStatus = $data['status'] ?? null;
+            $status = is_string($rawStatus) && '' !== $rawStatus ? $rawStatus : null;
+            if (isset($data['gold'])) {
+                $gold = (int) $data['gold'];
+            }
+            break;
+        }
+
+        return [
+            'position' => $position,
+            'group_name' => $group->getGroupName(),
+            'tier_name' => $group->getTier()->getTierName(),
+            'status' => $status,
+            'gold' => $gold,
+        ];
     }
 
     /**

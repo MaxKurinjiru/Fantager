@@ -43,6 +43,7 @@ class SeasonTransitionServiceTest extends TestCase
             $this->economyServiceMock,
             $this->createMock(TeamChronicleService::class),
             $this->createMock(\App\Service\Notification\NotificationHelper::class),
+            new \App\Service\League\LeagueGroupSeeder(),
         );
     }
 

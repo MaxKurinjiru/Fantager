@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Entity\Auth\User;
+use App\Enum\LeagueSeasonStatus;
 use App\Service\Formation\FixtureFormationService;
 use App\Service\Formation\MatchLineupService;
 use App\Service\League\LeagueService;
@@ -44,14 +45,23 @@ class LeagueController extends AbstractController
             $tab = 'standings';
         }
 
-        $season = $this->leagueService->getCurrentSeason($team->getKingdom());
+        $kingdom = $team->getKingdom();
+        $seasons = $this->leagueService->listBrowsableSeasons($kingdom);
+        $seasonIdStr = $request->query->get('seasonId');
+        $seasonId = null !== $seasonIdStr && '' !== $seasonIdStr && is_numeric($seasonIdStr)
+            ? (int) $seasonIdStr
+            : null;
+        $season = $this->leagueService->resolveSeason($kingdom, $seasonId);
 
         if (null === $season) {
             return $this->render('league/index.html.twig', [
                 'team' => $team,
-                'kingdom' => $team->getKingdom(),
+                'kingdom' => $kingdom,
                 'tab' => $tab,
                 'season' => null,
+                'seasons' => [],
+                'viewingArchive' => false,
+                'seasonResult' => null,
                 'groups' => [],
                 'selectedGroup' => null,
                 'standings' => [],
@@ -63,6 +73,8 @@ class LeagueController extends AbstractController
                 'fixtureLineups' => [],
             ]);
         }
+
+        $viewingArchive = LeagueSeasonStatus::Completed === $season->getStatus();
 
         $groups = $this->leagueService->getGroupsForSeason($season);
         $userStanding = $this->leagueService->findStandingForTeam($season, $team);
@@ -93,14 +105,16 @@ class LeagueController extends AbstractController
 
             $myFixtures = $this->leagueService->getTeamFixturesForSeason($season, $team);
 
-            foreach ($myFixtures as $fixture) {
-                $fixtureId = $fixture->getId() ?? 0;
-                $fixtureFormations[$fixtureId] = $this->fixtureFormationService->getFormationSummary($fixture, $team);
-                if (!$fixture->isCompleted()) {
-                    $fixtureLineups[$fixtureId] = $this->matchLineupService->preview(
-                        $team,
-                        $this->fixtureFormationService->getAssignedFormation($fixture, $team),
-                    );
+            if (!$viewingArchive) {
+                foreach ($myFixtures as $fixture) {
+                    $fixtureId = $fixture->getId() ?? 0;
+                    $fixtureFormations[$fixtureId] = $this->fixtureFormationService->getFormationSummary($fixture, $team);
+                    if (!$fixture->isCompleted()) {
+                        $fixtureLineups[$fixtureId] = $this->matchLineupService->preview(
+                            $team,
+                            $this->fixtureFormationService->getAssignedFormation($fixture, $team),
+                        );
+                    }
                 }
             }
 
@@ -109,9 +123,12 @@ class LeagueController extends AbstractController
 
         return $this->render('league/index.html.twig', [
             'team' => $team,
-            'kingdom' => $team->getKingdom(),
+            'kingdom' => $kingdom,
             'tab' => $tab,
             'season' => $season,
+            'seasons' => $seasons,
+            'viewingArchive' => $viewingArchive,
+            'seasonResult' => $viewingArchive ? $this->leagueService->summarizeSeasonResult($team, $season) : null,
             'groups' => $groups,
             'selectedGroup' => $selectedGroup,
             'standings' => $standings,

@@ -66,6 +66,7 @@ auth:
     rich_world: Rich world
     test: Test
   kingdom_season: "Season:"
+  kingdom_active_season: "Season: %number%"
   kingdom_days: days
   kingdom_players: "Players:"
   remember_me: Remember me
@@ -1435,6 +1436,16 @@ league:
   title: League & Standings
   subtitle: Overview of league standings, fixtures, and kingdom-wide team rankings.
   select_group: Select Group
+  select_season: Select season
+  season_option: "Season %number% — %status%"
+  season_status_active: In progress
+  season_status_completed: Finished
+  viewing_archive: This season is finished. The table and results are final.
+  archive_result: "You finished %position%. in %group% (%tier%)."
+  archive_status_promoted: Promoted.
+  archive_status_relegated: Relegated.
+  archive_status_retained: Stayed in this tier.
+  archive_reward: "Season reward: %gold% gold."
   no_active_season: No Active Season
   no_active_season_desc: There is no active league season running in this kingdom at the moment. Please check back later.
   tab_standings: Group Standings

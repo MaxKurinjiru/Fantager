@@ -13,8 +13,19 @@
                 {{ season.startDate|date('d. m. Y') }} — {{ season.endDate|date('d. m. Y') }}
             </div>
 
-            {# Group Select Dropdown #}
-            <form method="GET" action="{{ path('app_league') }}" class="league-group-form" data-controller="form-auto-submit">
+            <form method="GET" action="{{ path('app_league') }}" class="league-filters" data-controller="form-auto-submit">
+                <input type="hidden" name="tab" value="{{ tab }}">
+                <label for="season-select" class="sr-only">{{ 'league.select_season'|trans }}</label>
+                <select id="season-select" name="seasonId" data-action="change->form-auto-submit#submit" class="form-input league-group-select">
+                    {% for s in seasons %}
+                        <option value="{{ s.id }}" {% if season.id == s.id %}selected{% endif %}>
+                            {{ 'league.season_option'|trans({
+                                '%number%': s.seasonNumber,
+                                '%status%': ('league.season_status_' ~ s.status.value)|trans
+                            }) }}
+                        </option>
+                    {% endfor %}
+                </select>
                 <label for="group-select" class="sr-only">{{ 'league.select_group'|trans }}</label>
                 <select id="group-select" name="groupId" data-action="change->form-auto-submit#submit" class="form-input league-group-select">
                     {% for g in groups %}
@@ -43,22 +54,47 @@
         </div>
     {% else %}
         {# Main League View #}
+        {% set league_query = { seasonId: season.id } %}
+        {% if selectedGroup %}
+            {% set league_query = league_query|merge({ groupId: selectedGroup.id }) %}
+        {% endif %}
         <div>
             {# Tab Switcher Buttons #}
             <div class="tab-nav-bar">
-                <a href="{{ path('app_league', selectedGroup ? { tab: 'standings', groupId: selectedGroup.id } : { tab: 'standings' }) }}"
+                <a href="{{ path('app_league', league_query|merge({ tab: 'standings' })) }}"
                    class="tab-btn {{ tab == 'standings' ? 'tab-btn--active' : '' }}">
                     🏆 {{ 'league.tab_standings'|trans }}
                 </a>
-                <a href="{{ path('app_league', selectedGroup ? { tab: 'my-fixtures', groupId: selectedGroup.id } : { tab: 'my-fixtures' }) }}"
+                <a href="{{ path('app_league', league_query|merge({ tab: 'my-fixtures' })) }}"
                    class="tab-btn {{ tab == 'my-fixtures' ? 'tab-btn--active' : '' }}">
                     👤 {{ 'league.tab_my_fixtures'|trans }}
                 </a>
-                <a href="{{ path('app_league', selectedGroup ? { tab: 'leaderboard', groupId: selectedGroup.id } : { tab: 'leaderboard' }) }}"
+                <a href="{{ path('app_league', league_query|merge({ tab: 'leaderboard' })) }}"
                    class="tab-btn {{ tab == 'leaderboard' ? 'tab-btn--active' : '' }}">
                     🌎 {{ 'league.tab_leaderboard'|trans }}
                 </a>
             </div>
+
+            {% if viewingArchive %}
+                <div class="league-archive-banner" role="status">
+                    <p class="league-archive-banner__lead">{{ 'league.viewing_archive'|trans }}</p>
+                    {% if seasonResult %}
+                        <p class="league-archive-banner__detail">
+                            {{ 'league.archive_result'|trans({
+                                '%position%': seasonResult.position,
+                                '%group%': seasonResult.group_name,
+                                '%tier%': seasonResult.tier_name
+                            }) }}
+                            {% if seasonResult.status in ['promoted', 'relegated', 'retained'] %}
+                                {{ ('league.archive_status_' ~ seasonResult.status)|trans }}
+                            {% endif %}
+                            {% if seasonResult.gold is not null %}
+                                {{ 'league.archive_reward'|trans({'%gold%': seasonResult.gold}) }}
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                </div>
+            {% endif %}
 
             {# ==================== TAB 1: STANDINGS ==================== #}
             <div id="tab-standings" class="league-tab-panel {{ tab != 'standings' ? 'hidden' : '' }}">
@@ -383,7 +419,7 @@
                                         </div>
                                     </div>
 
-                                    {% if not is_completed %}
+                                    {% if not is_completed and not viewingArchive %}
                                         {% set lineup = fixtureLineups[f.id]|default(null) %}
                                         {% if lineup %}
                                             {% include 'components/formation/match_ready_panel.html.twig' with {

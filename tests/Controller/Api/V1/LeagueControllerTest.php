@@ -92,7 +92,7 @@ class LeagueControllerTest extends TestCase
         $season->setEndDate(new \DateTimeImmutable('2026-03-31'));
         $season->setStatus(LeagueSeasonStatus::Active);
 
-        $this->leagueService->method('getCurrentSeason')->willReturn($season);
+        $this->leagueService->method('resolveSeason')->willReturn($season);
         $this->leagueService->method('getGroupsForSeason')->willReturn([]);
 
         $request = new Request(['kingdomId' => '1']);
