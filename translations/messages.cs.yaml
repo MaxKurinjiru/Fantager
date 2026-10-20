@@ -1159,7 +1159,7 @@ training:
 
 inventory:
   title: Vybavení
-  subtitle: Vybavte své hrdiny výstrojí, rozložte staré předměty na esenci nebo opravte jejich odolnost.
+  subtitle: Vybavte své hrdiny výstrojí, rozložte staré předměty na zlatý šrot nebo opravte jejich odolnost.
   equip_manager: Správce vybavení
   select_hero_opt: "-- Vyberte hrdinu k vybavení --"
   paperdoll: Vybavená výstroj hrdiny
@@ -1167,6 +1167,22 @@ inventory:
   select_hero_manage: Vyberte hrdinu ke správě
   select_hero_manage_desc: Vyberte hrdinu z rozbalovací nabídky výše a spravujte jeho aktivní sloty.
   rucksack: Skladový batoh
+  filter_slot: Slot
+  filter_slot_all: Všechny sloty
+  filter_style: Styl
+  filter_style_all: Všechny styly
+  filter_empty: Těmto filtrům neodpovídá žádný předmět.
+  gear_compare: Výbava vs. bez výbavy
+  gear_compare_desc: Bojové statistiky s aktuální výbavou tohoto hrdiny oproti stejným slotům prázdným (forma, rys a mastery škol stále platí).
+  gear_compare_stat: Statistika
+  stat_with_gear: S výbavou
+  stat_without_gear: Bez výbavy
+  stat_delta: Rozdíl
+  team_wear: Výbava týmu
+  team_wear_desc: Co má každý bojovník nasazené. Batoh níže drží nenasazené týmové předměty.
+  team_wear_empty: Nikdo zatím nic nenosí.
+  slot_race_blocked: "%race% tohle nemůže použít (%restriction%)."
+  slot_race_restricted: Omezení rasy
   durability: Odolnost
   no_bonuses: Žádné pasivní bonusy atributů
   repair: Opravit
@@ -1206,6 +1222,13 @@ inventory:
   stat_spell_power: "Síla kouzel"
   stat_resistance: "Odolnost"
   stat_str: "STR"
+  stat_dex: "DEX"
+  stat_int: "INT"
+  stat_intel: "INT"
+  stat_kon: "KON"
+  stat_spd: "SPD"
+  stat_wil: "WIL"
+  stat_lck: "LCK"
   stat_ranged: "Na dálku"
 
 spells:
@@ -1953,7 +1976,10 @@ item:
   leather_gloves: "Kožené rukavice"
   leather_boots: "Kožené boty"
   copper_ring: "Měděný prsten"
+  bronze_ring: "Bronzový prsten"
+  quartz_ring: "Křemenný prsten"
   silver_amulet: "Stříbrný amulet"
+  gold_amulet: "Zlatý amulet"
   chain_coif: "Kroužková kukla"
   chain_hauberk: "Kroužková košile"
   chain_gloves: "Kroužkové rukavice"

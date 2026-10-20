@@ -348,6 +348,7 @@
              data-equipment-error-repair-value="{{ 'js_flash.inventory.failed_repair'|trans }}"
              data-equipment-success-repair-value="{{ 'js_flash.inventory.success_repair'|trans }}">
             {% include 'components/ui/alert_box.html.twig' with { target: 'equipment', message_target: 'alertMessage', close_action: 'equipment#hideAlert' } %}
+            {% include 'components/item/gear_compare.html.twig' with { hero: hero } %}
             <div class="equipment-layout">
                 <div class="equipment-layout__paperdoll">
                     {% include 'components/item/equip_manager.html.twig' with {
@@ -362,6 +363,7 @@
                     {% include 'components/item/rucksack_items.html.twig' with { items: items, selected_hero: hero } %}
                 </div>
             </div>
+            {% include 'components/item/team_wear.html.twig' with { team_wear: team_wear } %}
         </div>
     </div>
 

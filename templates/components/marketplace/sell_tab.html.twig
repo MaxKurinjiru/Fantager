@@ -97,7 +97,7 @@
                     {% set price_guidance = item_listing_price_guidance(item) %}
                     <div data-action="click->marketplace#selectEntityToSell"
                          data-entity-id="{{ item.id }}"
-                         data-entity-name="{{ item.name }}"
+                         data-entity-name="{{ item_display_name(item) }}"
                          data-entity-level="0"
                          data-entity-age="0"
                          data-entity-rarity="{{ item.rarity.value }}"
@@ -108,7 +108,7 @@
                         <div class="entity-row__main">
                             <span class="emoji-icon">🗡️</span>
                             <div>
-                                <h4 class="sell-card__name">{{ item.name }}</h4>
+                                <h4 class="sell-card__name">{{ item_display_name(item) }}</h4>
                                 <span class="sell-card__meta">{{ item.slotType.value|trans }} &bull; {{ 'inventory.durability'|trans }}: {{ item.durability }}%</span>
                             </div>
                         </div>

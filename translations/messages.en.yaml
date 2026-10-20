@@ -1168,6 +1168,22 @@ inventory:
   select_hero_manage: Select a Hero to Manage
   select_hero_manage_desc: Select a hero from the dropdown above to manage their active slots.
   rucksack: Compound Rucksack
+  filter_slot: Slot
+  filter_slot_all: All slots
+  filter_style: Style
+  filter_style_all: All styles
+  filter_empty: No items match these filters.
+  gear_compare: Gear vs unequipped
+  gear_compare_desc: Combat stats with this hero’s current equipment versus the same hero with empty slots (form, trait, and school mastery still apply).
+  gear_compare_stat: Stat
+  stat_with_gear: Equipped
+  stat_without_gear: Unequipped
+  stat_delta: Difference
+  team_wear: Team equipment
+  team_wear_desc: What each combatant is wearing. The rucksack below holds unequipped team items.
+  team_wear_empty: Nobody is wearing gear yet.
+  slot_race_blocked: "%race% cannot use this (%restriction%)."
+  slot_race_restricted: Race-restricted
   durability: Durability
   no_bonuses: No static attributes bonuses
   repair: Repair
@@ -1207,6 +1223,13 @@ inventory:
   stat_spell_power: "Spell Power"
   stat_resistance: "Resistance"
   stat_str: "STR"
+  stat_dex: "DEX"
+  stat_int: "INT"
+  stat_intel: "INT"
+  stat_kon: "KON"
+  stat_spd: "SPD"
+  stat_wil: "WIL"
+  stat_lck: "LCK"
   stat_ranged: "Ranged"
 
 spells:
@@ -1954,7 +1977,10 @@ item:
   leather_gloves: "Leather Gloves"
   leather_boots: "Leather Boots"
   copper_ring: "Copper Ring"
+  bronze_ring: "Bronze Ring"
+  quartz_ring: "Quartz Ring"
   silver_amulet: "Silver Amulet"
+  gold_amulet: "Gold Amulet"
   chain_coif: "Chain Coif"
   chain_hauberk: "Chain Hauberk"
   chain_gloves: "Chain Gloves"

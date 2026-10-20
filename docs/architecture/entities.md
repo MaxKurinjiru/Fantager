@@ -141,7 +141,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 
 | Entity   | Key Fields                                                                                                                                                     | Relationships                |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **Item** | id, owner_team_id, equipped_hero_id, equipped_slot, name, slot_type (enum), sub_type (nullable `ItemSubType`), category (enum), rarity (enum), durability, status (enum), bonuses (JSON), special_effects (JSON, unused / reserved — A7.4; omitted from item API) | → Team, → Hero (if equipped) |
+| **Item** | id, owner_team_id, equipped_hero_id, equipped_slot, name, name_key (nullable catalog translation key), slot_type (enum), sub_type (nullable `ItemSubType`), category (enum), rarity (enum), durability, status (enum), bonuses (JSON), special_effects (JSON, unused / reserved — A7.4; omitted from item API) | → Team, → Hero (if equipped) |
 
 
 ### 9. Spell Domain

@@ -92,6 +92,47 @@ class ItemServiceTest extends TestCase
         $this->assertSame(200, $this->itemService->calculateRepairCost($item));
     }
 
+    public function testCalculateRepairCostCapsCommonBelowMerchantPrice(): void
+    {
+        $item = new Item();
+        $item->setRarity(ItemRarity::Common);
+        $item->setSlotType(ItemSlotType::MainHand);
+        $item->setSubType(ItemSubType::OneHandedSword);
+        $item->setNameKey('item.short_sword');
+        $item->setBonuses(['damage' => 10]);
+        $item->setDurability(0);
+
+        $this->assertSame(49, $this->itemService->calculateRepairCost($item));
+    }
+
+    public function testCalculateRepairCostKeepsPerPointWhenBelowCap(): void
+    {
+        $item = new Item();
+        $item->setRarity(ItemRarity::Common);
+        $item->setSlotType(ItemSlotType::MainHand);
+        $item->setSubType(ItemSubType::OneHandedSword);
+        $item->setNameKey('item.short_sword');
+        $item->setBonuses(['damage' => 10]);
+        $item->setDurability(90);
+
+        $this->assertSame(20, $this->itemService->calculateRepairCost($item));
+    }
+
+    public function testDisplayNameUsesTranslationKey(): void
+    {
+        $item = new Item();
+        $item->setName('Stale Name');
+        $item->setNameKey('item.short_sword');
+
+        $this->symfonyTranslatorMock
+            ->method('trans')
+            ->willReturnCallback(static function (string $id): string {
+                return 'item.short_sword' === $id ? 'Short Sword' : $id;
+            });
+
+        $this->assertSame('Short Sword', $this->itemService->displayName($item));
+    }
+
     public function testEquipRejectsWrongSlotType(): void
     {
         $team = new Team();
@@ -143,6 +184,7 @@ class ItemServiceTest extends TestCase
         $this->assertSame(50, $team->getGold());
         $this->assertSame($team, $item->getOwnerTeam());
         $this->assertSame('Short Sword', $item->getName());
+        $this->assertSame('item.short_sword', $item->getNameKey());
         $this->assertSame(ItemSlotType::MainHand, $item->getSlotType());
         $this->assertSame(100, $item->getDurability());
         $this->assertSame(['damage' => 10], $item->getBonuses());
@@ -501,7 +543,52 @@ class ItemServiceTest extends TestCase
 
         $this->assertArrayNotHasKey('special_effects', $payload);
         $this->assertArrayHasKey('bonuses', $payload);
+        $this->assertSame('Test Sword', $payload['name']);
+        $this->assertNull($payload['name_key']);
         $this->assertSame(['unused' => true], $item->getSpecialEffects());
+    }
+
+    public function testEmptySlotRaceHintForGiantOffHand(): void
+    {
+        $hero = new Hero();
+        $hero->setRace(Race::Giant);
+        $this->raceConfigMock->method('getEquipmentRestrictions')->willReturn(['off_hand']);
+        $this->symfonyTranslatorMock
+            ->method('trans')
+            ->willReturnCallback(static function (string $id, array $params = []): string {
+                if ('inventory.slot_race_blocked' === $id) {
+                    return $params['%race%'].' / '.$params['%restriction%'];
+                }
+
+                return $id;
+            });
+
+        $this->assertSame(
+            'heroes.race_giant / inventory.slot_off_hand',
+            $this->itemService->emptySlotRaceHint($hero, ItemSlotType::OffHand),
+        );
+        $this->assertNull($this->itemService->emptySlotRaceHint($hero, ItemSlotType::Head));
+    }
+
+    public function testItemRaceBlockHintForEntWeapon(): void
+    {
+        $hero = new Hero();
+        $hero->setRace(Race::Ent);
+        $item = new Item();
+        $item->setSlotType(ItemSlotType::MainHand);
+        $item->setCategory(ItemCategory::Weapon);
+        $this->raceConfigMock->method('getEquipmentRestrictions')->willReturn(['weapon', 'shield', 'armor']);
+        $this->symfonyTranslatorMock
+            ->method('trans')
+            ->willReturnCallback(static function (string $id, array $params = []): string {
+                if ('inventory.slot_race_blocked' === $id) {
+                    return $params['%restriction%'];
+                }
+
+                return $id;
+            });
+
+        $this->assertSame('inventory.cat_weapon', $this->itemService->itemRaceBlockHint($item, $hero));
     }
 
     /**

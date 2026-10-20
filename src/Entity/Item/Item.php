@@ -37,6 +37,10 @@ class Item
     #[ORM\Column(length: 100)]
     private string $name;
 
+    /** Catalog translation key; null on pre-key rows — UI falls back to `name`. */
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $nameKey = null;
+
     #[ORM\Column(length: 15, enumType: ItemSlotType::class)]
     private ItemSlotType $slotType;
 
@@ -112,6 +116,18 @@ class Item
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getNameKey(): ?string
+    {
+        return $this->nameKey;
+    }
+
+    public function setNameKey(?string $nameKey): static
+    {
+        $this->nameKey = $nameKey;
 
         return $this;
     }

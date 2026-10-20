@@ -80,6 +80,11 @@ class GameExtension extends AbstractExtension
             new TwigFunction('team_weekly_payroll', $this->getTeamWeeklyPayroll(...)),
             new TwigFunction('hero_trait_js_labels', $this->getHeroTraitJsLabels(...)),
             new TwigFunction('item_equip_slots', $this->getItemEquipSlots(...)),
+            new TwigFunction('item_display_name', $this->getItemDisplayName(...)),
+            new TwigFunction('item_repair_cost', $this->getItemRepairCost(...)),
+            new TwigFunction('item_race_block_hint', $this->getItemRaceBlockHint(...)),
+            new TwigFunction('item_slot_race_hint', $this->getItemSlotRaceHint(...)),
+            new TwigFunction('hero_combat_stats_unequipped', $this->getHeroCombatStatsUnequipped(...)),
             new TwigFunction('kingdom_pace', $this->getKingdomPace(...)),
             new TwigFunction('kingdom_summon_cap', $this->getKingdomSummonCap(...)),
         ];
@@ -101,6 +106,36 @@ class GameExtension extends AbstractExtension
     public function getItemEquipSlots(Item $item, Hero $hero): array
     {
         return $this->itemService->allowedEquipSlots($item, $hero);
+    }
+
+    public function getItemDisplayName(Item $item): string
+    {
+        return $this->itemService->displayName($item);
+    }
+
+    public function getItemRepairCost(Item $item): int
+    {
+        return $this->itemService->calculateRepairCost($item);
+    }
+
+    public function getItemRaceBlockHint(Item $item, Hero $hero): ?string
+    {
+        return $this->itemService->itemRaceBlockHint($item, $hero);
+    }
+
+    public function getItemSlotRaceHint(Hero $hero, string $slotValue): ?string
+    {
+        $slot = ItemSlotType::tryFrom($slotValue);
+        if (null === $slot) {
+            return null;
+        }
+
+        return $this->itemService->emptySlotRaceHint($hero, $slot);
+    }
+
+    public function getHeroCombatStatsUnequipped(Hero $hero): \App\ValueObject\Combat\DerivedCombatStats
+    {
+        return $this->combatStatCalculator->calculateWithoutEquipment($hero);
     }
 
     public function getUnreadMailCount(): int

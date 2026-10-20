@@ -18,7 +18,8 @@ Items are represented by the `Item` entity (`src/Entity/Item/Item.php`). Key fie
 | `owner_team_id` | FK → Team | The team that currently owns the item |
 | `equipped_hero_id` | FK → Hero (nullable) | Hero the item is equipped on; `null` if in rucksack |
 | `equipped_slot` | `ItemSlotType` enum (nullable) | The specific slot where the item is equipped |
-| `name` | string | Item display name |
+| `name` | string | Fallback display name (snapshot at purchase / chronicle) |
+| `name_key` | string, nullable | Catalog translation key (`item.short_sword`). UI and item API translate at display time; null on pre-key rows |
 | `slot_type` | `ItemSlotType` enum | Native type (`ring` items stay `ring` when worn in `ring_2`) |
 | `category` | `ItemCategory` enum | Weapon, Shield, Spell Accelerator, Armor, Accessory, Material |
 | `rarity` | `ItemRarity` enum | Common, Uncommon, Rare, Epic, Legendary, Mythic |
@@ -124,25 +125,30 @@ new_durability = max(0, current_durability - loss)
 - `hits_received` — that hero’s total from combat result `item_hit_counts`
 
 ### Repair
-Repair restores durability to `100`. The Gold cost scales with **rarity** and the **number of missing durability points**.
+Repair restores durability to `100`. The Gold cost scales with **rarity** and the **number of missing durability points**. For **Common** items, the cost is capped so a full repair is cheaper than buying a replacement (merchant catalog price, or the Common market fallback of 75 gold).
 
 **Formula:**
 ```
-Gold Cost = (100 - current_durability) × cost_per_point[rarity]
+base = (100 - current_durability) × cost_per_point[rarity]
+if rarity is Common:
+  replacement = merchant catalog cost, else 75
+  Gold Cost = min(base, max(1, replacement - 1))
+else:
+  Gold Cost = base
 ```
 
 ### Repair Cost Per Missing Durability Point
 
 | Rarity | Gold per Missing Point |
 |--------|------------------------|
-| Common | 2 |
+| Common | 2 (capped below replacement, see formula) |
 | Uncommon | 5 |
 | Rare | 10 |
 | Epic | 20 |
 | Legendary | 40 |
 | Mythic | 80 |
 
-**Example:** Repairing an Epic item from `durability = 60` costs `(100 - 60) × 20 = 800` Gold.
+**Example:** Repairing an Epic item from `durability = 60` costs `(100 - 60) × 20 = 800` Gold. Repairing a Short Sword (merchant 50) from `0` costs `min(200, 49) = 49` Gold.
 
 ### Repair Requirements
 - Item must have `status = available`.
@@ -158,9 +164,11 @@ Teams can purchase fixed-price basic equipment from the merchant via the web fro
 | Step | Details |
 |------|---------|
 | Gold deduction | `EconomyService::deductGold` (`MarketplacePurchase`, actor `Active`) |
-| Item creation | New `Item` with `ownerTeam = buyer`, `status = Available` |
+| Item creation | New `Item` with `ownerTeam = buyer`, `status = Available`, `name_key` from the catalog, `name` snapshot in the buyer locale |
 | Chronicle | `TeamChronicleService::recordItemPurchased` with `seller = null` (shows as "merchant") |
 | Transaction | `MarketplaceTransaction` with `seller_team_id = null`, `listing_id = null`, `fee_amount = 0` |
+
+Catalog: starter weapons, three armor weights, copper / bronze / quartz rings (STR / DEX / INT), silver / gold amulets (resistance / spell power). UI and item API resolve `name_key` at display time.
 
 ---
 

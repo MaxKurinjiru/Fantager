@@ -151,6 +151,17 @@ class CombatStatCalculatorTest extends TestCase
         $this->assertEqualsWithDelta(49.0 / 149.0, $stats->getPhysicalDamageReduction(), 0.0001);
     }
 
+    public function testCalculateWithoutEquipmentIgnoresItemBonuses(): void
+    {
+        $hero = $this->createHero(Race::Human);
+        $this->itemRepositoryMock->expects($this->never())->method('findBy');
+
+        $stats = $this->calculator->calculateWithoutEquipment($hero);
+
+        $this->assertSame(20, $stats->getPhysicalAttack());
+        $this->assertSame(270, $stats->getMaxHp());
+    }
+
     public function testEntRaceBonus(): void
     {
         $hero = $this->createHero(Race::Ent);

@@ -33,7 +33,7 @@ Match record (`matches_played`, win rate, fallen, training counts) is on the **H
 
 ### Equipment tab
 
-See [10-item-equipment.md](10-item-equipment.md). Nine slots, two rings, click-to-equip.
+See [10-item-equipment.md](10-item-equipment.md). Nine slots, two rings, click-to-equip, gear vs unequipped, team wear, rucksack filters.
 
 ### Spells tab
 

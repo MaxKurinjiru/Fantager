@@ -1,0 +1,48 @@
+{# templates/components/item/gear_compare.html.twig #}
+{% set with_gear = hero_combat_stats(hero) %}
+{% set without_gear = hero_combat_stats_unequipped(hero) %}
+{% set rows = [
+    { label: 'heroes.combat_hp', equipped: with_gear.maxHp, unequipped: without_gear.maxHp },
+    { label: 'heroes.combat_attack', equipped: with_gear.physicalAttack, unequipped: without_gear.physicalAttack },
+    { label: 'heroes.combat_spell_power', equipped: with_gear.spellPower, unequipped: without_gear.spellPower },
+    { label: 'heroes.combat_armor', equipped: with_gear.armorValue, unequipped: without_gear.armorValue },
+    { label: 'heroes.combat_resistance', equipped: with_gear.magicResistance, unequipped: without_gear.magicResistance },
+    { label: 'heroes.combat_initiative', equipped: with_gear.baseInitiative, unequipped: without_gear.baseInitiative }
+] %}
+<div class="hero-panel">
+    <div>
+        <h2 class="hero-panel__title">{{ 'inventory.gear_compare'|trans }}</h2>
+        <p class="hero-panel__desc">{{ 'inventory.gear_compare_desc'|trans }}</p>
+    </div>
+    <div class="data-table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ 'inventory.gear_compare_stat'|trans }}</th>
+                    <th>{{ 'inventory.stat_without_gear'|trans }}</th>
+                    <th>{{ 'inventory.stat_with_gear'|trans }}</th>
+                    <th>{{ 'inventory.stat_delta'|trans }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    {% set delta = row.equipped - row.unequipped %}
+                    <tr>
+                        <th scope="row">{{ row.label|trans }}</th>
+                        <td>{{ row.unequipped }}</td>
+                        <td>{{ row.equipped }}</td>
+                        <td>
+                            {% if delta > 0 %}
+                                <span class="copy-status-success">+{{ delta }}</span>
+                            {% elseif delta < 0 %}
+                                <span class="copy-status-error">{{ delta }}</span>
+                            {% else %}
+                                <span class="copy-muted">0</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

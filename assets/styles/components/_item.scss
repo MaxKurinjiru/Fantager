@@ -432,3 +432,54 @@
   color: color-mix(in srgb, var(--color-text-muted) 60%, transparent);
   line-height: 1;
 }
+
+.paperdoll-slot--race-blocked {
+  border-color: color-mix(in srgb, var(--color-warning-border) 50%, var(--color-border-strong));
+}
+
+.rucksack-filters {
+  margin-bottom: 0.25rem;
+}
+
+.rucksack-item__race-hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.team-wear-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.team-wear-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem 1rem;
+  background-color: color-mix(in srgb, var(--color-surface-overlay) 50%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  &__hero {
+    font-weight: 700;
+    min-width: 10rem;
+  }
+
+  &__items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}

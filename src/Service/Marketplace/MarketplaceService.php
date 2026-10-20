@@ -31,6 +31,7 @@ use App\Service\Economy\RoyalTreasuryService;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroRatingCalculator;
+use App\Service\Item\ItemService;
 use App\Service\Notification\NotificationHelper;
 use App\Service\Team\TeamChemistryService;
 use App\Service\Team\TeamRosterService;
@@ -60,6 +61,7 @@ class MarketplaceService
         private readonly HeadquartersService $hqService,
         private readonly TrainingService $trainingService,
         private readonly HeroChronicleService $heroChronicleService,
+        private readonly ItemService $itemService,
     ) {
     }
 
@@ -373,7 +375,7 @@ class MarketplaceService
         if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
             $entityName = $listing->getHero()->getName();
         } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
-            $entityName = $listing->getItem()->getName();
+            $entityName = $this->itemService->displayName($listing->getItem());
         } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
             $entityName = $listing->getHero()->getName();
         }
@@ -620,7 +622,7 @@ class MarketplaceService
                 if (ListingType::Hero === $listing->getListingType() && null !== $listing->getHero()) {
                     $entityName = $listing->getHero()->getName();
                 } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
-                    $entityName = $listing->getItem()->getName();
+                    $entityName = $this->itemService->displayName($listing->getItem());
                 } elseif (ListingType::Trainer === $listing->getListingType() && null !== $listing->getHero()) {
                     $entityName = $listing->getHero()->getName();
                 }
@@ -1017,7 +1019,7 @@ class MarketplaceService
                     if (null !== $listing->getHero()) {
                         $entityName = $listing->getHero()->getName();
                     } elseif (ListingType::Item === $listing->getListingType() && null !== $listing->getItem()) {
-                        $entityName = $listing->getItem()->getName();
+                        $entityName = $this->itemService->displayName($listing->getItem());
                     } else {
                         $entityName = 'Unknown';
                     }
@@ -1098,7 +1100,7 @@ class MarketplaceService
             $item = $listing->getItem();
             $entityData = [
                 'id' => $item->getId(),
-                'name' => $item->getName(),
+                'name' => $this->itemService->displayName($item),
                 'rarity' => $item->getRarity()->value,
                 'slot_type' => $item->getSlotType()->value,
                 'category' => $item->getCategory()->value,
