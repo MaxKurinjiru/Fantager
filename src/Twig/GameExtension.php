@@ -9,6 +9,7 @@ use App\Entity\Headquarters\Headquarters;
 use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
 use App\Entity\Kingdom\Kingdom;
+use App\Entity\Spell\Spell;
 use App\Entity\Team\Team;
 use App\Enum\FacilityType;
 use App\Enum\HeroTrait;
@@ -22,6 +23,7 @@ use App\Service\Item\ItemService;
 use App\Service\Kingdom\KingdomPace;
 use App\Service\Marketplace\MarketplacePriceGuidance;
 use App\Service\Notification\NotificationService;
+use App\Service\Spell\SpellService;
 use App\Service\Team\TeamRosterService;
 use App\ValueObject\Marketplace\ListingPriceGuidance;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -46,6 +48,7 @@ class GameExtension extends AbstractExtension
         private readonly \App\Service\Economy\TeamPayrollService $teamPayrollService,
         private readonly \App\Service\Hero\HeroProgressionService $heroProgressionService,
         private readonly ItemService $itemService,
+        private readonly SpellService $spellService,
         private readonly MarketplacePriceGuidance $marketplacePriceGuidance,
         private readonly TranslatorInterface $translator,
     ) {
@@ -81,6 +84,8 @@ class GameExtension extends AbstractExtension
             new TwigFunction('hero_trait_js_labels', $this->getHeroTraitJsLabels(...)),
             new TwigFunction('item_equip_slots', $this->getItemEquipSlots(...)),
             new TwigFunction('item_display_name', $this->getItemDisplayName(...)),
+            new TwigFunction('spell_display_name', $this->getSpellDisplayName(...)),
+            new TwigFunction('hero_can_cast_offensive_spells', $this->heroCanCastOffensiveSpells(...)),
             new TwigFunction('item_repair_cost', $this->getItemRepairCost(...)),
             new TwigFunction('item_race_block_hint', $this->getItemRaceBlockHint(...)),
             new TwigFunction('item_slot_race_hint', $this->getItemSlotRaceHint(...)),
@@ -111,6 +116,16 @@ class GameExtension extends AbstractExtension
     public function getItemDisplayName(Item $item): string
     {
         return $this->itemService->displayName($item);
+    }
+
+    public function getSpellDisplayName(Spell $spell): string
+    {
+        return $this->spellService->displayName($spell);
+    }
+
+    public function heroCanCastOffensiveSpells(Hero $hero): bool
+    {
+        return $this->spellService->heroCanCastOffensiveSpells($hero);
     }
 
     public function getItemRepairCost(Item $item): int

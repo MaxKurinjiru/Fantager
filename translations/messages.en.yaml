@@ -813,6 +813,8 @@ heroes:
   combat_attack_desc: "Physical attack power, modified by Strength (STR) and equipped weapon."
   combat_spell_power: "Spell Power"
   combat_spell_power_desc: "Spell casting strength, modified by Intelligence (INT)."
+  combat_mana: "Mana"
+  combat_mana_desc: "Match mana pool from level, Intelligence, and Willpower. Spells spend it when queued."
   combat_armor: "Armor Value"
   combat_armor_desc: "Physical armor from gear, reducing incoming physical damage."
   combat_resistance: "Magic Resistance"
@@ -1238,7 +1240,7 @@ spells:
   filter_tier: Tier
   subtitle: Learn new spell scrolls for your heroes and manage their active combat slots.
   slot_empty: "Slot %slot% Empty"
-  academy_desc: "In matches, causes effects depending on the magic school."
+  academy_desc: "In matches, effects follow the spell's school and type."
   trainee_mage: Trainee Mage
   select_hero_opt: "-- Select Hero to Manage --"
   equipped_slots: Equipped Slots
@@ -1247,6 +1249,35 @@ spells:
   tab_learned: Learned Spells
   tab_store: Academy Store
   mana_cooldown: "Mana Cost: %mana% &bull; Cooldown: %cooldown% rounds"
+  hero_max_mana: "Hero max mana: %mana%."
+  mana_too_high: "This cost is above the hero's max mana."
+  needs_magical_weapon: "Needs a wand or staff to cast in combat."
+  mastery_spell_power: "Equipped: +%pct%% spell power"
+  damage_formula: "Damage scales with spell power and tier %tier%."
+  heal_formula: "Healing scales with spell power and tier %tier%."
+  cast_duration: "Cast takes %rounds% rounds."
+  effect:
+    offensive:
+      fire: Deals magical damage and applies Burn.
+      water: Deals magical damage.
+      air: Deals magical damage and applies Shock.
+      earth: Deals magical damage and applies Petrify.
+      light: Deals magical damage and applies Blind.
+      dark: Deals magical damage and applies Curse.
+    defensive:
+      fire: Aids an ally and applies Fury.
+      water: Heals an ally and applies Regeneration.
+      air: Aids an ally and applies Haste.
+      earth: Aids an ally and applies Shield.
+      light: Heals an ally and applies Bless. Does not revive.
+      dark: Aids an ally and applies Shadow Cloak.
+    utility:
+      fire: Applies Burn.
+      water: Applies Freeze.
+      air: Applies Stun.
+      earth: Applies Petrify.
+      light: Applies Silence.
+      dark: Applies Taunt.
   known: Known
   equip_slot_num: "Equip Slot %slot%"
   slots_full: Slots Full
@@ -1323,7 +1354,10 @@ formation:
   tactics_fallback_lowest_hp: Lowest remaining HP
   tactics_fallback_highest_threat: Highest physical attack
   tactics_spells: Spell priorities
-  tactics_spells_hint: Ordered equipped spells. Leave empty to use the default heal-or-highest-offense pick.
+  tactics_spells_hint: Ordered equipped spells. Leave empty to use heal, then highest offense, then utility.
+  tactics_template_healer: Healer
+  tactics_template_cc: Crowd control
+  tactics_template_nuker: Nuker
   tactics_assign_hero_spells: Assign a hero to this slot to set spell priorities.
   tactics_no_spells: This hero has no equipped spells.
   tactics_add_spell: Add equipped spell
@@ -2049,6 +2083,15 @@ battle:
   status_tick: "%effect% tick deals %amount% damage to %target% (%hp% HP left)"
   status_expired: "%effect% on %target% has expired"
   skip_turn: "%hero% skips turn due to freeze or stun"
+  turn_start: "%hero% acts (mana %mana%)"
+  plan_action_attack: "%attacker% prepares to attack %target% (%duration% rounds)"
+  plan_action_spell: "%caster% begins casting %spell% on %target% (%duration% rounds)"
+  plan_action_mana: "Mana %cost% (now %after%)."
+  preparing_action_tick: "%hero% continues preparing (%rounds% rounds left)"
+  action_interrupted: "%hero%'s preparation was interrupted (%reason%)"
+  action_fumble: "%hero%'s action failed because %target% was already down"
+  reason_stun_or_freeze: "stun or freeze"
+  reason_silence: "silence"
   no_team: No Team
   unknown_actor: Unknown
   return_to_league: Return to League
@@ -2114,4 +2157,65 @@ status_effects:
   taunt: Taunt
   silence: Silence
 
+spell:
+  spark: Spark
+  ignite: Ignite
+  fireball: Fireball
+  immolation: Immolation
+  flamethrower: Flamethrower
+  firestorm: Firestorm
+  hellfire: Hellfire
+  burning_spiral: Burning Spiral
+  fire_meteor: Fire Meteor
+  phoenix_wrath: Phoenix Wrath
+  water_jet: Water Jet
+  gentle_touch: Gentle Touch
+  healing_wave: Healing Wave
+  ice_spike: Ice Spike
+  tide: Tide
+  ice_cage: Ice Cage
+  living_water: Living Water
+  snowstorm: Snowstorm
+  sea_grace: Sea Grace
+  eternal_frost: Eternal Frost
+  breeze: Breeze
+  static_charge: Static Charge
+  lightning_strike: Lightning Strike
+  wind_wall: Wind Wall
+  whirlwind: Whirlwind
+  storm_arrow: Storm Arrow
+  air_shield: Air Shield
+  thunder_fist: Thunder Fist
+  cyclone_eye: Eye of the Cyclone
+  sky_bolt: Sky Bolt
+  stone_skin: Stone Skin
+  stone_throw: Stone Throw
+  earthquake: Earthquake
+  gravel_storm: Gravel Storm
+  boulder: Boulder
+  stone_fortress: Stone Fortress
+  mountain_fist: Mountain Fist
+  earth_split: Earth Split
+  mountain_collapse: Mountain Collapse
+  titan_skin: Titan Skin
+  holy_light: Holy Light
+  blessing: Blessing
+  cleanse: Cleanse
+  ray_of_hope: Ray of Hope
+  divine_radiance: Divine Radiance
+  consecration: Consecration
+  miracle: Miracle
+  light_of_hope: Light of Hope
+  heavenly_grace: Heavenly Grace
+  aura_of_light: Aura of Light
+  shadow_bolt: Shadow Bolt
+  weakness: Weakness
+  life_drain: Life Drain
+  corruption: Corruption
+  dark_beam: Dark Beam
+  curse: Curse
+  blood_rite: Blood Rite
+  plague: Plague
+  soul_drain: Soul Drain
+  eternal_dark: Eternal Dark
 

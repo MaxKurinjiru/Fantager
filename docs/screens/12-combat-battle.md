@@ -5,7 +5,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 **When:** Watch a **completed** match. Combat is fully automated — players do **not** issue mid-battle actions. Pre-match behaviour is set on [Formation Setup](07-formation-setup.md) (`approach`, movement goal, per-slot L1/L2).
 
 **Status:** Live at `/app/battles/{id}` (`Web\BattleController`, `templates/battle/index.html.twig`). Post-match replay only (no live / in-progress match UI).  
-**Lock:** [Locked: replay HUD](#locked-replay-hud)
+**Lock:** [Locked: replay HUD](#locked-replay-hud)  
+Accordion shows mana on `turn_start` and `plan_action`. No HUD mana bar ([Locked: replay HUD](#locked-replay-hud)).
 
 ---
 
@@ -44,7 +45,8 @@ Not in the HUD: morale widget, initiative queue, remaining-heroes sidebar, forma
 - Accordion of `combat_log` events (`battle_report`)
 - Semantic row styles per event type
 - Spell events use type `spell` (i18n key remains `battle.spell_cast`)
-- Turn order stays in the accordion (`turn_start`); Haste/Shock change initiative sort only — no HUD queue
+- Turn order stays in the accordion (`turn_start`, including mana after regen); Haste/Shock change initiative sort only — no HUD queue
+- Spell `plan_action` rows include mana spent
 
 **Forfeit**
 

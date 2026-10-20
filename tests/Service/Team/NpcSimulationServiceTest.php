@@ -225,6 +225,7 @@ class NpcSimulationServiceTest extends TestCase
             $hero = new Hero();
             $this->setEntityId($hero, $i);
             $hero->setTeam($team);
+            $hero->setRace(Race::Human);
             $hero->setRole(HeroRole::Combatant);
             $hero->setStatus(HeroStatus::Available);
             
@@ -378,6 +379,7 @@ class NpcSimulationServiceTest extends TestCase
             $hero = new Hero();
             $this->setEntityId($hero, $i);
             $hero->setTeam($team);
+            $hero->setRace(Race::Human);
             $hero->setRole(HeroRole::Combatant);
             $hero->setStatus(HeroStatus::Available);
             

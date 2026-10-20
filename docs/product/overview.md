@@ -68,7 +68,7 @@ Nine slots including two rings. Enchanting is **not** in the live game ([#2](kno
 
 Live rules: [spell-system.md](../systems/spell-system.md).
 
-Learn for **gold only**. Seeded catalog is **Tier 1–5** ([#16](known-issues.md)).
+Learn for **gold only**. Seeded catalog is **Tier 1–5** ([#16](known-issues.md)). Match mana pool and `name_key` display: [spell-system.md](../systems/spell-system.md).
 
 ### Combat
 

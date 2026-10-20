@@ -146,6 +146,7 @@ Seven facilities. Forge is not live (crafting is ⏳).
 | Spellbook | School mastery (Fire / Water / Air / Earth / Light / Dark) | ✅ | [11-spell-management.md](../screens/11-spell-management.md) |
 | Spellbook | Learned list + inline store | ✅ | [11-spell-management.md](../screens/11-spell-management.md) |
 | Academy | Buy T1–T5 for gold (school / tier filters) | ✅ | [11-spell-management.md](../screens/11-spell-management.md#locked-catalog-t1t5) |
+| Spellbook | Mana pool, honest cards, starting slot, L0 utility, name keys | ✅ | [spell-system.md](../systems/spell-system.md) |
 
 ## League and calendar
 

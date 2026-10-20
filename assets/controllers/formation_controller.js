@@ -28,7 +28,11 @@ export default class extends Controller {
         'spellsNeedHero',
         'spellsEmpty',
         'targetOrderRowTemplate',
-        'spellPriorityRowTemplate'
+        'spellPriorityRowTemplate',
+        'spellTemplates',
+        'templateHealer',
+        'templateCc',
+        'templateNuker'
     ];
 
     static values = {
@@ -740,6 +744,43 @@ export default class extends Controller {
         this.renderTacticsPanel();
     }
 
+    applySpellTemplate(e) {
+        e.preventDefault();
+        const tactics = this.selectedTactics();
+        const type = e.currentTarget.dataset.spellType;
+        if (!tactics || !type) {
+            return;
+        }
+        const spells = this.heroSpells(this.slotsState[this.selectedPosition]).filter((spell) => spell.type === type);
+        if (spells.length === 0) {
+            return;
+        }
+        const used = new Set();
+        const rows = [];
+        spells.forEach((spell) => {
+            if (used.has(spell.id)) {
+                return;
+            }
+            used.add(spell.id);
+            if ('defensive' === type) {
+                rows.push({
+                    spell_id: spell.id,
+                    when: 'ally_hp_below',
+                    threshold: 50,
+                    target: 'lowest_hp_ally'
+                });
+            } else {
+                rows.push({
+                    spell_id: spell.id,
+                    when: 'always',
+                    target: 'priority'
+                });
+            }
+        });
+        tactics.spell_priorities = rows;
+        this.renderTacticsPanel();
+    }
+
     removeSpell(e) {
         e.preventDefault();
         const spellId = parseInt(e.currentTarget.closest('[data-spell-id]')?.dataset.spellId, 10);
@@ -877,6 +918,20 @@ export default class extends Controller {
         if (this.hasAddSpellRowTarget) {
             this.addSpellRowTarget.classList.toggle('hidden', !hasHero || spells.length === 0);
         }
+        const showTemplates = hasHero && spells.length > 0;
+        if (this.hasSpellTemplatesTarget) {
+            this.spellTemplatesTarget.classList.toggle('hidden', !showTemplates);
+        }
+        const hasType = (type) => spells.some((spell) => spell.type === type);
+        if (this.hasTemplateHealerTarget) {
+            this.templateHealerTarget.classList.toggle('hidden', !hasType('defensive'));
+        }
+        if (this.hasTemplateCcTarget) {
+            this.templateCcTarget.classList.toggle('hidden', !hasType('utility'));
+        }
+        if (this.hasTemplateNukerTarget) {
+            this.templateNukerTarget.classList.toggle('hidden', !hasType('offensive'));
+        }
 
         this.spellPriorityListTarget.replaceChildren();
         if (!hasHero) {
@@ -892,6 +947,10 @@ export default class extends Controller {
             const node = this.spellPriorityRowTemplateTarget.content.firstElementChild.cloneNode(true);
             node.dataset.spellId = String(row.spell_id);
             node.querySelector('[data-spell-name]').textContent = spell?.name || `#${row.spell_id}`;
+            const gate = node.querySelector('[data-spell-gate]');
+            if (gate) {
+                gate.classList.toggle('hidden', spell?.castable !== false);
+            }
             const whenSelect = node.querySelector('[data-when-select]');
             const targetSelect = node.querySelector('[data-target-select]');
             const thresholdWrap = node.querySelector('[data-threshold-wrap]');

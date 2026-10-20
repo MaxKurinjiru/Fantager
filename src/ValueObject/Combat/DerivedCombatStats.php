@@ -54,6 +54,8 @@ final class DerivedCombatStats
         private bool $ignoresRaceSynergy = false,
         /** Equipped-profile morale band. 1.0 at morale 40–59. Applied to physical and offensive-spell damage. */
         private float $outgoingDamageMultiplier = 1.0,
+        private int $maxMana = 100,
+        private int $manaRegen = 1,
     ) {
     }
 
@@ -170,6 +172,16 @@ final class DerivedCombatStats
     public function getOutgoingDamageMultiplier(): float
     {
         return $this->outgoingDamageMultiplier;
+    }
+
+    public function getMaxMana(): int
+    {
+        return $this->maxMana;
+    }
+
+    public function getManaRegen(): int
+    {
+        return $this->manaRegen;
     }
 
     public function withOutgoingDamageMultiplier(float $outgoingDamageMultiplier): self

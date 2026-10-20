@@ -8,7 +8,7 @@ Formulas: [combat-formulas.md](combat-formulas.md)
 Open design: none  
 Lock: [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)
 
-Purpose: Live combat contract — eligibility, scoring, hex layout, simulation / `combat_log`, formation AI, post-match boundary. Derived stats live in [combat-formulas.md](combat-formulas.md). Later product decisions (home-advantage): [known-issues.md](../product/known-issues.md) § Later product decisions. Simulate is **Cut** — [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate).
+Purpose: Live combat contract — eligibility, scoring, hex layout, simulation / `combat_log`, formation AI, post-match boundary. Derived stats live in [combat-formulas.md](combat-formulas.md). Later product decisions (home-advantage): [known-issues.md](../product/known-issues.md) § Later product decisions. Mana pool: [combat-formulas.md](combat-formulas.md#mana-pool). Simulate is **Cut** — [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate).
 
 ---
 
@@ -84,7 +84,7 @@ A **player** forfeits when the formation that will start is not match-ready: the
 
 ## Hexagonal Grid Combat Engine (17×11 Landscape)
 
-Combat takes place on a **17×11 2D Hexagonal Grid** (17 columns wide, q = 0..16; 11 rows tall, r = 0..10) using **Flat-Topped Axial Coordinates `(q, r)`**. `CombatEngine::ENGINE_VERSION` is **7** (Haste/Shock YAML speed percents apply to the per-round initiative sort, not AP).
+Combat takes place on a **17×11 2D Hexagonal Grid** (17 columns wide, q = 0..16; 11 rows tall, r = 0..10) using **Flat-Topped Axial Coordinates `(q, r)`**. `CombatEngine::ENGINE_VERSION` is **8** (match mana pool; Haste/Shock YAML speed percents apply to the per-round initiative sort, not AP).
 
 Canonical starting positions are defined in `HexGridService::getInitialHexForSlot()` and mirrored by the battle replay UI. Lane centres are **at least 3 hexes apart** so 7-hex flowers do not overlap. The front row is staggered +1 r vs the back row so a backliner does not share a LoS corridor with its own frontliner.
 
@@ -163,7 +163,7 @@ CombatMatchRequest
   sideA, sideB: CombatSide
   matchType: MatchType
   seed: int                         // required
-  engineVersion: int = CombatEngine::ENGINE_VERSION  // 7
+  engineVersion: int = CombatEngine::ENGINE_VERSION  // 8
 
 CombatSide
   teamId: int
@@ -326,7 +326,7 @@ To expand combat duration and add tactical depth, each active combatant's turn i
 | `version` | Schema version; replay client must understand or refuse |
 | `simulator` | `combat_engine` \| `forfeit` |
 | `seed` | PRNG seed used for this run |
-| `engine_version` | `CombatEngine::ENGINE_VERSION` stamped on the match (7 = Haste/Shock on initiative sort) |
+| `engine_version` | `CombatEngine::ENGINE_VERSION` stamped on the match (8 = mana pool + Haste/Shock on initiative sort) |
 | `grid` | `{ width, height }` battlefield size for replay |
 | `lineup` | Slot → hero labels for replay UI |
 | `events` | Ordered combat events (appended across waves) |
@@ -340,8 +340,8 @@ Common fields: `t` (monotonic index), `type`; commonly also `round`, `side` (`a`
 |--------|----------------|
 | `match_start` | — |
 | `round_start` | `round` |
-| `turn_start` | `side`, `slot`, `hero_id`, `initiative` |
-| `plan_action` | `side`, `slot`, `hero_id`, `action_type`, `target_side`, `target_slot`, `duration`, optional `spell_name`, optional `weapon_type` |
+| `turn_start` | `side`, `slot`, `hero_id`, `initiative`, `mana` (after regen) |
+| `plan_action` | `side`, `slot`, `hero_id`, `action_type`, `target_side`, `target_slot`, `duration`, optional `spell_name`, optional `weapon_type`; spell rows also have `mana_cost` and `mana_after` |
 | `preparing_action_tick` | `side`, `slot`, `hero_id`, `action_type`, `rounds_remaining` |
 | `action_interrupted` | `side`, `slot`, `hero_id`, `reason` |
 | `action_fumble` | `side`, `slot`, `hero_id`, `target_side`, `target_slot` |
@@ -372,7 +372,7 @@ Replay reconstructs HP/status by folding `events` — see [screens/12-combat-bat
 | `balanced` | Enemy front left→right, then back | Attack; heal if ally HP < 40% |
 | `defensive` | Enemy front; else highest threat | Heal if ally HP < 50%; else attack *(defend stance deferred — not queued)* |
 
-**Engine today:** `aggressive` uses back-then-front. `balanced` uses front-then-back. `defensive` uses the living front line and, once that line is gone, the survivor with the highest `physicalAttack`. A non-empty `spell_priorities` list is interpreted first (first matching `always` / `self_hp_below` / `ally_hp_below` wins; `enemy_status` and other unknown `when` values never match and are skipped). An empty list picks at most one ready spell: a defensive spell when any living ally is under the approach heal threshold, otherwise the highest-tier offensive spell. Utility spells are not auto-cast. `target_order` and `fallback` (`lowest_hp`, `highest_threat`, default approach order) are already read and outrank the approach.
+**Engine today:** `aggressive` uses back-then-front. `balanced` uses front-then-back. `defensive` uses the living front line and, once that line is gone, the survivor with the highest `physicalAttack`. A non-empty `spell_priorities` list is interpreted first (first matching `always` / `self_hp_below` / `ally_hp_below` wins; `enemy_status` and other unknown `when` values never match and are skipped). An empty list picks at most one **ready** spell (mana, cooldown, magical-weapon gate): a defensive spell when any living ally is under the approach heal threshold, otherwise the highest-tier offensive spell, otherwise the highest-tier utility spell. `target_order` and `fallback` (`lowest_hp`, `highest_threat`, default approach order) are already read and outrank the approach.
 
 ### Engine vs post-match boundary
 
@@ -433,13 +433,13 @@ Request/result shapes, event payloads, and **wave orchestration**: [Simulation C
 
 ## Formation AI (Phased)
 
-Combat AI is fully automated. It reads `Formation.approach` and per-slot `strategy` / `spell_priorities`. Empty `target_order` uses the approach slot order. Empty `spell_priorities` uses the L0 spell pick (heal under the approach threshold, else highest-tier offense). Schema details: [formation-system.md](formation-system.md#strategy-json-schema-phased). L0 numeric defaults: [Simulation Contract — L0](#l0-defaults-config-backed).
+Combat AI is fully automated. It reads `Formation.approach` and per-slot `strategy` / `spell_priorities`. Empty `target_order` uses the approach slot order. Empty `spell_priorities` uses the L0 spell pick (heal under the approach threshold, else highest-tier offense, else utility). Schema details: [formation-system.md](formation-system.md#strategy-json-schema-phased). L0 numeric defaults: [Simulation Contract — L0](#l0-defaults-config-backed).
 
 ### Layers
 
 | Layer | Behaviour | UI / data today |
 |-------|-----------|-----------------|
-| **L0** | Approach slot order, plus one ready spell when `spell_priorities` is empty (heal under the yaml threshold, else highest-tier offense). Defensive holds the front line, then highest physical attack | Approach radios and one formation-wide `movement_goal` (copied onto every slot) |
+| **L0** | Approach slot order, plus one ready spell when `spell_priorities` is empty (heal under the yaml threshold, else highest-tier offense, else utility). Defensive holds the front line, then highest physical attack | Approach radios and one formation-wide `movement_goal` (copied onto every slot) |
 | **L1** | Per-hero `target_order` (+ `fallback`: `lowest_hp`, `highest_threat`, or approach order) | Player slot editor. Empty order = approach |
 | **L2** | `spell_priorities` with `always`, `self_hp_below`, `ally_hp_below` | Thin player editor for equipped spells. Empty list = L0 pick. NPC may still fill lists. `enemy_status` / `lowest_hp_enemy` Cut from UI |
 | **L3** | Explicit action sequences + advanced conditional tactics (sub, formation switch) | Deferred — not live |

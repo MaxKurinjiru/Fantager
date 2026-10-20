@@ -25,7 +25,7 @@ use App\ValueObject\Combat\HexCoordinate;
  */
 class CombatEngine
 {
-    public const ENGINE_VERSION = 7;
+    public const ENGINE_VERSION = 8;
 
     /** Hard stop for one-shot and wave/resume combat paths. */
     public const MAX_ROUNDS = 200;
@@ -178,7 +178,15 @@ class CombatEngine
                 break;
             }
 
-            // Turn start
+            // 1. Decrement active cooldowns, then regen mana (still runs if the turn is skipped)
+            foreach ($actor['cooldowns'] as $spellId => $cd) {
+                if ($cd > 0) {
+                    $actor['cooldowns'][$spellId] = $cd - 1;
+                }
+            }
+            $this->regenMana($actor);
+            $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
+
             $roundEvents[] = [
                 't' => count($runState['events']) + count($roundEvents),
                 'type' => 'turn_start',
@@ -186,15 +194,8 @@ class CombatEngine
                 'slot' => $actorSlot,
                 'hero_id' => $actor['heroId'],
                 'initiative' => $actorInfo['initiative'],
+                'mana' => (int) ($actor['currentMana'] ?? 0),
             ];
-
-            // 1. Decrement active cooldowns for actor
-            foreach ($actor['cooldowns'] as $spellId => $cd) {
-                if ($cd > 0) {
-                    $actor['cooldowns'][$spellId] = $cd - 1;
-                }
-            }
-            $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
 
             // 2. Check for freeze/stun (skip turn & interrupt)
             $hasSkipTurnEffect = false;
@@ -344,18 +345,7 @@ class CombatEngine
                         continue;
                     }
 
-                    // Magical weapon requirement check
-                    if (!empty($spell['requires_magical_weapon'])) {
-                        $weaponType = $actor['weaponSubType'] ?? null;
-                        $isEnt = isset($actor['race']) && 'ent' === $actor['race'];
-                        if (!$isEnt && 'wand' !== $weaponType && 'staff' !== $weaponType) {
-                            continue;
-                        }
-                    }
-
-                    $cdKey = (string) $spellId;
-                    $currentCd = $actor['cooldowns'][$cdKey] ?? 0;
-                    if ($currentCd > 0) {
+                    if (!$this->spellIsReady($actor, $spell)) {
                         continue;
                     }
 
@@ -430,6 +420,8 @@ class CombatEngine
 
                 $duration = 1 + ($castSpell['tier'] ?? 1);
                 $targetSide = ('lowest_hp_ally' === $spellPriorityTarget || 'self' === $spellPriorityTarget) ? $actorSide : $opposingSideKey;
+                $manaCost = (int) ($castSpell['mana_cost'] ?? 0);
+                $actor['currentMana'] = max(0, ((int) ($actor['currentMana'] ?? 0)) - $manaCost);
 
                 $actor['queuedAction'] = [
                     'type' => 'spell',
@@ -451,6 +443,8 @@ class CombatEngine
                     'target_side' => $targetSide,
                     'target_slot' => $spellTargetSlot,
                     'duration' => $duration,
+                    'mana_cost' => $manaCost,
+                    'mana_after' => (int) $actor['currentMana'],
                 ];
 
                 $this->updateCombatant($runState, $actorSide, $actorSlot, $actor);
@@ -969,7 +963,8 @@ class CombatEngine
      *
      * Heal with the strongest ready defensive spell when any living ally
      * (including the caster) is under the approach HP threshold. Otherwise
-     * the highest-tier ready offensive spell. Utility spells are not auto-cast.
+     * the highest-tier ready offensive spell. If neither is ready, the
+     * highest-tier ready utility spell (L1 / approach enemy).
      *
      * @param array<string, mixed> $runState
      * @param array<string, mixed> $actor
@@ -1002,6 +997,11 @@ class CombatEngine
             return ['spell' => $offense, 'target' => 'enemy'];
         }
 
+        $utility = $this->strongestReadySpell($ready, 'utility');
+        if (null !== $utility) {
+            return ['spell' => $utility, 'target' => 'enemy'];
+        }
+
         return null;
     }
 
@@ -1021,8 +1021,29 @@ class CombatEngine
 
         $cdKey = (string) ($spell['id'] ?? '');
         $currentCd = $actor['cooldowns'][$cdKey] ?? 0;
+        if ($currentCd > 0) {
+            return false;
+        }
 
-        return $currentCd <= 0;
+        $cost = (int) ($spell['mana_cost'] ?? 0);
+        $mana = (int) ($actor['currentMana'] ?? $actor['derived']['maxMana'] ?? 0);
+
+        return $mana >= $cost;
+    }
+
+    /**
+     * @param array<string, mixed> $combatant
+     */
+    private function regenMana(array &$combatant): void
+    {
+        $maxMana = (int) ($combatant['derived']['maxMana'] ?? 0);
+        if ($maxMana <= 0) {
+            return;
+        }
+
+        $regen = max(0, (int) ($combatant['derived']['manaRegen'] ?? 0));
+        $current = (int) ($combatant['currentMana'] ?? $maxMana);
+        $combatant['currentMana'] = min($maxMana, $current + $regen);
     }
 
     /**
@@ -1258,6 +1279,7 @@ class CombatEngine
             'spellPriorities' => $c->getSpellPriorities(),
             'spells' => $c->getSpells(),
             'currentHp' => $c->getDerived()->getCurrentHp(),
+            'currentMana' => $c->getDerived()->getMaxMana(),
             'cooldowns' => [],
             'statusEffects' => [],
             'weaponSubType' => $c->getWeaponSubType()?->value,
@@ -1298,6 +1320,8 @@ class CombatEngine
             // Unused (#9 Cut): serialized unused; CombatEngine does not read it.
             'ignoresRaceSynergy' => $d->ignoresRaceSynergy(),
             'outgoingDamageMultiplier' => $d->getOutgoingDamageMultiplier(),
+            'maxMana' => $d->getMaxMana(),
+            'manaRegen' => $d->getManaRegen(),
         ];
     }
 

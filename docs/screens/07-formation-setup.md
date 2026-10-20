@@ -5,7 +5,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 **When:** Edit saved lineups, or prepare a specific fixture (`?fixture_id=`).
 
 **Status:** Lineup drag-and-drop is **live**. Per-slot L1/L2 tactics editor is **live**. Synergies are **Cut**. Save rejects duplicate `hero_id`.  
-**Lock:** [formation-system.md — L1/L2 editor](../systems/formation-system.md#locked-l1l2-editor)
+**Lock:** [formation-system.md — L1/L2 editor](../systems/formation-system.md#locked-l1l2-editor)  
+Slot tactics: Healer / CC / Nuker buttons write thin L2 lists from equipped spells. Spec: [spell-system.md](../systems/spell-system.md#l0-utility-and-l2-templates).
 
 **Live UI:** `templates/formation/index.html.twig`, `templates/components/formation/`, Stimulus `formation`.
 
@@ -36,7 +37,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 - Set as default (disabled in match-prep)
 - Pre-match approach: Aggressive / Balanced / Defensive (`approach`)
 - Movement goal: one formation-wide `strategy.movement_goal` (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`), copied onto every slot on save and merged with that slot’s L1/L2
-- Slot tactics panel (click a pitch slot): L1 `target_order` + `fallback`; thin L2 equipped `spell_priorities`. Empty lists keep L0.
+- Slot tactics panel (click a pitch slot): L1 `target_order` + `fallback`; thin L2 equipped `spell_priorities`; Healer / CC / Nuker templates. Empty lists keep L0.
 
 **Pitch (3 front + 3 back)**
 

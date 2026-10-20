@@ -83,6 +83,17 @@ Final_Spell_Effect = Spell_Base_Effect × (1 + Spell_Power / 100)
 
 - **Race:** Genies +15% spell effectiveness
 
+### Mana pool
+
+Match-only (not a `Hero` column). Seeded `Spell.manaCost` is the spend. Effective INT/WIL are the same durability-scaled attributes used for spell power and resistance. Form and fatigue do **not** scale mana.
+
+```
+maxMana = max(20, round(Level × 6 + Effective_INT × 4 + Effective_WIL × 2))
+manaRegen = max(1, round(Effective_WIL / 5 + Effective_INT / 10))
+```
+
+Glasscannon multiplies max mana by **1.15** after that product (same multiplier as spell power). Kickoff `currentMana = maxMana`. Once per that combatant’s turn, after status ticks and cooldown decrement: `currentMana = min(maxMana, currentMana + manaRegen)`. Deduct `manaCost` when a spell is **queued** (`plan_action`). No refund on silence or fumble. Ready check: `currentMana >= manaCost` plus cooldown and the magical-weapon gate. Product rules: [spell-system.md](spell-system.md#mana-pool).
+
 ### Physical Defense / Armor (DEF)
 
 ```

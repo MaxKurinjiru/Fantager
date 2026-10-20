@@ -45,6 +45,17 @@
             <p class="copy-muted">{{ 'formation.tactics_spells_hint'|trans }}</p>
             <p data-formation-target="spellsNeedHero" class="copy-muted hidden">{{ 'formation.tactics_assign_hero_spells'|trans }}</p>
             <p data-formation-target="spellsEmpty" class="copy-muted hidden">{{ 'formation.tactics_no_spells'|trans }}</p>
+            <div data-formation-target="spellTemplates" class="layout-cluster layout-cluster--sm hidden">
+                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#applySpellTemplate" data-spell-type="defensive" data-formation-target="templateHealer">
+                    {{ 'formation.tactics_template_healer'|trans }}
+                </button>
+                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#applySpellTemplate" data-spell-type="utility" data-formation-target="templateCc">
+                    {{ 'formation.tactics_template_cc'|trans }}
+                </button>
+                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#applySpellTemplate" data-spell-type="offensive" data-formation-target="templateNuker">
+                    {{ 'formation.tactics_template_nuker'|trans }}
+                </button>
+            </div>
             <ol data-formation-target="spellPriorityList" class="formation-tactics-list"></ol>
             <div data-formation-target="addSpellRow" class="layout-cluster layout-cluster--sm">
                 <label for="formation-add-spell" class="sr-only">{{ 'formation.tactics_add_spell'|trans }}</label>
@@ -71,6 +82,7 @@
 <template data-formation-target="spellPriorityRowTemplate">
     <li class="formation-tactics-row formation-tactics-row--spell" data-spell-id="">
         <span data-spell-name class="formation-tactics-row__label"></span>
+        <span data-spell-gate class="spell-card__status-note hidden">{{ 'spells.needs_magical_weapon'|trans }}</span>
         <div class="form-field-group form-field-group--tight">
             <label class="form-label">{{ 'formation.tactics_when'|trans }}
                 <select data-when-select data-action="change->formation#changeSpellWhen" class="form-select">

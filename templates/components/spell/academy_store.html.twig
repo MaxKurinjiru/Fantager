@@ -14,7 +14,7 @@
                             <div class="layout-cluster layout-cluster--sm">
                                 <span class="emoji-icon">📜</span>
                                 <div>
-                                    <h3 class="spell-card__title">{{ spell.name }}</h3>
+                                    <h3 class="spell-card__title">{{ spell_display_name(spell) }}</h3>
                                     <span class="spell-card__school">
                                         {{ 'spells.tier_label'|trans({'%tier%': spell.tier }) }} &bull; {{ ('school.' ~ spell.school.value)|trans }}
                                     </span>
@@ -26,9 +26,7 @@
                             </span>
                         </div>
 
-                        <p class="spell-card__desc">
-                            {{ 'spells.academy_desc'|trans }} {{ 'spells.mana_cooldown'|trans({'%mana%': spell.manaCost, '%cooldown%': spell.cooldown})|raw }}
-                        </p>
+                        {% include 'components/spell/card_facts.html.twig' with { spell: spell, selected_hero: selected_hero } %}
                     </div>
 
                     <div class="spell-card__footer">

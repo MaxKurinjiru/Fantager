@@ -16,6 +16,14 @@ use App\ValueObject\Combat\DerivedCombatStats;
 
 class CombatStatCalculator
 {
+    public const MANA_LEVEL_FACTOR = 6;
+
+    public const MANA_INT_FACTOR = 4;
+
+    public const MANA_WIL_FACTOR = 2;
+
+    public const MANA_FLOOR = 20;
+
     public function __construct(
         private readonly ItemRepository $itemRepository,
         private readonly HeroMasteryService $heroMasteryService,
@@ -252,6 +260,9 @@ class CombatStatCalculator
         $spellPowerVal *= $spellPowerMult;
         $spellPower = (int) round($spellPowerVal);
 
+        $maxMana = max(self::MANA_FLOOR, (int) round(($level * self::MANA_LEVEL_FACTOR) + ($intel * self::MANA_INT_FACTOR) + ($wil * self::MANA_WIL_FACTOR)));
+        $manaRegen = max(1, (int) round(($wil / 5.0) + ($intel / 10.0)));
+
         $armorFactor = $isDwarf ? 1.15 : 1.0;
         $armorValueVal = ($itemArmor + ($kon * 1.5 * $konFactor)) * $armorFactor * $armorMult;
         $armorValue = (int) round($armorValueVal);
@@ -286,8 +297,9 @@ class CombatStatCalculator
             $maxHp = (int) round($maxHp * $trait->getHpMultiplier());
             $currentHp = (int) round($maxHp * ($formPercent / 100.0));
             $physicalAttack = (int) round($physicalAttack * $trait->getPhysAttackMultiplier());
-            $spellPower = (int) round($spellPower * $trait->getSpellPowerMultiplier());
-            $armorValue = (int) round($armorValue * $trait->getArmorMultiplier());
+            $spellPower = $this->applyPercentMultiplier($spellPower, $trait->getSpellPowerMultiplier());
+            $maxMana = $this->applyPercentMultiplier($maxMana, $trait->getSpellPowerMultiplier());
+            $armorValue = $this->applyPercentMultiplier($armorValue, $trait->getArmorMultiplier());
 
             $accuracyPercent += $trait->getAccuracyBonus();
             $critPercent = min(50.0, $critPercent + $trait->getCritBonus());
@@ -321,6 +333,8 @@ class CombatStatCalculator
             isConsistentDamage: $trait?->isConsistentDamage() ?? false,
             ignoresRaceSynergy: $trait?->ignoresRaceSynergy() ?? false,
             outgoingDamageMultiplier: $outgoingDamageMultiplier,
+            maxMana: $maxMana,
+            manaRegen: $manaRegen,
         );
     }
 
@@ -413,5 +427,13 @@ class CombatStatCalculator
             $morale >= 20 => 0.90,
             default => 0.80,
         };
+    }
+
+    /** Avoid IEEE 1.15 * 90 = 103.499… rounding down instead of 104. */
+    private function applyPercentMultiplier(int $value, float $multiplier): int
+    {
+        $percent = (int) round($multiplier * 100);
+
+        return (int) round($value * $percent / 100);
     }
 }

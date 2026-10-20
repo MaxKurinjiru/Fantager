@@ -7,7 +7,7 @@ Screens: [11-spell-management.md](../screens/11-spell-management.md) · Code: [s
 Open design: none  
 Lock: [Locked: catalog T1–T5](#locked-catalog-t1t5)
 
-Purpose: Document spell schools, mastery, learning, equip slots, and academy UI.
+Purpose: Document spell schools, mastery, learning, equip slots, academy UI, and the match mana pool.
 
 
 ## Overview
@@ -15,8 +15,9 @@ Purpose: Document spell schools, mastery, learning, equip slots, and academy UI.
 - Spells belong to schools (`fire`, `water`, `air`, `earth`, `light`, `dark`) and have tiers.
 - Learning requires school mastery tier ≥ spell `required_mastery_tier`.
 - Cost is **gold only** (`learning_cost_gold`). There is no essence currency.
-- Heroes equip spells into slots limited by magic capacity (expanded via training, max 5).
-- Seeded catalog: `SpellService::seedDefaultSpells()` / `app:spells:seed` (also on kingdom init). See [Locked: catalog T1–T5](#locked-catalog-t1t5).
+- Heroes equip spells into slots limited by magic capacity (default **1** at generation; expanded via training, max 5). Trainers have capacity **0**.
+- Seeded catalog: `SpellService::seedDefaultSpells()` / `app:spells:seed` (also on kingdom init). Display uses `name_key`; `name` is the fallback. See [Locked: catalog T1–T5](#locked-catalog-t1t5).
+- Combat spends **mana** when a spell is queued. Formulas: [combat-formulas.md](combat-formulas.md#mana-pool).
 
 **Service:** `App\Service\Spell\SpellService`  
 **Entity:** `App\Entity\Spell\Spell`, `HeroSpell`, `SchoolMastery`  
@@ -33,7 +34,7 @@ Purpose: Document spell schools, mastery, learning, equip slots, and academy UI.
 |------|---------|
 | Shape | 6 schools × 5 tiers × 2 spells (**60**). Fire is offensive; Light is defensive (heal / bless / cleanse; **no** revive); Dark is offensive / curse / drain / poison (**no** heal); Water heal + freeze; Air haste / shock / evasion; Earth shield / petrify / damage. |
 | Mastery | Learn needs school mastery ≥ spell tier. Combat mastery XP still reaches T5. |
-| Combat | Engine uses **school + type + `spell.tier`**, not a new formula. Damage `spellPower × (1 + tier × 0.15)`; heal `spellPower × (1 + tier × 0.10)`. Cast duration stays `1 + tier` (T5 = 6 rounds). `effects` JSON is catalog flavor (same keys as T1–T2). Offensive spells set `requires_magical_weapon`. |
+| Combat | Engine uses **school + type + `spell.tier`**, not a new formula. Damage `spellPower × (1 + tier × 0.15)`; heal `spellPower × (1 + tier × 0.10)`. Cast duration stays `1 + tier` (T5 = 6 rounds). `effects` JSON is catalog flavor (same keys as T1–T2). Offensive spells set `requires_magical_weapon`. Mana spend is live ([Mana pool](#mana-pool)). |
 | Gold | T1 ~100–150, T2 ~300–450, T3 ~750–1100, T4 ~1900–2500, T5 ~4800–6200 (~2.5× per tier). |
 | UI | Academy tier filter **1–5**. Hero-detail store lists the same catalog (school then tier). Existing DBs: `app:spells:seed`. |
 
@@ -51,7 +52,23 @@ Purpose: Document spell schools, mastery, learning, equip slots, and academy UI.
 
 Ledger type for learn spend: `spell_learning_cost`. `spell_slot_cost` is **reserved / unused (A6.2)** (capacity via training; do not write).
 
-`SpellService::seedDefaultSpells()` sets `requires_magical_weapon` to true for every `SpellType::Offensive` spell (false for defensive/utility). The Library HQ facility does **not** reduce learning cost or school-mastery XP; it only multiplies post-match hero XP. Seeded catalog is Tier 1–5.
+`SpellService::seedDefaultSpells()` sets `requires_magical_weapon` to true for every `SpellType::Offensive` spell (false for defensive/utility) and backfills `name_key`. The Library HQ facility does **not** reduce learning cost or school-mastery XP; it only multiplies post-match hero XP. Seeded catalog is Tier 1–5.
+
+---
+
+## Mana pool
+
+Match-only (`derived.maxMana`, combatant `currentMana`). Not a `Hero` column.
+
+Ready spells need `currentMana >= manaCost`, cooldown 0, and the wand/staff gate for offensive spells (Ents excepted). Deduct on `plan_action`; silence and fumble do not refund. Regen runs each turn after cooldown decrement, including skipped turns. Kickoff fills the pool. Replay accordion shows mana on `turn_start` / `plan_action` — no HUD bar ([12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud)).
+
+Academy and spellbook show live mana cost, the selected hero’s max mana, engine type/school copy, and a wand/staff warning when an offensive spell cannot fire.
+
+---
+
+## L0 utility and L2 templates
+
+Empty `spell_priorities`: heal under the approach threshold, else highest-tier offense, else highest-tier **utility**. Formation tactics panel can write Healer / CC / Nuker lists from equipped spells (opt-in). Sanitizer unchanged. No L3.
 
 ---
 
