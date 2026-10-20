@@ -13,6 +13,26 @@
             <span data-formation-target="tacticsHeroName" class="copy-secondary"></span>
         </p>
 
+        <div class="formation-engine-summary" data-formation-target="engineSummary">
+            <p class="section-label--xs">{{ 'formation.engine_summary_title'|trans }}</p>
+            <p data-formation-target="engineTargeting" class="copy-muted"></p>
+            <p data-formation-target="engineSpells" class="copy-muted"></p>
+            <p data-formation-target="engineMovement" class="copy-muted"></p>
+        </div>
+
+        <div class="form-field-group">
+            <label for="formation-slot-movement" class="section-label--xs">{{ 'formation.movement_slot'|trans }}</label>
+            <select id="formation-slot-movement"
+                    data-formation-target="slotMovementSelect"
+                    data-action="change->formation#changeSlotMovement"
+                    class="form-select">
+                <option value="advance_to_melee">{{ 'formation.movement_advance_to_melee'|trans }}</option>
+                <option value="seek_cover_ranged">{{ 'formation.movement_seek_cover_ranged'|trans }}</option>
+                <option value="protect_backline">{{ 'formation.movement_protect_backline'|trans }}</option>
+                <option value="flank_rear">{{ 'formation.movement_flank_rear'|trans }}</option>
+            </select>
+        </div>
+
         <div class="form-field-group">
             <span class="section-label--xs">{{ 'formation.tactics_targeting'|trans }}</span>
             <p class="copy-muted">{{ 'formation.tactics_targeting_hint'|trans }}</p>

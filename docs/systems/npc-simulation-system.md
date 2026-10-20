@@ -24,7 +24,7 @@ Every NPC team is assigned an archetype based on a deterministic modulo calculat
 ## 2. Match Tactics Simulation
 
 Tactics simulation runs automatically for both teams during the `league_match` tick (prior to match resolution).
-- **Lineup Selection:** Rewrites the team's **default** formation only. NPC fixtures are not given a separate assignment, so kickoff uses that default. Evaluates available heroes for a 3-3 formation. Scores front-row performance (based on STR + KON) and back-row performance (based on INT + SPD + DEX).
+- **Lineup Selection:** Rewrites the team's **default** formation only. NPC fixtures are not given a separate assignment, so kickoff uses that default. Evaluates available heroes for a 3-3 formation. Front/back scores live in `FormationLineupScorer` (same formula as player fill-from-roster). Front-row performance is based on STR + KON; back-row on INT + SPD + DEX. Kickoff hole-fill for a short default uses that scorer (empty fronts first, then backs; ties by `id` ascending).
 - **Form & Fatigue Adaptation:** Readiness is penalized if fatigue > 50 (50% penalty) or form < 40 (40% penalty).
 - **Trait-Aware Scoring:** Adjusts candidates' scores based on traits:
   - `Berserker`, `BattleHardened`, and `Overconfident` boost front-row score by +20% (multiplier `1.20`).

@@ -33,6 +33,7 @@ class MatchLineupService
         private readonly FormationService $formationService,
         private readonly TeamRosterService $teamRosterService,
         private readonly EntityManagerInterface $em,
+        private readonly FormationLineupScorer $lineupScorer,
     ) {
     }
 
@@ -55,7 +56,8 @@ class MatchLineupService
      *     will_autofill: bool,
      *     can_fill: bool,
      *     uses_default_fallback: bool,
-     *     slots: list<array{position: string, hero_id: int|null, hero_name: string|null, status: string|null, issue: string}>
+     *     slots: list<array{position: string, hero_id: int|null, hero_name: string|null, status: string|null, issue: string}>,
+     *     fill_preview: list<array{position: string, hero_id: int, hero_name: string, action: string}>
      * }
      */
     public function preview(Team $team, ?Formation $assigned): array
@@ -78,12 +80,14 @@ class MatchLineupService
                 'can_fill' => false,
                 'uses_default_fallback' => false,
                 'slots' => $this->describeSlots($team, $default),
+                'fill_preview' => [],
             ];
         }
 
         $chosen = $assigned ?? $this->formationService->findDefaultForTeam($team);
         $ready = null !== $chosen && $this->isMatchReady($chosen);
-        $canFill = !$ready && null !== $this->buildFilledClone($team, $chosen);
+        $filled = $ready ? null : $this->buildFilledClone($team, $chosen);
+        $canFill = !$ready && null !== $filled;
 
         return [
             'source' => null !== $assigned ? 'assigned' : (null !== $chosen ? 'default' : 'none'),
@@ -94,6 +98,7 @@ class MatchLineupService
             'can_fill' => $canFill,
             'uses_default_fallback' => false,
             'slots' => $this->describeSlots($team, $chosen),
+            'fill_preview' => $this->describeFillPreview($team, $chosen, $filled),
         ];
     }
 
@@ -334,10 +339,11 @@ class MatchLineupService
             }
         }
 
-        $fallbackStrategy = $this->fallbackStrategy($template);
         /** @var array<string, array{hero: Hero|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $chosen */
         $chosen = [];
         $used = [];
+        $emptyFront = [];
+        $emptyBack = [];
 
         foreach (FormationPosition::cases() as $position) {
             $templateSlot = $slotsByPosition[$position->value] ?? null;
@@ -357,27 +363,29 @@ class MatchLineupService
 
             $chosen[$position->value] = [
                 'hero' => null,
-                'strategy' => $templateSlot?->getStrategy() ?? $fallbackStrategy,
+                'strategy' => $templateSlot?->getStrategy() ?? [],
                 'spell_priorities' => [],
             ];
+            if ($this->lineupScorer->isFrontRow($position)) {
+                $emptyFront[] = $position;
+            } else {
+                $emptyBack[] = $position;
+            }
         }
 
-        foreach (FormationPosition::cases() as $position) {
-            if ($chosen[$position->value]['hero'] instanceof Hero) {
+        $remaining = [];
+        foreach ($bench as $candidate) {
+            $candidateId = $candidate->getId();
+            if (null === $candidateId || isset($used[$candidateId])) {
                 continue;
             }
+            $remaining[] = $candidate;
+        }
 
-            foreach ($bench as $candidate) {
-                $candidateId = $candidate->getId();
-                if (null === $candidateId || isset($used[$candidateId])) {
-                    continue;
-                }
+        $chosen = $this->placeByScore($chosen, $used, $remaining, $emptyFront, true);
+        $chosen = $this->placeByScore($chosen, $used, $remaining, $emptyBack, false);
 
-                $used[$candidateId] = true;
-                $chosen[$position->value]['hero'] = $candidate;
-                break;
-            }
-
+        foreach (FormationPosition::cases() as $position) {
             if (!$chosen[$position->value]['hero'] instanceof Hero) {
                 return null;
             }
@@ -403,22 +411,91 @@ class MatchLineupService
     }
 
     /**
-     * @return array<string, mixed>
+     * @param array<string, array{hero: Hero|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $chosen
+     * @param array<int, true>                                                                                      $used
+     * @param list<Hero>                                                                                            $remaining
+     * @param list<FormationPosition>                                                                               $positions
+     *
+     * @return array<string, array{hero: Hero|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}>
      */
-    private function fallbackStrategy(?Formation $template): array
+    private function placeByScore(
+        array $chosen,
+        array &$used,
+        array &$remaining,
+        array $positions,
+        bool $front,
+    ): array {
+        $pool = [];
+        foreach ($remaining as $candidate) {
+            $candidateId = $candidate->getId();
+            if (null === $candidateId || isset($used[$candidateId])) {
+                continue;
+            }
+            $pool[] = $candidate;
+        }
+        $pool = $this->lineupScorer->sortForRow($pool, $front);
+
+        foreach ($positions as $index => $position) {
+            $hero = $pool[$index] ?? null;
+            if (!$hero instanceof Hero) {
+                return $chosen;
+            }
+            $heroId = $hero->getId();
+            if (null === $heroId) {
+                return $chosen;
+            }
+            $used[$heroId] = true;
+            $chosen[$position->value] = [
+                'hero' => $hero,
+                'strategy' => $chosen[$position->value]['strategy'] ?? [],
+                'spell_priorities' => $chosen[$position->value]['spell_priorities'] ?? [],
+            ];
+        }
+
+        $remaining = array_values(array_filter(
+            $remaining,
+            static fn (Hero $hero): bool => null !== $hero->getId() && !isset($used[$hero->getId()]),
+        ));
+
+        return $chosen;
+    }
+
+    /**
+     * @return list<array{position: string, hero_id: int, hero_name: string, action: string}>
+     */
+    private function describeFillPreview(Team $team, ?Formation $template, ?Formation $filled): array
     {
-        if (!$template instanceof Formation) {
+        if (!$filled instanceof Formation) {
             return [];
         }
 
-        foreach ($template->getSlots() as $slot) {
-            $goal = $slot->getStrategy()['movement_goal'] ?? null;
-            if (is_string($goal) && '' !== $goal) {
-                return ['movement_goal' => $goal];
-            }
+        $before = [];
+        foreach ($this->describeSlots($team, $template) as $row) {
+            $before[$row['position']] = 'ok' === $row['issue'] ? $row['hero_id'] : null;
         }
 
-        return [];
+        $byPosition = [];
+        foreach ($filled->getSlots() as $slot) {
+            $byPosition[$slot->getPosition()->value] = $slot;
+        }
+
+        $preview = [];
+        foreach (FormationPosition::cases() as $positionEnum) {
+            $slot = $byPosition[$positionEnum->value] ?? null;
+            $hero = $slot?->getHero();
+            if (!$hero instanceof Hero || null === $hero->getId()) {
+                continue;
+            }
+            $position = $positionEnum->value;
+            $preview[] = [
+                'position' => $position,
+                'hero_id' => $hero->getId(),
+                'hero_name' => $hero->getName(),
+                'action' => ($before[$position] ?? null) === $hero->getId() ? 'kept' : 'filled',
+            ];
+        }
+
+        return $preview;
     }
 
     private function isUsableHero(Hero $hero, Team $team): bool

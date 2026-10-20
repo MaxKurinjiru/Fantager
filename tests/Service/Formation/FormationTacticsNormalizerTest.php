@@ -84,5 +84,6 @@ class FormationTacticsNormalizerTest extends TestCase
         $this->assertSame([], $state['front_1']['target_order']);
         $this->assertSame('approach', $state['front_1']['fallback']);
         $this->assertSame([], $state['front_1']['spell_priorities']);
+        $this->assertSame('advance_to_melee', $state['front_1']['movement_goal']);
     }
 }

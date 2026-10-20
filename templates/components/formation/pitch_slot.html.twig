@@ -9,6 +9,12 @@
      data-action="click->formation#selectSlot dragover->formation#slotDragOver dragenter->formation#slotDragEnter dragleave->formation#slotDragLeave drop->formation#slotDrop"
      class="formation-slot">
     <span class="{{ title_class }}">{{ ('formation.slots.' ~ slot.pos)|trans }}</span>
+    <div data-slot-badges class="formation-slot__badges">
+        <span data-badge-l0 class="formation-slot__badge formation-slot__badge--l0">{{ 'formation.badge_l0'|trans }}</span>
+        <span data-badge-l1 class="formation-slot__badge formation-slot__badge--l1 hidden">{{ 'formation.badge_l1'|trans }}</span>
+        <span data-badge-l2 class="formation-slot__badge formation-slot__badge--l2 hidden">{{ 'formation.badge_l2'|trans }}</span>
+        <span data-badge-movement class="formation-slot__badge formation-slot__badge--movement">{{ 'formation.movement_short_advance_to_melee'|trans }}</span>
+    </div>
 
     <div data-empty-view class="formation-slot__empty-view layout-stack layout-stack--sm {% if hero %}hidden{% endif %}">
         <span class="formation-slot__empty-icon">{{ default_emoji }}</span>

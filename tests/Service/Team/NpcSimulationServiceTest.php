@@ -125,7 +125,8 @@ class NpcSimulationServiceTest extends TestCase
         $tacticsSimulator = new \App\Service\Team\NpcTacticsSimulator(
             $this->em,
             $this->itemService,
-            $this->spellService
+            $this->spellService,
+            new \App\Service\Formation\FormationLineupScorer()
         );
 
         $trainingSimulator = new \App\Service\Team\NpcTrainingSimulator(

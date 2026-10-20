@@ -1306,11 +1306,11 @@ formation:
     front_3: Front Right
   delete_btn: Delete
   starting_lineup: Starting Lineup
-  starting_lineup_desc: Arrange 6 heroes on the field positions. Drag heroes from the pool or use quick assigns. Click a slot to edit targeting and spell priorities.
+  starting_lineup_desc: Arrange 6 heroes on the field positions. Drag heroes from the pool or use quick assigns. Click a slot to edit targeting, movement, and spell priorities.
   back_line: "Back Line (Defense / Support)"
   front_line: "Front Line (Attack / Offense)"
   match_strategy: Match Strategy
-  match_strategy_desc: Name this formation setup and choose the pre-match tactical approach.
+  match_strategy_desc: Name this setup. Approach picks default targets and when to heal. Movement is set per slot — the default below is only a starting point.
   formation_name: Formation Name
   prematch_approach: Pre-Match Approach
   set_default: Set as Default Active Formation
@@ -1323,12 +1323,15 @@ formation:
   no_trainees: No trainees in compound pool.
   no_heroes_roster: No heroes available for the lineup.
   tactics_aggressive: Aggressive Tactics
-  tactics_aggressive_desc: Focus on front line strike speed and critical rating.
+  tactics_aggressive_desc: Target the enemy back row first. Heal only when an ally is below 25% HP.
   tactics_balanced: Balanced Position
-  tactics_balanced_desc: Equal distribution of defense and attack bonuses.
+  tactics_balanced_desc: Target the enemy front row first. Heal when an ally is below 40% HP.
   tactics_defensive: Defensive Fort
-  tactics_defensive_desc: Increase back line recovery speed and block rating.
-  movement_strategy: Hex Grid Movement Strategy
+  tactics_defensive_desc: Hold the living front row, then the highest physical attack. Heal when an ally is below 50% HP.
+  movement_strategy: Default movement
+  movement_strategy_hint: Copied onto a slot only when you apply it, or when that slot has no goal yet.
+  movement_apply_all: Apply to all slots
+  movement_slot: This slot's movement
   movement_advance_to_melee: "Advance to Melee (Default: Direct push towards target)"
   movement_seek_cover_ranged: "Seek Cover & Maintain Range (Ranged: hold the weapon's maximum range)"
   movement_protect_backline: "Protect Backline (Bodyguard: Cover lowest HP ally)"
@@ -1342,7 +1345,23 @@ formation:
   promote_match_formation: Save as my formation
   save_match_lineup: Save lineup for fixture
   tactics_panel_title: Slot tactics
-  tactics_panel_hint: Click a pitch slot to set targeting and spell priorities. Empty lists use the formation approach and the default spell pick.
+  tactics_panel_hint: Click a pitch slot to set targeting, movement, and spell priorities. Empty lists keep L0 defaults from the formation approach.
+  engine_summary_title: What the engine will do
+  engine_targeting_l0: "Targets (L0): %order%"
+  engine_targeting_l0_defensive: "Targets (L0): living front row, then highest physical attack"
+  engine_targeting_l1: "Targets (L1): %order%"
+  engine_targeting_fallback: "then %fallback%"
+  engine_spells_l0: "Spells (L0): heal under %threshold%% HP, else strongest attack, else utility"
+  engine_spells_l2: "Spells (L2): %count% equipped spell(s)"
+  engine_movement: "Movement: %goal%"
+  engine_order_arrow: " → "
+  badge_l0: L0
+  badge_l1: L1
+  badge_l2: L2
+  movement_short_advance_to_melee: Melee
+  movement_short_seek_cover_ranged: Range
+  movement_short_protect_backline: Guard
+  movement_short_flank_rear: Flank
   tactics_select_slot: Select a pitch slot to edit its tactics.
   tactics_empty_hero: No hero assigned
   tactics_targeting: Focus order
@@ -1378,6 +1397,11 @@ formation:
     count: "%ready% of 6 combat-ready slots"
     ok: "%formation% is match-ready. Kickoff will field this lineup."
     fill: Fill empty slots from roster
+    fill_preview_title: Proposed fill
+    fill_action_kept: Already in this slot
+    fill_action_filled: Will be placed here
+    confirm_fill_title: Fill lineup from roster
+    confirm_fill: This writes a match-specific lineup. Ready heroes in filled slots stay put; empty, duplicate, and unready slots get the proposed heroes.
     cannot_fill: Not enough combat-ready heroes to complete this lineup. Summon, heal, or assign a different formation.
     issue_empty: Empty slot
     issue_duplicate: "%name% is already in this lineup"
@@ -1457,6 +1481,8 @@ js_flash:
     filling: Filling...
     failed_fill: Failed to fill the lineup from the roster.
     success_fill: Empty slots filled from combat-ready heroes.
+    confirm_fill: Fill slots
+    cancel: Cancel
     lvl_short: Lvl
   inventory:
     equipping: Equipping...

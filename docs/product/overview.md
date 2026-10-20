@@ -50,7 +50,7 @@ One player, one team. Starting roster **10**; **6** combat-ready heroes to play.
 
 Live rules: [formation-system.md](../systems/formation-system.md). UI: [07-formation-setup.md](../screens/07-formation-setup.md).
 
-Six slots, up to **4** saved formations. Player editor is L1 targeting + thin L2 spell priorities. No L3, no in-combat synergy, no simulate sandbox.
+Six slots, up to **4** saved formations. Player editor is per-slot movement, L1 targeting, and thin L2 spell priorities. No L3, no in-combat synergy, no simulate sandbox.
 
 ### Headquarters
 

@@ -33,7 +33,7 @@ Quick map of production PHP layout. Full workflow: [SKILL.md](SKILL.md) · [exam
 | `Training/` | `TrainingService`, `TrainerDismissalService` | [training-system.md](../../../docs/systems/training-system.md) |
 | `Item/` | `ItemService` | [item-system.md](../../../docs/systems/item-system.md) |
 | `Spell/` | `SpellService` | [spell-system.md](../../../docs/systems/spell-system.md) |
-| `Formation/` | `FormationService`, `FixtureFormationService`, `MatchLineupService` | [formation-system.md](../../../docs/systems/formation-system.md) |
+| `Formation/` | `FormationService`, `FixtureFormationService`, `MatchLineupService`, `FormationLineupScorer` | [formation-system.md](../../../docs/systems/formation-system.md) |
 | `Marketplace/` | `MarketplaceService`, `MarketplacePriceGuidance` | [marketplace-system.md](../../../docs/systems/marketplace-system.md) |
 | `Community/` | `CommunityService`, `ForumThreadHelper`, `ContentFilterService` | [community-system.md](../../../docs/systems/community-system.md) |
 | `Calendar/` | `CalendarService`, `TickScheduleCalculator`, `KingdomTickRunnerService`, `TickClock` | [calendar-system.md](../../../docs/systems/calendar-system.md) |

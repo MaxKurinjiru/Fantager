@@ -1305,11 +1305,11 @@ formation:
     front_3: Přední pravá
   delete_btn: Smazat
   starting_lineup: Startovní sestava
-  starting_lineup_desc: Rozmístěte 6 hrdinů na pozice na hřišti. Přetáhněte hrdiny z poolu nebo použijte rychlé přiřazení. Klikněte na slot pro úpravu cílení a priority kouzel.
+  starting_lineup_desc: Rozmístěte 6 hrdinů na pozice na hřišti. Přetáhněte hrdiny z poolu nebo použijte rychlé přiřazení. Klikněte na slot pro úpravu cílení, pohybu a priority kouzel.
   back_line: "Zadní řada (Obrana / Podpora)"
   front_line: "Přední řada (Útok / Ofenzíva)"
   match_strategy: Strategie zápasu
-  match_strategy_desc: Pojmenujte toto nastavení formace a vyberte předzápasový taktický přístup.
+  match_strategy_desc: Pojmenujte sestavu. Přístup určuje výchozí cíle a kdy se léčí. Pohyb se nastavuje po slotech — výchozí níže je jen startovní bod.
   formation_name: Název formace
   prematch_approach: Předzápasový přístup
   set_default: Nastavit jako výchozí aktivní formaci
@@ -1322,12 +1322,15 @@ formation:
   no_trainees: V poolu sídla nejsou žádní učni.
   no_heroes_roster: Žádní hrdinové k dispozici pro sestavu.
   tactics_aggressive: Agresivní taktika
-  tactics_aggressive_desc: Zaměření na rychlost úderu přední řady a kritické hodnocení.
+  tactics_aggressive_desc: Nejdřív cílí zadní řadu soupeře. Léčí, až když spojenec klesne pod 25 % HP.
   tactics_balanced: Vyvážená pozice
-  tactics_balanced_desc: Rovnoměrné rozdělení bonusů pro obranu a útok.
+  tactics_balanced_desc: Nejdřív cílí přední řadu soupeře. Léčí, když spojenec klesne pod 40 % HP.
   tactics_defensive: Obranná pevnost
-  tactics_defensive_desc: Zvýšení rychlosti zotavení zadní řady a hodnocení blokování.
-  movement_strategy: Strategie pohybu na hexové mřížce
+  tactics_defensive_desc: Drží živou přední řadu, pak nejvyšší fyzický útok. Léčí, když spojenec klesne pod 50 % HP.
+  movement_strategy: Výchozí pohyb
+  movement_strategy_hint: Na slot se zkopíruje jen když ho použijete na všechny, nebo když slot ještě cíl nemá.
+  movement_apply_all: Použít na všechny sloty
+  movement_slot: Pohyb tohoto slotu
   movement_advance_to_melee: "Postup do boje zblízka (výchozí: přímý tlak na cíl)"
   movement_seek_cover_ranged: "Krytí a udržení vzdálenosti (střelba: na maximální dostřel zbraně)"
   movement_protect_backline: "Ochrana zadní řady (bodyguard: krytí spojence s nejnižším HP)"
@@ -1341,7 +1344,23 @@ formation:
   promote_match_formation: Uložit jako vlastní formaci
   save_match_lineup: Uložit sestavu pro zápas
   tactics_panel_title: Taktika slotu
-  tactics_panel_hint: Klikněte na slot na hřišti a nastavte cílení a prioritu kouzel. Prázdné seznamy použijí přístup formace a výchozí výběr kouzla.
+  tactics_panel_hint: Klikněte na slot na hřišti a nastavte cílení, pohyb a prioritu kouzel. Prázdné seznamy nechají L0 výchozí hodnoty z přístupu formace.
+  engine_summary_title: Co engine udělá
+  engine_targeting_l0: "Cíle (L0): %order%"
+  engine_targeting_l0_defensive: "Cíle (L0): živá přední řada, pak nejvyšší fyzický útok"
+  engine_targeting_l1: "Cíle (L1): %order%"
+  engine_targeting_fallback: "pak %fallback%"
+  engine_spells_l0: "Kouzla (L0): léčení pod %threshold% % HP, jinak nejsilnější útok, jinak utility"
+  engine_spells_l2: "Kouzla (L2): %count% nasazených kouzel"
+  engine_movement: "Pohyb: %goal%"
+  engine_order_arrow: " → "
+  badge_l0: L0
+  badge_l1: L1
+  badge_l2: L2
+  movement_short_advance_to_melee: Zblízka
+  movement_short_seek_cover_ranged: Dostřel
+  movement_short_protect_backline: Kryt
+  movement_short_flank_rear: Bok
   tactics_select_slot: Vyberte slot na hřišti pro úpravu taktiky.
   tactics_empty_hero: Žádný hrdina
   tactics_targeting: Pořadí cílů
@@ -1377,6 +1396,11 @@ formation:
     count: "%ready% ze 6 bojeschopných slotů"
     ok: "%formation% je připravená. Při výkopu nastoupí tato sestava."
     fill: Doplnit prázdná místa ze soupisky
+    fill_preview_title: Navržené doplnění
+    fill_action_kept: Už v tomto slotu
+    fill_action_filled: Sem se doplní
+    confirm_fill_title: Doplnit sestavu ze soupisky
+    confirm_fill: Zapíše se sestava jen pro tento zápas. Bojeschopní hrdinové ve vyplněných slotech zůstanou; prázdné, duplicitní a nepřipravené sloty dostanou navržené hrdiny.
     cannot_fill: Není dost bojeschopných hrdinů na doplnění sestavy. Vyvolejte, uzdravte, nebo zvolte jinou formaci.
     issue_empty: Prázdný slot
     issue_duplicate: "%name% už v sestavě je"
@@ -1456,6 +1480,8 @@ js_flash:
     filling: Doplňuji...
     failed_fill: Doplnění sestavy ze soupisky selhalo.
     success_fill: Prázdná místa se doplnila z bojeschopných hrdinů.
+    confirm_fill: Doplnit sloty
+    cancel: Zrušit
     lvl_short: Lvl
   inventory:
     equipping: Vybavování...
