@@ -223,6 +223,14 @@
                     '%effect%': ('status_effects.' ~ event.effect)|trans
                 }) }}
             </span>
+        {% elseif event.type == 'turn_start' %}
+            {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
+            <span class="battle-event-text battle-event-text--muted">
+                {{ 'battle.turn_start'|trans({
+                    '%hero%': hero_name,
+                    '%mana%': event.mana|default('')
+                }) }}
+            </span>
         {% elseif event.type == 'skip_turn' %}
             {% set hero_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
             <span class="battle-event-text battle-event-text--warning">
@@ -239,6 +247,12 @@
                         '%target%': target_name,
                         '%duration%': event.duration
                     }) }}
+                    {% if event.mana_cost is defined %}
+                        {{ 'battle.plan_action_mana'|trans({
+                            '%cost%': event.mana_cost,
+                            '%after%': event.mana_after|default(0)
+                        }) }}
+                    {% endif %}
                 </span>
             {% else %}
                 {% set attacker_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}

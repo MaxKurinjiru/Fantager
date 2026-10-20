@@ -812,6 +812,8 @@ heroes:
   combat_attack_desc: "Fyzická útočná síla, ovlivněná Silou (STR) a vybavenou zbraní."
   combat_spell_power: "Síla kouzel"
   combat_spell_power_desc: "Síla magických kouzel, ovlivněná Inteligencí (INT)."
+  combat_mana: "Mana"
+  combat_mana_desc: "Manový fond v zápase z úrovně, Inteligence a Vůle. Kouzla ho utrácejí při naplánování."
   combat_armor: "Zbroj"
   combat_armor_desc: "Fyzická zbroj z vybavení, snižující příchozí fyzické poškození."
   combat_resistance: "Magický odpor"
@@ -1237,7 +1239,7 @@ spells:
   filter_tier: Úroveň
   subtitle: Učte své hrdiny svitky kouzel a spravujte jejich aktivní bojové sloty.
   slot_empty: "Slot %slot% prázdný"
-  academy_desc: "V zápasech způsobuje efekty závislé na magické škole."
+  academy_desc: "V zápasech platí škola a typ kouzla."
   trainee_mage: Učeň mág
   select_hero_opt: "-- Vyberte hrdinu ke správě --"
   equipped_slots: Vybavené sloty
@@ -1246,6 +1248,35 @@ spells:
   tab_learned: Naučená kouzla
   tab_store: Obchod akademie
   mana_cooldown: "Cena many: %mana% &bull; Cooldown: %cooldown% kol"
+  hero_max_mana: "Maximum many hrdiny: %mana%."
+  mana_too_high: "Tato cena je nad maximem many hrdiny."
+  needs_magical_weapon: "V boji potřebuje hůl nebo prut."
+  mastery_spell_power: "Nasazeno: +%pct%% síly kouzel"
+  damage_formula: "Poškození roste se silou kouzel a úrovní %tier%."
+  heal_formula: "Léčení roste se silou kouzel a úrovní %tier%."
+  cast_duration: "Sesílání trvá %rounds% kol."
+  effect:
+    offensive:
+      fire: Způsobí magické poškození a přiloží Burn.
+      water: Způsobí magické poškození.
+      air: Způsobí magické poškození a přiloží Shock.
+      earth: Způsobí magické poškození a přiloží Petrify.
+      light: Způsobí magické poškození a přiloží Blind.
+      dark: Způsobí magické poškození a přiloží Curse.
+    defensive:
+      fire: Pomůže spojenci a přiloží Fury.
+      water: Léčí spojence a přiloží Regeneration.
+      air: Pomůže spojenci a přiloží Haste.
+      earth: Pomůže spojenci a přiloží Shield.
+      light: Léčí spojence a přiloží Bless. Neoživuje.
+      dark: Pomůže spojenci a přiloží Shadow Cloak.
+    utility:
+      fire: Přiloží Burn.
+      water: Přiloží Freeze.
+      air: Přiloží Stun.
+      earth: Přiloží Petrify.
+      light: Přiloží Silence.
+      dark: Přiloží Taunt.
   known: Naučeno
   equip_slot_num: "Vybavit slot %slot%"
   slots_full: Sloty plné
@@ -1322,7 +1353,10 @@ formation:
   tactics_fallback_lowest_hp: Nejnižší zbývající HP
   tactics_fallback_highest_threat: Nejvyšší fyzický útok
   tactics_spells: Priorita kouzel
-  tactics_spells_hint: Seřazená nasazená kouzla. Prázdný seznam = výchozí léčení nebo nejsilnější útok.
+  tactics_spells_hint: Seřazená nasazená kouzla. Prázdný seznam = léčení, pak nejsilnější útok, pak utility.
+  tactics_template_healer: Léčitel
+  tactics_template_cc: Ovládání
+  tactics_template_nuker: Útočník
   tactics_assign_hero_spells: Přiřaďte hrdinu do slotu, abyste nastavili prioritu kouzel.
   tactics_no_spells: Tento hrdina nemá nasazená kouzla.
   tactics_add_spell: Přidat nasazené kouzlo
@@ -2049,7 +2083,9 @@ battle:
   status_expired: "Efekt %effect% na cíl %target% vypršel"
   skip_turn: "%hero% vynechává tah kvůli zmrazení nebo omráčení"
   plan_action_attack: "%attacker% se připravuje k útoku na %target% (příprava %duration% kol)"
+  turn_start: "%hero% táhne (mana %mana%)"
   plan_action_spell: "%caster% začíná sesílat kouzlo %spell% na %target% (příprava %duration% kol)"
+  plan_action_mana: "Mana %cost% (nyní %after%)."
   preparing_action_tick: "%hero% pokračuje v přípravě akce (zbývá %rounds% kol)"
   action_interrupted: "Příprava akce hrdiny %hero% byla přerušena (%reason%)"
   action_fumble: "Akce hrdiny %hero% selhala, protože cíl %target% byl již vyřazen"
@@ -2119,6 +2155,68 @@ status_effects:
   shadow_cloak: Stínový plášť
   taunt: Provokace
   silence: Umlčení
+
+spell:
+  spark: Jiskra
+  ignite: Vzplanutí
+  fireball: Ohnivá koule
+  immolation: Spalování
+  flamethrower: Plamenomet
+  firestorm: Ohnivá bouře
+  hellfire: Pekelný oheň
+  burning_spiral: Spalující spirála
+  fire_meteor: Ohnivý meteor
+  phoenix_wrath: Fénixí hněv
+  water_jet: Vodní proud
+  gentle_touch: Laskavý dotek
+  healing_wave: Léčivá vlna
+  ice_spike: Ledový osten
+  tide: Příliv
+  ice_cage: Ledová klec
+  living_water: Živá voda
+  snowstorm: Sněhová bouře
+  sea_grace: Mořská milost
+  eternal_frost: Věčný mráz
+  breeze: Vánek
+  static_charge: Statický náboj
+  lightning_strike: Úder blesku
+  wind_wall: Větrná zeď
+  whirlwind: Vír
+  storm_arrow: Bouřkový šíp
+  air_shield: Vzdušný štít
+  thunder_fist: Hromová pěst
+  cyclone_eye: Oko cyklónu
+  sky_bolt: Nebeský blesk
+  stone_skin: Kamenná kůže
+  stone_throw: Hod kamenem
+  earthquake: Zemětřesení
+  gravel_storm: Štěrková smršť
+  boulder: Balvan
+  stone_fortress: Kamenná pevnost
+  mountain_fist: Horská pěst
+  earth_split: Rozštěpení země
+  mountain_collapse: Zřícení hor
+  titan_skin: Titanova kůže
+  holy_light: Svaté světlo
+  blessing: Požehnání
+  cleanse: Očištění
+  ray_of_hope: Paprsek naděje
+  divine_radiance: Božská záře
+  consecration: Posvěcení
+  miracle: Zázrak
+  light_of_hope: Světlo naděje
+  heavenly_grace: Nebeská milost
+  aura_of_light: Aura světla
+  shadow_bolt: Stínový šíp
+  weakness: Slabost
+  life_drain: Vysátí života
+  corruption: Zkaženost
+  dark_beam: Temný paprsek
+  curse: Prokletí
+  blood_rite: Krvavý obřad
+  plague: Mor
+  soul_drain: Vysátí duše
+  eternal_dark: Věčná tma
 
 
 

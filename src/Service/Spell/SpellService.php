@@ -11,6 +11,8 @@ use App\Entity\Spell\Spell;
 use App\Entity\Team\Team;
 use App\Enum\FinancialRecordActor;
 use App\Enum\FinancialRecordType;
+use App\Enum\ItemSubType;
+use App\Enum\Race;
 use App\Enum\School;
 use App\Enum\SpellType;
 use App\Exception\UserFacingException;
@@ -18,13 +20,79 @@ use App\Repository\Hero\HeroSpellRepository;
 use App\Repository\Hero\SchoolMasteryRepository;
 use App\Repository\Spell\SpellRepository;
 use App\Service\Economy\EconomyService;
+use App\Service\Hero\HeroMasteryService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SpellService
 {
     public const CATALOG_MIN_TIER = 1;
 
     public const CATALOG_MAX_TIER = 5;
+
+    /** @var array<string, string> */
+    private const NAME_KEYS = [
+        'Jiskra' => 'spell.spark',
+        'Vzplanutí' => 'spell.ignite',
+        'Ohnivá koule' => 'spell.fireball',
+        'Spalování' => 'spell.immolation',
+        'Plamenomet' => 'spell.flamethrower',
+        'Ohnivá bouře' => 'spell.firestorm',
+        'Pekelný oheň' => 'spell.hellfire',
+        'Spalující spirála' => 'spell.burning_spiral',
+        'Ohnivý meteor' => 'spell.fire_meteor',
+        'Fénixí hněv' => 'spell.phoenix_wrath',
+        'Vodní proud' => 'spell.water_jet',
+        'Laskavý dotek' => 'spell.gentle_touch',
+        'Léčivá vlna' => 'spell.healing_wave',
+        'Ledový osten' => 'spell.ice_spike',
+        'Příliv' => 'spell.tide',
+        'Ledová klec' => 'spell.ice_cage',
+        'Živá voda' => 'spell.living_water',
+        'Sněhová bouře' => 'spell.snowstorm',
+        'Mořská milost' => 'spell.sea_grace',
+        'Věčný mráz' => 'spell.eternal_frost',
+        'Vánek' => 'spell.breeze',
+        'Statický náboj' => 'spell.static_charge',
+        'Úder blesku' => 'spell.lightning_strike',
+        'Větrná zeď' => 'spell.wind_wall',
+        'Vír' => 'spell.whirlwind',
+        'Bouřkový šíp' => 'spell.storm_arrow',
+        'Vzdušný štít' => 'spell.air_shield',
+        'Hromová pěst' => 'spell.thunder_fist',
+        'Oko cyklónu' => 'spell.cyclone_eye',
+        'Nebeský blesk' => 'spell.sky_bolt',
+        'Kamenná kůže' => 'spell.stone_skin',
+        'Hod kamenem' => 'spell.stone_throw',
+        'Zemětřesení' => 'spell.earthquake',
+        'Štěrková smršť' => 'spell.gravel_storm',
+        'Balvan' => 'spell.boulder',
+        'Kamenná pevnost' => 'spell.stone_fortress',
+        'Horská pěst' => 'spell.mountain_fist',
+        'Rozštěpení země' => 'spell.earth_split',
+        'Zřícení hor' => 'spell.mountain_collapse',
+        'Titanova kůže' => 'spell.titan_skin',
+        'Svaté světlo' => 'spell.holy_light',
+        'Požehnání' => 'spell.blessing',
+        'Očištění' => 'spell.cleanse',
+        'Paprsek naděje' => 'spell.ray_of_hope',
+        'Božská záře' => 'spell.divine_radiance',
+        'Posvěcení' => 'spell.consecration',
+        'Zázrak' => 'spell.miracle',
+        'Světlo naděje' => 'spell.light_of_hope',
+        'Nebeská milost' => 'spell.heavenly_grace',
+        'Aura světla' => 'spell.aura_of_light',
+        'Stínový šíp' => 'spell.shadow_bolt',
+        'Slabost' => 'spell.weakness',
+        'Vysátí života' => 'spell.life_drain',
+        'Zkaženost' => 'spell.corruption',
+        'Temný paprsek' => 'spell.dark_beam',
+        'Prokletí' => 'spell.curse',
+        'Krvavý obřad' => 'spell.blood_rite',
+        'Mor' => 'spell.plague',
+        'Vysátí duše' => 'spell.soul_drain',
+        'Věčná tma' => 'spell.eternal_dark',
+    ];
 
     public function __construct(
         private readonly SpellRepository $spellRepository,
@@ -34,6 +102,8 @@ class SpellService
         private readonly EconomyService $economyService,
         private readonly \App\Service\Hero\HeroChronicleService $heroChronicleService,
         private readonly \App\Service\TeamChronicle\TeamChronicleService $teamChronicleService,
+        private readonly TranslatorInterface $translator,
+        private readonly HeroMasteryService $heroMasteryService,
     ) {
     }
 
@@ -203,12 +273,38 @@ class SpellService
         return $this->masteryRepository->findOneBy(['hero' => $hero, 'school' => $school]);
     }
 
+    public function displayName(Spell $spell): string
+    {
+        $key = $spell->getNameKey();
+        if (null !== $key && '' !== $key) {
+            return $this->translator->trans($key);
+        }
+
+        return $spell->getName();
+    }
+
+    public function heroCanCastOffensiveSpells(Hero $hero): bool
+    {
+        if (Race::Ent === $hero->getRace()) {
+            return true;
+        }
+
+        foreach ($this->heroMasteryService->getEquippedSubTypes($hero) as $subType) {
+            if (ItemSubType::Wand === $subType || ItemSubType::Staff === $subType) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** @return array<string, mixed> */
     public function serializeSpell(Spell $spell): array
     {
         return [
             'id' => $spell->getId(),
-            'name' => $spell->getName(),
+            'name' => $this->displayName($spell),
+            'name_key' => $spell->getNameKey(),
             'school' => $spell->getSchool()->value,
             'tier' => $spell->getTier(),
             'type' => $spell->getType()->value,
@@ -935,6 +1031,7 @@ class SpellService
             $spell->setRequiredMasteryTier($data['required_mastery_tier']);
             $spell->setLearningCostGold($data['learning_cost_gold']);
             $spell->setRequiresMagicalWeapon(SpellType::Offensive === $data['type']);
+            $spell->setNameKey(self::NAME_KEYS[$data['name']]);
 
             if ($isNew) {
                 $this->em->persist($spell);

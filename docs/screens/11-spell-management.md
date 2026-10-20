@@ -7,7 +7,8 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 **Status:** Hero spells live on **Hero Detail → Spells**. `GET /app/spells` **redirects** to that tab (or `/app/heroes` if no `hero_id`). Academy store is `/app/academy`. Seeded catalog is **T1–T5**. No essence. Enchanting is not in the live game.  
 **Lock:** [Locked: catalog T1–T5](#locked-catalog-t1t5)
 
-**Live UI:** `templates/hero/detail.html.twig` (spells tab), `templates/spell/academy.html.twig`, `templates/components/spell/`.
+**Live UI:** `templates/hero/detail.html.twig` (spells tab), `templates/spell/academy.html.twig`, `templates/components/spell/`.  
+Cards show engine type/school copy, mana vs the selected hero’s max mana, and a wand/staff warning. Spec: [spell-system.md](../systems/spell-system.md).
 
 ---
 
@@ -37,7 +38,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 - Trainee `<select>` (`?hero_id=`)
 - School filter, tier filter (**1–5**)
 - Treasury badge
-- Spell cards: description, cooldown, mana, gold cost, learn eligibility vs mastery
+- Spell cards: school/type engine copy, cast length, mana vs hero max mana, cooldown, gold cost, learn eligibility vs mastery, wand/staff warning
 
 ### Backend
 

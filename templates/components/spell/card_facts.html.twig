@@ -1,0 +1,25 @@
+{# templates/components/spell/card_facts.html.twig #}
+{% set can_cast = selected_hero is defined and selected_hero ? hero_can_cast_offensive_spells(selected_hero) : true %}
+{% set max_mana = selected_hero is defined and selected_hero ? hero_combat_stats(selected_hero).maxMana : null %}
+{% set kickoff_ok = max_mana is null or spell.manaCost <= max_mana %}
+<p class="spell-card__desc">{{ ('spells.effect.' ~ spell.type.value ~ '.' ~ spell.school.value)|trans }}</p>
+<p class="spell-card__desc">
+    {% if spell.type.value == 'defensive' %}
+        {{ 'spells.heal_formula'|trans({'%tier%': spell.tier}) }}
+    {% elseif spell.type.value == 'offensive' %}
+        {{ 'spells.damage_formula'|trans({'%tier%': spell.tier}) }}
+    {% endif %}
+    {{ 'spells.cast_duration'|trans({'%rounds%': 1 + spell.tier}) }}
+</p>
+<p class="spell-card__desc">
+    {{ 'spells.mana_cooldown'|trans({'%mana%': spell.manaCost, '%cooldown%': spell.cooldown})|raw }}
+    {% if max_mana is not null %}
+        {{ 'spells.hero_max_mana'|trans({'%mana%': max_mana}) }}
+        {% if not kickoff_ok %}
+            <span class="spell-card__status-note">{{ 'spells.mana_too_high'|trans }}</span>
+        {% endif %}
+    {% endif %}
+</p>
+{% if spell.requiresMagicalWeapon and not can_cast %}
+    <p class="spell-card__status-note">{{ 'spells.needs_magical_weapon'|trans }}</p>
+{% endif %}

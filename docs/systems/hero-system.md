@@ -78,7 +78,7 @@ In-combat race-synergy **tables** are **Cut** ([#9](../product/known-issues.md) 
 ## Equipment and magic capacity
 
 - **Items:** nine slots on the hero (`main_hand` … `ring` + `ring_2`). Equip/unequip is `PUT /api/v1/heroes/{heroId}/equipment`. Occupancy locked [#8](../product/known-issues.md). Full rules: [item-system.md](item-system.md#locked-item-occupancy).
-- **Magic capacity:** integer on `Hero` (default **0** at generation). Weekly Magic training raises it (max **5**). Equipped spell count cannot exceed capacity. Gold is not charged for extra slots (`spell_slot_cost` reserved / unused, A6.2). See [spell-system.md](spell-system.md) and [training-system.md](training-system.md).
+- **Magic capacity:** integer on `Hero` (default **1** at generation). Weekly Magic training raises it (max **5**). Trainers are set to **0** on promotion. Equipped spell count cannot exceed capacity. Gold is not charged for extra slots (`spell_slot_cost` reserved / unused, A6.2). See [spell-system.md](spell-system.md) and [training-system.md](training-system.md).
 
 ---
 

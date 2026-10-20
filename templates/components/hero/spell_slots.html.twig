@@ -32,7 +32,7 @@
                         <div class="layout-cluster layout-cluster--sm">
                             <span class="emoji-icon">✨</span>
                             <div>
-                                <h4 class="hero-spell-row__name">{{ matching_hs.spell.name }}</h4>
+                                <h4 class="hero-spell-row__name">{{ spell_display_name(matching_hs.spell) }}</h4>
                                 <p class="hero-spell-row__meta">{{ 'spells.tier_label'|trans({'%tier%': matching_hs.spell.tier}) }} &bull; {{ ('school.' ~ matching_hs.spell.school.value)|trans }}</p>
                             </div>
                         </div>

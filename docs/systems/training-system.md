@@ -83,7 +83,7 @@ Trains a primary attribute (STR, DEX, KON, SPD, INT, WIL, CHA, LCK).
 
 ### 2. Magic Training
 The trainer’s `targetAttribute` stores a magic school (`fire`, `water`, `air`, `earth`, `light`, `dark`). Each completed week grants school XP of `max(1, round(5 × (max(INT, WIL) / 10) × training_speed))` (`TrainingService::MAGIC_TRAINING_SCHOOL_XP` is the base 5, for a trainer whose higher of INT and WIL is 10). That XP counts as exercise for school decay. Weapon attunement is unchanged.
-Increases a hero's Magic Capacity by `max(1, round(1 × training_speed))` (capped at a maximum of 5 slots). At training speed `1.0` this is +1 per week. Capacity gain does not use the trainer's INT or WIL.
+Increases a hero's Magic Capacity by `max(1, round(1 × training_speed))` (capped at a maximum of 5 slots). New combatants start at **1**. At training speed `1.0` this is +1 per week. Capacity gain does not use the trainer's INT or WIL. Promotion to trainer sets capacity to **0**.
 - **Fatigue Impact**: Adds **+20 fatigue** when capacity increased. Once capacity is already 5, school XP still applies and adds **+10 fatigue** (`MAGIC_AT_CAP_FATIGUE`). No school and no capacity gain adds no fatigue. Fatigue is **not** scaled by game speed or by the trainer's magic stat.
 
 Every hero the weekly tick actually processes (attribute, magic, or form, including a zero stat gain) also receives **8** base hero XP (`HeroProgressionService::TRAINING_PARTICIPATION_XP`). Library `xp_gain_pct` and `Kingdom.xp_modifier` multiply it the same way as match XP, and stored level follows the same curve and cap of 20.

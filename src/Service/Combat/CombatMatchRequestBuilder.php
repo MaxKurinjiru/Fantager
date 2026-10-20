@@ -13,6 +13,7 @@ use App\Enum\ItemSlotType;
 use App\Enum\ItemSubType;
 use App\Enum\MatchType;
 use App\Repository\Item\ItemRepository;
+use App\Service\Spell\SpellService;
 use App\ValueObject\Combat\CombatantSnapshot;
 use App\ValueObject\Combat\CombatMatchRequest;
 use App\ValueObject\Combat\CombatSide;
@@ -25,6 +26,7 @@ class CombatMatchRequestBuilder
     public function __construct(
         private readonly CombatStatCalculator $combatStatCalculator,
         private readonly ItemRepository $itemRepository,
+        private readonly SpellService $spellService,
     ) {
     }
 
@@ -107,7 +109,7 @@ class CombatMatchRequestBuilder
 
             $spells[] = [
                 'id' => $spellId,
-                'name' => $spell->getName(),
+                'name' => $this->spellService->displayName($spell),
                 'school' => $spell->getSchool()->value,
                 'type' => $spell->getType()->value,
                 'mana_cost' => $spell->getManaCost(),

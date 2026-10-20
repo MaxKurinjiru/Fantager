@@ -18,6 +18,7 @@ use App\Enum\MatchType;
 use App\Enum\Race;
 use App\Repository\Item\ItemRepository;
 use App\Service\Combat\CombatMatchRequestBuilder;
+use App\Service\Spell\SpellService;
 use App\Service\Combat\CombatStatCalculator;
 use App\ValueObject\Combat\DerivedCombatStats;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -35,7 +36,7 @@ class CombatMatchRequestBuilderTest extends TestCase
         $itemRepository = $this->createMock(ItemRepository::class);
         $itemRepository->method('findBy')->willReturn([]);
 
-        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository);
+        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository, $this->createMock(SpellService::class));
         $request = $builder->fromFormations(
             $this->createFullFormation(1, 10),
             $this->createFullFormation(2, 20),
@@ -61,7 +62,7 @@ class CombatMatchRequestBuilderTest extends TestCase
         $itemRepository = $this->createMock(ItemRepository::class);
         $itemRepository->method('findBy')->willReturn([]);
 
-        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository);
+        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository, $this->createMock(SpellService::class));
 
         $formationA = $this->createFullFormation(1, 10);
         $formationB = new Formation();
@@ -95,7 +96,7 @@ class CombatMatchRequestBuilderTest extends TestCase
         $itemRepository = $this->createMock(ItemRepository::class);
         $itemRepository->method('findBy')->willReturn([$offHandDagger, $mainHandSword]);
 
-        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository);
+        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository, $this->createMock(SpellService::class));
         $request = $builder->fromFormations(
             $this->createFullFormation(1, 10),
             $this->createFullFormation(2, 20),
@@ -118,7 +119,7 @@ class CombatMatchRequestBuilderTest extends TestCase
         $itemRepository = $this->createMock(ItemRepository::class);
         $itemRepository->method('findBy')->willReturn([]);
 
-        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository);
+        $builder = new CombatMatchRequestBuilder($calculator, $itemRepository, $this->createMock(SpellService::class));
         $formation = $this->createFullFormation(1, 10);
         foreach ($formation->getSlots() as $slot) {
             if (FormationPosition::Front1 === $slot->getPosition()) {

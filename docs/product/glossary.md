@@ -19,6 +19,7 @@ Short definitions for live game terms. **Rules** live in `docs/systems/*.md`. Th
 | **Combat-ready** | Active, not a trainer, not permanently dead. A team needs **6** unique combat-ready heroes to field a match. |
 | **Kill score** | Match result **0–6** (kills). Round 200 ends on current scores. |
 | **Formation L0 / L1 / L2** | Pre-match AI: L0 default spell pick, L1 target order, L2 equipped-spell priorities. **L3** sequences are Cut. |
+| **Mana** | Match-only caster pool (`maxMana` / `currentMana`). Spent when a spell is queued. Spec: [spell-system.md](../systems/spell-system.md#mana-pool). |
 | **Arena** | HQ facility: home-match **ticket gold** + attendance analytics. Not `MatchType::Arena` (reserved, unused). |
 | **Friendly match** | Player-vs-player practice (Wed/Sun 18:00). Same combat engine; no standings or tickets. |
 | **Fan club** | Background attendance mechanic. Shown on the dashboard and HQ arena panel; no management UI. |

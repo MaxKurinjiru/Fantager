@@ -30,6 +30,15 @@
             </span>
             <span class="stat-tile__value">{{ combat_stats.spellPower }}</span>
         </div>
+        <div class="stat-tile" title="{{ 'heroes.combat_mana_desc'|trans }}">
+            <span class="stat-tile__label">
+                <svg class="stat-tile__icon stat-tile__icon--sp" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v18m0 0c4-4 7-7 7-11a7 7 0 10-14 0c0 4 3 7 7 11z"/>
+                </svg>
+                {{ 'heroes.combat_mana'|trans }}
+            </span>
+            <span class="stat-tile__value">{{ combat_stats.maxMana }}</span>
+        </div>
         <div class="stat-tile" title="{{ 'heroes.combat_armor_desc'|trans }}">
             <span class="stat-tile__label">
                 <svg class="stat-tile__icon stat-tile__icon--arm" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

@@ -149,7 +149,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 
 | Entity    | Key Fields                                                                                                                                        | Relationships           |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| **Spell** | id, name, school (enum), tier (1–5), type (enum), effects (JSON), mana_cost, cooldown, required_mastery_tier, learning_cost_gold, requires_magical_weapon (bool) | referenced by HeroSpell. Seeded catalog: 6 schools × 5 tiers × 2 (A7.11 / #16) |
+| **Spell** | id, name, name_key (nullable catalog translation key), school (enum), tier (1–5), type (enum), effects (JSON), mana_cost, cooldown, required_mastery_tier, learning_cost_gold, requires_magical_weapon (bool) | referenced by HeroSpell. Seeded catalog: 6 schools × 5 tiers × 2 (A7.11 / #16) |
 
 
 ### 10. Combat Domain

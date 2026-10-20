@@ -397,6 +397,55 @@ class CombatEngineSpellTest extends TestCase
         $this->assertSame('Fireball', $plan['spell_name'], 'unimplemented when must not match; next priority wins');
     }
 
+    public function testL0CastsUtilityWhenNoHealOrOffenseIsReady(): void
+    {
+        $spells = [
+            $this->spell(3, 'Frost', 'utility', 2),
+        ];
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, [], $spells, init: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
+
+        $this->assertNotNull($plan);
+        $this->assertSame('Frost', $plan['spell_name']);
+        $this->assertSame(0, $plan['mana_cost']);
+    }
+
+    public function testSpellIsNotQueuedWhenManaIsInsufficient(): void
+    {
+        $spell = $this->spell(10, 'Meteor', 'offensive', 5);
+        $spell['mana_cost'] = 200;
+        $priorities = [
+            ['spell_id' => 10, 'when' => 'always', 'target' => 'enemy'],
+        ];
+
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, $priorities, [$spell], init: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
+
+        $this->assertNull($plan);
+    }
+
+    public function testPlanActionDeductsMana(): void
+    {
+        $spell = $this->spell(10, 'Spark', 'offensive', 1);
+        $spell['mana_cost'] = 15;
+        $priorities = [
+            ['spell_id' => 10, 'when' => 'always', 'target' => 'enemy'],
+        ];
+
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, $priorities, [$spell], init: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
+
+        $this->assertNotNull($plan);
+        $this->assertSame(15, $plan['mana_cost']);
+        $this->assertSame(85, $plan['mana_after']);
+    }
+
     /**
      * @param array<int, array<string, mixed>> $events
      *

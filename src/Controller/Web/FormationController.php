@@ -140,7 +140,7 @@ class FormationController extends AbstractController
     /**
      * @param list<Hero> $heroes
      *
-     * @return array<int, list<array{id: int, name: string, type: string}>>
+     * @return array<int, list<array{id: int, name: string, type: string, requires_magical_weapon: bool, castable: bool}>>
      */
     private function equippedSpellsByHeroId(array $heroes): array
     {
@@ -152,6 +152,7 @@ class FormationController extends AbstractController
             }
 
             $equipped = [];
+            $canCastOffensive = $this->spellService->heroCanCastOffensiveSpells($hero);
             foreach ($this->spellService->listForHero($hero) as $heroSpell) {
                 if (!$heroSpell->isEquipped()) {
                     continue;
@@ -161,10 +162,13 @@ class FormationController extends AbstractController
                 if (null === $spellId) {
                     continue;
                 }
+                $needsWeapon = $spell->requiresMagicalWeapon();
                 $equipped[] = [
                     'id' => $spellId,
-                    'name' => $spell->getName(),
+                    'name' => $this->spellService->displayName($spell),
                     'type' => $spell->getType()->value,
+                    'requires_magical_weapon' => $needsWeapon,
+                    'castable' => !$needsWeapon || $canCastOffensive,
                 ];
             }
             $map[$heroId] = $equipped;

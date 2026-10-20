@@ -9,14 +9,14 @@
                             <div class="layout-cluster layout-cluster--sm">
                                 <span class="emoji-icon">✨</span>
                                 <div>
-                                    <h3 class="spell-card__title">{{ hs.spell.name }}</h3>
+                                    <h3 class="spell-card__title">{{ spell_display_name(hs.spell) }}</h3>
                                     <span class="spell-card__tier">
                                         {{ 'spells.tier_label'|trans({'%tier%': hs.spell.tier}) }} &bull; {{ ('school.' ~ hs.spell.school.value)|trans }}
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <p class="spell-card__desc">{{ 'spells.mana_cooldown'|trans({'%mana%': hs.spell.manaCost, '%cooldown%': hs.spell.cooldown})|raw }}</p>
+                        {% include 'components/spell/card_facts.html.twig' with { spell: hs.spell, selected_hero: selected_hero } %}
                     </div>
 
                     <div class="panel-divider panel-divider-row">

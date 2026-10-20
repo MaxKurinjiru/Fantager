@@ -50,6 +50,8 @@ class SpellServiceTest extends TestCase
             $this->economyServiceMock,
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             $this->createMock(\App\Service\TeamChronicle\TeamChronicleService::class),
+            $this->createMock(\Symfony\Contracts\Translation\TranslatorInterface::class),
+            $this->createMock(\App\Service\Hero\HeroMasteryService::class),
         );
     }
 
@@ -120,6 +122,7 @@ class SpellServiceTest extends TestCase
         ];
         $bySchoolAndTier = [];
         $names = [];
+        $nameKeys = [];
 
         foreach ($persisted as $spell) {
             $tier = $spell->getTier();
@@ -137,9 +140,13 @@ class SpellServiceTest extends TestCase
                 $this->assertContains($key, $allowedEffectKeys);
             }
 
-            $nameKey = $spell->getSchool()->value.'|'.$spell->getName();
-            $this->assertArrayNotHasKey($nameKey, $names);
-            $names[$nameKey] = true;
+            $catalogName = $spell->getSchool()->value.'|'.$spell->getName();
+            $this->assertArrayNotHasKey($catalogName, $names);
+            $names[$catalogName] = true;
+            $this->assertNotNull($spell->getNameKey());
+            $this->assertStringStartsWith('spell.', (string) $spell->getNameKey());
+            $this->assertArrayNotHasKey((string) $spell->getNameKey(), $nameKeys);
+            $nameKeys[(string) $spell->getNameKey()] = true;
 
             $bySchoolAndTier[$spell->getSchool()->value][$tier][] = $spell;
 

@@ -215,6 +215,7 @@ class TrainingService
         $hero->setRole(HeroRole::Trainer);
         $hero->setTrainingType(null);
         $hero->setTargetAttribute(null);
+        $hero->setMagicCapacity(0);
 
         // Unequip all items from the hero being promoted to trainer
         $equippedItems = $this->em->getRepository(Item::class)->findBy(['equippedHero' => $hero]);

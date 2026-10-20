@@ -107,6 +107,9 @@
                         <span>{{ relative_xp }}/{{ relative_req }} XP</span>
                     {% endif %}
                     <span class="hero-mastery-row__tier">T{{ mastery_tier }}</span>
+                    {% if is_equipped and mastery_tier > 1 %}
+                        <span>{{ 'spells.mastery_spell_power'|trans({'%pct%': (mastery_tier - 1) * 5}) }}</span>
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}

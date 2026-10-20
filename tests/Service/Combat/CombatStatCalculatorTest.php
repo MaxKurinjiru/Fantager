@@ -96,6 +96,10 @@ class CombatStatCalculatorTest extends TestCase
 
         // Crit = 5 + 10 + 2.5 = 17.5
         $this->assertEqualsWithDelta(17.5, $stats->getCritPercent(), 0.0001);
+
+        // maxMana = max(20, 5*6 + 10*4 + 10*2) = 90; regen = round(10/5 + 10/10) = 3
+        $this->assertSame(90, $stats->getMaxMana());
+        $this->assertSame(3, $stats->getManaRegen());
     }
 
     public function testEquippedStatsWithDurabilityScaling(): void
@@ -416,6 +420,7 @@ class CombatStatCalculatorTest extends TestCase
 
         $this->assertSame(35, $stats->getSpellPower());
         $this->assertSame(14, $stats->getArmorValue());
+        $this->assertSame(104, $stats->getMaxMana());
     }
 
     /**

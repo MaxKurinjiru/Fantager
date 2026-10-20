@@ -55,8 +55,8 @@ class Hero
     #[ORM\Column(options: ['default' => 50])]
     private int $morale = 50;
 
-    #[ORM\Column(options: ['default' => 0])]
-    private int $magicCapacity = 0;
+    #[ORM\Column(options: ['default' => 1])]
+    private int $magicCapacity = 1;
 
     #[ORM\Column]
     private int $str;
