@@ -27,9 +27,14 @@ class CombatStatCalculator
         return $this->calculateForProfile($hero, CombatStatProfile::Equipped);
     }
 
-    public function calculateForProfile(Hero $hero, CombatStatProfile $profile): DerivedCombatStats
+    public function calculateWithoutEquipment(Hero $hero): DerivedCombatStats
     {
-        $applyItems = CombatStatProfile::Equipped === $profile;
+        return $this->calculateForProfile($hero, CombatStatProfile::Equipped, false);
+    }
+
+    public function calculateForProfile(Hero $hero, CombatStatProfile $profile, bool $includeItems = true): DerivedCombatStats
+    {
+        $applyItems = CombatStatProfile::Equipped === $profile && $includeItems;
         $applyTrait = CombatStatProfile::Equipped === $profile;
         $applyEquipMastery = CombatStatProfile::Equipped === $profile;
 

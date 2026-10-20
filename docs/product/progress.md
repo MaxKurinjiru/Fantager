@@ -138,7 +138,8 @@ Seven facilities. Forge is not live (crafting is ⏳).
 | Block | Feature | Status | Spec |
 |-------|---------|--------|------|
 | Equipment | Nine-slot paperdoll (two rings), click-to-equip / unequip | ✅ | [10-item-equipment.md](../screens/10-item-equipment.md) |
-| Equipment | Rucksack: repair / dismantle | ✅ | [10-item-equipment.md](../screens/10-item-equipment.md) |
+| Equipment | Rucksack: repair / dismantle, slot/style filter | ✅ | [10-item-equipment.md](../screens/10-item-equipment.md) |
+| Equipment | Gear vs unequipped + team wear on Equipment tab | ✅ | [10-item-equipment.md](../screens/10-item-equipment.md) |
 | Equipment | Enchanting / essence | ✂️ | [item-system.md](../systems/item-system.md#locked-no-enchanting) |
 | Equipment | Crafting | ⏳ | [future/crafting-system.md](../future/crafting-system.md) |
 | Spellbook | Equip / unequip slots (magic capacity) | ✅ | [11-spell-management.md](../screens/11-spell-management.md) |

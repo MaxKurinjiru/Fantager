@@ -113,7 +113,22 @@ class HeroController extends AbstractController
             }
         }
 
-        $items = $this->itemRepository->findBy(['ownerTeam' => $team, 'equippedHero' => null]);
+        $teamItems = $this->itemRepository->findOwnedByTeam($team);
+        $items = [];
+        $teamWear = [];
+        foreach ($teamItems as $teamItem) {
+            $wearer = $teamItem->getEquippedHero();
+            if (null === $wearer) {
+                $items[] = $teamItem;
+                continue;
+            }
+
+            $wearerId = $wearer->getId() ?? 0;
+            if (!isset($teamWear[$wearerId])) {
+                $teamWear[$wearerId] = ['hero' => $wearer, 'items' => []];
+            }
+            $teamWear[$wearerId]['items'][] = $teamItem;
+        }
         $spells = $this->spellRepository->findBy([], ['school' => 'ASC', 'tier' => 'ASC']);
         $heroes = $this->heroRepository->findCombatantsByTeam($team);
         $trainers = $this->heroRepository->findTrainersByTeam($team);
@@ -138,6 +153,7 @@ class HeroController extends AbstractController
             'totalStatGain' => $totalStatGain,
             'completedTrainings' => $completedTrainings,
             'items' => $items,
+            'team_wear' => array_values($teamWear),
             'spells' => $spells,
             'heroes' => $heroes,
             'trainers' => $trainers,

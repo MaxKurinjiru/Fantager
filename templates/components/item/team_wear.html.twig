@@ -1,0 +1,29 @@
+{# templates/components/item/team_wear.html.twig #}
+<div class="hero-panel">
+    <div>
+        <h2 class="hero-panel__title">{{ 'inventory.team_wear'|trans }}</h2>
+        <p class="hero-panel__desc">{{ 'inventory.team_wear_desc'|trans }}</p>
+    </div>
+
+    {% if team_wear is empty %}
+        <p class="copy-muted">{{ 'inventory.team_wear_empty'|trans }}</p>
+    {% else %}
+        <div class="team-wear-list">
+            {% for row in team_wear %}
+                <div class="team-wear-row">
+                    <a href="{{ path('app_heroes_detail', { id: row.hero.id, tab: 'equipment' }) }}" class="team-wear-row__hero link">
+                        {{ row.hero.name }}
+                    </a>
+                    <ul class="team-wear-row__items">
+                        {% for item in row.items %}
+                            <li>
+                                <span class="item-slot-tag">{{ ('inventory.slot_' ~ item.equippedSlot.value)|trans }}</span>
+                                {{ item_display_name(item) }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

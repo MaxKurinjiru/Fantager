@@ -99,6 +99,7 @@ class MarketplaceServiceTest extends TestCase
             $this->hqServiceMock,
             $this->trainingServiceMock,
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
+            $this->createMock(\App\Service\Item\ItemService::class),
         );
     }
 

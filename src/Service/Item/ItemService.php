@@ -52,6 +52,9 @@ class ItemService
     /** Player/NPC listing suggested price as a fraction of merchant cost for catalog commons. */
     public const MARKET_MERCHANT_RATIO = 0.7;
 
+    /** Suggested gold for a Common that is not in the merchant catalog. */
+    public const MARKET_COMMON_FALLBACK = 75;
+
     public function __construct(
         private readonly ItemRepository $itemRepository,
         private readonly EntityManagerInterface $em,
@@ -316,6 +319,77 @@ class ItemService
         return ['rarity' => $rarity->value, 'gold_gained' => $amount];
     }
 
+    public function displayName(Item $item): string
+    {
+        $key = $item->getNameKey();
+        if (null !== $key && '' !== $key) {
+            return $this->translator->trans($key);
+        }
+
+        return $item->getName();
+    }
+
+    /**
+     * Why this empty paperdoll slot cannot be filled for the hero's race, or null.
+     */
+    public function emptySlotRaceHint(Hero $hero, ItemSlotType $slot): ?string
+    {
+        foreach ($this->raceConfig->getEquipmentRestrictions($hero->getRace()) as $restriction) {
+            if ($slot->value === $restriction) {
+                return $this->formatRaceRestrictionHint($hero, $restriction);
+            }
+
+            if ('armor' === $restriction && \in_array($slot, [
+                ItemSlotType::Head,
+                ItemSlotType::Body,
+                ItemSlotType::Hands,
+                ItemSlotType::Feet,
+            ], true)) {
+                return $this->formatRaceRestrictionHint($hero, 'armor');
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Why this item cannot go on any compatible slot for the hero, or null.
+     */
+    public function itemRaceBlockHint(Item $item, Hero $hero): ?string
+    {
+        if ([] !== $this->allowedEquipSlots($item, $hero)) {
+            return null;
+        }
+
+        $matched = $item->getSlotType()->value;
+        foreach ($this->raceConfig->getEquipmentRestrictions($hero->getRace()) as $restriction) {
+            if ($item->getSlotType()->value === $restriction
+                || $item->getCategory()->value === $restriction
+                || (ItemSlotType::OffHand === $item->getSlotType() && 'off_hand' === $restriction)) {
+                $matched = $restriction;
+                break;
+            }
+        }
+
+        return $this->formatRaceRestrictionHint($hero, $matched);
+    }
+
+    private function formatRaceRestrictionHint(Hero $hero, string $restriction): string
+    {
+        $raceKey = 'heroes.race_'.$hero->getRace()->value;
+        $restrictionKey = $restriction;
+        if (null !== ItemSlotType::tryFrom($restriction)) {
+            $restrictionKey = 'inventory.slot_'.$restriction;
+        } elseif (null !== ItemCategory::tryFrom($restriction)) {
+            $restrictionKey = 'inventory.cat_'.$restriction;
+        }
+
+        return $this->translator->trans('inventory.slot_race_blocked', [
+            '%race%' => $this->translator->trans($raceKey),
+            '%restriction%' => $this->translator->trans($restrictionKey),
+        ]);
+    }
+
     /**
      * Repair durability to 100. Gold cost scales with rarity and missing durability.
      *
@@ -336,8 +410,7 @@ class ItemService
             return 0;
         }
 
-        $ratePerPoint = self::REPAIR_COST_PER_POINT[$item->getRarity()->value];
-        $cost = $missing * $ratePerPoint;
+        $cost = $this->calculateRepairCost($item);
 
         if ($team->getGold() < $cost) {
             throw new UserFacingException('error.item_repair_insufficient_gold', ['%cost%' => $cost, '%available%' => $team->getGold()]);
@@ -360,9 +433,19 @@ class ItemService
     public function calculateRepairCost(Item $item): int
     {
         $missing = 100 - $item->getDurability();
-        $ratePerPoint = self::REPAIR_COST_PER_POINT[$item->getRarity()->value];
+        if ($missing <= 0) {
+            return 0;
+        }
 
-        return $missing * $ratePerPoint;
+        $ratePerPoint = self::REPAIR_COST_PER_POINT[$item->getRarity()->value];
+        $base = $missing * $ratePerPoint;
+        if (ItemRarity::Common !== $item->getRarity()) {
+            return $base;
+        }
+
+        $replacement = $this->getBasicItemMerchantPrice($item) ?? self::MARKET_COMMON_FALLBACK;
+
+        return min($base, max(1, $replacement - 1));
     }
 
     /**
@@ -374,7 +457,8 @@ class ItemService
     {
         return [
             'id' => $item->getId(),
-            'name' => $item->getName(),
+            'name' => $this->displayName($item),
+            'name_key' => $item->getNameKey(),
             'slot_type' => $item->getSlotType()->value,
             'category' => $item->getCategory()->value,
             'rarity' => $item->getRarity()->value,
@@ -609,12 +693,33 @@ class ItemService
             'cost' => 40,
             'bonuses' => ['str' => 1],
         ],
+        'bronze_ring' => [
+            'name_key' => 'item.bronze_ring',
+            'slot' => ItemSlotType::Ring,
+            'category' => ItemCategory::Accessory,
+            'cost' => 40,
+            'bonuses' => ['dex' => 1],
+        ],
+        'quartz_ring' => [
+            'name_key' => 'item.quartz_ring',
+            'slot' => ItemSlotType::Ring,
+            'category' => ItemCategory::Accessory,
+            'cost' => 40,
+            'bonuses' => ['int' => 1],
+        ],
         'silver_amulet' => [
             'name_key' => 'item.silver_amulet',
             'slot' => ItemSlotType::Amulet,
             'category' => ItemCategory::Accessory,
             'cost' => 50,
             'bonuses' => ['resistance' => 5],
+        ],
+        'gold_amulet' => [
+            'name_key' => 'item.gold_amulet',
+            'slot' => ItemSlotType::Amulet,
+            'category' => ItemCategory::Accessory,
+            'cost' => 50,
+            'bonuses' => ['spell_power' => 5],
         ],
     ];
 
@@ -643,6 +748,7 @@ class ItemService
         $item = new Item();
         $item->setOwnerTeam($team);
         $item->setName($this->translator->trans($template['name_key']));
+        $item->setNameKey($template['name_key']);
         $item->setSlotType($template['slot']);
         $item->setCategory($template['category']);
         $item->setRarity(ItemRarity::Common);
@@ -686,7 +792,7 @@ class ItemService
         }
 
         return max(1, match ($item->getRarity()) {
-            ItemRarity::Common => 75,
+            ItemRarity::Common => self::MARKET_COMMON_FALLBACK,
             ItemRarity::Uncommon => 180,
             ItemRarity::Rare => 400,
             ItemRarity::Epic => 1000,
@@ -704,18 +810,43 @@ class ItemService
             return null;
         }
 
+        $nameKey = $item->getNameKey();
+        if (null !== $nameKey && '' !== $nameKey) {
+            foreach (self::BASIC_EQUIPMENT as $template) {
+                if ($template['name_key'] === $nameKey) {
+                    return $template['cost'];
+                }
+            }
+        }
+
         foreach (self::BASIC_EQUIPMENT as $template) {
             if ($template['slot'] === $item->getSlotType()) {
                 $subTypeVal = $item->getSubType()?->value;
                 if (isset($template['sub_type']) && $subTypeVal === $template['sub_type']) {
                     return $template['cost'];
                 }
-                if (!isset($template['sub_type']) && null === $subTypeVal) {
+                if (!isset($template['sub_type']) && null === $subTypeVal
+                    && $this->catalogBonusesMatch($template['bonuses'], $item->getBonuses())) {
                     return $template['cost'];
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * @param array<string, int|string> $templateBonuses
+     * @param array<string, mixed>      $itemBonuses
+     */
+    private function catalogBonusesMatch(array $templateBonuses, array $itemBonuses): bool
+    {
+        foreach ($templateBonuses as $key => $value) {
+            if (($itemBonuses[$key] ?? null) != $value) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -1,13 +1,59 @@
 {# templates/components/item/rucksack_items.html.twig #}
-<div class="inventory-rucksack">
+{% set rucksack_slots = [] %}
+{% set rucksack_styles = [] %}
+{% for item in items %}
+    {% if item.slotType.value not in rucksack_slots %}
+        {% set rucksack_slots = rucksack_slots|merge([item.slotType.value]) %}
+    {% endif %}
+    {% if item.subType and item.subType.value not in rucksack_styles %}
+        {% set rucksack_styles = rucksack_styles|merge([item.subType.value]) %}
+    {% endif %}
+{% endfor %}
+<div class="inventory-rucksack" data-controller="rucksack-filter">
     <h2 class="hero-panel__title">{{ 'inventory.rucksack'|trans }}</h2>
+
+    {% if items is not empty %}
+        <div class="filter-form rucksack-filters">
+            <div class="filter-form__fields">
+                <div>
+                    <label for="rucksack-slot-filter" class="sr-only">{{ 'inventory.filter_slot'|trans }}</label>
+                    <select id="rucksack-slot-filter"
+                            data-rucksack-filter-target="slotFilter"
+                            data-action="change->rucksack-filter#filter"
+                            class="form-input">
+                        <option value="">{{ 'inventory.filter_slot_all'|trans }}</option>
+                        {% for slot in rucksack_slots %}
+                            <option value="{{ slot }}">{{ ('inventory.slot_' ~ slot)|trans }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="rucksack-style-filter" class="sr-only">{{ 'inventory.filter_style'|trans }}</label>
+                    <select id="rucksack-style-filter"
+                            data-rucksack-filter-target="styleFilter"
+                            data-action="change->rucksack-filter#filter"
+                            class="form-input">
+                        <option value="">{{ 'inventory.filter_style_all'|trans }}</option>
+                        {% for style in rucksack_styles %}
+                            <option value="{{ style }}">{{ ('weapon_style.' ~ style)|trans }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 
     <div class="rucksack-list">
         {% for item in items %}
             {% set is_equipped = item.equippedHero is not null %}
-            {% set is_equipped_on_selected = selected_hero and is_equipped and item.equippedHero.id == selected_hero.id %}
+            {% set display_name = item_display_name(item) %}
+            {% set allowed_slots = selected_hero ? item_equip_slots(item, selected_hero) : [] %}
+            {% set race_block = selected_hero and not is_equipped ? item_race_block_hint(item, selected_hero) : null %}
 
-            <div class="rucksack-item rucksack-item--rarity-{{ item.rarity.value }}">
+            <div class="rucksack-item rucksack-item--rarity-{{ item.rarity.value }}"
+                 data-rucksack-filter-target="item"
+                 data-slot="{{ item.slotType.value }}"
+                 data-subtype="{{ item.subType ? item.subType.value : '' }}">
                 <div class="rucksack-item__main">
                     <span class="rucksack-item__icon">
                         {% if item.slotType.value == 'main_hand' or item.slotType.value == 'weapon' %}🗡️
@@ -21,10 +67,13 @@
                         {% else %}🎒{% endif %}
                     </span>
                     <div class="rucksack-item__details">
-                        <h3 class="rucksack-item__name">{{ item.name }}</h3>
+                        <h3 class="rucksack-item__name">{{ display_name }}</h3>
                         <div class="rucksack-item__meta">
                             <span class="rarity-tag rarity-tag--{{ item.rarity.value }}">{{ ('inventory.rarity_' ~ item.rarity.value)|trans }}</span>
                             <span class="item-slot-tag">{{ ('inventory.slot_' ~ item.slotType.value)|trans }}</span>
+                            {% if item.subType %}
+                                <span class="item-slot-tag">{{ ('weapon_style.' ~ item.subType.value)|trans }}</span>
+                            {% endif %}
                             <span class="item-durability-badge {% if item.durability < 100 %}item-durability-badge--low{% endif %}">
                                 {{ 'inventory.durability'|trans }}: {{ item.durability }}%
                             </span>
@@ -50,15 +99,14 @@
                 </div>
 
                 <div class="rucksack-item__actions">
-                    {# Repair option if durability < 100 #}
                     {% if item.durability < 100 %}
+                        {% set repair_cost = item_repair_cost(item) %}
                         <button type="button" data-action="click->equipment#repair" data-item-id="{{ item.id }}"
                                 class="btn btn-outline-warning btn--sm">
-                            {{ 'inventory.repair'|trans }}
+                            {{ 'inventory.repair'|trans }} ({{ repair_cost }} 🪙)
                         </button>
                     {% endif %}
 
-                    {# Dismantle option if NOT equipped #}
                     {% if not is_equipped %}
                         <button type="button" data-action="click->equipment#dismantle" data-item-id="{{ item.id }}"
                                 class="btn btn-outline-danger btn--sm">
@@ -66,14 +114,17 @@
                         </button>
                     {% endif %}
 
-                    {# Equip to selected hero — one button per allowed slot (rings / dual-wield) #}
                     {% if selected_hero and not is_equipped %}
-                        {% for slot in item_equip_slots(item, selected_hero) %}
-                            <button type="button" data-action="click->equipment#equip" data-item-id="{{ item.id }}" data-slot="{{ slot.value }}"
-                                    class="btn btn-primary btn--sm">
-                                {{ 'inventory.equip_into_slot'|trans({'%slot%': ('inventory.slot_' ~ slot.value)|trans}) }}
-                            </button>
-                        {% endfor %}
+                        {% if allowed_slots is empty and race_block %}
+                            <p class="copy-muted rucksack-item__race-hint">{{ race_block }}</p>
+                        {% else %}
+                            {% for slot in allowed_slots %}
+                                <button type="button" data-action="click->equipment#equip" data-item-id="{{ item.id }}" data-slot="{{ slot.value }}"
+                                        class="btn btn-primary btn--sm">
+                                    {{ 'inventory.equip_into_slot'|trans({'%slot%': ('inventory.slot_' ~ slot.value)|trans}) }}
+                                </button>
+                            {% endfor %}
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -84,5 +135,8 @@
                 <p class="hero-panel__desc">{{ 'inventory.rucksack_empty_desc'|trans }}</p>
             </div>
         {% endfor %}
+        <p class="copy-muted item-empty-state hidden" data-rucksack-filter-target="emptyFiltered" role="status">
+            {{ 'inventory.filter_empty'|trans }}
+        </p>
     </div>
 </div>

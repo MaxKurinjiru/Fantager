@@ -28,15 +28,22 @@ Buying and selling items is the **Marketplace** (`/app/marketplace`), including 
 
 - Head, Amulet, Body, Hands, Main Hand, Off-Hand, Ring, Ring 2, Feet
 - Equipped item name + rarity styling; empty-slot placeholder
+- Race-restricted empty slots show a short Restricted label (full reason in `title`)
 - Unequip (✕) on a filled slot
 
 **Rucksack** (`components/item/rucksack_items.html.twig`)
 
 - Team items that are **not** currently equipped (`equippedHero` is null)
-- Name, rarity, slot type, durability, numeric bonuses
-- Equip / Repair / Dismantle buttons
+- Name (from `name_key` when set), rarity, slot type, style, durability, numeric bonuses
+- Filter by slot and weapon/armor style
+- Equip / Repair (shows gold cost) / Dismantle buttons
+- Race-restriction copy when the selected hero cannot wear the item (Giant `off_hand`, Ent weapon / shield / armor)
 
-No rucksack filter/sort controls. No equipment-vs-naked stat comparison panel on this tab (derived combat stats live on hero overview). Ring items show Equip Ring / Equip Ring 2; dual-wieldable one-handers show Main Hand / Off-Hand.
+Ring items show Equip Ring / Equip Ring 2; dual-wieldable one-handers show Main Hand / Off-Hand.
+
+**Gear compare** (`components/item/gear_compare.html.twig`) — equipped combat stats vs the same hero with empty slots.
+
+**Team wear** (`components/item/team_wear.html.twig`) — which combatant is wearing which items. Not a standalone inventory page.
 
 ### Actions
 
@@ -70,9 +77,7 @@ Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
 
 - Standalone Inventory screen (`/app/inventory` as its own UI; route redirects today)
 - Drag-and-drop equip / paperdoll (live is click-to-equip)
-- Rucksack filter / sort
 - Compare items / swap between two heroes
-- Stat summary with vs without equipment on this tab
 
 Crafting is **Deferred**: [future/crafting-system.md](../future/crafting-system.md). Enchanting is **Cut** — [Locked: no enchanting](../systems/item-system.md#locked-no-enchanting).
 
@@ -84,4 +89,5 @@ Crafting is **Deferred**: [future/crafting-system.md](../future/crafting-system.
 |-------|----------|
 | Host page | `templates/hero/detail.html.twig` (`?tab=equipment`) |
 | Paperdoll / rucksack | `templates/components/item/equip_manager.html.twig`, `rucksack_items.html.twig` |
-| Stimulus | `equipment` |
+| Gear compare / team wear | `templates/components/item/gear_compare.html.twig`, `team_wear.html.twig` |
+| Stimulus | `equipment`, `rucksack-filter` |

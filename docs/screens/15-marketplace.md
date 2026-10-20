@@ -31,7 +31,7 @@ Segmented type control. Filters: search, race, level min/max, age phase, rarity 
 
 ### Other tabs
 
-- Basic equipment: `ItemService::BASIC_EQUIPMENT`, CSRF form
+- Basic equipment: `ItemService::BASIC_EQUIPMENT` (starter weapons, three armor weights, STR/DEX/INT rings, resistance/spell-power amulets), CSRF form
 - Sell: entity picker (hero picker shows trait badge), buy-now vs auction, suggested price + allowed range (−50% / +100%), tax rate
 - My listings: cancel (auctions with bids cannot cancel)
 - History: settled transactions
