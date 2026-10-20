@@ -41,7 +41,7 @@ class FormationTacticsNormalizer
     public const DEFAULT_HP_THRESHOLD = 40;
 
     /**
-     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>}>
+     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string}>
      */
     public function emptyUiState(): array
     {
@@ -51,6 +51,7 @@ class FormationTacticsNormalizer
                 'target_order' => [],
                 'fallback' => 'approach',
                 'spell_priorities' => [],
+                'movement_goal' => 'advance_to_melee',
             ];
         }
 
@@ -60,7 +61,7 @@ class FormationTacticsNormalizer
     /**
      * @param iterable<mixed> $slots
      *
-     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>}>
+     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string}>
      */
     public function initialUiStateFromSlots(iterable $slots): array
     {
@@ -94,7 +95,7 @@ class FormationTacticsNormalizer
     /**
      * @param array<string, mixed> $strategy
      *
-     * @return array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>}
+     * @return array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string}
      */
     public function tacticsForUi(array $strategy, mixed $spellPriorities): array
     {
@@ -104,6 +105,7 @@ class FormationTacticsNormalizer
             'target_order' => $normalized['target_order'] ?? [],
             'fallback' => $normalized['fallback'] ?? 'approach',
             'spell_priorities' => $this->normalizeSpellPriorities($spellPriorities),
+            'movement_goal' => $normalized['movement_goal'] ?? 'advance_to_melee',
         ];
     }
 

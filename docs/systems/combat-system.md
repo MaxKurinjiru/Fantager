@@ -14,7 +14,7 @@ Purpose: Live combat contract — eligibility, scoring, hex layout, simulation /
 
 ## Automation Model
 
-Combat is **fully automated**. Players configure behaviour **before** the match via the [Formation System](formation-system.md) (`approach`, one formation-wide `movement_goal`, and per-slot L1 `target_order` / L2 `spell_priorities`). The engine simulates the entire bout server-side; the UI is a **replay viewer** over `combat_log` — see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
+Combat is **fully automated**. Players configure behaviour **before** the match via the [Formation System](formation-system.md) (`approach`, per-slot `movement_goal`, and per-slot L1 `target_order` / L2 `spell_priorities`). The engine simulates the entire bout server-side; the UI is a **replay viewer** over `combat_log` — see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
 There is **no** mid-battle player input (no turn submission, target picking, Auto-Battle toggle, or surrender during simulation). Architecture, log format, wave orchestration, and AI phases: [Simulation Contract](#simulation-contract), [Engine Architecture Decisions](#engine-architecture-decisions), and [Formation AI](#formation-ai-phased).
 
@@ -110,7 +110,7 @@ Most races occupy **1 hex** (the centre). **Ent** and **Giant** occupy a **7-hex
 - **Budget:** On a planning turn the unit spends the whole budget, one hex at a time, and stops early when the movement goal is already met. A unit with `preparationRemaining > 0` does not move.
 - **Armor Fatigue:** `heavy_armor` adds **+2 Fatigue** for each hex moved.
 - **Pathfinding:** Hexagonal A* routes unit centres around occupied hexes (living combatant footprints). Closing to melee stops at weapon reach rather than walking onto the target body.
-- **`seek_cover_ranged`:** Holds engagement at the weapon's max range. Closer than that, the unit steps back. Farther than that, it closes and pathfinding stops at that range, so it does not walk into melee. One formation-wide `movement_goal` is still copied onto every slot.
+- **`seek_cover_ranged`:** Holds engagement at the weapon's max range. Closer than that, the unit steps back. Farther than that, it closes and pathfinding stops at that range, so it does not walk into melee. Each slot may store its own `movement_goal`.
 
 ### Weapon Reach & Line of Sight (LoS)
 - **Melee Weapons:** 1 hex engagement reach (footprints adjacent).
@@ -439,7 +439,7 @@ Combat AI is fully automated. It reads `Formation.approach` and per-slot `strate
 
 | Layer | Behaviour | UI / data today |
 |-------|-----------|-----------------|
-| **L0** | Approach slot order, plus one ready spell when `spell_priorities` is empty (heal under the yaml threshold, else highest-tier offense, else utility). Defensive holds the front line, then highest physical attack | Approach radios and one formation-wide `movement_goal` (copied onto every slot) |
+| **L0** | Approach slot order, plus one ready spell when `spell_priorities` is empty (heal under the yaml threshold, else highest-tier offense, else utility). Defensive holds the front line, then highest physical attack | Approach radios and per-slot `movement_goal` (optional Apply-to-all) |
 | **L1** | Per-hero `target_order` (+ `fallback`: `lowest_hp`, `highest_threat`, or approach order) | Player slot editor. Empty order = approach |
 | **L2** | `spell_priorities` with `always`, `self_hp_below`, `ally_hp_below` | Thin player editor for equipped spells. Empty list = L0 pick. NPC may still fill lists. `enemy_status` / `lowest_hp_enemy` Cut from UI |
 | **L3** | Explicit action sequences + advanced conditional tactics (sub, formation switch) | Deferred — not live |

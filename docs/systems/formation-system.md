@@ -24,7 +24,7 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 ## Validation Rules
 
 - **Save:** `FormationService::rebuildSlots()` persists 0–6 slots. Duplicate `hero_id` values are rejected (`error.formation_duplicate_hero`, API 422). Empty slots stay allowed, including a fully empty draft (UI and API).
-- **Match-ready (kickoff):** `MatchLineupService`. A **player** fields the formation assigned to the fixture or friendly match. When none is assigned, they field the team default. That formation must already have 6 unique combat-ready heroes. An incomplete one forfeits. Kickoff does not fall through from an assigned formation to the default, and it does not fill empty slots from the roster. Before kickoff a player may **explicitly** fill empty, duplicate, and unready slots from the combat-ready roster (`id` ascending) via `POST /api/v1/fixtures/{id}/formation/fill-roster`. That writes a match-specific temporary formation (same algorithm as NPC kickoff fill) and leaves saved formations unchanged. An **NPC** always fields the default formation (`NpcTacticsSimulator` rewrites that formation and does not assign a fixture lineup). If the default is short, empty / duplicate / unready slots are filled from the combat-ready roster (`id` ascending) and persisted as a temporary copy (league: `source_fixture_id` for existing cleanup). Forfeit when that fill cannot place 6 heroes — see [combat-system.md](combat-system.md#match-eligibility).
+- **Match-ready (kickoff):** `MatchLineupService`. A **player** fields the formation assigned to the fixture or friendly match. When none is assigned, they field the team default. That formation must already have 6 unique combat-ready heroes. An incomplete one forfeits. Kickoff does not fall through from an assigned formation to the default, and it does not fill empty slots from the roster. Before kickoff a player may **explicitly** fill empty, duplicate, and unready slots from the combat-ready roster via `POST /api/v1/fixtures/{id}/formation/fill-roster`. That writes a match-specific temporary formation (same hole-fill scoring as NPC kickoff fill) and leaves saved formations unchanged. Ready heroes already in a slot stay there. Empty front holes take the highest remaining front score (`STR+KON`, readiness, traits); empty back holes then take the highest remaining back score (`INT+SPD+DEX`). Ties break by `id` ascending. The match-ready UI shows that proposal before confirm. An **NPC** always fields the default formation (`NpcTacticsSimulator` rewrites that formation and does not assign a fixture lineup). If the default is short, empty / duplicate / unready slots are filled with the same scorer (`FormationLineupScorer`) and persisted as a temporary copy (league: `source_fixture_id` for existing cleanup). Forfeit when that fill cannot place 6 heroes — see [combat-system.md](combat-system.md#match-eligibility).
 - Team must have ≥ 6 combat-ready heroes to participate in a match at all (see [combat-system.md](combat-system.md#match-eligibility)).
 - Creating or promoting a saved formation fails when the team already has 4 saved formations.
 
@@ -35,7 +35,7 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
   - **Team A (Home / Left):** `front_1` (4,3), `front_2` (4,6), `front_3` (4,9), `back_1` (1,2), `back_2` (1,5), `back_3` (1,8).
   - **Team B (Away / Right):** `front_1` (12,3), `front_2` (12,6), `front_3` (12,9), `back_1` (15,2), `back_2` (15,5), `back_3` (15,8).
   - Lane centres are at least 3 hexes apart so Ent/Giant **7-hex flowers** do not overlap at kickoff. Front row is staggered +1 r vs back so a lane's backliner does not share LoS with its frontliner. See [combat-system.md](combat-system.md#unit-footprint-size).
-- **Movement strategy:** Formation-wide `strategy.movement_goal` (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`) stored on each slot. `seek_cover_ranged` holds the weapon's maximum range.
+- **Movement strategy:** Per-slot `strategy.movement_goal` (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`). The Formation UI has a default goal plus **Apply to all slots**; save keeps each slot’s own value. `seek_cover_ranged` holds the weapon's maximum range.
 - **Roster minimum:** 10 heroes at team start; 6 combat-ready required to avoid automatic forfeit
 
 ## Fixture Formation Assignment
@@ -48,7 +48,7 @@ Each team may store up to **4 saved formations** (`FormationService::MAX_SAVED_F
 
 ## Strategy JSON Schema (Phased)
 
-Per-slot `strategy` and `spell_priorities` are stored as JSON. The Formation UI saves formation-level `approach` (`aggressive` | `balanced` | `defensive`) and copies one `strategy.movement_goal` onto every slot, merged with that slot’s L1 `target_order` / `fallback` and L2 `spell_priorities`. Empty lists keep engine L0 defaults. Combat AI phases: [combat-system.md — Formation AI](combat-system.md#formation-ai-phased). See [Locked: L1/L2 editor](#locked-l1l2-editor).
+Per-slot `strategy` and `spell_priorities` are stored as JSON. The Formation UI saves formation-level `approach` (`aggressive` | `balanced` | `defensive`) and per-slot `strategy.movement_goal`, merged with that slot’s L1 `target_order` / `fallback` and L2 `spell_priorities`. Empty lists keep engine L0 defaults. Combat AI phases: [combat-system.md — Formation AI](combat-system.md#formation-ai-phased). See [Locked: L1/L2 editor](#locked-l1l2-editor).
 
 ### Empty / missing → engine defaults
 
@@ -115,14 +115,15 @@ Explicit action sequences and advanced conditional tactics (substitution, mid-ma
 |------|---------|
 | L1 targeting | Click a pitch slot. Ordered unique enemy slots (`front_1`–`back_3`) plus `fallback` `lowest_hp` / `highest_threat` / `approach`. Empty `target_order` = L0 approach. Fallback is stored only with a non-empty order. |
 | Thin L2 | Ordered **equipped** spells for the hero in that slot. Live `when`: `always`, `ally_hp_below`, `self_hp_below` (threshold 1–99). Live `target`: `priority`, `lowest_hp_ally`, `self`. Empty list = L0 spell pick. |
-| Movement stays formation-wide | One `movement_goal` is copied onto every slot on save and merged with that slot’s L1 fields. |
+| Per-slot movement | Each slot stores its own `movement_goal`. The strategy panel default is a starting point / Apply-to-all; it is not written onto every slot on save. Movement stays on the slot when heroes swap (same as L1). |
+| Engine readout | The slot panel states the live L0 or L1/L2 behaviour (approach target order, heal threshold from `combat_ai_l0.yaml`, movement). Pitch badges mark L0 vs L1/L2. |
 | Cut | L3 action sequences / Conditional Tactics UI. `enemy_status`. `lowest_hp_enemy`. Dual-wield targeting lists. Flexible AI. On Low Morale. |
 | Save sanitizer | `FormationTacticsNormalizer` keeps only the live schema. NPC-shaped objects and unmet `when` values are dropped. Invalid `target` (including `lowest_hp_enemy`) remaps to `priority`. Duplicate `spell_id` / slot values are collapsed. |
-| L2 follows the hero | Swapping or moving a hero moves `spell_priorities` with them. L1 stays on the slot. |
+| L2 follows the hero | Swapping or moving a hero moves `spell_priorities` with them. L1 and movement stay on the slot. |
 
 ## Summary
 
-Formations are 6-slot layouts (3 front, 3 back) with formation-wide `approach` and per-slot `strategy` / `spell_priorities`. There is **no synergy calculation** on save or at kickoff. Team chemistry (flavor for matches — [#7](../product/known-issues.md) Resolved) is computed from the combatant roster, not from filled slots.
+Formations are 6-slot layouts (3 front, 3 back) with formation-wide `approach` and per-slot movement, `strategy`, and `spell_priorities`. There is **no synergy calculation** on save or at kickoff. Team chemistry (flavor for matches — [#7](../product/known-issues.md) Resolved) is computed from the combatant roster, not from filled slots.
 
 **Combat integration:** Combat is fully automated — the engine reads `approach` and (phased) strategy / spell priorities and runs the match without mid-battle player input. Snapshot building and match request shape: [combat-system.md — Simulation Contract](combat-system.md#simulation-contract). The battle UI is a replay of `combat_log` only; see [screens/12-combat-battle.md](../screens/12-combat-battle.md).
 
@@ -134,7 +135,7 @@ Formations are 6-slot layouts (3 front, 3 back) with formation-wide `approach` a
 - `POST /api/v1/fixtures/{id}/formation/promote` — promote temporary match formation to saved (counts toward limit of 4)
 - `POST /api/v1/formations/simulate` — **Cut** (no controller); do not ship a sandbox
 
-**Tests:** `tests/Service/Formation/FormationServiceTest.php`, `FormationTacticsNormalizerTest.php`, `MatchLineupServiceTest.php`, `FixtureFormationServiceTest.php`.
+**Tests:** `tests/Service/Formation/FormationServiceTest.php`, `FormationTacticsNormalizerTest.php`, `MatchLineupServiceTest.php`, `FixtureFormationServiceTest.php`, `FormationLineupScorerTest.php`.
 
 ## Implementation Notes
 

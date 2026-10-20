@@ -40,6 +40,7 @@
                         or (not match_edit_source and not selected_formation and app.key == 'balanced') %}
                     <label class="tactic-option{% if approach_selected %} tactic-option--selected{% endif %}">
                         <input type="radio" data-formation-target="approachRadio" name="approach" value="{{ app.key }}"
+                               data-action="change->formation#changeApproach"
                                class="tactic-option__radio form-control-accent"
                                {% if approach_selected %}checked{% endif %}>
                         <div class="tactic-option__body">
@@ -59,6 +60,7 @@
                 |map(s => s.strategy.movement_goal)
                 |first
                 |default('advance_to_melee') %}
+            <p class="copy-muted">{{ 'formation.movement_strategy_hint'|trans }}</p>
             <div class="formation-strategy-panel__spatial-control">
                 <select id="movement-goal" data-formation-target="movementGoalSelect" class="form-select formation-strategy-panel__movement-select">
                     <option value="advance_to_melee"{% if movement_goal == 'advance_to_melee' %} selected{% endif %}>{{ 'formation.movement_advance_to_melee'|trans }}</option>
@@ -66,6 +68,11 @@
                     <option value="protect_backline"{% if movement_goal == 'protect_backline' %} selected{% endif %}>{{ 'formation.movement_protect_backline'|trans }}</option>
                     <option value="flank_rear"{% if movement_goal == 'flank_rear' %} selected{% endif %}>{{ 'formation.movement_flank_rear'|trans }}</option>
                 </select>
+                <button type="button"
+                        class="btn btn-outline btn--sm"
+                        data-action="click->formation#applyMovementToAll">
+                    {{ 'formation.movement_apply_all'|trans }}
+                </button>
             </div>
         </div>
     </div>

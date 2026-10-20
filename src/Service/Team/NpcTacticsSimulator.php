@@ -16,12 +16,12 @@ use App\Entity\Team\Team;
 use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
 use App\Enum\HeroStatus;
-use App\Enum\HeroTrait;
 use App\Enum\ItemRarity;
 use App\Enum\ItemSlotType;
 use App\Enum\ItemStatus;
 use App\Enum\ItemSubType;
 use App\Enum\SpellType;
+use App\Service\Formation\FormationLineupScorer;
 use App\Service\Item\ItemService;
 use App\Service\Spell\SpellService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -71,6 +71,7 @@ class NpcTacticsSimulator
         private readonly EntityManagerInterface $em,
         private readonly ItemService $itemService,
         private readonly SpellService $spellService,
+        private readonly FormationLineupScorer $lineupScorer,
     ) {
     }
 
@@ -138,53 +139,18 @@ class NpcTacticsSimulator
                     continue;
                 }
 
-                $fatigue = $hero->getFatigue();
-                $form = $hero->getForm();
-
-                $readinessMultiplier = 1.0;
-                if ($fatigue > 50) {
-                    $readinessMultiplier *= 0.5;
-                }
-                if ($form < 40) {
-                    $readinessMultiplier *= 0.6;
-                }
-
-                $frontScore = ($hero->getKon() + $hero->getStr()) * $readinessMultiplier;
-                $backScore = ($hero->getIntel() + $hero->getSpd() + $hero->getDex()) * $readinessMultiplier;
-
-                // Trait-aware score adjustments
-                $trait = $hero->getTrait();
-                if (null !== $trait) {
-                    // Traits boosting physical front-row performance
-                    if (\in_array($trait, [HeroTrait::Berserker, HeroTrait::Overconfident, HeroTrait::BattleHardened], true)) {
-                        $frontScore *= 1.20;
-                    }
-                    // Traits boosting back-row / ranged / magic performance
-                    if (\in_array($trait, [HeroTrait::Glasscannon, HeroTrait::Reckless], true)) {
-                        $backScore *= 1.20;
-                        $frontScore *= 0.85; // Penalty for fragile back-row heroes in front
-                    }
-                    // Clutch: better front-row (thrives under pressure)
-                    if (HeroTrait::Clutch === $trait) {
-                        $frontScore *= 1.10;
-                    }
-                    // Fragile / GlassJaw: penalize front-row placement
-                    if (\in_array($trait, [HeroTrait::Fragile, HeroTrait::GlassJaw], true)) {
-                        $frontScore *= 0.80;
-                    }
-                    // Purely negative trait: heavily penalize so they prefer bench
-                    if ($this->isPurelyNegativeTrait($trait)) {
-                        $frontScore *= 0.10;
-                        $backScore *= 0.10;
-                    }
-                }
-
-                $frontCandidates[] = ['hero' => $hero, 'id' => $heroId, 'score' => $frontScore];
-                $backCandidates[] = ['hero' => $hero, 'id' => $heroId, 'score' => $backScore];
+                $scores = $this->lineupScorer->scores($hero);
+                $frontCandidates[] = ['hero' => $hero, 'id' => $heroId, 'score' => $scores['front']];
+                $backCandidates[] = ['hero' => $hero, 'id' => $heroId, 'score' => $scores['back']];
             }
 
-            usort($frontCandidates, fn ($a, $b) => $b['score'] <=> $a['score']);
-            usort($backCandidates, fn ($a, $b) => $b['score'] <=> $a['score']);
+            $byScoreThenId = static function (array $a, array $b): int {
+                $byScore = $b['score'] <=> $a['score'];
+
+                return 0 !== $byScore ? $byScore : $a['id'] <=> $b['id'];
+            };
+            usort($frontCandidates, $byScoreThenId);
+            usort($backCandidates, $byScoreThenId);
 
             $selectedFront = [];
             $selectedBack = [];

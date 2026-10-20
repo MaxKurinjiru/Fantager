@@ -76,6 +76,37 @@
      }|json_encode }}"
      data-formation-slot-tactics-value="{{ (slot_tactics|default({}))|json_encode|e('html_attr') }}"
      data-formation-hero-spells-value="{{ (hero_spells|default({}))|json_encode|e('html_attr') }}"
+     data-formation-heal-thresholds-value="{{ (l0_heal|default({aggressive: 25, balanced: 40, defensive: 50}))|json_encode|e('html_attr') }}"
+     data-formation-l0-orders-value="{{ {
+         aggressive: ['back_1', 'back_2', 'back_3', 'front_1', 'front_2', 'front_3'],
+         balanced: ['front_1', 'front_2', 'front_3', 'back_1', 'back_2', 'back_3'],
+         defensive: ['front_1', 'front_2', 'front_3']
+     }|json_encode|e('html_attr') }}"
+     data-formation-summary-targeting-l0-value="{{ 'formation.engine_targeting_l0'|trans }}"
+     data-formation-summary-targeting-l0-defensive-value="{{ 'formation.engine_targeting_l0_defensive'|trans }}"
+     data-formation-summary-targeting-l1-value="{{ 'formation.engine_targeting_l1'|trans }}"
+     data-formation-summary-fallback-value="{{ 'formation.engine_targeting_fallback'|trans }}"
+     data-formation-summary-spells-l0-value="{{ 'formation.engine_spells_l0'|trans }}"
+     data-formation-summary-spells-l2-value="{{ 'formation.engine_spells_l2'|trans }}"
+     data-formation-summary-movement-value="{{ 'formation.engine_movement'|trans }}"
+     data-formation-order-arrow-value="{{ 'formation.engine_order_arrow'|trans }}"
+     data-formation-fallback-labels-value="{{ {
+         approach: 'formation.tactics_fallback_approach'|trans,
+         lowest_hp: 'formation.tactics_fallback_lowest_hp'|trans,
+         highest_threat: 'formation.tactics_fallback_highest_threat'|trans
+     }|json_encode|e('html_attr') }}"
+     data-formation-movement-labels-value="{{ {
+         advance_to_melee: 'formation.movement_advance_to_melee'|trans,
+         seek_cover_ranged: 'formation.movement_seek_cover_ranged'|trans,
+         protect_backline: 'formation.movement_protect_backline'|trans,
+         flank_rear: 'formation.movement_flank_rear'|trans
+     }|json_encode|e('html_attr') }}"
+     data-formation-movement-short-value="{{ {
+         advance_to_melee: 'formation.movement_short_advance_to_melee'|trans,
+         seek_cover_ranged: 'formation.movement_short_seek_cover_ranged'|trans,
+         protect_backline: 'formation.movement_short_protect_backline'|trans,
+         flank_rear: 'formation.movement_short_flank_rear'|trans
+     }|json_encode|e('html_attr') }}"
      data-formation-races-value="{{ {
          human: 'heroes.race_human'|trans,
          elf: 'heroes.race_elf'|trans,

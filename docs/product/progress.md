@@ -97,7 +97,7 @@ Equipment and spells on hero detail are listed under **Items and spells**.
 | Saved lineups | Up to 4 formations; create / delete / set default | ✅ | [07-formation-setup.md](../screens/07-formation-setup.md) |
 | Saved lineups | Pitch 3+3 drag-and-drop + quick-assign | ✅ | [07-formation-setup.md](../screens/07-formation-setup.md) |
 | Tactics | Pre-match approach (Aggressive / Balanced / Defensive) | ✅ | [07-formation-setup.md](../screens/07-formation-setup.md) |
-| Tactics | Formation-wide movement goal | ✅ | [07-formation-setup.md](../screens/07-formation-setup.md) |
+| Tactics | Per-slot movement goal (default + apply-all) | ✅ | [07-formation-setup.md](../screens/07-formation-setup.md) |
 | Tactics | Per-slot L1 target order + thin L2 spell priorities | ✅ | [formation-system.md](../systems/formation-system.md#locked-l1l2-editor) |
 | Tactics | L3 sequences / synergy tables / simulate sandbox | ✂️ | [formation-system.md](../systems/formation-system.md), [combat-system.md](../systems/combat-system.md#locked-no-race-synergy--no-simulate) |
 | Match prep | Assign lineup to a league fixture | ✅ | [07-formation-setup.md](../screens/07-formation-setup.md) |

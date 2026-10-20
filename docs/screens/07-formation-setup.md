@@ -26,8 +26,8 @@ Slot tactics: Healer / CC / Nuker buttons write thin L2 lists from equipped spel
 
 - Opponent name and kickoff time
 - Assign default / a saved formation / keep a custom match lineup
-- Match-ready panel (`ready_slots` / 6, per-slot empty / unready / duplicate issues)
-- Fill empty slots from the combat-ready roster (writes a custom match lineup; does not edit the saved default)
+- Match-ready panel (`ready_slots` / 6, per-slot empty / unready / duplicate issues, proposed fill before confirm)
+- Fill empty slots from the combat-ready roster (front/back scores shared with NPC tactics; writes a custom match lineup; does not edit the saved default; does not move ready heroes already in a slot)
 - Promote custom match lineup to a saved formation
 - Does **not** show the opponent’s formation
 
@@ -36,8 +36,8 @@ Slot tactics: Healer / CC / Nuker buttons write thin L2 lists from equipped spel
 - Formation name
 - Set as default (disabled in match-prep)
 - Pre-match approach: Aggressive / Balanced / Defensive (`approach`)
-- Movement goal: one formation-wide `strategy.movement_goal` (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`), copied onto every slot on save and merged with that slot’s L1/L2
-- Slot tactics panel (click a pitch slot): L1 `target_order` + `fallback`; thin L2 equipped `spell_priorities`; Healer / CC / Nuker templates. Empty lists keep L0.
+- Default movement goal plus **Apply to all slots** (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`). Each pitch slot can override it; save keeps per-slot `strategy.movement_goal`
+- Slot tactics panel (click a pitch slot): movement; L1 `target_order` + `fallback`; thin L2 equipped `spell_priorities`; Healer / CC / Nuker templates; live L0/L1/L2 readout. Empty lists keep L0. Pitch badges mark L0 vs custom L1/L2.
 
 **Pitch (3 front + 3 back)**
 
@@ -76,7 +76,7 @@ Pitch cards do **not** show a primary-role icon or a full quick-stat grid.
 | POST | `/api/v1/fixtures/{id}/formation/fill-roster` | Fill empty / unready slots from the combat-ready roster |
 | POST | `/api/v1/fixtures/{id}/formation/promote` | Custom → saved |
 
-Match **kickoff** uses the assigned lineup if it has 6 unique combat-ready heroes; otherwise the team default. Kickoff does **not** fill a player roster. Forfeit when that formation is short ([combat-system.md](../systems/combat-system.md#match-eligibility)). Empty slots are allowed at **save** (0–6 assigned heroes; the UI does not require a hero). Before kickoff, **Fill empty slots from roster** writes a match-specific formation using the same fill order as NPC kickoff (`id` ascending).
+Match **kickoff** uses the assigned lineup when one is set, otherwise the team default. That formation must already have 6 unique combat-ready heroes. Kickoff does **not** fall through from an incomplete assigned formation to the default and does **not** fill a player roster. Forfeit when that formation is short ([combat-system.md](../systems/combat-system.md#match-eligibility)). Empty slots are allowed at **save** (0–6 assigned heroes; the UI does not require a hero). Before kickoff, **Fill empty slots from roster** shows a proposal, then writes a match-specific formation. Empty front holes take the highest remaining front score; empty back holes then take the highest remaining back score (`FormationLineupScorer`, same as NPC kickoff fill).
 
 See `assets/controllers/formation_controller.js` and [formation-system.md](../systems/formation-system.md).
 

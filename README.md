@@ -87,7 +87,7 @@ Equipment and spells on hero detail are under **Items and spells**.
 | Saved lineups | Up to 4 formations; create / delete / set default | ✅ |
 | Saved lineups | Pitch 3+3 drag-and-drop + quick-assign | ✅ |
 | Tactics | Pre-match approach (Aggressive / Balanced / Defensive) | ✅ |
-| Tactics | Formation-wide movement goal | ✅ |
+| Tactics | Per-slot movement goal (default + apply-all) | ✅ |
 | Tactics | Per-slot L1 target order + thin L2 spell priorities | ✅ |
 | Tactics | L3 sequences / synergy tables / simulate sandbox | ✂️ |
 | Match prep | Assign lineup to a league fixture | ✅ |

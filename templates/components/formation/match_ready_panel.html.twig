@@ -16,7 +16,11 @@
          {% if fixture_id %}data-match-ready-fixture-id-value="{{ fixture_id }}"{% endif %}
          data-match-ready-text-filling-value="{{ 'js_flash.formation.filling'|trans }}"
          data-match-ready-error-fill-value="{{ 'js_flash.formation.failed_fill'|trans }}"
-         data-match-ready-success-fill-value="{{ 'js_flash.formation.success_fill'|trans }}">
+         data-match-ready-success-fill-value="{{ 'js_flash.formation.success_fill'|trans }}"
+         data-match-ready-confirm-title-value="{{ 'formation.match_ready.confirm_fill_title'|trans }}"
+         data-match-ready-confirm-message-value="{{ 'formation.match_ready.confirm_fill'|trans }}"
+         data-match-ready-confirm-btn-value="{{ 'js_flash.formation.confirm_fill'|trans }}"
+         data-match-ready-cancel-btn-value="{{ 'js_flash.formation.cancel'|trans }}">
         {% include 'components/ui/alert_box.html.twig' with {
             target: 'match-ready',
             classes: 'alert-box--compact',
@@ -85,6 +89,22 @@
                     </li>
                 {% endfor %}
             </ul>
+        {% endif %}
+
+        {% set fill_preview = lineup.fill_preview|default([]) %}
+        {% if will_forfeit and can_fill and fill_preview is not empty %}
+            <div class="match-ready-panel__preview">
+                <h4 class="match-ready-panel__preview-title">{{ 'formation.match_ready.fill_preview_title'|trans }}</h4>
+                <ul class="match-ready-panel__slots">
+                    {% for row in fill_preview %}
+                        <li class="match-ready-slot match-ready-slot--{{ row.action }}">
+                            <span class="match-ready-slot__position">{{ ('formation.slots.' ~ row.position)|trans }}</span>
+                            <span class="match-ready-slot__detail">{{ row.hero_name }}</span>
+                            <span class="match-ready-slot__action">{{ ('formation.match_ready.fill_action_' ~ row.action)|trans }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
         {% endif %}
 
         {% if will_forfeit and can_fill and fixture_id and allow_fill %}

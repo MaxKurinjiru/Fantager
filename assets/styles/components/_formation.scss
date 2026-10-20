@@ -49,7 +49,12 @@
   }
 
   .formation-strategy-panel__spatial-control {
-    @apply w-full;
+    @apply w-full flex flex-col gap-2;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+      align-items: center;
+    }
   }
 
   .formation-strategy-panel__movement-select {
@@ -159,6 +164,54 @@
 
   .match-ready-slot__detail {
     color: var(--color-text-primary);
+  }
+
+  .match-ready-slot__action {
+    color: var(--color-text-muted);
+  }
+
+  .match-ready-slot--kept {
+    border-color: color-mix(in srgb, var(--color-success-border) 35%, transparent);
+  }
+
+  .match-ready-slot--filled {
+    border-color: color-mix(in srgb, var(--color-brand-400) 45%, transparent);
+  }
+
+  .match-ready-panel__preview-title {
+    @apply m-0 text-sm;
+    color: var(--color-text-primary);
+  }
+
+  .match-ready-panel__preview {
+    @apply flex flex-col gap-2;
+  }
+
+  .formation-engine-summary {
+    @apply flex flex-col gap-1;
+    padding: 0.5rem 0.65rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 55%, transparent);
+  }
+
+  .formation-slot__badges {
+    @apply flex flex-wrap justify-center gap-1;
+  }
+
+  .formation-slot__badge {
+    @apply text-[10px] uppercase tracking-wide;
+    padding: 0.1rem 0.35rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+    color: var(--color-text-secondary);
+    background-color: color-mix(in srgb, var(--color-surface-overlay) 80%, transparent);
+
+    &--l1,
+    &--l2 {
+      border-color: color-mix(in srgb, var(--color-brand-400) 45%, transparent);
+      color: var(--color-text-primary);
+    }
   }
 
   .match-ready-panel__actions {

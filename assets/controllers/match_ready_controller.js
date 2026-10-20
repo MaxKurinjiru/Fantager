@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showAlert, hideAlert } from '../utils/alert.js';
+import { showConfirm } from '../utils/confirm.js';
 
 export default class extends Controller {
     static targets = ['alert', 'alertMessage', 'fillButton'];
@@ -8,13 +9,30 @@ export default class extends Controller {
         fixtureId: Number,
         textFilling: String,
         errorFill: String,
-        successFill: String
+        successFill: String,
+        confirmTitle: String,
+        confirmMessage: String,
+        confirmBtn: String,
+        cancelBtn: String
     };
 
     async fill(e) {
         e.preventDefault();
         if (!this.hasFixtureIdValue || !this.fixtureIdValue) {
             return;
+        }
+
+        if (this.hasConfirmMessageValue && this.confirmMessageValue) {
+            const accepted = await showConfirm(
+                this.confirmTitleValue || '',
+                this.confirmMessageValue,
+                this.confirmBtnValue || null,
+                this.cancelBtnValue || null,
+                'primary'
+            );
+            if (!accepted) {
+                return;
+            }
         }
 
         const btn = this.hasFillButtonTarget ? this.fillButtonTarget : e.currentTarget;

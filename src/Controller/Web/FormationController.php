@@ -7,9 +7,11 @@ namespace App\Controller\Web;
 use App\Entity\Auth\User;
 use App\Entity\Formation\Formation;
 use App\Entity\Hero\Hero;
+use App\Enum\FormationApproach;
 use App\Enum\HeroStatus;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Hero\HeroRepository;
+use App\Service\Config\CombatAiL0Config;
 use App\Service\Formation\FixtureFormationService;
 use App\Service\Formation\FormationTacticsNormalizer;
 use App\Service\Formation\MatchLineupService;
@@ -31,6 +33,7 @@ class FormationController extends AbstractController
         private readonly MatchLineupService $matchLineupService,
         private readonly FormationTacticsNormalizer $tacticsNormalizer,
         private readonly SpellService $spellService,
+        private readonly CombatAiL0Config $l0Config,
         private readonly UserMessageTranslator $userMessages,
     ) {
     }
@@ -84,6 +87,11 @@ class FormationController extends AbstractController
             'fixture_lineup' => $fixtureLineup,
             'slot_tactics' => $this->slotTacticsForPage($fixtureAssignment, $formations, $request->query->get('formation_id')),
             'hero_spells' => $this->equippedSpellsByHeroId($heroes),
+            'l0_heal' => [
+                'aggressive' => $this->l0Config->healThresholdPercent(FormationApproach::Aggressive),
+                'balanced' => $this->l0Config->healThresholdPercent(FormationApproach::Balanced),
+                'defensive' => $this->l0Config->healThresholdPercent(FormationApproach::Defensive),
+            ],
         ]);
     }
 
@@ -91,7 +99,7 @@ class FormationController extends AbstractController
      * @param array<string, mixed>|null $fixtureAssignment
      * @param list<Formation>           $formations
      *
-     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>}>
+     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string}>
      */
     private function slotTacticsForPage(?array $fixtureAssignment, array $formations, mixed $formationId): array
     {

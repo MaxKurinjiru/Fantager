@@ -13,6 +13,8 @@ use App\Enum\FormationApproach;
 use App\Enum\FormationPosition;
 use App\Enum\HeroRole;
 use App\Enum\HeroStatus;
+use App\Enum\Race;
+use App\Service\Formation\FormationLineupScorer;
 use App\Service\Formation\FormationService;
 use App\Service\Formation\MatchLineupService;
 use App\Service\Team\TeamRosterService;
@@ -138,6 +140,8 @@ class MatchLineupServiceTest extends TestCase
         $this->assertTrue($preview['can_fill']);
         $this->assertCount(6, $preview['slots']);
         $this->assertSame('empty', $preview['slots'][0]['issue']);
+        $this->assertCount(6, $preview['fill_preview']);
+        $this->assertSame('filled', $preview['fill_preview'][0]['action']);
     }
 
     public function testProposeRosterFillBuildsSixCombatReadySlots(): void
@@ -165,6 +169,50 @@ class MatchLineupServiceTest extends TestCase
         sort($ids);
         $this->assertSame([1, 2, 3, 4, 5, 6], $ids);
         $this->assertSame('advance_to_melee', $proposal['slots'][0]['strategy']['movement_goal']);
+    }
+
+    public function testProposeRosterFillPutsTanksInFrontHolesAndCastersInBack(): void
+    {
+        $team = $this->createTeam(1);
+        $kept = $this->createHero($team, 1);
+        $assigned = $this->createEmptyFormation($team, 'Draft');
+        $slot = new FormationSlot();
+        $slot->setPosition(FormationPosition::Front1);
+        $slot->setHero($kept);
+        $slot->setStrategy(['movement_goal' => 'advance_to_melee']);
+        $slot->setSpellPriorities([]);
+        $assigned->addSlot($slot);
+
+        $caster = $this->createHero($team, 2);
+        $caster->setStrRaw(40);
+        $caster->setKonRaw(40);
+        $caster->setIntelRaw(180);
+        $caster->setSpdRaw(180);
+        $caster->setDexRaw(180);
+
+        $tank = $this->createHero($team, 3);
+        $tank->setStrRaw(180);
+        $tank->setKonRaw(180);
+        $tank->setIntelRaw(40);
+        $tank->setSpdRaw(40);
+        $tank->setDexRaw(40);
+
+        $rest = [];
+        for ($i = 4; $i <= 6; ++$i) {
+            $rest[] = $this->createHero($team, $i);
+        }
+
+        $proposal = $this->createService($team, array_merge([$kept, $caster, $tank], $rest), null)
+            ->proposeRosterFill($team, $assigned);
+
+        $byPosition = [];
+        foreach ($proposal['slots'] as $row) {
+            $byPosition[$row['position']] = $row['hero_id'];
+        }
+
+        $this->assertSame(1, $byPosition['front_1']);
+        $this->assertSame(3, $byPosition['front_2']);
+        $this->assertSame(2, $byPosition['back_1']);
     }
 
     public function testProposeRosterFillFailsWhenRosterCannotComplete(): void
@@ -309,6 +357,7 @@ class MatchLineupServiceTest extends TestCase
             $formationService,
             $roster,
             $em ?? $this->createMock(EntityManagerInterface::class),
+            new FormationLineupScorer(),
         );
     }
 
@@ -326,8 +375,15 @@ class MatchLineupServiceTest extends TestCase
         $hero = new Hero();
         $hero->setTeam($team);
         $hero->setName('Hero '.$id);
+        $hero->setRace(Race::Human);
+        $hero->setAge(20);
         $hero->setRole(HeroRole::Combatant);
         $hero->setStatus(HeroStatus::Available);
+        $hero->setStrRaw(100);
+        $hero->setKonRaw(100);
+        $hero->setIntelRaw(100);
+        $hero->setSpdRaw(100);
+        $hero->setDexRaw(100);
         $this->setId($hero, $id);
 
         return $hero;

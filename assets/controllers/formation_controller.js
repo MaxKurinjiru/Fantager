@@ -32,7 +32,12 @@ export default class extends Controller {
         'spellTemplates',
         'templateHealer',
         'templateCc',
-        'templateNuker'
+        'templateNuker',
+        'engineSummary',
+        'engineTargeting',
+        'engineSpells',
+        'engineMovement',
+        'slotMovementSelect'
     ];
 
     static values = {
@@ -56,7 +61,20 @@ export default class extends Controller {
         addSpell: String,
         slotLabels: Object,
         slotTactics: Object,
-        heroSpells: Object
+        heroSpells: Object,
+        healThresholds: Object,
+        l0Orders: Object,
+        summaryTargetingL0: String,
+        summaryTargetingL0Defensive: String,
+        summaryTargetingL1: String,
+        summaryFallback: String,
+        summarySpellsL0: String,
+        summarySpellsL2: String,
+        summaryMovement: String,
+        orderArrow: String,
+        fallbackLabels: Object,
+        movementLabels: Object,
+        movementShort: Object
     };
 
     connect() {
@@ -66,6 +84,7 @@ export default class extends Controller {
         this.draggingElement = null;
         this.initializeSlotsState();
         this.renderTacticsPanel();
+        this.refreshSlotBadges();
     }
 
     disconnect() {
@@ -487,7 +506,7 @@ export default class extends Controller {
 
         const slots = Object.entries(this.slotsState).map(([pos, heroId]) => {
             const tactics = this.ensureTactics(pos);
-            const strategy = { movement_goal: movementGoal };
+            const strategy = { movement_goal: tactics.movement_goal || movementGoal };
             if (tactics.target_order.length > 0) {
                 strategy.target_order = [...tactics.target_order];
                 strategy.fallback = tactics.fallback || 'approach';
@@ -874,8 +893,14 @@ export default class extends Controller {
             this.fallbackSelectTarget.value = tactics.fallback || 'approach';
         }
 
+        if (this.hasSlotMovementSelectTarget) {
+            this.slotMovementSelectTarget.value = tactics.movement_goal || 'advance_to_melee';
+        }
+
         this.renderTargetOrder(tactics);
         this.renderSpellPriorities(tactics, heroId);
+        this.renderEngineSummary(tactics);
+        this.refreshSlotBadges();
     }
 
     renderTargetOrder(tactics) {
@@ -986,7 +1011,8 @@ export default class extends Controller {
             this.tacticsState[position] = {
                 target_order: [],
                 fallback: 'approach',
-                spell_priorities: []
+                spell_priorities: [],
+                movement_goal: this.defaultMovementGoal()
             };
         }
         if (!Array.isArray(this.tacticsState[position].target_order)) {
@@ -998,11 +1024,115 @@ export default class extends Controller {
         if (!this.tacticsState[position].fallback) {
             this.tacticsState[position].fallback = 'approach';
         }
+        if (!this.tacticsState[position].movement_goal) {
+            this.tacticsState[position].movement_goal = this.defaultMovementGoal();
+        }
         return this.tacticsState[position];
     }
 
     selectedTactics() {
         return this.selectedPosition ? this.ensureTactics(this.selectedPosition) : null;
+    }
+
+    changeApproach() {
+        this.approachRadioTargets.forEach((radio) => {
+            radio.closest('.tactic-option')?.classList.toggle('tactic-option--selected', radio.checked);
+        });
+        this.renderTacticsPanel();
+    }
+
+    changeSlotMovement() {
+        const tactics = this.selectedTactics();
+        if (!tactics || !this.hasSlotMovementSelectTarget) {
+            return;
+        }
+        tactics.movement_goal = this.slotMovementSelectTarget.value;
+        this.renderEngineSummary(tactics);
+        this.refreshSlotBadges();
+    }
+
+    applyMovementToAll() {
+        const goal = this.defaultMovementGoal();
+        Object.keys(this.slotsState).forEach((position) => {
+            this.ensureTactics(position).movement_goal = goal;
+        });
+        this.renderTacticsPanel();
+        this.refreshSlotBadges();
+    }
+
+    defaultMovementGoal() {
+        if (this.hasMovementGoalSelectTarget && this.movementGoalSelectTarget.value) {
+            return this.movementGoalSelectTarget.value;
+        }
+        return 'advance_to_melee';
+    }
+
+    currentApproach() {
+        const selected = this.approachRadioTargets.find((radio) => radio.checked);
+        return selected ? selected.value : 'balanced';
+    }
+
+    renderEngineSummary(tactics) {
+        if (!this.hasEngineTargetingTarget || !this.hasEngineSpellsTarget || !this.hasEngineMovementTarget) {
+            return;
+        }
+
+        const approach = this.currentApproach();
+        let targeting;
+        if (tactics.target_order.length > 0) {
+            const order = tactics.target_order.map((slot) => this.slotLabel(slot)).join(this.orderArrowValue || ' → ');
+            targeting = this.interpolate(this.summaryTargetingL1Value, { order });
+            const fallbackLabel = this.fallbackLabelsValue?.[tactics.fallback] || tactics.fallback;
+            targeting += ' — ' + this.interpolate(this.summaryFallbackValue, { fallback: fallbackLabel });
+        } else if (approach === 'defensive') {
+            targeting = this.summaryTargetingL0DefensiveValue;
+        } else {
+            const slots = this.l0OrdersValue?.[approach] || this.l0OrdersValue?.balanced || [];
+            const order = slots.map((slot) => this.slotLabel(slot)).join(this.orderArrowValue || ' → ');
+            targeting = this.interpolate(this.summaryTargetingL0Value, { order });
+        }
+
+        let spells;
+        if (tactics.spell_priorities.length > 0) {
+            spells = this.interpolate(this.summarySpellsL2Value, { count: String(tactics.spell_priorities.length) });
+        } else {
+            const threshold = this.healThresholdsValue?.[approach] ?? 40;
+            spells = this.interpolate(this.summarySpellsL0Value, { threshold: String(threshold) });
+        }
+
+        const goal = tactics.movement_goal || 'advance_to_melee';
+        const goalLabel = this.movementLabelsValue?.[goal] || goal;
+        const movement = this.interpolate(this.summaryMovementValue, { goal: goalLabel });
+
+        this.engineTargetingTarget.textContent = targeting;
+        this.engineSpellsTarget.textContent = spells;
+        this.engineMovementTarget.textContent = movement;
+    }
+
+    refreshSlotBadges() {
+        this.gridSlotTargets.forEach((slot) => {
+            const position = slot.dataset.position;
+            if (!position) {
+                return;
+            }
+            const tactics = this.ensureTactics(position);
+            const hasL1 = tactics.target_order.length > 0;
+            const hasL2 = tactics.spell_priorities.length > 0;
+            slot.querySelector('[data-badge-l0]')?.classList.toggle('hidden', hasL1 || hasL2);
+            slot.querySelector('[data-badge-l1]')?.classList.toggle('hidden', !hasL1);
+            slot.querySelector('[data-badge-l2]')?.classList.toggle('hidden', !hasL2);
+            const movement = slot.querySelector('[data-badge-movement]');
+            if (movement) {
+                const goal = tactics.movement_goal || 'advance_to_melee';
+                movement.textContent = this.movementShortValue?.[goal] || goal;
+            }
+        });
+    }
+
+    interpolate(template, values) {
+        return Object.entries(values).reduce((text, [key, value]) => {
+            return text.replaceAll(`%${key}%`, value);
+        }, template || '');
     }
 
     slotLabel(position) {
@@ -1093,7 +1223,8 @@ export default class extends Controller {
                 fallback: value?.fallback || 'approach',
                 spell_priorities: Array.isArray(value?.spell_priorities)
                     ? value.spell_priorities.map((row) => ({ ...row }))
-                    : []
+                    : [],
+                movement_goal: value?.movement_goal || 'advance_to_melee'
             };
         });
         return cloned;
