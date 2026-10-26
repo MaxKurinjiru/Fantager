@@ -750,11 +750,18 @@ export default class extends Controller {
             return;
         }
         const spell = this.heroSpells(this.slotsState[this.selectedPosition]).find((item) => item.id === spellId);
-        const when = spell?.type === 'defensive' ? 'ally_hp_below' : 'always';
+        let when = 'always';
+        let target = 'priority';
+        if (spell?.type === 'restore') {
+            when = 'ally_hp_below';
+            target = 'lowest_hp_ally';
+        } else if (spell?.type === 'enhance') {
+            target = 'self';
+        }
         const row = {
             spell_id: spellId,
             when,
-            target: when === 'ally_hp_below' ? 'lowest_hp_ally' : 'priority'
+            target
         };
         if (when !== 'always') {
             row.threshold = 40;
@@ -781,7 +788,7 @@ export default class extends Controller {
                 return;
             }
             used.add(spell.id);
-            if ('defensive' === type) {
+            if ('restore' === type) {
                 rows.push({
                     spell_id: spell.id,
                     when: 'ally_hp_below',
@@ -949,13 +956,13 @@ export default class extends Controller {
         }
         const hasType = (type) => spells.some((spell) => spell.type === type);
         if (this.hasTemplateHealerTarget) {
-            this.templateHealerTarget.classList.toggle('hidden', !hasType('defensive'));
+            this.templateHealerTarget.classList.toggle('hidden', !hasType('restore'));
         }
         if (this.hasTemplateCcTarget) {
-            this.templateCcTarget.classList.toggle('hidden', !hasType('utility'));
+            this.templateCcTarget.classList.toggle('hidden', !hasType('hinder'));
         }
         if (this.hasTemplateNukerTarget) {
-            this.templateNukerTarget.classList.toggle('hidden', !hasType('offensive'));
+            this.templateNukerTarget.classList.toggle('hidden', !hasType('harm'));
         }
 
         this.spellPriorityListTarget.replaceChildren();

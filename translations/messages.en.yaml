@@ -1256,7 +1256,7 @@ spells:
   filter_tier: Tier
   subtitle: Learn new spell scrolls for your heroes and manage their active combat slots.
   slot_empty: "Slot %slot% Empty"
-  academy_desc: "In matches, effects follow the spell's school and type."
+  academy_desc: "In matches, each spell uses its own damage, heal, and status payloads."
   trainee_mage: Trainee Mage
   select_hero_opt: "-- Select Hero to Manage --"
   equipped_slots: Equipped Slots
@@ -1272,28 +1272,18 @@ spells:
   damage_formula: "Damage scales with spell power and tier %tier%."
   heal_formula: "Healing scales with spell power and tier %tier%."
   cast_duration: "Cast takes %rounds% rounds."
+  intent:
+    harm: Harm
+    restore: Restore
+    enhance: Enhance
+    hinder: Hinder
   effect:
-    offensive:
-      fire: Deals magical damage and applies Burn.
-      water: Deals magical damage.
-      air: Deals magical damage and applies Shock.
-      earth: Deals magical damage and applies Petrify.
-      light: Deals magical damage and applies Blind.
-      dark: Deals magical damage and applies Curse.
-    defensive:
-      fire: Aids an ally and applies Fury.
-      water: Heals an ally and applies Regeneration.
-      air: Aids an ally and applies Haste.
-      earth: Aids an ally and applies Shield.
-      light: Heals an ally and applies Bless. Does not revive.
-      dark: Aids an ally and applies Shadow Cloak.
-    utility:
-      fire: Applies Burn.
-      water: Applies Freeze.
-      air: Applies Stun.
-      earth: Applies Petrify.
-      light: Applies Silence.
-      dark: Applies Taunt.
+    damage_status: "Deals magical damage and applies %effect%."
+    damage_plain: Deals magical damage.
+    heal_status: "Heals an ally and applies %effect%."
+    heal_plain: Heals an ally.
+    status_only: "Applies %effect%. No damage or heal."
+    no_revive: Does not revive.
   known: Known
   equip_slot_num: "Equip Slot %slot%"
   slots_full: Slots Full
@@ -1367,7 +1357,7 @@ formation:
   engine_targeting_l0_defensive: "Targets (L0): living front row, then highest physical attack"
   engine_targeting_l1: "Targets (L1): %order%"
   engine_targeting_fallback: "then %fallback%"
-  engine_spells_l0: "Spells (L0): heal under %threshold%% HP, else strongest attack, else utility"
+  engine_spells_l0: "Spells (L0): restore under %threshold%% HP, else strongest harm, else hinder"
   engine_spells_l2: "Spells (L2): %count% equipped spell(s)"
   engine_movement: "Movement: %goal%"
   engine_order_arrow: " → "
@@ -1389,7 +1379,7 @@ formation:
   tactics_fallback_lowest_hp: Lowest remaining HP
   tactics_fallback_highest_threat: Highest physical attack
   tactics_spells: Spell priorities
-  tactics_spells_hint: Ordered equipped spells. Leave empty to use heal, then highest offense, then utility.
+  tactics_spells_hint: Ordered equipped spells. Leave empty to use restore, then highest harm, then hinder.
   tactics_template_healer: Healer
   tactics_template_cc: Crowd control
   tactics_template_nuker: Nuker

@@ -10,10 +10,13 @@ use App\Exception\UserFacingException;
 use App\Entity\Team\Team;
 use App\Enum\School;
 use App\Enum\SpellType;
+use App\Enum\StatusEffect;
 use App\Repository\Hero\HeroSpellRepository;
 use App\Repository\Hero\SchoolMasteryRepository;
 use App\Repository\Spell\SpellRepository;
+use App\Service\Combat\SpellPayload;
 use App\Service\Economy\EconomyService;
+use App\Service\Spell\SpellCatalog;
 use App\Service\Spell\SpellService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -107,19 +110,6 @@ class SpellServiceTest extends TestCase
         $this->assertSame(0, $result['skipped']);
         $this->assertCount(60, $persisted);
 
-        $allowedEffectKeys = [
-            'damage',
-            'apply_effect',
-            'duration',
-            'double_if_effect',
-            'heal',
-            'reduce_accuracy_percent',
-            'reduce_speed_percent',
-            'holy_damage_vs_undead',
-            'cleanse_debuffs',
-            'double_if_low_health',
-            'lifesteal_percent',
-        ];
         $bySchoolAndTier = [];
         $names = [];
         $nameKeys = [];
@@ -131,14 +121,15 @@ class SpellServiceTest extends TestCase
             $this->assertGreaterThan(0, $spell->getManaCost());
             $this->assertGreaterThan(0, $spell->getCooldown());
             $this->assertGreaterThan(0, $spell->getLearningCostGold());
-            $this->assertSame(
-                SpellType::Offensive === $spell->getType(),
-                $spell->requiresMagicalWeapon()
-            );
-
-            foreach (array_keys($spell->getEffects()) as $key) {
-                $this->assertContains($key, $allowedEffectKeys);
-            }
+            $payload = SpellPayload::fromEffects($spell->getEffects());
+            $this->assertSame($payload->requiresMagicalWeapon(), $spell->requiresMagicalWeapon());
+            $this->assertTrue(null !== $payload->instantHp || null !== $payload->applyEffect);
+            $this->assertContains($spell->getType(), [
+                SpellType::Harm,
+                SpellType::Restore,
+                SpellType::Enhance,
+                SpellType::Hinder,
+            ]);
 
             $catalogName = $spell->getSchool()->value.'|'.$spell->getName();
             $this->assertArrayNotHasKey($catalogName, $names);
@@ -171,21 +162,30 @@ class SpellServiceTest extends TestCase
             }
         }
 
-        foreach ($bySchoolAndTier[School::Light->value] as $lightSpells) {
-            foreach ($lightSpells as $spell) {
-                $this->assertSame(SpellType::Defensive, $spell->getType());
+        foreach ($bySchoolAndTier as $schoolRows) {
+            foreach ($schoolRows as $tierSpells) {
+                $shapes = [];
+                foreach ($tierSpells as $spell) {
+                    $payload = SpellPayload::fromEffects($spell->getEffects());
+                    $shape = $spell->getType()->value.'|'.($payload->instantHp ?? '').'|'.($payload->applyEffect?->value ?? '');
+                    $this->assertArrayNotHasKey($shape, $shapes);
+                    $shapes[$shape] = true;
+                }
             }
         }
-        foreach ($bySchoolAndTier[School::Fire->value] as $fireSpells) {
-            foreach ($fireSpells as $spell) {
-                $this->assertSame(SpellType::Offensive, $spell->getType());
-            }
-        }
+
         foreach ($bySchoolAndTier[School::Dark->value] as $darkSpells) {
             foreach ($darkSpells as $spell) {
-                $this->assertNotSame(SpellType::Defensive, $spell->getType());
+                $this->assertNotSame(SpellType::Restore, $spell->getType());
+                $this->assertNotSame(
+                    SpellPayload::INSTANT_HEAL,
+                    SpellPayload::fromEffects($spell->getEffects())->instantHp
+                );
             }
         }
+
+        $this->assertCount(60, SpellCatalog::rows());
+        $this->assertSame(StatusEffect::Burn, SpellCatalog::rows()[1]['apply_effect']);
     }
 
     public function testNormalizeCatalogTierRejectsOutOfRange(): void

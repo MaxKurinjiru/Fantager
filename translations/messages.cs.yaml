@@ -1255,7 +1255,7 @@ spells:
   filter_tier: Úroveň
   subtitle: Učte své hrdiny svitky kouzel a spravujte jejich aktivní bojové sloty.
   slot_empty: "Slot %slot% prázdný"
-  academy_desc: "V zápasech platí škola a typ kouzla."
+  academy_desc: "V zápasech každé kouzlo používá vlastní poškození, léčení a stavy."
   trainee_mage: Učeň mág
   select_hero_opt: "-- Vyberte hrdinu ke správě --"
   equipped_slots: Vybavené sloty
@@ -1271,28 +1271,18 @@ spells:
   damage_formula: "Poškození roste se silou kouzel a úrovní %tier%."
   heal_formula: "Léčení roste se silou kouzel a úrovní %tier%."
   cast_duration: "Sesílání trvá %rounds% kol."
+  intent:
+    harm: Útok
+    restore: Léčení
+    enhance: Posílení
+    hinder: Oslabení
   effect:
-    offensive:
-      fire: Způsobí magické poškození a přiloží Burn.
-      water: Způsobí magické poškození.
-      air: Způsobí magické poškození a přiloží Shock.
-      earth: Způsobí magické poškození a přiloží Petrify.
-      light: Způsobí magické poškození a přiloží Blind.
-      dark: Způsobí magické poškození a přiloží Curse.
-    defensive:
-      fire: Pomůže spojenci a přiloží Fury.
-      water: Léčí spojence a přiloží Regeneration.
-      air: Pomůže spojenci a přiloží Haste.
-      earth: Pomůže spojenci a přiloží Shield.
-      light: Léčí spojence a přiloží Bless. Neoživuje.
-      dark: Pomůže spojenci a přiloží Shadow Cloak.
-    utility:
-      fire: Přiloží Burn.
-      water: Přiloží Freeze.
-      air: Přiloží Stun.
-      earth: Přiloží Petrify.
-      light: Přiloží Silence.
-      dark: Přiloží Taunt.
+    damage_status: "Způsobí magické poškození a přiloží efekt %effect%."
+    damage_plain: Způsobí magické poškození.
+    heal_status: "Léčí spojence a přiloží efekt %effect%."
+    heal_plain: Léčí spojence.
+    status_only: "Přiloží efekt %effect%. Bez poškození i léčení."
+    no_revive: Neoživuje.
   known: Naučeno
   equip_slot_num: "Vybavit slot %slot%"
   slots_full: Sloty plné
@@ -1366,7 +1356,7 @@ formation:
   engine_targeting_l0_defensive: "Cíle (L0): živá přední řada, pak nejvyšší fyzický útok"
   engine_targeting_l1: "Cíle (L1): %order%"
   engine_targeting_fallback: "pak %fallback%"
-  engine_spells_l0: "Kouzla (L0): léčení pod %threshold% % HP, jinak nejsilnější útok, jinak utility"
+  engine_spells_l0: "Kouzla (L0): léčení pod %threshold% % HP, jinak nejsilnější útok, jinak oslabení"
   engine_spells_l2: "Kouzla (L2): %count% nasazených kouzel"
   engine_movement: "Pohyb: %goal%"
   engine_order_arrow: " → "
@@ -1388,7 +1378,7 @@ formation:
   tactics_fallback_lowest_hp: Nejnižší zbývající HP
   tactics_fallback_highest_threat: Nejvyšší fyzický útok
   tactics_spells: Priorita kouzel
-  tactics_spells_hint: Seřazená nasazená kouzla. Prázdný seznam = léčení, pak nejsilnější útok, pak utility.
+  tactics_spells_hint: Seřazená nasazená kouzla. Prázdný seznam = léčení, pak nejsilnější útok, pak oslabení.
   tactics_template_healer: Léčitel
   tactics_template_cc: Ovládání
   tactics_template_nuker: Útočník

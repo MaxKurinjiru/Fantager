@@ -2,11 +2,29 @@
 {% set can_cast = selected_hero is defined and selected_hero ? hero_can_cast_offensive_spells(selected_hero) : true %}
 {% set max_mana = selected_hero is defined and selected_hero ? hero_combat_stats(selected_hero).maxMana : null %}
 {% set kickoff_ok = max_mana is null or spell.manaCost <= max_mana %}
-<p class="spell-card__desc">{{ ('spells.effect.' ~ spell.type.value ~ '.' ~ spell.school.value)|trans }}</p>
+{% set apply_effect = spell_apply_effect(spell) %}
+{% set instant_hp = spell_instant_hp(spell) %}
 <p class="spell-card__desc">
-    {% if spell.type.value == 'defensive' %}
+    <span class="spell-card__school">{{ ('spells.intent.' ~ spell.type.value)|trans }}</span>
+    {% if instant_hp == 'damage' and apply_effect %}
+        {{ 'spells.effect.damage_status'|trans({'%effect%': ('status_effects.' ~ apply_effect)|trans}) }}
+    {% elseif instant_hp == 'damage' %}
+        {{ 'spells.effect.damage_plain'|trans }}
+    {% elseif instant_hp == 'heal' and apply_effect %}
+        {{ 'spells.effect.heal_status'|trans({'%effect%': ('status_effects.' ~ apply_effect)|trans}) }}
+    {% elseif instant_hp == 'heal' %}
+        {{ 'spells.effect.heal_plain'|trans }}
+    {% elseif apply_effect %}
+        {{ 'spells.effect.status_only'|trans({'%effect%': ('status_effects.' ~ apply_effect)|trans}) }}
+    {% endif %}
+    {% if spell.school.value == 'light' %}
+        {{ 'spells.effect.no_revive'|trans }}
+    {% endif %}
+</p>
+<p class="spell-card__desc">
+    {% if instant_hp == 'heal' %}
         {{ 'spells.heal_formula'|trans({'%tier%': spell.tier}) }}
-    {% elseif spell.type.value == 'offensive' %}
+    {% elseif instant_hp == 'damage' %}
         {{ 'spells.damage_formula'|trans({'%tier%': spell.tier}) }}
     {% endif %}
     {{ 'spells.cast_duration'|trans({'%rounds%': 1 + spell.tier}) }}

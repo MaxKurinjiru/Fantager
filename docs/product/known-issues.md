@@ -10,7 +10,7 @@ Single source of truth for **design questions** that must not be invented in cod
 
 | ID | Area | Issue | Severity | Status |
 |----|------|-------|----------|--------|
-| — | — | None. Next new question is **#17**. | — | — |
+| — | — | None. Next new question is **#18**. | — | — |
 
 When an Open row is decided, record Cut vs Implement. Mark **Decided — Implement** until that code lands, then **Resolved** and move the lock into the matching system or screen doc. Cut decisions may go straight to Resolved.
 
@@ -52,7 +52,8 @@ Deferred features beyond this list (Milestone 8 dungeons/quests/crafting, Milest
 | 13 | Roster extras | Resolved (Cut) | [03-hero-roster.md](../screens/03-hero-roster.md#locked-roster-extras) |
 | 14 | Genie summon pool | Resolved | [summoning-system.md](../systems/summoning-system.md#locked-genie-summon-pool) |
 | 15 | Marketplace price band | Resolved | [marketplace-system.md](../systems/marketplace-system.md#locked-listing-price-band) |
-| 16 | Spell catalog T1–T5 | Resolved | [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) |
+| 16 | Spell catalog T1–T5 envelope | Resolved | [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) |
+| 17 | Spell payloads | Resolved | [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) |
 | — | League morale fiction | Resolved (Cut) | [league-system.md](../systems/league-system.md#locked-no-league-morale-fiction) |
 
-Decision notes for #1–#16 live in the linked specs and in [roadmap/archive/alignment-waves.md](../roadmap/archive/alignment-waves.md) (waves 6–8).
+Decision notes for #1–#17 live in the linked specs and in [roadmap/archive/alignment-waves.md](../roadmap/archive/alignment-waves.md) (waves 6–8).

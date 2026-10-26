@@ -31,11 +31,11 @@ class CombatEngineSpellTest extends TestCase
             'id' => 10,
             'name' => 'Fireball',
             'school' => 'fire',
-            'type' => 'offensive',
+            'type' => 'harm',
             'mana_cost' => 0,
             'cooldown' => 3,
             'tier' => 1,
-            'effects' => [],
+            'effects' => ['instant_hp' => 'damage', 'apply_effect' => 'burn'],
         ];
 
         $priorities = [
@@ -77,17 +77,41 @@ class CombatEngineSpellTest extends TestCase
         $this->assertSame(100, $statusAppliedEvent['source_hero_id']);
     }
 
+    public function testHarmSpellWithoutStatusDealsDamageOnly(): void
+    {
+        $spell = [
+            'id' => 11,
+            'name' => 'Spark',
+            'school' => 'fire',
+            'type' => 'harm',
+            'mana_cost' => 0,
+            'cooldown' => 1,
+            'tier' => 1,
+            'effects' => ['instant_hp' => 'damage'],
+        ];
+        $priorities = [
+            ['spell_id' => 11, 'when' => 'always', 'threshold' => 100, 'target' => 'enemy'],
+        ];
+
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, $priorities, [$spell], spellPower: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], hp: 200);
+        $events = $this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events'];
+
+        $this->assertNotNull($this->findEvent($events, 'damage'));
+        $this->assertNull($this->findEvent($events, 'status_applied'));
+    }
+
     public function testDefensiveSpellHealAndUndeadBlocked(): void
     {
         $spell = [
             'id' => 20,
             'name' => 'Holy Light',
             'school' => 'light',
-            'type' => 'defensive',
+            'type' => 'restore',
             'mana_cost' => 0,
             'cooldown' => 2,
             'tier' => 1,
-            'effects' => [],
+            'effects' => ['instant_hp' => 'heal', 'apply_effect' => 'bless'],
         ];
 
         $priorities = [
@@ -122,7 +146,7 @@ class CombatEngineSpellTest extends TestCase
         $this->assertNotNull($healEvent);
         $this->assertSame('front_2', $healEvent['target_slot']);
 
-        // Status applied should be bless (light defensive)
+        // Status applied should be bless (heal + bless payload)
         $statusAppliedEvent = $this->findEvent($events, 'status_applied');
         $this->assertNotNull($statusAppliedEvent);
         $this->assertSame('bless', $statusAppliedEvent['effect']);
@@ -134,11 +158,11 @@ class CombatEngineSpellTest extends TestCase
             'id' => 20,
             'name' => 'Holy Light',
             'school' => 'light',
-            'type' => 'defensive',
+            'type' => 'restore',
             'mana_cost' => 0,
             'cooldown' => 2,
             'tier' => 1,
-            'effects' => [],
+            'effects' => ['instant_hp' => 'heal', 'apply_effect' => 'bless'],
         ];
 
         $priorities = [
@@ -177,11 +201,11 @@ class CombatEngineSpellTest extends TestCase
             'id' => 30,
             'name' => 'Frostbolt',
             'school' => 'water',
-            'type' => 'utility', // maps to freeze (Utility Water status)
+            'type' => 'hinder',
             'mana_cost' => 0,
             'cooldown' => 5,
             'tier' => 1,
-            'effects' => [],
+            'effects' => ['apply_effect' => 'freeze'],
         ];
 
         $priorities = [
@@ -224,9 +248,10 @@ class CombatEngineSpellTest extends TestCase
             'id' => 40,
             'name' => 'Taunt Spell',
             'school' => 'dark',
-            'type' => 'utility', // maps to taunt (Utility Dark status)
+            'type' => 'hinder',
             'mana_cost' => 0,
             'cooldown' => 5,
+            'effects' => ['apply_effect' => 'taunt'],
         ];
         $priorities = [
             [
@@ -275,8 +300,8 @@ class CombatEngineSpellTest extends TestCase
     public function testEmptyPrioritiesCastsHighestTierOffensiveSpell(): void
     {
         $spells = [
-            $this->spell(1, 'Spark', 'offensive', 1),
-            $this->spell(2, 'Fireball', 'offensive', 3),
+            $this->spell(1, 'Spark', 'harm', 1),
+            $this->spell(2, 'Fireball', 'harm', 3),
         ];
 
         $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, [], $spells, init: 50);
@@ -292,8 +317,8 @@ class CombatEngineSpellTest extends TestCase
     public function testEmptyPrioritiesHealsAllyUnderBalancedThreshold(): void
     {
         $spells = [
-            $this->spell(3, 'Mend', 'defensive', 1),
-            $this->spell(4, 'Bolt', 'offensive', 2),
+            $this->spell(3, 'Mend', 'restore', 1),
+            $this->spell(4, 'Bolt', 'harm', 2),
         ];
 
         $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, [], $spells, init: 50, hpValues: ['front_2' => 30]);
@@ -310,8 +335,8 @@ class CombatEngineSpellTest extends TestCase
     public function testEmptyPrioritiesSkipHealWhenAllyIsAboveAggressiveThreshold(): void
     {
         $spells = [
-            $this->spell(3, 'Mend', 'defensive', 1),
-            $this->spell(4, 'Bolt', 'offensive', 2),
+            $this->spell(3, 'Mend', 'restore', 1),
+            $this->spell(4, 'Bolt', 'harm', 2),
         ];
 
         $sideA = $this->buildSide(1, 100, FormationApproach::Aggressive, [], $spells, init: 50, hpValues: ['front_2' => 30]);
@@ -326,8 +351,8 @@ class CombatEngineSpellTest extends TestCase
     public function testExplicitSpellPriorityBeatsHigherTierSpell(): void
     {
         $spells = [
-            $this->spell(1, 'Spark', 'offensive', 1),
-            $this->spell(2, 'Fireball', 'offensive', 3),
+            $this->spell(1, 'Spark', 'harm', 1),
+            $this->spell(2, 'Fireball', 'harm', 3),
         ];
         $priorities = [
             ['spell_id' => 1, 'when' => 'always', 'target' => 'enemy'],
@@ -348,11 +373,11 @@ class CombatEngineSpellTest extends TestCase
             'id' => 10,
             'name' => 'Nuke',
             'school' => 'fire',
-            'type' => 'offensive',
+            'type' => 'harm',
             'mana_cost' => 0,
             'cooldown' => 1,
             'tier' => 5,
-            'effects' => [],
+            'effects' => ['instant_hp' => 'damage'],
         ];
         $priorities = [
             ['spell_id' => 10, 'when' => 'always', 'target' => 'enemy'],
@@ -380,8 +405,8 @@ class CombatEngineSpellTest extends TestCase
     public function testUnknownSpellWhenIsSkipped(): void
     {
         $spells = [
-            $this->spell(1, 'Spark', 'offensive', 1),
-            $this->spell(2, 'Fireball', 'offensive', 3),
+            $this->spell(1, 'Spark', 'harm', 1),
+            $this->spell(2, 'Fireball', 'harm', 3),
         ];
         $priorities = [
             ['spell_id' => 1, 'when' => 'enemy_status', 'target' => 'enemy'],
@@ -397,10 +422,10 @@ class CombatEngineSpellTest extends TestCase
         $this->assertSame('Fireball', $plan['spell_name'], 'unimplemented when must not match; next priority wins');
     }
 
-    public function testL0CastsUtilityWhenNoHealOrOffenseIsReady(): void
+    public function testL0CastsHinderWhenNoHealOrHarmIsReady(): void
     {
         $spells = [
-            $this->spell(3, 'Frost', 'utility', 2),
+            $this->spell(3, 'Frost', 'hinder', 2),
         ];
         $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, [], $spells, init: 50);
         $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
@@ -412,9 +437,22 @@ class CombatEngineSpellTest extends TestCase
         $this->assertSame(0, $plan['mana_cost']);
     }
 
+    public function testEmptyPrioritiesDoNotCastEnhance(): void
+    {
+        $spells = [
+            $this->spell(5, 'Haste', 'enhance', 3),
+        ];
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, [], $spells, init: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
+
+        $this->assertNull($plan);
+    }
+
     public function testSpellIsNotQueuedWhenManaIsInsufficient(): void
     {
-        $spell = $this->spell(10, 'Meteor', 'offensive', 5);
+        $spell = $this->spell(10, 'Meteor', 'harm', 5);
         $spell['mana_cost'] = 200;
         $priorities = [
             ['spell_id' => 10, 'when' => 'always', 'target' => 'enemy'],
@@ -430,7 +468,7 @@ class CombatEngineSpellTest extends TestCase
 
     public function testPlanActionDeductsMana(): void
     {
-        $spell = $this->spell(10, 'Spark', 'offensive', 1);
+        $spell = $this->spell(10, 'Spark', 'harm', 1);
         $spell['mana_cost'] = 15;
         $priorities = [
             ['spell_id' => 10, 'when' => 'always', 'target' => 'enemy'],
@@ -463,19 +501,38 @@ class CombatEngineSpellTest extends TestCase
     }
 
     /**
-     * @return array{id: int, name: string, school: string, type: string, mana_cost: int, cooldown: int, tier: int, effects: array<mixed>}
+     * @param array<string, string> $effects
+     *
+     * @return array{id: int, name: string, school: string, type: string, mana_cost: int, cooldown: int, tier: int, effects: array<string, string>}
      */
-    private function spell(int $id, string $name, string $type, int $tier): array
+    private function spell(int $id, string $name, string $type, int $tier, array $effects = []): array
     {
+        if ([] === $effects) {
+            $effects = match ($type) {
+                'harm' => ['instant_hp' => 'damage'],
+                'restore' => ['instant_hp' => 'heal'],
+                'hinder' => ['apply_effect' => 'freeze'],
+                'enhance' => ['apply_effect' => 'haste'],
+                default => [],
+            };
+        }
+
+        $school = match ($type) {
+            'restore' => 'light',
+            'hinder' => 'water',
+            'enhance' => 'air',
+            default => 'fire',
+        };
+
         return [
             'id' => $id,
             'name' => $name,
-            'school' => 'defensive' === $type ? 'light' : 'fire',
+            'school' => $school,
             'type' => $type,
             'mana_cost' => 0,
             'cooldown' => 1,
             'tier' => $tier,
-            'effects' => [],
+            'effects' => $effects,
         ];
     }
 

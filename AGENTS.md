@@ -28,6 +28,7 @@ Conflict order, Open rows, leftovers: [docs/README.md](docs/README.md) § Canoni
 - **Enchanting:** not in the live game — do not reintroduce essence or an enchant UI. [item-system.md](docs/systems/item-system.md#locked-no-enchanting)
 - **Simulate:** do not ship `POST /api/v1/combat/simulate`. [combat-system.md](docs/systems/combat-system.md#locked-no-race-synergy--no-simulate)
 - **Wiki / extra settings:** `GET /wiki` and session password change stay **Planned**. [00-public-pages.md](docs/screens/00-public-pages.md#locked-public-wiki-stays-planned), [19-player-profile-settings.md](docs/screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned)
+- **Spell payloads:** combat reads row `effects` (`instant_hp` / `apply_effect`), not school × type. Envelope stays T1–T5, 60 spells. [spell-system.md](docs/systems/spell-system.md#locked-catalog-t1t5)
 
 ## Backend (PHP / Symfony)
 

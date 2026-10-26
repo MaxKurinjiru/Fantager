@@ -78,10 +78,18 @@ Combat stats derive from primary attributes (1–20), equipped items, race, form
 
 ```
 Spell_Power = Effective_INT × 3 + Equipped_Spell_Accelerator_Bonus
-Final_Spell_Effect = Spell_Base_Effect × (1 + Spell_Power / 100)
 ```
 
-- **Race:** Genies +15% spell effectiveness
+Match resolution does **not** multiply a catalog `damage` / `heal` number by Spell Power. `CombatEngine::executeSpell` reads `effects` (`SpellPayload`) plus `spell.tier`:
+
+```
+instant_hp damage = Spell_Power × (1 + tier × 0.15) × outgoingDamageMultiplier × crit × (1 − magicDamageReduction) × shield
+instant_hp heal   = round(Spell_Power × (1 + tier × 0.10) × curseHealMult)
+apply_effect      = 100% status from the catalog YAML (with or without HP)
+```
+
+- **Race:** Genies +15% spell power (`CombatStatCalculator`). Spell crit for Genies is under Critical Hit Chance below.
+- Catalog `effects` is `instant_hp` and/or `apply_effect` only. Product: [spell-system.md](spell-system.md#locked-catalog-t1t5).
 
 ### Mana pool
 
@@ -156,7 +164,7 @@ Dodge_Chance_Percent = (Effective_DEX + Effective_SPD) × 0.75 + Effective_LCK �
 Crit_Chance_Percent = 5 + Effective_LCK × 1 + Effective_DEX × 0.25  (cap 50%)
 ```
 
-- **Race:** Genies add **+15% spell crit chance** when an **offensive spell** resolves (`CombatEngine::executeSpell`). The shared `critPercent` on `DerivedCombatStats` is physical-only and does **not** include the Genie bonus.
+- **Race:** Genies add **+15% spell crit chance** when an **`instant_hp` damage** payload resolves (`CombatEngine::executeSpell`). The shared `critPercent` on `DerivedCombatStats` is physical-only and does **not** include the Genie bonus.
 - Default crit damage multiplier: **1.5×** (Berserker trait overrides to 2.0×). Offensive spells use the same multiplier when the spell crit roll succeeds.
 
 ---
