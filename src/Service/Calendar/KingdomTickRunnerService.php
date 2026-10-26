@@ -366,7 +366,7 @@ class KingdomTickRunnerService
             return;
         }
 
-        // Sort chronologically, then by priority; team WeeklyReset before kingdom treasury.
+        // Sort chronologically, then by priority; kingdom treasury before team WeeklyReset.
         usort($logs, function (KingdomTickLog $a, KingdomTickLog $b): int {
             $timeCompare = $a->getScheduledAt() <=> $b->getScheduledAt();
             if (0 !== $timeCompare) {
@@ -382,7 +382,7 @@ class KingdomTickRunnerService
                 $aIsKingdom = null === $a->getTeam();
                 $bIsKingdom = null === $b->getTeam();
 
-                return ((int) $aIsKingdom) <=> ((int) $bIsKingdom);
+                return ((int) $bIsKingdom) <=> ((int) $aIsKingdom);
             }
 
             return 0;

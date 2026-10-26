@@ -113,14 +113,6 @@ class SummoningService
                 'summons_used' => $used,
                 'summons_max' => $maxSummons,
             ];
-        } catch (\DomainException $e) {
-            return [
-                'available' => false,
-                'reason' => $e->getMessage(),
-                'gold_cost' => $cost,
-                'summons_used' => $used,
-                'summons_max' => $maxSummons,
-            ];
         }
 
         if ($team->getGold() < $cost) {

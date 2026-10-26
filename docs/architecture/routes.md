@@ -213,7 +213,7 @@ Player-facing economy is split across **two Web screens** (sidebar links):
 |--------|------|-----------|---------|
 | GET | `/app/marketplace` | Web\MarketplaceController | Marketplace page (tabs: `browse`, `sell`, `mylistings`, `history`, `basic_equipment`) |
 | POST | `/app/marketplace/buy-basic` | Web\MarketplaceController | Purchase fixed-price basic equipment (`item_key`, CSRF `buy_basic`); redirects to `basic_equipment` tab |
-| GET | `/app/finance` | Web\FinanceController | Financial ledger (filters: type, actor, sort; summary via `FinanceSummaryService`) |
+| GET | `/app/finance` | Web\FinanceController | Financial ledger (filters: type, actor, sort; summary + cashflow via `FinanceSummaryService`) |
 | GET | `/api/v1/finance/status` | Api\V1\FinanceController | Financial crisis status |
 | GET | `/api/v1/finance/recent` | Api\V1\FinanceController | Recent financial ledger entries |
 | GET | `/api/v1/marketplace` | Api\V1\MarketplaceController | Search listings. Query: `type`, `race`, `level_min`/`level_max`, `rating_min`/`rating_max`, `base_ovr_min`/`base_ovr_max`, `age_phase`, `price_min`/`price_max`, `seller_reputation_min`, `rarity`, `search`, `sort`. Hero entities include `trait` (nullable), `ratings`; `seller_team` includes `reputation`. |

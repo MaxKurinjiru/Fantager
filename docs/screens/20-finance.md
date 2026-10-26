@@ -27,8 +27,13 @@ Same `financial_crisis_banner.html.twig` as the dashboard when crisis level is n
 
 - Gold on hand and unpaid debt
 - Weekly expenses split into payroll and HQ maintenance
+- Upcoming weekly cashflow (`CashflowForecastService`): remaining home ticket gold through the next Sunday weekly reset, minus payroll and HQ maintenance; projected gold and debt after that tick (automatic debt repayment included). Kingdom treasury share is listed as arriving **before** costs, with **no amount** (forecast stays conservative). Marketplace and other player actions are omitted.
 - Period net (income / expense)
 - All-time net (income / expense)
+
+### Upcoming cashflow (`cashflow_forecast.html.twig`)
+
+Rendered under the summary on Finance only. Reset timestamp uses the kingdom timezone. Dashboard keeps the shorter gold / costs / net snapshot.
 
 ### Ledger (`ledger_content.html.twig`)
 
@@ -76,7 +81,7 @@ Later product decisions (diminishing returns): [known-issues.md](../product/know
 | Piece | Location |
 |-------|----------|
 | Page | `templates/finance/index.html.twig` |
-| Summary / table | `templates/components/finance/` |
+| Summary / table / cashflow | `templates/components/finance/` |
 | Crisis banner | `templates/components/dashboard/financial_crisis_banner.html.twig` |
 | Filters | `form-auto-submit` |
 | Navbar modal | `templates/components/layout/ledger_modal.html.twig`, `ledger` |

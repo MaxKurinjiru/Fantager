@@ -331,7 +331,7 @@ notification:
   season_ended_title: Season %season% Ended
   season_ended_body: 'Season %season% has ended! You finished in %position% place (%status_text%). You earned %reward% gold.'
   financial_warning_title: Financial Warning
-  financial_warning_body: 'Your team has unpaid debt of %debt% gold. Reduce expenses or sell assets.'
+  financial_warning_body: 'Your team has unpaid debt of %debt% gold. Recover this week (sell, downgrade, or dismiss) or restrictions start after the next idle Sunday.'
   financial_restricted_title: Financial Restrictions
   financial_restricted_body: 'Your team has been in crisis for %weeks% weeks! HQ passive bonuses are suspended.'
   financial_bankruptcy_title: Team bankruptcy
@@ -593,7 +593,7 @@ financial_crisis:
   title_warning: Financial Warning
   title_restricted: Financial Restrictions
   title_bankruptcy_pending: Bankruptcy Imminent
-  message_warning: "The team has %debt% gold in unpaid debt (weekly fixed costs %expenses% gold). Cut costs or sell assets."
+  message_warning: "The team has %debt% gold in unpaid debt (weekly fixed costs %expenses% gold). Sell, downgrade, or dismiss this week to keep spending and HQ bonuses."
   message_restricted: "The team has been in crisis for %weeks% weeks. HQ passive bonuses are suspended and some actions are blocked until debt is repaid."
   message_bankruptcy_pending: "Without action, the team will soon be declared bankrupt. Debt is %debt% gold and cash reserves are exhausted."
   unpaid_debt: Unpaid Debt
@@ -602,6 +602,7 @@ financial_crisis:
   weekly_expenses: Weekly Fixed Costs
   gold_on_hand: Cash Reserves
   weeks_until_bankruptcy: Weeks Until Bankruptcy
+  warning_recovery_hint: "Do one recovery this week (sell, downgrade, or dismiss). Restrictions start after two idle Sundays, or on the third Sunday of debt even if you recovered."
   restricted_hint: "Blocked: HQ upgrades, summoning, marketplace purchases."
   hq_bonuses_suspended: HQ passive bonuses are temporarily disabled.
   action_sell: Sell on Marketplace
@@ -938,6 +939,21 @@ finance:
   tooltip_net_all_time: Cumulative financial balance of the team since its creation.
   tooltip_all_time_income: Total gold earned by the team since its creation.
   tooltip_all_time_expense: Total gold spent by the team since its creation.
+  cashflow_title: Upcoming weekly cashflow
+  cashflow_until_reset: Through the next weekly reset (%datetime%)
+  cashflow_estimated_net: Estimated net (tickets minus Sunday costs)
+  cashflow_arena: Remaining home tickets (%matches%)
+  cashflow_kingdom_reward: Kingdom share
+  cashflow_kingdom_reward_value: Before costs
+  cashflow_after_tick: After Sunday tick
+  cashflow_covers_hint: Gold on hand plus remaining home tickets covers Sunday payroll and maintenance. Kingdom share is extra, arrives before those costs, and is not included here.
+  cashflow_shortfall_hint: Sunday payroll and maintenance exceed gold plus remaining home tickets. The unpaid remainder becomes debt. Kingdom share arrives before costs and is not included here, so the shortfall may be smaller.
+  cashflow_no_home_matches: No remaining home league matches before this weekly reset.
+  cashflow_excludes_hint: Marketplace, summoning, and other player actions are not included. Kingdom treasury share is never shown in advance.
+  tooltip_cashflow_net: Remaining home arena tickets minus the next Sunday payroll and HQ maintenance. Does not include kingdom share or player spending.
+  tooltip_cashflow_arena: Projected ticket gold for scheduled home league matches that still pay out before the weekly reset.
+  tooltip_cashflow_kingdom_reward: Royal Treasury distribution is paid before payroll. The pool size is not shown to players, so this forecast leaves it out.
+  tooltip_cashflow_after_tick: Projected gold and debt after Sunday costs and automatic debt repayment. Live ticks also add kingdom share first; that amount is omitted here.
   filter_type: Filter by Type
   all_types: All Types
   filter_actor: Filter by Actor

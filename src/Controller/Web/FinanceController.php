@@ -60,7 +60,7 @@ class FinanceController extends AbstractController
         }
 
         $records = $this->recordRepository->findByTeamFiltered($team, $type, $actor, $sort, $page, $limit);
-        $summary = $this->financeSummaryService->buildOverview($team);
+        $summary = $this->financeSummaryService->buildOverview($team, true);
 
         return $this->render('finance/index.html.twig', [
             'team' => $team,

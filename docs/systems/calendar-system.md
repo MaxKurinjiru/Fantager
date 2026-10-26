@@ -27,7 +27,7 @@ The game world operates on automated server ticks executed at scheduled times. T
 | **Friday** | 19:00 | **Season Transition** *(Week 11 only)* | Run season resolution service: finalize standings, distribute tier promotion/relegation rewards, execute team transfers (promotions/relegations), initialize the next season. |
 | **Sunday** | 09:30 | **Arena Adaptation** (`TickType::RaceOptimization`, persisted as `race_optimization`) | Apply pending headquarters arena adaptation changes and manage weekly adaptation lock cycles. |
 | **Sunday** | 18:00 | **Friendly Match** | Second weekly friendly kickoff window (same rules as Wednesday). |
-| **Weekly** | Sun 23:59 | **Weekly Reset** | Reset summoning chamber cooldowns, process HQ maintenance fees, **hero/trainer payroll**, **Royal Treasury distribution**, facility downgrade lock expiry, and weekly financial-crisis checks. **NPC Simulation:** runs weekly HQ upgrades. |
+| **Weekly** | Sun 23:59 | **Weekly Reset** | **Royal Treasury distribution** first (kingdom-scoped), then per team: reset summoning cooldowns, HQ maintenance, **hero/trainer payroll**, facility downgrade lock expiry, and weekly financial-crisis checks. **NPC Simulation:** weekly HQ upgrades after treasury credit. |
 
 ---
 
@@ -151,7 +151,7 @@ Within the message handler (`ExecuteSingleTickHandler`) and the orchestrator (`K
      4. **Priority 5**: `FatigueRecovery`
      5. **Priority 6**: Resets/Cleanups (`DailyReset`, `WeeklyReset`, `RaceOptimization`, `InactiveRegistrationCleanup`, `InactivePlayerCleanup`)
    - It fetches all pending ticks belonging to this specific `[scheduledAt, priority]` group (e.g., all team training ticks or all fixtures in a match round) and dispatches them as separate `ExecuteSingleTickMessage` messages. These run concurrently across all available Messenger workers.
-   - **WeeklyReset exception:** team-scoped logs (maintenance, payroll, crisis) always dispatch before the kingdom-scoped Royal Treasury distribution. The orchestrator holds the treasury tick until every team WeeklyReset at that timestamp has finished, so gold races cannot interleave.
+   - **WeeklyReset exception:** the kingdom-scoped Royal Treasury distribution always dispatches before team-scoped logs (maintenance, payroll, crisis). The orchestrator holds team WeeklyReset ticks until the treasury tick at that timestamp has finished, so gold races cannot interleave and Sunday costs see the new `kingdom_reward`.
 
 3. **Atomic Acquisition & Execution**:
    - When a worker consumes `ExecuteSingleTickMessage($tickLogId)`, it runs an atomic database update to change the tick status from `'pending'` to `'processing'`. If 0 rows are affected, another worker claimed it first, and it exits safely.

@@ -28,7 +28,7 @@ Quick map of production PHP layout. Full workflow: [SKILL.md](SKILL.md) · [exam
 | `TeamChronicle/` | `TeamChronicleService`, `TeamChroniclePresenter` | [team-chronicle-system.md](../../../docs/systems/team-chronicle-system.md) |
 | `Hero/` | `HeroService`, `HeroProgressionService`, `HeroGenerator`, `HeroDismissalService` | [hero-system.md](../../../docs/systems/hero-system.md) |
 | `Summoning/` | `SummoningService` | [summoning-system.md](../../../docs/systems/summoning-system.md) |
-| `Economy/` | `EconomyService`, `FinancialCrisisService`, `RoyalTreasuryService`, `ArenaRevenueService` | [economy-system.md](../../../docs/systems/economy-system.md) |
+| `Economy/` | `EconomyService`, `FinancialCrisisService`, `RoyalTreasuryService`, `ArenaRevenueService`, `CashflowForecastService`, `FinanceSummaryService` | [economy-system.md](../../../docs/systems/economy-system.md) |
 | `Headquarters/` | `HeadquartersService`, `ArenaService`, `HqMaintenanceCalculator` | [headquarters-system.md](../../../docs/systems/headquarters-system.md) |
 | `Training/` | `TrainingService`, `TrainerDismissalService` | [training-system.md](../../../docs/systems/training-system.md) |
 | `Item/` | `ItemService` | [item-system.md](../../../docs/systems/item-system.md) |

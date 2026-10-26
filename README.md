@@ -163,9 +163,10 @@ Seven facilities. Forge is not live (crafting is ⏳).
 | Basic merchant | Fixed-price starter equipment | ✅ |
 | History | Settled purchase / sale log | ✅ |
 | Finance | Gold, debt, weekly payroll + HQ maintenance, period / all-time net | ✅ |
+| Finance | Upcoming weekly cashflow (home tickets vs Sunday costs) | ✅ |
 | Finance | Full ledger with type / actor filters | ✅ |
 | Finance | Navbar recent-ledger modal | ✅ |
-| Crisis | Warning → restricted → bankruptcy | ✅ |
+| Crisis | Warning (recovery grace) → restricted → bankruptcy | ✅ |
 | Economy | Gold never goes negative | ✅ |
 | Economy | Diminishing returns | 📋 |
 

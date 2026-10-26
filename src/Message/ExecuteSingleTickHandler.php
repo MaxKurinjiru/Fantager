@@ -194,7 +194,7 @@ class ExecuteSingleTickHandler
 
             case TickType::WeeklyReset:
                 if (null !== $team) {
-                    // Team-scoped weekly reset
+                    // Team-scoped weekly reset — runs after kingdom treasury distribution.
                     $this->npcSimulationService->simulateWeeklyManagementAndEconomy($kingdom, $scheduledAt, $team);
                     $this->resetWeeklySummons($kingdom, $team);
                     $this->hqService->processMaintenanceTick($kingdom, $team);
@@ -202,7 +202,7 @@ class ExecuteSingleTickHandler
                     $this->hqService->processFacilityDowngradeLockTick($kingdom, $team);
                     $this->financialCrisisService->processWeeklyCrisisTick($kingdom, $team);
                 } else {
-                    // Kingdom-scoped weekly reset: Shared Royal Treasury distribution
+                    // Kingdom-scoped weekly reset: Royal Treasury distribution (first wave).
                     $this->royalTreasuryService->processWeeklyDistribution($kingdom);
                 }
                 break;

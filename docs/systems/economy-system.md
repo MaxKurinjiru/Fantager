@@ -71,7 +71,7 @@ Kingdom-level gold pool that collects fees and redistributes a capped share to a
 3. Credit each team via `EconomyService`; ledger type **`kingdom_reward`**
 4. Deduct distributed amount from `royal_treasury_gold`
 
-Runs as the **kingdom-scoped** WeeklyReset log **after** all team-scoped WeeklyReset ticks (maintenance, payroll, crisis) at the same timestamp finish — see [calendar-system.md](calendar-system.md).
+Runs as the **kingdom-scoped** WeeklyReset log **before** all team-scoped WeeklyReset ticks (maintenance, payroll, crisis) at the same timestamp — see [calendar-system.md](calendar-system.md). HQ maintenance collected later in this tick goes into next week's pool.
 
 **Arena ticket revenue** is multiplied by the kingdom's stored `economy_scale` and also applies home-lineup **Audience Favorite** bonuses (`+5%` per fielded hero with the trait) in `ArenaRevenueService`. Weekly HQ maintenance uses the same `economy_scale`.
 
@@ -107,7 +107,7 @@ See [financial-crisis-system.md](financial-crisis-system.md) for escalation (war
 
 ## Weekly Payroll
 
-Hero and trainer salaries are charged on the **`weekly_reset` tick** (Sunday 23:59), after HQ maintenance.
+Hero and trainer salaries are charged on the **`weekly_reset` tick** (Sunday 23:59), after kingdom treasury distribution and HQ maintenance.
 
 **Services:** `App\Service\Hero\HeroSalaryService` (per-hero calculation), `App\Service\Economy\TeamPayrollService` (team tick)
 
@@ -138,6 +138,24 @@ If the team lacks sufficient gold after HQ maintenance, only the available balan
 
 ---
 
+## Upcoming weekly cashflow
+
+**Service:** `App\Service\Economy\CashflowForecastService` (Finance screen via `FinanceSummaryService::buildOverview($team, true)`)
+
+Conservative forecast through the next **Sunday 23:59** weekly reset in the kingdom timezone:
+
+| Line | Source |
+|------|--------|
+| Remaining home tickets | Scheduled home league fixtures with kickoff at or before that reset (including overdue unpaid kickoffs). Gold from `ArenaRevenueService::calculateMatchRevenue` |
+| Sunday payroll / HQ maintenance | Same figures as the crisis status (`TeamPayrollService`, `HqMaintenanceCalculator`) |
+| Estimated net | Ticket gold minus those Sunday costs |
+| Kingdom share | Live tick pays `kingdom_reward` before costs; amount omitted |
+| After Sunday tick | Gold and debt after costs and automatic debt repayment. Assumes remaining tickets land before the reset. Does not add kingdom share |
+
+**Not included:** kingdom treasury share (paid **before** payroll in the live tick; pool is not player-facing, so the forecast stays conservative), marketplace, summoning, and other player actions. Gold never goes negative in the projection; unpaid Sunday costs add to `unpaid_debt`.
+
+---
+
 ## Player-Facing Web Screens
 
 Economy features are **not** merged into a single page. The sidebar exposes two routes:
@@ -145,7 +163,7 @@ Economy features are **not** merged into a single page. The sidebar exposes two 
 | Route | Controller | Purpose |
 |-------|------------|---------|
 | `GET /app/marketplace` | `Web\MarketplaceController` | Marketplace tabs: browse, sell, my listings, transaction history, basic equipment |
-| `GET /app/finance` | `Web\FinanceController` | Financial ledger with type/actor filters and overview summary |
+| `GET /app/finance` | `Web\FinanceController` | Financial ledger with type/actor filters, overview summary, and upcoming weekly cashflow |
 
 See [screens/20-finance.md](../screens/20-finance.md), [screens/15-marketplace.md](../screens/15-marketplace.md), and [architecture/routes.md](../architecture/routes.md#economy--marketplace).
 

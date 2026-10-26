@@ -81,6 +81,26 @@ class LeagueFixtureRepository extends ServiceEntityRepository
     }
 
     /**
+     * Scheduled home fixtures that still pay tickets at or before the weekly reset
+     * (includes overdue kickoffs that have not ticked yet).
+     *
+     * @return list<LeagueFixture>
+     */
+    public function findScheduledHomeFixturesUntil(Team $team, \DateTimeImmutable $until): array
+    {
+        return $this->createQueryBuilder('f')
+            ->where('f.homeTeam = :team')
+            ->andWhere('f.status = :status')
+            ->andWhere('f.scheduledAt <= :until')
+            ->setParameter('team', $team)
+            ->setParameter('status', LeagueFixtureStatus::Scheduled)
+            ->setParameter('until', $until)
+            ->orderBy('f.scheduledAt', \SortDirection::Ascending)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Scheduled fixtures for a league-match tick instant.
      *
      * Ticks are stored in UTC (kingdom-local 18:00 converted). Older fixtures were stored

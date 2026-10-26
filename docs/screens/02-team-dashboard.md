@@ -29,7 +29,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 - Treasury / gold on hand, unpaid debt, weekly expenses (payroll + HQ maintenance), period and all-time net (`components/finance/summary_stats.html.twig`)
 - Recent ledger rows with link to `/app/finance`
-- **Financial crisis banner** when crisis level is not `none` (level copy, debt, weekly costs, restricted-action hint)
+- **Financial crisis banner** when crisis level is not `none` (level copy, debt, weekly costs, warning recovery hint, restricted-action hint)
 
 **Chronicle**
 

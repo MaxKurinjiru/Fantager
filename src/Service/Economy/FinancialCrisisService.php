@@ -23,11 +23,19 @@ use Psr\Log\LoggerInterface;
 
 class FinancialCrisisService
 {
-    public const RESTRICTED_WEEKS = 2;
+    /** Restricted from this week if there is no recovery action in IDLE_RECOVERY_WEEKS. */
+    public const RESTRICTED_IDLE_WEEKS = 2;
+    /** Restricted from this week even with a recent recovery action. */
+    public const RESTRICTED_ALWAYS_WEEKS = 3;
+    /** Recovery window that keeps week 2 at warning. */
+    public const IDLE_RECOVERY_WEEKS = 1;
     public const BANKRUPTCY_WEEKS = 6;
     public const BANKRUPTCY_DEBT_MULTIPLIER = 4;
     public const REASSIGNMENT_COOLDOWN_DAYS = 7;
     public const RECOVERY_STALE_WEEKS = 2;
+    /** Tighter bankruptcy recovery window from this crisis week onward. */
+    public const LATE_STALE_FROM_WEEKS = 5;
+    public const RECOVERY_STALE_LATE_WEEKS = 1;
 
     public function __construct(
         private readonly HeadquartersRepository $hqRepository,
@@ -72,6 +80,7 @@ class FinancialCrisisService
                 'sell_on_marketplace',
                 'downgrade_facility',
             ],
+            'has_recent_recovery' => $this->hasRecentRecoveryAction($team, self::IDLE_RECOVERY_WEEKS),
             'last_recovery_action_at' => $team->getLastRecoveryActionAt()?->format(\DateTimeInterface::ATOM),
         ];
     }
@@ -83,7 +92,6 @@ class FinancialCrisisService
         }
 
         $debt = $team->getUnpaidDebt();
-        $crisisWeeks = $team->getCrisisWeeks();
 
         if ($debt <= 0) {
             return FinancialCrisisLevel::None;
@@ -93,7 +101,7 @@ class FinancialCrisisService
             return FinancialCrisisLevel::BankruptcyPending;
         }
 
-        if ($crisisWeeks >= self::RESTRICTED_WEEKS) {
+        if ($this->isRestrictedPhase($team)) {
             return FinancialCrisisLevel::Restricted;
         }
 
@@ -115,7 +123,7 @@ class FinancialCrisisService
     }
 
     /**
-     * @throws \DomainException when spending is blocked during financial restrictions
+     * @throws UserFacingException when spending is blocked during financial restrictions
      */
     public function assertSpendingAllowed(Team $team, string $action): void
     {
@@ -307,10 +315,28 @@ class FinancialCrisisService
             return false;
         }
 
-        return !$this->hasRecentRecoveryAction($team);
+        return !$this->hasRecentRecoveryAction($team, $this->recoveryStaleWeeks($team));
     }
 
-    private function hasRecentRecoveryAction(Team $team): bool
+    private function isRestrictedPhase(Team $team): bool
+    {
+        $crisisWeeks = $team->getCrisisWeeks();
+        if ($crisisWeeks >= self::RESTRICTED_ALWAYS_WEEKS) {
+            return true;
+        }
+
+        return $crisisWeeks >= self::RESTRICTED_IDLE_WEEKS
+            && !$this->hasRecentRecoveryAction($team, self::IDLE_RECOVERY_WEEKS);
+    }
+
+    private function recoveryStaleWeeks(Team $team): int
+    {
+        return $team->getCrisisWeeks() >= self::LATE_STALE_FROM_WEEKS
+            ? self::RECOVERY_STALE_LATE_WEEKS
+            : self::RECOVERY_STALE_WEEKS;
+    }
+
+    private function hasRecentRecoveryAction(Team $team, int $staleWeeks): bool
     {
         $lastRecovery = $team->getLastRecoveryActionAt();
         if (null === $lastRecovery) {
@@ -318,7 +344,7 @@ class FinancialCrisisService
         }
 
         $threshold = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
-            ->modify(sprintf('-%d weeks', self::RECOVERY_STALE_WEEKS));
+            ->modify(sprintf('-%d weeks', $staleWeeks));
 
         return $lastRecovery >= $threshold;
     }
