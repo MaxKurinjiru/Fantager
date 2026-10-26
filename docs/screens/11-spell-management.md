@@ -8,13 +8,13 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 **Lock:** [Locked: catalog T1–T5](#locked-catalog-t1t5)
 
 **Live UI:** `templates/hero/detail.html.twig` (spells tab), `templates/spell/academy.html.twig`, `templates/components/spell/`.  
-Cards show engine type/school copy, mana vs the selected hero’s max mana, and a wand/staff warning. Spec: [spell-system.md](../systems/spell-system.md).
+Cards show school, intent, and payload copy (hit / heal / status from `effects`), mana vs the selected hero’s max mana, and a wand/staff warning. Spec: [spell-system.md](../systems/spell-system.md).
 
 ---
 
 ## Locked: catalog T1–T5
 
-**#16 Resolved (A7.11 seed).** Academy and hero-detail store show the T1–T5 catalog. Do not add a T6 filter, resurrection, or summon-creature cards. Spec: [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5).
+**#16 envelope + #17 payloads.** Academy and hero-detail store show the T1–T5 catalog. Do not add a T6 filter, resurrection, or summon-creature cards. Combat copy follows row payloads. Spec: [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5).
 
 ---
 
@@ -38,7 +38,7 @@ Cards show engine type/school copy, mana vs the selected hero’s max mana, and 
 - Trainee `<select>` (`?hero_id=`)
 - School filter, tier filter (**1–5**)
 - Treasury badge
-- Spell cards: school/type engine copy, cast length, mana vs hero max mana, cooldown, gold cost, learn eligibility vs mastery, wand/staff warning
+- Spell cards: school + intent + payload copy (status via `status_effects.*`), cast length, mana vs hero max mana, cooldown, gold cost, learn eligibility vs mastery, wand/staff warning
 
 ### Backend
 

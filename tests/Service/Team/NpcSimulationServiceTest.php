@@ -1504,7 +1504,7 @@ class NpcSimulationServiceTest extends TestCase
         $this->setEntityId($spell1, 10);
         $spell1->setName('Jiskra');
         $spell1->setSchool(\App\Enum\School::Fire);
-        $spell1->setType(\App\Enum\SpellType::Offensive);
+        $spell1->setType(\App\Enum\SpellType::Harm);
         $spell1->setRequiredMasteryTier(1);
         $spell1->setLearningCostGold(100);
                 $spell1->setRequiresMagicalWeapon(true);
@@ -1513,7 +1513,7 @@ class NpcSimulationServiceTest extends TestCase
         $this->setEntityId($spell2, 11);
         $spell2->setName('Laskavý dotek');
         $spell2->setSchool(\App\Enum\School::Water);
-        $spell2->setType(\App\Enum\SpellType::Defensive);
+        $spell2->setType(\App\Enum\SpellType::Restore);
         $spell2->setRequiredMasteryTier(1);
         $spell2->setLearningCostGold(150);
                 $spell2->setRequiresMagicalWeapon(false);

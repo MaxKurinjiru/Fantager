@@ -25,7 +25,7 @@ use App\ValueObject\Combat\HexCoordinate;
  */
 class CombatEngine
 {
-    public const ENGINE_VERSION = 8;
+    public const ENGINE_VERSION = 9;
 
     /** Hard stop for one-shot and wave/resume combat paths. */
     public const MAX_ROUNDS = 200;
@@ -961,10 +961,10 @@ class CombatEngine
     /**
      * L0 spell when the slot has no spell_priorities.
      *
-     * Heal with the strongest ready defensive spell when any living ally
+     * Heal with the strongest ready restore spell when any living ally
      * (including the caster) is under the approach HP threshold. Otherwise
-     * the highest-tier ready offensive spell. If neither is ready, the
-     * highest-tier ready utility spell (L1 / approach enemy).
+     * the highest-tier ready harm spell. If neither is ready, the
+     * highest-tier ready hinder spell. Enhance is L2-only.
      *
      * @param array<string, mixed> $runState
      * @param array<string, mixed> $actor
@@ -986,20 +986,20 @@ class CombatEngine
 
         $threshold = $this->l0Config->healThresholdPercent($approach);
         if ($this->anyAllyBelowHpPercent($runState, $actorSide, $threshold)) {
-            $heal = $this->strongestReadySpell($ready, 'defensive');
+            $heal = $this->strongestReadySpell($ready, 'restore');
             if (null !== $heal) {
                 return ['spell' => $heal, 'target' => 'lowest_hp_ally'];
             }
         }
 
-        $offense = $this->strongestReadySpell($ready, 'offensive');
+        $offense = $this->strongestReadySpell($ready, 'harm');
         if (null !== $offense) {
             return ['spell' => $offense, 'target' => 'enemy'];
         }
 
-        $utility = $this->strongestReadySpell($ready, 'utility');
-        if (null !== $utility) {
-            return ['spell' => $utility, 'target' => 'enemy'];
+        $hinder = $this->strongestReadySpell($ready, 'hinder');
+        if (null !== $hinder) {
+            return ['spell' => $hinder, 'target' => 'enemy'];
         }
 
         return null;
@@ -1823,17 +1823,14 @@ class CombatEngine
         array &$roundEvents,
         int &$rngState,
     ): void {
-        $spellType = $spell['type'];
-        $school = $spell['school'];
+        $payload = SpellPayload::fromEffects(\is_array($spell['effects'] ?? null) ? $spell['effects'] : []);
         $tier = $spell['tier'] ?? 1;
 
         $targetSide = ('a' === $casterSide) ? 'b' : 'a';
 
-        $isAlly = false;
         $sideData = 'a' === $casterSide ? $runState['sideA'] : $runState['sideB'];
         foreach ($sideData['combatants'] as $c) {
             if ($c['slot'] === $targetSlot && $c['heroId'] === $target['heroId']) {
-                $isAlly = true;
                 $targetSide = $casterSide;
                 break;
             }
@@ -1853,7 +1850,7 @@ class CombatEngine
             'spell_name' => $spell['name'],
         ];
 
-        if ('offensive' === $spellType) {
+        if (SpellPayload::INSTANT_DAMAGE === $payload->instantHp) {
             $spellPower = (float) $caster['derived']['spellPower'];
             $baseDamage = $spellPower * (1.0 + $tier * 0.15);
             $baseDamage *= (float) ($caster['derived']['outgoingDamageMultiplier'] ?? 1.0);
@@ -1905,11 +1902,6 @@ class CombatEngine
             $hitKey = (string) $target['heroId'];
             $runState['itemHitCounts'][$hitKey] = ($runState['itemHitCounts'][$hitKey] ?? 0) + 1;
 
-            $statusEffect = $this->getOffensiveStatusForSchool($school);
-            if (null !== $statusEffect) {
-                $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $statusEffect, $roundEvents, (int) $caster['heroId'], $casterSide, $casterSlot);
-            }
-
             if ($target['currentHp'] <= 0) {
                 if ('a' === $casterSide) {
                     ++$runState['scoreA'];
@@ -1935,7 +1927,7 @@ class CombatEngine
                     'score_b' => $runState['scoreB'],
                 ];
             }
-        } elseif ('defensive' === $spellType) {
+        } elseif (SpellPayload::INSTANT_HEAL === $payload->instantHp) {
             if ('undead' === $target['race'] && 'undead' !== $caster['race']) {
                 $roundEvents[] = [
                     't' => count($runState['events']) + count($roundEvents),
@@ -1975,17 +1967,12 @@ class CombatEngine
                     'hp_after' => $target['currentHp'],
                 ];
             }
-
-            $statusEffect = $this->getDefensiveStatusForSchool($school);
-            if (null !== $statusEffect) {
-                $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $statusEffect, $roundEvents, (int) $caster['heroId'], $casterSide, $casterSlot);
-            }
-        } elseif ('utility' === $spellType) {
+        } elseif (null === $payload->instantHp) {
             $this->addContribution($runState, (int) $caster['heroId'], 'utility_casts', 1);
-            $statusEffect = $this->getUtilityStatusForSchool($school);
-            if (null !== $statusEffect) {
-                $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $statusEffect, $roundEvents, (int) $caster['heroId'], $casterSide, $casterSlot);
-            }
+        }
+
+        if (null !== $payload->applyEffect) {
+            $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $payload->applyEffect->value, $roundEvents, (int) $caster['heroId'], $casterSide, $casterSlot);
         }
     }
 
@@ -2142,43 +2129,5 @@ class CombatEngine
         } catch (\Throwable) {
             return 'regeneration' === $effect ? 5 : 0;
         }
-    }
-
-    private function getOffensiveStatusForSchool(string $school): ?string
-    {
-        return match ($school) {
-            'fire' => 'burn',
-            'air' => 'shock',
-            'earth' => 'petrify',
-            'light' => 'blind',
-            'dark' => 'curse',
-            default => null,
-        };
-    }
-
-    private function getDefensiveStatusForSchool(string $school): ?string
-    {
-        return match ($school) {
-            'fire' => 'fury',
-            'water' => 'regeneration',
-            'air' => 'haste',
-            'earth' => 'shield',
-            'light' => 'bless',
-            'dark' => 'shadow_cloak',
-            default => null,
-        };
-    }
-
-    private function getUtilityStatusForSchool(string $school): ?string
-    {
-        return match ($school) {
-            'fire' => 'burn',
-            'water' => 'freeze',
-            'air' => 'stun',
-            'earth' => 'petrify',
-            'light' => 'silence',
-            'dark' => 'taunt',
-            default => null,
-        };
     }
 }

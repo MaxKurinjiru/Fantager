@@ -66,13 +66,13 @@
             <p data-formation-target="spellsNeedHero" class="copy-muted hidden">{{ 'formation.tactics_assign_hero_spells'|trans }}</p>
             <p data-formation-target="spellsEmpty" class="copy-muted hidden">{{ 'formation.tactics_no_spells'|trans }}</p>
             <div data-formation-target="spellTemplates" class="layout-cluster layout-cluster--sm hidden">
-                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#applySpellTemplate" data-spell-type="defensive" data-formation-target="templateHealer">
+                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#applySpellTemplate" data-spell-type="restore" data-formation-target="templateHealer">
                     {{ 'formation.tactics_template_healer'|trans }}
                 </button>
-                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#applySpellTemplate" data-spell-type="utility" data-formation-target="templateCc">
+                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#applySpellTemplate" data-spell-type="hinder" data-formation-target="templateCc">
                     {{ 'formation.tactics_template_cc'|trans }}
                 </button>
-                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#applySpellTemplate" data-spell-type="offensive" data-formation-target="templateNuker">
+                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#applySpellTemplate" data-spell-type="harm" data-formation-target="templateNuker">
                     {{ 'formation.tactics_template_nuker'|trans }}
                 </button>
             </div>

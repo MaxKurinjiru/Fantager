@@ -693,25 +693,24 @@ class NpcTacticsSimulator
                 }
 
                 // Sort eligible spells by preference
-                // Prefer Offensive for Front row/Mages, Defensive/Utility for Back row/Support
+                // Prefer harm for front row/mages, restore/hinder/enhance for back row
                 usort($eligibleSpells, function (Spell $a, Spell $b) use ($isMage, $isFrontRow): int {
                     $scoreA = 0;
                     $scoreB = 0;
 
-                    // Front row or Mage prefers Offensive
+                    // Front row or mage prefers harm
                     if ($isFrontRow || $isMage) {
-                        if (SpellType::Offensive === $a->getType()) {
+                        if (SpellType::Harm === $a->getType()) {
                             $scoreA += 10;
                         }
-                        if (SpellType::Offensive === $b->getType()) {
+                        if (SpellType::Harm === $b->getType()) {
                             $scoreB += 10;
                         }
                     } else {
-                        // Back row physical / support hybrid prefers Defensive or Utility
-                        if (\in_array($a->getType(), [SpellType::Defensive, SpellType::Utility], true)) {
+                        if (\in_array($a->getType(), [SpellType::Restore, SpellType::Hinder, SpellType::Enhance], true)) {
                             $scoreA += 10;
                         }
-                        if (\in_array($b->getType(), [SpellType::Defensive, SpellType::Utility], true)) {
+                        if (\in_array($b->getType(), [SpellType::Restore, SpellType::Hinder, SpellType::Enhance], true)) {
                             $scoreB += 10;
                         }
                     }
@@ -782,17 +781,17 @@ class NpcTacticsSimulator
                 $scoreB = 0;
 
                 if ($isFrontRow || $isMage) {
-                    if (SpellType::Offensive === $spellA->getType()) {
+                    if (SpellType::Harm === $spellA->getType()) {
                         $scoreA += 10;
                     }
-                    if (SpellType::Offensive === $spellB->getType()) {
+                    if (SpellType::Harm === $spellB->getType()) {
                         $scoreB += 10;
                     }
                 } else {
-                    if (\in_array($spellA->getType(), [SpellType::Defensive, SpellType::Utility], true)) {
+                    if (\in_array($spellA->getType(), [SpellType::Restore, SpellType::Hinder, SpellType::Enhance], true)) {
                         $scoreA += 10;
                     }
-                    if (\in_array($spellB->getType(), [SpellType::Defensive, SpellType::Utility], true)) {
+                    if (\in_array($spellB->getType(), [SpellType::Restore, SpellType::Hinder, SpellType::Enhance], true)) {
                         $scoreB += 10;
                     }
                 }
@@ -835,16 +834,20 @@ class NpcTacticsSimulator
                     continue;
                 }
 
-                if (SpellType::Defensive === $spell->getType()) {
-                    // Defensive spell (heal/bless/shield)
+                if (SpellType::Restore === $spell->getType()) {
                     $priorities[] = [
                         'spell_id' => $spellId,
                         'when' => 'ally_hp_below',
                         'threshold' => $healThreshold,
                         'target' => 'lowest_hp_ally',
                     ];
+                } elseif (SpellType::Enhance === $spell->getType()) {
+                    $priorities[] = [
+                        'spell_id' => $spellId,
+                        'when' => 'always',
+                        'target' => 'self',
+                    ];
                 } else {
-                    // Offensive / Utility spell (cast when ready)
                     $priorities[] = [
                         'spell_id' => $spellId,
                         'when' => 'always',

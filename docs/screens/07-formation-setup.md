@@ -6,7 +6,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **Status:** Lineup drag-and-drop is **live**. Per-slot L1/L2 tactics editor is **live**. Synergies are **Cut**. Save rejects duplicate `hero_id`.  
 **Lock:** [formation-system.md — L1/L2 editor](../systems/formation-system.md#locked-l1l2-editor)  
-Slot tactics: Healer / CC / Nuker buttons write thin L2 lists from equipped spells. Spec: [spell-system.md](../systems/spell-system.md#l0-utility-and-l2-templates).
+Slot tactics: Healer (`restore`) / CC (`hinder`) / Nuker (`harm`) buttons write thin L2 lists from equipped spells. Spec: [spell-system.md](../systems/spell-system.md#l0-utility-and-l2-templates).
 
 **Live UI:** `templates/formation/index.html.twig`, `templates/components/formation/`, Stimulus `formation`.
 

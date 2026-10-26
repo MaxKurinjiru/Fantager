@@ -16,6 +16,7 @@ use App\Enum\HeroTrait;
 use App\Enum\ItemSlotType;
 use App\Enum\Race;
 use App\Repository\Hero\HeroRepository;
+use App\Service\Combat\SpellPayload;
 use App\Service\Community\CommunityService;
 use App\Service\Config\RaceConfig;
 use App\Service\Economy\FinancialCrisisService;
@@ -85,6 +86,8 @@ class GameExtension extends AbstractExtension
             new TwigFunction('item_equip_slots', $this->getItemEquipSlots(...)),
             new TwigFunction('item_display_name', $this->getItemDisplayName(...)),
             new TwigFunction('spell_display_name', $this->getSpellDisplayName(...)),
+            new TwigFunction('spell_apply_effect', $this->getSpellApplyEffect(...)),
+            new TwigFunction('spell_instant_hp', $this->getSpellInstantHp(...)),
             new TwigFunction('hero_can_cast_offensive_spells', $this->heroCanCastOffensiveSpells(...)),
             new TwigFunction('item_repair_cost', $this->getItemRepairCost(...)),
             new TwigFunction('item_race_block_hint', $this->getItemRaceBlockHint(...)),
@@ -121,6 +124,16 @@ class GameExtension extends AbstractExtension
     public function getSpellDisplayName(Spell $spell): string
     {
         return $this->spellService->displayName($spell);
+    }
+
+    public function getSpellApplyEffect(Spell $spell): ?string
+    {
+        return SpellPayload::fromEffects($spell->getEffects())->applyEffect?->value;
+    }
+
+    public function getSpellInstantHp(Spell $spell): ?string
+    {
+        return SpellPayload::fromEffects($spell->getEffects())->instantHp;
     }
 
     public function heroCanCastOffensiveSpells(Hero $hero): bool

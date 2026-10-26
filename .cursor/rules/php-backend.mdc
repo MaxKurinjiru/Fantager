@@ -91,11 +91,11 @@ Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entit
 - Auction bids are not capped. Do not add a second pricing formula.
 - Spec: `docs/systems/marketplace-system.md` § Locked: listing price band.
 
-## Spell catalog (locked — #16)
+## Spell catalog (locked — #16 / #17)
 
 - Seeded library is two spells per school per tier for T1–T5 (`required_mastery_tier` = `tier`).
 - Do not add T6+, resurrection, summon-creature, or new combat effect keys.
-- Combat uses school + type + `spell.tier`. Spec: `docs/systems/spell-system.md` § Locked: catalog T1–T5.
+- Combat reads `effects` (`instant_hp` + `apply_effect`) via `SpellPayload`, not school × type. Spec: `docs/systems/spell-system.md` § Locked: catalog T1–T5.
 
 ## Arena analytics (locked — #4)
 

@@ -32,7 +32,8 @@ Quick map of production PHP layout. Full workflow: [SKILL.md](SKILL.md) · [exam
 | `Headquarters/` | `HeadquartersService`, `ArenaService`, `HqMaintenanceCalculator` | [headquarters-system.md](../../../docs/systems/headquarters-system.md) |
 | `Training/` | `TrainingService`, `TrainerDismissalService` | [training-system.md](../../../docs/systems/training-system.md) |
 | `Item/` | `ItemService` | [item-system.md](../../../docs/systems/item-system.md) |
-| `Spell/` | `SpellService` | [spell-system.md](../../../docs/systems/spell-system.md) |
+| `Spell/` | `SpellService`, `SpellCatalog` | [spell-system.md](../../../docs/systems/spell-system.md) |
+| `Combat/` | `CombatEngine`, `CombatStatCalculator`, `SpellPayload` | [combat-system.md](../../../docs/systems/combat-system.md), [spell-system.md](../../../docs/systems/spell-system.md) |
 | `Formation/` | `FormationService`, `FixtureFormationService`, `MatchLineupService`, `FormationLineupScorer` | [formation-system.md](../../../docs/systems/formation-system.md) |
 | `Marketplace/` | `MarketplaceService`, `MarketplacePriceGuidance` | [marketplace-system.md](../../../docs/systems/marketplace-system.md) |
 | `Community/` | `CommunityService`, `ForumThreadHelper`, `ContentFilterService` | [community-system.md](../../../docs/systems/community-system.md) |

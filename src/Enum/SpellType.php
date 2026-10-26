@@ -6,7 +6,8 @@ namespace App\Enum;
 
 enum SpellType: string
 {
-    case Offensive = 'offensive';
-    case Defensive = 'defensive';
-    case Utility = 'utility';
+    case Harm = 'harm';
+    case Restore = 'restore';
+    case Enhance = 'enhance';
+    case Hinder = 'hinder';
 }
