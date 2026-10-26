@@ -167,7 +167,8 @@ class SpellServiceTest extends TestCase
                 $shapes = [];
                 foreach ($tierSpells as $spell) {
                     $payload = SpellPayload::fromEffects($spell->getEffects());
-                    $shape = $spell->getType()->value.'|'.($payload->instantHp ?? '').'|'.($payload->applyEffect?->value ?? '');
+                    $effectKey = $payload->applyEffect instanceof StatusEffect ? $payload->applyEffect->value : '';
+                    $shape = $spell->getType()->value.'|'.($payload->instantHp ?? '').'|'.$effectKey;
                     $this->assertArrayNotHasKey($shape, $shapes);
                     $shapes[$shape] = true;
                 }
