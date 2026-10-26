@@ -17,9 +17,11 @@ The system uses four crisis levels:
 | Level | Trigger | Player impact |
 |-------|---------|---------------|
 | `none` | Debt = 0 | Normal play |
-| `warning` | Debt > 0 | Dashboard warning, full gameplay |
-| `restricted` | Debt > 0 for ≥ 2 consecutive crisis weeks | HQ passive bonuses disabled; upgrades, summoning, marketplace purchases blocked |
+| `warning` | Debt > 0, and not yet restricted | Dashboard warning, full gameplay (HQ bonuses stay on). Banner asks for a recovery action this week |
+| `restricted` | `crisis_weeks` ≥ 3, **or** `crisis_weeks` ≥ 2 with no recovery action in the last 7 days | HQ passive bonuses disabled; upgrades, summoning, marketplace purchases blocked |
 | `bankruptcy_pending` | Debt ≥ 4× weekly fixed costs (maintenance + payroll), gold = 0, ≥ 6 crisis weeks, no recent recovery | Team released to NPC pool on next weekly tick |
+
+Recovery in week 2 keeps the team on **warning** through that Sunday. From week 3, recovery no longer delays restrictions. From week 5, the bankruptcy recovery window shrinks from 2 weeks to 1.
 
 ---
 
@@ -37,10 +39,10 @@ The system uses four crisis levels:
 
 ## Weekly Tick Flow (`weekly_reset`)
 
-1. Reset summon cycle counters
-2. `HeadquartersService::processMaintenanceTick()` — deduct available gold; remainder → `unpaid_debt`; portion may route to Royal Treasury
-3. `TeamPayrollService::processPayrollTick()` — deduct hero/trainer salaries; remainder → `unpaid_debt`
-4. `RoyalTreasuryService::processWeeklyDistribution()` — redistribute up to 50% of kingdom pool to teams (`kingdom_reward`)
+1. `RoyalTreasuryService::processWeeklyDistribution()` — kingdom-scoped; redistribute up to 50% of the pool (`kingdom_reward`) **before** Sunday costs
+2. Reset summon cycle counters
+3. `HeadquartersService::processMaintenanceTick()` — deduct available gold; remainder → `unpaid_debt`; portion may route to Royal Treasury (next week's pool)
+4. `TeamPayrollService::processPayrollTick()` — deduct hero/trainer salaries; remainder → `unpaid_debt`
 5. `HeadquartersService::processFacilityDowngradeLockTick()` — clear downgrade lock cycle
 6. `FinancialCrisisService::processWeeklyCrisisTick()` — auto-pay debt from gold, evaluate crisis weeks, execute bankruptcy if needed
 
@@ -137,11 +139,15 @@ Twig helpers: `team_financial_crisis(team)`, `hq_downgrade_refund(type, level, t
 
 | Constant | Value |
 |----------|-------|
-| `RESTRICTED_WEEKS` | 2 |
+| `RESTRICTED_IDLE_WEEKS` | 2 |
+| `RESTRICTED_ALWAYS_WEEKS` | 3 |
+| `IDLE_RECOVERY_WEEKS` | 1 |
 | `BANKRUPTCY_WEEKS` | 6 |
 | `BANKRUPTCY_DEBT_MULTIPLIER` | 4 |
 | `REASSIGNMENT_COOLDOWN_DAYS` | 7 |
 | `RECOVERY_STALE_WEEKS` | 2 |
+| `LATE_STALE_FROM_WEEKS` | 5 |
+| `RECOVERY_STALE_LATE_WEEKS` | 1 |
 
 ---
 

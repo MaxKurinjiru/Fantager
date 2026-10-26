@@ -173,9 +173,10 @@ Seven facilities. Forge is not live (crafting is ⏳).
 | Basic merchant | Fixed-price starter equipment | ✅ | [15-marketplace.md](../screens/15-marketplace.md) |
 | History | Settled purchase / sale log | ✅ | [15-marketplace.md](../screens/15-marketplace.md) |
 | Finance | Gold, debt, weekly payroll + HQ maintenance, period / all-time net | ✅ | [20-finance.md](../screens/20-finance.md) |
+| Finance | Upcoming weekly cashflow (home tickets vs Sunday costs) | ✅ | [20-finance.md](../screens/20-finance.md), [economy-system.md](../systems/economy-system.md) |
 | Finance | Full ledger with type / actor filters | ✅ | [20-finance.md](../screens/20-finance.md) |
 | Finance | Navbar recent-ledger modal | ✅ | [20-finance.md](../screens/20-finance.md) |
-| Crisis | Warning → restricted → bankruptcy | ✅ | [financial-crisis-system.md](../systems/financial-crisis-system.md) |
+| Crisis | Warning (recovery grace) → restricted → bankruptcy | ✅ | [financial-crisis-system.md](../systems/financial-crisis-system.md) |
 | Economy | Gold never goes negative | ✅ | [economy-system.md](../systems/economy-system.md) |
 | Economy | Diminishing returns | 📋 | [known-issues.md](known-issues.md) § Later product decisions |
 

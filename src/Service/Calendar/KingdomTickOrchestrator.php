@@ -96,7 +96,7 @@ class KingdomTickOrchestrator
 
             // 5. Get all pending ticks in this [scheduledAt, priority] group
             $ticksToDispatch = $this->tickLogRepository->findPendingTicksInGroup($kingdom, $oldestPendingTime, $highestPriority);
-            $ticksToDispatch = $this->deferKingdomWeeklyResetUntilTeamsFinish($ticksToDispatch);
+            $ticksToDispatch = $this->deferTeamWeeklyResetUntilTreasuryFinishes($ticksToDispatch);
             if (empty($ticksToDispatch)) {
                 $this->em->commit();
 
@@ -134,14 +134,14 @@ class KingdomTickOrchestrator
     }
 
     /**
-     * Team-scoped WeeklyReset (maintenance, payroll, crisis) must finish before the
-     * kingdom-scoped Royal Treasury distribution, even though they share priority 6.
+     * Kingdom-scoped WeeklyReset (Royal Treasury) must finish before team-scoped
+     * WeeklyReset (maintenance, payroll, crisis), even though they share priority 6.
      *
      * @param list<KingdomTickLog> $ticks
      *
      * @return list<KingdomTickLog>
      */
-    private function deferKingdomWeeklyResetUntilTeamsFinish(array $ticks): array
+    public function deferTeamWeeklyResetUntilTreasuryFinishes(array $ticks): array
     {
         $hasTeamWeeklyReset = false;
         $hasKingdomWeeklyReset = false;
@@ -163,7 +163,7 @@ class KingdomTickOrchestrator
         return array_values(array_filter(
             $ticks,
             static fn (KingdomTickLog $tick): bool => TickType::WeeklyReset !== $tick->getTickType()
-                || null !== $tick->getTeam()
+                || null === $tick->getTeam()
         ));
     }
 }

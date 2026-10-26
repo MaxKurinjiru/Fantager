@@ -82,7 +82,7 @@ Quick reference: which files implement each game screen.
 | Graveyard | `GraveyardService`, `GraveyardPresenter` | `tests/Service/Graveyard/` |
 | Calendar / ticks | `CalendarService`, `KingdomTickRunnerService`, `KingdomTickOrchestrator`, `ExecuteSingleTickHandler` | `tests/Service/Calendar/` |
 | League | `LeagueService`, `LeagueFixtureScheduler`, `SeasonTransitionService` | `tests/Service/League/` |
-| Economy | `EconomyService`, `FinancialCrisisService`, `ArenaRevenueService` | `tests/Service/Economy/` |
+| Economy | `EconomyService`, `FinancialCrisisService`, `ArenaRevenueService`, `CashflowForecastService`, `FinanceSummaryService` | `tests/Service/Economy/` |
 | Auth | `RegistrationService`, `UserSettingsService` | `tests/Service/Auth/` |
 
 ---

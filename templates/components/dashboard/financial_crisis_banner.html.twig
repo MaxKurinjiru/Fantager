@@ -55,6 +55,12 @@
                     {% endif %}
                 </dl>
 
+                {% if crisis.level == 'warning' %}
+                    <p class="financial-crisis-banner__restricted">
+                        {{ 'financial_crisis.warning_recovery_hint'|trans }}
+                    </p>
+                {% endif %}
+
                 {% if crisis.restricted_actions is not empty %}
                     <p class="financial-crisis-banner__restricted">
                         {{ 'financial_crisis.restricted_hint'|trans }}

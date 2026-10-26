@@ -15,27 +15,31 @@ class FinanceSummaryService
     public function __construct(
         private readonly FinancialRecordRepository $recordRepository,
         private readonly FinancialCrisisService $financialCrisisService,
+        private readonly CashflowForecastService $cashflowForecastService,
     ) {
     }
 
     /**
      * @return array{
      *     crisis: array<string, mixed>,
+     *     cashflow: array<string, mixed>|null,
      *     period_days: int,
      *     period: array{income: int, expense: int, net: int, transaction_count: int},
      *     all_time: array{income: int, expense: int, net: int, transaction_count: int},
      *     recent_transactions: list<array{type: string, gold_change: int, created_at: \DateTimeImmutable}>
      * }
      */
-    public function buildOverview(Team $team): array
+    public function buildOverview(Team $team, bool $includeCashflow = false): array
     {
         $since = new \DateTimeImmutable(
             sprintf('-%d days', self::PERIOD_DAYS),
             new \DateTimeZone('UTC')
         );
+        $crisis = $this->financialCrisisService->getStatus($team);
 
         return [
-            'crisis' => $this->financialCrisisService->getStatus($team),
+            'crisis' => $crisis,
+            'cashflow' => $includeCashflow ? $this->cashflowForecastService->buildForecast($team, $crisis) : null,
             'period_days' => self::PERIOD_DAYS,
             'period' => $this->recordRepository->getGoldSummarySince($team, $since),
             'all_time' => $this->recordRepository->getGoldSummarySince($team),

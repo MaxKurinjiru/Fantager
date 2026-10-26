@@ -1,0 +1,86 @@
+{# templates/components/finance/cashflow_forecast.html.twig #}
+{% set cashflow = summary.cashflow %}
+{% set timezone = team.kingdom.timezone %}
+
+<section class="finance-cashflow" aria-label="{{ 'finance.cashflow_title'|trans }}">
+    <h2 class="finance-summary__heading">{{ 'finance.cashflow_title'|trans }}</h2>
+    <p class="finance-cashflow__reset copy-muted">
+        {{ 'finance.cashflow_until_reset'|trans({
+            '%datetime%': cashflow.weekly_reset_at|date('Y-m-d H:i', timezone)
+        }) }}
+    </p>
+
+    <div class="finance-summary__grid finance-summary__grid--cashflow">
+        <article class="finance-summary__card" title="{{ 'finance.tooltip_cashflow_net'|trans }}">
+            <span class="finance-summary__label">{{ 'finance.cashflow_estimated_net'|trans }}</span>
+            <span class="finance-summary__value{% if cashflow.estimated_net > 0 %} finance-summary__value--success{% elseif cashflow.estimated_net < 0 %} finance-summary__value--danger{% endif %}">
+                {{ cashflow.estimated_net > 0 ? '+' : '' }}{{ cashflow.estimated_net|number_format(0, '.', ' ') }} 🪙
+            </span>
+
+            <div class="finance-summary__breakdown">
+                <div class="finance-summary__breakdown-item" title="{{ 'finance.tooltip_cashflow_arena'|trans }}">
+                    <span class="finance-summary__breakdown-label">{{ 'finance.cashflow_arena'|trans({'%matches%': cashflow.home_match_count}) }}</span>
+                    <span class="finance-summary__breakdown-value finance-summary__breakdown-value--success">+{{ cashflow.estimated_arena|number_format(0, '.', ' ') }} 🪙</span>
+                </div>
+                <div class="finance-summary__breakdown-item" title="{{ 'finance.tooltip_weekly_payroll'|trans }}">
+                    <span class="finance-summary__breakdown-label">{{ 'financial_crisis.weekly_payroll'|trans }}</span>
+                    <span class="finance-summary__breakdown-value finance-summary__breakdown-value--danger">−{{ cashflow.weekly_payroll|number_format(0, '.', ' ') }} 🪙</span>
+                </div>
+                <div class="finance-summary__breakdown-item" title="{{ 'finance.tooltip_weekly_maintenance'|trans }}">
+                    <span class="finance-summary__breakdown-label">{{ 'financial_crisis.weekly_maintenance'|trans }}</span>
+                    <span class="finance-summary__breakdown-value finance-summary__breakdown-value--danger">−{{ cashflow.weekly_maintenance|number_format(0, '.', ' ') }} 🪙</span>
+                </div>
+                <div class="finance-summary__breakdown-item" title="{{ 'finance.tooltip_cashflow_kingdom_reward'|trans }}">
+                    <span class="finance-summary__breakdown-label">{{ 'finance.cashflow_kingdom_reward'|trans }}</span>
+                    <span class="finance-summary__breakdown-value finance-summary__breakdown-value--muted">{{ 'finance.cashflow_kingdom_reward_value'|trans }}</span>
+                </div>
+            </div>
+        </article>
+
+        <article class="finance-summary__card" title="{{ 'finance.tooltip_cashflow_after_tick'|trans }}">
+            <span class="finance-summary__label">{{ 'finance.cashflow_after_tick'|trans }}</span>
+            <span class="finance-summary__value{% if not cashflow.covers_weekly_costs %} finance-summary__value--danger{% endif %}">
+                🪙 {{ cashflow.gold_after_tick|number_format(0, '.', ' ') }}
+            </span>
+
+            <div class="finance-summary__breakdown">
+                <div class="finance-summary__breakdown-item">
+                    <span class="finance-summary__breakdown-label">{{ 'financial_crisis.gold_on_hand'|trans }}</span>
+                    <span class="finance-summary__breakdown-value">🪙 {{ cashflow.gold_after_tick|number_format(0, '.', ' ') }}</span>
+                </div>
+                <div class="finance-summary__breakdown-item">
+                    <span class="finance-summary__breakdown-label">{{ 'financial_crisis.unpaid_debt'|trans }}</span>
+                    <span class="finance-summary__breakdown-value{% if cashflow.debt_after_tick > 0 %} finance-summary__breakdown-value--danger{% endif %}">
+                        🪙 {{ cashflow.debt_after_tick|number_format(0, '.', ' ') }}
+                    </span>
+                </div>
+            </div>
+
+            <p class="finance-summary__hint{% if not cashflow.covers_weekly_costs %} finance-summary__hint-text--danger{% endif %}">
+                {% if cashflow.covers_weekly_costs %}
+                    {{ 'finance.cashflow_covers_hint'|trans }}
+                {% else %}
+                    {{ 'finance.cashflow_shortfall_hint'|trans }}
+                {% endif %}
+            </p>
+        </article>
+    </div>
+
+    {% if cashflow.home_matches is not empty %}
+        <ul class="finance-cashflow__matches">
+            {% for match in cashflow.home_matches %}
+                <li class="finance-cashflow__match">
+                    <span class="finance-cashflow__match-name">{{ match.opponent_name }}</span>
+                    <time class="finance-cashflow__match-time" datetime="{{ match.scheduled_at|date('c', timezone) }}">
+                        {{ match.scheduled_at|date('Y-m-d H:i', timezone) }}
+                    </time>
+                    <span class="finance-cashflow__match-gold">+{{ match.projected_gold|number_format(0, '.', ' ') }} 🪙</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="finance-cashflow__empty copy-muted">{{ 'finance.cashflow_no_home_matches'|trans }}</p>
+    {% endif %}
+
+    <p class="finance-cashflow__footnote copy-muted">{{ 'finance.cashflow_excludes_hint'|trans }}</p>
+</section>

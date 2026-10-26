@@ -9,12 +9,13 @@ use App\Entity\Headquarters\Headquarters;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
 use App\Enum\FinancialCrisisLevel;
+use App\Exception\UserFacingException;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Service\Economy\EconomyService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\TeamPayrollService;
-use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Notification\NotificationHelper;
+use App\Service\TeamChronicle\TeamChronicleService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -94,9 +95,63 @@ class FinancialCrisisServiceTest extends TestCase
         );
     }
 
-    public function testResolveCrisisLevelRestrictedAfterTwoWeeks(): void
+    public function testResolveCrisisLevelWarningAtWeekOneWithoutRecovery(): void
+    {
+        $team = $this->createPlayerTeam(gold: 0, debt: 500, crisisWeeks: 1);
+
+        $this->assertSame(
+            FinancialCrisisLevel::Warning,
+            $this->service->resolveCrisisLevel($team, 271)
+        );
+    }
+
+    public function testResolveCrisisLevelRestrictedAtWeekTwoWhenIdle(): void
     {
         $team = $this->createPlayerTeam(gold: 0, debt: 500, crisisWeeks: 2);
+
+        $this->assertSame(
+            FinancialCrisisLevel::Restricted,
+            $this->service->resolveCrisisLevel($team, 271)
+        );
+    }
+
+    public function testResolveCrisisLevelWarningAtWeekTwoWithRecentRecovery(): void
+    {
+        $team = $this->createPlayerTeam(gold: 0, debt: 500, crisisWeeks: 2);
+        $team->setLastRecoveryActionAt(new \DateTimeImmutable('-3 days', new \DateTimeZone('UTC')));
+
+        $this->assertSame(
+            FinancialCrisisLevel::Warning,
+            $this->service->resolveCrisisLevel($team, 271)
+        );
+    }
+
+    public function testResolveCrisisLevelRestrictedAtWeekThreeDespiteRecovery(): void
+    {
+        $team = $this->createPlayerTeam(gold: 0, debt: 500, crisisWeeks: 3);
+        $team->setLastRecoveryActionAt(new \DateTimeImmutable('-1 day', new \DateTimeZone('UTC')));
+
+        $this->assertSame(
+            FinancialCrisisLevel::Restricted,
+            $this->service->resolveCrisisLevel($team, 271)
+        );
+    }
+
+    public function testResolveCrisisLevelBankruptcyUsesShorterStaleWindowFromWeekFive(): void
+    {
+        $team = $this->createPlayerTeam(gold: 0, debt: 1200, crisisWeeks: 6);
+        $team->setLastRecoveryActionAt(new \DateTimeImmutable('-10 days', new \DateTimeZone('UTC')));
+
+        $this->assertSame(
+            FinancialCrisisLevel::BankruptcyPending,
+            $this->service->resolveCrisisLevel($team, 271)
+        );
+    }
+
+    public function testResolveCrisisLevelNotBankruptWhenLateRecoveryIsFresh(): void
+    {
+        $team = $this->createPlayerTeam(gold: 0, debt: 1200, crisisWeeks: 6);
+        $team->setLastRecoveryActionAt(new \DateTimeImmutable('-3 days', new \DateTimeZone('UTC')));
 
         $this->assertSame(
             FinancialCrisisLevel::Restricted,
@@ -117,7 +172,7 @@ class FinancialCrisisServiceTest extends TestCase
                 return $hq;
             });
 
-        $this->expectException(\DomainException::class);
+        $this->expectException(UserFacingException::class);
         $this->service->assertSpendingAllowed($team, 'summon');
     }
 

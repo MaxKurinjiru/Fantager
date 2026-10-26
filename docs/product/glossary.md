@@ -24,7 +24,7 @@ Short definitions for live game terms. **Rules** live in `docs/systems/*.md`. Th
 | **Friendly match** | Player-vs-player practice (Wed/Sun 18:00). Same combat engine; no standings or tickets. |
 | **Fan club** | Background attendance mechanic. Shown on the dashboard and HQ arena panel; no management UI. |
 | **Royal Treasury** | Kingdom gold pool. Collects fees; weekly capped share to teams. Not shown to players. |
-| **Financial crisis** | Unpaid upkeep becomes `unpaid_debt` (warning → restricted → bankruptcy). |
+| **Financial crisis** | Unpaid upkeep becomes `unpaid_debt` (warning with a recovery grace week → restricted → bankruptcy). |
 | **Graveyard** | Memorial wall for dismissals and permanent combat death. Reserved causes `age` / `retired` / `death` have no writers. |
 | **Chronicle** | Append-only event log. **Hero** chronicle is per hero (History tab); **team** chronicle is per team. |
 | **Library `xp_gain_pct`** | HQ Library bonus. Multiplies **match XP** only. Training does not write `Hero.xp`. |

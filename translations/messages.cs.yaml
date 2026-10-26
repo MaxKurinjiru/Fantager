@@ -331,7 +331,7 @@ notification:
   season_ended_title: Konec sezóny %season%
   season_ended_body: 'Sezóna %season% skončila! Umístění: %position%. místo (%status_text%). Získali jste %reward% zlata.'
   financial_warning_title: Finanční varování
-  financial_warning_body: 'Tým má neuhrazený dluh %debt% zlata. Snižte náklady nebo prodejte aktiva.'
+  financial_warning_body: 'Tým má neuhrazený dluh %debt% zlata. Tento týden se vzpamatujte (prodej, downgrade, propuštění), jinak po další nečinné neděli přijdou restrikce.'
   financial_restricted_title: Finanční restrikce
   financial_restricted_body: 'Tým je %weeks% týdnů v krizi! Pasivní bonusy základny jsou pozastaveny.'
   financial_bankruptcy_title: Bankrot týmu
@@ -593,7 +593,7 @@ financial_crisis:
   title_warning: Finanční varování
   title_restricted: Finanční restrikce
   title_bankruptcy_pending: Hrozící bankrot
-  message_warning: "Tým má neuhrazený dluh %debt% zlata (týdenní fixní náklady %expenses% zlata). Snižte náklady, nebo prodejte aktiva."
+  message_warning: "Tým má neuhrazený dluh %debt% zlata (týdenní fixní náklady %expenses% zlata). Tento týden prodejte, snižte budovu nebo pusťte hrdinu, ať zůstanou nákupy a bonusy HQ."
   message_restricted: "Tým je %weeks% týdnů v krizi. Pasivní bonusy základny jsou pozastaveny a některé akce jsou blokovány, dokud nesplátíte dluh."
   message_bankruptcy_pending: "Bez zásahu bude tým brzy prohlášen bankrotem. Dluh %debt% zlata, pokladnice je vyčerpána."
   unpaid_debt: Neuhrazený dluh
@@ -602,6 +602,7 @@ financial_crisis:
   weekly_expenses: Týdenní fixní náklady
   gold_on_hand: Zlato k dispozici
   weeks_until_bankruptcy: Týdnů do bankrotu
+  warning_recovery_hint: "Do neděle udělejte jednu recovery akci (prodej, downgrade nebo propuštění). Restrikce začnou po dvou nedělích bez akce, nebo nejpozději třetí neděli v dluhu."
   restricted_hint: "Blokováno: vylepšení základny, vyvolávání, nákupy na tržišti."
   hq_bonuses_suspended: Pasivní bonusy základny jsou dočasně vypnuty.
   action_sell: Prodat na tržišti
@@ -937,6 +938,21 @@ finance:
   tooltip_net_all_time: Celková historická finanční bilance týmu od jeho založení.
   tooltip_all_time_income: Celková částka zlata získaná týmem od založení.
   tooltip_all_time_expense: Celková částka zlata utracená týmem od založení.
+  cashflow_title: Přehled týdenního cashflow
+  cashflow_until_reset: Do příštího týdenního resetu (%datetime%)
+  cashflow_estimated_net: Odhadované saldo (vstupenky minus nedělní náklady)
+  cashflow_arena: Zbývající domácí zápasy (%matches%)
+  cashflow_kingdom_reward: Podíl z království
+  cashflow_kingdom_reward_value: Před náklady
+  cashflow_after_tick: Po nedělním ticku
+  cashflow_covers_hint: Zlato plus zbývající domácí vstupenky pokryjí nedělní mzdy a údržbu. Podíl z království je navíc, přijde před těmito náklady a v tomto odhadu není.
+  cashflow_shortfall_hint: Nedělní mzdy a údržba přesahují zlato plus zbývající domácí vstupenky. Zbytek se stane dluhem. Podíl z království přijde před náklady a v tomto odhadu není, takže výpadek může být menší.
+  cashflow_no_home_matches: Do tohoto týdenního resetu nezbývá žádný domácí ligový zápas.
+  cashflow_excludes_hint: Tržiště, vyvolávání a další hráčské akce v odhadu nejsou. Výše podílu z královské pokladny se předem nezobrazuje.
+  tooltip_cashflow_net: Zbývající domácí vstupenky minus příští nedělní mzdy a údržba HQ. Nezahrnuje podíl z království ani hráčské výdaje.
+  tooltip_cashflow_arena: Odhadované zlato ze vstupenek za naplánované domácí ligové zápasy, které se ještě vyplatí před týdenním resetem.
+  tooltip_cashflow_kingdom_reward: Přerozdělení královské pokladny se vyplácí před výplatami. Velikost pokladny hráči nevidí, proto ji odhad vynechává.
+  tooltip_cashflow_after_tick: Odhadované zlato a dluh po nedělních nákladech a automatické splátce dluhu. Živý tick nejdřív připíše podíl z království; tato částka tu není.
   filter_type: Filtrovat podle typu
   all_types: Všechny typy
   filter_actor: Filtrovat podle iniciátora
