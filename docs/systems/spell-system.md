@@ -34,12 +34,12 @@ Purpose: Document spell schools, mastery, learning, equip slots, academy UI, mat
 | Rule | Meaning |
 |------|---------|
 | Shape | 6 schools × 5 tiers × 2 spells (**60**). Two spells of the same school + tier **must differ in payload shape** (`intent` + `instant_hp` + `apply_effect`). School has a signature status, not a forced map. |
-| Intent | `SpellType`: `harm` / `restore` / `enhance` / `hinder`. L0 and Healer / Nuker / CC templates read intent. |
-| Payloads | `effects` is only `{ "instant_hp": "damage"\|"heal" }` and/or `{ "apply_effect": "<status>" }`. At least one key. Status applies at **100%**. Engine reads this JSON (`SpellPayload`), not school × type. Damage `spellPower × (1 + tier × 0.15)`; heal `spellPower × (1 + tier × 0.10)`. Cast duration stays `1 + tier` (T5 = 6 rounds). Do not add unused keys (lifesteal, cleanse, holy, poison, evasion, chance). `requires_magical_weapon` when `instant_hp` is `damage`. Mana spend is live ([Mana pool](#mana-pool)). |
+| Intent | `SpellType`: `harm` / `restore` / `enhance` / `hinder`. L0 and Healer / CC / Nuker / Buff templates read intent. |
+| Payloads | `effects` is only `{ "instant_hp": "damage"\|"heal" }` and/or `{ "apply_effect": "<status>" }`. At least one key. Status applies at **100%**. Engine reads this JSON (`SpellPayload`), not school × type. Damage `spellPower × (1 + tier × 0.15)`; heal `spellPower × (1 + tier × 0.10)`. Cast duration stays `1 + tier` (T5 = 6 rounds). Do not add unused keys (lifesteal, cleanse, holy, poison, evasion, chance). `requires_magical_weapon` when `instant_hp` is `damage`. Mana spend is live ([Mana pool](#mana-pool)). Instant heal from a non-Undead caster to an Undead target is blocked; `apply_effect` on that same row still applies. `silence` interrupts a queued spell and blocks planning a new one; catalog rows are Dark T1 **Němota** (`hinder`) and Air T2 **Úder blesku** (`harm` + damage). |
 | Gold | T1 ~100–150, T2 ~300–450, T3 ~750–1100, T4 ~1900–2500, T5 ~4800–6200 (~2.5× per tier). |
 | UI | Academy tier filter **1–5**. Hero-detail store lists the same catalog (school then tier). Existing DBs: `app:spells:seed`. |
 
-Light has **no** revive. Dark has **no** heal. Drain names (Vysátí života, Vysátí duše) are flavor only.
+Light has **no** revive. Dark has **no** heal. Drain names (Vysátí života, Vysátí duše) are flavor only. `silence` is Dark T1 **Němota** and Air T2 **Úder blesku**. Existing DBs: `app:spells:seed` renames leftover `Slabost` rows.
 
 ### Catalog matrix
 
@@ -69,7 +69,7 @@ Light has **no** revive. Dark has **no** heal. Drain names (Vysátí života, Vy
 | Water | Věčný mráz | 5 | hinder | — | freeze |
 | Air | Vánek | 1 | enhance | — | haste |
 | Air | Statický náboj | 1 | harm | damage | shock |
-| Air | Úder blesku | 2 | harm | damage | — |
+| Air | Úder blesku | 2 | harm | damage | silence |
 | Air | Větrná zeď | 2 | enhance | — | haste |
 | Air | Vír | 3 | hinder | — | stun |
 | Air | Bouřkový šíp | 3 | harm | damage | shock |
@@ -98,7 +98,7 @@ Light has **no** revive. Dark has **no** heal. Drain names (Vysátí života, Vy
 | Light | Nebeská milost | 5 | restore | heal | — |
 | Light | Aura světla | 5 | enhance | — | bless |
 | Dark | Stínový šíp | 1 | harm | damage | — |
-| Dark | Slabost | 1 | hinder | — | curse |
+| Dark | Němota | 1 | hinder | — | silence |
 | Dark | Vysátí života | 2 | harm | damage | curse |
 | Dark | Zkaženost | 2 | harm | damage | — |
 | Dark | Temný paprsek | 3 | harm | damage | curse |
@@ -130,15 +130,15 @@ Ledger type for learn spend: `spell_learning_cost`. `spell_slot_cost` is **reser
 
 Match-only (`derived.maxMana`, combatant `currentMana`). Not a `Hero` column.
 
-Ready spells need `currentMana >= manaCost`, cooldown 0, and the wand/staff gate for damage payloads (Ents excepted). Deduct on `plan_action`; silence and fumble do not refund. Regen runs each turn after cooldown decrement, including skipped turns. Kickoff fills the pool. Replay accordion shows mana on `turn_start` / `plan_action` — no HUD bar ([12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud)).
+Ready spells need `currentMana >= manaCost`, cooldown 0, and the wand/staff gate for damage payloads (Ents excepted). Deduct on `plan_action`; silence and fumble do not refund. Regen runs each turn after cooldown decrement, including skipped turns. Kickoff fills the pool. Replay accordion shows mana on `turn_start` / `plan_action` and a payload summary on `spell` (damage / heal / blocked heal / status). Matching `damage` / `heal_applied` / `heal_blocked` / `status_applied` rows stay in the log for hex replay with `accordion: false`. No HUD bar ([12-combat-battle.md](../screens/12-combat-battle.md#locked-replay-hud)).
 
 Academy and spellbook show live mana cost, the selected hero’s max mana, intent and payload copy, and a wand/staff warning when a damage spell cannot fire.
 
 ---
 
-## L0 utility and L2 templates
+## L0 pick and L2 templates
 
-Empty `spell_priorities`: strongest ready **restore** under the approach HP threshold, else highest-tier **harm**, else highest-tier **hinder**. Do not auto-cast **enhance** (L2 only). Formation tactics panel can write Healer (`restore`) / CC (`hinder`) / Nuker (`harm`) lists from equipped spells (opt-in). Sanitizer unchanged. No L3.
+Empty `spell_priorities`: strongest ready **restore** under the approach HP threshold, else the **lowest-tier ready enhance** whose `apply_effect` is not already on the caster (self), else highest-tier **harm**, else highest-tier **hinder**. Formation tactics panel can write Healer (`restore`) / CC (`hinder`) / Nuker (`harm`) / Buff (`enhance` on self) lists from equipped spells (opt-in). Sanitizer unchanged. No L3.
 
 ---
 

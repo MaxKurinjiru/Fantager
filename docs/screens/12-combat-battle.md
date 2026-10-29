@@ -44,7 +44,7 @@ Not in the HUD: morale widget, initiative queue, remaining-heroes sidebar, forma
 
 - Accordion of `combat_log` events (`battle_report`)
 - Semantic row styles per event type
-- Spell events use type `spell` (i18n key remains `battle.spell_cast`)
+- Spell events use type `spell` (i18n key remains `battle.spell_cast`) plus payload copy (`battle.spell_payload_*`). Matching `damage` / `heal_*` / `status_applied` rows from that cast set `accordion: false` so the accordion does not repeat them; hex replay still folds those events.
 - Turn order stays in the accordion (`turn_start`, including mana after regen); Haste/Shock change initiative sort only — no HUD queue
 - Spell `plan_action` rows include mana spent
 

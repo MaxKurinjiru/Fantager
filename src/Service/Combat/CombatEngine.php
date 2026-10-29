@@ -963,8 +963,9 @@ class CombatEngine
      *
      * Heal with the strongest ready restore spell when any living ally
      * (including the caster) is under the approach HP threshold. Otherwise
-     * the highest-tier ready harm spell. If neither is ready, the
-     * highest-tier ready hinder spell. Enhance is L2-only.
+     * the lowest-tier ready enhance whose status is not already on the
+     * caster (self). Otherwise the highest-tier ready harm spell. If none
+     * of those is ready, the highest-tier ready hinder spell.
      *
      * @param array<string, mixed> $runState
      * @param array<string, mixed> $actor
@@ -990,6 +991,11 @@ class CombatEngine
             if (null !== $heal) {
                 return ['spell' => $heal, 'target' => 'lowest_hp_ally'];
             }
+        }
+
+        $buff = $this->lowestTierReadyMissingBuff($actor, $ready);
+        if (null !== $buff) {
+            return ['spell' => $buff, 'target' => 'self'];
         }
 
         $offense = $this->strongestReadySpell($ready, 'harm');
@@ -1069,6 +1075,53 @@ class CombatEngine
         }
 
         return $best;
+    }
+
+    /**
+     * Lowest-tier ready enhance whose apply_effect is not already on the caster.
+     * Fast T1 buffs win over long T5 casts. Enhance with no status is eligible.
+     *
+     * @param array<string, mixed>       $actor
+     * @param list<array<string, mixed>> $spells
+     *
+     * @return array<string, mixed>|null
+     */
+    private function lowestTierReadyMissingBuff(array $actor, array $spells): ?array
+    {
+        $best = null;
+        foreach ($spells as $spell) {
+            if ('enhance' !== ($spell['type'] ?? '')) {
+                continue;
+            }
+            $effect = SpellPayload::fromEffects(\is_array($spell['effects'] ?? null) ? $spell['effects'] : [])->applyEffect;
+            if (null !== $effect && $this->combatantHasStatus($actor, $effect->value)) {
+                continue;
+            }
+            if (null === $best) {
+                $best = $spell;
+                continue;
+            }
+            $tierDiff = ((int) ($spell['tier'] ?? 1)) <=> ((int) ($best['tier'] ?? 1));
+            if ($tierDiff < 0 || (0 === $tierDiff && ((int) $spell['id']) < ((int) $best['id']))) {
+                $best = $spell;
+            }
+        }
+
+        return $best;
+    }
+
+    /**
+     * @param array<string, mixed> $combatant
+     */
+    private function combatantHasStatus(array $combatant, string $effect): bool
+    {
+        foreach ($combatant['statusEffects'] ?? [] as $status) {
+            if ($effect === ($status['effect'] ?? '')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -1836,6 +1889,7 @@ class CombatEngine
             }
         }
 
+        $spellEventIndex = count($roundEvents);
         $roundEvents[] = [
             't' => count($runState['events']) + count($roundEvents),
             'type' => 'spell',
@@ -1848,6 +1902,9 @@ class CombatEngine
             'target_slot' => $targetSlot,
             'spell_id' => $spell['id'],
             'spell_name' => $spell['name'],
+            'instant_hp' => $payload->instantHp,
+            'apply_effect' => $payload->applyEffect?->value,
+            'heal_blocked' => false,
         ];
 
         if (SpellPayload::INSTANT_DAMAGE === $payload->instantHp) {
@@ -1889,6 +1946,9 @@ class CombatEngine
             $this->updateCombatant($runState, $targetSide, $targetSlot, $target);
             $this->addContribution($runState, (int) $caster['heroId'], 'damage_hp', $effectiveDamage);
 
+            $roundEvents[$spellEventIndex]['amount'] = $netDamage;
+            $roundEvents[$spellEventIndex]['hp_after'] = $target['currentHp'];
+
             $roundEvents[] = [
                 't' => count($runState['events']) + count($roundEvents),
                 'type' => 'damage',
@@ -1897,6 +1957,7 @@ class CombatEngine
                 'amount' => $netDamage,
                 'hp_after' => $target['currentHp'],
                 'source' => 'magical',
+                'accordion' => false,
             ];
 
             $hitKey = (string) $target['heroId'];
@@ -1929,12 +1990,14 @@ class CombatEngine
             }
         } elseif (SpellPayload::INSTANT_HEAL === $payload->instantHp) {
             if ('undead' === $target['race'] && 'undead' !== $caster['race']) {
+                $roundEvents[$spellEventIndex]['heal_blocked'] = true;
                 $roundEvents[] = [
                     't' => count($runState['events']) + count($roundEvents),
                     'type' => 'heal_blocked',
                     'target_side' => $targetSide,
                     'target_slot' => $targetSlot,
                     'reason' => 'undead_external_heal',
+                    'accordion' => false,
                 ];
             } else {
                 $spellPower = (float) $caster['derived']['spellPower'];
@@ -1958,6 +2021,9 @@ class CombatEngine
                 $this->updateCombatant($runState, $targetSide, $targetSlot, $target);
                 $this->addContribution($runState, (int) $caster['heroId'], 'heal_hp', $effectiveHeal);
 
+                $roundEvents[$spellEventIndex]['amount'] = $healAmount;
+                $roundEvents[$spellEventIndex]['hp_after'] = $target['currentHp'];
+
                 $roundEvents[] = [
                     't' => count($runState['events']) + count($roundEvents),
                     'type' => 'heal_applied',
@@ -1965,6 +2031,7 @@ class CombatEngine
                     'target_slot' => $targetSlot,
                     'amount' => $healAmount,
                     'hp_after' => $target['currentHp'],
+                    'accordion' => false,
                 ];
             }
         } elseif (null === $payload->instantHp) {
@@ -1972,6 +2039,7 @@ class CombatEngine
         }
 
         if (null !== $payload->applyEffect) {
+            $roundEvents[$spellEventIndex]['status_duration'] = $this->getDurationForStatus($payload->applyEffect->value);
             $this->applyStatusEffect($runState, $targetSide, $targetSlot, $target, $payload->applyEffect->value, $roundEvents, (int) $caster['heroId'], $casterSide, $casterSlot);
         }
     }
@@ -2020,6 +2088,7 @@ class CombatEngine
             'source_hero_id' => $sourceHeroId,
             'source_side' => $sourceSide,
             'source_slot' => $sourceSlot,
+            'accordion' => false,
         ];
     }
 

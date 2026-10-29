@@ -60,7 +60,7 @@ final class SpellCatalog
 
             self::row('Vánek', School::Air, 1, SpellType::Enhance, 10, 3, 100, null, StatusEffect::Haste),
             self::row('Statický náboj', School::Air, 1, SpellType::Harm, 14, 1, 150, $d, StatusEffect::Shock),
-            self::row('Úder blesku', School::Air, 2, SpellType::Harm, 32, 3, 400, $d, null),
+            self::row('Úder blesku', School::Air, 2, SpellType::Harm, 32, 3, 400, $d, StatusEffect::Silence),
             self::row('Větrná zeď', School::Air, 2, SpellType::Enhance, 22, 4, 300, null, StatusEffect::Haste),
             self::row('Vír', School::Air, 3, SpellType::Hinder, 30, 3, 750, null, StatusEffect::Stun),
             self::row('Bouřkový šíp', School::Air, 3, SpellType::Harm, 45, 3, 900, $d, StatusEffect::Shock),
@@ -92,7 +92,7 @@ final class SpellCatalog
             self::row('Aura světla', School::Light, 5, SpellType::Enhance, 70, 4, 5000, null, StatusEffect::Bless),
 
             self::row('Stínový šíp', School::Dark, 1, SpellType::Harm, 10, 1, 100, $d, null),
-            self::row('Slabost', School::Dark, 1, SpellType::Hinder, 14, 3, 150, null, StatusEffect::Curse),
+            self::row('Němota', School::Dark, 1, SpellType::Hinder, 14, 3, 150, null, StatusEffect::Silence),
             self::row('Vysátí života', School::Dark, 2, SpellType::Harm, 26, 3, 380, $d, StatusEffect::Curse),
             self::row('Zkaženost', School::Dark, 2, SpellType::Harm, 22, 2, 320, $d, null),
             self::row('Temný paprsek', School::Dark, 3, SpellType::Harm, 40, 2, 800, $d, StatusEffect::Curse),

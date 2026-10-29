@@ -2,8 +2,8 @@
 
 Reference: [product/overview.md](../product/overview.md#calendar-and-ticks), [league-system.md](league-system.md)
 
-Status: Live  
-Screens: [14-calendar.md](../screens/14-calendar.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Status: Live
+Screens: [14-calendar.md](../screens/14-calendar.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)
 Open design: none
 
 Purpose: Document the weekly schedule, automated event sequences, daily/weekly server ticks, and the timeline of a league season. Dungeon / crafting / world-event ticks are **Deferred** ([future/](../future/)) and are not in the runner.
@@ -33,7 +33,7 @@ The game world operates on automated server ticks executed at scheduled times. T
 
 ## Season Lifecycle Timeline
 
-Based on a standard 10-team league group playing a **double round-robin** tournament (each team plays every other team twice: once Home, once Away), the season requires **18 rounds** of matches. 
+Based on a standard 10-team league group playing a **double round-robin** tournament (each team plays every other team twice: once Home, once Away), the season requires **18 rounds** of matches.
 
 To provide players with time to prepare rosters, adjust strategies, and play friendly matches:
 - **Week 1 (Preparation Gap):** No league matches are scheduled. Players can recruit heroes, build formations, trade on the marketplace, upgrade headquarters facilities, and schedule friendly/practice matches.
@@ -62,25 +62,25 @@ gantt
     title Double Round-Robin Season Timeline (77 Days)
     dateFormat  YYYY-MM-DD
     axisFormat %w
-    
+
     section Week 1 (Prep)
     Preparation Gap (No League Matches) :active, 2026-06-02, 7d
-    
+
     section Weeks 2-3 (First Leg)
     Rounds 1-4 (Tue/Fri) :active, 2026-06-09, 11d
-    
+
     section Weeks 4-5
     Rounds 5-8 (Tue/Fri) :active, 2026-06-22, 12d
-    
+
     section Week 6 (Mid-Way)
     Rounds 9-10 (Tue/Fri) :active, 2026-07-06, 5d
-    
+
     section Weeks 7-8 (Second Leg)
     Rounds 11-14 (Tue/Fri) :active, 2026-07-13, 12d
-    
+
     section Weeks 9-10
     Rounds 15-18 (Tue/Fri) :active, 2026-07-27, 12d
-    
+
     section Week 11 (Transition)
     Season Transition (Fri 19:00) :crit, 2026-08-10, 5d
 ```
@@ -132,6 +132,20 @@ For each active Kingdom:
    - **Match-scoped** (`LeagueMatch`): Queries all scheduled fixtures in the kingdom at that time, and schedules a separate log entry for each fixture.
    - **Kingdom-scoped** (`SeasonTransition`, `InactiveRegistrationCleanup`, and the Royal Treasury distribution part of `WeeklyReset`): Schedules a single log entry.
 4. Pending ticks are advanced by `KingdomTickOrchestrator` (invoked from `app:ticks:run`), which dispatches `ExecuteSingleTickMessage` per tick to Symfony Messenger.
+
+#### Manual Time Overrides
+
+- `--time="2026-11-03 03:00:00"` schedules through an explicit UTC timestamp. Relative values such as `--time="+1 week"` are relative to the current real-world time.
+- `--advance="+1 week"` schedules through the latest completed tick's `scheduledAt` plus the given relative interval, independently for each selected kingdom. The base is the newest completed scheduled timestamp across all tick types and scopes, not `executedAt` or the current time. Arithmetic uses UTC.
+- `--kingdom-id=1` limits either mode to one kingdom; omitting it selects all kingdoms.
+- `--advance` and `--time` are mutually exclusive. Invalid intervals, intervals that do not move time forward, and kingdoms without completed tick history fail with an error. Use the normal command or `--time` to establish initial completed ticks.
+
+```bash
+docker exec -u apache fantager-web php bin/console app:ticks:run --advance="+1 week" --kingdom-id=1
+docker exec -u apache fantager-web composer messenger
+```
+
+This changes live game state, not just a preview. Finish processing the existing tick pipeline before advancing again: pending/dispatched ticks are not the base for `--advance`, so repeating it before completion does not reliably add another week. The command schedules work; Messenger workers still execute it. The `composer messenger` shortcut exits after 3000 messages and may need restarting to finish a large advance. These overrides do not change the application's real-world clock.
 
 ### 3. Chronological, Parallel & Guided Orchestration Flow
 

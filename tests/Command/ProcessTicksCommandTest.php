@@ -19,6 +19,7 @@ use App\Service\Calendar\KingdomTickRunnerService;
 use App\Service\Calendar\TickScheduleCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -119,6 +120,7 @@ class ProcessTicksCommandTest extends TestCase
             $kingdomRepository,
             $tickRunner,
             $tickOrchestrator,
+            $tickLogRepository,
         );
 
         $tester = new CommandTester($command);
@@ -146,5 +148,101 @@ class ProcessTicksCommandTest extends TestCase
                 $this->assertEquals($fatigueRecoveryTime, $log->getScheduledAt());
             }
         }
+    }
+
+    public function testAdvanceUsesEachKingdomsLatestCompletedScheduledTime(): void
+    {
+        $firstKingdom = new Kingdom();
+        $firstKingdom->setName('First Kingdom');
+        $secondKingdom = new Kingdom();
+        $secondKingdom->setName('Second Kingdom');
+        $idProperty = new \ReflectionProperty(Kingdom::class, 'id');
+        $idProperty->setValue($firstKingdom, 1);
+        $idProperty->setValue($secondKingdom, 2);
+
+        $kingdomRepository = $this->createMock(KingdomRepository::class);
+        $kingdomRepository->method('findAll')->willReturn([$firstKingdom, $secondKingdom]);
+
+        $firstLog = new KingdomTickLog();
+        $firstLog->setScheduledAt(new \DateTimeImmutable('2026-10-27T03:00:00Z'));
+        $secondLog = new KingdomTickLog();
+        $secondLog->setScheduledAt(new \DateTimeImmutable('2026-11-10T03:00:00Z'));
+
+        $tickLogRepository = $this->createMock(KingdomTickLogRepository::class);
+        $tickLogRepository->expects($this->exactly(2))
+            ->method('findOneBy')
+            ->willReturnCallback(function (array $criteria, ?array $orderBy) use ($firstKingdom, $firstLog, $secondLog): KingdomTickLog {
+                $this->assertSame('completed', $criteria['status']);
+                $this->assertSame(['scheduledAt' => 'DESC'], $orderBy);
+
+                return $criteria['kingdom'] === $firstKingdom ? $firstLog : $secondLog;
+            });
+
+        $tickRunner = $this->createMock(KingdomTickRunnerService::class);
+        $tickRunner->method('recoverStaleTicks')->willReturn(0);
+        $tickRunner->method('findBlockedTick')->willReturn(null);
+        $tickRunner->method('hasPendingTicks')->willReturn(false);
+        $tickRunner->expects($this->exactly(2))
+            ->method('schedulePendingTicks')
+            ->willReturnCallback(function (Kingdom $kingdom, \DateTimeImmutable $until) use ($firstKingdom): int {
+                $expected = $kingdom === $firstKingdom ? '2026-11-03 03:00:00' : '2026-11-17 03:00:00';
+                $this->assertSame($expected, $until->format('Y-m-d H:i:s'));
+                $this->assertSame('UTC', $until->getTimezone()->getName());
+
+                return 1;
+            });
+
+        $tickOrchestrator = $this->createMock(KingdomTickOrchestrator::class);
+        $tickOrchestrator->expects($this->exactly(2))->method('orchestrate');
+
+        $tester = new CommandTester(new ProcessTicksCommand($kingdomRepository, $tickRunner, $tickOrchestrator, $tickLogRepository));
+
+        $this->assertSame(0, $tester->execute(['--advance' => '+1 week']));
+        $this->assertStringContainsString('Advancing from 2026-10-27 03:00:00 UTC to 2026-11-03 03:00:00 UTC.', $tester->getDisplay());
+    }
+
+    /**
+     * @param array<string, string> $options
+     */
+    #[DataProvider('invalidAdvanceProvider')]
+    public function testRejectsInvalidAdvanceWithoutScheduling(array $options, bool $hasHistory, string $expectedError): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setName('Test Kingdom');
+        $idProperty = new \ReflectionProperty(Kingdom::class, 'id');
+        $idProperty->setValue($kingdom, 1);
+
+        $kingdomRepository = $this->createMock(KingdomRepository::class);
+        $kingdomRepository->method('findAll')->willReturn([$kingdom]);
+        $kingdomRepository->method('findBy')->willReturn([$kingdom]);
+
+        $latestLog = new KingdomTickLog();
+        $latestLog->setScheduledAt(new \DateTimeImmutable('2026-10-27T03:00:00Z'));
+        $tickLogRepository = $this->createMock(KingdomTickLogRepository::class);
+        $tickLogRepository->method('findOneBy')->willReturn($hasHistory ? $latestLog : null);
+
+        $tickRunner = $this->createMock(KingdomTickRunnerService::class);
+        $tickRunner->expects($this->never())->method('schedulePendingTicks');
+        $tickOrchestrator = $this->createMock(KingdomTickOrchestrator::class);
+        $tickOrchestrator->expects($this->never())->method('orchestrate');
+
+        $tester = new CommandTester(new ProcessTicksCommand($kingdomRepository, $tickRunner, $tickOrchestrator, $tickLogRepository));
+
+        $this->assertSame(1, $tester->execute($options));
+        $this->assertStringContainsString($expectedError, $tester->getDisplay());
+    }
+
+    /**
+     * @return iterable<string, array{array<string, string>, bool, string}>
+     */
+    public static function invalidAdvanceProvider(): iterable
+    {
+        yield 'conflicting options' => [['--advance' => '+1 week', '--time' => '2026-11-03 03:00:00'], true, 'cannot be used together'];
+        yield 'invalid interval' => [['--advance' => 'not-an-interval'], true, 'Invalid --advance interval'];
+        yield 'empty interval' => [['--advance' => ''], true, 'Invalid --advance interval'];
+        yield 'absolute date' => [['--advance' => '2026-11-03'], true, 'Invalid --advance interval'];
+        yield 'negative interval' => [['--advance' => '-1 week'], true, 'must move time forward'];
+        yield 'zero interval' => [['--advance' => '0 days'], true, 'must move time forward'];
+        yield 'no completed history' => [['--advance' => '+1 week', '--kingdom-id' => '1'], false, 'has no completed ticks'];
     }
 }

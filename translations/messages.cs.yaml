@@ -1356,7 +1356,7 @@ formation:
   engine_targeting_l0_defensive: "Cíle (L0): živá přední řada, pak nejvyšší fyzický útok"
   engine_targeting_l1: "Cíle (L1): %order%"
   engine_targeting_fallback: "pak %fallback%"
-  engine_spells_l0: "Kouzla (L0): léčení pod %threshold% % HP, jinak nejsilnější útok, jinak oslabení"
+  engine_spells_l0: "Kouzla (L0): léčení pod %threshold% % HP, jinak chybějící posílení na sebe, jinak nejsilnější útok, jinak oslabení"
   engine_spells_l2: "Kouzla (L2): %count% nasazených kouzel"
   engine_movement: "Pohyb: %goal%"
   engine_order_arrow: " → "
@@ -1378,10 +1378,11 @@ formation:
   tactics_fallback_lowest_hp: Nejnižší zbývající HP
   tactics_fallback_highest_threat: Nejvyšší fyzický útok
   tactics_spells: Priorita kouzel
-  tactics_spells_hint: Seřazená nasazená kouzla. Prázdný seznam = léčení, pak nejsilnější útok, pak oslabení.
+  tactics_spells_hint: Seřazená nasazená kouzla. Prázdný seznam = léčení, pak chybějící posílení na sebe, pak nejsilnější útok, pak oslabení.
   tactics_template_healer: Léčitel
   tactics_template_cc: Ovládání
   tactics_template_nuker: Útočník
+  tactics_template_buff: Posílení
   tactics_assign_hero_spells: Přiřaďte hrdinu do slotu, abyste nastavili prioritu kouzel.
   tactics_no_spells: Tento hrdina nemá nasazená kouzla.
   tactics_add_spell: Přidat nasazené kouzlo
@@ -2108,6 +2109,10 @@ battle:
   ko: "%hero% byl vyřazen z boje (KO)!"
   ko_by_effect: "%hero% byl vyřazen efektem %effect%, který seslal %killer%"
   spell_cast: "%caster% sesílá kouzlo %spell% na %target%"
+  spell_payload_damage: "— %amount% magického poškození (zbývá %hp% HP)."
+  spell_payload_heal: "— léčí %amount% HP (nyní %hp% HP)."
+  spell_payload_heal_blocked: "— léčení zablokováno (nemrtvý)."
+  spell_payload_status: "— aplikuje %effect% (%duration% kol)."
   heal_applied: "%target% je vyléčen o %amount% HP (nyní %hp% HP)"
   heal_blocked: "Léčení cíle %target% bylo zablokováno (%reason%)"
   status_applied: "%target% je pod vlivem efektu %effect% (zbývá %duration% kol)"
@@ -2240,7 +2245,7 @@ spell:
   heavenly_grace: Nebeská milost
   aura_of_light: Aura světla
   shadow_bolt: Stínový šíp
-  weakness: Slabost
+  mute: Němota
   life_drain: Vysátí života
   corruption: Zkaženost
   dark_beam: Temný paprsek

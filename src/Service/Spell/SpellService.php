@@ -30,6 +30,11 @@ class SpellService
 
     public const CATALOG_MAX_TIER = 5;
 
+    /** Previous catalog names → current name (seed updates in place). */
+    private const FORMER_NAMES = [
+        'Němota' => ['Slabost'],
+    ];
+
     /** @var array<string, string> */
     private const NAME_KEYS = [
         'Jiskra' => 'spell.spark',
@@ -83,7 +88,7 @@ class SpellService
         'Nebeská milost' => 'spell.heavenly_grace',
         'Aura světla' => 'spell.aura_of_light',
         'Stínový šíp' => 'spell.shadow_bolt',
-        'Slabost' => 'spell.weakness',
+        'Němota' => 'spell.mute',
         'Vysátí života' => 'spell.life_drain',
         'Zkaženost' => 'spell.corruption',
         'Temný paprsek' => 'spell.dark_beam',
@@ -346,13 +351,15 @@ class SpellService
         $skippedCount = 0;
 
         foreach ($spellsData as $data) {
-            $spell = $this->spellRepository->findOneBy(['name' => $data['name'], 'school' => $data['school']]);
+            $spell = $this->findCatalogSpell($data['name'], $data['school']);
             $isNew = false;
             if (null === $spell) {
                 $spell = new Spell();
                 $spell->setName($data['name']);
                 $spell->setSchool($data['school']);
                 $isNew = true;
+            } elseif ($spell->getName() !== $data['name']) {
+                $spell->setName($data['name']);
             }
 
             $effects = SpellPayload::catalog($data['instant_hp'], $data['apply_effect']);
@@ -379,5 +386,22 @@ class SpellService
         $this->em->flush();
 
         return ['inserted' => $insertedCount, 'skipped' => $skippedCount];
+    }
+
+    private function findCatalogSpell(string $name, School $school): ?Spell
+    {
+        $spell = $this->spellRepository->findOneBy(['name' => $name, 'school' => $school]);
+        if (null !== $spell) {
+            return $spell;
+        }
+
+        foreach (self::FORMER_NAMES[$name] ?? [] as $formerName) {
+            $spell = $this->spellRepository->findOneBy(['name' => $formerName, 'school' => $school]);
+            if (null !== $spell) {
+                return $spell;
+            }
+        }
+
+        return null;
     }
 }

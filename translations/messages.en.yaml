@@ -1357,7 +1357,7 @@ formation:
   engine_targeting_l0_defensive: "Targets (L0): living front row, then highest physical attack"
   engine_targeting_l1: "Targets (L1): %order%"
   engine_targeting_fallback: "then %fallback%"
-  engine_spells_l0: "Spells (L0): restore under %threshold%% HP, else strongest harm, else hinder"
+  engine_spells_l0: "Spells (L0): restore under %threshold%% HP, else a missing self-buff, else strongest harm, else hinder"
   engine_spells_l2: "Spells (L2): %count% equipped spell(s)"
   engine_movement: "Movement: %goal%"
   engine_order_arrow: " → "
@@ -1379,10 +1379,11 @@ formation:
   tactics_fallback_lowest_hp: Lowest remaining HP
   tactics_fallback_highest_threat: Highest physical attack
   tactics_spells: Spell priorities
-  tactics_spells_hint: Ordered equipped spells. Leave empty to use restore, then highest harm, then hinder.
+  tactics_spells_hint: Ordered equipped spells. Leave empty to use restore, then a missing self-buff, then highest harm, then hinder.
   tactics_template_healer: Healer
   tactics_template_cc: Crowd control
   tactics_template_nuker: Nuker
+  tactics_template_buff: Buff
   tactics_assign_hero_spells: Assign a hero to this slot to set spell priorities.
   tactics_no_spells: This hero has no equipped spells.
   tactics_add_spell: Add equipped spell
@@ -2109,6 +2110,10 @@ battle:
   ko: "%hero% has been knocked out (KO)!"
   ko_by_effect: "%hero% was knocked out by %killer%'s %effect%"
   spell_cast: "%caster% casts %spell% on %target%"
+  spell_payload_damage: "— %amount% magical damage (%hp% HP left)."
+  spell_payload_heal: "— heals %amount% HP (%hp% HP left)."
+  spell_payload_heal_blocked: "— healing blocked (undead)."
+  spell_payload_status: "— applies %effect% (%duration% turns)."
   heal_applied: "%target% is healed for %amount% HP (%hp% HP left)"
   heal_blocked: "%target%'s healing was blocked (%reason%)"
   status_applied: "%target% is affected by %effect% (%duration% turns remaining)"
@@ -2241,7 +2246,7 @@ spell:
   heavenly_grace: Heavenly Grace
   aura_of_light: Aura of Light
   shadow_bolt: Shadow Bolt
-  weakness: Weakness
+  mute: Mute
   life_drain: Life Drain
   corruption: Corruption
   dark_beam: Dark Beam

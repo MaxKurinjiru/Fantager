@@ -240,6 +240,55 @@ class CombatEngineSpellTest extends TestCase
         $this->assertSame('front_1', $skipEvent['slot']);
     }
 
+    public function testSilenceInterruptsQueuedSpell(): void
+    {
+        $mute = [
+            'id' => 1,
+            'name' => 'Mute',
+            'school' => 'dark',
+            'type' => 'hinder',
+            'mana_cost' => 0,
+            'cooldown' => 5,
+            'tier' => 1,
+            'effects' => ['apply_effect' => 'silence'],
+        ];
+        $meteor = [
+            'id' => 2,
+            'name' => 'Meteor',
+            'school' => 'fire',
+            'type' => 'harm',
+            'mana_cost' => 0,
+            'cooldown' => 5,
+            'tier' => 5,
+            'effects' => ['instant_hp' => 'damage'],
+        ];
+
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, [
+            ['spell_id' => 1, 'when' => 'always', 'target' => 'enemy'],
+        ], [$mute], init: 20);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [
+            ['spell_id' => 2, 'when' => 'always', 'target' => 'enemy'],
+        ], [$meteor], init: 80);
+
+        $events = $this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events'];
+
+        $status = $this->findEvent($events, 'status_applied');
+        $this->assertNotNull($status);
+        $this->assertSame('silence', $status['effect']);
+        $this->assertSame('b', $status['target_side']);
+
+        $interrupted = null;
+        foreach ($events as $event) {
+            if ('action_interrupted' === ($event['type'] ?? '') && 'silence' === ($event['reason'] ?? '')) {
+                $interrupted = $event;
+                break;
+            }
+        }
+        $this->assertNotNull($interrupted);
+        $this->assertSame('b', $interrupted['side']);
+        $this->assertSame('front_1', $interrupted['slot']);
+    }
+
     public function testTauntForcesTargetSelection(): void
     {
         // Setup Side B so front_2 has 'taunt' active status.
@@ -437,7 +486,7 @@ class CombatEngineSpellTest extends TestCase
         $this->assertSame(0, $plan['mana_cost']);
     }
 
-    public function testEmptyPrioritiesDoNotCastEnhance(): void
+    public function testEmptyPrioritiesCastsMissingEnhanceOnSelf(): void
     {
         $spells = [
             $this->spell(5, 'Haste', 'enhance', 3),
@@ -447,7 +496,88 @@ class CombatEngineSpellTest extends TestCase
 
         $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
 
-        $this->assertNull($plan);
+        $this->assertNotNull($plan);
+        $this->assertSame('Haste', $plan['spell_name']);
+        $this->assertSame('a', $plan['target_side']);
+        $this->assertSame('front_1', $plan['target_slot']);
+    }
+
+    public function testEmptyPrioritiesPrefersLowestMissingEnhanceOverHarm(): void
+    {
+        $spells = [
+            $this->spell(4, 'Bolt', 'harm', 5),
+            $this->spell(5, 'Haste', 'enhance', 1),
+            $this->spell(6, 'Gale', 'enhance', 4),
+        ];
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, [], $spells, init: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plan = $this->firstSpellPlan($this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']);
+
+        $this->assertNotNull($plan);
+        $this->assertSame('Haste', $plan['spell_name']);
+        $this->assertSame('front_1', $plan['target_slot']);
+    }
+
+    public function testEmptyPrioritiesSkipsEnhanceOnceBuffIsActive(): void
+    {
+        $haste = $this->spell(5, 'Haste', 'enhance', 1);
+        $haste['cooldown'] = 0;
+        $spells = [
+            $this->spell(4, 'Bolt', 'harm', 2),
+            $haste,
+        ];
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, [], $spells, init: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], init: 1);
+
+        $plans = $this->spellPlans(
+            $this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events']
+        );
+
+        $this->assertGreaterThanOrEqual(2, count($plans));
+        $this->assertSame('Haste', $plans[0]['spell_name']);
+        $this->assertSame('Bolt', $plans[1]['spell_name']);
+    }
+
+    public function testSpellEventCarriesPayloadSummary(): void
+    {
+        $spell = [
+            'id' => 10,
+            'name' => 'Fireball',
+            'school' => 'fire',
+            'type' => 'harm',
+            'mana_cost' => 0,
+            'cooldown' => 3,
+            'tier' => 1,
+            'effects' => ['instant_hp' => 'damage', 'apply_effect' => 'burn'],
+        ];
+        $priorities = [
+            ['spell_id' => 10, 'when' => 'always', 'threshold' => 100, 'target' => 'enemy'],
+        ];
+        $sideA = $this->buildSide(1, 100, FormationApproach::Balanced, $priorities, [$spell], spellPower: 50);
+        $sideB = $this->buildSide(2, 200, FormationApproach::Balanced, [], [], hp: 200);
+        $events = $this->engine->simulate(new CombatMatchRequest($sideA, $sideB, MatchType::League, seed: 1))->getCombatLog()['events'];
+
+        $cast = $this->findEvent($events, 'spell');
+        $this->assertNotNull($cast);
+        $this->assertSame('damage', $cast['instant_hp']);
+        $this->assertSame('burn', $cast['apply_effect']);
+        $this->assertGreaterThan(0, $cast['amount']);
+        $this->assertArrayHasKey('hp_after', $cast);
+        $this->assertSame(3, $cast['status_duration']);
+
+        $damage = null;
+        foreach ($events as $event) {
+            if ('damage' === ($event['type'] ?? '') && 'magical' === ($event['source'] ?? '')) {
+                $damage = $event;
+                break;
+            }
+        }
+        $this->assertNotNull($damage);
+        $this->assertFalse($damage['accordion']);
+        $status = $this->findEvent($events, 'status_applied');
+        $this->assertNotNull($status);
+        $this->assertFalse($status['accordion']);
     }
 
     public function testSpellIsNotQueuedWhenManaIsInsufficient(): void
@@ -498,6 +628,23 @@ class CombatEngineSpellTest extends TestCase
         }
 
         return null;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $events
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function spellPlans(array $events): array
+    {
+        $plans = [];
+        foreach ($events as $event) {
+            if ('plan_action' === ($event['type'] ?? '') && 'spell' === ($event['action_type'] ?? '') && 'a' === ($event['side'] ?? '') && 'front_1' === ($event['slot'] ?? '')) {
+                $plans[] = $event;
+            }
+        }
+
+        return $plans;
     }
 
     /**

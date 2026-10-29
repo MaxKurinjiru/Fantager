@@ -90,6 +90,8 @@ apply_effect      = 100% status from the catalog YAML (with or without HP)
 
 - **Race:** Genies +15% spell power (`CombatStatCalculator`). Spell crit for Genies is under Critical Hit Chance below.
 - Catalog `effects` is `instant_hp` and/or `apply_effect` only. Product: [spell-system.md](spell-system.md#locked-catalog-t1t5).
+- Non-Undead caster → Undead target: `instant_hp` heal is blocked (`heal_blocked`); `apply_effect` on the same row still applies.
+- `silence` cancels a queued spell and blocks planning a new one. Catalog: Dark T1 Němota; Air T2 Úder blesku (also deals damage).
 
 ### Mana pool
 

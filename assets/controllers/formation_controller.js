@@ -33,6 +33,7 @@ export default class extends Controller {
         'templateHealer',
         'templateCc',
         'templateNuker',
+        'templateBuff',
         'engineSummary',
         'engineTargeting',
         'engineSpells',
@@ -795,6 +796,12 @@ export default class extends Controller {
                     threshold: 50,
                     target: 'lowest_hp_ally'
                 });
+            } else if ('enhance' === type) {
+                rows.push({
+                    spell_id: spell.id,
+                    when: 'always',
+                    target: 'self'
+                });
             } else {
                 rows.push({
                     spell_id: spell.id,
@@ -963,6 +970,9 @@ export default class extends Controller {
         }
         if (this.hasTemplateNukerTarget) {
             this.templateNukerTarget.classList.toggle('hidden', !hasType('harm'));
+        }
+        if (this.hasTemplateBuffTarget) {
+            this.templateBuffTarget.classList.toggle('hidden', !hasType('enhance'));
         }
 
         this.spellPriorityListTarget.replaceChildren();

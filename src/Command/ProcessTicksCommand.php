@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Repository\Kingdom\KingdomRepository;
+use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Service\Calendar\KingdomTickOrchestrator;
 use App\Service\Calendar\KingdomTickRunnerService;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -24,6 +25,7 @@ class ProcessTicksCommand extends Command
         private readonly KingdomRepository $kingdomRepository,
         private readonly KingdomTickRunnerService $tickRunnerService,
         private readonly KingdomTickOrchestrator $tickOrchestrator,
+        private readonly KingdomTickLogRepository $tickLogRepository,
     ) {
         parent::__construct();
     }
@@ -31,6 +33,7 @@ class ProcessTicksCommand extends Command
     protected function configure(): void
     {
         $this->addOption('time', null, InputOption::VALUE_OPTIONAL, 'Override check execution time (e.g. "2026-06-08 19:30:00")')
+               ->addOption('advance', null, InputOption::VALUE_REQUIRED, 'Advance from each Kingdom\'s latest completed scheduled tick (e.g. "+1 week"), instead of the current time')
              ->addOption('kingdom-id', null, InputOption::VALUE_OPTIONAL, 'Run only for a specific Kingdom ID');
     }
 
@@ -38,7 +41,25 @@ class ProcessTicksCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $timeStr = $input->getOption('time');
+        $advanceStr = $input->getOption('advance');
         $kingdomIdOpt = $input->getOption('kingdom-id');
+
+        if (null !== $advanceStr && null !== $timeStr) {
+            $io->error('Options --time and --advance cannot be used together.');
+
+            return Command::FAILURE;
+        }
+
+        $advanceInterval = null;
+        if (null !== $advanceStr) {
+            try {
+                $advanceInterval = \DateInterval::createFromDateString((string) $advanceStr);
+            } catch (\Exception) {
+                $io->error('Invalid --advance interval. Use a positive relative interval such as "+1 week".');
+
+                return Command::FAILURE;
+            }
+        }
 
         if (null !== $timeStr) {
             try {
@@ -63,7 +84,9 @@ class ProcessTicksCommand extends Command
             $kingdoms = $this->kingdomRepository->findAll();
         }
 
-        $io->section(sprintf('Processing ticks at %s UTC...', $now->format('Y-m-d H:i:s')));
+        $io->section(null === $advanceInterval
+            ? sprintf('Processing ticks at %s UTC...', $now->format('Y-m-d H:i:s'))
+            : sprintf('Advancing ticks by "%s" from each Kingdom\'s latest completed tick...', $advanceStr));
 
         foreach ($kingdoms as $kingdom) {
             /** @var \App\Entity\Kingdom\Kingdom $kingdom */
@@ -73,6 +96,29 @@ class ProcessTicksCommand extends Command
             }
 
             $io->text(sprintf('Checking Kingdom: %s (ID: %d)', $kingdom->getName(), $kingdomId));
+
+            $until = $now;
+            if (null !== $advanceInterval) {
+                $latestTick = $this->tickLogRepository->findOneBy(
+                    ['kingdom' => $kingdom, 'status' => 'completed'],
+                    ['scheduledAt' => 'DESC'],
+                );
+                if (null === $latestTick) {
+                    $io->error(sprintf('Kingdom ID %d has no completed ticks. Use --time to schedule its initial ticks.', $kingdomId));
+
+                    return Command::FAILURE;
+                }
+
+                $latestTime = $latestTick->getScheduledAt()->setTimezone(new \DateTimeZone('UTC'));
+                $until = $latestTime->add($advanceInterval);
+                if ($until <= $latestTime) {
+                    $io->error('The --advance interval must move time forward.');
+
+                    return Command::FAILURE;
+                }
+
+                $io->text(sprintf('Advancing from %s UTC to %s UTC.', $latestTime->format('Y-m-d H:i:s'), $until->format('Y-m-d H:i:s')));
+            }
 
             // Recover stale ticks (e.g. processing/dispatched for > 5 minutes) before checking if blocked
             $recovered = $this->tickRunnerService->recoverStaleTicks($kingdom);
@@ -93,7 +139,7 @@ class ProcessTicksCommand extends Command
             }
 
             $hasPendingBefore = $this->tickRunnerService->hasPendingTicks($kingdom);
-            $ticksDispatched = $this->tickRunnerService->schedulePendingTicks($kingdom, $now);
+            $ticksDispatched = $this->tickRunnerService->schedulePendingTicks($kingdom, $until);
 
             if ($ticksDispatched > 0 || $hasPendingBefore) {
                 if ($ticksDispatched > 0) {

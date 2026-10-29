@@ -187,6 +187,17 @@ class SpellServiceTest extends TestCase
 
         $this->assertCount(60, SpellCatalog::rows());
         $this->assertSame(StatusEffect::Burn, SpellCatalog::rows()[1]['apply_effect']);
+
+        $byName = [];
+        foreach (SpellCatalog::rows() as $row) {
+            $byName[$row['name']] = $row;
+        }
+        $this->assertSame(StatusEffect::Silence, $byName['Němota']['apply_effect']);
+        $this->assertNull($byName['Němota']['instant_hp']);
+        $this->assertSame(SpellType::Hinder, $byName['Němota']['type']);
+        $this->assertSame(StatusEffect::Silence, $byName['Úder blesku']['apply_effect']);
+        $this->assertSame(SpellPayload::INSTANT_DAMAGE, $byName['Úder blesku']['instant_hp']);
+        $this->assertSame(SpellType::Harm, $byName['Úder blesku']['type']);
     }
 
     public function testNormalizeCatalogTierRejectsOutOfRange(): void
