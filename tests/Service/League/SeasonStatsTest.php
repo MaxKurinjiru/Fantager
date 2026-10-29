@@ -26,12 +26,11 @@ class SeasonStatsTest extends TestCase
         $this->assertEqualsWithDelta(0.0, SeasonStats::gini([10, 10, 10]), 0.0001);
     }
 
-    public function testSpreadKeys(): void
+    public function testSpreadPercentiles(): void
     {
         $spread = SeasonStats::spread([1, 2, 3, 4]);
-        $this->assertArrayHasKey('p25', $spread);
-        $this->assertArrayHasKey('p50', $spread);
-        $this->assertArrayHasKey('p75', $spread);
-        $this->assertNotNull($spread['p50']);
+        $this->assertSame(2.0, $spread['p25']);
+        $this->assertSame(3.0, $spread['p50']);
+        $this->assertSame(3.0, $spread['p75']);
     }
 }
