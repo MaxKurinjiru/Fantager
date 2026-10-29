@@ -22,6 +22,7 @@ use App\Enum\ItemStatus;
 use App\Enum\ItemSubType;
 use App\Enum\SpellType;
 use App\Service\Formation\FormationLineupScorer;
+use App\Service\Formation\FormationTacticsNormalizer;
 use App\Service\Item\ItemService;
 use App\Service\Spell\SpellService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -72,6 +73,7 @@ class NpcTacticsSimulator
         private readonly ItemService $itemService,
         private readonly SpellService $spellService,
         private readonly FormationLineupScorer $lineupScorer,
+        private readonly FormationTacticsNormalizer $tacticsNormalizer,
     ) {
     }
 
@@ -103,6 +105,7 @@ class NpcTacticsSimulator
                 $formation->setName('Default NPC Formation');
                 $formation->setIsDefault(true);
                 $formation->setApproach(FormationApproach::Balanced);
+                $formation->setTacticsDefaults($this->tacticsNormalizer->defaultTacticsDefaults());
                 $this->em->persist($formation);
 
                 foreach (FormationPosition::cases() as $pos) {
@@ -123,89 +126,20 @@ class NpcTacticsSimulator
                 'status' => HeroStatus::Available,
             ]);
 
-            if (\count($heroes) < 6) {
+            $lineup = $this->lineupScorer->pickStartingLineup($heroes);
+            $selectedFront = $lineup['front'];
+            $selectedBack = $lineup['back'];
+            if (\count($selectedFront) + \count($selectedBack) < 6) {
                 continue;
             }
 
-            $frontCandidates = [];
-            $backCandidates = [];
-
-            foreach ($heroes as $hero) {
-                if ($hero->isTrainer()) {
-                    continue;
-                }
-                $heroId = $hero->getId();
-                if (null === $heroId) {
-                    continue;
-                }
-
-                $scores = $this->lineupScorer->scores($hero);
-                $frontCandidates[] = ['hero' => $hero, 'id' => $heroId, 'score' => $scores['front']];
-                $backCandidates[] = ['hero' => $hero, 'id' => $heroId, 'score' => $scores['back']];
-            }
-
-            $byScoreThenId = static function (array $a, array $b): int {
-                $byScore = $b['score'] <=> $a['score'];
-
-                return 0 !== $byScore ? $byScore : $a['id'] <=> $b['id'];
-            };
-            usort($frontCandidates, $byScoreThenId);
-            usort($backCandidates, $byScoreThenId);
-
-            $selectedFront = [];
-            $selectedBack = [];
-            $usedHeroIds = [];
-
-            foreach ($frontCandidates as $item) {
-                if (\count($selectedFront) >= 3) {
-                    break;
-                }
-                $hero = $item['hero'];
-                $heroId = $item['id'];
-                $selectedFront[] = $hero;
-                $usedHeroIds[$heroId] = true;
-            }
-
-            foreach ($backCandidates as $item) {
-                if (\count($selectedBack) >= 3) {
-                    break;
-                }
-                $hero = $item['hero'];
-                $heroId = $item['id'];
-                if (!isset($usedHeroIds[$heroId])) {
-                    $selectedBack[] = $hero;
-                    $usedHeroIds[$heroId] = true;
-                }
-            }
-
-            // Fallback if not enough unique heroes selected
-            if (\count($selectedFront) + \count($selectedBack) < 6) {
-                foreach ($heroes as $hero) {
-                    if ($hero->isTrainer()) {
-                        continue;
-                    }
-                    $heroId = $hero->getId();
-                    if (null === $heroId) {
-                        continue;
-                    }
-                    if (\count($selectedFront) + \count($selectedBack) >= 6) {
-                        break;
-                    }
-                    if (!isset($usedHeroIds[$heroId])) {
-                        if (\count($selectedFront) < 3) {
-                            $selectedFront[] = $hero;
-                        } else {
-                            $selectedBack[] = $hero;
-                        }
-                        $usedHeroIds[$heroId] = true;
-                    }
-                }
-            }
-
-            // 3. Slot heroes & set strategies
+            // 3. Slot heroes & set live L1 strategy (combat does not invent movement for NPC rows)
             $frontIndex = 0;
             $backIndex = 0;
             $role = $this->getHelperEconomicRole($team);
+            $approach = $this->getApproachForRole($role);
+            $formation->setApproach($approach);
+            $formation->setTacticsDefaults($this->tacticsDefaultsForRole($role, $approach));
 
             foreach ($formation->getSlots() as $slot) {
                 $position = $slot->getPosition();
@@ -219,11 +153,9 @@ class NpcTacticsSimulator
                     ++$backIndex;
                 }
 
-                $slot->setStrategy($this->getStrategyForSlot($role, $position));
-                $slot->setSpellPriorities($this->getSpellPrioritiesForSlot($role, $position));
+                $slot->setStrategy($this->strategyForSlot($role, $approach, $position, $hero));
+                $slot->setSpellPriorities([]);
             }
-
-            $formation->setApproach($this->getApproachForRole($role));
 
             // 4. Auto-equip items to active lineup
             $activeLineup = array_merge($selectedFront, $selectedBack);
@@ -302,26 +234,33 @@ class NpcTacticsSimulator
                     continue;
                 }
 
-                // If currently equipped item matches preferred subtype, keep it
+                // Matching subtype: keep it unless inventory has a strictly better rarity
                 if (null !== $equipped && $equipped->getSubType() === $prefSubType) {
+                    $upgrade = $this->takeBestMatchingItem(
+                        $unequippedItems,
+                        $slot,
+                        $prefSubType,
+                        $this->getRarityValue($equipped->getRarity()),
+                    );
+                    if (null !== $upgrade) {
+                        try {
+                            $this->itemService->unequip($equipped);
+                            $unequippedItems[] = $equipped;
+                            $this->itemService->equip($upgrade, $hero, $slot);
+                        } catch (\Throwable) {
+                            $unequippedItems[] = $upgrade;
+                        }
+                    }
                     continue;
                 }
 
-                // Try to find a matching item in the inventory
-                $foundInInventory = false;
-                foreach ($unequippedItems as $idx => $item) {
-                    if (\in_array($slot, ItemService::compatibleSlots($item), true) && $item->getSubType() === $prefSubType) {
-                        try {
-                            $this->itemService->equip($item, $hero, $slot);
-                            unset($unequippedItems[$idx]);
-                            $foundInInventory = true;
-                            break;
-                        } catch (\Throwable) {
-                        }
+                $found = $this->takeBestMatchingItem($unequippedItems, $slot, $prefSubType, 0);
+                if (null !== $found) {
+                    try {
+                        $this->itemService->equip($found, $hero, $slot);
+                    } catch (\Throwable) {
+                        $unequippedItems[] = $found;
                     }
-                }
-
-                if ($foundInInventory) {
                     continue;
                 }
 
@@ -396,7 +335,7 @@ class NpcTacticsSimulator
     /**
      * Get preferred weapon sub-type for a hero based on masteries or attributes.
      */
-    private function getPreferredWeaponSubType(Hero $hero): ItemSubType
+    public function getPreferredWeaponSubType(Hero $hero): ItemSubType
     {
         $weaponSubTypes = [
             ItemSubType::OneHandedSword,
@@ -513,30 +452,167 @@ class NpcTacticsSimulator
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
-    private function getStrategyForSlot(string $role, FormationPosition $position): array
+    private function tacticsDefaultsForRole(string $role, FormationApproach $approach): array
     {
-        // Simple heuristic strategy based on role
+        $defaults = $this->tacticsNormalizer->defaultTacticsDefaults();
         if (NpcSimulationService::ROLE_MERCENARY_ACADEMY === $role) {
-            return ['target' => 'weakest', 'action' => 'attack', 'aggression' => 'high'];
-        } elseif (NpcSimulationService::ROLE_VETERAN_GUILD === $role) {
-            return ['target' => 'frontline', 'action' => 'defend', 'aggression' => 'low'];
+            $defaults['movement_back'] = 'flank_rear';
+        }
+        if (NpcSimulationService::ROLE_VETERAN_GUILD === $role) {
+            $defaults['movement_front'] = 'protect_backline';
+        }
+        if (FormationApproach::Defensive !== $approach) {
+            $defaults['target_order'] = $this->targetOrderForApproach($approach);
+            $defaults['fallback'] = $this->fallbackForRole($role);
         }
 
-        return ['target' => 'balanced', 'action' => 'balanced', 'aggression' => 'medium'];
+        return $this->tacticsNormalizer->normalizeTacticsDefaults($defaults);
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function getSpellPrioritiesForSlot(string $role, FormationPosition $position): array
-    {
-        if (NpcSimulationService::ROLE_ROYAL_COLLECTOR === $role) {
-            return ['heal_trigger_pct' => 50, 'prefer_magic' => true];
+    private function strategyForSlot(
+        string $role,
+        FormationApproach $approach,
+        FormationPosition $position,
+        ?Hero $hero,
+    ): array {
+        $movement = $this->movementGoalForHero($role, $position, $hero);
+        $raw = [
+            'movement_goal' => $movement,
+            'inherit_movement' => false,
+            'inherit_targeting' => FormationApproach::Defensive === $approach,
+        ];
+        if (FormationApproach::Defensive !== $approach) {
+            $raw['target_order'] = $this->targetOrderForApproach($approach);
+            $raw['fallback'] = $this->fallbackForRole($role);
+            $raw['inherit_targeting'] = false;
         }
 
-        return ['heal_trigger_pct' => 30, 'prefer_magic' => false];
+        $normalized = $this->tacticsNormalizer->normalizeStrategy($raw);
+        $normalized['inherit_movement'] = false;
+        $normalized['inherit_targeting'] = $raw['inherit_targeting'];
+
+        return $normalized;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function targetOrderForApproach(FormationApproach $approach): array
+    {
+        if (FormationApproach::Aggressive === $approach) {
+            return [
+                FormationPosition::Back1->value,
+                FormationPosition::Back2->value,
+                FormationPosition::Back3->value,
+                FormationPosition::Front1->value,
+                FormationPosition::Front2->value,
+                FormationPosition::Front3->value,
+            ];
+        }
+
+        return [
+            FormationPosition::Front1->value,
+            FormationPosition::Front2->value,
+            FormationPosition::Front3->value,
+            FormationPosition::Back1->value,
+            FormationPosition::Back2->value,
+            FormationPosition::Back3->value,
+        ];
+    }
+
+    private function fallbackForRole(string $role): string
+    {
+        return match ($role) {
+            NpcSimulationService::ROLE_MERCENARY_ACADEMY => 'lowest_hp',
+            NpcSimulationService::ROLE_VETERAN_GUILD => 'highest_threat',
+            default => 'approach',
+        };
+    }
+
+    private function movementGoalForHero(string $role, FormationPosition $position, ?Hero $hero): string
+    {
+        $isFront = \in_array($position, [
+            FormationPosition::Front1,
+            FormationPosition::Front2,
+            FormationPosition::Front3,
+        ], true);
+
+        if (null !== $hero && $this->isRangedOrCasterWeapon($this->getPreferredWeaponSubType($hero))) {
+            return 'seek_cover_ranged';
+        }
+
+        if ($isFront) {
+            return NpcSimulationService::ROLE_VETERAN_GUILD === $role
+                ? 'protect_backline'
+                : 'advance_to_melee';
+        }
+
+        return NpcSimulationService::ROLE_MERCENARY_ACADEMY === $role
+            ? 'flank_rear'
+            : 'advance_to_melee';
+    }
+
+    private function isRangedOrCasterWeapon(ItemSubType $weapon): bool
+    {
+        return \in_array($weapon, [
+            ItemSubType::Bow,
+            ItemSubType::Crossbow,
+            ItemSubType::Wand,
+            ItemSubType::Staff,
+        ], true);
+    }
+
+    /**
+     * Attribute trained for the preferred weapon (weapon XP still comes from combat).
+     */
+    public function attributeForWeapon(ItemSubType $weapon): string
+    {
+        return match ($weapon) {
+            ItemSubType::Bow, ItemSubType::Crossbow, ItemSubType::Dagger => 'dex',
+            ItemSubType::Wand, ItemSubType::Staff => 'int',
+            default => 'str',
+        };
+    }
+
+    /**
+     * @param array<int, Item> $unequippedItems
+     *
+     * @param-out array<int, Item> $unequippedItems
+     */
+    private function takeBestMatchingItem(
+        array &$unequippedItems,
+        ItemSlotType $slot,
+        ItemSubType $prefSubType,
+        int $minRarityExclusive,
+    ): ?Item {
+        $bestIdx = null;
+        $bestRarity = $minRarityExclusive;
+        foreach ($unequippedItems as $idx => $item) {
+            if (!\in_array($slot, ItemService::compatibleSlots($item), true)) {
+                continue;
+            }
+            if ($item->getSubType() !== $prefSubType) {
+                continue;
+            }
+            $rarity = $this->getRarityValue($item->getRarity());
+            if ($rarity > $bestRarity) {
+                $bestRarity = $rarity;
+                $bestIdx = $idx;
+            }
+        }
+        if (null === $bestIdx) {
+            return null;
+        }
+
+        $item = $unequippedItems[$bestIdx];
+        unset($unequippedItems[$bestIdx]);
+
+        return $item;
     }
 
     private function getApproachForRole(string $role): FormationApproach
@@ -824,7 +900,12 @@ class NpcTacticsSimulator
 
             // C. Generate Spell Priorities
             $role = $this->getHelperEconomicRole($team);
-            $healThreshold = (NpcSimulationService::ROLE_ROYAL_COLLECTOR === $role) ? 50 : 30;
+            $healThreshold = match ($role) {
+                NpcSimulationService::ROLE_MERCENARY_ACADEMY => 25,
+                NpcSimulationService::ROLE_VETERAN_GUILD,
+                NpcSimulationService::ROLE_ROYAL_COLLECTOR => 50,
+                default => 40,
+            };
 
             $priorities = [];
             foreach ($toEquip as $hs) {

@@ -24,7 +24,7 @@ Every NPC team is assigned an archetype based on a deterministic modulo calculat
 ## 2. Match Tactics Simulation
 
 Tactics simulation runs automatically for both teams during the `league_match` tick (prior to match resolution).
-- **Lineup Selection:** Rewrites the team's **default** formation only. NPC fixtures are not given a separate assignment, so kickoff uses that default. Evaluates available heroes for a 3-3 formation. Front/back scores live in `FormationLineupScorer` (same formula as player fill-from-roster). Front-row performance is based on STR + KON; back-row on INT + SPD + DEX. Kickoff hole-fill for a short default uses that scorer (empty fronts first, then backs; ties by `id` ascending).
+- **Lineup Selection:** Rewrites the team's **default** formation only. NPC fixtures are not given a separate assignment, so kickoff uses that default. Scores live in `FormationLineupScorer` (same formula as player fill-from-roster): front STR + KON, back INT + SPD + DEX, plus form/fatigue/trait modifiers below. A full rewrite picks the six combatants with the highest `max(front, back)`, then puts the three with the largest `front − back` delta in front (rest in back). Kickoff hole-fill for a short default still fills empty fronts first, then backs; ties by `id` ascending.
 - **Form & Fatigue Adaptation:** Readiness is penalized if fatigue > 50 (50% penalty) or form < 40 (40% penalty).
 - **Trait-Aware Scoring:** Adjusts candidates' scores based on traits:
   - `Berserker`, `BattleHardened`, and `Overconfident` boost front-row score by +20% (multiplier `1.20`).
@@ -32,7 +32,9 @@ Tactics simulation runs automatically for both teams during the `league_match` t
   - `Clutch` boosts front-row score by +10% (multiplier `1.10`).
   - `Fragile` and `GlassJaw` penalize front-row placement by -20% (multiplier `0.80`).
   - Purely negative traits (`Slacker`, `Fragile`, `GlassJaw`) heavily penalize both front and back row placement by -90% (multiplier `0.10`) to prefer benching them. Volatile is a mixed trait and is not in this list.
-- **Auto-Equip:** NPC teams automatically scan their unequipped inventory and equip the best gear matching the active lineup's preferred weapon and armor masteries.
+- **Live L1 tactics:** Writes the same schema as the player editor (`movement_goal`, `target_order`, `fallback`, `inherit_*`) plus formation `tactics_defaults`. Combat does not invent movement for rows without `movement_goal`, so NPC slots store a concrete goal: ranged/caster weapons `seek_cover_ranged`; veteran front `protect_backline`; mercenary back melee `flank_rear`; otherwise `advance_to_melee`. Aggressive/balanced teams store the approach slot order and a role fallback (`lowest_hp` / `highest_threat` / `approach`). Defensive (veteran) omits `target_order` so engine L0 defensive targeting stays. Approach is still `aggressive` / `defensive` / `balanced` by archetype. Dummy keys (`aggression`, `heal_trigger_pct`) are not written.
+- **Spells:** Learns and equips spells for the lineup, then writes L2 `spell_priorities` (`always` / `ally_hp_below`). Restore threshold follows the approach (25 / 40 / 50) except royal collector, which keeps 50.
+- **Auto-Equip:** Scans unequipped inventory for the lineup's preferred weapon and armor masteries. A matching equipped item is replaced when the bag has a strictly higher rarity of the same subtype. Otherwise the best matching bag item is equipped, then a basic purchase fills empty/common mismatches (150 gold reserve).
 
 ---
 
@@ -40,7 +42,7 @@ Tactics simulation runs automatically for both teams during the `league_match` t
 
 Training setups for NPC teams are simulated on **Tuesday 00:00:00 (during Daily Reset)**, well before the training lock begins (Thursday 08:00:00).
 - **Trainer Promotion:** Promotes the oldest and highest-level eligible combatants to fill empty trainer slots (excluding purely negative-trait heroes unless desperate). Uses shared `TrainingService::applyTrainerPromotion()` to unequip items, remove from active formations, and record `trainer_promoted` in the team chronicle.
-- **Trainer Focus Config:** Configures trainer specializations (training type and target attributes) matching the team's economic role.
+- **Trainer Focus Config:** Starts from the role template, prepends the default lineup's dominant weapon attribute (STR melee, DEX bow/crossbow/dagger, INT wand/staff), and appends Form. Duplicates are dropped. Weapon mastery XP still comes from combat — training has no mastery type.
 - **Trainee Allocation:** Assigns combatants to trainers up to their slot limits, prioritizing those with the `QuickLearner` trait first.
 - **Fairness Guarantee:** Because this runs before the lock starts, a player taking over an NPC team mid-week inherits a fully configured and active training setup instead of an empty or outdated queue.
 

@@ -154,7 +154,7 @@ Forfeit outcomes stay **outside** the engine (existing `resolveForfeitOutcome()`
 
 Identity: side **A** = home / `Battle.team_a`; side **B** = away / `Battle.team_b`.
 
-**NPC vs player:** Combat orchestration and the engine do **not** distinguish NPC teams from player teams. NPC “management” is handled only by [npc-simulation-system.md](npc-simulation-system.md) before kickoff (formations, roster, etc.) so that lineups look player-like.
+**NPC vs player:** Combat orchestration and the engine do **not** distinguish NPC teams from player teams. NPC “management” is handled only by [npc-simulation-system.md](npc-simulation-system.md) before kickoff (live L1/L2 formation JSON, roster, gear) so that lineups look player-like. Legacy strategy blobs without `movement_goal` still default to melee in the engine.
 
 ### Value objects
 
