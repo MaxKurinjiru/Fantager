@@ -126,12 +126,14 @@ class NpcSimulationServiceTest extends TestCase
             $this->em,
             $this->itemService,
             $this->spellService,
-            new \App\Service\Formation\FormationLineupScorer()
+            new \App\Service\Formation\FormationLineupScorer(),
+            new \App\Service\Formation\FormationTacticsNormalizer(),
         );
 
         $trainingSimulator = new \App\Service\Team\NpcTrainingSimulator(
             $this->em,
-            $this->trainingService
+            $this->trainingService,
+            $tacticsSimulator,
         );
 
         $economySimulator = new \App\Service\Team\NpcEconomySimulator(
@@ -230,29 +232,33 @@ class NpcSimulationServiceTest extends TestCase
             $hero->setRole(HeroRole::Combatant);
             $hero->setStatus(HeroStatus::Available);
             
-            // Set stats
-            $hero->setStr(10);
-            $hero->setKon(10);
-            $hero->setDex(10);
-            $hero->setSpd(10);
-            $hero->setIntel(10);
-            
+            $hero->setStrRaw(100);
+            $hero->setKonRaw(100);
+            $hero->setDexRaw(100);
+            $hero->setSpdRaw(100);
+            $hero->setIntelRaw(100);
+
             $heroes[] = $hero;
         }
 
         // Configure one trainer (should be skipped in tactics)
         $heroes[9]->setRole(HeroRole::Trainer);
 
-        // Make some heroes explicitly tankier or more magical
-        // Frontline candidates
-        $heroes[0]->setStr(20); $heroes[0]->setKon(20);
-        $heroes[1]->setStr(18); $heroes[1]->setKon(18);
-        $heroes[2]->setStr(15); $heroes[2]->setKon(15);
-        
-        // Backline candidates
-        $heroes[3]->setIntel(20); $heroes[3]->setSpd(20);
-        $heroes[4]->setIntel(18); $heroes[4]->setSpd(18);
-        $heroes[5]->setIntel(15); $heroes[5]->setSpd(15);
+        // Frontline candidates (displayed STR/KON)
+        $heroes[0]->setStrRaw(200);
+        $heroes[0]->setKonRaw(200);
+        $heroes[1]->setStrRaw(180);
+        $heroes[1]->setKonRaw(180);
+        $heroes[2]->setStrRaw(150);
+        $heroes[2]->setKonRaw(150);
+
+        // Backline candidates (displayed INT/SPD)
+        $heroes[3]->setIntelRaw(200);
+        $heroes[3]->setSpdRaw(200);
+        $heroes[4]->setIntelRaw(180);
+        $heroes[4]->setSpdRaw(180);
+        $heroes[5]->setIntelRaw(150);
+        $heroes[5]->setSpdRaw(150);
 
         // Repositories mocking
         $teamRepo = $this->createMock(EntityRepository::class);
@@ -292,6 +298,28 @@ class NpcSimulationServiceTest extends TestCase
         }
 
         $this->assertCount(6, array_unique($assignedHeroIds));
+
+        $frontIds = [];
+        $backIds = [];
+        foreach ($formation->getSlots() as $slot) {
+            $strategy = $slot->getStrategy();
+            $this->assertArrayNotHasKey('aggression', $strategy);
+            $this->assertSame('lowest_hp', $strategy['fallback']);
+            $this->assertSame(['back_1', 'back_2', 'back_3', 'front_1', 'front_2', 'front_3'], $strategy['target_order']);
+            $this->assertFalse($strategy['inherit_movement']);
+            $hero = $slot->getHero();
+            $this->assertNotNull($hero);
+            if (\in_array($slot->getPosition(), [FormationPosition::Front1, FormationPosition::Front2, FormationPosition::Front3], true)) {
+                $frontIds[] = $hero->getId();
+                $this->assertSame('advance_to_melee', $strategy['movement_goal']);
+            } else {
+                $backIds[] = $hero->getId();
+                $this->assertSame('seek_cover_ranged', $strategy['movement_goal']);
+            }
+        }
+        $this->assertEqualsCanonicalizing([1, 2, 3], $frontIds);
+        $this->assertEqualsCanonicalizing([4, 5, 6], $backIds);
+        $this->assertSame('flank_rear', $formation->getTacticsDefaults()['movement_back']);
     }
 
     public function testSimulateTraining(): void
@@ -350,6 +378,77 @@ class NpcSimulationServiceTest extends TestCase
             }
         }
         $this->assertEquals(8, $assignedTrainees);
+    }
+
+    public function testSimulateTrainingPrefersLineupWeaponAttribute(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0);
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+
+        $heroes = [];
+        for ($i = 1; $i <= 8; ++$i) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setAgeRaw($i * 5);
+            $hero->setLevel(1);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            $hero->setStr(5);
+            $hero->setKon(8);
+            $hero->setDex(20);
+            $hero->setSpd(12);
+            $hero->setIntel(8);
+            $heroes[] = $hero;
+        }
+
+        $formation = new Formation();
+        $formation->setTeam($team);
+        $formation->setIsDefault(true);
+        foreach (FormationPosition::cases() as $idx => $pos) {
+            $slot = new FormationSlot();
+            $slot->setFormation($formation);
+            $slot->setPosition($pos);
+            $slot->setHero($heroes[$idx]);
+            $formation->addSlot($slot);
+        }
+
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findBy')->willReturn($heroes);
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findOneBy')->willReturn($formation);
+        $formationRepo->method('findBy')->willReturn([$formation]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $heroRepo, $formationRepo) {
+            if (Team::class === $class) {
+                return $teamRepo;
+            }
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+            if (Formation::class === $class) {
+                return $formationRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+        $this->trainingService->method('getTrainerSlotsLimit')->willReturn(4);
+
+        $this->service->simulateTraining($kingdom, new \DateTimeImmutable());
+
+        $this->assertEquals(HeroRole::Trainer, $heroes[7]->getRole());
+        $this->assertEquals(HeroRole::Trainer, $heroes[6]->getRole());
+        $this->assertEquals(TrainingType::Attribute, $heroes[7]->getTrainingType());
+        $this->assertEquals('dex', $heroes[7]->getTargetAttribute());
+        $this->assertEquals(TrainingType::Attribute, $heroes[6]->getTrainingType());
+        $this->assertEquals('str', $heroes[6]->getTargetAttribute());
     }
 
     public function testAutoEquipItemsWithMasteryAndPurchase(): void
@@ -482,6 +581,154 @@ class NpcSimulationServiceTest extends TestCase
         // OffHand should be empty because TwoHandedSword is two-handed
         $hero1OffHand = $equippedItems[$hero1->getId() . '_' . ItemSlotType::OffHand->value] ?? null;
         $this->assertNull($hero1OffHand);
+    }
+
+    public function testAutoEquipUpgradesMatchingSubtypeByRarity(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0);
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        $formation = new Formation();
+        $formation->setTeam($team);
+        $formation->setIsDefault(true);
+        $this->setEntityId($formation, 100);
+        foreach (FormationPosition::cases() as $pos) {
+            $slot = new FormationSlot();
+            $slot->setFormation($formation);
+            $slot->setPosition($pos);
+            $formation->addSlot($slot);
+        }
+
+        $heroes = [];
+        for ($i = 1; $i <= 6; ++$i) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setRace(Race::Human);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            $hero->setStr(20);
+            $hero->setKon(20);
+            $hero->setDex(8);
+            $hero->setSpd(8);
+            $hero->setIntel(8);
+            $heroes[] = $hero;
+        }
+        $hero1 = $heroes[0];
+
+        $commonSword = new Item();
+        $this->setEntityId($commonSword, 201);
+        $commonSword->setOwnerTeam($team);
+        $commonSword->setName('common_sword');
+        $commonSword->setSlotType(ItemSlotType::MainHand);
+        $commonSword->setCategory(\App\Enum\ItemCategory::Weapon);
+        $commonSword->setSubType(ItemSubType::OneHandedSword);
+        $commonSword->setRarity(ItemRarity::Common);
+        $commonSword->setStatus(ItemStatus::Available);
+        $commonSword->setEquippedHero($hero1);
+        $commonSword->setEquippedSlot(ItemSlotType::MainHand);
+
+        $epicSword = new Item();
+        $this->setEntityId($epicSword, 202);
+        $epicSword->setOwnerTeam($team);
+        $epicSword->setName('epic_sword');
+        $epicSword->setSlotType(ItemSlotType::MainHand);
+        $epicSword->setCategory(\App\Enum\ItemCategory::Weapon);
+        $epicSword->setSubType(ItemSubType::OneHandedSword);
+        $epicSword->setRarity(ItemRarity::Epic);
+        $epicSword->setStatus(ItemStatus::Available);
+
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findOneBy')->willReturn($formation);
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findBy')->willReturn($heroes);
+
+        /** @var array<string, Item> $equippedItems */
+        $equippedItems = [
+            $hero1->getId().'_'.ItemSlotType::MainHand->value => $commonSword,
+        ];
+        $itemRepo = $this->createMock(EntityRepository::class);
+        $itemRepo->method('findBy')->willReturnCallback(function (array $criteria) use ($epicSword, &$equippedItems) {
+            if (\array_key_exists('equippedHero', $criteria) && null === $criteria['equippedHero']) {
+                $bag = [];
+                if (null === $epicSword->getEquippedHero()) {
+                    $bag[] = $epicSword;
+                }
+                foreach ($equippedItems as $item) {
+                    if (null === $item->getEquippedHero()) {
+                        $bag[] = $item;
+                    }
+                }
+
+                return $bag;
+            }
+            if (isset($criteria['equippedHero'])) {
+                $hero = $criteria['equippedHero'];
+                $held = [];
+                foreach ($equippedItems as $item) {
+                    if ($item->getEquippedHero() === $hero) {
+                        $held[] = $item;
+                    }
+                }
+
+                return $held;
+            }
+
+            return [];
+        });
+        $itemRepo->method('findOneBy')->willReturnCallback(function (array $criteria) use (&$equippedItems) {
+            $hero = $criteria['equippedHero'] ?? null;
+            $slot = $criteria['equippedSlot'] ?? null;
+            if ($hero && $slot) {
+                return $equippedItems[$hero->getId().'_'.$slot->value] ?? null;
+            }
+
+            return null;
+        });
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $formationRepo, $heroRepo, $itemRepo) {
+            if (Team::class === $class) {
+                return $teamRepo;
+            }
+            if (Formation::class === $class) {
+                return $formationRepo;
+            }
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+            if (Item::class === $class) {
+                return $itemRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $this->itemService->method('unequip')->willReturnCallback(function (Item $item) use (&$equippedItems): void {
+            $hero = $item->getEquippedHero();
+            $slot = $item->getEquippedSlot();
+            if (null !== $hero && null !== $slot) {
+                unset($equippedItems[$hero->getId().'_'.$slot->value]);
+            }
+            $item->setEquippedHero(null);
+            $item->setEquippedSlot(null);
+        });
+        $this->itemService->method('equip')->willReturnCallback(function (Item $item, Hero $h, ItemSlotType $slot) use (&$equippedItems): void {
+            $item->setEquippedHero($h);
+            $item->setEquippedSlot($slot);
+            $equippedItems[$h->getId().'_'.$slot->value] = $item;
+        });
+
+        $this->service->simulateTactics($kingdom, new \DateTimeImmutable());
+
+        $this->assertSame($hero1, $epicSword->getEquippedHero());
+        $this->assertSame(ItemSlotType::MainHand, $epicSword->getEquippedSlot());
+        $this->assertNotSame($hero1, $commonSword->getEquippedHero());
     }
 
     public function testProactiveDismissNegativeTrait(): void

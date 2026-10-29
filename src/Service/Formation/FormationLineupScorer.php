@@ -83,6 +83,70 @@ class FormationLineupScorer
     }
 
     /**
+     * Pick a 3-3 starting lineup from combatants.
+     *
+     * Takes the six heroes with the highest max(front, back) score, then puts
+     * the three with the largest front-minus-back delta in front (rest in back).
+     * Player hole-fill stays {@see fillEmptyHeroIds()} (front holes first).
+     *
+     * @param list<Hero> $heroes
+     *
+     * @return array{front: list<Hero>, back: list<Hero>}
+     */
+    public function pickStartingLineup(array $heroes): array
+    {
+        $candidates = [];
+        foreach ($heroes as $hero) {
+            $heroId = $hero->getId();
+            if (null === $heroId || $hero->isTrainer()) {
+                continue;
+            }
+            $scores = $this->scores($hero);
+            $candidates[] = [
+                'hero' => $hero,
+                'id' => $heroId,
+                'front' => $scores['front'],
+                'back' => $scores['back'],
+                'best' => max($scores['front'], $scores['back']),
+                'delta' => $scores['front'] - $scores['back'],
+            ];
+        }
+
+        usort($candidates, static function (array $a, array $b): int {
+            $byBest = $b['best'] <=> $a['best'];
+
+            return 0 !== $byBest ? $byBest : $a['id'] <=> $b['id'];
+        });
+        $selected = array_slice($candidates, 0, 6);
+
+        usort($selected, static function (array $a, array $b): int {
+            $byDelta = $b['delta'] <=> $a['delta'];
+
+            return 0 !== $byDelta ? $byDelta : $a['id'] <=> $b['id'];
+        });
+
+        $frontCount = min(3, \count($selected));
+        $frontRows = array_slice($selected, 0, $frontCount);
+        $backRows = array_slice($selected, $frontCount);
+
+        usort($frontRows, static function (array $a, array $b): int {
+            $byScore = $b['front'] <=> $a['front'];
+
+            return 0 !== $byScore ? $byScore : $a['id'] <=> $b['id'];
+        });
+        usort($backRows, static function (array $a, array $b): int {
+            $byScore = $b['back'] <=> $a['back'];
+
+            return 0 !== $byScore ? $byScore : $a['id'] <=> $b['id'];
+        });
+
+        return [
+            'front' => array_map(static fn (array $row): Hero => $row['hero'], $frontRows),
+            'back' => array_map(static fn (array $row): Hero => $row['hero'], $backRows),
+        ];
+    }
+
+    /**
      * Fill empty positions from remaining candidates. Occupied ids stay put.
      * Front holes take the highest remaining front score, then back holes.
      *

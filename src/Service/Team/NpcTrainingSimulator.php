@@ -20,6 +20,7 @@ class NpcTrainingSimulator
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly TrainingService $trainingService,
+        private readonly NpcTacticsSimulator $tacticsSimulator,
     ) {
     }
 
@@ -155,7 +156,7 @@ class NpcTrainingSimulator
             $activeTrainers = array_slice($trainers, 0, $trainerLimit);
 
             $role = $this->getHelperEconomicRole($team);
-            $trainingConfigs = $this->getTrainingConfigsForRole($role);
+            $trainingConfigs = $this->getTrainingConfigsForTeam($team, $role);
 
             // Configure active trainers
             foreach ($activeTrainers as $idx => $trainer) {
@@ -246,7 +247,67 @@ class NpcTrainingSimulator
     }
 
     /**
-     * @return array<array{type: TrainingType, attribute: string|null}>
+     * Role templates, then the lineup's dominant weapon attribute (STR/DEX/INT),
+     * then Form. Weapon mastery XP still comes from combat — training has no mastery type.
+     *
+     * @return list<array{type: TrainingType, attribute: string|null}>
+     */
+    private function getTrainingConfigsForTeam(Team $team, string $role): array
+    {
+        $configs = $this->getTrainingConfigsForRole($role);
+        $lineupAttr = $this->dominantLineupWeaponAttribute($team);
+        if (null !== $lineupAttr) {
+            array_unshift($configs, ['type' => TrainingType::Attribute, 'attribute' => $lineupAttr]);
+        }
+        $configs[] = ['type' => TrainingType::Form, 'attribute' => null];
+
+        $unique = [];
+        $seen = [];
+        foreach ($configs as $config) {
+            $key = $config['type']->value.'|'.($config['attribute'] ?? '');
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $unique[] = $config;
+        }
+
+        return $unique;
+    }
+
+    private function dominantLineupWeaponAttribute(Team $team): ?string
+    {
+        $formation = $this->em->getRepository(Formation::class)->findOneBy([
+            'team' => $team,
+            'isDefault' => true,
+            'isTemporary' => false,
+        ]);
+        if (null === $formation) {
+            return null;
+        }
+
+        $votes = [];
+        foreach ($formation->getSlots() as $slot) {
+            $hero = $slot->getHero();
+            if (null === $hero || $hero->isTrainer()) {
+                continue;
+            }
+            $attr = $this->tacticsSimulator->attributeForWeapon(
+                $this->tacticsSimulator->getPreferredWeaponSubType($hero)
+            );
+            $votes[$attr] = ($votes[$attr] ?? 0) + 1;
+        }
+        if ([] === $votes) {
+            return null;
+        }
+
+        arsort($votes);
+
+        return array_key_first($votes);
+    }
+
+    /**
+     * @return list<array{type: TrainingType, attribute: string|null}>
      */
     private function getTrainingConfigsForRole(string $role): array
     {

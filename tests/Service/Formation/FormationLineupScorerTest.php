@@ -60,6 +60,30 @@ class FormationLineupScorerTest extends TestCase
         $this->assertFalse($scorer->isFrontRow(FormationPosition::Back1));
     }
 
+    public function testPickStartingLineupPutsHighBackScoreHybridInBack(): void
+    {
+        $scorer = new FormationLineupScorer();
+        $tank = $this->hero(1, str: 180, kon: 180, intel: 40, spd: 40, dex: 40);
+        $hybrid = $this->hero(2, str: 170, kon: 170, intel: 160, spd: 160, dex: 160);
+        $caster = $this->hero(3, str: 50, kon: 50, intel: 180, spd: 180, dex: 180);
+        $filler = [
+            $this->hero(4, str: 90, kon: 90, intel: 80, spd: 80, dex: 80),
+            $this->hero(5, str: 85, kon: 85, intel: 70, spd: 70, dex: 70),
+            $this->hero(6, str: 40, kon: 40, intel: 120, spd: 120, dex: 120),
+        ];
+
+        $lineup = $scorer->pickStartingLineup(array_merge([$tank, $hybrid, $caster], $filler));
+        $frontIds = array_map(static fn (Hero $hero): int => (int) $hero->getId(), $lineup['front']);
+        $backIds = array_map(static fn (Hero $hero): int => (int) $hero->getId(), $lineup['back']);
+
+        $this->assertContains(1, $frontIds);
+        $this->assertNotContains(2, $frontIds);
+        $this->assertContains(2, $backIds);
+        $this->assertContains(3, $backIds);
+        $this->assertCount(3, $lineup['front']);
+        $this->assertCount(3, $lineup['back']);
+    }
+
     public function testFillEmptyHeroIdsKeepsOccupiedAndFillsFrontThenBack(): void
     {
         $scorer = new FormationLineupScorer();
