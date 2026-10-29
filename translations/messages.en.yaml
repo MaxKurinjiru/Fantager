@@ -149,6 +149,7 @@ error:
   item_not_found: Item not found.
   formation_not_found: Formation not found.
   fixture_not_found: Fixture not found.
+  season_not_found: Season not found.
   listing_not_found: Listing not found.
   memorial_not_found: Memorial not found.
   message_not_found: Message not found.
@@ -1555,6 +1556,43 @@ league:
   tab_my_fixtures: My Matches
   tab_group_fixtures: Group Matches
   tab_leaderboard: Kingdom Leaderboard
+  tab_yearbook: Season report
+  yearbook_empty: No frozen report for this season yet.
+  yearbook_empty_desc: The report is written when the season ends. Finished seasons from before this feature can be rebuilt by an operator.
+  yearbook_your_season: Your season
+  yearbook_vs_group: Versus group median
+  yearbook_highlights: Group notes
+  yearbook_champion: Group winner
+  yearbook_best_gd: Best kill difference
+  yearbook_place: Place
+  yearbook_record: Record
+  yearbook_points: Points
+  yearbook_gold_end: Gold at season end
+  yearbook_gold_open: Gold at season start
+  yearbook_gold_reward: League reward
+  yearbook_income_arena: Arena tickets
+  yearbook_income_market: Marketplace sales
+  yearbook_income_treasury: Kingdom share
+  yearbook_roster: Roster at freeze
+  yearbook_combat_ready: Combat-ready
+  yearbook_trainers: Trainers
+  yearbook_mean_level: Mean level
+  yearbook_mean_ovr: Mean OVR
+  yearbook_median_age: Median age
+  yearbook_events: Season activity
+  yearbook_summons: Summons
+  yearbook_buys: Buys
+  yearbook_sells: Sells
+  yearbook_dismissals: Dismissals
+  yearbook_deaths: Combat deaths
+  yearbook_flavor: Club flavor
+  yearbook_chemistry_note: Chemistry is flavor for matches. It does not change combat.
+  yearbook_fan_base: Fan base
+  yearbook_hq_level: Headquarters level
+  yearbook_median: Group median
+  yearbook_you: You
+  yearbook_delta: Difference
+  yearbook_no_team: Your team was not in this season. Public group notes are hidden.
   prev_round: Previous round
   next_round: Next round
   tab_calendar: Calendar

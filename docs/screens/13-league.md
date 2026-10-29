@@ -4,11 +4,11 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **When:** Group table, own fixtures, kingdom-wide ranking.
 
-**Status:** Live at `GET /app/league`. Three **English** tabs (translation keys): Group standings, My fixtures, Kingdom leaderboard. A season selector opens finished seasons (final table, own results, place, tier move, gold). Win-streak / derby / relegation-pressure morale are **Cut**. Page is server-rendered; JSON also exists under `/api/v1/league/*`.
+**Status:** Live at `GET /app/league`. Tabs (translation keys): Group standings, My fixtures, Kingdom leaderboard, and on finished seasons **Season report**. A season selector opens finished seasons (final table, own results, place, tier move, gold, yearbook). Win-streak / derby / relegation-pressure morale are **Cut**. Page is server-rendered; JSON also exists under `/api/v1/league/*`.
 
-**Live UI:** `templates/league/index.html.twig`, `templates/components/league/`.
+**Live UI:** `templates/league/index.html.twig`, `templates/league/_yearbook.html.twig`, `templates/components/league/`.
 
-**Lock:** [league-system.md — no league morale fiction](../systems/league-system.md#locked-no-league-morale-fiction)
+**Lock:** [league-system.md — no league morale fiction](../systems/league-system.md#locked-no-league-morale-fiction), [season-report freeze](../systems/season-report-system.md#locked-frozen-snapshot-two-consumers)
 
 ---
 
@@ -21,11 +21,11 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 - Group `<select>` (`?groupId=`) — all groups in the selected season, by tier
 - Empty state when the kingdom has no active or finished season
 
-Query: `tab` = `standings` | `my-fixtures` | `leaderboard`. `seasonId` and `groupId` stay on the tab links. Changing season drops a group id that belongs to another season.
+Query: `tab` = `standings` | `my-fixtures` | `leaderboard` | `yearbook` (yearbook only when the selected season is completed). `seasonId` and `groupId` stay on the tab links. Changing season drops a group id that belongs to another season.
 
 ### Season archive
 
-Choosing a **completed** season keeps the three tabs (final group table, that season's own matches, kingdom leaderboard). Formation prep and fill-from-roster are hidden. A banner states the season is finished and, for the viewer's team, the place, group, tier, promotion/relegation/retained status, and gold from the `season_ended` chronicle.
+Choosing a **completed** season keeps standings, fixtures, leaderboard, and adds **Season report** (`tab=yearbook`): own freeze vs group medians, income mix, roster/activity counts, flavor chemistry/reputation/fan base. Empty copy when no `season_report` row exists yet. Formation prep and fill-from-roster are hidden. A banner states the season is finished and, for the viewer's team, the place, group, tier, promotion/relegation/retained status, and gold from the `season_ended` chronicle.
 
 ### Group standings (`tab=standings`)
 
@@ -47,8 +47,8 @@ All teams in the active season. Tie-breakers: points DESC, GD DESC, wins DESC, r
 | Piece | Location |
 |-------|----------|
 | Web | `GET /app/league` → `Web\LeagueController::index` |
-| JSON | `GET /api/v1/league/standings`, `/fixtures`, `/seasons` |
-| Domain | `LeagueService` (`getSortedStandings`, `getGlobalLeaderboard`, `getTeamForm`) |
+| JSON | `GET /api/v1/league/standings`, `/fixtures`, `/seasons`, `/yearbook` |
+| Domain | `LeagueService` (`getSortedStandings`, `getGlobalLeaderboard`, `getTeamForm`), `SeasonReportService` |
 
 Team names open the community profile modal (`player-profile`).
 
@@ -69,6 +69,6 @@ League morale fiction (win-streak / derby / relegation pressure) is **Cut**: [le
 
 | Piece | Location |
 |-------|----------|
-| Page | `templates/league/index.html.twig` |
+| Page | `templates/league/index.html.twig`, `templates/league/_yearbook.html.twig` |
 | Formation chip | `templates/components/league/fixture_formation_status.html.twig` |
 | Stimulus | `form-auto-submit`, `league-fixtures`, `player-profile`, `match_ready` |

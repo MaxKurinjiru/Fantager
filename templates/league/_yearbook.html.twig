@@ -1,0 +1,189 @@
+{% if yearbook is null %}
+    <div class="league-empty-state">
+        <h3 class="league-empty-state__title">{{ 'league.yearbook_empty'|trans }}</h3>
+        <p class="league-empty-state__desc">{{ 'league.yearbook_empty_desc'|trans }}</p>
+    </div>
+{% else %}
+    <div class="league-yearbook layout-stack layout-stack--lg">
+        {% if yearbook.team is null %}
+            <p class="copy-muted">{{ 'league.yearbook_no_team'|trans }}</p>
+        {% else %}
+            {% set own = yearbook.team %}
+            <section class="game-panel" aria-labelledby="yearbook-own-title">
+                <h2 id="yearbook-own-title" class="game-panel__title">{{ 'league.yearbook_your_season'|trans }}</h2>
+                <dl class="league-yearbook__stats">
+                    <div>
+                        <dt>{{ 'league.yearbook_place'|trans }}</dt>
+                        <dd>{{ own.position }} · {{ own.group }} ({{ own.tier }})</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_record'|trans }}</dt>
+                        <dd>{{ own.wins }}–{{ own.draws }}–{{ own.losses }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_points'|trans }}</dt>
+                        <dd>{{ own.points }} ({{ own.goal_difference > 0 ? '+' : '' }}{{ own.goal_difference }})</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_gold_end'|trans }}</dt>
+                        <dd>{{ own.gold.end }}</dd>
+                    </div>
+                    {% if own.gold.open is not null %}
+                        <div>
+                            <dt>{{ 'league.yearbook_gold_open'|trans }}</dt>
+                            <dd>{{ own.gold.open }}</dd>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <dt>{{ 'league.yearbook_gold_reward'|trans }}</dt>
+                        <dd>{{ own.gold.reward }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_income_arena'|trans }}</dt>
+                        <dd>{{ own.income.arena }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_income_market'|trans }}</dt>
+                        <dd>{{ own.income.marketplace }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_income_treasury'|trans }}</dt>
+                        <dd>{{ own.income.kingdom_reward }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_hq_level'|trans }}</dt>
+                        <dd>{{ own.hq_total_level }}</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="game-panel" aria-labelledby="yearbook-roster-title">
+                <h2 id="yearbook-roster-title" class="game-panel__title">{{ 'league.yearbook_roster'|trans }}</h2>
+                <dl class="league-yearbook__stats">
+                    <div>
+                        <dt>{{ 'league.yearbook_combat_ready'|trans }}</dt>
+                        <dd>{{ own.roster.combat_ready }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_trainers'|trans }}</dt>
+                        <dd>{{ own.roster.trainers }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_mean_level'|trans }}</dt>
+                        <dd>{{ own.roster.mean_level is not null ? own.roster.mean_level|number_format(1) : '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_mean_ovr'|trans }}</dt>
+                        <dd>{{ own.roster.mean_ovr is not null ? own.roster.mean_ovr|number_format(1) : '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_median_age'|trans }}</dt>
+                        <dd>{{ own.roster.median_age is not null ? own.roster.median_age|number_format(1) : '—' }}</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="game-panel" aria-labelledby="yearbook-events-title">
+                <h2 id="yearbook-events-title" class="game-panel__title">{{ 'league.yearbook_events'|trans }}</h2>
+                <dl class="league-yearbook__stats">
+                    <div>
+                        <dt>{{ 'league.yearbook_summons'|trans }}</dt>
+                        <dd>{{ own.events.summons }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_buys'|trans }}</dt>
+                        <dd>{{ own.events.buys }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_sells'|trans }}</dt>
+                        <dd>{{ own.events.sells }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_dismissals'|trans }}</dt>
+                        <dd>{{ own.events.dismissals }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_deaths'|trans }}</dt>
+                        <dd>{{ own.events.combat_deaths }}</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="game-panel" aria-labelledby="yearbook-flavor-title">
+                <h2 id="yearbook-flavor-title" class="game-panel__title">{{ 'league.yearbook_flavor'|trans }}</h2>
+                <dl class="league-yearbook__stats">
+                    <div>
+                        <dt>{{ 'dashboard.reputation'|trans }}</dt>
+                        <dd>{{ own.reputation }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'dashboard.chemistry'|trans }}</dt>
+                        <dd>{{ own.chemistry }}</dd>
+                    </div>
+                    <div>
+                        <dt>{{ 'league.yearbook_fan_base'|trans }}</dt>
+                        <dd>{{ own.fan_base }}</dd>
+                    </div>
+                </dl>
+                <p class="copy-muted">{{ 'league.yearbook_chemistry_note'|trans }}</p>
+            </section>
+        {% endif %}
+
+        {% if yearbook.versus %}
+            {% set vs = yearbook.versus %}
+            <section class="game-panel" aria-labelledby="yearbook-vs-title">
+                <h2 id="yearbook-vs-title" class="game-panel__title">{{ 'league.yearbook_vs_group'|trans }}</h2>
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <caption class="sr-only">{{ 'league.yearbook_vs_group'|trans }}</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">{{ 'league.yearbook_you'|trans }}</th>
+                                <th scope="col">{{ 'league.yearbook_median'|trans }}</th>
+                                <th scope="col">{{ 'league.yearbook_delta'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for metric in ['points', 'gold', 'ovr', 'level', 'age'] %}
+                                {% set row = vs[metric] %}
+                                <tr>
+                                    <th scope="row">{{ ('league.yearbook_' ~ (metric == 'gold' ? 'gold_end' : (metric == 'ovr' ? 'mean_ovr' : (metric == 'level' ? 'mean_level' : (metric == 'age' ? 'median_age' : 'points')))))|trans }}</th>
+                                    <td>{{ row.value is not null ? row.value|number_format(1) : '—' }}</td>
+                                    <td>{{ row.median is not null ? row.median|number_format(1) : '—' }}</td>
+                                    <td>
+                                        {% if row.delta is not null %}
+                                            {{ row.delta > 0 ? '+' : '' }}{{ row.delta|number_format(1) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        {% endif %}
+
+        {% if yearbook.highlights.champion or yearbook.highlights.best_goal_difference %}
+            <section class="game-panel" aria-labelledby="yearbook-notes-title">
+                <h2 id="yearbook-notes-title" class="game-panel__title">{{ 'league.yearbook_highlights'|trans }}</h2>
+                <dl class="league-yearbook__stats">
+                    {% if yearbook.highlights.champion %}
+                        <div>
+                            <dt>{{ 'league.yearbook_champion'|trans }}</dt>
+                            <dd>{{ yearbook.highlights.champion }}</dd>
+                        </div>
+                    {% endif %}
+                    {% if yearbook.highlights.best_goal_difference %}
+                        <div>
+                            <dt>{{ 'league.yearbook_best_gd'|trans }}</dt>
+                            <dd>{{ yearbook.highlights.best_goal_difference }}</dd>
+                        </div>
+                    {% endif %}
+                </dl>
+            </section>
+        {% endif %}
+    </div>
+{% endif %}

@@ -66,6 +66,13 @@ docker exec -u apache fantager-web php bin/console app:ticks:run --time="2026-06
 docker exec -u apache fantager-web php bin/console app:ticks:run --kingdom-id=1
 ```
 
+Season reports are written on `season_transition`. Backfill and export (JSONL + health alerts):
+
+```bash
+docker exec -u apache fantager-web php bin/console app:season:report:build --kingdom-id=1
+docker exec -u apache fantager-web php bin/console app:season:report:export --kingdom-id=1 -o /tmp/seasons.jsonl
+```
+
 `app:ticks:run` dispatches work to Symfony Messenger. Consume the queue:
 
 ```bash

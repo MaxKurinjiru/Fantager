@@ -55,5 +55,6 @@ Deferred features beyond this list (Milestone 8 dungeons/quests/crafting, Milest
 | 16 | Spell catalog T1–T5 envelope | Resolved | [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) |
 | 17 | Spell payloads | Resolved | [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) |
 | — | League morale fiction | Resolved (Cut) | [league-system.md](../systems/league-system.md#locked-no-league-morale-fiction) |
+| — | Season report freeze | Resolved | [season-report-system.md](../systems/season-report-system.md#locked-frozen-snapshot-two-consumers) |
 
 Decision notes for #1–#17 live in the linked specs and in [roadmap/archive/alignment-waves.md](../roadmap/archive/alignment-waves.md) (waves 6–8).

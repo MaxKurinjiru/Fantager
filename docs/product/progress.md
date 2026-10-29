@@ -157,6 +157,7 @@ Seven facilities. Forge is not live (crafting is ⏳).
 | My fixtures | Own season matches + prepare formation | ✅ | [13-league.md](../screens/13-league.md) |
 | Kingdom leaderboard | All teams in the selected season | ✅ | [13-league.md](../screens/13-league.md) |
 | Season archive | Finished seasons: table, fixtures, place, tier move, gold | ✅ | [13-league.md](../screens/13-league.md) |
+| Season report | Yearbook vs group medians + operator JSONL health export | ✅ | [season-report-system.md](../systems/season-report-system.md), [13-league.md](../screens/13-league.md) |
 | League | Win-streak / derby / relegation-pressure morale | ✂️ | [league-system.md](../systems/league-system.md#locked-no-league-morale-fiction) |
 | Calendar | Week navigation, team-only / system-tick toggles | ✅ | [14-calendar.md](../screens/14-calendar.md) |
 | Calendar | League fixtures + own friendlies in the feed | ✅ | [14-calendar.md](../screens/14-calendar.md) |

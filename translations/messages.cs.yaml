@@ -149,6 +149,7 @@ error:
   item_not_found: Předmět nenalezen.
   formation_not_found: Formace nenalezena.
   fixture_not_found: Zápas nenalezen.
+  season_not_found: Sezóna nenalezena.
   listing_not_found: Nabídka nenalezena.
   memorial_not_found: Památník nenalezen.
   message_not_found: Zpráva nenalezena.
@@ -1554,6 +1555,43 @@ league:
   tab_my_fixtures: Moje zápasy
   tab_group_fixtures: Zápasy skupiny
   tab_leaderboard: Globální žebříček
+  tab_yearbook: Výroční zpráva
+  yearbook_empty: Pro tuhle sezónu ještě není zmražená zpráva.
+  yearbook_empty_desc: Zpráva se zapisuje na konci sezóny. Ukončené sezóny z doby před touhle funkcí může doplnit provozovatel.
+  yearbook_your_season: Vaše sezóna
+  yearbook_vs_group: Proti mediánu skupiny
+  yearbook_highlights: Poznámky ke skupině
+  yearbook_champion: Vítěz skupiny
+  yearbook_best_gd: Nejlepší skóre zabití
+  yearbook_place: Umístění
+  yearbook_record: Bilance
+  yearbook_points: Body
+  yearbook_gold_end: Zlato na konci sezóny
+  yearbook_gold_open: Zlato na začátku sezóny
+  yearbook_gold_reward: Ligová odměna
+  yearbook_income_arena: Vstupenky arény
+  yearbook_income_market: Prodeje na trhu
+  yearbook_income_treasury: Podíl království
+  yearbook_roster: Soupiska při uzamčení
+  yearbook_combat_ready: Připraveni k boji
+  yearbook_trainers: Trenéři
+  yearbook_mean_level: Průměrná úroveň
+  yearbook_mean_ovr: Průměrné OVR
+  yearbook_median_age: Medián věku
+  yearbook_events: Aktivita sezóny
+  yearbook_summons: Vyvolání
+  yearbook_buys: Nákupy
+  yearbook_sells: Prodeje
+  yearbook_dismissals: Propuštění
+  yearbook_deaths: Úmrtí v boji
+  yearbook_flavor: Atmosféra klubu
+  yearbook_chemistry_note: Chemie je příchuť zápasů. Boj nemění.
+  yearbook_fan_base: Fanoušci
+  yearbook_hq_level: Úroveň velitelství
+  yearbook_median: Medián skupiny
+  yearbook_you: Vy
+  yearbook_delta: Rozdíl
+  yearbook_no_team: Váš tým v téhle sezóně nebyl. Veřejné poznámky ke skupině jsou skryté.
   prev_round: Předchozí kolo
   next_round: Další kolo
   tab_calendar: Kalendář

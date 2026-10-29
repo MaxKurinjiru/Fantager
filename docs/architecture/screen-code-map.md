@@ -42,7 +42,7 @@ Quick reference: which files implement each game screen.
 | [10-item-equipment.md](../screens/10-item-equipment.md) | `/app/inventory` (redirects → `/app/heroes/{id}?tab=equipment` or `/app/heroes`) | `Web\ItemController` | `Api\V1\ItemController` | `templates/hero/detail.html.twig` (`tab=equipment`), `templates/components/item/` | `equipment` (click-to-equip; no DnD), `rucksack_filter` |
 | [11-spell-management.md](../screens/11-spell-management.md) | `/app/spells` (redirects → `/app/heroes/{id}?tab=spells`), `/app/academy` | `Web\SpellController` | `Api\V1\SpellController` | `templates/spell/academy.html.twig`, `templates/hero/detail.html.twig` | `spellbook` |
 | [12-combat-battle.md](../screens/12-combat-battle.md) | `/app/battles/{id}` | `Web\BattleController` | `Api\V1\BattleController` | `templates/battle/` | `hex_battle_replay`, `battle_report` |
-| [13-league.md](../screens/13-league.md) | `/app/league` | `Web\LeagueController` | `Api\V1\FixtureFormationController` (`/formation/fill-roster`) | `templates/league/`, `templates/components/league/`, `templates/components/formation/match_ready_panel.html.twig` | `form-auto-submit`, `league-fixtures`, `player-profile`, `match_ready` |
+| [13-league.md](../screens/13-league.md) | `/app/league` | `Web\LeagueController` | `Api\V1\LeagueController` (`standings`, `fixtures`, `seasons`, `yearbook`); `Api\V1\FixtureFormationController` (`/formation/fill-roster`) | `templates/league/`, `templates/components/league/`, `templates/components/formation/match_ready_panel.html.twig` | `form-auto-submit`, `league-fixtures`, `player-profile`, `match_ready` |
 | [14-calendar.md](../screens/14-calendar.md) | `/app/calendar` | `Web\CalendarController` | `Api\V1\CalendarController` | `templates/calendar/` | `calendar` |
 | [15-marketplace.md](../screens/15-marketplace.md) | `/app/marketplace` | `Web\MarketplaceController` | `Api\V1\MarketplaceController` | `templates/marketplace/` | `marketplace` |
 | [16-graveyard.md](../screens/16-graveyard.md) | `/app/graveyard` | `Web\GraveyardController` | `Api\V1\GraveyardController` | `templates/graveyard/` | — |
@@ -81,7 +81,7 @@ Quick reference: which files implement each game screen.
 | Community | `CommunityService`, `ForumThreadHelper`, `PlayerProfileService` | `tests/Service/Community/` |
 | Graveyard | `GraveyardService`, `GraveyardPresenter` | `tests/Service/Graveyard/` |
 | Calendar / ticks | `CalendarService`, `KingdomTickRunnerService`, `KingdomTickOrchestrator`, `ExecuteSingleTickHandler` | `tests/Service/Calendar/` |
-| League | `LeagueService`, `LeagueFixtureScheduler`, `SeasonTransitionService` | `tests/Service/League/` |
+| League | `LeagueService`, `LeagueFixtureScheduler`, `SeasonTransitionService`, `SeasonReportService` | `tests/Service/League/` |
 | Economy | `EconomyService`, `FinancialCrisisService`, `ArenaRevenueService`, `CashflowForecastService`, `FinanceSummaryService` | `tests/Service/Economy/` |
 | Auth | `RegistrationService`, `UserSettingsService` | `tests/Service/Auth/` |
 

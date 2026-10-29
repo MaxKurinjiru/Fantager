@@ -43,4 +43,8 @@ services:
     arguments:
       $projectDir: '%kernel.project_dir%'
 
+  App\Service\Config\SeasonHealthConfig:
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+
   App\Service\Combat\MatchSimulatorInterface: '@App\Service\Combat\LeagueMatchSimulator'

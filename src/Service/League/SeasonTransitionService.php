@@ -39,6 +39,7 @@ class SeasonTransitionService
         private readonly TeamChronicleService $teamChronicleService,
         private readonly \App\Service\Notification\NotificationHelper $notificationHelper,
         private readonly LeagueGroupSeeder $groupSeeder,
+        private readonly SeasonReportService $seasonReportService,
     ) {
     }
 
@@ -265,6 +266,7 @@ class SeasonTransitionService
             }
 
             $goldGranted = (int) round($baseGold * $mPos * $mSeason * $mStatus);
+            $teamStandingDetails[$teamId]['gold'] = $goldGranted;
             // 1. Credit team balances
             if ($goldGranted > 0) {
                 $this->economyService->addGold(
@@ -357,6 +359,8 @@ class SeasonTransitionService
         // Transition statuses
         $currentSeason->setStatus(LeagueSeasonStatus::Completed);
         $upcomingSeason->setStatus(LeagueSeasonStatus::Active);
+
+        $this->seasonReportService->recordForSeason($currentSeason, $teamStandingDetails);
 
         $this->em->flush();
     }

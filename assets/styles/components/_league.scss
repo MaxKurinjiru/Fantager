@@ -328,6 +328,22 @@
   .round-switcher {
     @apply flex items-center gap-2;
   }
+  .league-yearbook__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.75rem 1.25rem;
+    margin: 0;
+    dt {
+      margin: 0;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
+    dd {
+      margin: 0.125rem 0 0;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+  }
   .round-switcher__select {
     width: auto;
     min-width: 8.5rem;

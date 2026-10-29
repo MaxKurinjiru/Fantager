@@ -7,6 +7,7 @@ Short definitions for live game terms. **Rules** live in `docs/systems/*.md`. Th
 | **Kingdom** | One shared game world. Isolation is `kingdom_id` on rows, not a separate process. |
 | **Tick** | Scheduled server job in the kingdom timezone (daily reset, league match, weekly training, …). |
 | **Season** | One league cycle: **77 days** (11 weeks). |
+| **Season report** | Frozen end-of-season JSON (`SeasonReport`). Player yearbook vs group medians; operator JSONL + health bands. |
 | **Gold** | Sole live currency. Every change is a `FinancialRecord`. Gold never goes negative. |
 | **Essence** | Not in the live game. Do not reintroduce (enchanting Cut). |
 | **Hero** | Roster combatant. No classes, no rarity. |
