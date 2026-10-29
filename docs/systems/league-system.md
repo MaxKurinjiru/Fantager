@@ -201,6 +201,7 @@ For a team finishing at position P in Tier T_old during Season S, and transition
 - **Direct Credit:** Rewards are added directly to the team's balance (`gold` column on the `Team` entity) during the Season Transition transaction. No manual claiming is required.
 - **Team chronicle:** `TeamChronicleService::recordSeasonEnded()` writes type `season_ended` to `team_chronicle` (tier, position, promotion/relegation status, gold granted). Displayed on the dashboard and at `/app/chronicle`. See [team-chronicle-system.md](team-chronicle-system.md).
 - **Financial Ledger:** A record of type `league_reward` is added to the `FinancialRecord` entity with actor set to `system`, documenting the exact amount of Gold granted for auditing and player ledger transparency.
+- **Season report:** `SeasonReportService::recordForSeason()` freezes a yearbook + validation payload for the completed season. See [season-report-system.md](season-report-system.md).
 
 ## Standings and leaderboards
 
@@ -211,7 +212,7 @@ Group tables and the kingdom-wide ranking are **live**, not a leftover sketch.
 - **Kingdom leaderboard** (web tab `leaderboard`): all teams in the **active** season, same tie-breakers as [Global Standing Comparison Formula](#4-global-standing-comparison-formula) (points, GD, wins, real player before NPC, reputation, chemistry, team id). Columns include group name; no form column.
 - There is **no** `GET /api/v1/leaderboards` route. Community does not own a second ranking API.
 
-Web page is server-rendered (`Web\LeagueController`); JSON is optional for the same data. Empty state when the kingdom has no active or finished season. The page season selector lists **active and completed** seasons (`?seasonId=`). A scheduled shell is omitted. An unknown id falls back to the active season, then the newest finished season. On a finished season the page shows that season's table, fixtures, and leaderboard, plus the viewer's place, promotion/relegation status, and gold from the `season_ended` chronicle. Full UI: [13-league.md](../screens/13-league.md).
+Web page is server-rendered (`Web\LeagueController`); JSON is optional for the same data. Empty state when the kingdom has no active or finished season. The page season selector lists **active and completed** seasons (`?seasonId=`). A scheduled shell is omitted. An unknown id falls back to the active season, then the newest finished season. On a finished season the page shows that season's table, fixtures, leaderboard, and yearbook tab, plus the viewer's place, promotion/relegation status, and gold from the `season_ended` chronicle. Full UI: [13-league.md](../screens/13-league.md).
 
 Veteran leadership and junior bonus XP are **not live**. Win-streak / derby / relegation-pressure morale is **Cut** — [Locked: no league morale fiction](#locked-no-league-morale-fiction).
 
@@ -225,6 +226,7 @@ Veteran leadership and junior bonus XP are **not live**. Win-streak / derby / re
 | GET | `/api/v1/league/standings` | Current group standings and kingdom-wide leaderboard |
 | GET | `/api/v1/league/fixtures` | Fixture schedule for group or team |
 | GET | `/api/v1/league/seasons` | Kingdom season history |
+| GET | `/api/v1/league/yearbook` | Player-facing season report for `seasonId` |
 | POST | `/api/v1/league/process-season` | Season transition trigger (Admin only) |
 
 See [architecture/routes.md](../architecture/routes.md#league).
@@ -241,13 +243,13 @@ Win-streak, derby, and relegation-pressure morale are **Cut**. Do not add them. 
 
 | Piece | Location |
 |-------|----------|
-| Entities | `LeagueSeason`, `LeagueTier`, `LeagueGroup`, `LeagueStanding`, `LeagueFixture` |
-| Read API / web aggregation | `App\Service\League\LeagueService` (`getSortedStandings`, `getGlobalLeaderboard`, `getTeamForm`) |
+| Entities | `LeagueSeason`, `LeagueTier`, `LeagueGroup`, `LeagueStanding`, `LeagueFixture`, `SeasonReport` |
+| Read API / web aggregation | `App\Service\League\LeagueService` (`getSortedStandings`, `getGlobalLeaderboard`, `getTeamForm`), `SeasonYearbookPresenter` |
 | Fixtures | `LeagueFixtureScheduler` (Berger), `LeagueFixtureKickoffMatcher` |
 | Next-season groups | `LeagueGroupSeeder` (pots by previous place; shuffle inside each pot) |
 | Match tick | `LeagueMatchResolutionService` → combat → `LeagueFixtureCompletionService` |
-| End of season | `SeasonTransitionService` |
+| End of season | `SeasonTransitionService`, `SeasonReportService` |
 | Web | `Web\LeagueController`, `templates/league/` |
-| JSON | `Api\V1\LeagueController` (`GET` standings/fixtures/seasons; `POST /process-season` is `ROLE_ADMIN`) |
+| JSON | `Api\V1\LeagueController` (`GET` standings/fixtures/seasons/yearbook; `POST /process-season` is `ROLE_ADMIN`) |
 
-**Tests:** `tests/Service/League/` (`LeagueStandingServiceTest`, `LeagueFixtureSchedulerTest`, `SeasonTransitionServiceTest`, `LeagueMatchResolutionServiceTest`, `LeagueFixtureCompletionServiceTest`, `LeagueFixtureKickoffMatcherTest`).
+**Tests:** `tests/Service/League/` (`LeagueStandingServiceTest`, `LeagueFixtureSchedulerTest`, `SeasonTransitionServiceTest`, `LeagueMatchResolutionServiceTest`, `LeagueFixtureCompletionServiceTest`, `LeagueFixtureKickoffMatcherTest`, `SeasonStatsTest`, `SeasonHealthEvaluatorTest`, `SeasonYearbookPresenterTest`).

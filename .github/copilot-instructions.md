@@ -24,6 +24,8 @@ Do **not** run tests, linters, builds, or verification commands unless the user 
 |------|---------|
 | Initialize kingdom | `docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom" --test` |
 | Create test user | `docker exec -u apache fantager-web php bin/console app:user:create-test "Main Kingdom" user@example.com "Nickname" "password"` |
+| Build season reports | `docker exec -u apache fantager-web php bin/console app:season:report:build --kingdom-id=1` |
+| Export season reports | `docker exec -u apache fantager-web php bin/console app:season:report:export --kingdom-id=1 -o /tmp/seasons.jsonl` |
 | Clear cache | `docker exec -u apache fantager-web php bin/console cache:clear` |
 | PHPStan | `docker exec -u apache fantager-web vendor/bin/phpstan` |
 | Style check / fix | `docker exec -u apache fantager-web composer php-cs` / `composer php-cs-fix` |

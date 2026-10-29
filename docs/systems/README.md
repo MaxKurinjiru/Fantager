@@ -52,6 +52,7 @@ One-line index of the **live contract**. Leftovers live in that doc’s Remainin
 | Items | Live | [item-system.md](item-system.md) |
 | Spells | Live | [spell-system.md](spell-system.md) |
 | Leagues | Live | [league-system.md](league-system.md) |
+| Season reports | Live | [season-report-system.md](season-report-system.md) |
 | Combat | Live (replay) | [combat-system.md](combat-system.md), [combat-formulas.md](combat-formulas.md) |
 | Marketplace | Live | [marketplace-system.md](marketplace-system.md) |
 | Community | Live | [community-system.md](community-system.md) |

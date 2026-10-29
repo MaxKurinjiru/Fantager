@@ -38,7 +38,7 @@ Quick map of production PHP layout. Full workflow: [SKILL.md](SKILL.md) · [exam
 | `Marketplace/` | `MarketplaceService`, `MarketplacePriceGuidance` | [marketplace-system.md](../../../docs/systems/marketplace-system.md) |
 | `Community/` | `CommunityService`, `ForumThreadHelper`, `ContentFilterService` | [community-system.md](../../../docs/systems/community-system.md) |
 | `Calendar/` | `CalendarService`, `TickScheduleCalculator`, `KingdomTickRunnerService`, `TickClock` | [calendar-system.md](../../../docs/systems/calendar-system.md) |
-| `League/` | `LeagueService`, `LeagueFixtureScheduler`, `SeasonTransitionService` | [league-system.md](../../../docs/systems/league-system.md) |
+| `League/` | `LeagueService`, `LeagueFixtureScheduler`, `SeasonTransitionService`, `SeasonReportService` | [league-system.md](../../../docs/systems/league-system.md), [season-report-system.md](../../../docs/systems/season-report-system.md) |
 | `Graveyard/` | `GraveyardService`, `GraveyardPresenter` | [graveyard-system.md](../../../docs/systems/graveyard-system.md) |
 | `Notification/` | `NotificationService`, `NotificationHelper`, `NotificationPresenter` | [notification-system.md](../../../docs/systems/notification-system.md) |
 | `Config/` | `RaceConfig`, `KingdomInitConfig`, `StatusEffectConfig` | [architecture/entities.md](../../../docs/architecture/entities.md) |

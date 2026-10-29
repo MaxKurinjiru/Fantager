@@ -14,6 +14,7 @@ use App\Enum\LeagueFixtureStatus;
 use App\Enum\LeagueSeasonStatus;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Service\League\LeagueService;
+use App\Service\League\SeasonReportService;
 use App\Service\League\SeasonTransitionService;
 use App\Service\Translation\UserMessageTranslator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -62,6 +63,7 @@ class LeagueControllerTest extends TestCase
         $this->controller = new LeagueController(
             $this->leagueService,
             $this->seasonTransitionService,
+            $this->createMock(SeasonReportService::class),
             $this->kingdomRepository,
             $this->em
         );

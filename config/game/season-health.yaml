@@ -1,0 +1,52 @@
+# Expected bands for frozen season reports. Alerts never change tick outcomes.
+# Tune after multi-season simulation runs. Paths are dotted keys in the JSON payload.
+
+metrics:
+  median_gold:
+    path: aggregates.kingdom.gold.p50
+    min: 0
+    max: 250000
+  gold_gini:
+    path: aggregates.kingdom.gold_gini
+    min: 0
+    max: 0.85
+  median_combatant_age:
+    path: aggregates.kingdom.age.p50
+    min: 14
+    max: 80
+  median_level:
+    path: aggregates.kingdom.level.p50
+    min: 1
+    max: 20
+  median_ovr:
+    path: aggregates.kingdom.ovr.p50
+    min: 0
+    max: 100
+  home_win_rate:
+    path: combat.home_win_rate
+    min: 0.38
+    max: 0.62
+  round_200_share:
+    path: combat.round_200_share
+    min: 0
+    max: 0.40
+  forfeit_rate:
+    path: combat.forfeit_rate
+    min: 0
+    max: 0.25
+  combat_deaths:
+    path: aging.combat_deaths
+    min: 0
+    max: 400
+  market_volume:
+    path: market.volume_gold
+    min: 0
+    max: 10000000
+  crisis_count:
+    path: aggregates.kingdom.crisis_count
+    min: 0
+    max: 20
+  yo_yo_count:
+    path: league.yo_yo_count
+    min: 0
+    max: 15

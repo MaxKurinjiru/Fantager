@@ -27,6 +27,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 | **NotificationPreference** | Dedicated **`UserSettings`** table (`auth_user_settings`), 1:1 with User | UI/interface preferences (modal backdrop, future toggles). Notification email/in-game prefs still **planned**. |
 | **HeroTrainingHistory** as append-only weekly training log            | One row per hero trained during each weekly tick. Used for hero recent activity and calendar history. The same tick also writes `training_completed` on team chronicle and hero chronicle.                                                                         |
 | **Leaderboard** = SQL view / computed                                 | Derived from LeagueStanding, not stored separately.                                                                                                                                                                                                                 |
+| **SeasonReport** frozen JSON                                          | Written once at season transition. Player yearbook and sim export share the payload. Do not recompute from live heroes on read.                                                                                                                                    |
 | **PlayerProfile** = projection of User+Team                              | Not a DB entity.                                                                                                                                                                                                                                                    |
 | **NPC Team** as `is_npc = true` on Team entity                        | No separate entity needed; NPC and player teams share all fields. `user_id` is NULL for NPC teams.                                                                                                                                                                  |
 | **Kingdom initialization** creates all NPC teams + first LeagueSeason | Ensures a full league bracket exists before any player joins.                                                                                                                                                                                                       |
@@ -170,6 +171,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 | **LeagueGroup**    | id, tier_id, group_name                                                          | → LeagueTier                     |
 | **LeagueStanding** | id, group_id, team_id, played, wins, draws, losses, points, goal_difference      | → LeagueGroup, → Team            |
 | **LeagueFixture**  | id, group_id, home_team_id, away_team_id, home_formation_id (nullable), away_formation_id (nullable), scheduled_at, battle_id, status (enum) | → LeagueGroup, → Teams, → Formations (optional), → Battle |
+| **SeasonReport**   | id, kingdom_id, season_id (unique), season_number, generated_at, median_gold, median_combatant_age, combat_death_count, market_volume, crisis_count, mean_kill_score, payload (JSON freeze) | → Kingdom, → LeagueSeason |
 | **FriendlyMatch**  | id, kingdom_id, home_team_id (challenger), away_team_id, home_formation_id (nullable), away_formation_id (nullable), scheduled_at, battle_id (nullable, unique), status (`FriendlyMatchStatus`), created_at, responded_at (nullable) | → Kingdom, → Teams, → Formations (optional), → Battle |
 
 
@@ -293,10 +295,10 @@ Fields: [Team Domain](#3-team-domain) (`TeamChronicle`). Full writer map, catego
 
 | Category                   | Count  |
 | -------------------------- | ------ |
-| DB entities (implemented) | 38     |
+| DB entities (implemented) | 39     |
 | Config-based (not DB)      | 6      |
 | PHP enums (`src/Enum`)     | 41     |
-| **Total modeled concepts** | **85** |
+| **Total modeled concepts** | **86** |
 
 
 ---

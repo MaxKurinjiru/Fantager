@@ -9,6 +9,7 @@ use App\Enum\LeagueSeasonStatus;
 use App\Service\Formation\FixtureFormationService;
 use App\Service\Formation\MatchLineupService;
 use App\Service\League\LeagueService;
+use App\Service\League\SeasonReportService;
 use App\Service\Translation\UserMessageTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,6 +25,7 @@ class LeagueController extends AbstractController
         private readonly FixtureFormationService $fixtureFormationService,
         private readonly MatchLineupService $matchLineupService,
         private readonly UserMessageTranslator $userMessages,
+        private readonly SeasonReportService $seasonReportService,
     ) {
     }
 
@@ -40,10 +42,7 @@ class LeagueController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-        $tab = $request->query->get('tab', 'standings');
-        if (!in_array($tab, ['standings', 'my-fixtures', 'leaderboard'], true)) {
-            $tab = 'standings';
-        }
+        $tab = (string) $request->query->get('tab', 'standings');
 
         $kingdom = $team->getKingdom();
         $seasons = $this->leagueService->listBrowsableSeasons($kingdom);
@@ -71,10 +70,18 @@ class LeagueController extends AbstractController
                 'forms' => [],
                 'fixtureFormations' => [],
                 'fixtureLineups' => [],
+                'yearbook' => null,
             ]);
         }
 
         $viewingArchive = LeagueSeasonStatus::Completed === $season->getStatus();
+        $allowedTabs = ['standings', 'my-fixtures', 'leaderboard'];
+        if ($viewingArchive) {
+            $allowedTabs[] = 'yearbook';
+        }
+        if (!in_array($tab, $allowedTabs, true)) {
+            $tab = 'standings';
+        }
 
         $groups = $this->leagueService->getGroupsForSeason($season);
         $userStanding = $this->leagueService->findStandingForTeam($season, $team);
@@ -138,6 +145,7 @@ class LeagueController extends AbstractController
             'forms' => $forms,
             'fixtureFormations' => $fixtureFormations,
             'fixtureLineups' => $fixtureLineups,
+            'yearbook' => $viewingArchive ? $this->seasonReportService->yearbookForTeam($season, $team) : null,
         ]);
     }
 }

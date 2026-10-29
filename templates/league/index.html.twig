@@ -73,6 +73,12 @@
                    class="tab-btn {{ tab == 'leaderboard' ? 'tab-btn--active' : '' }}">
                     🌎 {{ 'league.tab_leaderboard'|trans }}
                 </a>
+                {% if viewingArchive %}
+                    <a href="{{ path('app_league', league_query|merge({ tab: 'yearbook' })) }}"
+                       class="tab-btn {{ tab == 'yearbook' ? 'tab-btn--active' : '' }}">
+                        {{ 'league.tab_yearbook'|trans }}
+                    </a>
+                {% endif %}
             </div>
 
             {% if viewingArchive %}
@@ -500,6 +506,10 @@
                         </table>
                     </div>
                 {% endif %}
+            </div>
+
+            <div id="tab-yearbook" class="league-tab-panel {{ tab != 'yearbook' ? 'hidden' : '' }}">
+                {% include 'league/_yearbook.html.twig' %}
             </div>
 
         </div>

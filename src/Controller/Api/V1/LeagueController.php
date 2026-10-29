@@ -13,6 +13,7 @@ use App\Entity\League\LeagueSeason;
 use App\Entity\Team\Team;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Service\League\LeagueService;
+use App\Service\League\SeasonReportService;
 use App\Service\League\SeasonTransitionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,6 +31,7 @@ class LeagueController extends AbstractController
     public function __construct(
         private readonly LeagueService $leagueService,
         private readonly SeasonTransitionService $seasonTransitionService,
+        private readonly SeasonReportService $seasonReportService,
         private readonly KingdomRepository $kingdomRepository,
         private readonly EntityManagerInterface $em,
     ) {
@@ -223,6 +225,30 @@ class LeagueController extends AbstractController
         ], $seasons);
 
         return $this->json($payload);
+    }
+
+    #[Route('/yearbook', name: 'api_league_yearbook', methods: ['GET'])]
+    public function yearbook(Request $request): JsonResponse
+    {
+        $team = $this->getPlayerTeam();
+        $kingdom = $team?->getKingdom();
+        if (null === $kingdom) {
+            return $this->jsonError('error.kingdom_not_found', 404);
+        }
+
+        $seasonIdStr = $request->query->get('seasonId');
+        $seasonId = null !== $seasonIdStr && is_numeric($seasonIdStr) ? (int) $seasonIdStr : null;
+        $season = $this->leagueService->resolveSeason($kingdom, $seasonId);
+        if (null === $season) {
+            return $this->jsonError('error.season_not_found', 404);
+        }
+
+        $yearbook = $this->seasonReportService->yearbookForTeam($season, $team);
+        if (null === $yearbook) {
+            return $this->json(['yearbook' => null]);
+        }
+
+        return $this->json(['yearbook' => $yearbook]);
     }
 
     #[Route('/process-season', name: 'api_league_process_season', methods: ['POST'])]
