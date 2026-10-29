@@ -6,7 +6,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 
 **Status:** Lineup drag-and-drop is **live**. Per-slot L1/L2 tactics editor is **live**. Synergies are **Cut**. Save rejects duplicate `hero_id`.  
 **Lock:** [formation-system.md — L1/L2 editor](../systems/formation-system.md#locked-l1l2-editor)  
-Slot tactics: Healer (`restore`) / CC (`hinder`) / Nuker (`harm`) buttons write thin L2 lists from equipped spells. Spec: [spell-system.md](../systems/spell-system.md#l0-utility-and-l2-templates).
+Slot tactics: Healer (`restore`) / CC (`hinder`) / Nuker (`harm`) / Buff (`enhance`) buttons write thin L2 lists from equipped spells. Spec: [spell-system.md](../systems/spell-system.md#l0-pick-and-l2-templates).
 
 **Live UI:** `templates/formation/index.html.twig`, `templates/components/formation/`, Stimulus `formation`.
 
@@ -37,7 +37,7 @@ Slot tactics: Healer (`restore`) / CC (`hinder`) / Nuker (`harm`) buttons write 
 - Set as default (disabled in match-prep)
 - Pre-match approach: Aggressive / Balanced / Defensive (`approach`)
 - Default movement goal plus **Apply to all slots** (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`). Each pitch slot can override it; save keeps per-slot `strategy.movement_goal`
-- Slot tactics panel (click a pitch slot): movement; L1 `target_order` + `fallback`; thin L2 equipped `spell_priorities`; Healer / CC / Nuker templates; live L0/L1/L2 readout. Empty lists keep L0. Pitch badges mark L0 vs custom L1/L2.
+- Slot tactics panel (click a pitch slot): movement; L1 `target_order` + `fallback`; thin L2 equipped `spell_priorities`; Healer / CC / Nuker / Buff templates; live L0/L1/L2 readout. Empty lists keep L0. Pitch badges mark L0 vs custom L1/L2.
 
 **Pitch (3 front + 3 back)**
 

@@ -52,7 +52,7 @@ Per-slot `strategy` and `spell_priorities` are stored as JSON. The Formation UI 
 
 ### Empty / missing → engine defaults
 
-If `target_order` is missing, the engine uses the approach (`aggressive`: back row then front; `balanced`: front row then back; `defensive`: living front row, then the survivor with the highest physical attack). If `spell_priorities` is `[]`, the engine picks one ready equipped spell (restore under the approach threshold, otherwise the highest-tier harm spell, otherwise the highest-tier hinder spell). Enhance is L2-only. NPC tactics may still fill `spell_priorities` before kickoff, and that list wins over the L0 pick. No client-side required fields for match resolution.
+If `target_order` is missing, the engine uses the approach (`aggressive`: back row then front; `balanced`: front row then back; `defensive`: living front row, then the survivor with the highest physical attack). If `spell_priorities` is `[]`, the engine picks one ready equipped spell (restore under the approach threshold, otherwise the lowest-tier enhance whose status is missing on the caster, otherwise the highest-tier harm spell, otherwise the highest-tier hinder spell). NPC tactics may still fill `spell_priorities` before kickoff, and that list wins over the L0 pick. No client-side required fields for match resolution.
 
 ### L1 — targeting (`strategy`)
 

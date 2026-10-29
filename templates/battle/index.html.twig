@@ -132,6 +132,8 @@
 
 {# Macro to render event logs #}
 {% macro render_event(event, lineup) %}
+    {% if event.accordion is defined and event.accordion == false %}
+    {% else %}
     <div class="battle-event-row battle-event-row--{{ event.type }}">
         {% if event.type == 'physical_attack' or event.type == 'attack' %}
             {% set attacker_name = (event.side is defined and event.slot is defined and lineup[event.side] is defined and lineup[event.side][event.slot] is defined) ? lineup[event.side][event.slot].name : 'battle.unknown_actor'|trans %}
@@ -178,6 +180,25 @@
                     '%spell%': event.spell_name,
                     '%target%': target_name
                 }) }}
+                {% if event.heal_blocked|default(false) %}
+                    {{ 'battle.spell_payload_heal_blocked'|trans }}
+                {% elseif event.instant_hp|default(null) == 'damage' and event.amount is defined %}
+                    {{ 'battle.spell_payload_damage'|trans({
+                        '%amount%': event.amount,
+                        '%hp%': event.hp_after
+                    }) }}
+                {% elseif event.instant_hp|default(null) == 'heal' and event.amount is defined %}
+                    {{ 'battle.spell_payload_heal'|trans({
+                        '%amount%': event.amount,
+                        '%hp%': event.hp_after
+                    }) }}
+                {% endif %}
+                {% if event.apply_effect is defined and event.apply_effect %}
+                    {{ 'battle.spell_payload_status'|trans({
+                        '%effect%': ('status_effects.' ~ event.apply_effect)|trans,
+                        '%duration%': event.status_duration|default('')
+                    }) }}
+                {% endif %}
             </span>
         {% elseif event.type == 'heal_applied' %}
             {% set target_name = (event.target_side is defined and event.target_slot is defined and lineup[event.target_side] is defined and lineup[event.target_side][event.target_slot] is defined) ? lineup[event.target_side][event.target_slot].name : 'battle.unknown_actor'|trans %}
@@ -293,4 +314,5 @@
             </span>
         {% endif %}
     </div>
+    {% endif %}
 {% endmacro %}

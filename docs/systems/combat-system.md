@@ -282,7 +282,7 @@ To expand combat duration and add tactical depth, each active combatant's turn i
 
 ##### Interruption Mechanics
 - **Stun / Freeze**: If a hero is stunned or frozen, their current queued action is immediately cancelled.
-- **Silence**: If a hero is silenced and their queued action is a spell, it is immediately cancelled.
+- **Silence**: If a hero is silenced and their queued action is a spell, it is immediately cancelled. They cannot queue a new spell until it expires. Catalog: [spell-system.md](spell-system.md#locked-catalog-t1t5) (Němota, Úder blesku).
 
 ### `combat_log` envelope (v1)
 
@@ -348,12 +348,13 @@ Common fields: `t` (monotonic index), `type`; commonly also `round`, `side` (`a`
 | `attack` | `target_side`, `target_slot` |
 | `attack_out_of_range` | `side`, `slot`, `target_side`, `target_slot` — planned attack aborted (reach / min range); no replay highlight required |
 | `attack_blocked_los` | `side`, `slot`, `target_side`, `target_slot` — ranged attack blocked by LoS; no replay highlight required |
-| `spell` | `spell_id`, `spell_name`, `caster_side`, `caster_slot`, `target_side`, `target_slot` (also common fields `side`, `slot`, `hero_id`) |
+| `spell` | `spell_id`, `spell_name`, `caster_side`, `caster_slot`, `target_side`, `target_slot`, plus payload summary `instant_hp`, `apply_effect`, optional `amount` / `hp_after` / `heal_blocked` / `status_duration` (also common fields `side`, `slot`, `hero_id`) |
 | `defend` | — |
 | `hit` / `miss` / `crit` | Follows the preceding action event in order |
-| `damage` | `target_side`, `target_slot`, `amount`, `hp_after`, `source` (`physical` \| `magical` \| `dot`) |
-| `heal_applied` | Same shape as `damage` where applicable |
-| `status_applied` / `status_tick` / `status_expired` | `effect`, optional `stacks`. `status_applied` and damage/heal ticks also carry `source_hero_id` (and side/slot on apply) |
+| `damage` | `target_side`, `target_slot`, `amount`, `hp_after`, `source` (`physical` \| `magical` \| `dot`). Magical rows from a spell also have `accordion: false` (hex replay still reads them) |
+| `heal_applied` | Same shape as `damage` where applicable. Spell-sourced rows have `accordion: false` |
+| `heal_blocked` | `target_side`, `target_slot`, `reason`. Spell-sourced rows have `accordion: false` |
+| `status_applied` / `status_tick` / `status_expired` | `effect`, optional `stacks`. `status_applied` and damage/heal ticks also carry `source_hero_id` (and side/slot on apply). Spell-sourced `status_applied` has `accordion: false` |
 | `ko` | `side`, `slot`, `hero_id` — awards +1 kill to the opposing side. A damage-over-time KO also has `killer_hero_id`, `effect`, `killer_side`, `killer_slot` |
 | `kill_score` | `score_a`, `score_b` — emit **after each** `ko`, with scores already incremented |
 | `match_end` | `score_a`, `score_b`, `rounds` |
@@ -372,7 +373,7 @@ Replay reconstructs HP/status by folding `events` — see [screens/12-combat-bat
 | `balanced` | Enemy front left→right, then back | Attack; heal if ally HP < 40% |
 | `defensive` | Enemy front; else highest threat | Heal if ally HP < 50%; else attack *(defend stance deferred — not queued)* |
 
-**Engine today:** `aggressive` uses back-then-front. `balanced` uses front-then-back. `defensive` uses the living front line and, once that line is gone, the survivor with the highest `physicalAttack`. A non-empty `spell_priorities` list is interpreted first (first matching `always` / `self_hp_below` / `ally_hp_below` wins; `enemy_status` and other unknown `when` values never match and are skipped). An empty list picks at most one **ready** spell (mana, cooldown, magical-weapon gate): a **restore** spell when any living ally is under the approach heal threshold, otherwise the highest-tier **harm** spell, otherwise the highest-tier **hinder** spell. **Enhance** is not L0. `target_order` and `fallback` (`lowest_hp`, `highest_threat`, default approach order) are already read and outrank the approach.
+**Engine today:** `aggressive` uses back-then-front. `balanced` uses front-then-back. `defensive` uses the living front line and, once that line is gone, the survivor with the highest `physicalAttack`. A non-empty `spell_priorities` list is interpreted first (first matching `always` / `self_hp_below` / `ally_hp_below` wins; `enemy_status` and other unknown `when` values never match and are skipped). An empty list picks at most one **ready** spell (mana, cooldown, magical-weapon gate): a **restore** spell when any living ally is under the approach heal threshold, otherwise the lowest-tier **enhance** whose status is not already on the caster (self), otherwise the highest-tier **harm** spell, otherwise the highest-tier **hinder** spell. `target_order` and `fallback` (`lowest_hp`, `highest_threat`, default approach order) are already read and outrank the approach.
 
 ### Engine vs post-match boundary
 
@@ -433,15 +434,15 @@ Request/result shapes, event payloads, and **wave orchestration**: [Simulation C
 
 ## Formation AI (Phased)
 
-Combat AI is fully automated. It reads `Formation.approach` and per-slot `strategy` / `spell_priorities`. Empty `target_order` uses the approach slot order. Empty `spell_priorities` uses the L0 spell pick (restore under the approach threshold, else highest-tier harm, else hinder). Schema details: [formation-system.md](formation-system.md#strategy-json-schema-phased). L0 numeric defaults: [Simulation Contract — L0](#l0-defaults-config-backed).
+Combat AI is fully automated. It reads `Formation.approach` and per-slot `strategy` / `spell_priorities`. Empty `target_order` uses the approach slot order. Empty `spell_priorities` uses the L0 spell pick (restore under the approach threshold, else a missing self-buff, else highest-tier harm, else hinder). Schema details: [formation-system.md](formation-system.md#strategy-json-schema-phased). L0 numeric defaults: [Simulation Contract — L0](#l0-defaults-config-backed).
 
 ### Layers
 
 | Layer | Behaviour | UI / data today |
 |-------|-----------|-----------------|
-| **L0** | Approach slot order, plus one ready spell when `spell_priorities` is empty (restore under the yaml threshold, else highest-tier harm, else hinder). Defensive holds the front line, then highest physical attack | Approach radios and per-slot `movement_goal` (optional Apply-to-all) |
+| **L0** | Approach slot order, plus one ready spell when `spell_priorities` is empty (restore under the yaml threshold, else lowest-tier missing self-buff, else highest-tier harm, else hinder). Defensive holds the front line, then highest physical attack | Approach radios and per-slot `movement_goal` (optional Apply-to-all) |
 | **L1** | Per-hero `target_order` (+ `fallback`: `lowest_hp`, `highest_threat`, or approach order) | Player slot editor. Empty order = approach |
-| **L2** | `spell_priorities` with `always`, `self_hp_below`, `ally_hp_below` | Thin player editor for equipped spells. Empty list = L0 pick. NPC may still fill lists. `enemy_status` / `lowest_hp_enemy` Cut from UI |
+| **L2** | `spell_priorities` with `always`, `self_hp_below`, `ally_hp_below` | Thin player editor for equipped spells. Healer / CC / Nuker / Buff templates. Empty list = L0 pick. NPC may still fill lists. `enemy_status` / `lowest_hp_enemy` Cut from UI |
 | **L3** | Explicit action sequences + advanced conditional tactics (sub, formation switch) | Deferred — not live |
 
 ### Approach weight sketch (L0)

@@ -1,6 +1,7 @@
 # L0 combat AI thresholds. The engine reads this file via CombatAiL0Config.
 # Empty spell_priorities: restore when any living ally is under the approach
-# threshold; otherwise the highest-tier ready harm spell, else hinder.
+# threshold; otherwise the lowest-tier ready enhance whose status is missing
+# on the caster; otherwise the highest-tier ready harm spell, else hinder.
 
 heal_hp_percent:
   aggressive: 25

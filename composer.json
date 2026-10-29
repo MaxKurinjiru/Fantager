@@ -52,7 +52,9 @@
         "test": "vendor/bin/phpunit",
         "kingdom": "php bin/console app:kingdom:initialize \"Main Kingdom\" --pace=test --test --start-offset-days=-10",
         "ticks": "php bin/console app:ticks:run",
-        "messenger": "php bin/console messenger:consume async --limit=3000 -vv",
+        "ticks-week": "php bin/console app:ticks:run --advance=\"+1 week\"",
+        "ticks-session": "php bin/console app:ticks:run --advance=\"+10 week\"",
+        "messenger": "php bin/console messenger:consume async --limit=2000 -vv",
         "users": "php bin/console app:user:create-test \"Main Kingdom\" --default",
         "new-kingdom": [
             "@init-db",
