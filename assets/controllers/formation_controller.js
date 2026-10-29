@@ -9,7 +9,15 @@ export default class extends Controller {
         'nameInput',
         'approachRadio',
         'defaultCheckbox',
-        'movementGoalSelect',
+        'movementFrontSelect',
+        'movementBackSelect',
+        'defaultTargetOrderList',
+        'defaultAddTargetSelect',
+        'defaultFallbackSelect',
+        'defaultTargetOrderRowTemplate',
+        'inheritMovementCheckbox',
+        'inheritTargetingCheckbox',
+        'slotTargetingControls',
         'gridSlot',
         'poolHero',
         'rosterDropZone',
@@ -75,15 +83,22 @@ export default class extends Controller {
         orderArrow: String,
         fallbackLabels: Object,
         movementLabels: Object,
-        movementShort: Object
+        movementShort: Object,
+        tacticsDefaults: Object,
+        heroScores: Object,
+        errorFillFull: String,
+        errorFillNone: String,
+        successQuickFill: String
     };
 
     connect() {
         this.slotsState = {};
         this.tacticsState = this.cloneTactics(this.hasSlotTacticsValue ? this.slotTacticsValue : {});
+        this.tacticsDefaults = this.cloneDefaults(this.hasTacticsDefaultsValue ? this.tacticsDefaultsValue : {});
         this.selectedPosition = null;
         this.draggingElement = null;
         this.initializeSlotsState();
+        this.renderDefaultTargetOrder();
         this.renderTacticsPanel();
         this.refreshSlotBadges();
     }
@@ -501,14 +516,20 @@ export default class extends Controller {
 
         const approachRadio = this.approachRadioTargets.find(r => r.checked);
         const approach = approachRadio ? approachRadio.value : 'balanced';
-        const movementGoal = this.hasMovementGoalSelectTarget
-            ? this.movementGoalSelectTarget.value
-            : 'advance_to_melee';
+        const tacticsDefaults = this.currentTacticsDefaults();
 
         const slots = Object.entries(this.slotsState).map(([pos, heroId]) => {
             const tactics = this.ensureTactics(pos);
-            const strategy = { movement_goal: tactics.movement_goal || movementGoal };
-            if (tactics.target_order.length > 0) {
+            const inheritMovement = tactics.inherit_movement !== false;
+            const inheritTargeting = tactics.inherit_targeting !== false;
+            const strategy = {
+                inherit_movement: inheritMovement,
+                inherit_targeting: inheritTargeting,
+                movement_goal: inheritMovement
+                    ? this.rowMovementGoal(pos)
+                    : (tactics.movement_goal || this.rowMovementGoal(pos))
+            };
+            if (!inheritTargeting && tactics.target_order.length > 0) {
                 strategy.target_order = [...tactics.target_order];
                 strategy.fallback = tactics.fallback || 'approach';
             }
@@ -531,6 +552,7 @@ export default class extends Controller {
                     mode: 'custom',
                     name,
                     approach,
+                    tactics_defaults: tacticsDefaults,
                     slots
                 });
                 this.showAlert('success', this.successSaveValue);
@@ -548,6 +570,7 @@ export default class extends Controller {
                 name,
                 approach,
                 is_default: isDefault,
+                tactics_defaults: tacticsDefaults,
                 slots
             };
 
@@ -706,6 +729,16 @@ export default class extends Controller {
         if (!value || tactics.target_order.includes(value)) {
             return;
         }
+        if (tactics.inherit_targeting !== false) {
+            tactics.inherit_targeting = false;
+            tactics.target_order = [...this.tacticsDefaults.target_order];
+            tactics.fallback = this.tacticsDefaults.fallback || 'approach';
+            if (tactics.target_order.includes(value)) {
+                this.addTargetSelectTarget.value = '';
+                this.renderTacticsPanel();
+                return;
+            }
+        }
         tactics.target_order.push(value);
         this.addTargetSelectTarget.value = '';
         this.renderTacticsPanel();
@@ -718,6 +751,7 @@ export default class extends Controller {
         if (!tactics || !value) {
             return;
         }
+        tactics.inherit_targeting = false;
         tactics.target_order = tactics.target_order.filter((slot) => slot !== value);
         this.renderTacticsPanel();
     }
@@ -737,7 +771,9 @@ export default class extends Controller {
         if (!tactics || !this.hasFallbackSelectTarget) {
             return;
         }
+        tactics.inherit_targeting = false;
         tactics.fallback = this.fallbackSelectTarget.value || 'approach';
+        this.renderTacticsPanel();
     }
 
     addSpell(e) {
@@ -903,15 +939,33 @@ export default class extends Controller {
             ? heroCard.dataset.name
             : (this.hasEmptyHeroValue ? this.emptyHeroValue : '');
 
+        const inheritMovement = tactics.inherit_movement !== false;
+        const inheritTargeting = tactics.inherit_targeting !== false;
+
+        if (this.hasInheritMovementCheckboxTarget) {
+            this.inheritMovementCheckboxTarget.checked = inheritMovement;
+        }
+        if (this.hasInheritTargetingCheckboxTarget) {
+            this.inheritTargetingCheckboxTarget.checked = inheritTargeting;
+        }
+
         if (this.hasFallbackSelectTarget) {
-            this.fallbackSelectTarget.value = tactics.fallback || 'approach';
+            this.fallbackSelectTarget.value = inheritTargeting
+                ? (this.tacticsDefaults.fallback || 'approach')
+                : (tactics.fallback || 'approach');
+            this.fallbackSelectTarget.disabled = inheritTargeting;
         }
 
         if (this.hasSlotMovementSelectTarget) {
-            this.slotMovementSelectTarget.value = tactics.movement_goal || 'advance_to_melee';
+            this.slotMovementSelectTarget.value = this.resolvedMovementGoal(position);
+            this.slotMovementSelectTarget.disabled = inheritMovement;
         }
 
-        this.renderTargetOrder(tactics);
+        if (this.hasSlotTargetingControlsTarget) {
+            this.slotTargetingControlsTarget.classList.toggle('hidden', inheritTargeting);
+        }
+
+        this.renderTargetOrder(this.resolvedTargeting(tactics));
         this.renderSpellPriorities(tactics, heroId);
         this.renderEngineSummary(tactics);
         this.refreshSlotBadges();
@@ -922,11 +976,15 @@ export default class extends Controller {
             return;
         }
 
+        const inherit = this.selectedTactics()?.inherit_targeting !== false;
         this.targetOrderListTarget.replaceChildren();
         tactics.target_order.forEach((slot) => {
             const node = this.targetOrderRowTemplateTarget.content.firstElementChild.cloneNode(true);
             node.dataset.slotValue = slot;
             node.querySelector('[data-slot-label]').textContent = this.slotLabel(slot);
+            if (inherit) {
+                node.querySelector('.layout-cluster')?.classList.add('hidden');
+            }
             this.targetOrderListTarget.appendChild(node);
         });
 
@@ -1029,7 +1087,9 @@ export default class extends Controller {
                 target_order: [],
                 fallback: 'approach',
                 spell_priorities: [],
-                movement_goal: this.defaultMovementGoal()
+                movement_goal: this.rowMovementGoal(position),
+                inherit_movement: true,
+                inherit_targeting: true
             };
         }
         if (!Array.isArray(this.tacticsState[position].target_order)) {
@@ -1042,7 +1102,13 @@ export default class extends Controller {
             this.tacticsState[position].fallback = 'approach';
         }
         if (!this.tacticsState[position].movement_goal) {
-            this.tacticsState[position].movement_goal = this.defaultMovementGoal();
+            this.tacticsState[position].movement_goal = this.rowMovementGoal(position);
+        }
+        if (this.tacticsState[position].inherit_movement === undefined) {
+            this.tacticsState[position].inherit_movement = true;
+        }
+        if (this.tacticsState[position].inherit_targeting === undefined) {
+            this.tacticsState[position].inherit_targeting = true;
         }
         return this.tacticsState[position];
     }
@@ -1063,25 +1129,274 @@ export default class extends Controller {
         if (!tactics || !this.hasSlotMovementSelectTarget) {
             return;
         }
+        tactics.inherit_movement = false;
         tactics.movement_goal = this.slotMovementSelectTarget.value;
         this.renderEngineSummary(tactics);
         this.refreshSlotBadges();
     }
 
+    toggleInheritMovement() {
+        const tactics = this.selectedTactics();
+        if (!tactics || !this.hasInheritMovementCheckboxTarget) {
+            return;
+        }
+        tactics.inherit_movement = this.inheritMovementCheckboxTarget.checked;
+        if (!tactics.inherit_movement) {
+            tactics.movement_goal = this.rowMovementGoal(this.selectedPosition);
+        }
+        this.renderTacticsPanel();
+    }
+
+    toggleInheritTargeting() {
+        const tactics = this.selectedTactics();
+        if (!tactics || !this.hasInheritTargetingCheckboxTarget) {
+            return;
+        }
+        tactics.inherit_targeting = this.inheritTargetingCheckboxTarget.checked;
+        if (!tactics.inherit_targeting) {
+            tactics.target_order = [...this.tacticsDefaults.target_order];
+            tactics.fallback = this.tacticsDefaults.fallback || 'approach';
+        }
+        this.renderTacticsPanel();
+    }
+
     applyMovementToAll() {
-        const goal = this.defaultMovementGoal();
         Object.keys(this.slotsState).forEach((position) => {
-            this.ensureTactics(position).movement_goal = goal;
+            const tactics = this.ensureTactics(position);
+            tactics.inherit_movement = true;
+            tactics.movement_goal = this.rowMovementGoal(position);
         });
         this.renderTacticsPanel();
         this.refreshSlotBadges();
     }
 
-    defaultMovementGoal() {
-        if (this.hasMovementGoalSelectTarget && this.movementGoalSelectTarget.value) {
-            return this.movementGoalSelectTarget.value;
+    applyTargetingToAll() {
+        Object.keys(this.slotsState).forEach((position) => {
+            const tactics = this.ensureTactics(position);
+            tactics.inherit_targeting = true;
+            tactics.target_order = [];
+            tactics.fallback = this.tacticsDefaults.fallback || 'approach';
+        });
+        this.renderTacticsPanel();
+        this.refreshSlotBadges();
+    }
+
+    changeDefaultMovement() {
+        this.syncTacticsDefaultsFromInputs();
+        this.renderTacticsPanel();
+        this.refreshSlotBadges();
+    }
+
+    addDefaultTarget(e) {
+        e.preventDefault();
+        if (!this.hasDefaultAddTargetSelectTarget) {
+            return;
         }
-        return 'advance_to_melee';
+        const value = this.defaultAddTargetSelectTarget.value;
+        if (!value || this.tacticsDefaults.target_order.includes(value)) {
+            return;
+        }
+        this.tacticsDefaults.target_order.push(value);
+        this.defaultAddTargetSelectTarget.value = '';
+        this.renderDefaultTargetOrder();
+        this.renderTacticsPanel();
+        this.refreshSlotBadges();
+    }
+
+    removeDefaultTarget(e) {
+        e.preventDefault();
+        const value = e.currentTarget.closest('[data-slot-value]')?.dataset.slotValue;
+        if (!value) {
+            return;
+        }
+        this.tacticsDefaults.target_order = this.tacticsDefaults.target_order.filter((slot) => slot !== value);
+        this.renderDefaultTargetOrder();
+        this.renderTacticsPanel();
+        this.refreshSlotBadges();
+    }
+
+    moveDefaultTargetUp(e) {
+        e.preventDefault();
+        this.moveDefaultTarget(e.currentTarget.closest('[data-slot-value]')?.dataset.slotValue, -1);
+    }
+
+    moveDefaultTargetDown(e) {
+        e.preventDefault();
+        this.moveDefaultTarget(e.currentTarget.closest('[data-slot-value]')?.dataset.slotValue, 1);
+    }
+
+    changeDefaultFallback() {
+        if (!this.hasDefaultFallbackSelectTarget) {
+            return;
+        }
+        this.tacticsDefaults.fallback = this.defaultFallbackSelectTarget.value || 'approach';
+        this.renderTacticsPanel();
+    }
+
+    moveDefaultTarget(value, direction) {
+        if (!value) {
+            return;
+        }
+        const list = this.tacticsDefaults.target_order;
+        const index = list.indexOf(value);
+        const next = index + direction;
+        if (index < 0 || next < 0 || next >= list.length) {
+            return;
+        }
+        [list[index], list[next]] = [list[next], list[index]];
+        this.renderDefaultTargetOrder();
+        this.renderTacticsPanel();
+        this.refreshSlotBadges();
+    }
+
+    renderDefaultTargetOrder() {
+        if (!this.hasDefaultTargetOrderListTarget || !this.hasDefaultTargetOrderRowTemplateTarget) {
+            return;
+        }
+
+        this.syncTacticsDefaultsFromInputs();
+        this.defaultTargetOrderListTarget.replaceChildren();
+        this.tacticsDefaults.target_order.forEach((slot) => {
+            const node = this.defaultTargetOrderRowTemplateTarget.content.firstElementChild.cloneNode(true);
+            node.dataset.slotValue = slot;
+            node.querySelector('[data-slot-label]').textContent = this.slotLabel(slot);
+            this.defaultTargetOrderListTarget.appendChild(node);
+        });
+
+        if (this.hasDefaultAddTargetSelectTarget) {
+            Array.from(this.defaultAddTargetSelectTarget.options).forEach((option) => {
+                if (!option.value) {
+                    return;
+                }
+                option.hidden = this.tacticsDefaults.target_order.includes(option.value);
+            });
+        }
+
+        if (this.hasDefaultFallbackSelectTarget) {
+            this.defaultFallbackSelectTarget.value = this.tacticsDefaults.fallback || 'approach';
+        }
+    }
+
+    rowMovementGoal(position) {
+        this.syncTacticsDefaultsFromInputs();
+        if (String(position).startsWith('front')) {
+            return this.tacticsDefaults.movement_front || 'advance_to_melee';
+        }
+        return this.tacticsDefaults.movement_back || 'seek_cover_ranged';
+    }
+
+    resolvedMovementGoal(position) {
+        const tactics = this.ensureTactics(position);
+        if (tactics.inherit_movement !== false) {
+            return this.rowMovementGoal(position);
+        }
+        return tactics.movement_goal || this.rowMovementGoal(position);
+    }
+
+    resolvedTargeting(tactics) {
+        if (tactics.inherit_targeting !== false) {
+            return {
+                target_order: [...this.tacticsDefaults.target_order],
+                fallback: this.tacticsDefaults.fallback || 'approach'
+            };
+        }
+        return tactics;
+    }
+
+    currentTacticsDefaults() {
+        this.syncTacticsDefaultsFromInputs();
+        const defaults = {
+            movement_front: this.tacticsDefaults.movement_front,
+            movement_back: this.tacticsDefaults.movement_back,
+            target_order: [...this.tacticsDefaults.target_order],
+            fallback: this.tacticsDefaults.fallback || 'approach'
+        };
+        if (defaults.target_order.length === 0) {
+            defaults.fallback = 'approach';
+        }
+        return defaults;
+    }
+
+    syncTacticsDefaultsFromInputs() {
+        if (!this.tacticsDefaults) {
+            this.tacticsDefaults = this.cloneDefaults({});
+        }
+        if (this.hasMovementFrontSelectTarget && this.movementFrontSelectTarget.value) {
+            this.tacticsDefaults.movement_front = this.movementFrontSelectTarget.value;
+        }
+        if (this.hasMovementBackSelectTarget && this.movementBackSelectTarget.value) {
+            this.tacticsDefaults.movement_back = this.movementBackSelectTarget.value;
+        }
+        if (this.hasDefaultFallbackSelectTarget && this.defaultFallbackSelectTarget.value) {
+            this.tacticsDefaults.fallback = this.defaultFallbackSelectTarget.value;
+        }
+        if (!Array.isArray(this.tacticsDefaults.target_order)) {
+            this.tacticsDefaults.target_order = [];
+        }
+    }
+
+    cloneDefaults(raw) {
+        return {
+            movement_front: raw?.movement_front || 'advance_to_melee',
+            movement_back: raw?.movement_back || 'seek_cover_ranged',
+            target_order: Array.isArray(raw?.target_order) ? [...raw.target_order] : [],
+            fallback: raw?.fallback || 'approach'
+        };
+    }
+
+    quickFill(e) {
+        e.preventDefault();
+        const positions = ['front_1', 'front_2', 'front_3', 'back_1', 'back_2', 'back_3'];
+        const emptyFront = positions.filter((pos) => pos.startsWith('front') && !this.slotsState[pos]);
+        const emptyBack = positions.filter((pos) => pos.startsWith('back') && !this.slotsState[pos]);
+        if (emptyFront.length === 0 && emptyBack.length === 0) {
+            this.showAlert('error', this.errorFillFullValue);
+            return;
+        }
+
+        const scores = this.hasHeroScoresValue ? this.heroScoresValue : {};
+        const used = new Set(Object.values(this.slotsState).filter((id) => id !== null));
+        const availableIds = this.poolHeroTargets
+            .filter((card) => card.dataset.status === 'available')
+            .map((card) => parseInt(card.dataset.heroId, 10))
+            .filter((id) => id && !used.has(id) && (scores[id] || scores[String(id)]));
+
+        const scoreFor = (id, key) => {
+            const row = scores[id] || scores[String(id)] || { front: 0, back: 0 };
+            return row[key] ?? 0;
+        };
+
+        const place = (empties, key) => {
+            const ranked = availableIds
+                .filter((id) => !used.has(id))
+                .sort((a, b) => {
+                    const byScore = scoreFor(b, key) - scoreFor(a, key);
+                    if (byScore !== 0) {
+                        return byScore;
+                    }
+                    return a - b;
+                });
+            empties.forEach((pos, index) => {
+                const heroId = ranked[index];
+                if (!heroId) {
+                    return;
+                }
+                used.add(heroId);
+                this.slotsState[pos] = heroId;
+            });
+        };
+
+        const before = JSON.stringify(this.slotsState);
+        place(emptyFront, 'front');
+        place(emptyBack, 'back');
+        if (before === JSON.stringify(this.slotsState)) {
+            this.showAlert('error', this.errorFillNoneValue);
+            return;
+        }
+
+        this.syncUI();
+        this.renderTacticsPanel();
+        this.showAlert('success', this.successQuickFillValue);
     }
 
     currentApproach() {
@@ -1095,11 +1410,12 @@ export default class extends Controller {
         }
 
         const approach = this.currentApproach();
+        const targetingState = this.resolvedTargeting(tactics);
         let targeting;
-        if (tactics.target_order.length > 0) {
-            const order = tactics.target_order.map((slot) => this.slotLabel(slot)).join(this.orderArrowValue || ' → ');
+        if (targetingState.target_order.length > 0) {
+            const order = targetingState.target_order.map((slot) => this.slotLabel(slot)).join(this.orderArrowValue || ' → ');
             targeting = this.interpolate(this.summaryTargetingL1Value, { order });
-            const fallbackLabel = this.fallbackLabelsValue?.[tactics.fallback] || tactics.fallback;
+            const fallbackLabel = this.fallbackLabelsValue?.[targetingState.fallback] || targetingState.fallback;
             targeting += ' — ' + this.interpolate(this.summaryFallbackValue, { fallback: fallbackLabel });
         } else if (approach === 'defensive') {
             targeting = this.summaryTargetingL0DefensiveValue;
@@ -1117,7 +1433,9 @@ export default class extends Controller {
             spells = this.interpolate(this.summarySpellsL0Value, { threshold: String(threshold) });
         }
 
-        const goal = tactics.movement_goal || 'advance_to_melee';
+        const goal = this.selectedPosition
+            ? this.resolvedMovementGoal(this.selectedPosition)
+            : (tactics.movement_goal || 'advance_to_melee');
         const goalLabel = this.movementLabelsValue?.[goal] || goal;
         const movement = this.interpolate(this.summaryMovementValue, { goal: goalLabel });
 
@@ -1133,14 +1451,15 @@ export default class extends Controller {
                 return;
             }
             const tactics = this.ensureTactics(position);
-            const hasL1 = tactics.target_order.length > 0;
+            const targeting = this.resolvedTargeting(tactics);
+            const hasL1 = targeting.target_order.length > 0;
             const hasL2 = tactics.spell_priorities.length > 0;
             slot.querySelector('[data-badge-l0]')?.classList.toggle('hidden', hasL1 || hasL2);
             slot.querySelector('[data-badge-l1]')?.classList.toggle('hidden', !hasL1);
             slot.querySelector('[data-badge-l2]')?.classList.toggle('hidden', !hasL2);
             const movement = slot.querySelector('[data-badge-movement]');
             if (movement) {
-                const goal = tactics.movement_goal || 'advance_to_melee';
+                const goal = this.resolvedMovementGoal(position);
                 movement.textContent = this.movementShortValue?.[goal] || goal;
             }
         });
@@ -1241,7 +1560,9 @@ export default class extends Controller {
                 spell_priorities: Array.isArray(value?.spell_priorities)
                     ? value.spell_priorities.map((row) => ({ ...row }))
                     : [],
-                movement_goal: value?.movement_goal || 'advance_to_melee'
+                movement_goal: value?.movement_goal || (String(position).startsWith('back') ? 'seek_cover_ranged' : 'advance_to_melee'),
+                inherit_movement: value?.inherit_movement !== false,
+                inherit_targeting: value?.inherit_targeting !== false
             };
         });
         return cloned;

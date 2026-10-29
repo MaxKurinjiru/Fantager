@@ -48,6 +48,18 @@
     @apply flex flex-col gap-2;
   }
 
+  .formation-strategy-panel__row-goals {
+    @apply grid gap-3;
+
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .formation-strategy-panel__defaults {
+    @apply flex flex-col gap-3;
+  }
+
   .formation-strategy-panel__spatial-control {
     @apply w-full flex flex-col gap-2;
 

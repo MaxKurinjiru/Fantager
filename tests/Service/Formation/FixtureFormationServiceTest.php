@@ -264,6 +264,7 @@ class FixtureFormationServiceTest extends TestCase
             ->willReturn([
                 'name' => 'Default',
                 'approach' => FormationApproach::Balanced,
+                'tactics_defaults' => [],
                 'slots' => $slots,
             ]);
 
@@ -271,7 +272,7 @@ class FixtureFormationServiceTest extends TestCase
         $formationService->method('findDefaultForTeam')->willReturn($defaultFormation);
         $formationService->expects($this->once())
             ->method('createTemporary')
-            ->with($homeTeam, $fixture, 'Default', FormationApproach::Balanced, $slots)
+            ->with($homeTeam, $fixture, 'Default', FormationApproach::Balanced, $slots, [])
             ->willReturn($filled);
 
         $em = $this->createMock(EntityManagerInterface::class);

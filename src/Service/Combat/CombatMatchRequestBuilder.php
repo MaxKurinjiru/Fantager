@@ -13,6 +13,7 @@ use App\Enum\ItemSlotType;
 use App\Enum\ItemSubType;
 use App\Enum\MatchType;
 use App\Repository\Item\ItemRepository;
+use App\Service\Formation\FormationTacticsNormalizer;
 use App\Service\Spell\SpellService;
 use App\ValueObject\Combat\CombatantSnapshot;
 use App\ValueObject\Combat\CombatMatchRequest;
@@ -27,6 +28,7 @@ class CombatMatchRequestBuilder
         private readonly CombatStatCalculator $combatStatCalculator,
         private readonly ItemRepository $itemRepository,
         private readonly SpellService $spellService,
+        private readonly FormationTacticsNormalizer $tacticsNormalizer = new FormationTacticsNormalizer(),
     ) {
     }
 
@@ -176,7 +178,12 @@ class CombatMatchRequestBuilder
             $hero->getFatigue(),
             $hero->getMorale(),
             $derived,
-            $slot->getStrategy(),
+            $this->tacticsNormalizer->resolveSlotStrategy(
+                $slot->getStrategy(),
+                $slot->getFormation()->getTacticsDefaults(),
+                $slot->getPosition()->value,
+                false,
+            ),
             $spellPriorities,
             $spells,
             $weaponSubType,

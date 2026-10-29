@@ -40,18 +40,142 @@ class FormationTacticsNormalizer
 
     public const DEFAULT_HP_THRESHOLD = 40;
 
+    public const DEFAULT_MOVEMENT_FRONT = 'advance_to_melee';
+
+    public const DEFAULT_MOVEMENT_BACK = 'seek_cover_ranged';
+
     /**
-     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string}>
+     * @return array{movement_front: string, movement_back: string, target_order: list<string>, fallback: string}
      */
-    public function emptyUiState(): array
+    public function defaultTacticsDefaults(): array
     {
+        return [
+            'movement_front' => self::DEFAULT_MOVEMENT_FRONT,
+            'movement_back' => self::DEFAULT_MOVEMENT_BACK,
+            'target_order' => [],
+            'fallback' => 'approach',
+        ];
+    }
+
+    /**
+     * @return array{movement_front: string, movement_back: string, target_order: list<string>, fallback: string}
+     */
+    public function normalizeTacticsDefaults(mixed $raw): array
+    {
+        $defaults = $this->defaultTacticsDefaults();
+        if (!is_array($raw)) {
+            return $defaults;
+        }
+
+        $front = $raw['movement_front'] ?? null;
+        if (is_string($front) && in_array($front, self::MOVEMENT_GOALS, true)) {
+            $defaults['movement_front'] = $front;
+        }
+
+        $back = $raw['movement_back'] ?? null;
+        if (is_string($back) && in_array($back, self::MOVEMENT_GOALS, true)) {
+            $defaults['movement_back'] = $back;
+        }
+
+        $order = $this->normalizeTargetOrder($raw['target_order'] ?? null);
+        $defaults['target_order'] = $order;
+        if ([] !== $order) {
+            $fallback = $raw['fallback'] ?? 'approach';
+            $defaults['fallback'] = is_string($fallback) && in_array($fallback, self::FALLBACKS, true)
+                ? $fallback
+                : 'approach';
+        } else {
+            $defaults['fallback'] = 'approach';
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * @param array<string, mixed> $defaults
+     */
+    public function movementGoalForPosition(string $position, array $defaults): string
+    {
+        $defaults = $this->normalizeTacticsDefaults($defaults);
+        $front = str_starts_with($position, 'front');
+
+        return $front ? $defaults['movement_front'] : $defaults['movement_back'];
+    }
+
+    /**
+     * Resolve a slot's stored strategy against formation defaults.
+     *
+     * Player save passes $followDefaultsWhenUnset = true so missing inherit flags
+     * follow the template. Combat / NPC rows without the flags keep engine L0 melee.
+     *
+     * @param array<string, mixed> $defaults
+     *
+     * @return array<string, mixed>
+     */
+    public function resolveSlotStrategy(
+        mixed $strategy,
+        array $defaults,
+        string $position,
+        bool $followDefaultsWhenUnset = true,
+    ): array {
+        $defaults = $this->normalizeTacticsDefaults($defaults);
+        $raw = is_array($strategy) ? $strategy : [];
+        $normalized = $this->normalizeStrategy($raw);
+        $hasMovement = isset($normalized['movement_goal']);
+        $hasOrder = isset($normalized['target_order']);
+
+        $inheritMovement = $this->inheritFlag(
+            $raw['inherit_movement'] ?? null,
+            $followDefaultsWhenUnset && !$hasMovement,
+        );
+        $inheritTargeting = $this->inheritFlag(
+            $raw['inherit_targeting'] ?? null,
+            $followDefaultsWhenUnset && !$hasOrder,
+        );
+
+        $out = [
+            'inherit_movement' => $inheritMovement,
+            'inherit_targeting' => $inheritTargeting,
+        ];
+
+        if ($inheritMovement) {
+            $out['movement_goal'] = $this->movementGoalForPosition($position, $defaults);
+        } elseif ($hasMovement) {
+            $out['movement_goal'] = $normalized['movement_goal'];
+        } elseif ($followDefaultsWhenUnset) {
+            $out['movement_goal'] = $this->movementGoalForPosition($position, $defaults);
+        }
+
+        if ($inheritTargeting) {
+            if ([] !== $defaults['target_order']) {
+                $out['target_order'] = $defaults['target_order'];
+                $out['fallback'] = $defaults['fallback'];
+            }
+        } elseif ($hasOrder) {
+            $out['target_order'] = $normalized['target_order'];
+            $out['fallback'] = $normalized['fallback'] ?? 'approach';
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param array<string, mixed>|null $defaults
+     *
+     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string, inherit_movement: bool, inherit_targeting: bool}>
+     */
+    public function emptyUiState(?array $defaults = null): array
+    {
+        $defaults = $this->normalizeTacticsDefaults($defaults);
         $state = [];
         foreach (FormationPosition::cases() as $position) {
             $state[$position->value] = [
                 'target_order' => [],
-                'fallback' => 'approach',
+                'fallback' => $defaults['fallback'],
                 'spell_priorities' => [],
-                'movement_goal' => 'advance_to_melee',
+                'movement_goal' => $this->movementGoalForPosition($position->value, $defaults),
+                'inherit_movement' => true,
+                'inherit_targeting' => true,
             ];
         }
 
@@ -59,13 +183,15 @@ class FormationTacticsNormalizer
     }
 
     /**
-     * @param iterable<mixed> $slots
+     * @param iterable<mixed>           $slots
+     * @param array<string, mixed>|null $defaults
      *
-     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string}>
+     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string, inherit_movement: bool, inherit_targeting: bool}>
      */
-    public function initialUiStateFromSlots(iterable $slots): array
+    public function initialUiStateFromSlots(iterable $slots, ?array $defaults = null): array
     {
-        $state = $this->emptyUiState();
+        $defaults = $this->normalizeTacticsDefaults($defaults);
+        $state = $this->emptyUiState($defaults);
 
         foreach ($slots as $slot) {
             $position = null;
@@ -86,26 +212,31 @@ class FormationTacticsNormalizer
                 continue;
             }
 
-            $state[$position] = $this->tacticsForUi($strategy, $priorities);
+            $state[$position] = $this->tacticsForUi($strategy, $priorities, $defaults, $position);
         }
 
         return $state;
     }
 
     /**
-     * @param array<string, mixed> $strategy
+     * @param array<string, mixed>      $strategy
+     * @param array<string, mixed>|null $defaults
      *
-     * @return array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string}
+     * @return array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string, inherit_movement: bool, inherit_targeting: bool}
      */
-    public function tacticsForUi(array $strategy, mixed $spellPriorities): array
+    public function tacticsForUi(array $strategy, mixed $spellPriorities, ?array $defaults = null, string $position = 'front_1'): array
     {
-        $normalized = $this->normalizeStrategy($strategy);
+        $resolved = $this->resolveSlotStrategy($strategy, $defaults ?? [], $position, true);
 
         return [
-            'target_order' => $normalized['target_order'] ?? [],
-            'fallback' => $normalized['fallback'] ?? 'approach',
+            'target_order' => $resolved['inherit_targeting'] ? [] : ($resolved['target_order'] ?? []),
+            'fallback' => $resolved['inherit_targeting']
+                ? $this->normalizeTacticsDefaults($defaults)['fallback']
+                : ($resolved['fallback'] ?? 'approach'),
             'spell_priorities' => $this->normalizeSpellPriorities($spellPriorities),
-            'movement_goal' => $normalized['movement_goal'] ?? 'advance_to_melee',
+            'movement_goal' => $resolved['movement_goal'],
+            'inherit_movement' => $resolved['inherit_movement'],
+            'inherit_targeting' => $resolved['inherit_targeting'],
         ];
     }
 
@@ -220,5 +351,18 @@ class FormationTacticsNormalizer
         }
 
         return $order;
+    }
+
+    private function inheritFlag(mixed $value, bool $default): bool
+    {
+        if (null === $value) {
+            return $default;
+        }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 }

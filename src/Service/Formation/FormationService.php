@@ -70,6 +70,7 @@ class FormationService
      * Create a new formation or update an existing one (matched by id).
      *
      * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
+     * @param array<string, mixed>                                                                                             $tacticsDefaults
      *
      * @throws \DomainException|\InvalidArgumentException
      */
@@ -80,6 +81,7 @@ class FormationService
         FormationApproach $approach,
         array $slotsData,
         bool $isDefault,
+        array $tacticsDefaults = [],
     ): Formation {
         $name = trim($name);
         if ('' === $name) {
@@ -102,6 +104,7 @@ class FormationService
 
         $formation->setName($name);
         $formation->setApproach($approach);
+        $formation->setTacticsDefaults($this->tacticsNormalizer->normalizeTacticsDefaults($tacticsDefaults));
         $formation->setIsTemporary(false);
         $formation->setSourceFixture(null);
 
@@ -110,13 +113,14 @@ class FormationService
             $formation->setIsDefault(true);
         }
 
-        $this->rebuildSlots($formation, $team, $slotsData);
+        $this->rebuildSlots($formation, $team, $slotsData, $formation->getTacticsDefaults());
 
         return $formation;
     }
 
     /**
      * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
+     * @param array<string, mixed>                                                                                             $tacticsDefaults
      *
      * @throws \DomainException|\InvalidArgumentException
      */
@@ -127,6 +131,7 @@ class FormationService
         string $name,
         FormationApproach $approach,
         array $slotsData,
+        array $tacticsDefaults = [],
     ): Formation {
         if ($formation->getTeam()->getId() !== $team->getId()) {
             throw new UserFacingException('error.formation_not_on_team');
@@ -147,13 +152,15 @@ class FormationService
 
         $formation->setName($name);
         $formation->setApproach($approach);
-        $this->rebuildSlots($formation, $team, $slotsData);
+        $formation->setTacticsDefaults($this->tacticsNormalizer->normalizeTacticsDefaults($tacticsDefaults));
+        $this->rebuildSlots($formation, $team, $slotsData, $formation->getTacticsDefaults());
 
         return $formation;
     }
 
     /**
      * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
+     * @param array<string, mixed>                                                                                             $tacticsDefaults
      *
      * @throws \DomainException|\InvalidArgumentException
      */
@@ -163,6 +170,7 @@ class FormationService
         string $name,
         FormationApproach $approach,
         array $slotsData,
+        array $tacticsDefaults = [],
     ): Formation {
         $formation = new Formation();
         $formation->setTeam($team);
@@ -171,13 +179,14 @@ class FormationService
         $formation->setIsDefault(false);
         $formation->setName(trim($name));
         $formation->setApproach($approach);
+        $formation->setTacticsDefaults($this->tacticsNormalizer->normalizeTacticsDefaults($tacticsDefaults));
 
         if ('' === $formation->getName()) {
             throw new UserFacingException('error.formation_name_empty');
         }
 
         $this->em->persist($formation);
-        $this->rebuildSlots($formation, $team, $slotsData);
+        $this->rebuildSlots($formation, $team, $slotsData, $formation->getTacticsDefaults());
 
         return $formation;
     }
@@ -267,6 +276,7 @@ class FormationService
             'id' => $formation->getId(),
             'name' => $formation->getName(),
             'approach' => $formation->getApproach()->value,
+            'tactics_defaults' => $this->tacticsNormalizer->normalizeTacticsDefaults($formation->getTacticsDefaults()),
             'is_default' => $formation->isDefault(),
             'is_temporary' => $formation->isTemporary(),
             'source_fixture_id' => $formation->getSourceFixture()?->getId(),
@@ -288,12 +298,13 @@ class FormationService
 
     /**
      * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
+     * @param array<string, mixed>                                                                                             $tacticsDefaults
      *
      * @throws \DomainException|\InvalidArgumentException
      */
-    private function rebuildSlots(Formation $formation, Team $team, array $slotsData): void
+    private function rebuildSlots(Formation $formation, Team $team, array $slotsData, array $tacticsDefaults = []): void
     {
-        $prepared = $this->prepareSlots($team, $slotsData);
+        $prepared = $this->prepareSlots($team, $slotsData, $tacticsDefaults);
 
         foreach ($this->slotRepository->findBy(['formation' => $formation]) as $oldSlot) {
             $this->em->remove($oldSlot);
@@ -318,13 +329,15 @@ class FormationService
 
     /**
      * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
+     * @param array<string, mixed>                                                                                             $tacticsDefaults
      *
      * @return list<array{position: FormationPosition, hero: \App\Entity\Hero\Hero|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}>
      */
-    private function prepareSlots(Team $team, array $slotsData): array
+    private function prepareSlots(Team $team, array $slotsData, array $tacticsDefaults = []): array
     {
         $prepared = [];
         $seenHeroIds = [];
+        $defaults = $this->tacticsNormalizer->normalizeTacticsDefaults($tacticsDefaults);
 
         foreach ($slotsData as $slotData) {
             $positionValue = $slotData['position'];
@@ -353,7 +366,12 @@ class FormationService
             $prepared[] = [
                 'position' => $position,
                 'hero' => $hero,
-                'strategy' => $this->tacticsNormalizer->normalizeStrategy($slotData['strategy']),
+                'strategy' => $this->tacticsNormalizer->resolveSlotStrategy(
+                    $slotData['strategy'],
+                    $defaults,
+                    $position->value,
+                    true,
+                ),
                 'spell_priorities' => $this->tacticsNormalizer->normalizeSpellPriorities($slotData['spell_priorities']),
             ];
         }

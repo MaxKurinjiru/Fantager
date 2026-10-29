@@ -49,7 +49,7 @@ class FixtureFormationController extends AbstractController
      * Body modes:
      * - { "mode": "default" }
      * - { "mode": "saved", "formation_id": 123 }
-     * - { "mode": "custom", "name": "...", "approach": "balanced", "slots": [...] }
+     * - { "mode": "custom", "name": "...", "approach": "balanced", "tactics_defaults": {...}, "slots": [...] }
      */
     #[Route('/{id}/formation', name: 'api_fixture_formation_save', methods: ['PUT'], requirements: ['id' => '\d+'])]
     public function save(int $id, Request $request): JsonResponse
@@ -92,7 +92,9 @@ class FixtureFormationController extends AbstractController
 
                 /** @var list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slots */
                 $slots = is_array($body['slots'] ?? null) ? $body['slots'] : [];
-                $this->fixtureFormationService->saveMatchSpecificFormation($fixture, $team, $name, $approach, $slots);
+                /** @var array<string, mixed> $tacticsDefaults */
+                $tacticsDefaults = is_array($body['tactics_defaults'] ?? null) ? $body['tactics_defaults'] : [];
+                $this->fixtureFormationService->saveMatchSpecificFormation($fixture, $team, $name, $approach, $slots, $tacticsDefaults);
             } else {
                 return $this->jsonError('error.invalid_mode', 400);
             }

@@ -13,6 +13,7 @@ use App\Repository\Formation\FormationRepository;
 use App\Repository\Hero\HeroRepository;
 use App\Service\Config\CombatAiL0Config;
 use App\Service\Formation\FixtureFormationService;
+use App\Service\Formation\FormationLineupScorer;
 use App\Service\Formation\FormationTacticsNormalizer;
 use App\Service\Formation\MatchLineupService;
 use App\Service\Spell\SpellService;
@@ -32,6 +33,7 @@ class FormationController extends AbstractController
         private readonly FixtureFormationService $fixtureFormationService,
         private readonly MatchLineupService $matchLineupService,
         private readonly FormationTacticsNormalizer $tacticsNormalizer,
+        private readonly FormationLineupScorer $lineupScorer,
         private readonly SpellService $spellService,
         private readonly CombatAiL0Config $l0Config,
         private readonly UserMessageTranslator $userMessages,
@@ -86,6 +88,8 @@ class FormationController extends AbstractController
             'fixture_assignment' => $fixtureAssignment,
             'fixture_lineup' => $fixtureLineup,
             'slot_tactics' => $this->slotTacticsForPage($fixtureAssignment, $formations, $request->query->get('formation_id')),
+            'tactics_defaults' => $this->tacticsDefaultsForPage($fixtureAssignment, $formations, $request->query->get('formation_id')),
+            'hero_scores' => $this->heroScoresForPage($heroes),
             'hero_spells' => $this->equippedSpellsByHeroId($heroes),
             'l0_heal' => [
                 'aggressive' => $this->l0Config->healThresholdPercent(FormationApproach::Aggressive),
@@ -99,25 +103,71 @@ class FormationController extends AbstractController
      * @param array<string, mixed>|null $fixtureAssignment
      * @param list<Formation>           $formations
      *
-     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string}>
+     * @return array<string, array{target_order: list<string>, fallback: string, spell_priorities: list<array<string, mixed>>, movement_goal: string, inherit_movement: bool, inherit_targeting: bool}>
      */
     private function slotTacticsForPage(?array $fixtureAssignment, array $formations, mixed $formationId): array
     {
+        $defaults = $this->tacticsDefaultsForPage($fixtureAssignment, $formations, $formationId);
+
         if (null !== $fixtureAssignment) {
             $source = $fixtureAssignment['assigned_formation'] ?? $fixtureAssignment['effective_formation'] ?? null;
             if (is_array($source) && isset($source['slots']) && is_iterable($source['slots'])) {
-                return $this->tacticsNormalizer->initialUiStateFromSlots($source['slots']);
+                return $this->tacticsNormalizer->initialUiStateFromSlots($source['slots'], $defaults);
             }
 
-            return $this->tacticsNormalizer->emptyUiState();
+            return $this->tacticsNormalizer->emptyUiState($defaults);
         }
 
         $selected = $this->resolveSelectedFormation($formations, $formationId);
         if (null !== $selected) {
-            return $this->tacticsNormalizer->initialUiStateFromSlots($selected->getSlots());
+            return $this->tacticsNormalizer->initialUiStateFromSlots($selected->getSlots(), $defaults);
         }
 
-        return $this->tacticsNormalizer->emptyUiState();
+        return $this->tacticsNormalizer->emptyUiState($defaults);
+    }
+
+    /**
+     * @param array<string, mixed>|null $fixtureAssignment
+     * @param list<Formation>           $formations
+     *
+     * @return array{movement_front: string, movement_back: string, target_order: list<string>, fallback: string}
+     */
+    private function tacticsDefaultsForPage(?array $fixtureAssignment, array $formations, mixed $formationId): array
+    {
+        if (null !== $fixtureAssignment) {
+            $source = $fixtureAssignment['assigned_formation'] ?? $fixtureAssignment['effective_formation'] ?? null;
+            if (is_array($source)) {
+                return $this->tacticsNormalizer->normalizeTacticsDefaults($source['tactics_defaults'] ?? []);
+            }
+
+            return $this->tacticsNormalizer->defaultTacticsDefaults();
+        }
+
+        $selected = $this->resolveSelectedFormation($formations, $formationId);
+
+        return $this->tacticsNormalizer->normalizeTacticsDefaults($selected?->getTacticsDefaults() ?? []);
+    }
+
+    /**
+     * @param list<Hero> $heroes
+     *
+     * @return array<int, array{front: float, back: float}>
+     */
+    private function heroScoresForPage(array $heroes): array
+    {
+        $scores = [];
+        foreach ($heroes as $hero) {
+            if (HeroStatus::Available !== $hero->getStatus()) {
+                continue;
+            }
+            $heroId = $hero->getId();
+            if (null === $heroId) {
+                continue;
+            }
+            $scores[$heroId] = $this->lineupScorer->scores($hero);
+        }
+
+        return $scores;
     }
 
     /**

@@ -124,8 +124,8 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 
 | Entity            | Key Fields                                                                           | Relationships                  |
 | ----------------- | ------------------------------------------------------------------------------------ | ------------------------------ |
-| **Formation**     | id, team_id, name, is_default, is_temporary, source_fixture_id (nullable), approach (enum) | → Team, → LeagueFixture (optional), has many FormationSlot |
-| **FormationSlot** | id, formation_id, hero_id, position (enum), strategy (JSON: `movement_goal`, optional L1 `target_order`/`fallback`), spell_priorities (JSON: L2 list) | → Formation, → Hero            |
+| **Formation**     | id, team_id, name, is_default, is_temporary, source_fixture_id (nullable), approach (enum), tactics_defaults (JSON: `movement_front`, `movement_back`, L1 `target_order`/`fallback`) | → Team, → LeagueFixture (optional), has many FormationSlot |
+| **FormationSlot** | id, formation_id, hero_id, position (enum), strategy (JSON: `movement_goal`, `inherit_movement`, `inherit_targeting`, optional L1 `target_order`/`fallback`), spell_priorities (JSON: L2 list) | → Formation, → Hero            |
 
 
 ### 7. Headquarters Domain

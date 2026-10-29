@@ -75,6 +75,11 @@
          back_3: 'formation.slots.back_3'|trans
      }|json_encode }}"
      data-formation-slot-tactics-value="{{ (slot_tactics|default({}))|json_encode|e('html_attr') }}"
+     data-formation-tactics-defaults-value="{{ (tactics_defaults|default({}))|json_encode|e('html_attr') }}"
+     data-formation-hero-scores-value="{{ (hero_scores|default({}))|json_encode|e('html_attr') }}"
+     data-formation-error-fill-full-value="{{ 'js_flash.formation.fill_full'|trans }}"
+     data-formation-error-fill-none-value="{{ 'js_flash.formation.fill_none'|trans }}"
+     data-formation-success-quick-fill-value="{{ 'js_flash.formation.success_quick_fill'|trans }}"
      data-formation-hero-spells-value="{{ (hero_spells|default({}))|json_encode|e('html_attr') }}"
      data-formation-heal-thresholds-value="{{ (l0_heal|default({aggressive: 25, balanced: 40, defensive: 50}))|json_encode|e('html_attr') }}"
      data-formation-l0-orders-value="{{ {
@@ -169,9 +174,16 @@
     } %}
 
     <div class="feature-panel formation-lineup-panel">
-        <div>
-            <h2 class="feature-panel__title">{{ 'formation.starting_lineup'|trans }}</h2>
-            <p class="feature-panel__desc">{{ 'formation.starting_lineup_desc'|trans }}</p>
+        <div class="layout-cluster layout-cluster--between layout-cluster--wrap">
+            <div>
+                <h2 class="feature-panel__title">{{ 'formation.starting_lineup'|trans }}</h2>
+                <p class="feature-panel__desc">{{ 'formation.starting_lineup_desc'|trans }}</p>
+            </div>
+            <button type="button"
+                    class="btn btn-outline"
+                    data-action="click->formation#quickFill">
+                {{ 'formation.quick_fill'|trans }}
+            </button>
         </div>
 
         <div class="screen-grid">

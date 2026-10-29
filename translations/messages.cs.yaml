@@ -1312,11 +1312,11 @@ formation:
     front_3: Přední pravá
   delete_btn: Smazat
   starting_lineup: Startovní sestava
-  starting_lineup_desc: Rozmístěte 6 hrdinů na pozice na hřišti. Přetáhněte hrdiny z poolu nebo použijte rychlé přiřazení. Klikněte na slot pro úpravu cílení, pohybu a priority kouzel.
+  starting_lineup_desc: Rozmístěte 6 hrdinů na pozice na hřišti. Přetáhněte hrdiny z poolu, použijte rychlé přiřazení, nebo Quick Fill do prázdných slotů. Klikněte na slot pro přepsání cílení, pohybu a priority kouzel.
   back_line: "Zadní řada (Obrana / Podpora)"
   front_line: "Přední řada (Útok / Ofenzíva)"
   match_strategy: Strategie zápasu
-  match_strategy_desc: Pojmenujte sestavu. Přístup určuje výchozí cíle a kdy se léčí. Pohyb se nastavuje po slotech — výchozí níže je jen startovní bod.
+  match_strategy_desc: Pojmenujte sestavu. Přístup určuje práh léčení a cíle, když slot dědí prázdný seznam. Pohyb řad a pořadí cílů níže jsou šablona — každý slot je může přepsat.
   formation_name: Název formace
   prematch_approach: Předzápasový přístup
   set_default: Nastavit jako výchozí aktivní formaci
@@ -1335,8 +1335,16 @@ formation:
   tactics_defensive: Obranná pevnost
   tactics_defensive_desc: Drží živou přední řadu, pak nejvyšší fyzický útok. Léčí, když spojenec klesne pod 50 % HP.
   movement_strategy: Výchozí pohyb
-  movement_strategy_hint: Na slot se zkopíruje jen když ho použijete na všechny, nebo když slot ještě cíl nemá.
-  movement_apply_all: Použít na všechny sloty
+  movement_strategy_hint: Výchozí hodnoty přední a zadní řady platí pro sloty, které dědí. Použít na všechny vrátí každému slotu dědění.
+  movement_front_row: Přední řada
+  movement_back_row: Zadní řada
+  movement_apply_all: Použít pohyb na všechny sloty
+  targeting_apply_all: Použít pořadí cílů na všechny sloty
+  default_targeting: Výchozí pořadí cílů
+  default_targeting_hint: Použije ho každý slot, který dědí cílení. Prázdný seznam nechá přístup formace (L0).
+  inherit_movement: Použít výchozí pohyb řady
+  inherit_targeting: Použít výchozí pořadí cílů
+  quick_fill: Rychlé doplnění
   movement_slot: Pohyb tohoto slotu
   movement_advance_to_melee: "Postup do boje zblízka (výchozí: přímý tlak na cíl)"
   movement_seek_cover_ranged: "Krytí a udržení vzdálenosti (střelba: na maximální dostřel zbraně)"
@@ -1351,7 +1359,7 @@ formation:
   promote_match_formation: Uložit jako vlastní formaci
   save_match_lineup: Uložit sestavu pro zápas
   tactics_panel_title: Taktika slotu
-  tactics_panel_hint: Klikněte na slot na hřišti a nastavte cílení, pohyb a prioritu kouzel. Prázdné seznamy nechají L0 výchozí hodnoty z přístupu formace.
+  tactics_panel_hint: Klikněte na slot na hřišti a přepište pohyb a cílení, nebo nechte výchozí hodnoty formace. Prázdné zděděné cílení nechá L0 z přístupu. Priorita kouzel zůstává u hrdiny.
   engine_summary_title: Co engine udělá
   engine_targeting_l0: "Cíle (L0): %order%"
   engine_targeting_l0_defensive: "Cíle (L0): živá přední řada, pak nejvyšší fyzický útok"
@@ -1371,7 +1379,7 @@ formation:
   tactics_select_slot: Vyberte slot na hřišti pro úpravu taktiky.
   tactics_empty_hero: Žádný hrdina
   tactics_targeting: Pořadí cílů
-  tactics_targeting_hint: Preferované sloty nepřítele v pořadí. Prázdný seznam = přístup formace.
+  tactics_targeting_hint: Preferované sloty nepřítele v pořadí. Zděděte seznam formace, nebo ho tady přepište. Prázdný zděděný seznam použije přístup.
   tactics_add_target: Přidat slot nepřítele
   tactics_add: Přidat
   tactics_fallback: Když je seznam cílů prázdný nebo vyčerpaný
@@ -1488,6 +1496,9 @@ js_flash:
     filling: Doplňuji...
     failed_fill: Doplnění sestavy ze soupisky selhalo.
     success_fill: Prázdná místa se doplnila z bojeschopných hrdinů.
+    fill_full: Každý slot na hřišti už má hrdinu.
+    fill_none: Nezbývají dostupní hrdinové na prázdné sloty.
+    success_quick_fill: Prázdné sloty se doplnily podle nejvyššího skóre přední a zadní řady.
     confirm_fill: Doplnit sloty
     cancel: Zrušit
     lvl_short: Lvl

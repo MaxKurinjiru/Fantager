@@ -34,6 +34,15 @@ class Formation
     #[ORM\Column(length: 15, enumType: FormationApproach::class)]
     private FormationApproach $approach = FormationApproach::Balanced;
 
+    /**
+     * Formation-wide tactics template: row movement defaults and L1 targeting.
+     * Slots inherit unless they store inherit_movement / inherit_targeting = false.
+     *
+     * @var array<string, mixed>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $tacticsDefaults = [];
+
     #[ORM\Column(options: ['default' => false])]
     private bool $isTemporary = false;
 
@@ -99,6 +108,20 @@ class Formation
     public function setApproach(FormationApproach $approach): static
     {
         $this->approach = $approach;
+
+        return $this;
+    }
+
+    /** @return array<string, mixed> */
+    public function getTacticsDefaults(): array
+    {
+        return $this->tacticsDefaults;
+    }
+
+    /** @param array<string, mixed> $tacticsDefaults */
+    public function setTacticsDefaults(array $tacticsDefaults): static
+    {
+        $this->tacticsDefaults = $tacticsDefaults;
 
         return $this;
     }

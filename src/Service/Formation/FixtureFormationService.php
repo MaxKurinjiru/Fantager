@@ -276,6 +276,7 @@ class FixtureFormationService
      * Save a match-specific temporary formation for this fixture.
      *
      * @param list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slotsData
+     * @param array<string, mixed>                                                                                             $tacticsDefaults
      *
      * @throws \DomainException|\InvalidArgumentException
      */
@@ -285,12 +286,13 @@ class FixtureFormationService
         string $name,
         FormationApproach $approach,
         array $slotsData,
+        array $tacticsDefaults = [],
     ): Formation {
         $this->assertEditable($fixture, $team);
 
         $assigned = $this->getAssignedFormation($fixture, $team);
         if (null !== $assigned && $assigned->isTemporary() && $assigned->getSourceFixture()?->getId() === $fixture->getId()) {
-            $formation = $this->formationService->saveTemporary($assigned, $team, $fixture, $name, $approach, $slotsData);
+            $formation = $this->formationService->saveTemporary($assigned, $team, $fixture, $name, $approach, $slotsData, $tacticsDefaults);
             $this->em->flush();
 
             return $formation;
@@ -298,7 +300,7 @@ class FixtureFormationService
 
         $this->removeAssignedTemporary($fixture, $team);
 
-        $formation = $this->formationService->createTemporary($team, $fixture, $name, $approach, $slotsData);
+        $formation = $this->formationService->createTemporary($team, $fixture, $name, $approach, $slotsData, $tacticsDefaults);
         $this->setAssignedFormation($fixture, $team, $formation);
         $this->em->flush();
 
@@ -325,6 +327,7 @@ class FixtureFormationService
             $proposal['name'],
             $proposal['approach'],
             $proposal['slots'],
+            $proposal['tactics_defaults'],
         );
     }
 

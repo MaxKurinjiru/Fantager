@@ -60,6 +60,35 @@ class FormationLineupScorerTest extends TestCase
         $this->assertFalse($scorer->isFrontRow(FormationPosition::Back1));
     }
 
+    public function testFillEmptyHeroIdsKeepsOccupiedAndFillsFrontThenBack(): void
+    {
+        $scorer = new FormationLineupScorer();
+        $kept = $this->hero(1, str: 80, kon: 80);
+        $tank = $this->hero(3, str: 180, kon: 180, intel: 40, spd: 40, dex: 40);
+        $caster = $this->hero(2, str: 40, kon: 40, intel: 180, spd: 180, dex: 180);
+        $rest = [
+            $this->hero(4, str: 90, kon: 90, intel: 90, spd: 90, dex: 90),
+            $this->hero(5, str: 70, kon: 70, intel: 70, spd: 70, dex: 70),
+            $this->hero(6, str: 60, kon: 60, intel: 110, spd: 110, dex: 110),
+        ];
+
+        $filled = $scorer->fillEmptyHeroIds(
+            [
+                'front_1' => 1,
+                'front_2' => null,
+                'front_3' => null,
+                'back_1' => null,
+                'back_2' => null,
+                'back_3' => null,
+            ],
+            array_merge([$kept, $tank, $caster], $rest),
+        );
+
+        $this->assertSame(1, $filled['front_1']);
+        $this->assertSame(3, $filled['front_2']);
+        $this->assertSame(2, $filled['back_1']);
+    }
+
     private function hero(
         int $id,
         int $str = 100,
