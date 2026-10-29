@@ -180,6 +180,42 @@ class FormationServiceTest extends TestCase
         ], false);
 
         $this->assertSame('Empty draft', $formation->getName());
+        $this->assertSame('seek_cover_ranged', $formation->getTacticsDefaults()['movement_back']);
+    }
+
+    public function testSaveAppliesInheritedRowMovementToEmptyStrategy(): void
+    {
+        $team = new Team();
+        $slotRepository = $this->createMock(FormationSlotRepository::class);
+        $slotRepository->method('findBy')->willReturn([]);
+
+        $persistedSlots = [];
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(function (object $entity) use (&$persistedSlots): void {
+            if ($entity instanceof FormationSlot) {
+                $persistedSlots[] = $entity;
+            }
+        });
+        $em->expects($this->atLeastOnce())->method('flush');
+
+        $repository = $this->createMock(FormationRepository::class);
+        $repository->method('countSavedByTeam')->willReturn(0);
+
+        $service = new FormationService(
+            $repository,
+            $slotRepository,
+            $this->createMock(HeroRepository::class),
+            $this->createMock(LeagueFixtureRepository::class),
+            $em,
+        );
+
+        $service->save($team, null, 'Rows', FormationApproach::Balanced, [
+            ['position' => 'back_2', 'hero_id' => null, 'strategy' => [], 'spell_priorities' => []],
+        ], false);
+
+        $this->assertCount(1, $persistedSlots);
+        $this->assertSame('seek_cover_ranged', $persistedSlots[0]->getStrategy()['movement_goal']);
+        $this->assertTrue($persistedSlots[0]->getStrategy()['inherit_movement']);
     }
 
     public function testSaveSanitizesStrategyAndSpellPriorities(): void
@@ -234,6 +270,8 @@ class FormationServiceTest extends TestCase
 
         $this->assertCount(1, $persistedSlots);
         $this->assertSame([
+            'inherit_movement' => false,
+            'inherit_targeting' => false,
             'movement_goal' => 'flank_rear',
             'target_order' => ['back_2', 'front_1'],
             'fallback' => 'lowest_hp',

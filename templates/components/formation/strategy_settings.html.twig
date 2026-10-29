@@ -1,5 +1,12 @@
 {# templates/components/formation/strategy_settings.html.twig #}
 {% set match_edit_source = match_edit_source|default(null) %}
+{% set defaults = tactics_defaults|default({
+    movement_front: 'advance_to_melee',
+    movement_back: 'seek_cover_ranged',
+    target_order: [],
+    fallback: 'approach'
+}) %}
+{% set default_positions = ['front_1', 'front_2', 'front_3', 'back_1', 'back_2', 'back_3'] %}
 <div class="feature-panel formation-strategy-panel">
     <div>
         <h2 class="feature-panel__title">{{ 'formation.match_strategy'|trans }}</h2>
@@ -53,27 +60,67 @@
         </div>
 
         <div class="formation-strategy-panel__spatial">
-            <label for="movement-goal" class="section-label--xs">{{ 'formation.movement_strategy'|trans }}</label>
-            {% set slot_list = match_edit_source ? match_edit_source.slots : (selected_formation ? selected_formation.slots : []) %}
-            {% set movement_goal = slot_list
-                |filter(s => s.strategy.movement_goal is defined and s.strategy.movement_goal)
-                |map(s => s.strategy.movement_goal)
-                |first
-                |default('advance_to_melee') %}
+            <span class="section-label--xs">{{ 'formation.movement_strategy'|trans }}</span>
             <p class="copy-muted">{{ 'formation.movement_strategy_hint'|trans }}</p>
-            <div class="formation-strategy-panel__spatial-control">
-                <select id="movement-goal" data-formation-target="movementGoalSelect" class="form-select formation-strategy-panel__movement-select">
-                    <option value="advance_to_melee"{% if movement_goal == 'advance_to_melee' %} selected{% endif %}>{{ 'formation.movement_advance_to_melee'|trans }}</option>
-                    <option value="seek_cover_ranged"{% if movement_goal == 'seek_cover_ranged' %} selected{% endif %}>{{ 'formation.movement_seek_cover_ranged'|trans }}</option>
-                    <option value="protect_backline"{% if movement_goal == 'protect_backline' %} selected{% endif %}>{{ 'formation.movement_protect_backline'|trans }}</option>
-                    <option value="flank_rear"{% if movement_goal == 'flank_rear' %} selected{% endif %}>{{ 'formation.movement_flank_rear'|trans }}</option>
+            <div class="formation-strategy-panel__row-goals">
+                <div class="form-field-group">
+                    <label for="movement-front" class="form-label">{{ 'formation.movement_front_row'|trans }}</label>
+                    <select id="movement-front"
+                            data-formation-target="movementFrontSelect"
+                            data-action="change->formation#changeDefaultMovement"
+                            class="form-select formation-strategy-panel__movement-select">
+                        {% include 'components/formation/_movement_options.html.twig' with { selected: defaults.movement_front } %}
+                    </select>
+                </div>
+                <div class="form-field-group">
+                    <label for="movement-back" class="form-label">{{ 'formation.movement_back_row'|trans }}</label>
+                    <select id="movement-back"
+                            data-formation-target="movementBackSelect"
+                            data-action="change->formation#changeDefaultMovement"
+                            class="form-select formation-strategy-panel__movement-select">
+                        {% include 'components/formation/_movement_options.html.twig' with { selected: defaults.movement_back } %}
+                    </select>
+                </div>
+            </div>
+            <button type="button"
+                    class="btn btn-outline btn--sm"
+                    data-action="click->formation#applyMovementToAll">
+                {{ 'formation.movement_apply_all'|trans }}
+            </button>
+        </div>
+
+        <div class="formation-strategy-panel__defaults">
+            <span class="section-label--xs">{{ 'formation.default_targeting'|trans }}</span>
+            <p class="copy-muted">{{ 'formation.default_targeting_hint'|trans }}</p>
+            <ol data-formation-target="defaultTargetOrderList" class="formation-tactics-list"></ol>
+            <div class="layout-cluster layout-cluster--sm">
+                <label for="formation-default-add-target" class="sr-only">{{ 'formation.tactics_add_target'|trans }}</label>
+                <select id="formation-default-add-target" data-formation-target="defaultAddTargetSelect" class="form-select">
+                    <option value="">{{ 'formation.tactics_add_target'|trans }}</option>
+                    {% for pos in default_positions %}
+                        <option value="{{ pos }}">{{ ('formation.slots.' ~ pos)|trans }}</option>
+                    {% endfor %}
                 </select>
-                <button type="button"
-                        class="btn btn-outline btn--sm"
-                        data-action="click->formation#applyMovementToAll">
-                    {{ 'formation.movement_apply_all'|trans }}
+                <button type="button" class="btn btn-outline btn--sm" data-action="click->formation#addDefaultTarget">
+                    {{ 'formation.tactics_add'|trans }}
                 </button>
             </div>
+            <div class="form-field-group">
+                <label for="formation-default-fallback" class="form-label">{{ 'formation.tactics_fallback'|trans }}</label>
+                <select id="formation-default-fallback"
+                        data-formation-target="defaultFallbackSelect"
+                        data-action="change->formation#changeDefaultFallback"
+                        class="form-select">
+                    <option value="approach"{% if defaults.fallback == 'approach' %} selected{% endif %}>{{ 'formation.tactics_fallback_approach'|trans }}</option>
+                    <option value="lowest_hp"{% if defaults.fallback == 'lowest_hp' %} selected{% endif %}>{{ 'formation.tactics_fallback_lowest_hp'|trans }}</option>
+                    <option value="highest_threat"{% if defaults.fallback == 'highest_threat' %} selected{% endif %}>{{ 'formation.tactics_fallback_highest_threat'|trans }}</option>
+                </select>
+            </div>
+            <button type="button"
+                    class="btn btn-outline btn--sm"
+                    data-action="click->formation#applyTargetingToAll">
+                {{ 'formation.targeting_apply_all'|trans }}
+            </button>
         </div>
     </div>
 
@@ -85,3 +132,14 @@
         </button>
     </div>
 </div>
+
+<template data-formation-target="defaultTargetOrderRowTemplate">
+    <li class="formation-tactics-row" data-slot-value="">
+        <span data-slot-label class="formation-tactics-row__label"></span>
+        <div class="layout-cluster layout-cluster--sm">
+            <button type="button" class="btn btn-ghost btn--sm" data-action="click->formation#moveDefaultTargetUp" aria-label="{{ 'formation.tactics_move_up'|trans }}">↑</button>
+            <button type="button" class="btn btn-ghost btn--sm" data-action="click->formation#moveDefaultTargetDown" aria-label="{{ 'formation.tactics_move_down'|trans }}">↓</button>
+            <button type="button" class="btn btn-ghost btn--sm" data-action="click->formation#removeDefaultTarget" aria-label="{{ 'formation.tactics_remove'|trans }}">✕</button>
+        </div>
+    </li>
+</template>

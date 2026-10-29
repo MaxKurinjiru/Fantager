@@ -45,6 +45,7 @@ class FormationController extends AbstractController
      *   "name": "My Formation",
      *   "approach": "balanced",
      *   "is_default": true,
+     *   "tactics_defaults": { "movement_front": "advance_to_melee", "movement_back": "seek_cover_ranged", "target_order": [], "fallback": "approach" },
      *   "slots": [
      *     { "position": "front_1", "hero_id": 5, "strategy": {"movement_goal": "advance_to_melee", "target_order": ["back_2"], "fallback": "lowest_hp"}, "spell_priorities": [{"spell_id": 12, "when": "ally_hp_below", "threshold": 40, "target": "lowest_hp_ally"}] },
      *     ...
@@ -77,12 +78,14 @@ class FormationController extends AbstractController
 
         $id = (isset($body['id']) && 'new' !== $body['id']) ? (int) $body['id'] : null;
         $isDefault = (bool) ($body['is_default'] ?? false);
+        /** @var array<string, mixed> $tacticsDefaults */
+        $tacticsDefaults = is_array($body['tactics_defaults'] ?? null) ? $body['tactics_defaults'] : [];
 
         /** @var list<array{position: string, hero_id: int|null, strategy: array<string, mixed>, spell_priorities: array<mixed>}> $slots */
         $slots = is_array($body['slots'] ?? null) ? $body['slots'] : [];
 
         try {
-            $formation = $this->formationService->save($team, $id, $name, $approach, $slots, $isDefault);
+            $formation = $this->formationService->save($team, $id, $name, $approach, $slots, $isDefault, $tacticsDefaults);
         } catch (\DomainException|\InvalidArgumentException $e) {
             return $this->jsonException($e, 422);
         }

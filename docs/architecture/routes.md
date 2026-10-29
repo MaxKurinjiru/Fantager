@@ -109,10 +109,10 @@ Training is not a hero-id POST. Live trainer assign/promote: [Training & Trainer
 |--------|------|-----------|---------|
 | GET | `/app/formation` | Web\FormationController | Formation Setup page (supports `?fixture_id=` for match prep) |
 | GET | `/api/v1/formations` | Api\V1\FormationController | Get team saved formations (max 4) |
-| PUT | `/api/v1/formations` | Api\V1\FormationController | Save/update saved formations (0–6 slots; duplicate `hero_id` → 422) |
+| PUT | `/api/v1/formations` | Api\V1\FormationController | Save/update saved formations (0–6 slots, `tactics_defaults`; duplicate `hero_id` → 422) |
 | DELETE | `/api/v1/formations/{id}` | Api\V1\FormationController | Delete saved formation |
 | GET | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Fixture formation assignment state |
-| PUT | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Assign default / saved / custom lineup |
+| PUT | `/api/v1/fixtures/{id}/formation` | Api\V1\FixtureFormationController | Assign default / saved / custom lineup (`tactics_defaults` on custom) |
 | POST | `/api/v1/fixtures/{id}/formation/fill-roster` | Api\V1\FixtureFormationController | Fill empty / unready kickoff slots from the combat-ready roster (match-specific formation) |
 | POST | `/api/v1/fixtures/{id}/formation/promote` | Api\V1\FixtureFormationController | Promote temporary match lineup to saved |
 | POST | `/api/v1/formations/simulate` | — | Simulation preview — **Cut** (no controller; [#9](../product/known-issues.md) / combat simulate lock) |

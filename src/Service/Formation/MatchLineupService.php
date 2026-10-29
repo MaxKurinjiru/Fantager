@@ -109,6 +109,7 @@ class MatchLineupService
      * @return array{
      *     name: string,
      *     approach: FormationApproach,
+     *     tactics_defaults: array<string, mixed>,
      *     slots: list<array{position: string, hero_id: int, strategy: array<string, mixed>, spell_priorities: array<mixed>}>
      * }
      */
@@ -149,6 +150,7 @@ class MatchLineupService
         return [
             'name' => $filled->getName(),
             'approach' => $filled->getApproach(),
+            'tactics_defaults' => $filled->getTacticsDefaults(),
             'slots' => $slots,
         ];
     }
@@ -395,6 +397,7 @@ class MatchLineupService
         $clone->setTeam($team);
         $clone->setName($template instanceof Formation ? $template->getName() : 'Kickoff');
         $clone->setApproach($template?->getApproach() ?? FormationApproach::Balanced);
+        $clone->setTacticsDefaults($template?->getTacticsDefaults() ?? []);
         $clone->setIsDefault(false);
         $clone->setIsTemporary(true);
 

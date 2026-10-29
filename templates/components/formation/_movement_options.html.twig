@@ -1,0 +1,6 @@
+{# templates/components/formation/_movement_options.html.twig #}
+{% set selected = selected|default('advance_to_melee') %}
+<option value="advance_to_melee"{% if selected == 'advance_to_melee' %} selected{% endif %}>{{ 'formation.movement_advance_to_melee'|trans }}</option>
+<option value="seek_cover_ranged"{% if selected == 'seek_cover_ranged' %} selected{% endif %}>{{ 'formation.movement_seek_cover_ranged'|trans }}</option>
+<option value="protect_backline"{% if selected == 'protect_backline' %} selected{% endif %}>{{ 'formation.movement_protect_backline'|trans }}</option>
+<option value="flank_rear"{% if selected == 'flank_rear' %} selected{% endif %}>{{ 'formation.movement_flank_rear'|trans }}</option>

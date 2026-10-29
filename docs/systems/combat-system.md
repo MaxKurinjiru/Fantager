@@ -440,8 +440,8 @@ Combat AI is fully automated. It reads `Formation.approach` and per-slot `strate
 
 | Layer | Behaviour | UI / data today |
 |-------|-----------|-----------------|
-| **L0** | Approach slot order, plus one ready spell when `spell_priorities` is empty (restore under the yaml threshold, else lowest-tier missing self-buff, else highest-tier harm, else hinder). Defensive holds the front line, then highest physical attack | Approach radios and per-slot `movement_goal` (optional Apply-to-all) |
-| **L1** | Per-hero `target_order` (+ `fallback`: `lowest_hp`, `highest_threat`, or approach order) | Player slot editor. Empty order = approach |
+| **L0** | Approach slot order, plus one ready spell when `spell_priorities` is empty (restore under the yaml threshold, else lowest-tier missing self-buff, else highest-tier harm, else hinder). Defensive holds the front line, then highest physical attack | Approach radios; empty inherited focus |
+| **L1** | Per-hero `target_order` (+ `fallback`: `lowest_hp`, `highest_threat`, or approach order) | Formation default list; slot inherit or override. Empty inherited order = approach |
 | **L2** | `spell_priorities` with `always`, `self_hp_below`, `ally_hp_below` | Thin player editor for equipped spells. Healer / CC / Nuker / Buff templates. Empty list = L0 pick. NPC may still fill lists. `enemy_status` / `lowest_hp_enemy` Cut from UI |
 | **L3** | Explicit action sequences + advanced conditional tactics (sub, formation switch) | Deferred — not live |
 

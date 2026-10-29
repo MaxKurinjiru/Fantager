@@ -36,8 +36,8 @@ Slot tactics: Healer (`restore`) / CC (`hinder`) / Nuker (`harm`) / Buff (`enhan
 - Formation name
 - Set as default (disabled in match-prep)
 - Pre-match approach: Aggressive / Balanced / Defensive (`approach`)
-- Default movement goal plus **Apply to all slots** (`advance_to_melee` | `seek_cover_ranged` | `protect_backline` | `flank_rear`). Each pitch slot can override it; save keeps per-slot `strategy.movement_goal`
-- Slot tactics panel (click a pitch slot): movement; L1 `target_order` + `fallback`; thin L2 equipped `spell_priorities`; Healer / CC / Nuker / Buff templates; live L0/L1/L2 readout. Empty lists keep L0. Pitch badges mark L0 vs custom L1/L2.
+- Formation defaults (`tactics_defaults`): front-row and back-row movement (`advance_to_melee` / `seek_cover_ranged` / `protect_backline` / `flank_rear`; new drafts default front melee / back ranged) plus L1 `target_order` + `fallback`. **Apply movement to all** / **Apply focus order to all** reset slots to inherit
+- Slot tactics panel (click a pitch slot): inherit or override movement; inherit or override L1 `target_order` + `fallback`; thin L2 equipped `spell_priorities`; Healer / CC / Nuker / Buff templates; live L0/L1/L2 readout. Empty inherited focus keeps L0 from approach. Pitch badges mark L0 vs custom L1/L2.
 
 **Pitch (3 front + 3 back)**
 
@@ -58,6 +58,7 @@ Pitch cards do **not** show a primary-role icon or a full quick-stat grid.
 
 - Drag & drop between pool and pitch; swap by dropping onto an occupied slot
 - Quick-assign from the empty-slot select
+- **Quick Fill** empty slots from available heroes (front `STR+KON`, then back `INT+SPD+DEX`; same scorer as NPC / fill-from-roster). Occupied slots stay
 - Clear slot (✕)
 - Save (`PUT /api/v1/formations`, or fixture formation PUT in match prep)
 - Set as default (checkbox on save)
@@ -70,7 +71,7 @@ Pitch cards do **not** show a primary-role icon or a full quick-stat grid.
 |--------|------|-------|
 | GET | `/app/formation` | Optional `?fixture_id=` |
 | GET | `/api/v1/formations` | Saved formations |
-| PUT | `/api/v1/formations` | Upsert; 0–6 slots; duplicate `hero_id` rejected (422) |
+| PUT | `/api/v1/formations` | Upsert; 0–6 slots + `tactics_defaults`; duplicate `hero_id` rejected (422) |
 | DELETE | `/api/v1/formations/{id}` | |
 | GET/PUT | `/api/v1/fixtures/{id}/formation` | Default / saved / custom |
 | POST | `/api/v1/fixtures/{id}/formation/fill-roster` | Fill empty / unready slots from the combat-ready roster |
@@ -87,7 +88,6 @@ See `assets/controllers/formation_controller.js` and [formation-system.md](../sy
 Index: [known-issues.md](../product/known-issues.md) § Later product decisions. Unique to this screen:
 
 - Clone formation
-- Quick Fill (auto-suggest)
 - Hero pool filter by role / stats / race
 - View opponent formation
 

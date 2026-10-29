@@ -24,6 +24,7 @@ use App\Enum\Race;
 use App\Repository\Kingdom\KingdomRepository;
 use App\Service\Config\KingdomInitConfig;
 use App\Service\Config\RaceConfig;
+use App\Service\Formation\FormationTacticsNormalizer;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroGenerator;
 use App\Service\League\LeagueFixtureScheduler;
@@ -45,6 +46,7 @@ class KingdomInitializationService
         private readonly TeamChronicleService $teamChronicleService,
         private readonly TeamChemistryService $teamChemistryService,
         private readonly SpellService $spellService,
+        private readonly FormationTacticsNormalizer $tacticsNormalizer = new FormationTacticsNormalizer(),
     ) {
     }
 
@@ -451,6 +453,8 @@ class KingdomInitializationService
         $formation->setTeam($team);
         $formation->setName((string) ($formationDef['name'] ?? 'Default'));
         $formation->setApproach($approach);
+        $defaults = $this->tacticsNormalizer->defaultTacticsDefaults();
+        $formation->setTacticsDefaults($defaults);
         $formation->setIsDefault(true);
         $this->em->persist($formation);
 
@@ -462,7 +466,7 @@ class KingdomInitializationService
             $slot->setFormation($formation);
             $slot->setPosition($positions[$i]);
             $slot->setHero($heroes[$i] ?? null);
-            $slot->setStrategy([]);
+            $slot->setStrategy($this->tacticsNormalizer->resolveSlotStrategy([], $defaults, $positions[$i]->value, true));
             $slot->setSpellPriorities([]);
             $this->em->persist($slot);
         }
