@@ -15,7 +15,7 @@ COPY templates/ ./templates/
 COPY translations/ ./translations/
 RUN npm ci && npm run build
 
-FROM alpine:3.23
+FROM alpine:3.24
 
 ENV TZ=Europe/Prague
 

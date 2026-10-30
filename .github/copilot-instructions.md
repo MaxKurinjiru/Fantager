@@ -4,8 +4,9 @@ Agent rules, task routing, locks, and UI/backend checklists live in **[AGENTS.md
 
 ## Stack
 
-- **PHP** 8.5 (Symfony 7.4)
+- **PHP** 8.5 (Symfony 8.1)
 - **MariaDB** 11.4
+- **PHP runtime** Alpine 3.24
 - **Node** >= 24 (Webpack Encore, Tailwind CSS)
 
 ## Execution

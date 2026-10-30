@@ -6,8 +6,9 @@ Live stack, dual-layer request flow, security, and local ops. API shape: [api.md
 
 | Layer | Version |
 |-------|---------|
-| PHP | 8.5 (Symfony 7.4) |
+| PHP | 8.5 (Symfony 8.1) |
 | Database | MariaDB 11.4 |
+| PHP/Apache image | Alpine 3.24 |
 | Frontend | Twig + Stimulus + Turbo, Webpack Encore |
 | Node / npm | Node 24+, npm 11+ |
 | Packaging | Docker Compose, Composer 2.5+ |

@@ -7,7 +7,7 @@ export const app = startStimulusApp(require.context(
     /\.[jt]sx?$/
 ));
 
-import BattleReportController from './controllers/battle_report_controller';
+import BattleReportController from './controllers/battle_report_controller.js';
 app.register('battle-report', BattleReportController);
 // register any custom, 3rd party controllers here
 // app.register('some_controller_name', SomeImportedController);

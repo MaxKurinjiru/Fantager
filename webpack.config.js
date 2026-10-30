@@ -1,4 +1,4 @@
-const Encore = require('@symfony/webpack-encore');
+import Encore from '@symfony/webpack-encore';
 
 if (!Encore.isRuntimeEnvironmentConfigured()) {
   Encore.configureRuntimeEnvironment(process.env.NODE_ENV || 'dev');
@@ -16,11 +16,7 @@ Encore
   .cleanupOutputBeforeBuild()
   .enableSourceMaps(!Encore.isProduction())
   .enableVersioning(Encore.isProduction())
-  .configureBabel(() => {}, {
-    useBuiltIns: 'usage',
-    corejs: 3
-  })
   .enablePostCssLoader()
   .enableSassLoader();
 
-module.exports = Encore.getWebpackConfig();
+export default await Encore.getWebpackConfig();
