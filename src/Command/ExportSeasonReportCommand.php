@@ -10,6 +10,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -37,29 +38,33 @@ class ExportSeasonReportCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $alertsOnly = (bool) $input->getOption('alerts-only');
+        $outputPath = $input->getOption('output');
+        $jsonlToStdout = !$alertsOnly && (!is_string($outputPath) || '' === $outputPath);
+        $messages = $jsonlToStdout && $output instanceof ConsoleOutputInterface
+            ? new SymfonyStyle($input, $output->getErrorOutput())
+            : $io;
         $kingdomId = $input->getOption('kingdom-id');
         if (null === $kingdomId) {
-            $io->error('Pass --kingdom-id.');
+            $messages->error('Pass --kingdom-id.');
 
             return Command::FAILURE;
         }
 
         $kingdom = $this->kingdomRepository->find((int) $kingdomId);
         if (null === $kingdom) {
-            $io->error(sprintf('Kingdom %s not found.', (string) $kingdomId));
+            $messages->error(sprintf('Kingdom %s not found.', (string) $kingdomId));
 
             return Command::FAILURE;
         }
 
         $reports = $this->reportRepository->findByKingdomOrdered($kingdom);
         if ([] === $reports) {
-            $io->warning('No season reports for this kingdom. Run app:season:report:build first.');
+            $messages->warning('No season reports for this kingdom. Run app:season:report:build first.');
 
             return Command::SUCCESS;
         }
 
-        $alertsOnly = (bool) $input->getOption('alerts-only');
-        $outputPath = $input->getOption('output');
         $lines = [];
         $alertRows = [];
 
@@ -86,21 +91,21 @@ class ExportSeasonReportCommand extends Command
             $jsonl = implode("\n", $lines)."\n";
             if (is_string($outputPath) && '' !== $outputPath) {
                 if (false === file_put_contents($outputPath, $jsonl)) {
-                    $io->error(sprintf('Could not write %s.', $outputPath));
+                    $messages->error(sprintf('Could not write %s.', $outputPath));
 
                     return Command::FAILURE;
                 }
-                $io->success(sprintf('Wrote %d report(s) to %s.', count($lines), $outputPath));
+                $messages->success(sprintf('Wrote %d report(s) to %s.', count($lines), $outputPath));
             } else {
                 $output->write($jsonl);
             }
         }
 
         if ([] === $alertRows) {
-            $io->success('No health-band alerts.');
+            $messages->success('No health-band alerts.');
         } else {
-            $io->warning(sprintf('%d health-band alert(s).', count($alertRows)));
-            $io->table(
+            $messages->warning(sprintf('%d health-band alert(s).', count($alertRows)));
+            $messages->table(
                 ['Season', 'Metric', 'Status', 'Value', 'Min', 'Max'],
                 $alertRows,
             );

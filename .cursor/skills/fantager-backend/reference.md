@@ -45,7 +45,7 @@ Quick map of production PHP layout. Full workflow: [SKILL.md](SKILL.md) · [exam
 | `Translation/` | `UserMessageTranslator` | — |
 
 **Handlers:** `src/Message/ProcessKingdomTicksHandler.php` — weekly tick orchestration  
-**Commands:** `src/Command/` — `ProcessTicksCommand`, `InitializeKingdomCommand`, …
+**Commands:** `src/Command/` — `app:ticks:run` (`--dry-run`, `--sync`), `app:ticks:status`, `app:ticks:retry`, `app:kingdom:initialize`, `app:kingdom:list`, `app:kingdom:diagnose`, `app:kingdom:simulate:init` / `advance` / `process` / `status`, `app:dev:bootstrap`, …
 
 ---
 

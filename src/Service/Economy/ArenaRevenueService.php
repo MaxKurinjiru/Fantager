@@ -14,6 +14,7 @@ use App\Enum\FinancialRecordType;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\League\LeagueFixtureRepository;
+use App\Repository\Team\FinancialRecordRepository;
 use App\Service\Kingdom\KingdomPace;
 use App\Service\Team\FanClubService;
 
@@ -26,6 +27,7 @@ class ArenaRevenueService
     public function __construct(
         private readonly HeadquartersRepository $hqRepository,
         private readonly LeagueFixtureRepository $fixtureRepository,
+        private readonly FinancialRecordRepository $financialRecordRepository,
         private readonly EconomyService $economyService,
         private readonly FinancialCrisisService $financialCrisisService,
         private readonly FanClubService $fanClubService,
@@ -51,16 +53,21 @@ class ArenaRevenueService
      *
      * @return list<array<string, mixed>>
      */
-    public function processLeagueMatchTick(Kingdom $kingdom, \DateTimeImmutable $scheduledAt): array
+    public function processLeagueMatchTick(Kingdom $kingdom, \DateTimeImmutable $scheduledAt, bool $dryRun = false): array
     {
         $fixtures = $this->fixtureRepository->findScheduledFixturesAtTime($kingdom, $scheduledAt);
         $results = [];
+        $paidAnything = false;
 
         foreach ($fixtures as $fixture) {
-            $results[] = $this->payFixtureRevenue($fixture);
+            $report = $this->payFixtureRevenue($fixture, $dryRun);
+            $results[] = $report;
+            if (!($report['skipped'] ?? false) && !($report['dry_run'] ?? false)) {
+                $paidAnything = true;
+            }
         }
 
-        if ([] !== $results) {
+        if ($paidAnything) {
             $this->economyService->flush();
         }
 
@@ -70,13 +77,27 @@ class ArenaRevenueService
     /**
      * @return array<string, mixed>
      */
-    public function payFixtureRevenue(LeagueFixture $fixture): array
+    public function payFixtureRevenue(LeagueFixture $fixture, bool $dryRun = false): array
     {
         $homeTeam = $fixture->getHomeTeam();
         $awayTeam = $fixture->getAwayTeam();
         $homeFormation = $this->resolveHomeFormation($fixture);
         $report = $this->calculateMatchRevenue($homeTeam, $awayTeam, null, $homeFormation);
         $report['fixture_id'] = $fixture->getId();
+        $report['skipped'] = false;
+        $report['dry_run'] = $dryRun;
+
+        $fixtureId = $fixture->getId();
+        if (null !== $fixtureId && $this->financialRecordRepository->hasArenaRevenueForFixture($homeTeam, $fixtureId)) {
+            $report['skipped'] = true;
+            $report['skip_reason'] = 'already_paid';
+
+            return $report;
+        }
+
+        if ($dryRun) {
+            return $report;
+        }
 
         if ($report['gold_earned'] > 0) {
             $this->economyService->addGold(

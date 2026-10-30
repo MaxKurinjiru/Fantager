@@ -34,7 +34,9 @@ class ProcessTicksCommand extends Command
     {
         $this->addOption('time', null, InputOption::VALUE_OPTIONAL, 'Override check execution time (e.g. "2026-06-08 19:30:00")')
                ->addOption('advance', null, InputOption::VALUE_REQUIRED, 'Advance from each Kingdom\'s latest completed scheduled tick (e.g. "+1 week"), instead of the current time')
-             ->addOption('kingdom-id', null, InputOption::VALUE_OPTIONAL, 'Run only for a specific Kingdom ID');
+             ->addOption('kingdom-id', null, InputOption::VALUE_OPTIONAL, 'Run only for a specific Kingdom ID')
+             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Count ticks that would be scheduled; do not persist, recover, or dispatch')
+             ->addOption('sync', null, InputOption::VALUE_NONE, 'Execute pending ticks synchronously instead of dispatching Messenger (local catch-up)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -43,6 +45,14 @@ class ProcessTicksCommand extends Command
         $timeStr = $input->getOption('time');
         $advanceStr = $input->getOption('advance');
         $kingdomIdOpt = $input->getOption('kingdom-id');
+        $dryRun = (bool) $input->getOption('dry-run');
+        $sync = (bool) $input->getOption('sync');
+
+        if ($dryRun && $sync) {
+            $io->error('Options --dry-run and --sync cannot be used together.');
+
+            return Command::FAILURE;
+        }
 
         if (null !== $advanceStr && null !== $timeStr) {
             $io->error('Options --time and --advance cannot be used together.');
@@ -85,8 +95,11 @@ class ProcessTicksCommand extends Command
         }
 
         $io->section(null === $advanceInterval
-            ? sprintf('Processing ticks at %s UTC...', $now->format('Y-m-d H:i:s'))
-            : sprintf('Advancing ticks by "%s" from each Kingdom\'s latest completed tick...', $advanceStr));
+            ? sprintf('%s ticks at %s UTC...', $dryRun ? 'Dry-run: counting' : 'Processing', $now->format('Y-m-d H:i:s'))
+            : sprintf('%s ticks by "%s" from each Kingdom\'s latest completed tick...', $dryRun ? 'Dry-run: counting' : 'Advancing', $advanceStr));
+
+        $hadBlocked = false;
+        $hadError = false;
 
         foreach ($kingdoms as $kingdom) {
             /** @var \App\Entity\Kingdom\Kingdom $kingdom */
@@ -120,16 +133,18 @@ class ProcessTicksCommand extends Command
                 $io->text(sprintf('Advancing from %s UTC to %s UTC.', $latestTime->format('Y-m-d H:i:s'), $until->format('Y-m-d H:i:s')));
             }
 
-            // Recover stale ticks (e.g. processing/dispatched for > 5 minutes) before checking if blocked
-            $recovered = $this->tickRunnerService->recoverStaleTicks($kingdom);
-            if ($recovered > 0) {
-                $io->note(sprintf('Recovered %d stale/timed out tick(s) for Kingdom %s.', $recovered, $kingdom->getName()));
+            if (!$dryRun) {
+                $recovered = $this->tickRunnerService->recoverStaleTicks($kingdom);
+                if ($recovered > 0) {
+                    $io->note(sprintf('Recovered %d stale/timed out tick(s) for Kingdom %s.', $recovered, $kingdom->getName()));
+                }
             }
 
             $blocked = $this->tickRunnerService->findBlockedTick($kingdom);
             if (null !== $blocked) {
+                $hadBlocked = true;
                 $io->warning(sprintf(
-                    'Kingdom ID %d has a blocked tick (ID: %d, type: %s, status: %s). Skipping scheduling.',
+                    'Kingdom ID %d has a blocked tick (ID: %d, type: %s, status: %s). Skipping scheduling. Use app:ticks:retry after fixing the cause.',
                     $kingdomId,
                     $blocked->getId(),
                     $blocked->getTickType()->value,
@@ -139,7 +154,17 @@ class ProcessTicksCommand extends Command
             }
 
             $hasPendingBefore = $this->tickRunnerService->hasPendingTicks($kingdom);
-            $ticksDispatched = $this->tickRunnerService->schedulePendingTicks($kingdom, $until);
+            $ticksDispatched = $this->tickRunnerService->schedulePendingTicks($kingdom, $until, !$dryRun);
+
+            if ($dryRun) {
+                $io->text(sprintf(
+                    'Dry-run: would schedule %d new tick(s) for Kingdom %s. Existing pending: %s.',
+                    $ticksDispatched,
+                    $kingdom->getName(),
+                    $hasPendingBefore ? 'yes' : 'no',
+                ));
+                continue;
+            }
 
             if ($ticksDispatched > 0 || $hasPendingBefore) {
                 if ($ticksDispatched > 0) {
@@ -147,10 +172,24 @@ class ProcessTicksCommand extends Command
                 } else {
                     $io->text(sprintf('Found existing pending ticks for Kingdom %s. Resuming processing.', $kingdom->getName()));
                 }
-                $this->tickOrchestrator->orchestrate($kingdom);
+                if ($sync) {
+                    try {
+                        $this->tickRunnerService->processPendingTicksSynchronously($kingdom);
+                        $io->success(sprintf('Synchronous catch-up finished for Kingdom %s.', $kingdom->getName()));
+                    } catch (\Throwable $e) {
+                        $hadError = true;
+                        $io->error(sprintf('Synchronous catch-up failed for Kingdom %s: %s', $kingdom->getName(), $e->getMessage()));
+                    }
+                } else {
+                    $this->tickOrchestrator->orchestrate($kingdom);
+                }
             } else {
                 $io->text(sprintf('Kingdom %s is up-to-date.', $kingdom->getName()));
             }
+        }
+
+        if ($hadBlocked || $hadError) {
+            return Command::FAILURE;
         }
 
         return Command::SUCCESS;

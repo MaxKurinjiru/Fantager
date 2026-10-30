@@ -20,6 +20,7 @@ use App\Enum\HeroTrait;
 use App\Repository\Formation\FormationRepository;
 use App\Repository\Headquarters\HeadquartersRepository;
 use App\Repository\League\LeagueFixtureRepository;
+use App\Repository\Team\FinancialRecordRepository;
 use App\Repository\Team\TeamRepository;
 use App\Service\Economy\ArenaRevenueService;
 use App\Service\Economy\EconomyService;
@@ -47,6 +48,8 @@ class ArenaRevenueServiceTest extends TestCase
     {
         $this->hqRepositoryMock = $this->createMock(HeadquartersRepository::class);
         $this->fixtureRepositoryMock = $this->createMock(LeagueFixtureRepository::class);
+        $financialRecordRepositoryMock = $this->createMock(FinancialRecordRepository::class);
+        $financialRecordRepositoryMock->method('hasArenaRevenueForFixture')->willReturn(false);
         $this->economyServiceMock = $this->createMock(EconomyService::class);
         $this->financialCrisisServiceMock = $this->createMock(FinancialCrisisService::class);
         $this->financialCrisisServiceMock
@@ -60,6 +63,7 @@ class ArenaRevenueServiceTest extends TestCase
         $this->arenaRevenueService = new ArenaRevenueService(
             $this->hqRepositoryMock,
             $this->fixtureRepositoryMock,
+            $financialRecordRepositoryMock,
             $this->economyServiceMock,
             $this->financialCrisisServiceMock,
             $fanClubService,
@@ -340,5 +344,47 @@ class ArenaRevenueServiceTest extends TestCase
         $this->assertGreaterThanOrEqual(0, $projections[0]['attendance']);
         $this->assertGreaterThanOrEqual(0, $projections[0]['gold_earned']);
         $this->assertGreaterThanOrEqual(0.0, $projections[0]['elasticity']);
+    }
+
+    public function testPayFixtureRevenueSkipsWhenAlreadyPaid(): void
+    {
+        $home = new Team();
+        $home->setName('Home FC');
+        $home->setFanBase(350);
+        $home->setReputation(10);
+        $home->setMorale(50);
+        $home->setChemistry(0);
+        $away = new Team();
+        $away->setName('Away FC');
+        $away->setFanBase(350);
+        $away->setReputation(10);
+        $away->setMorale(50);
+        $away->setChemistry(0);
+
+        $fixture = new LeagueFixture();
+        $fixture->setHomeTeam($home);
+        $fixture->setAwayTeam($away);
+        $idProperty = new \ReflectionProperty(LeagueFixture::class, 'id');
+        $idProperty->setValue($fixture, 77);
+
+        $financialRecordRepositoryMock = $this->createMock(FinancialRecordRepository::class);
+        $financialRecordRepositoryMock->method('hasArenaRevenueForFixture')->willReturn(true);
+
+        $service = new ArenaRevenueService(
+            $this->hqRepositoryMock,
+            $this->fixtureRepositoryMock,
+            $financialRecordRepositoryMock,
+            $this->economyServiceMock,
+            $this->financialCrisisServiceMock,
+            new FanClubService($this->createMock(TeamRepository::class)),
+            $this->formationRepositoryMock,
+        );
+
+        $this->hqRepositoryMock->method('findOneBy')->willReturn(null);
+        $this->economyServiceMock->expects($this->never())->method('addGold');
+
+        $report = $service->payFixtureRevenue($fixture);
+        $this->assertTrue($report['skipped']);
+        $this->assertSame('already_paid', $report['skip_reason']);
     }
 }

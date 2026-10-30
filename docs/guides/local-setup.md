@@ -27,17 +27,17 @@ App: http://localhost:10001
 After schema init, bootstrap a kingdom and test players. Kingdom defaults: [config/kingdom/README.md](../../config/kingdom/README.md).
 
 ```bash
-# Initialize default kingdom (NPCs, heroes, league standings)
+# One-shot local world (~1 month in, default test users, catch-up ticks)
+docker exec -u apache fantager-web php bin/console app:dev:bootstrap
+
+# Initialize default kingdom (NPCs, heroes, league standings). --test also ensures player1–3@example.com
 docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom" --test
 
 # Mid-season dev setup (~1 month of simulated game time)
-docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom" --test --start-offset-days=-21
-
-# Create the 3 default test users, each assigned to an NPC team
-docker exec -u apache fantager-web php bin/console app:user:create-test "Main Kingdom" --default
+docker exec -u apache fantager-web php bin/console app:kingdom:initialize "Main Kingdom" --test --start-offset-days=-21 --catch-up-ticks
 ```
 
-`--default` creates three verified users:
+`--test` / `app:dev:bootstrap` ensure three verified users:
 
 | Email | Nickname | Password |
 |-------|----------|----------|
@@ -56,14 +56,26 @@ docker exec -u apache fantager-web php bin/console app:user:create-test "Main Ki
 Tick semantics: [calendar-system.md](../systems/calendar-system.md). NPC opponents: [npc-simulation-system.md](../systems/npc-simulation-system.md). Inactive teams: [player-inactivity-system.md](../systems/player-inactivity-system.md).
 
 ```bash
+# List kingdoms
+docker exec -u apache fantager-web php bin/console app:kingdom:list
+
 # Check and schedule pending ticks for all active kingdoms
 docker exec -u apache fantager-web php bin/console app:ticks:run
+
+# Preview what would be scheduled (no persist / no dispatch)
+docker exec -u apache fantager-web php bin/console app:ticks:run --dry-run --kingdom-id=1
+
+# Local catch-up without Messenger
+docker exec -u apache fantager-web php bin/console app:ticks:run --sync --kingdom-id=1
 
 # Simulate running ticks at a specific time
 docker exec -u apache fantager-web php bin/console app:ticks:run --time="2026-06-27 18:00:00"
 
-# One kingdom
-docker exec -u apache fantager-web php bin/console app:ticks:run --kingdom-id=1
+# Pipeline snapshot (exit 1 if blocked or failed)
+docker exec -u apache fantager-web php bin/console app:ticks:status --kingdom-id=1
+
+# After fixing a failed tick
+docker exec -u apache fantager-web php bin/console app:ticks:retry --kingdom-id=1
 ```
 
 Season reports are written on `season_transition`. Backfill and export (JSONL + health alerts):
@@ -72,6 +84,49 @@ Season reports are written on `season_transition`. Backfill and export (JSONL + 
 docker exec -u apache fantager-web php bin/console app:season:report:build --kingdom-id=1
 docker exec -u apache fantager-web php bin/console app:season:report:export --kingdom-id=1 -o /tmp/seasons.jsonl
 ```
+
+## Multi-season balance / NPC simulation
+
+Use the live tick pipeline and Messenger combat waves (not `POST /api/v1/combat/simulate`). **Do not run 8 seasons in one PHP process** — combat batches will hit the process time/memory limit. The operator loop is a shell script: init once, then **advance one step** and **process bounded Messenger batches until idle**.
+
+From the host (recommended):
+
+```bash
+# New NPC-only world, 8 seasons, JSONL + health alerts
+bash scripts/simulate-kingdom.sh --init --name="Balance Sim" --pace=classic --seasons=8 -o /tmp/seasons.jsonl
+
+# Preview
+bash scripts/simulate-kingdom.sh --init --seasons=8 --dry-run
+
+# Continue an existing kingdom
+bash scripts/simulate-kingdom.sh --kingdom-id=1 --seasons=8 -o /tmp/seasons.jsonl
+```
+
+Each PHP invocation is short-lived:
+
+| Command | Role | Exit |
+|---------|------|------|
+| `app:kingdom:simulate:init` | Create NPC kingdom (prints `kingdom_id=`) | 0 |
+| `app:kingdom:simulate:advance --kingdom-id= --step=week` | Schedule **one** week (or `--step=season` = 11 weeks). Does not consume the queue. | 0 ok, 2 pipeline still busy, 1 failed |
+| `app:kingdom:simulate:process --kingdom-id= --limit=200 --time-limit=45` | One Messenger batch (or orchestrator resume) | 0 idle, 2 still busy (call again), 1 failed |
+| `app:kingdom:simulate:status --kingdom-id= --json` | Snapshot including `completed_seasons` | 0 idle, 2 busy, 1 failed |
+
+Manual loop inside `fantager-web`:
+
+```bash
+php bin/console app:kingdom:simulate:init --name="Balance Sim" --json
+# kingdom_id from JSON
+
+php bin/console app:kingdom:simulate:advance --kingdom-id=1 --step=week
+php bin/console app:kingdom:simulate:process --kingdom-id=1 --limit=200 --time-limit=45
+# repeat process until exit 0, then advance again, until status completed_seasons >= N
+
+php bin/console app:season:report:export --kingdom-id=1 -o /tmp/seasons.jsonl
+```
+
+`--with-test-users` on init claims three NPC teams for `player1–3@example.com`. If a batch fails: `app:ticks:status`, `app:kingdom:diagnose`, `app:ticks:retry --kingdom-id=`, then `simulate:process` again.
+
+Bands: `config/game/season-health.yaml`. Spec: [season-report-system.md](../systems/season-report-system.md).
 
 `app:ticks:run` dispatches work to Symfony Messenger. Consume the queue:
 

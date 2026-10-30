@@ -24,7 +24,7 @@ Index: [known-issues.md](../product/known-issues.md) § Later product decisions.
 | `base_ovr` | 0–100 | Fair comparison across races |
 | `complex_rating` | 0–9999 | Marketplace value, dismiss compensation, NPC pricing, hero/trainer salaries |
 
-Both columns are cached on `Hero` and refreshed by `HeroRatingCacheSubscriber` (Doctrine `onFlush`) when the hero or a mastery row changes. Bulk repair: `php bin/console app:hero-ratings:refresh`.
+Both columns are cached on `Hero` and refreshed by `HeroRatingCacheSubscriber` (Doctrine `onFlush`) when the hero or a mastery row changes. Bulk repair: `php bin/console app:hero-ratings:refresh` (optional `--kingdom-id`).
 
 Gold amounts that need an intrinsic hero value use `complex_rating × gold_per_complex_point` (and the role factors below). Listing prices must sit in the suggested band — [marketplace-system.md](marketplace-system.md#locked-listing-price-band).
 
@@ -119,7 +119,7 @@ Weekly salary: `complex_rating × gold_per_complex_point × role_factor` — [ec
 | Marketplace listings | same ratings; hero includes `trait`; filter/sort on cached columns |
 | Twig | `hero_rating()`, `hero_gold_value()`, `hero_rating_badge`, detail `ratings_panel` |
 | Graveyard | memorial snapshot includes ratings |
-| Backfill | `app:hero-ratings:refresh` |
+| Backfill | `app:hero-ratings:refresh` (optional `--kingdom-id`) |
 
 ---
 

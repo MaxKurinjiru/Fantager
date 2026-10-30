@@ -34,7 +34,8 @@ class DiagnoseKingdomCommand extends Command
     {
         $this
             ->addArgument('kingdom-id', InputArgument::OPTIONAL, 'Kingdom ID to diagnose')
-            ->addOption('all', null, InputOption::VALUE_NONE, 'Diagnose all kingdoms');
+            ->addOption('all', null, InputOption::VALUE_NONE, 'Diagnose all kingdoms')
+            ->addOption('json', null, InputOption::VALUE_NONE, 'Print JSON instead of tables');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -42,6 +43,13 @@ class DiagnoseKingdomCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $kingdomId = $input->getArgument('kingdom-id');
         $all = $input->getOption('all');
+        $asJson = (bool) $input->getOption('json');
+
+        if ($asJson && !$all && null === $kingdomId) {
+            $io->error('Pass a kingdom-id or --all with --json.');
+
+            return Command::FAILURE;
+        }
 
         if ($all) {
             $kingdoms = $this->kingdomRepository->findAll();
@@ -78,51 +86,86 @@ class DiagnoseKingdomCommand extends Command
             }
         }
 
+        $issues = [];
+        $payloads = [];
         foreach ($kingdoms as $kingdom) {
-            $this->diagnoseKingdom($kingdom, $io);
+            $payloads[] = $this->diagnoseKingdom($kingdom, $io, $asJson, $issues);
         }
 
-        return Command::SUCCESS;
+        if ($asJson) {
+            $output->writeln((string) json_encode(
+                ['kingdoms' => $payloads, 'issues' => $issues],
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT,
+            ));
+        }
+
+        return [] === $issues ? Command::SUCCESS : Command::FAILURE;
     }
 
-    private function diagnoseKingdom(Kingdom $kingdom, SymfonyStyle $io): void
+    /**
+     * @param list<string> $issues
+     *
+     * @return array<string, mixed>
+     */
+    private function diagnoseKingdom(Kingdom $kingdom, SymfonyStyle $io, bool $asJson, array &$issues): array
     {
-        $io->title(sprintf('Diagnosis for Kingdom: %s (ID: %d)', $kingdom->getName(), $kingdom->getId()));
+        if (!$asJson) {
+            $io->title(sprintf('Diagnosis for Kingdom: %s (ID: %d)', $kingdom->getName(), $kingdom->getId()));
+            $io->definitionList(
+                ['Timezone' => $kingdom->getTimezone()],
+                ['Pace preset' => $kingdom->getPacePreset()->value],
+                ['Training / Recovery / Aging' => sprintf(
+                    '%s / %s / %s',
+                    KingdomPace::format(KingdomPace::training($kingdom)),
+                    KingdomPace::format(KingdomPace::recovery($kingdom)),
+                    KingdomPace::format(KingdomPace::aging($kingdom)),
+                )],
+                ['Construction / Economy / Fans' => sprintf(
+                    '%s / %s / %s',
+                    KingdomPace::format(KingdomPace::construction($kingdom)),
+                    KingdomPace::format(KingdomPace::economy($kingdom)),
+                    KingdomPace::format(KingdomPace::fans($kingdom)),
+                )],
+                ['Summon cap' => (string) KingdomPace::summonCap($kingdom)],
+                ['Language' => $kingdom->getLanguage()],
+                ['Royal Treasury Gold' => $kingdom->getRoyalTreasuryGold().' gold'],
+                ['Season Length' => $kingdom->getSeasonLength().' days']
+            );
+        }
 
-        $io->definitionList(
-            ['Timezone' => $kingdom->getTimezone()],
-            ['Pace preset' => $kingdom->getPacePreset()->value],
-            ['Training / Recovery / Aging' => sprintf(
-                '%s / %s / %s',
-                KingdomPace::format(KingdomPace::training($kingdom)),
-                KingdomPace::format(KingdomPace::recovery($kingdom)),
-                KingdomPace::format(KingdomPace::aging($kingdom)),
-            )],
-            ['Construction / Economy / Fans' => sprintf(
-                '%s / %s / %s',
-                KingdomPace::format(KingdomPace::construction($kingdom)),
-                KingdomPace::format(KingdomPace::economy($kingdom)),
-                KingdomPace::format(KingdomPace::fans($kingdom)),
-            )],
-            ['Summon cap' => (string) KingdomPace::summonCap($kingdom)],
-            ['Language' => $kingdom->getLanguage()],
-            ['Royal Treasury Gold' => $kingdom->getRoyalTreasuryGold().' gold'],
-            ['Season Length' => $kingdom->getSeasonLength().' days']
-        );
+        $payload = [
+            'id' => $kingdom->getId(),
+            'name' => $kingdom->getName(),
+            'timezone' => $kingdom->getTimezone(),
+            'pace_preset' => $kingdom->getPacePreset()->value,
+            'language' => $kingdom->getLanguage(),
+            'royal_treasury_gold' => $kingdom->getRoyalTreasuryGold(),
+            'season_length' => $kingdom->getSeasonLength(),
+        ];
+        $payload['ticks'] = $this->diagnoseTicks($kingdom, $io, $asJson, $issues);
+        $payload['economy'] = $this->diagnoseEconomy($kingdom, $io, $asJson);
+        $payload['rosters'] = $this->diagnoseRosters($kingdom, $io, $asJson, $issues);
+        $payload['marketplace'] = $this->diagnoseMarketplace($kingdom, $io, $asJson);
+        $payload['combat'] = $this->diagnoseCombat($kingdom, $io, $asJson);
 
-        $this->diagnoseTicks($kingdom, $io);
-        $this->diagnoseEconomy($kingdom, $io);
-        $this->diagnoseRosters($kingdom, $io);
-        $this->diagnoseMarketplace($kingdom, $io);
-        $this->diagnoseCombat($kingdom, $io);
+        if (!$asJson) {
+            $io->newLine();
+            $io->writeln(str_repeat('-', 80));
+        }
 
-        $io->newLine();
-        $io->writeln(str_repeat('-', 80));
+        return $payload;
     }
 
-    private function diagnoseTicks(Kingdom $kingdom, SymfonyStyle $io): void
+    /**
+     * @param list<string> $issues
+     *
+     * @return array<string, mixed>
+     */
+    private function diagnoseTicks(Kingdom $kingdom, SymfonyStyle $io, bool $asJson, array &$issues): array
     {
-        $io->section('1. Tick Pipeline & Infrastructure Health');
+        if (!$asJson) {
+            $io->section('1. Tick Pipeline & Infrastructure Health');
+        }
 
         $conn = $this->em->getConnection();
         $sql = '
@@ -136,9 +179,11 @@ class DiagnoseKingdomCommand extends Command
         $rows = $stmt->fetchAllAssociative();
 
         if (empty($rows)) {
-            $io->note('No ticks have been scheduled/executed in this kingdom.');
+            if (!$asJson) {
+                $io->note('No ticks have been scheduled/executed in this kingdom.');
+            }
 
-            return;
+            return ['by_type' => [], 'failed' => []];
         }
 
         // Organize counts
@@ -152,22 +197,30 @@ class DiagnoseKingdomCommand extends Command
             $ticks[$type][$row['status']] = (int) $row['cnt'];
         }
 
-        $table = new Table($io);
-        $table->setHeaders(['Tick Type', 'Pending', 'Dispatched', 'Processing', 'Completed', 'Failed', 'Total']);
+        $byType = [];
+        if (!$asJson) {
+            $table = new Table($io);
+            $table->setHeaders(['Tick Type', 'Pending', 'Dispatched', 'Processing', 'Completed', 'Failed', 'Total']);
+        }
 
         foreach ($ticks as $type => $statusCounts) {
             $total = array_sum($statusCounts);
-            $table->addRow([
-                $type,
-                $statusCounts['pending'],
-                $statusCounts['dispatched'],
-                $statusCounts['processing'],
-                $statusCounts['completed'],
-                $statusCounts['failed'],
-                $total,
-            ]);
+            $byType[] = array_merge(['tick_type' => $type], $statusCounts, ['total' => $total]);
+            if (!$asJson) {
+                $table->addRow([
+                    $type,
+                    $statusCounts['pending'],
+                    $statusCounts['dispatched'],
+                    $statusCounts['processing'],
+                    $statusCounts['completed'],
+                    $statusCounts['failed'],
+                    $total,
+                ]);
+            }
         }
-        $table->render();
+        if (!$asJson) {
+            $table->render();
+        }
 
         // Highlight failed ticks
         $failedSql = '
@@ -179,23 +232,33 @@ class DiagnoseKingdomCommand extends Command
         $failedRows = $conn->executeQuery($failedSql, ['kingdomId' => $kingdom->getId()])->fetchAllAssociative();
 
         if (\count($failedRows) > 0) {
-            $io->error(sprintf('Found %d failed tick(s) in this kingdom!', \count($failedRows)));
-            foreach ($failedRows as $failed) {
-                $io->writeln(sprintf('<fg=red>Failed Tick ID: %d</>', $failed['id']));
-                $io->writeln(sprintf('  Type: %s', $failed['tick_type']));
-                $io->writeln(sprintf('  Scheduled At: %s', $failed['scheduled_at']));
-                $io->writeln(sprintf('  Executed At: %s', $failed['executed_at']));
-                $io->writeln(sprintf('  Error Message: %s', $failed['error_message']));
-                $io->newLine();
+            $issues[] = sprintf('kingdom %d: %d failed tick(s)', (int) $kingdom->getId(), \count($failedRows));
+            if (!$asJson) {
+                $io->error(sprintf('Found %d failed tick(s) in this kingdom!', \count($failedRows)));
+                foreach ($failedRows as $failed) {
+                    $io->writeln(sprintf('<fg=red>Failed Tick ID: %d</>', $failed['id']));
+                    $io->writeln(sprintf('  Type: %s', $failed['tick_type']));
+                    $io->writeln(sprintf('  Scheduled At: %s', $failed['scheduled_at']));
+                    $io->writeln(sprintf('  Executed At: %s', $failed['executed_at']));
+                    $io->writeln(sprintf('  Error Message: %s', $failed['error_message']));
+                    $io->newLine();
+                }
             }
-        } else {
+        } elseif (!$asJson) {
             $io->success('No failed ticks detected.');
         }
+
+        return ['by_type' => $byType, 'failed' => $failedRows];
     }
 
-    private function diagnoseEconomy(Kingdom $kingdom, SymfonyStyle $io): void
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function diagnoseEconomy(Kingdom $kingdom, SymfonyStyle $io, bool $asJson): ?array
     {
-        $io->section('2. Economic Stability & Wealth Distribution');
+        if (!$asJson) {
+            $io->section('2. Economic Stability & Wealth Distribution');
+        }
 
         $conn = $this->em->getConnection();
         $sql = '
@@ -218,20 +281,24 @@ class DiagnoseKingdomCommand extends Command
         $row = $conn->executeQuery($sql, ['kingdomId' => $kingdom->getId()])->fetchAssociative();
 
         if (empty($row) || 0 === (int) $row['total_teams']) {
-            $io->warning('No teams found in this kingdom.');
+            if (!$asJson) {
+                $io->warning('No teams found in this kingdom.');
+            }
 
-            return;
+            return null;
         }
 
-        $table = new Table($io);
-        $table->setHeaders(['Metric', 'Value']);
-        $table->addRow(['Total Teams', $row['total_teams'].' ('.$row['npc_teams'].' NPCs / '.$row['player_teams'].' Players)']);
-        $table->addRow(['Total Gold in Circulation', $row['total_circulating_gold'].' gold']);
-        $table->addRow(['Average / Min / Max Gold per Team', sprintf('%.2f / %d / %d gold', $row['avg_gold'], $row['min_gold'], $row['max_gold'])]);
-        $table->addRow(['Total Outstanding Debt', $row['total_debt'].' gold']);
-        $table->addRow(['Average / Max Debt per Team', sprintf('%.2f / %d gold', $row['avg_debt'], $row['max_debt'])]);
-        $table->addRow(['Teams in Financial Crisis', $row['teams_in_crisis']]);
-        $table->render();
+        if (!$asJson) {
+            $table = new Table($io);
+            $table->setHeaders(['Metric', 'Value']);
+            $table->addRow(['Total Teams', $row['total_teams'].' ('.$row['npc_teams'].' NPCs / '.$row['player_teams'].' Players)']);
+            $table->addRow(['Total Gold in Circulation', $row['total_circulating_gold'].' gold']);
+            $table->addRow(['Average / Min / Max Gold per Team', sprintf('%.2f / %d / %d gold', $row['avg_gold'], $row['min_gold'], $row['max_gold'])]);
+            $table->addRow(['Total Outstanding Debt', $row['total_debt'].' gold']);
+            $table->addRow(['Average / Max Debt per Team', sprintf('%.2f / %d gold', $row['avg_debt'], $row['max_debt'])]);
+            $table->addRow(['Teams in Financial Crisis', $row['teams_in_crisis']]);
+            $table->render();
+        }
 
         // Transaction types gold flow audit
         $txSql = '
@@ -244,7 +311,7 @@ class DiagnoseKingdomCommand extends Command
         ';
         $txRows = $conn->executeQuery($txSql, ['kingdomId' => $kingdom->getId()])->fetchAllAssociative();
 
-        if (\count($txRows) > 0) {
+        if (\count($txRows) > 0 && !$asJson) {
             $io->text('Gold flows by transaction type:');
             $txTable = new Table($io);
             $txTable->setHeaders(['Transaction Type', 'Net Gold Flow', 'Count']);
@@ -254,11 +321,20 @@ class DiagnoseKingdomCommand extends Command
             }
             $txTable->render();
         }
+
+        return ['summary' => $row, 'gold_flows' => $txRows];
     }
 
-    private function diagnoseRosters(Kingdom $kingdom, SymfonyStyle $io): void
+    /**
+     * @param list<string> $issues
+     *
+     * @return array<string, mixed>|null
+     */
+    private function diagnoseRosters(Kingdom $kingdom, SymfonyStyle $io, bool $asJson, array &$issues): ?array
     {
-        $io->section('3. Roster Management & Hero Progression');
+        if (!$asJson) {
+            $io->section('3. Roster Management & Hero Progression');
+        }
 
         $conn = $this->em->getConnection();
         $sql = '
@@ -279,15 +355,19 @@ class DiagnoseKingdomCommand extends Command
         $rows = $conn->executeQuery($sql, ['kingdomId' => $kingdom->getId()])->fetchAllAssociative();
 
         if (empty($rows)) {
-            $io->warning('No team rosters detected.');
+            if (!$asJson) {
+                $io->warning('No team rosters detected.');
+            }
 
-            return;
+            return null;
         }
 
-        $table = new Table($io);
-        $table->setHeaders(['Team ID', 'Team Name', 'Type', 'Combatants', 'Trainers', 'Total Active']);
-
         $understaffedTeams = [];
+        if (!$asJson) {
+            $table = new Table($io);
+            $table->setHeaders(['Team ID', 'Team Name', 'Type', 'Combatants', 'Trainers', 'Total Active']);
+        }
+
         foreach ($rows as $row) {
             $isNpc = 1 === (int) $row['is_npc'] ? 'NPC' : 'Player';
             $combatants = (int) $row['combatants_count'];
@@ -298,26 +378,33 @@ class DiagnoseKingdomCommand extends Command
                 $understaffedTeams[] = $row['team_name'].' (ID: '.$row['team_id'].', Combatants: '.$combatants.')';
             }
 
-            $table->addRow([
-                $row['team_id'],
-                $row['team_name'],
-                $isNpc,
-                $combatantsStr,
-                $row['trainers_count'],
-                $row['total_roster'],
-            ]);
+            if (!$asJson) {
+                $table->addRow([
+                    $row['team_id'],
+                    $row['team_name'],
+                    $isNpc,
+                    $combatantsStr,
+                    $row['trainers_count'],
+                    $row['total_roster'],
+                ]);
+            }
         }
-        $table->render();
+        if (!$asJson) {
+            $table->render();
+        }
 
         if (!empty($understaffedTeams)) {
-            $io->warning(sprintf(
-                "CRITICAL: Found %d team(s) with less than 6 combat-ready heroes!\nThese teams will automatically forfeit league matches.",
-                \count($understaffedTeams)
-            ));
-            foreach ($understaffedTeams as $ut) {
-                $io->writeln('  - '.$ut);
+            $issues[] = sprintf('kingdom %d: %d understaffed team(s)', (int) $kingdom->getId(), \count($understaffedTeams));
+            if (!$asJson) {
+                $io->warning(sprintf(
+                    "CRITICAL: Found %d team(s) with less than 6 combat-ready heroes!\nThese teams will automatically forfeit league matches.",
+                    \count($understaffedTeams)
+                ));
+                foreach ($understaffedTeams as $ut) {
+                    $io->writeln('  - '.$ut);
+                }
             }
-        } else {
+        } elseif (!$asJson) {
             $io->success('All active teams have at least 6 combat-ready heroes.');
         }
 
@@ -340,7 +427,7 @@ class DiagnoseKingdomCommand extends Command
             GROUP BY role
         ';
         $progRows = $conn->executeQuery($progSql, ['kingdomId' => $kingdom->getId()])->fetchAllAssociative();
-        if (\count($progRows) > 0) {
+        if (\count($progRows) > 0 && !$asJson) {
             $io->text('Hero Attribute Averages:');
             $progTable = new Table($io);
             $progTable->setHeaders(['Role', 'Count', 'Avg Lvl', 'Avg STR', 'Avg DEX', 'Avg KON', 'Avg SPD', 'Avg INT', 'Avg WIL']);
@@ -359,11 +446,18 @@ class DiagnoseKingdomCommand extends Command
             }
             $progTable->render();
         }
+
+        return ['teams' => $rows, 'understaffed' => $understaffedTeams, 'averages' => $progRows];
     }
 
-    private function diagnoseMarketplace(Kingdom $kingdom, SymfonyStyle $io): void
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function diagnoseMarketplace(Kingdom $kingdom, SymfonyStyle $io, bool $asJson): array
     {
-        $io->section('4. Marketplace Liquidity & Valuation');
+        if (!$asJson) {
+            $io->section('4. Marketplace Liquidity & Valuation');
+        }
 
         $conn = $this->em->getConnection();
         $sql = '
@@ -377,27 +471,38 @@ class DiagnoseKingdomCommand extends Command
         $rows = $conn->executeQuery($sql, ['kingdomId' => $kingdom->getId()])->fetchAllAssociative();
 
         if (empty($rows)) {
-            $io->note('No marketplace listings detected.');
+            if (!$asJson) {
+                $io->note('No marketplace listings detected.');
+            }
 
-            return;
+            return [];
         }
 
-        $table = new Table($io);
-        $table->setHeaders(['Listing Type', 'Status', 'Count', 'Average Price']);
-        foreach ($rows as $row) {
-            $table->addRow([
-                $row['listing_type'],
-                $row['status'],
-                $row['cnt'],
-                sprintf('%.2f gold', $row['avg_price']),
-            ]);
+        if (!$asJson) {
+            $table = new Table($io);
+            $table->setHeaders(['Listing Type', 'Status', 'Count', 'Average Price']);
+            foreach ($rows as $row) {
+                $table->addRow([
+                    $row['listing_type'],
+                    $row['status'],
+                    $row['cnt'],
+                    sprintf('%.2f gold', $row['avg_price']),
+                ]);
+            }
+            $table->render();
         }
-        $table->render();
+
+        return $rows;
     }
 
-    private function diagnoseCombat(Kingdom $kingdom, SymfonyStyle $io): void
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function diagnoseCombat(Kingdom $kingdom, SymfonyStyle $io, bool $asJson): ?array
     {
-        $io->section('5. League Play & Combat Outcomes');
+        if (!$asJson) {
+            $io->section('5. League Play & Combat Outcomes');
+        }
 
         $conn = $this->em->getConnection();
         $sql = '
@@ -409,9 +514,11 @@ class DiagnoseKingdomCommand extends Command
         $rows = $conn->executeQuery($sql, ['kingdomId' => $kingdom->getId()])->fetchAllAssociative();
 
         if (empty($rows)) {
-            $io->note('No battles have been recorded in this kingdom.');
+            if (!$asJson) {
+                $io->note('No battles have been recorded in this kingdom.');
+            }
 
-            return;
+            return null;
         }
 
         $totalBattles = \count($rows);
@@ -447,12 +554,25 @@ class DiagnoseKingdomCommand extends Command
             $totalScores += (int) $row['score_a'] + (int) $row['score_b'];
         }
 
-        $table = new Table($io);
-        $table->setHeaders(['Metric', 'Value']);
-        $table->addRow(['Total Battles Simulated', $totalBattles]);
-        $table->addRow(['Home Wins / Away Wins / Draws', sprintf('%d / %d / %d', $homeWins, $awayWins, $draws)]);
-        $table->addRow(['Forfeit Matches (Roster Starvation)', sprintf('%d (%.1f%%)', $forfeitBattles, ($forfeitBattles / $totalBattles) * 100)]);
-        $table->addRow(['Average Score (Kills) per Match', sprintf('%.2f', $totalScores / $totalBattles)]);
-        $table->render();
+        $summary = [
+            'total_battles' => $totalBattles,
+            'home_wins' => $homeWins,
+            'away_wins' => $awayWins,
+            'draws' => $draws,
+            'forfeit_battles' => $forfeitBattles,
+            'average_score' => $totalScores / $totalBattles,
+        ];
+
+        if (!$asJson) {
+            $table = new Table($io);
+            $table->setHeaders(['Metric', 'Value']);
+            $table->addRow(['Total Battles Simulated', $totalBattles]);
+            $table->addRow(['Home Wins / Away Wins / Draws', sprintf('%d / %d / %d', $homeWins, $awayWins, $draws)]);
+            $table->addRow(['Forfeit Matches (Roster Starvation)', sprintf('%d (%.1f%%)', $forfeitBattles, ($forfeitBattles / $totalBattles) * 100)]);
+            $table->addRow(['Average Score (Kills) per Match', sprintf('%.2f', $totalScores / $totalBattles)]);
+            $table->render();
+        }
+
+        return $summary;
     }
 }

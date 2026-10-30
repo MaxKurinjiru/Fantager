@@ -245,4 +245,116 @@ class ProcessTicksCommandTest extends TestCase
         yield 'zero interval' => [['--advance' => '0 days'], true, 'must move time forward'];
         yield 'no completed history' => [['--advance' => '+1 week', '--kingdom-id' => '1'], false, 'has no completed ticks'];
     }
+
+    public function testDryRunDoesNotPersistOrOrchestrate(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setName('Test Kingdom');
+        $idProperty = new \ReflectionProperty(Kingdom::class, 'id');
+        $idProperty->setValue($kingdom, 1);
+
+        $kingdomRepository = $this->createMock(KingdomRepository::class);
+        $kingdomRepository->method('findAll')->willReturn([$kingdom]);
+
+        $tickRunner = $this->createMock(KingdomTickRunnerService::class);
+        $tickRunner->expects($this->never())->method('recoverStaleTicks');
+        $tickRunner->method('findBlockedTick')->willReturn(null);
+        $tickRunner->method('hasPendingTicks')->willReturn(false);
+        $tickRunner->expects($this->once())
+            ->method('schedulePendingTicks')
+            ->with($kingdom, $this->isInstanceOf(\DateTimeImmutable::class), false)
+            ->willReturn(4);
+        $tickRunner->expects($this->never())->method('processPendingTicksSynchronously');
+
+        $tickOrchestrator = $this->createMock(KingdomTickOrchestrator::class);
+        $tickOrchestrator->expects($this->never())->method('orchestrate');
+
+        $tester = new CommandTester(new ProcessTicksCommand(
+            $kingdomRepository,
+            $tickRunner,
+            $tickOrchestrator,
+            $this->createMock(KingdomTickLogRepository::class),
+        ));
+
+        $this->assertSame(0, $tester->execute(['--dry-run' => true]));
+        $this->assertStringContainsString('would schedule 4 new tick(s)', $tester->getDisplay());
+    }
+
+    public function testBlockedTickReturnsFailure(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setName('Test Kingdom');
+        $idProperty = new \ReflectionProperty(Kingdom::class, 'id');
+        $idProperty->setValue($kingdom, 1);
+
+        $blocked = new KingdomTickLog();
+        $blocked->setTickType(TickType::DailyReset);
+        $blocked->setStatus('failed');
+        $blockedId = new \ReflectionProperty(KingdomTickLog::class, 'id');
+        $blockedId->setValue($blocked, 9);
+
+        $kingdomRepository = $this->createMock(KingdomRepository::class);
+        $kingdomRepository->method('findAll')->willReturn([$kingdom]);
+
+        $tickRunner = $this->createMock(KingdomTickRunnerService::class);
+        $tickRunner->method('recoverStaleTicks')->willReturn(0);
+        $tickRunner->method('findBlockedTick')->willReturn($blocked);
+        $tickRunner->expects($this->never())->method('schedulePendingTicks');
+
+        $tickOrchestrator = $this->createMock(KingdomTickOrchestrator::class);
+        $tickOrchestrator->expects($this->never())->method('orchestrate');
+
+        $tester = new CommandTester(new ProcessTicksCommand(
+            $kingdomRepository,
+            $tickRunner,
+            $tickOrchestrator,
+            $this->createMock(KingdomTickLogRepository::class),
+        ));
+
+        $this->assertSame(1, $tester->execute([]));
+        $this->assertStringContainsString('blocked tick', $tester->getDisplay());
+    }
+
+    public function testSyncProcessesPendingWithoutOrchestrator(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setName('Test Kingdom');
+        $idProperty = new \ReflectionProperty(Kingdom::class, 'id');
+        $idProperty->setValue($kingdom, 1);
+
+        $kingdomRepository = $this->createMock(KingdomRepository::class);
+        $kingdomRepository->method('findAll')->willReturn([$kingdom]);
+
+        $tickRunner = $this->createMock(KingdomTickRunnerService::class);
+        $tickRunner->method('recoverStaleTicks')->willReturn(0);
+        $tickRunner->method('findBlockedTick')->willReturn(null);
+        $tickRunner->method('hasPendingTicks')->willReturn(true);
+        $tickRunner->method('schedulePendingTicks')->willReturn(0);
+        $tickRunner->expects($this->once())->method('processPendingTicksSynchronously')->with($kingdom);
+
+        $tickOrchestrator = $this->createMock(KingdomTickOrchestrator::class);
+        $tickOrchestrator->expects($this->never())->method('orchestrate');
+
+        $tester = new CommandTester(new ProcessTicksCommand(
+            $kingdomRepository,
+            $tickRunner,
+            $tickOrchestrator,
+            $this->createMock(KingdomTickLogRepository::class),
+        ));
+
+        $this->assertSame(0, $tester->execute(['--sync' => true]));
+    }
+
+    public function testRejectsDryRunWithSync(): void
+    {
+        $tester = new CommandTester(new ProcessTicksCommand(
+            $this->createMock(KingdomRepository::class),
+            $this->createMock(KingdomTickRunnerService::class),
+            $this->createMock(KingdomTickOrchestrator::class),
+            $this->createMock(KingdomTickLogRepository::class),
+        ));
+
+        $this->assertSame(1, $tester->execute(['--dry-run' => true, '--sync' => true]));
+        $this->assertStringContainsString('cannot be used together', $tester->getDisplay());
+    }
 }

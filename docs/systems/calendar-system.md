@@ -139,13 +139,23 @@ For each active Kingdom:
 - `--advance="+1 week"` schedules through the latest completed tick's `scheduledAt` plus the given relative interval, independently for each selected kingdom. The base is the newest completed scheduled timestamp across all tick types and scopes, not `executedAt` or the current time. Arithmetic uses UTC.
 - `--kingdom-id=1` limits either mode to one kingdom; omitting it selects all kingdoms.
 - `--advance` and `--time` are mutually exclusive. Invalid intervals, intervals that do not move time forward, and kingdoms without completed tick history fail with an error. Use the normal command or `--time` to establish initial completed ticks.
+- `--dry-run` counts ticks that would be scheduled and does not persist, recover stale ticks, or dispatch workers.
+- `--sync` executes pending ticks in-process (`KingdomTickRunnerService::processPendingTicksSynchronously`) instead of Messenger. `--dry-run` and `--sync` cannot be combined.
+- A blocked tick (failed / stuck dispatched or processing) **skips that kingdom and the command exits 1**. Reset failed logs with `app:ticks:retry --kingdom-id=` after the cause is fixed, then run `app:ticks:run` again.
+- `app:ticks:status` prints counts, last completed, oldest pending, blocked tick, and Messenger queue depth (exit 1 if blocked or failed). `--json` for scripts. `app:kingdom:diagnose` is the heavier economic/roster audit (`--json`, exit 1 on failed ticks or understaffed teams).
 
 ```bash
 docker exec -u apache fantager-web php bin/console app:ticks:run --advance="+1 week" --kingdom-id=1
+docker exec -u apache fantager-web php bin/console app:ticks:run --sync --kingdom-id=1
+docker exec -u apache fantager-web php bin/console app:ticks:retry --kingdom-id=1
+docker exec -u apache fantager-web php bin/console app:ticks:status --kingdom-id=1
 docker exec -u apache fantager-web composer messenger
+bash scripts/simulate-kingdom.sh --init --seasons=8 -o /tmp/seasons.jsonl
 ```
 
 This changes live game state, not just a preview. Finish processing the existing tick pipeline before advancing again: pending/dispatched ticks are not the base for `--advance`, so repeating it before completion does not reliably add another week. The command schedules work; Messenger workers still execute it. The `composer messenger` shortcut exits after 3000 messages and may need restarting to finish a large advance. These overrides do not change the application's real-world clock.
+
+Operator loop: `app:kingdom:simulate:advance` (one week) then `app:kingdom:simulate:process` until idle (exit 0). The shell wrapper is `scripts/simulate-kingdom.sh`. Do not use `--sync` — league matches stay `processing` until Messenger finishes the battle. Do not keep one PHP process running for many seasons. Usage: [local-setup.md](../guides/local-setup.md#multi-season-balance--npc-simulation).
 
 ### 3. Chronological, Parallel & Guided Orchestration Flow
 

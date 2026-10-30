@@ -54,6 +54,38 @@ class TestUserService
     }
 
     /**
+     * Create default test users that do not already exist (by email).
+     *
+     * @return array{created: list<User>, skipped: list<string>}
+     */
+    public function ensureDefaultTestUsers(Kingdom $kingdom): array
+    {
+        $created = [];
+        $skipped = [];
+        foreach (self::DEFAULT_TEST_USERS as $definition) {
+            $email = strtolower(trim($definition['email']));
+            if (null !== $this->userRepository->findOneBy(['email' => $email])) {
+                $skipped[] = $email;
+                continue;
+            }
+
+            try {
+                $created[] = $this->createTestUser(
+                    $kingdom,
+                    $definition['email'],
+                    $definition['nickname'],
+                    $definition['password'],
+                );
+                $this->entityManager->flush();
+            } catch (\DomainException $e) {
+                $skipped[] = $email.': '.$e->getMessage();
+            }
+        }
+
+        return ['created' => $created, 'skipped' => $skipped];
+    }
+
+    /**
      * @throws \DomainException
      */
     public function createTestUser(Kingdom $kingdom, string $email, string $nickname, string $password): User

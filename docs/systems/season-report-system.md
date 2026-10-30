@@ -52,7 +52,9 @@ docker exec -u apache fantager-web php bin/console app:season:report:build --kin
 docker exec -u apache fantager-web php bin/console app:season:report:export --kingdom-id=1 -o /tmp/seasons.jsonl
 ```
 
-`--force` overwrites. `--alerts-only` prints band alerts without JSONL. One JSONL line per completed season.
+`--force` overwrites. `--alerts-only` prints band alerts without JSONL. One JSONL line per completed season. Without `-o`, JSONL goes to stdout and alerts go to stderr so the stream stays pipeable.
+
+Multi-season NPC/balance runs (live ticks + Messenger, then this export): `bash scripts/simulate-kingdom.sh --init --seasons=8 -o /tmp/seasons.jsonl`. PHP steps: `app:kingdom:simulate:init`, `advance`, `process`, `status`. Details: [local-setup.md](../guides/local-setup.md#multi-season-balance--npc-simulation).
 
 ## Locked: frozen snapshot, two consumers
 
@@ -68,7 +70,7 @@ Do not recompute the yearbook from live `Hero` rows or 30-day `TeamDailySnapshot
 | Build | `SeasonReportBuilder`, `SeasonStats`, `SeasonHealthEvaluator`, `SeasonHealthConfig` |
 | Persist | `SeasonReportService` (hooked from `SeasonTransitionService`) |
 | Player view | `SeasonYearbookPresenter`, `templates/league/_yearbook.html.twig` |
-| CLI | `app:season:report:build`, `app:season:report:export` |
+| CLI | `app:season:report:build`, `app:season:report:export`, `app:kingdom:simulate:init` / `advance` / `process` / `status` |
 | Bands | `config/game/season-health.yaml` |
 
 **Tests:** `tests/Service/League/SeasonStatsTest.php`, `SeasonHealthEvaluatorTest.php`, `SeasonYearbookPresenterTest.php`.

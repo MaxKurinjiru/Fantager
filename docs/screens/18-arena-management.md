@@ -51,7 +51,7 @@ Reference: [architecture/screen-code-map.md](../architecture/screen-code-map.md)
 | Price | `POST /api/v1/hq/arena/tickets/price` |
 | Services | `ArenaService`, `ArenaRevenueService`, `FanClubService` |
 
-CLI: `app:economy:distribute-arena-revenue` for a manual fixture payout.
+CLI: `app:economy:distribute-arena-revenue` is break-glass (prefer `app:ticks:run`). `--dry-run` previews; already-paid fixtures (`arena_revenue` ledger with `fixture_id`) are skipped.
 
 Facility level/capacity still upgrade on the HQ grid ([08-headquarters.md](08-headquarters.md)).
 

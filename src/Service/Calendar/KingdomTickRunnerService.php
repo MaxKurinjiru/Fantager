@@ -115,9 +115,9 @@ class KingdomTickRunnerService
      * Creates KingdomTickLog rows for every tick occurrence between the last completed
      * tick (or season start) and $until.
      *
-     * @return int Number of newly scheduled tick log entries
+     * @return int Number of newly scheduled tick log entries (or that would be scheduled when $persist is false)
      */
-    public function schedulePendingTicks(Kingdom $kingdom, \DateTimeImmutable $until): int
+    public function schedulePendingTicks(Kingdom $kingdom, \DateTimeImmutable $until, bool $persist = true): int
     {
         $seasonStartDate = $this->resolveSeasonStartDate($kingdom);
         $ticksScheduled = 0;
@@ -198,7 +198,9 @@ class KingdomTickRunnerService
                     $log->setFixture($fixture);
                     $log->setStatus('pending');
 
-                    $this->em->persist($log);
+                    if ($persist) {
+                        $this->em->persist($log);
+                    }
                     ++$ticksScheduled;
                 }
             }
@@ -264,7 +266,9 @@ class KingdomTickRunnerService
                         $log->setFriendlyMatch($friendlyMatch);
                         $log->setStatus('pending');
 
-                        $this->em->persist($log);
+                        if ($persist) {
+                            $this->em->persist($log);
+                        }
                         ++$ticksScheduled;
                     }
                 }
@@ -331,18 +335,97 @@ class KingdomTickRunnerService
                         $log->setFixture($fixture);
                         $log->setStatus('pending');
 
-                        $this->em->persist($log);
+                        if ($persist) {
+                            $this->em->persist($log);
+                        }
                         ++$ticksScheduled;
                     }
                 }
             }
         }
 
-        if ($ticksScheduled > 0) {
+        if ($persist && $ticksScheduled > 0) {
             $this->em->flush();
         }
 
         return $ticksScheduled;
+    }
+
+    /**
+     * Reset failed tick logs to pending so the pipeline can resume after an operator fix.
+     * Does not dispatch workers — run app:ticks:run afterwards.
+     *
+     * @return list<KingdomTickLog>
+     */
+    public function retryFailedTicks(Kingdom $kingdom, ?int $tickId = null): array
+    {
+        $logs = $this->tickLogRepository->findFailed($kingdom, $tickId);
+        if (null !== $tickId && [] === $logs) {
+            throw new \DomainException(sprintf('No failed tick with id=%d in this kingdom.', $tickId));
+        }
+
+        foreach ($logs as $log) {
+            $previous = $log->getErrorMessage();
+            $log->setStatus('pending');
+            $log->setRetryCount(0);
+            $log->setErrorMessage(null !== $previous && '' !== $previous
+                ? 'Operator retry. Previous: '.$previous
+                : 'Operator retry.');
+        }
+
+        if ([] !== $logs) {
+            $this->em->flush();
+        }
+
+        return $logs;
+    }
+
+    /**
+     * @return array{
+     *     kingdom_id: int|null,
+     *     name: string,
+     *     blocked: array<string, mixed>|null,
+     *     counts: array<string, int>,
+     *     latest_completed_at: string|null,
+     *     latest_completed_type: string|null,
+     *     oldest_pending_at: string|null,
+     *     failed: list<array<string, mixed>>
+     * }
+     */
+    public function getStatusSnapshot(Kingdom $kingdom): array
+    {
+        $blocked = $this->findBlockedTick($kingdom);
+        $latest = $this->tickLogRepository->findLatestCompleted($kingdom);
+        $oldestPending = $this->tickLogRepository->getOldestPendingTime($kingdom);
+        $failed = [];
+        foreach ($this->tickLogRepository->findFailed($kingdom) as $log) {
+            $failed[] = $this->summarizeTickLog($log);
+        }
+
+        return [
+            'kingdom_id' => $kingdom->getId(),
+            'name' => $kingdom->getName(),
+            'blocked' => null !== $blocked ? $this->summarizeTickLog($blocked) : null,
+            'counts' => $this->tickLogRepository->countByStatus($kingdom),
+            'latest_completed_at' => $latest?->getScheduledAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+            'latest_completed_type' => $latest?->getTickType()->value,
+            'oldest_pending_at' => $oldestPending?->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+            'failed' => $failed,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function summarizeTickLog(KingdomTickLog $log): array
+    {
+        return [
+            'id' => $log->getId(),
+            'type' => $log->getTickType()->value,
+            'status' => $log->getStatus(),
+            'scheduled_at' => $log->getScheduledAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+            'error' => $log->getErrorMessage(),
+        ];
     }
 
     /**

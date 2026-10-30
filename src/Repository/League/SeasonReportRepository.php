@@ -32,6 +32,16 @@ class SeasonReportRepository extends ServiceEntityRepository
         );
     }
 
+    public function countByKingdom(Kingdom $kingdom): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->where('r.kingdom = :kingdom')
+            ->setParameter('kingdom', $kingdom)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     /**
      * @return list<SeasonReport>
      */
