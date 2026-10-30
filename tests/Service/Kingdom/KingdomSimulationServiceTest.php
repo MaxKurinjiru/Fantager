@@ -96,7 +96,7 @@ class KingdomSimulationServiceTest extends TestCase
         $log->setScheduledAt(new \DateTimeImmutable('2026-03-01 18:00:00', new \DateTimeZone('UTC')));
 
         $tickLogs = $this->createMock(KingdomTickLogRepository::class);
-        $tickLogs->method('findLatestCompleted')->with($kingdom)->willReturn($log);
+        $tickLogs->expects($this->once())->method('findLatestCompleted')->with($kingdom)->willReturn($log);
 
         $service = $this->createService(tickLogs: $tickLogs);
         $until = $service->nextHorizon($kingdom, new \DateInterval('P7D'));

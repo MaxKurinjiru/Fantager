@@ -26,7 +26,7 @@ class ListKingdomsCommandTest extends TestCase
         $idProperty->setValue($kingdom, 1);
 
         $repository = $this->createMock(KingdomRepository::class);
-        $repository->method('findBy')->with([], ['id' => 'ASC'])->willReturn([$kingdom]);
+        $repository->expects($this->once())->method('findBy')->with([], ['id' => 'ASC'])->willReturn([$kingdom]);
 
         $tester = new CommandTester(new ListKingdomsCommand($repository));
         $this->assertSame(0, $tester->execute([]));

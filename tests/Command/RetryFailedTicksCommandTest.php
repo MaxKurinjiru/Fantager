@@ -42,7 +42,7 @@ class RetryFailedTicksCommandTest extends TestCase
         $logId->setValue($log, 12);
 
         $kingdomRepository = $this->createMock(KingdomRepository::class);
-        $kingdomRepository->method('find')->with(4)->willReturn($kingdom);
+        $kingdomRepository->expects($this->once())->method('find')->with(4)->willReturn($kingdom);
 
         $tickRunner = $this->createMock(KingdomTickRunnerService::class);
         $tickRunner->expects($this->once())
