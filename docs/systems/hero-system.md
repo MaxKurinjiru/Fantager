@@ -154,7 +154,7 @@ Package **B** (locked with #6, 16 Oct 2026):
 - Cumulative cost to leave level `L` (need this much **more** total XP than `C(L)`): `400 × (L + 1)`. So 1→2 needs **800** total XP, 2→3 needs **2000** total, 3→4 needs **3600**. General minimum total XP to *be* level `n` (`n >= 2`): `C(n) = 400 × (n × (n + 1) / 2 − 1)`. `C(1) = 0`. `C(20) = 83600`.
 - XP bar: progress inside the current stored level, using `C(level)` and `C(level + 1)` (`hero_xp_bar()` / API `xp_for_level`, `xp_for_next_level`).
 
-Live writers: `HeroProgressionService::applyMatchXp()` (league and friendly resolution) raises stored level and writes chronicle `levelup` / `hero_levelup`. Formula or `LEVEL_CAP` changes: `php bin/console app:hero-levels:refresh` (no chronicle). Curve coefficient: `config/game/hero-progression.yaml`. Cap: `HeroProgressionConfig::LEVEL_CAP`.
+Live writers: `HeroProgressionService::applyMatchXp()` (league and friendly resolution) raises stored level and writes chronicle `levelup` / `hero_levelup`. Formula or `LEVEL_CAP` changes: `php bin/console app:hero-levels:refresh` (optional `--kingdom-id`; no chronicle). Curve coefficient: `config/game/hero-progression.yaml`. Cap: `HeroProgressionConfig::LEVEL_CAP`.
 
 ### Hero level vs match XP
 

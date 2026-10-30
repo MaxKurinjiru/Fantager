@@ -102,7 +102,7 @@ Full tick list: [calendar-system.md](calendar-system.md#weekly-server-tick-sched
 
 ## Kingdom initialization
 
-Admin/console: `php bin/console app:kingdom:initialize "Name" --pace=classic` (`InitializeKingdomCommand` → `KingdomInitializationService`). World settings come from `config/kingdom/*.defaults.json`. Pace numbers come from `config/kingdom/pace-presets.json`.
+Admin/console: `php bin/console app:kingdom:initialize "Name" --pace=classic` (`InitializeKingdomCommand` → `KingdomInitializationService`). `--test` also ensures the three default test users. Local one-shot: `php bin/console app:dev:bootstrap`. List worlds: `php bin/console app:kingdom:list`. World settings come from `config/kingdom/*.defaults.json`. Pace numbers come from `config/kingdom/pace-presets.json`.
 
 When a new Kingdom is created, in order:
 
@@ -159,7 +159,9 @@ Related (other systems): `GET /api/v1/kingdom/{id}/calendar` — [calendar-syste
 |-------|----------|
 | Entity | `src/Entity/Kingdom/Kingdom.php`, `KingdomTickLog.php` |
 | List / capacity / active season | `App\Service\Kingdom\KingdomService` |
-| Bootstrap | `App\Service\Kingdom\KingdomInitializationService`, `app:kingdom:initialize` |
+| Bootstrap | `App\Service\Kingdom\KingdomInitializationService`, `app:kingdom:initialize`, `app:dev:bootstrap` |
+| List / diagnose | `app:kingdom:list`, `app:kingdom:diagnose` (`--json`; exit 1 on failed ticks or understaffed teams) |
+| Multi-season sim | `app:kingdom:simulate:init`, `advance`, `process`, `status` — one PHP process per step; shell loop in `scripts/simulate-kingdom.sh` |
 | Pace resolution | `App\Service\Kingdom\KingdomPace` |
 | Tick runner | `KingdomTickRunnerService`, `ExecuteSingleTickHandler` |
 | Config | `config/kingdom/*.defaults.json` |

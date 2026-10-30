@@ -114,3 +114,5 @@ Score table (score `0` = not interested; higher score wins):
   - `mercenary_academy`: Chooses the most common race in the team among Orc, Dwarf, and Human (falls back to Orc if none are present).
   - Other archetypes: Chooses the race that has the largest number of alive heroes in the team.
 - **Headquarters Upgrades:** Upgrades a single facility if budget allows (respecting a safety reserve of 2x weekly maintenance). Candidates are sorted first by **archetype priority index** (role-specific facility order from `getFacilityPrioritiesForRole`), then by **current level ascending** (to balance equal-priority facilities). Keeps upgrades balanced: the level difference between the highest and lowest facilities after the upgrade must be ≤ 3.
+
+Operator multi-season runs (NPC archetypes in `season_report.payload.npc`): `scripts/simulate-kingdom.sh` (`simulate:init` / `advance` / `process`). [local-setup.md](../guides/local-setup.md#multi-season-balance--npc-simulation).

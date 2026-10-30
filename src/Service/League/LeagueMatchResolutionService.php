@@ -89,12 +89,26 @@ class LeagueMatchResolutionService
      *
      * @return list<array<string, mixed>>
      */
-    public function resolvePendingFixtures(Kingdom $kingdom, \DateTimeImmutable $until): array
+    public function resolvePendingFixtures(Kingdom $kingdom, \DateTimeImmutable $until, bool $dryRun = false): array
     {
         $fixtures = $this->fixtureRepository->findPendingFixturesUntil($kingdom, $until);
         $results = [];
 
         foreach ($fixtures as $fixture) {
+            if ($dryRun) {
+                $results[] = [
+                    'fixture_id' => $fixture->getId(),
+                    'home_team_id' => $fixture->getHomeTeam()->getId(),
+                    'away_team_id' => $fixture->getAwayTeam()->getId(),
+                    'home_score' => 0,
+                    'away_score' => 0,
+                    'is_forfeit' => false,
+                    'dry_run' => true,
+                    'status' => $fixture->getStatus()->value,
+                ];
+                continue;
+            }
+
             $results[] = $this->resolveFixture($fixture, $fixture->getScheduledAt());
         }
 

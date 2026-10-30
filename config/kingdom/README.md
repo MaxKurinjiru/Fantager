@@ -3,6 +3,7 @@
 JSON placeholders loaded by `KingdomInitConfig` when running:
 
 ```bash
+php bin/console app:dev:bootstrap
 php bin/console app:kingdom:initialize "Kingdom Name" [--test] [--start-offset-days=-21] [--catch-up-ticks]
 ```
 
@@ -25,17 +26,28 @@ php bin/console app:kingdom:initialize "Main Kingdom" \
 
 | Flag | Effect |
 |------|--------|
-| `--test` | Season starts on **last Monday** (not next Monday). To create the 3 default test users, run `php bin/console app:user:create-test "Kingdom Name" --default` afterwards. |
+| `--test` | Season starts on **last Monday** (not next Monday) and ensures the 3 default test users (`player1–3@example.com` / `password`). Existing emails are skipped. |
 | `--start-offset-days` | Shifts season start relative to that Monday anchor. **Negative** = further in the past. Overrides `season.defaults.json` → `start_offset_days`. |
-| `--catch-up-ticks` | Synchronously runs all server ticks from season start through now (training, aging, league matches, economy). Without it, run `php bin/console app:ticks:run --kingdom-id=<id>` later (async via Messenger). |
+| `--catch-up-ticks` | Synchronously runs all server ticks from season start through now (training, aging, league matches, economy). Without it, run `php bin/console app:ticks:run --sync --kingdom-id=<id>` (or async `app:ticks:run` + Messenger). |
 
 Rough guide: `--test` alone ≈ 0–6 days in; `--test --start-offset-days=-21` ≈ 4 calendar weeks; `-28` ≈ 5 weeks. Season length is 77 days (11 weeks) — do not offset beyond that.
 
 If league fixtures stayed **scheduled** after catch-up (timezone mismatch on older bootstraps), resolve them manually:
 
 ```bash
+php bin/console app:league:resolve-pending-fixtures --kingdom-id=<id> --dry-run
 php bin/console app:league:resolve-pending-fixtures --kingdom-id=<id>
 ```
+
+Prefer `app:ticks:run`. The league-resolve and arena-revenue commands are break-glass recovery; they skip already-completed fixtures / already-paid arena rows. Do not run them while the tick pipeline is processing matches.
+
+**Multi-season NPC/balance simulation** (new world, live pipeline, JSONL reports). Shell loop — not one long PHP process:
+
+```bash
+bash scripts/simulate-kingdom.sh --init --name="Balance Sim" --pace=classic --seasons=8 -o /tmp/seasons.jsonl
+```
+
+Details: [docs/guides/local-setup.md](../../docs/guides/local-setup.md#multi-season-balance--npc-simulation).
 
 | File | Purpose |
 |------|---------|

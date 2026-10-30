@@ -16,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:league:resolve-pending-fixtures',
-    description: 'Resolve past-due league fixtures (forfeit or wave combat simulation) and apply standings updates',
+    description: 'Break-glass: resolve past-due scheduled league fixtures. Prefer app:ticks:run. Do not run while the tick pipeline is processing matches.',
 )]
 class ResolvePendingLeagueFixturesCommand extends Command
 {
@@ -32,7 +32,8 @@ class ResolvePendingLeagueFixturesCommand extends Command
     {
         $this
             ->addOption('kingdom-id', null, InputOption::VALUE_REQUIRED, 'Kingdom ID to process')
-            ->addOption('until', null, InputOption::VALUE_OPTIONAL, 'Resolve fixtures scheduled at or before this time (default: now UTC)');
+            ->addOption('until', null, InputOption::VALUE_OPTIONAL, 'Resolve fixtures scheduled at or before this time (default: now UTC)')
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'List scheduled fixtures that would be resolved; do not simulate or write standings');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -64,9 +65,10 @@ class ResolvePendingLeagueFixturesCommand extends Command
             return Command::FAILURE;
         }
 
+        $dryRun = (bool) $input->getOption('dry-run');
         $this->tickClock->setCustomTime($until);
         try {
-            $results = $this->matchResolutionService->resolvePendingFixtures($kingdom, $until);
+            $results = $this->matchResolutionService->resolvePendingFixtures($kingdom, $until, $dryRun);
         } finally {
             $this->tickClock->setCustomTime(null);
         }
@@ -78,17 +80,23 @@ class ResolvePendingLeagueFixturesCommand extends Command
         }
 
         $io->table(
-            ['Fixture', 'Home', 'Away', 'Score', 'Forfeit'],
+            ['Fixture', 'Home', 'Away', 'Score', 'Forfeit', 'Mode'],
             array_map(static fn (array $r): array => [
                 $r['fixture_id'],
                 $r['home_team_id'],
                 $r['away_team_id'],
                 sprintf('%d-%d', $r['home_score'], $r['away_score']),
                 $r['is_forfeit'] ? 'yes' : 'no',
+                !empty($r['dry_run']) ? 'dry-run' : 'resolved',
             ], $results),
         );
 
-        $io->success(sprintf('Resolved %d fixture(s) for kingdom "%s".', count($results), $kingdom->getName()));
+        $io->success(sprintf(
+            '%s %d fixture(s) for kingdom "%s".',
+            $dryRun ? 'Would resolve' : 'Resolved',
+            count($results),
+            $kingdom->getName(),
+        ));
 
         return Command::SUCCESS;
     }

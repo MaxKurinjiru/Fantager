@@ -16,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:economy:distribute-arena-revenue',
-    description: 'Pay arena ticket revenue for league fixtures scheduled at the given time (home team only)',
+    description: 'Break-glass: pay arena ticket revenue for scheduled league fixtures. Prefer app:ticks:run. Skips fixtures already paid.',
 )]
 class DistributeArenaRevenueCommand extends Command
 {
@@ -32,7 +32,8 @@ class DistributeArenaRevenueCommand extends Command
     {
         $this
             ->addOption('time', null, InputOption::VALUE_OPTIONAL, 'Fixture scheduled time to process (e.g. "2026-06-10 18:00:00")')
-            ->addOption('kingdom-id', null, InputOption::VALUE_OPTIONAL, 'Limit to a single kingdom ID');
+            ->addOption('kingdom-id', null, InputOption::VALUE_OPTIONAL, 'Limit to a single kingdom ID')
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Calculate attendance and gold; do not write financial records');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -55,11 +56,12 @@ class DistributeArenaRevenueCommand extends Command
             ? array_filter([$this->kingdomRepository->find((int) $kingdomId)])
             : $this->kingdomRepository->findAll();
 
+        $dryRun = (bool) $input->getOption('dry-run');
         $allReports = [];
         $this->tickClock->setCustomTime($scheduledAt);
         try {
             foreach ($kingdoms as $kingdom) {
-                $reports = $this->arenaRevenueService->processLeagueMatchTick($kingdom, $scheduledAt);
+                $reports = $this->arenaRevenueService->processLeagueMatchTick($kingdom, $scheduledAt, $dryRun);
                 $allReports = array_merge($allReports, $reports);
             }
         } finally {
@@ -70,16 +72,21 @@ class DistributeArenaRevenueCommand extends Command
             $io->warning(sprintf('No scheduled fixtures found at %s.', $scheduledAt->format('Y-m-d H:i:s')));
         } else {
             $io->table(
-                ['Home Team', 'Away Team', 'Capacity', 'Attendance', 'Gold (home)'],
+                ['Home Team', 'Away Team', 'Capacity', 'Attendance', 'Gold (home)', 'Status'],
                 array_map(static fn (array $r): array => [
-                    $r['home_team_id'],
-                    $r['away_team_id'],
-                    $r['capacity'],
-                    $r['attendance'],
-                    $r['gold_earned'],
+                    $r['home_team_id'] ?? '',
+                    $r['away_team_id'] ?? '',
+                    $r['capacity'] ?? '',
+                    $r['attendance'] ?? '',
+                    $r['gold_earned'] ?? '',
+                    !empty($r['skipped']) ? (string) ($r['skip_reason'] ?? 'skipped') : (!empty($r['dry_run']) ? 'dry-run' : 'paid'),
                 ], $allReports)
             );
-            $io->success(sprintf('Arena revenue processed for %d fixture(s).', count($allReports)));
+            $io->success(sprintf(
+                'Arena revenue %s for %d fixture(s).',
+                $dryRun ? 'previewed' : 'processed',
+                count($allReports),
+            ));
         }
 
         return Command::SUCCESS;

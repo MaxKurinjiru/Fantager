@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Enum\PacePreset;
+use App\Service\Auth\TestUserService;
 use App\Service\Calendar\KingdomTickRunnerService;
 use App\Service\Kingdom\KingdomInitializationService;
 use App\Service\Kingdom\KingdomService;
@@ -26,11 +27,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  *     --start-offset-days=-21 \
  *     --catch-up-ticks
  *
- * - --test anchors season start to last Monday (not next Monday).
+ * - --test anchors season start to last Monday (not next Monday) and ensures the 3 default test users.
  * - --start-offset-days=-21 shifts that anchor ~3 weeks further into the past (~4 game weeks total).
  * - --catch-up-ticks runs all missed server ticks synchronously (training, aging, matches, economy).
  *
- * Without --catch-up-ticks you can schedule ticks later via: php bin/console app:ticks:run --kingdom-id=<id>
+ * Without --catch-up-ticks you can schedule ticks later via: php bin/console app:ticks:run --sync --kingdom-id=<id>
  */
 #[AsCommand(
     name: 'app:kingdom:initialize',
@@ -42,6 +43,7 @@ class InitializeKingdomCommand extends Command
         private readonly KingdomInitializationService $initializationService,
         private readonly KingdomService $kingdomService,
         private readonly KingdomTickRunnerService $tickRunnerService,
+        private readonly TestUserService $testUserService,
     ) {
         parent::__construct();
     }
@@ -54,7 +56,7 @@ class InitializeKingdomCommand extends Command
                 'test',
                 null,
                 InputOption::VALUE_NONE,
-                'Test mode: season starts last Monday and creates 3 default test users (player1–3@example.com / password)',
+                'Test mode: season starts last Monday and ensures 3 default test users (player1–3@example.com / password)',
             )
             ->addOption(
                 'start-offset-days',
@@ -128,6 +130,20 @@ class InitializeKingdomCommand extends Command
             $result['heroes'],
             $capacity,
         ));
+
+        if ($testMode) {
+            $users = $this->testUserService->ensureDefaultTestUsers($kingdom);
+            if ([] !== $users['created']) {
+                $io->success(sprintf(
+                    'Created %d default test user(s): %s',
+                    count($users['created']),
+                    implode(', ', array_map(static fn ($user) => $user->getEmail(), $users['created'])),
+                ));
+            }
+            if ([] !== $users['skipped']) {
+                $io->note(sprintf('Skipped existing default test user(s): %s', implode(', ', $users['skipped'])));
+            }
+        }
 
         if ($catchUpTicks) {
             $blocked = $this->tickRunnerService->findBlockedTick($kingdom);

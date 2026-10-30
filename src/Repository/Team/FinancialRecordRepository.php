@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Repository\Team;
 
+use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\FinancialRecord;
+use App\Entity\Team\Team;
+use App\Enum\FinancialRecordType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,7 +24,7 @@ class FinancialRecordRepository extends ServiceEntityRepository
     /**
      * @return list<FinancialRecord>
      */
-    public function findByTeamFiltered(\App\Entity\Team\Team $team, ?string $type = null, ?string $actor = null, ?string $sort = null, ?int $page = null, ?int $limit = null): array
+    public function findByTeamFiltered(Team $team, ?string $type = null, ?string $actor = null, ?string $sort = null, ?int $page = null, ?int $limit = null): array
     {
         $qb = $this->createQueryBuilder('f')
             ->where('f.team = :team')
@@ -61,7 +64,7 @@ class FinancialRecordRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    public function countByTeamFiltered(\App\Entity\Team\Team $team, ?string $type = null, ?string $actor = null): int
+    public function countByTeamFiltered(Team $team, ?string $type = null, ?string $actor = null): int
     {
         $qb = $this->createQueryBuilder('f')
             ->select('COUNT(f.id)')
@@ -84,7 +87,7 @@ class FinancialRecordRepository extends ServiceEntityRepository
     /**
      * @return list<FinancialRecord>
      */
-    public function findRecentByTeamAndType(\App\Entity\Team\Team $team, string $type, int $limit = 8): array
+    public function findRecentByTeamAndType(Team $team, string $type, int $limit = 8): array
     {
         return $this->createQueryBuilder('f')
             ->where('f.team = :team')
@@ -100,7 +103,7 @@ class FinancialRecordRepository extends ServiceEntityRepository
     /**
      * @return list<FinancialRecord>
      */
-    public function findRecentByTeam(\App\Entity\Team\Team $team, int $limit = 10): array
+    public function findRecentByTeam(Team $team, int $limit = 10): array
     {
         return $this->createQueryBuilder('f')
             ->where('f.team = :team')
@@ -114,7 +117,7 @@ class FinancialRecordRepository extends ServiceEntityRepository
     /**
      * @return array{income: int, expense: int, net: int, transaction_count: int}
      */
-    public function getGoldSummarySince(\App\Entity\Team\Team $team, ?\DateTimeImmutable $since = null): array
+    public function getGoldSummarySince(Team $team, ?\DateTimeImmutable $since = null): array
     {
         $qb = $this->createQueryBuilder('f')
             ->select('SUM(CASE WHEN f.goldChange > 0 THEN f.goldChange ELSE 0 END) AS income')
@@ -140,5 +143,51 @@ class FinancialRecordRepository extends ServiceEntityRepository
             'net' => $income + $expenseRaw,
             'transaction_count' => (int) ($result['transaction_count'] ?? 0),
         ];
+    }
+
+    public function hasArenaRevenueForFixture(Team $team, int $fixtureId): bool
+    {
+        /** @var list<FinancialRecord> $records */
+        $records = $this->createQueryBuilder('f')
+            ->where('f.team = :team')
+            ->andWhere('f.type = :type')
+            ->setParameter('team', $team)
+            ->setParameter('type', FinancialRecordType::ArenaRevenue)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($records as $record) {
+            if ((int) ($record->getContext()['fixture_id'] ?? 0) === $fixtureId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function findPaidArenaRevenueFixtureIds(Kingdom $kingdom): array
+    {
+        /** @var list<FinancialRecord> $records */
+        $records = $this->createQueryBuilder('f')
+            ->innerJoin('f.team', 't')
+            ->where('t.kingdom = :kingdom')
+            ->andWhere('f.type = :type')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('type', FinancialRecordType::ArenaRevenue)
+            ->getQuery()
+            ->getResult();
+
+        $ids = [];
+        foreach ($records as $record) {
+            $fixtureId = (int) ($record->getContext()['fixture_id'] ?? 0);
+            if ($fixtureId > 0) {
+                $ids[$fixtureId] = $fixtureId;
+            }
+        }
+
+        return array_values($ids);
     }
 }

@@ -128,6 +128,29 @@ class HeroRepository extends ServiceEntityRepository
     }
 
     /**
+     * Stream heroes (with team) for bulk jobs. Optional kingdom filter.
+     *
+     * @return iterable<Hero>
+     */
+    public function iterateWithTeam(?int $kingdomId = null): iterable
+    {
+        $qb = $this->createQueryBuilder('h')
+            ->innerJoin('h.team', 't')
+            ->addSelect('t')
+            ->orderBy('h.id', \SortDirection::Ascending);
+
+        if (null !== $kingdomId) {
+            $qb->andWhere('t.kingdom = :kingdomId')
+                ->setParameter('kingdomId', $kingdomId);
+        }
+
+        /** @var iterable<Hero> $heroes */
+        $heroes = $qb->getQuery()->toIterable();
+
+        return $heroes;
+    }
+
+    /**
      * @return list<Hero>
      */
     public function findPayrollEligibleByTeam(Team $team): array

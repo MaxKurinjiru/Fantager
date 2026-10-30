@@ -212,4 +212,72 @@ class KingdomTickLogRepository extends ServiceEntityRepository
 
         return $recoveredCount;
     }
+
+    /**
+     * @return array<string, int>
+     */
+    public function countByStatus(Kingdom $kingdom): array
+    {
+        $rows = $this->createQueryBuilder('l')
+            ->select('l.status AS status, COUNT(l.id) AS cnt')
+            ->where('l.kingdom = :kingdom')
+            ->setParameter('kingdom', $kingdom)
+            ->groupBy('l.status')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [
+            'pending' => 0,
+            'dispatched' => 0,
+            'processing' => 0,
+            'completed' => 0,
+            'failed' => 0,
+        ];
+        foreach ($rows as $row) {
+            $status = (string) $row['status'];
+            $counts[$status] = (int) $row['cnt'];
+        }
+
+        return $counts;
+    }
+
+    public function findLatestCompleted(Kingdom $kingdom): ?KingdomTickLog
+    {
+        /** @var KingdomTickLog|null $log */
+        $log = $this->createQueryBuilder('l')
+            ->where('l.kingdom = :kingdom')
+            ->andWhere('l.status = :status')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('status', 'completed')
+            ->orderBy('l.scheduledAt', \SortDirection::Descending)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $log;
+    }
+
+    /**
+     * @return list<KingdomTickLog>
+     */
+    public function findFailed(Kingdom $kingdom, ?int $tickId = null): array
+    {
+        $qb = $this->createQueryBuilder('l')
+            ->where('l.kingdom = :kingdom')
+            ->andWhere('l.status = :status')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('status', 'failed')
+            ->orderBy('l.scheduledAt', \SortDirection::Ascending)
+            ->addOrderBy('l.id', \SortDirection::Ascending);
+
+        if (null !== $tickId) {
+            $qb->andWhere('l.id = :tickId')
+                ->setParameter('tickId', $tickId);
+        }
+
+        /** @var list<KingdomTickLog> $logs */
+        $logs = $qb->getQuery()->getResult();
+
+        return $logs;
+    }
 }

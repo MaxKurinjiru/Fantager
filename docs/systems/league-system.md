@@ -248,6 +248,7 @@ Win-streak, derby, and relegation-pressure morale are **Cut**. Do not add them. 
 | Fixtures | `LeagueFixtureScheduler` (Berger), `LeagueFixtureKickoffMatcher` |
 | Next-season groups | `LeagueGroupSeeder` (pots by previous place; shuffle inside each pot) |
 | Match tick | `LeagueMatchResolutionService` → combat → `LeagueFixtureCompletionService` |
+| Break-glass CLI | `app:league:resolve-pending-fixtures` (`--dry-run`; prefer `app:ticks:run`) |
 | End of season | `SeasonTransitionService`, `SeasonReportService` |
 | Web | `Web\LeagueController`, `templates/league/` |
 | JSON | `Api\V1\LeagueController` (`GET` standings/fixtures/seasons/yearbook; `POST /process-season` is `ROLE_ADMIN`) |

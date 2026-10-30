@@ -361,6 +361,24 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->assertSame(42, $results[0]['fixture_id']);
     }
 
+    public function testResolvePendingFixturesDryRunDoesNotResolve(): void
+    {
+        [$fixture] = $this->createFixtureContext();
+        $until = new \DateTimeImmutable('2026-06-17 18:00:00');
+        $this->fixtureRepository
+            ->expects($this->once())
+            ->method('findPendingFixturesUntil')
+            ->willReturn([$fixture]);
+
+        $this->matchLineupService->expects($this->never())->method('canField');
+
+        $results = $this->service->resolvePendingFixtures(new Kingdom(), $until, true);
+
+        $this->assertCount(1, $results);
+        $this->assertTrue($results[0]['dry_run']);
+        $this->assertSame(LeagueFixtureStatus::Scheduled->value, $results[0]['status']);
+    }
+
     /**
      * @return array{0: LeagueFixture, 1: LeagueStanding, 2: LeagueStanding}
      */
