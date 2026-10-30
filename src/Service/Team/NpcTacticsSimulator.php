@@ -667,7 +667,7 @@ class NpcTacticsSimulator
                     default => $prefArmor,
                 };
 
-                if (null !== $prefSubType && $subType !== $prefSubType) {
+                if ($subType !== $prefSubType) {
                     continue;
                 }
             }
