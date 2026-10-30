@@ -17,7 +17,7 @@
     "chart.js": "^4.6.1"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.0",
+    "@babel/core": "^8.0.10",
     "@babel/preset-env": "^8.0.0",
     "@symfony/stimulus-bridge": "^4.0.0",
     "@symfony/ux-turbo": "file:vendor/symfony/ux-turbo/assets",
