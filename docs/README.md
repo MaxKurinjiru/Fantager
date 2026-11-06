@@ -43,6 +43,8 @@ Status words: [product/glossary.md](product/glossary.md#how-to-read-status-words
 | Agent task routing | [AGENTS.md](../AGENTS.md) |
 | Chronicle (M1–9 / waves 0–8) | [roadmap/archive/](roadmap/archive/README.md) — not a work queue |
 
+Combat batching: [simulation contract](systems/combat-system.md#wave-based-messenger-orchestration), [wave processor](../src/Service/Combat/CombatWaveProcessor.php), [round processor](../src/Service/Combat/CombatRoundProcessor.php). Regression coverage: [wave orchestration](../tests/Service/Combat/CombatWaveOrchestrationTest.php) and [round processing / legacy messages](../tests/Message/ProcessCombatRoundHandlerTest.php).
+
 ## Views
 
 | View | Start here | Contains |

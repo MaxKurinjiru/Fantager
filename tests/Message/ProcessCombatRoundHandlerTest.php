@@ -12,18 +12,16 @@ use App\Enum\MatchType;
 use App\Message\CombatWave;
 use App\Message\ProcessCombatRound;
 use App\Message\ProcessCombatRoundHandler;
-use App\Service\Calendar\KingdomTickOrchestrator;
 use App\Service\Combat\CombatEngine;
+use App\Service\Combat\CombatRoundProcessor;
+use App\Service\Combat\CombatWaveProcessor;
 use App\Service\League\LeagueMatchResolutionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query;
-use Doctrine\ORM\QueryBuilder;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AllowMockObjectsWithoutExpectations]
 class ProcessCombatRoundHandlerTest extends TestCase
@@ -41,12 +39,12 @@ class ProcessCombatRoundHandlerTest extends TestCase
         $combatEngine->expects($this->never())->method('simulateRound');
 
         $handler = $this->handler($em, $combatEngine);
-        $handler(new ProcessCombatRound(42, 3));
+        $handler->process(42, 3);
 
         $this->assertSame(3, $battle->getCurrentRound());
     }
 
-    public function testAdvancesRoundAndDispatchesNextWaveWhenBarrierClear(): void
+    public function testAdvancesRoundWithoutMessengerFanOut(): void
     {
         $kingdom = $this->createStub(Kingdom::class);
         $kingdom->method('getId')->willReturn(7);
@@ -71,33 +69,23 @@ class ProcessCombatRoundHandlerTest extends TestCase
                 return [['type' => 'round_start', 'round' => 2]];
             });
 
-        $this->stubBarrierCounts($em, laggingSimulating: 0, stillSimulating: 1);
-
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(static function (CombatWave $wave) use ($scheduledAt): bool {
-                return 7 === $wave->getKingdomId()
-                    && 3 === $wave->getRound()
-                    && $wave->getScheduledAt() == $scheduledAt;
-            }))
-            ->willReturn(new Envelope(new \stdClass()));
-
-        $handler = $this->handler($em, $combatEngine, messageBus: $messageBus);
-        $handler(new ProcessCombatRound(42, 2));
+        $handler = $this->handler($em, $combatEngine);
+        $handler->process(42, 2);
 
         $this->assertSame(2, $battle->getCurrentRound());
         $this->assertSame(BattleStatus::Simulating, $battle->getStatus());
     }
 
-    public function testCompletesBattleWhenRoundEndsMatch(): void
+    #[DataProvider('completionCases')]
+    public function testCompletesBattleWhenRoundEndsMatch(bool $friendly, int $savedRound): void
     {
         $kingdom = $this->createStub(Kingdom::class);
         $kingdom->method('getId')->willReturn(7);
         $scheduledAt = new \DateTimeImmutable('2026-06-17 18:00:00');
 
-        $battle = $this->makeBattle(BattleStatus::Simulating, 4, $kingdom, $scheduledAt);
+        $battle = $this->makeBattle(BattleStatus::Simulating, $savedRound, $kingdom, $scheduledAt);
         $battle->setRunState(['status' => 'simulating']);
+        $battle->setMatchType($friendly ? MatchType::Friendly : MatchType::League);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->once())->method('beginTransaction');
@@ -106,47 +94,68 @@ class ProcessCombatRoundHandlerTest extends TestCase
         $em->method('find')->willReturn($battle);
 
         $fixture = $this->createStub(\App\Entity\League\LeagueFixture::class);
-        $em->method('getRepository')->willReturnCallback(function (string $class) use ($fixture) {
+        $friendlyMatch = $this->createStub(\App\Entity\FriendlyMatch\FriendlyMatch::class);
+        $tickLog = $this->createMock(\App\Entity\Kingdom\KingdomTickLog::class);
+        $tickLog->expects($this->once())->method('setStatus')->with('completed');
+        $tickLog->expects($this->once())->method('setExecutedAt')->with($this->isInstanceOf(\DateTimeImmutable::class));
+        $em->method('getRepository')->willReturnCallback(function (string $class) use ($fixture, $friendlyMatch, $friendly, $tickLog) {
             $repo = $this->createStub(EntityRepository::class);
-            $repo->method('findOneBy')->willReturn(
-                \App\Entity\League\LeagueFixture::class === $class ? $fixture : null
-            );
+            $repo->method('findOneBy')->willReturn(match ($class) {
+                \App\Entity\League\LeagueFixture::class => $friendly ? null : $fixture,
+                \App\Entity\FriendlyMatch\FriendlyMatch::class => $friendlyMatch,
+                \App\Entity\Kingdom\KingdomTickLog::class => $tickLog,
+                default => null,
+            });
 
             return $repo;
         });
 
         $combatEngine = $this->createMock(CombatEngine::class);
-        $combatEngine->expects($this->once())
+        $finish = static function (array &$runState): void {
+            $runState['status'] = 'completed';
+            $runState['scoreA'] = 4;
+            $runState['scoreB'] = 1;
+            $runState['combatLog'] = ['version' => 1, 'events' => []];
+        };
+        $combatEngine->expects($savedRound < CombatEngine::MAX_ROUNDS ? $this->once() : $this->never())
             ->method('simulateRound')
-            ->willReturnCallback(static function (array &$runState, int $round): array {
-                self::assertSame(5, $round);
-                $runState['status'] = 'completed';
-                $runState['scoreA'] = 4;
-                $runState['scoreB'] = 1;
-                $runState['combatLog'] = ['version' => 1, 'events' => []];
+            ->willReturnCallback(static function (array &$runState, int $round) use ($savedRound, $finish): array {
+                self::assertSame($savedRound + 1, $round);
+                if ($round < CombatEngine::MAX_ROUNDS) {
+                    $finish($runState);
+                }
 
                 return [['type' => 'match_end']];
             });
-
-        $this->stubBarrierCounts($em, laggingSimulating: 0, stillSimulating: 0);
+        $combatEngine->expects($savedRound >= CombatEngine::MAX_ROUNDS - 1 ? $this->once() : $this->never())
+            ->method('forceCompleteAtRoundCap')->willReturnCallback($finish);
 
         $league = $this->createMock(LeagueMatchResolutionService::class);
-        $league->expects($this->once())->method('completeBattle')->with($battle);
+        $league->expects($friendly ? $this->never() : $this->once())->method('completeBattle')->with($battle);
+        $friendlyService = $this->createMock(\App\Service\FriendlyMatch\FriendlyMatchResolutionService::class);
+        $friendlyService->expects($friendly ? $this->once() : $this->never())->method('completeBattle')->with($battle);
 
-        $orchestrator = $this->createMock(KingdomTickOrchestrator::class);
-        $orchestrator->expects($this->once())->method('orchestrate')->with($kingdom);
-
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->expects($this->never())->method('dispatch');
-
-        $handler = $this->handler($em, $combatEngine, $league, $messageBus, $orchestrator);
-        $handler(new ProcessCombatRound(42, 5));
+        $handler = $this->handler($em, $combatEngine, $league, $friendlyService);
+        $handler->process(42, $savedRound + 1);
 
         $this->assertSame(BattleStatus::Completed, $battle->getStatus());
-        $this->assertSame(5, $battle->getCurrentRound());
+        $this->assertSame(min($savedRound + 1, CombatEngine::MAX_ROUNDS), $battle->getCurrentRound());
         $this->assertSame(4, $battle->getScoreA());
         $this->assertSame(1, $battle->getScoreB());
         $this->assertNotNull($battle->getProcessedAt());
+    }
+
+    /**
+     * @return iterable<string, array{bool, int}>
+     */
+    public static function completionCases(): iterable
+    {
+        yield 'league' => [false, 4];
+        yield 'friendly' => [true, 4];
+        yield 'league round cap' => [false, 199];
+        yield 'friendly round cap' => [true, 199];
+        yield 'league saved at cap' => [false, 200];
+        yield 'friendly saved at cap' => [true, 200];
     }
 
     public function testMarksBattleStalledWhenSimulateRoundThrows(): void
@@ -160,6 +169,7 @@ class ProcessCombatRoundHandlerTest extends TestCase
         $em->expects($this->once())->method('commit');
         $em->expects($this->once())->method('flush');
         $em->method('find')->willReturn($battle);
+        $em->method('isOpen')->willReturn(true);
 
         $combatEngine = $this->createMock(CombatEngine::class);
         $combatEngine->expects($this->once())
@@ -171,63 +181,108 @@ class ProcessCombatRoundHandlerTest extends TestCase
 
         $handler = $this->handler($em, $combatEngine, $league);
 
-        try {
-            $handler(new ProcessCombatRound(42, 1));
-            $this->fail('Expected RuntimeException');
-        } catch (\RuntimeException $e) {
-            $this->assertSame('engine boom', $e->getMessage());
-        }
+        $handler->process(42, 1);
 
         $this->assertSame(BattleStatus::Stalled, $battle->getStatus());
         $this->assertStringContainsString('engine boom', (string) ($battle->getRunState()['error'] ?? ''));
+    }
+
+    public function testCompletionFailureRestoresLastCheckpointBeforeMarkingStalled(): void
+    {
+        $battle = $this->makeBattle(BattleStatus::Simulating, 4);
+        $battle->setRunState(['status' => 'simulating']);
+        $persistedBattle = clone $battle;
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('find')->willReturnOnConsecutiveCalls($battle, $persistedBattle);
+        $em->method('isOpen')->willReturn(true);
+        $em->expects($this->exactly(2))->method('beginTransaction');
+        $em->expects($this->once())->method('rollback');
+        $em->expects($this->once())->method('commit');
+        $em->expects($this->exactly(2))->method('clear');
+        $fixture = $this->createStub(\App\Entity\League\LeagueFixture::class);
+        $repo = $this->createStub(EntityRepository::class);
+        $repo->method('findOneBy')->willReturn($fixture);
+        $em->method('getRepository')->willReturn($repo);
+        $combatEngine = $this->createMock(CombatEngine::class);
+        $combatEngine->method('simulateRound')->willReturnCallback(static function (array &$state): array {
+            $state = ['status' => 'completed', 'scoreA' => 6, 'scoreB' => 0, 'combatLog' => []];
+
+            return [];
+        });
+        $league = $this->createMock(LeagueMatchResolutionService::class);
+        $league->method('completeBattle')->willThrowException(new \RuntimeException('completion failed'));
+
+        $this->handler($em, $combatEngine, $league)->process(42, 5);
+
+        $this->assertSame(BattleStatus::Stalled, $persistedBattle->getStatus());
+        $this->assertSame(4, $persistedBattle->getCurrentRound());
+        $this->assertSame('simulating', $persistedBattle->getRunState()['status'] ?? null);
+        $this->assertStringContainsString('completion failed', $persistedBattle->getRunState()['error']);
     }
 
     private function handler(
         EntityManagerInterface $em,
         CombatEngine $combatEngine,
         ?LeagueMatchResolutionService $league = null,
-        ?MessageBusInterface $messageBus = null,
-        ?KingdomTickOrchestrator $orchestrator = null,
-    ): ProcessCombatRoundHandler {
-        return new ProcessCombatRoundHandler(
+        ?\App\Service\FriendlyMatch\FriendlyMatchResolutionService $friendly = null,
+    ): CombatRoundProcessor {
+        return new CombatRoundProcessor(
             $em,
             $combatEngine,
-            $messageBus ?? $this->createStub(MessageBusInterface::class),
             $league ?? $this->createStub(LeagueMatchResolutionService::class),
-            $this->createStub(\App\Service\FriendlyMatch\FriendlyMatchResolutionService::class),
-            $orchestrator ?? $this->createStub(KingdomTickOrchestrator::class),
+            $friendly ?? $this->createStub(\App\Service\FriendlyMatch\FriendlyMatchResolutionService::class),
             $this->createStub(LoggerInterface::class),
         );
     }
 
-    private function stubBarrierCounts(
-        EntityManagerInterface&\PHPUnit\Framework\MockObject\MockObject $em,
-        int $laggingSimulating,
-        int $stillSimulating,
-    ): void {
-        $lagQuery = $this->createMock(Query::class);
-        $lagQuery->method('getSingleScalarResult')->willReturn($laggingSimulating);
+    public function testRejectsRoundThatWouldSkipPersistedProgress(): void
+    {
+        $battle = $this->makeBattle(BattleStatus::Simulating, 1);
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('find')->willReturn($battle);
+        $em->expects($this->once())->method('rollback');
+        $combatEngine = $this->createMock(CombatEngine::class);
+        $combatEngine->expects($this->never())->method('simulateRound');
 
-        $stillQuery = $this->createMock(Query::class);
-        $stillQuery->method('getSingleScalarResult')->willReturn($stillSimulating);
+        $this->handler($em, $combatEngine)->process(42, 3);
 
-        $lagQb = $this->createMock(QueryBuilder::class);
-        $lagQb->method('select')->willReturnSelf();
-        $lagQb->method('from')->willReturnSelf();
-        $lagQb->method('where')->willReturnSelf();
-        $lagQb->method('andWhere')->willReturnSelf();
-        $lagQb->method('setParameter')->willReturnSelf();
-        $lagQb->method('getQuery')->willReturn($lagQuery);
+        $this->assertSame(1, $battle->getCurrentRound());
+    }
 
-        $stillQb = $this->createMock(QueryBuilder::class);
-        $stillQb->method('select')->willReturnSelf();
-        $stillQb->method('from')->willReturnSelf();
-        $stillQb->method('where')->willReturnSelf();
-        $stillQb->method('andWhere')->willReturnSelf();
-        $stillQb->method('setParameter')->willReturnSelf();
-        $stillQb->method('getQuery')->willReturn($stillQuery);
+    public function testLockFailurePropagatesWithoutMarkingBattleStalled(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->once())->method('beginTransaction');
+        $em->expects($this->once())->method('find')->willThrowException(new \RuntimeException('lock unavailable'));
+        $em->expects($this->once())->method('rollback');
+        $em->expects($this->never())->method('flush');
+        $em->expects($this->never())->method('commit');
 
-        $em->method('createQueryBuilder')->willReturnOnConsecutiveCalls($lagQb, $stillQb);
+        $this->expectExceptionMessage('lock unavailable');
+        $this->handler($em, $this->createStub(CombatEngine::class))->process(42, 1);
+    }
+
+    public function testLegacyMessageDelegatesToCohortBatch(): void
+    {
+        $battle = $this->makeBattle(BattleStatus::Simulating, 53);
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('find')->willReturn($battle);
+        $processor = $this->createMock(CombatWaveProcessor::class);
+        $processor->expects($this->once())->method('process')
+            ->with($this->callback(static fn (CombatWave $message): bool => 7 === $message->getKingdomId()
+                && $message->getScheduledAt() == $battle->getScheduledAt()));
+
+        (new ProcessCombatRoundHandler($em, $processor))(new ProcessCombatRound(42, 54));
+    }
+
+    public function testLegacyMessageDoesNotRestartCompletedBattle(): void
+    {
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('find')->willReturn($this->makeBattle(BattleStatus::Completed, 54));
+        $processor = $this->createMock(CombatWaveProcessor::class);
+        $processor->expects($this->never())->method('process');
+
+        (new ProcessCombatRoundHandler($em, $processor))(new ProcessCombatRound(42, 54));
     }
 
     private function makeBattle(

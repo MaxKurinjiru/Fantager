@@ -205,7 +205,6 @@ class FriendlyMatchResolutionService
 
     /**
      * Complete all side-effects after the battle simulation finishes.
-     * Called from ProcessCombatRoundHandler when a Friendly-type battle is done.
      */
     public function completeBattle(Battle $battle): void
     {

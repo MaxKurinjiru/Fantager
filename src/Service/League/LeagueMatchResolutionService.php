@@ -120,6 +120,26 @@ class LeagueMatchResolutionService
      */
     public function resolveFixture(LeagueFixture $fixture, \DateTimeImmutable $processedAt): array
     {
+        $existingBattle = $fixture->getBattle();
+        if (null !== $existingBattle) {
+            if (BattleStatus::Stalled === $existingBattle->getStatus()) {
+                throw new \RuntimeException(sprintf('Battle %d is stalled. Resume it after fixing its recorded error.', $existingBattle->getId()));
+            }
+            if (BattleStatus::Simulating === $existingBattle->getStatus()) {
+                $this->dispatchCohortWave($fixture, $processedAt);
+            }
+
+            return [
+                'fixture_id' => $fixture->getId(),
+                'home_team_id' => $fixture->getHomeTeam()->getId(),
+                'away_team_id' => $fixture->getAwayTeam()->getId(),
+                'home_score' => $existingBattle->getScoreA(),
+                'away_score' => $existingBattle->getScoreB(),
+                'is_forfeit' => 'forfeit' === ($existingBattle->getCombatLog()['simulator'] ?? null),
+                'battle_id' => $existingBattle->getId(),
+            ];
+        }
+
         $forfeitOutcome = $this->resolveForfeitOutcome($fixture);
 
         if (null !== $forfeitOutcome) {
@@ -236,33 +256,7 @@ class LeagueMatchResolutionService
 
         $this->em->flush();
 
-        // Check if cohort initialization is complete
-        $totalScheduledFixtures = (int) $this->em->createQueryBuilder()
-            ->select('COUNT(f.id)')
-            ->from(LeagueFixture::class, 'f')
-            ->join('f.group', 'g')
-            ->join('g.tier', 't')
-            ->join('t.season', 's')
-            ->where('s.kingdom = :kingdom')
-            ->andWhere('f.scheduledAt = :scheduledAt')
-            ->setParameter('kingdom', $homeTeam->getKingdom())
-            ->setParameter('scheduledAt', $processedAt)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        $initializedBattles = (int) $this->em->createQueryBuilder()
-            ->select('COUNT(b.id)')
-            ->from(Battle::class, 'b')
-            ->where('b.kingdom = :kingdom')
-            ->andWhere('b.scheduledAt = :scheduledAt')
-            ->setParameter('kingdom', $homeTeam->getKingdom())
-            ->setParameter('scheduledAt', $processedAt)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        if ($totalScheduledFixtures === $initializedBattles) {
-            $this->messageBus->dispatch(new \App\Message\CombatWave((int) $homeTeam->getKingdom()->getId(), $processedAt, 1));
-        }
+        $this->dispatchCohortWave($fixture, $processedAt);
 
         return [
             'fixture_id' => $fixture->getId(),
@@ -273,6 +267,55 @@ class LeagueMatchResolutionService
             'is_forfeit' => false,
             'battle_id' => $battle->getId(),
         ];
+    }
+
+    private function dispatchCohortWave(LeagueFixture $fixture, \DateTimeImmutable $processedAt): void
+    {
+        $kingdom = $fixture->getHomeTeam()->getKingdom();
+        $totalScheduledFixtures = (int) $this->em->createQueryBuilder()
+            ->select('COUNT(f.id)')
+            ->from(LeagueFixture::class, 'f')
+            ->join('f.group', 'g')
+            ->join('g.tier', 't')
+            ->join('t.season', 's')
+            ->where('s.kingdom = :kingdom')
+            ->andWhere('f.scheduledAt = :scheduledAt')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('scheduledAt', $processedAt)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $initializedBattles = (int) $this->em->createQueryBuilder()
+            ->select('COUNT(f.id)')
+            ->from(LeagueFixture::class, 'f')
+            ->join('f.battle', 'b')
+            ->where('b.kingdom = :kingdom')
+            ->andWhere('b.scheduledAt = :scheduledAt')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('scheduledAt', $processedAt)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        if ($totalScheduledFixtures !== $initializedBattles) {
+            return;
+        }
+
+        $currentRound = $this->em->createQueryBuilder()
+            ->select('MIN(b.currentRound)')
+            ->from(LeagueFixture::class, 'f')
+            ->join('f.battle', 'b')
+            ->where('b.kingdom = :kingdom')
+            ->andWhere('b.scheduledAt = :scheduledAt')
+            ->andWhere('b.status = :status')
+            ->setParameter('kingdom', $kingdom)
+            ->setParameter('scheduledAt', $processedAt)
+            ->setParameter('status', BattleStatus::Simulating)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        if (null !== $currentRound) {
+            $this->messageBus->dispatch(new \App\Message\CombatWave((int) $kingdom->getId(), $processedAt, (int) $currentRound + 1));
+        }
     }
 
     public function completeBattle(Battle $battle): void

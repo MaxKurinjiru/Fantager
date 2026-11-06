@@ -142,6 +142,7 @@ For each active Kingdom:
 - `--dry-run` counts ticks that would be scheduled and does not persist, recover stale ticks, or dispatch workers.
 - `--sync` executes pending ticks in-process (`KingdomTickRunnerService::processPendingTicksSynchronously`) instead of Messenger. `--dry-run` and `--sync` cannot be combined.
 - A blocked tick (failed / stuck dispatched or processing) **skips that kingdom and the command exits 1**. Reset failed logs with `app:ticks:retry --kingdom-id=` after the cause is fixed, then run `app:ticks:run` again.
+- Automatic stale-worker recovery leaves `processing` ticks linked to `simulating` or `stalled` battles unchanged. These ticks wait for combat completion or explicit combat recovery, not another kickoff.
 - `app:ticks:status` prints counts, last completed, oldest pending, blocked tick, and Messenger queue depth (exit 1 if blocked or failed). `--json` for scripts. `app:kingdom:diagnose` is the heavier economic/roster audit (`--json`, exit 1 on failed ticks or understaffed teams).
 
 ```bash
@@ -153,7 +154,7 @@ docker exec -u apache fantager-web composer messenger
 bash scripts/simulate-kingdom.sh --init --seasons=8 -o /tmp/seasons.jsonl
 ```
 
-This changes live game state, not just a preview. Finish processing the existing tick pipeline before advancing again: pending/dispatched ticks are not the base for `--advance`, so repeating it before completion does not reliably add another week. The command schedules work; Messenger workers still execute it. The `composer messenger` shortcut exits after 3000 messages and may need restarting to finish a large advance. These overrides do not change the application's real-world clock.
+This changes live game state, not just a preview. Finish processing the existing tick pipeline before advancing again: pending/dispatched ticks are not the base for `--advance`, so repeating it before completion does not reliably add another week. The command schedules work; Messenger workers still execute it. The `composer messenger` shortcut disables Composer's process timeout, exits after 2000 messages, and may need restarting to finish a large advance. These overrides do not change the application's real-world clock.
 
 Operator loop: `app:kingdom:simulate:advance` (one week) then `app:kingdom:simulate:process` until idle (exit 0). The shell wrapper is `scripts/simulate-kingdom.sh`. Do not use `--sync` — league matches stay `processing` until Messenger finishes the battle. Do not keep one PHP process running for many seasons. Usage: [local-setup.md](../guides/local-setup.md#multi-season-balance--npc-simulation).
 
@@ -203,6 +204,7 @@ This architecture guarantees:
 
 We configure a single asynchronous queue transport in `config/packages/messenger.yaml`:
 - **`async`**: All messages (`ExecuteSingleTickMessage`, `CombatWave`, `ProcessCombatRound`, email notifications, etc.) are routed to a single processing queue.
+- **Combat batching**: `CombatWave` directly processes up to 10 lockstep waves or a soft 2-second work budget, then sends one continuation. `ProcessCombatRound` remains routed only for compatibility with old queued messages. Match ticks remain `processing` until post-match completion, so dependent tick groups remain blocked regardless of queue order. See [combat-system.md](combat-system.md#wave-based-messenger-orchestration).
 - **Processing Order**: Processing is strictly governed by scheduled execution time (`available_at` ASC), ensuring older records and scheduled ticks are processed first.
 - **Queue Halting on Failure**: With `retry_strategy.max_retries = 0` and handlers re-throwing unhandled exceptions (after persisting the failure status/stack trace in DB), any message failure immediately halts the Messenger worker process. No subsequent messages in the queue will be processed until the failed state or record is repaired.
 

@@ -119,7 +119,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $sideB = new \App\ValueObject\Combat\CombatSide(2, 102, \App\Enum\FormationApproach::Balanced, $this->buildCombatants(200));
         $realRequest = new \App\ValueObject\Combat\CombatMatchRequest($sideA, $sideB, MatchType::League, 42);
         $this->requestBuilder->method('fromFormations')->willReturn($realRequest);
-        
+
         $this->combatEngine->method('initializeRunState')->willReturn([
             'seed' => 42,
             'status' => 'simulating',
@@ -127,8 +127,8 @@ class LeagueMatchResolutionServiceTest extends TestCase
         ]);
 
         $mockQuery = $this->createMock(\Doctrine\ORM\Query::class);
-        $mockQuery->method('getSingleScalarResult')->willReturn(1);
-        
+        $mockQuery->method('getSingleScalarResult')->willReturnOnConsecutiveCalls(1, 1, 0);
+
         $mockQb = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
         $mockQb->method('select')->willReturnSelf();
         $mockQb->method('from')->willReturnSelf();
@@ -155,7 +155,7 @@ class LeagueMatchResolutionServiceTest extends TestCase
         $this->assertSame(\App\Enum\BattleStatus::Simulating, $calledBattle->getStatus());
         $this->assertSame(0, $calledBattle->getScoreA());
         $this->assertSame(0, $calledBattle->getScoreB());
-        
+
         $this->assertSame(0, $result['home_score']);
         $this->assertSame(0, $result['away_score']);
         $this->assertFalse($result['is_forfeit']);
@@ -201,6 +201,79 @@ class LeagueMatchResolutionServiceTest extends TestCase
 
         $this->assertFalse($result['is_forfeit']);
         $this->assertSame(0, $result['home_score']);
+    }
+
+    public function testRetryResumesExistingBattleAtSavedCohortRound(): void
+    {
+        [$fixture] = $this->createFixtureContext();
+        $battle = new Battle();
+        $battle->setStatus(\App\Enum\BattleStatus::Simulating);
+        $battle->setCurrentRound(53);
+        $fixture->setBattle($battle);
+        $fixture->setStatus(LeagueFixtureStatus::InProgress);
+
+        $this->matchLineupService->expects($this->never())->method('canField');
+        $this->requestBuilder->expects($this->never())->method('fromFormations');
+        $this->combatEngine->expects($this->never())->method('initializeRunState');
+        $this->em->expects($this->never())->method('persist');
+        $this->fixtureCompletionService->expects($this->never())->method('complete');
+
+        $query = $this->createMock(\Doctrine\ORM\Query::class);
+        $query->method('getSingleScalarResult')->willReturnOnConsecutiveCalls(30, 30, 53);
+        $queryBuilder = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $queryBuilder->method('select')->willReturnSelf();
+        $queryBuilder->method('from')->willReturnSelf();
+        $queryBuilder->method('join')->willReturnSelf();
+        $queryBuilder->method('where')->willReturnSelf();
+        $queryBuilder->method('andWhere')->willReturnSelf();
+        $queryBuilder->method('setParameter')->willReturnSelf();
+        $queryBuilder->method('getQuery')->willReturn($query);
+        $this->em->method('createQueryBuilder')->willReturn($queryBuilder);
+        $this->messageBus->expects($this->once())->method('dispatch')
+            ->with($this->callback(static fn ($message): bool => $message instanceof \App\Message\CombatWave && 54 === $message->getRound()))
+            ->willReturn(new \Symfony\Component\Messenger\Envelope(new \stdClass()));
+
+        $this->service->resolveFixture($fixture, $fixture->getScheduledAt());
+
+        $this->assertSame($battle, $fixture->getBattle());
+        $this->assertSame(53, $battle->getCurrentRound());
+    }
+
+    public function testRetryDoesNotRepeatCompletedFixtureSideEffects(): void
+    {
+        [$fixture] = $this->createFixtureContext();
+        $battle = new Battle();
+        $battle->setStatus(\App\Enum\BattleStatus::Completed);
+        $battle->setScoreA(3);
+        $battle->setScoreB(1);
+        $fixture->setBattle($battle);
+        $fixture->setStatus(LeagueFixtureStatus::Completed);
+        $this->matchLineupService->expects($this->never())->method('canField');
+        $this->em->expects($this->never())->method('persist');
+        $this->em->expects($this->never())->method('createQueryBuilder');
+        $this->messageBus->expects($this->never())->method('dispatch');
+        $this->fanClubService->expects($this->never())->method('applyFixtureResult');
+        $this->fixtureCompletionService->expects($this->never())->method('complete');
+
+        $result = $this->service->resolveFixture($fixture, $fixture->getScheduledAt());
+
+        $this->assertSame(3, $result['home_score']);
+        $this->assertSame(1, $result['away_score']);
+    }
+
+    public function testRetryRejectsStalledBattleWithoutReplacingIt(): void
+    {
+        [$fixture] = $this->createFixtureContext();
+        $battle = new Battle();
+        $battle->setStatus(\App\Enum\BattleStatus::Stalled);
+        $fixture->setBattle($battle);
+        $this->em->expects($this->never())->method('persist');
+        $this->messageBus->expects($this->never())->method('dispatch');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('is stalled');
+
+        $this->service->resolveFixture($fixture, $fixture->getScheduledAt());
     }
 
     public function testCompleteBattleRunsPostMatchSideEffects(): void

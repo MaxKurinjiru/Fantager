@@ -7,6 +7,7 @@ namespace App\Repository\Kingdom;
 use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Kingdom\KingdomTickLog;
+use App\Enum\BattleStatus;
 use App\Enum\TickType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -185,6 +186,12 @@ class KingdomTickLogRepository extends ServiceEntityRepository
 
         $recoveredCount = 0;
         foreach ($staleTicks as $tick) {
+            $battle = $tick->getFixture()?->getBattle() ?? $tick->getFriendlyMatch()?->getBattle();
+            if ('processing' === $tick->getStatus() && null !== $battle
+                && in_array($battle->getStatus(), [BattleStatus::Simulating, BattleStatus::Stalled], true)) {
+                continue;
+            }
+
             $newRetryCount = $tick->getRetryCount() + 1;
             $tick->setRetryCount($newRetryCount);
             $tick->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));

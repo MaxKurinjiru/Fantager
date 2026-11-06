@@ -2,7 +2,8 @@ framework:
     messenger:
         # Doctrine transport — stores messages in the messenger_messages table in MariaDB.
         # No Redis or RabbitMQ needed. The table is created automatically on first use.
-        # Single queue transport: processed strictly in order of scheduled execution time (available_at ASC, oldest first).
+        # Shared queue; dependent game ticks are gated by persisted tick status.
+        # CombatWave processes bounded batches; ProcessCombatRound handles legacy queued messages only.
         transports:
             async:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'

@@ -237,12 +237,11 @@ class ExecuteSingleTickHandler
 
             case TickType::LeagueMatch:
                 if (null !== $fixture) {
-                    // NPC tactics simulation for both teams
-                    $this->npcSimulationService->simulateTactics($kingdom, $scheduledAt, $fixture->getHomeTeam());
-                    $this->npcSimulationService->simulateTactics($kingdom, $scheduledAt, $fixture->getAwayTeam());
-
-                    // Arena revenue and match resolution (temp formations cleaned in LeagueFixtureCompletionService)
-                    $this->arenaRevenueService->payFixtureRevenue($fixture);
+                    if (null === $fixture->getBattle()) {
+                        $this->npcSimulationService->simulateTactics($kingdom, $scheduledAt, $fixture->getHomeTeam());
+                        $this->npcSimulationService->simulateTactics($kingdom, $scheduledAt, $fixture->getAwayTeam());
+                        $this->arenaRevenueService->payFixtureRevenue($fixture);
+                    }
                     $this->leagueMatchResolutionService->resolveFixture($fixture, $scheduledAt);
 
                     $this->logger->debug(sprintf('Processed league match tick for fixture ID %d', $fixture->getId()));

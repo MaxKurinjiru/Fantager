@@ -2,10 +2,10 @@
 
 Reference: [product/overview.md](../product/overview.md#combat)
 
-Status: Live (automated engine + post-match replay)  
-Screens: [12-combat-battle.md](../screens/12-combat-battle.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Formulas: [combat-formulas.md](combat-formulas.md)  
-Open design: none  
+Status: Live (automated engine + post-match replay)
+Screens: [12-combat-battle.md](../screens/12-combat-battle.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)
+Formulas: [combat-formulas.md](combat-formulas.md)
+Open design: none
 Lock: [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)
 
 Purpose: Live combat contract — eligibility, scoring, hex layout, simulation / `combat_log`, formation AI, post-match boundary. Derived stats live in [combat-formulas.md](combat-formulas.md). Later product decisions (home-advantage): [known-issues.md](../product/known-issues.md) § Later product decisions. Mana pool: [combat-formulas.md](combat-formulas.md#mana-pool). Simulate is **Cut** — [Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate).
@@ -146,7 +146,7 @@ Align PHP value objects and Messenger orchestration with this section; do not in
 | Layer | Responsibility |
 |-------|----------------|
 | League match tick / cohort starter | Eligibility + forfeit; create `Battle` + persisted run state for each non-forfeit fixture at `scheduledAt`; start wave orchestration (see [Wave-based Messenger orchestration](#wave-based-messenger-orchestration)). |
-| `CombatEngine` (per-round) | Pure **per-round** (and per-turn within a round) resolution via `ProcessCombatRound` — no Doctrine fixtures, no standings writes. Input: run state + round number; output: updated state + appended events. |
+| `CombatEngine` (per-round) | Pure **per-round** (and per-turn within a round) resolution called by `CombatRoundProcessor` inside a wave batch — no Doctrine fixtures, no standings writes. Input: run state + round number; output: updated state + appended events. |
 | `CombatEngine::simulate()` / `LeagueMatchSimulator` | One-shot helpers retained for **tests**; **live league path uses wave Messenger**, not a single `simulate()` call. Sandbox API is **Cut** ([Locked: no race synergy / no simulate](#locked-no-race-synergy--no-simulate)). |
 | Completion handler (`LeagueMatchResolutionService`) | When a battle reaches `match_end`: persist final scores/log, apply post-match side effects (standings, fan club, morale, chronicles, mastery, aging/graveyard, durability). |
 
@@ -199,7 +199,7 @@ MatchOutcome(homeScore, awayScore, isForfeit = false, combatLog = [], seed = nul
 
 ### Seed
 
-- League: deterministic from fixture context, e.g.  
+- League: deterministic from fixture context, e.g.
   `seed = hash_to_u32(fixtureId, seasonId?, scheduledAt timestamp, engineVersion)`.
 - Practice / sandbox (`POST /api/v1/combat/simulate`): **not live**. If a later sandbox ships, the client may pass `seed`, or the server picks random and **returns** it. Tests seed `CombatEngine::simulate()` directly.
 - Same request + seed + `engineVersion` ⇒ same scores and event stream.
@@ -216,9 +216,14 @@ A **cohort** = all non-forfeit battles created for the same kingdom + `scheduled
 | Concept | Detail |
 |---------|--------|
 | Cohort start | League match tick creates battles + run state, appends `match_start`, sets battles to `simulating`, dispatches `CombatWave(scheduledAt, round=1)` |
-| Wave N | Dispatch `ProcessCombatRound(battleId, N)` for every battle in the cohort with status `simulating` whose `current_round == N - 1` |
+| League tick retry | Reuses the fixture's existing battle without repeating kickoff or post-match side effects. Once all fixtures have linked battles, resumes at the lowest active saved round plus one; unlinked battles do not count toward initialization. Stalled battles require explicit operational resume. |
+| Wave N | `CombatWaveProcessor` directly calls `CombatRoundProcessor::process(battleId, N)` for each linked, `simulating` battle whose `current_round == N - 1`; no per-battle round messages are created |
+| Batch | One `CombatWave` handles up to 10 waves or a soft 2-second work budget, checked after each battle round. A partial wave is checkpointed normally; exactly one continuation is dispatched if active battles remain |
+| Cohort lock | A MariaDB connection-scoped advisory lock (`GET_LOCK` / `RELEASE_LOCK`) serializes a kingdom + kickoff across workers, without holding one transaction over the entire batch. An overlapping duplicate does no work |
+| Continuation / redelivery | The lowest persisted active `current_round` determines the next round, not the message's round hint. Partially completed waves and stale messages cannot skip a lagging battle. Unlinked battles are excluded |
 | Wave barrier | Wave **N + 1** may start only when every cohort battle that is still `simulating` has finished round N. **`stalled` and `completed` battles are ignored** by the barrier |
-| No wave timeout | Wall-clock timeouts are **not** used — they would break the intended lockstep. Progress relies on successful round handlers and on marking failures as `stalled` |
+| No wave timeout | A slow battle is never skipped because of elapsed time. The batch work budget only yields to a continuation; it does not advance the barrier or mark battles as failed |
+| Tick barrier | Match ticks stay `processing` until their battle and post-match effects complete. The kingdom orchestrator is invoked once per batch; any processing tick, including one linked to a stalled battle, still blocks dependent groups |
 | Max rounds | **`MAX_ROUNDS = 200`**. If neither side has a decisive kill-score outcome by then, force `match_end` (draw on kill scores, or current scores as-is) after round 200 |
 | Live UI | **Not required** for now. Partial logs may exist on disk for ops/debug; product UI is post-match replay only |
 
@@ -227,7 +232,7 @@ A **cohort** = all non-forfeit battles created for the same kingdom + `scheduled
 | Status | Meaning |
 |--------|---------|
 | `simulating` | Participates in waves; waiting for or processing the next round |
-| `stalled` | Failed a round handler (exception / poison). **Excluded from wave barrier** so other matches continue. Ops resume via `ResumeCombatService` |
+| `stalled` | Failed round processing (exception / poison). **Excluded from wave barrier** so other matches continue, but its match tick remains `processing`. Ops resume via `ResumeCombatService` |
 | `completed` | `match_end` applied; post-match side effects done |
 
 Persisted **run state** lives on `Battle.run_state` (JSON) plus columns `current_round`, `status`, and `scheduled_at`. The JSON must include at least: RNG state, combatant HP/status snapshots, accumulated events (also mirrored to `combat_log` on completion), scores, and engine status. Cohort key is `scheduledAt` + kingdom on the entity.
@@ -241,16 +246,27 @@ LeagueMatchTick(kingdom, scheduledAt)
   → Dispatch CombatWave(kingdom, scheduledAt, round=1)
 
 CombatWave(kingdom, scheduledAt, round=N)
-  → enqueue ProcessCombatRound(battleId, N) for each simulating battle at current_round N-1
-  → when barrier satisfied (all simulating battles finished round N):
-        if any simulating remain and N < 200 → Dispatch CombatWave(..., N+1)
-        else → nothing (completed/stalled only)
+  → acquire kingdom + scheduledAt advisory lock; overlapping duplicates return
+  → read linked simulating battle IDs and saved rounds (not full JSON logs)
+  → choose N = lowest saved active round + 1
+  → process round N for each battle still at N-1
+  → only after the whole active cohort reaches N, proceed to N+1
+  → repeat for up to 10 waves / soft 2-second budget, yielding even mid-wave
+  → if simulating battles remain, dispatch ONE CombatWave with saved progress
+  → invoke kingdom orchestrator (processing match ticks still block it)
+  → release advisory lock
 
-ProcessCombatRound(battleId, N)   // idempotent on (battleId, N)
-  → if already applied or status ≠ simulating → no-op ack
+CombatRoundProcessor::process(battleId, N)
+  → own transaction and battle write lock; require current_round == N-1
   → resolve round N (turns inside the round); append events; current_round = N
   → if match over (one side all KO, or N == 200) → CompleteBattle
-  → on failure → set status=stalled, store error; do not retry forever without ops
+  → commit checkpoint and clear managed entities to bound batch memory
+  → on failure → rollback, discard in-memory changes, reload checkpoint,
+       set status=stalled and store error; other battles continue
+
+ProcessCombatRound(battleId, N)   // legacy messages already in the queue
+  → locate the active battle's cohort and delegate to CombatWaveProcessor
+  → no new per-round messages; completed/stalled/missing battles are no-ops
 
 CompleteBattle(battleId)
   → finalize score + combat_log; fixture completed; post-match side effects
@@ -258,8 +274,11 @@ CompleteBattle(battleId)
 
 #### Isolation and resume (no timeout)
 
-- **Failure isolation:** a battle that throws in `ProcessCombatRound` becomes `stalled` and drops out of the barrier. Other matches keep advancing waves.
-- **Hung / lost messages without an error:** there is no wave timeout by design. Operational recovery is: inspect stuck `simulating` battles, mark `stalled` or re-dispatch the missing round, then call `ResumeCombatService::resume(battleId)`.
+- **Failure isolation:** a failed round or completion operation rolls back to its saved checkpoint before recording `stalled`. Other matches keep advancing in the same batch. Infrastructure failures that prevent saving the stall still propagate; they are not silently acknowledged.
+- **Hung / lost messages without an error:** there is no wave timeout by design. Inspect stuck `simulating` battles and re-dispatch a `CombatWave` for the cohort; it resumes at the lowest saved active round plus one. For a stalled battle, fix the cause and call `ResumeCombatService::resume(battleId)`.
+- **Delivery:** checkpoints commit before the continuation is sent. The current Messenger message is acknowledged only after the batch handler returns. A crash before continuation dispatch relies on Doctrine transport redelivery; if a message fails with retries disabled or is removed, explicitly re-dispatch the cohort wave. No atomic checkpoint/outbox guarantee is added.
+- **Deployment:** keep `ProcessCombatRound` routed to the existing `async` transport so already queued messages remain readable. Restart workers to load the new handlers; do not run old and new worker code concurrently. No new transport, schema migration, or queue purge is needed.
+- **Tick recovery:** a `processing` league or friendly tick linked to a `simulating` or `stalled` battle is not a stale kickoff worker. Automatic tick recovery leaves it unchanged; it must not restart the match because its rounds take longer than the worker timeout threshold.
 - **Resume after fix:** `ResumeCombatService::resume(battleId)` runs remaining rounds **solo** (sync loop) until `completed`, without re-joining the original cohort wave. On completion it calls `LeagueMatchResolutionService::completeBattle` when a `LeagueFixture` exists, otherwise `FriendlyMatchResolutionService::completeBattle` for a `FriendlyMatch`. This avoids barrier edge cases when the cohort has already moved on.
 
 #### Within a round
