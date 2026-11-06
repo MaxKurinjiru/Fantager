@@ -216,7 +216,7 @@ class ProcessCombatRoundHandlerTest extends TestCase
 
         $this->assertSame(BattleStatus::Stalled, $persistedBattle->getStatus());
         $this->assertSame(4, $persistedBattle->getCurrentRound());
-        $this->assertSame('simulating', $persistedBattle->getRunState()['status']);
+        $this->assertSame('simulating', $persistedBattle->getRunState()['status'] ?? null);
         $this->assertStringContainsString('completion failed', $persistedBattle->getRunState()['error']);
     }
 

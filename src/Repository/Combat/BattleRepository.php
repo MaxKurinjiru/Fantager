@@ -10,7 +10,6 @@ use App\Entity\League\LeagueFixture;
 use App\Enum\BattleStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<Battle>
@@ -27,7 +26,8 @@ class BattleRepository extends ServiceEntityRepository
      */
     public function findSimulatingCohortRounds(int $kingdomId, \DateTimeImmutable $scheduledAt): array
     {
-        return $this->createQueryBuilder('b')
+        /** @var list<array{id: int, currentRound: int}> $rounds */
+        $rounds = $this->createQueryBuilder('b')
             ->select('b.id', 'b.currentRound')
             ->where('b.kingdom = :kingdomId')
             ->andWhere('b.scheduledAt = :scheduledAt')
@@ -40,8 +40,10 @@ class BattleRepository extends ServiceEntityRepository
             ->setParameter('kingdomId', $kingdomId)
             ->setParameter('scheduledAt', $scheduledAt)
             ->setParameter('status', BattleStatus::Simulating)
-            ->orderBy('b.id', SortDirection::Ascending)
+            ->orderBy('b.id', \SortDirection::Ascending)
             ->getQuery()
             ->getArrayResult();
+
+        return $rounds;
     }
 }
