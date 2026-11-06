@@ -20,7 +20,7 @@ class KingdomTickLogRepositoryTest extends KernelTestCase
     {
         self::bootKernel();
         $container = self::getContainer();
-        
+
         /** @var \Doctrine\ORM\EntityManagerInterface $em */
         $em = $container->get('doctrine.orm.entity_manager');
         $this->em = $em;
@@ -62,6 +62,48 @@ class KingdomTickLogRepositoryTest extends KernelTestCase
 
         restore_exception_handler();
         parent::tearDown();
+    }
+
+    #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
+    public function testRecoveryLeavesAsynchronousBattleTicksProcessing(): void
+    {
+        $logs = [];
+        foreach ([\App\Enum\BattleStatus::Simulating, \App\Enum\BattleStatus::Stalled] as $status) {
+            $battle = new \App\Entity\Combat\Battle();
+            $battle->setStatus($status);
+            $fixture = new \App\Entity\League\LeagueFixture();
+            $fixture->setBattle($battle);
+            $friendlyMatch = new \App\Entity\FriendlyMatch\FriendlyMatch();
+            $friendlyMatch->setBattle($battle);
+
+            $leagueLog = new KingdomTickLog();
+            $leagueLog->setStatus('processing');
+            $leagueLog->setFixture($fixture);
+            $friendlyLog = new KingdomTickLog();
+            $friendlyLog->setStatus('processing');
+            $friendlyLog->setFriendlyMatch($friendlyMatch);
+            $logs[] = $leagueLog;
+            $logs[] = $friendlyLog;
+        }
+
+        $query = $this->createMock(\Doctrine\ORM\Query::class);
+        $query->method('getResult')->willReturn($logs);
+        $queryBuilder = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $queryBuilder->method('where')->willReturnSelf();
+        $queryBuilder->method('andWhere')->willReturnSelf();
+        $queryBuilder->method('setParameter')->willReturnSelf();
+        $queryBuilder->method('getQuery')->willReturn($query);
+        $repository = $this->getMockBuilder(KingdomTickLogRepository::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['createQueryBuilder'])
+            ->getMock();
+        $repository->method('createQueryBuilder')->willReturn($queryBuilder);
+
+        $this->assertSame(0, $repository->recoverStaleTicks(new Kingdom(), new \DateTimeImmutable('-5 minutes')));
+        foreach ($logs as $log) {
+            $this->assertSame('processing', $log->getStatus());
+            $this->assertSame(0, $log->getRetryCount());
+        }
     }
 
     public function testRecoverStaleTicks(): void
