@@ -26,6 +26,37 @@ use Symfony\Component\Console\Tester\CommandTester;
 #[AllowMockObjectsWithoutExpectations]
 class ProcessTicksCommandTest extends TestCase
 {
+    public function testHealthCheckFailureDoesNotPreventTickScheduling(): void
+    {
+        $kingdom = (new Kingdom())->setName('Health test');
+        (new \ReflectionProperty(Kingdom::class, 'id'))->setValue($kingdom, 1);
+        $kingdoms = $this->createStub(KingdomRepository::class);
+        $kingdoms->method('findAll')->willReturn([$kingdom]);
+        $runner = $this->createMock(KingdomTickRunnerService::class);
+        $runner->expects($this->once())->method('schedulePendingTicks')->willReturn(1);
+        $orchestrator = $this->createMock(KingdomTickOrchestrator::class);
+        $orchestrator->expects($this->once())->method('orchestrate')->with($kingdom);
+        $monitor = $this->createMock(\App\Service\Calendar\TickHealthMonitor::class);
+        $monitor->expects($this->once())->method('checkQueue')->willThrowException(new \RuntimeException('Queue unavailable'));
+        $monitor->expects($this->once())->method('checkKingdom')->with($kingdom);
+        $tester = new CommandTester(new ProcessTicksCommand($kingdoms, $runner, $orchestrator, $this->createStub(KingdomTickLogRepository::class), $monitor));
+
+        self::assertSame(1, $tester->execute([]));
+        self::assertStringContainsString('Queue health check failed', $tester->getDisplay());
+    }
+
+    public function testDryRunDoesNotEmitHealthAlerts(): void
+    {
+        $kingdoms = $this->createStub(KingdomRepository::class);
+        $kingdoms->method('findAll')->willReturn([]);
+        $monitor = $this->createMock(\App\Service\Calendar\TickHealthMonitor::class);
+        $monitor->expects($this->never())->method('checkQueue');
+        $monitor->expects($this->never())->method('checkKingdom');
+        $tester = new CommandTester(new ProcessTicksCommand($kingdoms, $this->createStub(KingdomTickRunnerService::class), $this->createStub(KingdomTickOrchestrator::class), $this->createStub(KingdomTickLogRepository::class), $monitor));
+
+        self::assertSame(0, $tester->execute(['--dry-run' => true]));
+    }
+
     public function testSchedulesOnlyMatchingTickTypesForEachOccurrence(): void
     {
         $kingdom = new Kingdom();
@@ -313,6 +344,33 @@ class ProcessTicksCommandTest extends TestCase
 
         $this->assertSame(1, $tester->execute([]));
         $this->assertStringContainsString('blocked tick', $tester->getDisplay());
+    }
+
+    /** @param array<string, bool> $options */
+    #[DataProvider('blockedCombatRecoveryModes')]
+    public function testBlockedProcessingRequestsRecoveryOnlyInAsyncMode(array $options, bool $recover): void
+    {
+        $kingdom = (new Kingdom())->setName('Test Kingdom');
+        (new \ReflectionProperty(Kingdom::class, 'id'))->setValue($kingdom, 1);
+        $blocked = (new KingdomTickLog())->setTickType(TickType::FriendlyMatch)->setStatus('processing');
+        (new \ReflectionProperty(KingdomTickLog::class, 'id'))->setValue($blocked, 9);
+        $kingdoms = $this->createMock(KingdomRepository::class);
+        $kingdoms->method('findAll')->willReturn([$kingdom]);
+        $runner = $this->createMock(KingdomTickRunnerService::class);
+        $runner->method('findBlockedTick')->willReturn($blocked);
+        $orchestrator = $this->createMock(KingdomTickOrchestrator::class);
+        $orchestrator->expects($recover ? $this->once() : $this->never())->method('recoverCombatContinuation')->with($kingdom);
+        $command = new ProcessTicksCommand($kingdoms, $runner, $orchestrator, $this->createMock(KingdomTickLogRepository::class));
+
+        self::assertSame(1, (new CommandTester($command))->execute($options));
+    }
+
+    /** @return iterable<string, array{array<string, bool>, bool}> */
+    public static function blockedCombatRecoveryModes(): iterable
+    {
+        yield 'async' => [[], true];
+        yield 'dry run' => [['--dry-run' => true], false];
+        yield 'sync' => [['--sync' => true], false];
     }
 
     public function testSyncProcessesPendingWithoutOrchestrator(): void

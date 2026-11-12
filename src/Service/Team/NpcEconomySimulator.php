@@ -35,6 +35,18 @@ class NpcEconomySimulator
 {
     use NpcSimulationHelperTrait;
 
+    /** Lineup of 6 plus a short bench. Summon below this; sell only the surplus above it. */
+    private const NPC_COMBATANT_KEEP = 8;
+
+    /** Buy / keep a combatant only when the candidate is at least this times the baseline rating. */
+    private const NPC_UPGRADE_RATIO = 1.10;
+
+    /** Keep a negative-trait combatant who is clearly above team median. */
+    private const NPC_KEEP_STAR_RATIO = 1.25;
+
+    /** Recycle-dismiss only when the worst bench hero is below this share of median. */
+    private const NPC_DISMISS_WEAK_RATIO = 0.75;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly SummoningService $summoningService,
@@ -129,6 +141,17 @@ class NpcEconomySimulator
                     continue;
                 }
 
+                $otherCombatants = [];
+                foreach ($aliveHeroes as $h) {
+                    if ($h->isCombatant() && $h->getId() !== $heroId) {
+                        $otherCombatants[] = $h;
+                    }
+                }
+                $median = $this->medianNpcValue($otherCombatants);
+                if ($median > 0 && $this->npcValueMeets($this->npcValue($hero), $median, self::NPC_KEEP_STAR_RATIO)) {
+                    continue;
+                }
+
                 // Check if they have a high enough stat to qualify as a trainer candidate.
                 // Instead of a fixed value, we compute the threshold dynamically as 75% of the team's highest combatant stat (min 5.0).
                 $teamMaxStat = 0;
@@ -173,7 +196,8 @@ class NpcEconomySimulator
 
                     $trainerLimit = $this->trainingService->getTrainerLimit($team);
 
-                    if ($trainersCount < $trainerLimit) {
+                    // Do not fill HQ trainer cap internally — leave buy slots for the market.
+                    if (0 === $trainersCount && $trainersCount < $trainerLimit) {
                         try {
                             // Use shared applyTrainerPromotion() to ensure chronicle entry (trainer_promoted)
                             // is recorded identically to the player-facing promotion path.
@@ -208,9 +232,9 @@ class NpcEconomySimulator
                 }
             }
 
-            // 0b. Recycle Roster: If roster is full and we have at least 1 hero listed for sale,
-            // dismiss the worst available combatant to make room for a new summon.
-            if ($combatantCount >= $rosterLimit && $sellingCount >= 1) {
+            // 0b. Recycle Roster: only when the team is above the keep floor, the roster is
+            // full, and at least one hero is already listed — do not churn the starting 8.
+            if ($combatantCount > self::NPC_COMBATANT_KEEP && $combatantCount >= $rosterLimit && $sellingCount >= 1) {
                 $summonStatus = $this->summoningService->getStatus($team);
                 if ($team->getGold() >= ($summonStatus['gold_cost'] + 150)) {
                     // Find active formation hero IDs to avoid dismissing active combatants
@@ -249,35 +273,35 @@ class NpcEconomySimulator
                     }
 
                     if (\count($dismissalCandidates) > 0) {
-                        // Score candidates by sum of raw attributes (lowest is worst)
-                        usort($dismissalCandidates, static function (Hero $a, Hero $b): int {
-                            $scoreA = $a->getStrRaw() + $a->getDexRaw() + $a->getKonRaw() + $a->getSpdRaw()
-                                + $a->getIntelRaw() + $a->getWilRaw() + $a->getChaRaw() + $a->getLckRaw();
-                            $scoreB = $b->getStrRaw() + $b->getDexRaw() + $b->getKonRaw() + $b->getSpdRaw()
-                                + $b->getIntelRaw() + $b->getWilRaw() + $b->getChaRaw() + $b->getLckRaw();
-
-                            return $scoreA <=> $scoreB;
-                        });
-
+                        $dismissalCandidates = array_reverse($this->sortHeroesByNpcValueDesc($dismissalCandidates));
                         $worstHero = $dismissalCandidates[0];
-                        try {
-                            $this->dismissalService->dismiss($team, $worstHero);
-                            // Refresh hero list and count
-                            $aliveHeroes = array_filter($aliveHeroes, static fn (Hero $h) => $h->getId() !== $worstHero->getId());
-                            $heroCount = \count($aliveHeroes);
-                            --$combatantCount;
-                        } catch (\Throwable) {
-                            // Dismissal failed, ignore
+                        $combatantsForMedian = [];
+                        foreach ($aliveHeroes as $h) {
+                            if ($h->isCombatant()) {
+                                $combatantsForMedian[] = $h;
+                            }
+                        }
+                        $median = $this->medianNpcValue($combatantsForMedian);
+                        $tooCloseToMedian = $median > 0
+                            && $this->npcValueMeets($this->npcValue($worstHero), $median, self::NPC_DISMISS_WEAK_RATIO);
+
+                        if (!$tooCloseToMedian) {
+                            try {
+                                $this->dismissalService->dismiss($team, $worstHero);
+                                // Refresh hero list and count
+                                $aliveHeroes = array_filter($aliveHeroes, static fn (Hero $h) => $h->getId() !== $worstHero->getId());
+                                $heroCount = \count($aliveHeroes);
+                                --$combatantCount;
+                            } catch (\Throwable) {
+                                // Dismissal failed, ignore
+                            }
                         }
                     }
                 }
             }
 
-            // 1. Summoning
-            // NPC teams keep summoning to train and sell up to roster limit whenever they have space
-            $summonThreshold = $rosterLimit - 1;
-
-            if ($combatantCount <= $summonThreshold) {
+            // 1. Summoning — refill only when below the keep floor (not up to rosterLimit - 1).
+            if ($combatantCount < self::NPC_COMBATANT_KEEP) {
                 $summonStatus = $this->summoningService->getStatus($team);
                 if ($summonStatus['available'] && $team->getGold() >= ($summonStatus['gold_cost'] + 150)) {
                     try {
@@ -327,7 +351,10 @@ class NpcEconomySimulator
                 ->getQuery()
                 ->getResult();
 
-            $heroCount = \count($aliveHeroes);
+            $liveTrainerCount = $this->countLiveTrainers($aliveHeroes);
+            $liveCombatantCount = $this->countLiveCombatants($aliveHeroes);
+            $trainerLimit = $this->trainingService->getTrainerLimit($team);
+            $trainerTarget = $this->getNpcTrainerTarget($role, $trainerLimit);
 
             // HQ reference for safety reserve
             $hq = $this->hqService->getForTeam($team);
@@ -450,8 +477,16 @@ class NpcEconomySimulator
                 }
             }
 
-            // Selling surplus/trained heroes and redundant trainers (processed separately)
-            if ($heroCount >= 10) {
+            // Selling surplus combatants (above keep floor) and trainers above the role target.
+            $availableCombatantCount = 0;
+            foreach ($aliveHeroes as $h) {
+                if ($h->isCombatant() && HeroStatus::Available === $h->getStatus()) {
+                    ++$availableCombatantCount;
+                }
+            }
+            $combatantSurplus = max(0, $availableCombatantCount - self::NPC_COMBATANT_KEEP);
+            $trainerSurplus = max(0, $liveTrainerCount - $trainerTarget);
+            if ($combatantSurplus > 0 || $trainerSurplus > 0) {
                 // Find candidates who are available and not in active formations
                 $activeFormations = $this->em->getRepository(Formation::class)->findBy(['team' => $team]);
                 $activeHeroIds = [];
@@ -496,31 +531,62 @@ class NpcEconomySimulator
                 }
 
                 $theme = $this->summoningService->getArenaRaceTheme($team);
+                $liveCombatants = [];
+                $liveTrainers = [];
+                foreach ($aliveHeroes as $h) {
+                    if ($h->isCombatant()) {
+                        $liveCombatants[] = $h;
+                    } elseif ($h->isTrainer()) {
+                        $liveTrainers[] = $h;
+                    }
+                }
+                $trainerFocuses = $this->npcTrainerFocusAttributes(
+                    $role,
+                    $this->tacticsSimulator->dominantLineupWeaponAttribute($team)
+                );
+                $protectedCombatantIds = $this->npcProtectedIds($liveCombatants, self::NPC_COMBATANT_KEEP);
+                $protectedTrainerIds = $this->npcProtectedTrainerIds($liveTrainers, $trainerTarget, $trainerFocuses);
 
-                // Sort combatants: prioritize those with negative traits and lower compatibility
+                $combatantCandidates = array_values(array_filter(
+                    $combatantCandidates,
+                    static fn (Hero $h): bool => null === $h->getId() || !isset($protectedCombatantIds[$h->getId()])
+                ));
+                $trainerCandidates = array_values(array_filter(
+                    $trainerCandidates,
+                    static fn (Hero $h): bool => null === $h->getId() || !isset($protectedTrainerIds[$h->getId()])
+                ));
+
+                // Sort remaining surplus: lowest rating first, then mixed negative traits, then race mismatch
                 usort($combatantCandidates, function (Hero $a, Hero $b) use ($theme): int {
+                    $valueCmp = $this->npcValue($a) <=> $this->npcValue($b);
+                    if (0 !== $valueCmp) {
+                        return $valueCmp;
+                    }
                     $hasNegA = 'negative' === $a->getTrait()?->getCategory();
                     $hasNegB = 'negative' === $b->getTrait()?->getCategory();
-
+                    $negCmp = ($hasNegB ? 1 : 0) <=> ($hasNegA ? 1 : 0);
+                    if (0 !== $negCmp) {
+                        return $negCmp;
+                    }
                     $relA = $theme ? $this->raceConfig->getRelationship($a->getRace(), $theme) : 100;
                     $relB = $theme ? $this->raceConfig->getRelationship($b->getRace(), $theme) : 100;
 
-                    $priorityA = ($hasNegA ? 100 : 0) + (100 - $relA);
-                    $priorityB = ($hasNegB ? 100 : 0) + (100 - $relB);
-
-                    return $priorityB <=> $priorityA;
+                    return $relA <=> $relB;
                 });
 
-                // Sort trainers: prioritize those with negative traits
-                usort($trainerCandidates, static function (Hero $a, Hero $b): int {
+                usort($trainerCandidates, function (Hero $a, Hero $b) use ($trainerFocuses): int {
+                    $valueCmp = $this->npcTrainerValue($a, $trainerFocuses) <=> $this->npcTrainerValue($b, $trainerFocuses);
+                    if (0 !== $valueCmp) {
+                        return $valueCmp;
+                    }
                     $hasNegA = 'negative' === $a->getTrait()?->getCategory();
                     $hasNegB = 'negative' === $b->getTrait()?->getCategory();
 
                     return ($hasNegB ? 1 : 0) <=> ($hasNegA ? 1 : 0);
                 });
 
-                // 1. Sell combatants up to limit
-                $heroSellLimit = $this->getHeroSellLimitForRole($role);
+                // 1. Sell combatants up to role limit and keep-floor surplus
+                $heroSellLimit = min($this->getHeroSellLimitForRole($role), $combatantSurplus);
                 $heroesSold = 0;
                 foreach ($combatantCandidates as $sellingHero) {
                     if ($heroesSold >= $heroSellLimit) {
@@ -547,8 +613,8 @@ class NpcEconomySimulator
                     }
                 }
 
-                // 2. Sell trainers up to limit
-                $trainerSellLimit = $this->getTrainerSellLimitForRole($role);
+                // 2. Sell trainers only above the role target (keep at least target live trainers)
+                $trainerSellLimit = min($this->getTrainerSellLimitForRole($role), $trainerSurplus);
                 $trainersSold = 0;
                 foreach ($trainerCandidates as $sellingTrainer) {
                     if ($trainersSold >= $trainerSellLimit) {
@@ -671,7 +737,54 @@ class NpcEconomySimulator
             usort($heroCandidates, $sortCandidates);
             usort($trainerCandidates, $sortCandidates);
 
-            // 1. Buy items that are useful upgrades for active lineup (capped by tier and spend budget)
+            $ownCombatants = [];
+            $ownTrainers = [];
+            foreach ($aliveHeroes as $h) {
+                if ($h->isCombatant()) {
+                    $ownCombatants[] = $h;
+                } elseif ($h->isTrainer()) {
+                    $ownTrainers[] = $h;
+                }
+            }
+            $trainerFocuses = $this->npcTrainerFocusAttributes(
+                $role,
+                $this->tacticsSimulator->dominantLineupWeaponAttribute($team)
+            );
+
+            // 1. Buy trainers first so item/hero spend-cap and HQ-cap do not starve trainer demand.
+            $trainerBuyLimit = $this->getTrainerBuyLimitForRole($role);
+            $trainerSlotsOpen = max(0, $trainerTarget - $liveTrainerCount);
+            $trainersBought = 0;
+            foreach ($trainerCandidates as $cand) {
+                if ($trainersBought >= $trainerBuyLimit || $trainersBought >= $trainerSlotsOpen) {
+                    break;
+                }
+                $listingTrainer = $cand['listing']->getHero();
+                if (null === $listingTrainer) {
+                    continue;
+                }
+                if (!$this->npcTrainerListingIsUseful($listingTrainer, $ownTrainers, $trainerFocuses)) {
+                    continue;
+                }
+                if ($cand['price'] > $perTickSpendCap || ($tickGoldSpent + $cand['price']) > $perTickSpendCap) {
+                    continue;
+                }
+                if ($team->getGold() >= ($safetyReserve + $cand['price'])) {
+                    $listingId = $cand['listing']->getId();
+                    if (null !== $listingId) {
+                        try {
+                            $this->marketplaceService->buyListing($team, $listingId, $now);
+                            $tickGoldSpent += $cand['price'];
+                            ++$trainersBought;
+                            ++$liveTrainerCount;
+                            $ownTrainers[] = $listingTrainer;
+                        } catch (\Throwable) {
+                        }
+                    }
+                }
+            }
+
+            // 2. Buy items that are useful upgrades for active lineup (capped by tier and spend budget)
             $itemBuyLimit = $this->getItemBuyLimitForTier($tierName);
             $itemsBought = 0;
             foreach ($itemCandidates as $cand) {
@@ -709,12 +822,39 @@ class NpcEconomySimulator
                 }
             }
 
-            // 2. Buy heroes up to limit
+            // 3. Buy heroes up to role limit, without growing past a small surplus over keep.
+            $heroBuyCap = self::NPC_COMBATANT_KEEP
+                + (NpcSimulationService::ROLE_MERCENARY_ACADEMY === $role ? 2 : 0);
             $heroBuyLimit = $this->getHeroBuyLimitForRole($role);
             $heroesBought = 0;
             foreach ($heroCandidates as $cand) {
                 if ($heroesBought >= $heroBuyLimit) {
                     break;
+                }
+                if ($liveCombatantCount >= $heroBuyCap) {
+                    break;
+                }
+                $listingHero = $cand['listing']->getHero();
+                if (null === $listingHero) {
+                    continue;
+                }
+                if ($liveCombatantCount >= self::NPC_COMBATANT_KEEP) {
+                    if (!$this->npcValueMeets(
+                        $this->npcValue($listingHero),
+                        $this->minNpcValue($ownCombatants),
+                        self::NPC_UPGRADE_RATIO
+                    )) {
+                        continue;
+                    }
+                } else {
+                    $combatantMedian = $this->medianNpcValue($ownCombatants);
+                    if ($combatantMedian > 0 && !$this->npcValueMeets(
+                        $this->npcValue($listingHero),
+                        $combatantMedian,
+                        self::NPC_DISMISS_WEAK_RATIO
+                    )) {
+                        continue;
+                    }
                 }
                 if ($cand['price'] > $perTickSpendCap || ($tickGoldSpent + $cand['price']) > $perTickSpendCap) {
                     continue;
@@ -726,29 +866,8 @@ class NpcEconomySimulator
                             $this->marketplaceService->buyListing($team, $listingId, $now);
                             $tickGoldSpent += $cand['price'];
                             ++$heroesBought;
-                        } catch (\Throwable) {
-                        }
-                    }
-                }
-            }
-
-            // 3. Buy trainers up to limit
-            $trainerBuyLimit = $this->getTrainerBuyLimitForRole($role);
-            $trainersBought = 0;
-            foreach ($trainerCandidates as $cand) {
-                if ($trainersBought >= $trainerBuyLimit) {
-                    break;
-                }
-                if ($cand['price'] > $perTickSpendCap || ($tickGoldSpent + $cand['price']) > $perTickSpendCap) {
-                    continue;
-                }
-                if ($team->getGold() >= ($safetyReserve + $cand['price'])) {
-                    $listingId = $cand['listing']->getId();
-                    if (null !== $listingId) {
-                        try {
-                            $this->marketplaceService->buyListing($team, $listingId, $now);
-                            $tickGoldSpent += $cand['price'];
-                            ++$trainersBought;
+                            ++$liveCombatantCount;
+                            $ownCombatants[] = $listingHero;
                         } catch (\Throwable) {
                         }
                     }

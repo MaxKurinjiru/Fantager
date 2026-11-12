@@ -2,8 +2,8 @@
 
 Reference: [product/overview.md](../product/overview.md#economy)
 
-Status: Live  
-Screens: [20-finance.md](../screens/20-finance.md), [02-team-dashboard.md](../screens/02-team-dashboard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
+Status: Live
+Screens: [20-finance.md](../screens/20-finance.md), [02-team-dashboard.md](../screens/02-team-dashboard.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)
 Open design: none
 
 Purpose: Document currencies, sinks/sources, anti-exploit measures and economic invariants. Later product decisions (diminishing returns): [known-issues.md](../product/known-issues.md) § Later product decisions.
@@ -71,7 +71,7 @@ Kingdom-level gold pool that collects fees and redistributes a capped share to a
 3. Credit each team via `EconomyService`; ledger type **`kingdom_reward`**
 4. Deduct distributed amount from `royal_treasury_gold`
 
-Runs as the **kingdom-scoped** WeeklyReset log **before** all team-scoped WeeklyReset ticks (maintenance, payroll, crisis) at the same timestamp — see [calendar-system.md](calendar-system.md). HQ maintenance collected later in this tick goes into next week's pool.
+Runs as the **kingdom-scoped** WeeklyReset log **before** all team-scoped WeeklyReset ticks (maintenance, payroll, crisis) at the same timestamp — see [calendar-system.md](calendar-system.md). Team weekly resets run one at a time; HQ maintenance collected later in this tick goes into next week's pool. Optimistic versioning on Kingdom and Team rejects conflicting treasury and team writes rather than silently losing an update. Asynchronous transactional ticks retry such conflicts up to three times. API requests return HTTP 409 instead of automatically retrying, and players should refresh and check the result before retrying; synchronous ticks are not automatically retried either. Some web operations perform multiple flushes, so an error does not guarantee that earlier side effects were rolled back. Other shared entities still require separate concurrency protection.
 
 **Arena ticket revenue** is multiplied by the kingdom's stored `economy_scale` and also applies home-lineup **Audience Favorite** bonuses (`+5%` per fielded hero with the trait) in `ArenaRevenueService`. Weekly HQ maintenance uses the same `economy_scale`.
 

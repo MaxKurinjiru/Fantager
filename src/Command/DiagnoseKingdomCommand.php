@@ -169,10 +169,11 @@ class DiagnoseKingdomCommand extends Command
 
         $conn = $this->em->getConnection();
         $sql = '
-            SELECT tick_type, status, COUNT(*) as cnt
-            FROM kingdom_tick_log
-            WHERE kingdom_id = :kingdomId
-            GROUP BY tick_type, status
+            SELECT event.tick_type, phase.status, COUNT(*) as cnt
+            FROM kingdom_tick_log phase
+            INNER JOIN kingdom_tick_event event ON event.id = phase.event_id
+            WHERE event.kingdom_id = :kingdomId
+            GROUP BY event.tick_type, phase.status
         ';
 
         $stmt = $conn->executeQuery($sql, ['kingdomId' => $kingdom->getId()]);
@@ -188,7 +189,7 @@ class DiagnoseKingdomCommand extends Command
 
         // Organize counts
         $ticks = [];
-        $statuses = ['pending', 'dispatched', 'processing', 'completed', 'failed'];
+        $statuses = ['pending', 'dispatched', 'processing', 'awaiting_combat', 'completed', 'failed'];
         foreach ($rows as $row) {
             $type = $row['tick_type'];
             if (!isset($ticks[$type])) {
@@ -200,7 +201,7 @@ class DiagnoseKingdomCommand extends Command
         $byType = [];
         if (!$asJson) {
             $table = new Table($io);
-            $table->setHeaders(['Tick Type', 'Pending', 'Dispatched', 'Processing', 'Completed', 'Failed', 'Total']);
+            $table->setHeaders(['Tick Type', 'Pending', 'Dispatched', 'Processing', 'Awaiting combat', 'Completed', 'Failed', 'Total']);
         }
 
         foreach ($ticks as $type => $statusCounts) {
@@ -212,6 +213,7 @@ class DiagnoseKingdomCommand extends Command
                     $statusCounts['pending'],
                     $statusCounts['dispatched'],
                     $statusCounts['processing'],
+                    $statusCounts['awaiting_combat'],
                     $statusCounts['completed'],
                     $statusCounts['failed'],
                     $total,
@@ -224,10 +226,11 @@ class DiagnoseKingdomCommand extends Command
 
         // Highlight failed ticks
         $failedSql = '
-            SELECT id, tick_type, scheduled_at, executed_at, error_message
-            FROM kingdom_tick_log
-            WHERE kingdom_id = :kingdomId AND status = \'failed\'
-            ORDER BY scheduled_at ASC
+            SELECT phase.id, event.tick_type, event.scheduled_at, phase.executed_at, phase.error_message
+            FROM kingdom_tick_log phase
+            INNER JOIN kingdom_tick_event event ON event.id = phase.event_id
+            WHERE event.kingdom_id = :kingdomId AND phase.status = \'failed\'
+            ORDER BY event.scheduled_at ASC
         ';
         $failedRows = $conn->executeQuery($failedSql, ['kingdomId' => $kingdom->getId()])->fetchAllAssociative();
 
@@ -262,7 +265,7 @@ class DiagnoseKingdomCommand extends Command
 
         $conn = $this->em->getConnection();
         $sql = '
-            SELECT 
+            SELECT
                 COUNT(id) as total_teams,
                 SUM(is_npc) as npc_teams,
                 SUM(CASE WHEN is_npc = 0 THEN 1 ELSE 0 END) as player_teams,
@@ -338,9 +341,9 @@ class DiagnoseKingdomCommand extends Command
 
         $conn = $this->em->getConnection();
         $sql = '
-            SELECT 
-                t.id as team_id, 
-                t.name as team_name, 
+            SELECT
+                t.id as team_id,
+                t.name as team_name,
                 t.is_npc as is_npc,
                 COUNT(CASE WHEN h.role = \'combatant\' THEN 1 END) as combatants_count,
                 COUNT(CASE WHEN h.role = \'trainer\' THEN 1 END) as trainers_count,
@@ -410,7 +413,7 @@ class DiagnoseKingdomCommand extends Command
 
         // Progression stats
         $progSql = '
-            SELECT 
+            SELECT
                 role,
                 COUNT(*) as count,
                 AVG(level) as avg_level,

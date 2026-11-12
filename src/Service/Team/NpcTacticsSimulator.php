@@ -579,6 +579,35 @@ class NpcTacticsSimulator
         };
     }
 
+    public function dominantLineupWeaponAttribute(Team $team): ?string
+    {
+        $formation = $this->em->getRepository(Formation::class)->findOneBy([
+            'team' => $team,
+            'isDefault' => true,
+            'isTemporary' => false,
+        ]);
+        if (null === $formation) {
+            return null;
+        }
+
+        $votes = [];
+        foreach ($formation->getSlots() as $slot) {
+            $hero = $slot->getHero();
+            if (null === $hero || $hero->isTrainer()) {
+                continue;
+            }
+            $attr = $this->attributeForWeapon($this->getPreferredWeaponSubType($hero));
+            $votes[$attr] = ($votes[$attr] ?? 0) + 1;
+        }
+        if ([] === $votes) {
+            return null;
+        }
+
+        arsort($votes);
+
+        return array_key_first($votes);
+    }
+
     /**
      * @param array<int, Item> $unequippedItems
      *

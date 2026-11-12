@@ -63,6 +63,25 @@ class Kingdom
     #[ORM\Column(options: ['default' => 0])]
     private int $royalTreasuryGold = 0;
 
+    #[ORM\Version]
+    #[ORM\Column(type: 'integer')]
+    private int $version = 1;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $tickPlanningHorizon = null;
+
+    public function getTickPlanningHorizon(): ?\DateTimeImmutable
+    {
+        return $this->tickPlanningHorizon;
+    }
+
+    public function setTickPlanningHorizon(?\DateTimeImmutable $horizon): static
+    {
+        $this->tickPlanningHorizon = $horizon;
+
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;

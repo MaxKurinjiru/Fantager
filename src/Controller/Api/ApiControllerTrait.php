@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Service\Translation\UserMessageTranslator;
+use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\Service\Attribute\Required;
 
@@ -36,6 +37,10 @@ trait ApiControllerTrait
 
     protected function jsonException(\Throwable $exception, int $status = 422): JsonResponse
     {
+        if ($exception instanceof OptimisticLockException) {
+            $status = 409;
+        }
+
         return $this->json(['error' => $this->userMessages->fromException($exception)], $status);
     }
 }

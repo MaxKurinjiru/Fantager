@@ -50,7 +50,7 @@
         "php-cs": "vendor/bin/php-cs-fixer check --diff",
         "php-cs-fix": "vendor/bin/php-cs-fixer fix --diff",
         "test": "vendor/bin/phpunit",
-        "kingdom": "php bin/console app:kingdom:initialize \"Main Kingdom\" --pace=test --test --start-offset-days=-10",
+        "kingdom": "php bin/console app:kingdom:initialize \"Main Kingdom\" --pace=test --start-offset-days=-10",
         "ticks": "php bin/console app:ticks:run",
         "ticks-week": "php bin/console app:ticks:run --advance=\"+1 week\"",
         "ticks-session": "php bin/console app:ticks:run --advance=\"+10 week\"",

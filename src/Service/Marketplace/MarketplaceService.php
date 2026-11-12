@@ -363,7 +363,7 @@ class MarketplaceService
         }
 
         // Record Transaction
-        $transaction = new MarketplaceTransaction();
+        $transaction = new MarketplaceTransaction($now);
         $transaction->setBuyerTeam($buyer);
         $transaction->setSellerTeam($seller);
         $transaction->setListing($listing);
@@ -503,6 +503,7 @@ class MarketplaceService
         $bid->setBidderTeam($bidder);
         $bid->setBidAmount($bidAmount);
         $bid->setBidTime($now);
+        $listing->recordBid();
         $this->em->persist($bid);
         $this->em->flush();
 
@@ -526,8 +527,33 @@ class MarketplaceService
 
     public function processExpiredListingsForKingdom(?Kingdom $kingdom, \DateTimeImmutable $now, ?Team $team = null): void
     {
-        /** @var list<MarketplaceListing> $listings */
         $listings = $this->findExpiredActiveListings($kingdom, $now, $team);
+        $this->settleExpiredListings($listings, $now);
+    }
+
+    public function getMaximumListingId(Kingdom $kingdom): int
+    {
+        return (int) $this->em->getConnection()->fetchOne(
+            'SELECT MAX(id) FROM marketplace_listing WHERE kingdom_id = ?',
+            [$kingdom->getId()],
+        );
+    }
+
+    public function processExpiredListingsBatch(Kingdom $kingdom, \DateTimeImmutable $now, int $maximumListingId, int $limit): int
+    {
+        if ($limit < 1) {
+            throw new \InvalidArgumentException('Marketplace batch size must be positive.');
+        }
+
+        $listings = $this->findExpiredActiveListings($kingdom, $now, null, $maximumListingId, $limit);
+        $this->settleExpiredListings($listings, $now);
+
+        return count($listings);
+    }
+
+    /** @param list<MarketplaceListing> $listings */
+    private function settleExpiredListings(array $listings, \DateTimeImmutable $now): void
+    {
         $teamsToRecalculate = [];
 
         foreach ($listings as $listing) {
@@ -610,7 +636,7 @@ class MarketplaceService
                 }
 
                 // Record Transaction
-                $transaction = new MarketplaceTransaction();
+                $transaction = new MarketplaceTransaction($now);
                 $transaction->setBuyerTeam($winner);
                 $transaction->setSellerTeam($seller);
                 $transaction->setListing($listing);
@@ -1154,7 +1180,7 @@ class MarketplaceService
     /**
      * @return list<MarketplaceListing>
      */
-    private function findExpiredActiveListings(?Kingdom $kingdom, \DateTimeImmutable $now, ?Team $team = null): array
+    private function findExpiredActiveListings(?Kingdom $kingdom, \DateTimeImmutable $now, ?Team $team = null, ?int $maximumListingId = null, ?int $limit = null): array
     {
         $qb = $this->em->getRepository(MarketplaceListing::class)->createQueryBuilder('l')
             ->where('l.status = :status')
@@ -1168,6 +1194,13 @@ class MarketplaceService
         } elseif (null !== $kingdom) {
             $qb->andWhere('l.kingdom = :kingdom')
                 ->setParameter('kingdom', $kingdom);
+        }
+
+        if (null !== $maximumListingId) {
+            $qb->andWhere('l.id <= :maximumListingId')->setParameter('maximumListingId', $maximumListingId);
+        }
+        if (null !== $limit) {
+            $qb->orderBy('l.id', 'ASC')->setMaxResults($limit);
         }
 
         return $qb->getQuery()->getResult();

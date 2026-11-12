@@ -11,6 +11,7 @@ use App\Entity\League\LeagueFixture;
 use App\Enum\BattleStatus;
 use App\Enum\TickType;
 use App\Service\Calendar\KingdomTickOrchestrator;
+use App\Service\Calendar\TickClock;
 use App\Service\FriendlyMatch\FriendlyMatchResolutionService;
 use App\Service\League\LeagueMatchResolutionService;
 use Doctrine\DBAL\LockMode;
@@ -26,6 +27,7 @@ class ResumeCombatService
         private readonly FriendlyMatchResolutionService $friendlyMatchResolutionService,
         private readonly KingdomTickOrchestrator $orchestrator,
         private readonly LoggerInterface $logger,
+        private readonly TickClock $tickClock,
     ) {
     }
 
@@ -65,6 +67,7 @@ class ResumeCombatService
 
         $round = 1;
         while (true) {
+            $previousTime = $this->tickClock->getCustomTime();
             $this->em->beginTransaction();
             try {
                 $battle = $this->em->find(Battle::class, $battleId, LockMode::PESSIMISTIC_WRITE);
@@ -93,6 +96,7 @@ class ResumeCombatService
                     $battle->setCombatLog((array) $runState['combatLog']);
                     $battle->setResult($battle->getResult() ?? \App\Enum\BattleResult::fromScores($runState['scoreA'], $runState['scoreB']));
                     $battle->setProcessedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                    $this->tickClock->setCustomTime($battle->getScheduledAt() ?? $previousTime);
 
                     $leagueFixture = $this->em->getRepository(LeagueFixture::class)->findOneBy(['battle' => $battle]);
                     if (null !== $leagueFixture) {
@@ -129,6 +133,7 @@ class ResumeCombatService
                 $this->em->commit();
 
                 if ('completed' === $runState['status']) {
+                    $this->tickClock->setCustomTime($previousTime);
                     $this->orchestrator->orchestrate($battle->getKingdom());
                     break;
                 }
@@ -147,6 +152,8 @@ class ResumeCombatService
                 }
                 $this->em->commit();
                 break;
+            } finally {
+                $this->tickClock->setCustomTime($previousTime);
             }
         }
     }

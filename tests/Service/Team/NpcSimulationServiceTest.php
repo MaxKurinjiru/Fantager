@@ -360,24 +360,22 @@ class NpcSimulationServiceTest extends TestCase
         // Run
         $this->service->simulateTraining($kingdom, new \DateTimeImmutable());
 
-        // Verification
-        // The 2 oldest heroes (IDs 9 and 10) should be trainers
+        // Verification: only one internal promotion; remaining trainer slots stay open for market buys
         $this->assertEquals(HeroRole::Trainer, $heroes[9]->getRole());
-        $this->assertEquals(HeroRole::Trainer, $heroes[8]->getRole()); // Note: sorted desc, oldest are $heroes[9] and $heroes[8] (ages 50 and 45)
+        $this->assertEquals(HeroRole::Combatant, $heroes[8]->getRole());
 
-        // Trainer configs for Royal Collector: int and magic
+        // Trainer configs for Royal Collector: lineup attr none, then int
         $this->assertEquals(TrainingType::Attribute, $heroes[9]->getTrainingType());
         $this->assertEquals('int', $heroes[9]->getTargetAttribute());
-        $this->assertEquals(TrainingType::Magic, $heroes[8]->getTrainingType());
 
-        // Trainees should be assigned
+        // Trainees should be assigned up to the single trainer's slot limit (4)
         $assignedTrainees = 0;
         foreach ($heroes as $h) {
             if ($h->getTrainer() !== null) {
                 $assignedTrainees++;
             }
         }
-        $this->assertEquals(8, $assignedTrainees);
+        $this->assertEquals(4, $assignedTrainees);
     }
 
     public function testSimulateTrainingPrefersLineupWeaponAttribute(): void
@@ -444,11 +442,9 @@ class NpcSimulationServiceTest extends TestCase
         $this->service->simulateTraining($kingdom, new \DateTimeImmutable());
 
         $this->assertEquals(HeroRole::Trainer, $heroes[7]->getRole());
-        $this->assertEquals(HeroRole::Trainer, $heroes[6]->getRole());
+        $this->assertEquals(HeroRole::Combatant, $heroes[6]->getRole());
         $this->assertEquals(TrainingType::Attribute, $heroes[7]->getTrainingType());
         $this->assertEquals('dex', $heroes[7]->getTargetAttribute());
-        $this->assertEquals(TrainingType::Attribute, $heroes[6]->getTrainingType());
-        $this->assertEquals('str', $heroes[6]->getTargetAttribute());
     }
 
     public function testAutoEquipItemsWithMasteryAndPurchase(): void
@@ -831,6 +827,72 @@ class NpcSimulationServiceTest extends TestCase
         $this->assertSame(\App\Enum\HeroTrait::Fragile, $calledDismissParams[1]->getTrait());
     }
 
+    public function testKeepsHighRatedNegativeTraitCombatant(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0);
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        $heroes = [];
+        for ($i = 1; $i <= 8; ++$i) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            $hero->setLevel(1);
+            $hero->setComplexRating(800);
+            $heroes[] = $hero;
+        }
+        $heroes[0]->setTrait(\App\Enum\HeroTrait::Fragile);
+        $heroes[0]->setComplexRating(2000);
+
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($heroes);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+        $heroRepo->method('findBy')->willReturn($heroes);
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findBy')->willReturn([]);
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $formationRepo, $heroRepo) {
+            if (Team::class === $class) {
+                return $teamRepo;
+            }
+            if (Formation::class === $class) {
+                return $formationRepo;
+            }
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+        $this->hqService->method('getForTeam')->willReturn(new Headquarters());
+        $this->hqService->method('getRosterLimit')->willReturn(15);
+        $this->summoningService->method('getStatus')->willReturn([
+            'available' => false,
+            'reason' => 'test',
+            'gold_cost' => 100,
+            'summons_used' => 0,
+            'summons_max' => 5,
+        ]);
+        $this->dismissalService->expects($this->never())->method('dismiss');
+
+        $this->service->simulateDailyManagementAndEconomy($kingdom, new \DateTimeImmutable());
+
+        $this->assertSame(HeroRole::Combatant, $heroes[0]->getRole());
+    }
+
     public function testProactiveDismissNegativeTraitConvertsToTrainerIfHighStat(): void
     {
         $kingdom = new Kingdom();
@@ -984,6 +1046,7 @@ class NpcSimulationServiceTest extends TestCase
         $this->hqService->method('getForTeam')->willReturn($hq);
         $this->hqService->method('getRosterLimit')->willReturn(15);
         $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
 
         // We expect createListing NOT to list hero 0 (which has the negative trait)
         $listedHeroIds = [];
@@ -1066,6 +1129,7 @@ class NpcSimulationServiceTest extends TestCase
         $this->hqService->method('getForTeam')->willReturn($hq);
         $this->hqService->method('getRosterLimit')->willReturn(15);
         $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
 
         // We expect createListing to use the rating calculator market price
         $calledListingParams = null;
@@ -1084,7 +1148,6 @@ class NpcSimulationServiceTest extends TestCase
         $this->assertNotNull($calledListingParams);
         $this->assertSame($team, $calledListingParams[0]);
         $this->assertSame('hero', $calledListingParams[1]);
-        $this->assertSame($heroes[0]->getId(), $calledListingParams[2]);
         $this->assertSame(650, $calledListingParams[3]);
         $this->assertSame(650, $calledListingParams[4]);
         $this->assertSame('buy_now', $calledListingParams[5]);
@@ -1150,6 +1213,144 @@ class NpcSimulationServiceTest extends TestCase
         // Hero 2 should be promoted instead of Hero 1, because Hero 1 has a purely negative trait.
         $this->assertEquals(HeroRole::Trainer, $hero2->getRole());
         $this->assertEquals(HeroRole::Combatant, $hero1->getRole());
+    }
+
+    public function testSimulateTrainingDoesNotFillTrainerCapWhenOneTrainerExists(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 1); // veteran_guild target is 2
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+
+        $existing = new Hero();
+        $this->setEntityId($existing, 1);
+        $existing->setTeam($team);
+        $existing->setRole(HeroRole::Trainer);
+        $existing->setStatus(HeroStatus::Available);
+        $existing->setAgeRaw(80);
+        $existing->setLevel(5);
+
+        $candidate = new Hero();
+        $this->setEntityId($candidate, 2);
+        $candidate->setTeam($team);
+        $candidate->setRole(HeroRole::Combatant);
+        $candidate->setStatus(HeroStatus::Available);
+        $candidate->setAgeRaw(70);
+        $candidate->setLevel(4);
+
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findBy')->willReturn([$existing, $candidate]);
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $heroRepo) {
+            if (Team::class === $class) {
+                return $teamRepo;
+            }
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+        $this->trainingService->method('getTrainerSlotsLimit')->willReturn(4);
+
+        $this->service->simulateTraining($kingdom, new \DateTimeImmutable());
+
+        $this->assertEquals(HeroRole::Trainer, $existing->getRole());
+        $this->assertEquals(HeroRole::Combatant, $candidate->getRole());
+    }
+
+    public function testSimulateTrainingDoesNotPromoteTopRatedCombatant(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0);
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+
+        $heroes = [];
+        for ($i = 1; $i <= 10; ++$i) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setAgeRaw($i * 5);
+            $hero->setLevel(1);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            $hero->setComplexRating(10 === $i ? 5000 : 100);
+            $heroes[] = $hero;
+        }
+
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findBy')->willReturn($heroes);
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $heroRepo) {
+            if (Team::class === $class) {
+                return $teamRepo;
+            }
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+        $this->trainingService->method('getTrainerSlotsLimit')->willReturn(4);
+
+        $this->service->simulateTraining($kingdom, new \DateTimeImmutable());
+
+        $this->assertEquals(HeroRole::Combatant, $heroes[9]->getRole());
+        $this->assertEquals(HeroRole::Trainer, $heroes[8]->getRole());
+    }
+
+    public function testSimulateTrainingPromotesHighestFocusStatNotOldest(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // mercenary: STR/SPD
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+
+        $heroes = [];
+        for ($i = 1; $i <= 10; ++$i) {
+            $hero = new Hero();
+            $this->setEntityId($hero, $i);
+            $hero->setTeam($team);
+            $hero->setAgeRaw($i * 5);
+            $hero->setLevel(1);
+            $hero->setRole(HeroRole::Combatant);
+            $hero->setStatus(HeroStatus::Available);
+            $hero->setComplexRating(100);
+            $hero->setStrRaw(7 === $i ? 180 : 20);
+            $hero->setSpdRaw(20);
+            $heroes[] = $hero;
+        }
+
+        $teamRepo = $this->createMock(EntityRepository::class);
+        $teamRepo->method('findBy')->willReturn([$team]);
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $heroRepo->method('findBy')->willReturn($heroes);
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($teamRepo, $heroRepo) {
+            if (Team::class === $class) {
+                return $teamRepo;
+            }
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+        $this->trainingService->method('getTrainerSlotsLimit')->willReturn(4);
+
+        $this->service->simulateTraining($kingdom, new \DateTimeImmutable());
+
+        $this->assertEquals(HeroRole::Trainer, $heroes[6]->getRole());
+        $this->assertEquals(HeroRole::Combatant, $heroes[9]->getRole());
     }
 
     public function testSimulateTrainingUnequipsItemsFromPromotedTrainer(): void
@@ -1534,14 +1735,14 @@ class NpcSimulationServiceTest extends TestCase
         $team->setIsNpc(true);
         $team->setGold(1000);
 
-        // Create 10 heroes to trigger selling ($heroCount >= 10)
+        // 10 combatants (surplus above keep=8) and 4 trainers (surplus above veteran target=2)
         $heroes = [];
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 14; $i++) {
             $h = new Hero();
             $this->setEntityId($h, $i);
             $h->setStatus(HeroStatus::Available);
             $h->setLevel(1);
-            if ($i <= 5) {
+            if ($i <= 4) {
                 $h->setRole(HeroRole::Trainer);
             } else {
                 $h->setRole(HeroRole::Combatant);
@@ -1573,6 +1774,7 @@ class NpcSimulationServiceTest extends TestCase
         $hq = new Headquarters();
         $this->hqService->method('getForTeam')->willReturn($hq);
         $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
 
         // Track listings created
         $createdTypes = [];
@@ -1587,6 +1789,428 @@ class NpcSimulationServiceTest extends TestCase
         // Verify that we listed both combatants and trainers (separately)
         $this->assertContains('hero', $createdTypes);
         $this->assertContains('trainer', $createdTypes);
+    }
+
+    public function testSimulateMarketplaceDoesNotSellTrainersAtTarget(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0); // mercenary target trainers = 1
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(1000);
+
+        $heroes = [];
+        for ($i = 1; $i <= 10; ++$i) {
+            $h = new Hero();
+            $this->setEntityId($h, $i);
+            $h->setStatus(HeroStatus::Available);
+            $h->setLevel(1);
+            $h->setRole(1 === $i ? HeroRole::Trainer : HeroRole::Combatant);
+            $heroes[] = $h;
+        }
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($heroes);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        $formationRepo = $this->createMock(EntityRepository::class);
+        $formationRepo->method('findBy')->willReturn([]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($formationRepo, $heroRepo) {
+            if (Formation::class === $class) {
+                return $formationRepo;
+            }
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $this->heroRatingCalculator->method('estimateMarketPrice')->willReturn(100);
+        $hq = new Headquarters();
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+
+        $createdTypes = [];
+        $this->marketplaceService->method('createListing')
+            ->willReturnCallback(function ($t, $type) use (&$createdTypes) {
+                $createdTypes[] = $type;
+
+                return new MarketplaceListing();
+            });
+
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable(), $team);
+
+        $this->assertNotContains('trainer', $createdTypes);
+        $this->assertContains('hero', $createdTypes);
+    }
+
+    public function testSimulateMarketplaceBuysTrainerWhenBelowTarget(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 1); // veteran_guild target = 2
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(5000);
+
+        $ownTrainer = new Hero();
+        $this->setEntityId($ownTrainer, 1);
+        $ownTrainer->setRole(HeroRole::Trainer);
+        $ownTrainer->setStatus(HeroStatus::Available);
+        $ownTrainer->setLevel(3);
+
+        $listedTrainer = new Hero();
+        $this->setEntityId($listedTrainer, 50);
+        $listedTrainer->setRole(HeroRole::Trainer);
+        $listedTrainer->setStatus(HeroStatus::Selling);
+        $listedTrainer->setLevel(4);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn([$ownTrainer]);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        $sellerTeam = new Team();
+        $this->setEntityId($sellerTeam, 99);
+        $listing = new MarketplaceListing();
+        $this->setEntityId($listing, 201);
+        $listing->setSellerTeam($sellerTeam);
+        $listing->setListingType(ListingType::Trainer);
+        $listing->setHero($listedTrainer);
+        $listing->setPriceGold(200);
+        $listing->setBuyoutPriceGold(200);
+
+        $listingRepo = $this->createMock(EntityRepository::class);
+        $listingRepo->method('findBy')->willReturn([$listing]);
+
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($heroRepo, $listingRepo) {
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+            if (MarketplaceListing::class === $class) {
+                return $listingRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $hq = new Headquarters();
+        $this->hqService->method('getForTeam')->willReturn($hq);
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+
+        $bought = [];
+        $this->marketplaceService->method('buyListing')
+            ->willReturnCallback(function ($t, $listingId) use (&$bought) {
+                $bought[] = $listingId;
+            });
+
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable(), $team);
+
+        $this->assertContains(201, $bought);
+    }
+
+    public function testSimulateMarketplaceDoesNotBuyWeakerFocusTrainer(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 1); // veteran_guild: KON/WIL
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(5000);
+
+        $ownTrainer = new Hero();
+        $this->setEntityId($ownTrainer, 1);
+        $ownTrainer->setRole(HeroRole::Trainer);
+        $ownTrainer->setStatus(HeroStatus::Available);
+        $ownTrainer->setLevel(3);
+        $ownTrainer->setKonRaw(180);
+        $ownTrainer->setWilRaw(160);
+
+        $listedTrainer = new Hero();
+        $this->setEntityId($listedTrainer, 50);
+        $listedTrainer->setRole(HeroRole::Trainer);
+        $listedTrainer->setStatus(HeroStatus::Selling);
+        $listedTrainer->setLevel(4);
+        $listedTrainer->setKonRaw(50);
+        $listedTrainer->setWilRaw(40);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn([$ownTrainer]);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        $sellerTeam = new Team();
+        $this->setEntityId($sellerTeam, 99);
+        $listing = new MarketplaceListing();
+        $this->setEntityId($listing, 211);
+        $listing->setSellerTeam($sellerTeam);
+        $listing->setListingType(ListingType::Trainer);
+        $listing->setHero($listedTrainer);
+        $listing->setPriceGold(200);
+        $listing->setBuyoutPriceGold(200);
+
+        $listingRepo = $this->createMock(EntityRepository::class);
+        $listingRepo->method('findBy')->willReturn([$listing]);
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($heroRepo, $listingRepo) {
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+            if (MarketplaceListing::class === $class) {
+                return $listingRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $this->hqService->method('getForTeam')->willReturn(new Headquarters());
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+        $this->marketplaceService->expects($this->never())->method('buyListing');
+
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable(), $team);
+    }
+
+    public function testSimulateMarketplaceBuysTrainerCoveringMissingFocus(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 1); // veteran_guild: KON/WIL, target 2
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(5000);
+
+        $ownTrainer = new Hero();
+        $this->setEntityId($ownTrainer, 1);
+        $ownTrainer->setRole(HeroRole::Trainer);
+        $ownTrainer->setStatus(HeroStatus::Available);
+        $ownTrainer->setLevel(3);
+        $ownTrainer->setKonRaw(180);
+        $ownTrainer->setWilRaw(20);
+
+        $listedTrainer = new Hero();
+        $this->setEntityId($listedTrainer, 50);
+        $listedTrainer->setRole(HeroRole::Trainer);
+        $listedTrainer->setStatus(HeroStatus::Selling);
+        $listedTrainer->setLevel(4);
+        $listedTrainer->setKonRaw(40);
+        $listedTrainer->setWilRaw(150);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn([$ownTrainer]);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        $sellerTeam = new Team();
+        $this->setEntityId($sellerTeam, 99);
+        $listing = new MarketplaceListing();
+        $this->setEntityId($listing, 212);
+        $listing->setSellerTeam($sellerTeam);
+        $listing->setListingType(ListingType::Trainer);
+        $listing->setHero($listedTrainer);
+        $listing->setPriceGold(200);
+        $listing->setBuyoutPriceGold(200);
+
+        $listingRepo = $this->createMock(EntityRepository::class);
+        $listingRepo->method('findBy')->willReturn([$listing]);
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($heroRepo, $listingRepo) {
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+            if (MarketplaceListing::class === $class) {
+                return $listingRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $this->hqService->method('getForTeam')->willReturn(new Headquarters());
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+
+        $bought = [];
+        $this->marketplaceService->method('buyListing')
+            ->willReturnCallback(function ($t, $listingId) use (&$bought) {
+                $bought[] = $listingId;
+            });
+
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable(), $team);
+
+        $this->assertContains(212, $bought);
+    }
+
+    public function testSimulateMarketplaceDoesNotBuyWeakerHero(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0);
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(5000);
+
+        $own = [];
+        for ($i = 1; $i <= 8; ++$i) {
+            $h = new Hero();
+            $this->setEntityId($h, $i);
+            $h->setRole(HeroRole::Combatant);
+            $h->setStatus(HeroStatus::Available);
+            $h->setLevel(2);
+            $h->setRace(Race::Human);
+            $h->setComplexRating(1000);
+            $own[] = $h;
+        }
+
+        $listed = new Hero();
+        $this->setEntityId($listed, 50);
+        $listed->setRole(HeroRole::Combatant);
+        $listed->setStatus(HeroStatus::Selling);
+        $listed->setLevel(2);
+        $listed->setRace(Race::Human);
+        $listed->setComplexRating(500);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($own);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        $sellerTeam = new Team();
+        $this->setEntityId($sellerTeam, 99);
+        $listing = new MarketplaceListing();
+        $this->setEntityId($listing, 301);
+        $listing->setSellerTeam($sellerTeam);
+        $listing->setListingType(ListingType::Hero);
+        $listing->setHero($listed);
+        $listing->setPriceGold(100);
+        $listing->setBuyoutPriceGold(100);
+
+        $listingRepo = $this->createMock(EntityRepository::class);
+        $listingRepo->method('findBy')->willReturn([$listing]);
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($heroRepo, $listingRepo) {
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+            if (MarketplaceListing::class === $class) {
+                return $listingRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $this->summoningService->method('getCompatibleRacesForTeam')->willReturn([Race::Human]);
+        $this->hqService->method('getForTeam')->willReturn(new Headquarters());
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+        $this->marketplaceService->expects($this->never())->method('buyListing');
+
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable(), $team);
+    }
+
+    public function testSimulateMarketplaceBuysHeroUpgrade(): void
+    {
+        $kingdom = new Kingdom();
+        $team = new Team();
+        $this->setEntityId($team, 0);
+        $team->setKingdom($kingdom);
+        $team->setIsNpc(true);
+        $team->setGold(5000);
+
+        $own = [];
+        for ($i = 1; $i <= 8; ++$i) {
+            $h = new Hero();
+            $this->setEntityId($h, $i);
+            $h->setRole(HeroRole::Combatant);
+            $h->setStatus(HeroStatus::Available);
+            $h->setLevel(2);
+            $h->setRace(Race::Human);
+            $h->setComplexRating(1 === $i ? 100 : 1000);
+            $own[] = $h;
+        }
+
+        $listed = new Hero();
+        $this->setEntityId($listed, 50);
+        $listed->setRole(HeroRole::Combatant);
+        $listed->setStatus(HeroStatus::Selling);
+        $listed->setLevel(2);
+        $listed->setRace(Race::Human);
+        $listed->setComplexRating(200);
+
+        $heroRepo = $this->createMock(HeroRepository::class);
+        $queryMock = $this->createMock(\Doctrine\ORM\Query::class);
+        $queryMock->method('getResult')->willReturn($own);
+        $qbMock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbMock->method('where')->willReturnSelf();
+        $qbMock->method('andWhere')->willReturnSelf();
+        $qbMock->method('setParameter')->willReturnSelf();
+        $qbMock->method('getQuery')->willReturn($queryMock);
+        $heroRepo->method('createQueryBuilder')->willReturn($qbMock);
+
+        $sellerTeam = new Team();
+        $this->setEntityId($sellerTeam, 99);
+        $listing = new MarketplaceListing();
+        $this->setEntityId($listing, 302);
+        $listing->setSellerTeam($sellerTeam);
+        $listing->setListingType(ListingType::Hero);
+        $listing->setHero($listed);
+        $listing->setPriceGold(100);
+        $listing->setBuyoutPriceGold(100);
+
+        $listingRepo = $this->createMock(EntityRepository::class);
+        $listingRepo->method('findBy')->willReturn([$listing]);
+        $this->em->method('getRepository')->willReturnCallback(function (string $class) use ($heroRepo, $listingRepo) {
+            if (Hero::class === $class) {
+                return $heroRepo;
+            }
+            if (MarketplaceListing::class === $class) {
+                return $listingRepo;
+            }
+
+            return $this->createMock(EntityRepository::class);
+        });
+
+        $this->summoningService->method('getCompatibleRacesForTeam')->willReturn([Race::Human]);
+        $this->hqService->method('getForTeam')->willReturn(new Headquarters());
+        $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
+
+        $bought = [];
+        $this->marketplaceService->method('buyListing')
+            ->willReturnCallback(function ($t, $listingId) use (&$bought) {
+                $bought[] = $listingId;
+            });
+
+        $this->service->simulateMarketplaceActions($kingdom, new \DateTimeImmutable(), $team);
+
+        $this->assertContains(302, $bought);
     }
 
     public function testSimulateMarketplaceNeedBasedItemBuying(): void
@@ -1684,6 +2308,7 @@ class NpcSimulationServiceTest extends TestCase
         $hq = new Headquarters();
         $this->hqService->method('getForTeam')->willReturn($hq);
         $this->hqService->method('calculateWeeklyMaintenanceFee')->willReturn(50);
+        $this->trainingService->method('getTrainerLimit')->willReturn(2);
 
         // Capture bought listings
         $boughtListingIds = [];

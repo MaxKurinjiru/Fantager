@@ -129,7 +129,7 @@ class CombatWaveOrchestrationTest extends TestCase
         $this->assertSame([[10, 1], [11, 1], [11, 2]], $calls);
     }
 
-    public function testDuplicateWorkerDoesNoWorkWhileCohortIsLocked(): void
+    public function testDuplicateWorkerRetriesWhileCohortIsLocked(): void
     {
         $battleRepository = $this->createMock(BattleRepository::class);
         $battleRepository->expects($this->never())->method('findSimulatingCohortRounds');
@@ -145,6 +145,7 @@ class CombatWaveOrchestrationTest extends TestCase
             $this->createStub(MessageBusInterface::class),
             $this->createStub(KingdomTickOrchestrator::class),
         );
+        $this->expectException(\Symfony\Component\Messenger\Exception\RecoverableMessageHandlingException::class);
         $processor->process($this->message());
     }
 
@@ -157,6 +158,32 @@ class CombatWaveOrchestrationTest extends TestCase
 
         $processor = $this->processor($battleRepository, $roundProcessor, $this->createStub(MessageBusInterface::class));
         $this->expectExceptionMessage('database unavailable');
+        $processor->process($this->message());
+    }
+
+    public function testCombatMetricsIncludeWorkSize(): void
+    {
+        $repository = $this->createMock(BattleRepository::class);
+        $repository->method('findSimulatingCohortRounds')->willReturnOnConsecutiveCalls(
+            [['id' => 10, 'currentRound' => 0], ['id' => 11, 'currentRound' => 0]], [],
+        );
+        $roundProcessor = $this->createMock(CombatRoundProcessor::class);
+        $roundProcessor->expects($this->exactly(2))->method('process');
+        $connection = $this->createStub(Connection::class);
+        $connection->method('fetchOne')->willReturn(1);
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('getConnection')->willReturn($connection);
+        $metrics = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $metrics->expects($this->once())->method('info')->with('Combat wave metrics.', $this->callback(
+            static fn (array $context): bool => 2 === $context['round_attempts'] && 2 === $context['battle_count']
+                && 'completed' === $context['outcome'] && $context['duration_ms'] >= 0
+                && isset($context['memory_delta_bytes'], $context['process_peak_memory_bytes']),
+        ));
+        $processor = new CombatWaveProcessor(
+            $repository, $roundProcessor, $em, $this->createStub(MessageBusInterface::class),
+            $this->createStub(KingdomTickOrchestrator::class), 1, 60.0, null, $metrics,
+        );
+
         $processor->process($this->message());
     }
 

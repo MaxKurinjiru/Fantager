@@ -2,9 +2,9 @@
 
 Reference: [league-system.md](league-system.md), [calendar-system.md](calendar-system.md)
 
-Status: Live  
-Screens: [13-league.md](../screens/13-league.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none  
+Status: Live
+Screens: [13-league.md](../screens/13-league.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)
+Open design: none
 Lock: [Locked: frozen snapshot, two consumers](#locked-frozen-snapshot-two-consumers)
 
 Purpose: Freeze one end-of-season document per kingdom. Players see a yearbook (own team vs group medians). Operators export the same JSON for multi-season simulation health checks.
@@ -16,6 +16,8 @@ Purpose: Freeze one end-of-season document per kingdom. Players see a yearbook (
 Historical completed seasons (before this feature) have no row until `app:season:report:build --kingdom-id=` backfills them from standings + `season_ended` chronicle.
 
 Opening gold for season N is the previous report’s `gold.end` when that report exists.
+
+Market transactions and graveyard memorials created during ticks use the scheduled game time. Combat completion uses the battle's scheduled time, including asynchronous and resumed battles; execution timestamps remain real UTC time. Existing historical records are not rewritten.
 
 ## Payload
 

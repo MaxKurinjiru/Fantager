@@ -65,7 +65,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 
 ---
 
-## Database Entities (38 implemented)
+## Database Entities (39 implemented)
 
 ### 1. Auth Domain
 
@@ -82,8 +82,9 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 
 | Entity      | Key Fields                                                                                                                                        | Relationships        |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| **Kingdom** | id, name, language, timezone, pace_preset (`PacePreset`), training_speed, recovery_speed, aging_speed, construction_speed, economy_scale, fan_pace, summon_cap, xp_modifier (required; copied from `config/kingdom/pace-presets.json` at creation), season_length (**77**), league_tiers_config (JSON), **royal_treasury_gold** | 1:N Users, 1:N Teams |
-| **KingdomTickLog** | id, kingdom_id, team_id (nullable), fixture_id (nullable), friendly_match_id (nullable), tickType (enum), scheduledAt, status, errorMessage, executedAt, retry_count | → Kingdom, → Team (nullable), → LeagueFixture (nullable), → FriendlyMatch (nullable) |
+| **Kingdom** | id, name, language, timezone, pace_preset (`PacePreset`), training_speed, recovery_speed, aging_speed, construction_speed, economy_scale, fan_pace, summon_cap, xp_modifier (required; copied from `config/kingdom/pace-presets.json` at creation), season_length (**77**), league_tiers_config (JSON), **royal_treasury_gold**, tick_planning_horizon (nullable UTC datetime), version (optimistic lock) | 1:N Users, 1:N Teams |
+| **KingdomTickEvent** | id, kingdom_id, tick_type, scheduled_at; unique per kingdom, type and time | → Kingdom; groups scoped tick phases |
+| **KingdomTickLog** | id, event_id, team_id (nullable), fixture_id (nullable), friendly_match_id (nullable), kingdom_scope (nullable), marketplace_batch (nullable), marketplace_max_listing_id (nullable), status, errorMessage, executedAt, retry_count, combat_recovery_count, combat_recovery_round (nullable) | → KingdomTickEvent, → Team (nullable), → LeagueFixture (nullable), → FriendlyMatch (nullable); unique per event and scope or marketplace batch |
 
 
 ### 3. Team Domain
@@ -91,7 +92,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 
 | Entity   | Key Fields                                                                                                                                                                                                                                           | Relationships                                                |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **Team**            | id, user_id (nullable), kingdom_id, name, emblem, colors, morale, reputation, chemistry, fan_base, **last_fan_base_delta**, gold, is_npc, last_summon_at, summons_this_cycle, **unpaid_debt**, **crisis_weeks**, **last_recovery_action_at**, **ticket_price** | → User (N:1, nullable — NULL for NPC teams), → Kingdom (N:1) |
+| **Team**            | id, user_id (nullable), kingdom_id, name, emblem, colors, morale, reputation, chemistry, fan_base, **last_fan_base_delta**, gold, version (optimistic lock), is_npc, last_summon_at, summons_this_cycle, **unpaid_debt**, **crisis_weeks**, **last_recovery_action_at**, **ticket_price** | → User (N:1, nullable — NULL for NPC teams), → Kingdom (N:1) |
 | **FinancialRecord** | id, team_id, type (enum), actor (enum), gold_change, context (JSON), created_at, processed_at (nullable) | → Team (N:1)                                                 |
 | **TeamChronicle**   | id, team_id, type (`ChronicleEventType` enum), subject_key, subject_params (JSON), data (JSON), created_at | → Team (N:1). Append-only; write via `TeamChronicleService` only. Behaviour: [team-chronicle-system.md](../systems/team-chronicle-system.md). |
 | **TeamSummonHistory** | id, team_id, race_selected, hero_id, gold_cost, summoned_at | → Team (N:1), → Hero (N:1)                                   |
@@ -180,7 +181,7 @@ Reference: Derived from [product/overview.md](../product/overview.md), system do
 
 | Entity                 | Key Fields                                                                                                                                                                     | Relationships      |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
-| **MarketplaceListing** | id, kingdom_id, seller_team_id, listing_type (enum), hero_id (nullable), item_id (nullable), price_gold, buyout_price_gold (nullable int), listing_mode (enum), expires_at, status (enum) | → Kingdom, → Team. **Trainer listings** reuse the `hero_id` FK (trainer is a `Hero` with `role = trainer`); there is no separate `trainer_id` column. |
+| **MarketplaceListing** | id, kingdom_id, seller_team_id, listing_type (enum), hero_id (nullable), item_id (nullable), price_gold, buyout_price_gold (nullable int), listing_mode (enum), expires_at, status (enum), version (optimistic lock), bid_revision | → Kingdom, → Team. **Trainer listings** reuse the `hero_id` FK (trainer is a `Hero` with `role = trainer`); there is no separate `trainer_id` column. |
 | **MarketplaceBid**     | id, listing_id, bidder_team_id, bid_amount, bid_time                                                                                                                           | → Listing, → Team  |
 | **MarketplaceTransaction** | id, buyer_team_id, seller_team_id (nullable), listing_id (nullable), entity_name (nullable snapshot), amount, fee_amount, type (enum), created_at                                                                                 | → Teams, → Listing |
 

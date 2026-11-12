@@ -15,4 +15,9 @@ class ExecuteSingleTickMessage
     {
         return $this->tickLogId;
     }
+
+    public function getLockName(): string
+    {
+        return sprintf('kingdom_tick_%d', $this->tickLogId);
+    }
 }

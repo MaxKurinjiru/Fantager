@@ -27,4 +27,9 @@ class CombatWave
     {
         return $this->round;
     }
+
+    public function getLockName(): string
+    {
+        return sprintf('combat_wave_%d_%s', $this->kingdomId, $this->scheduledAt->format('U.u'));
+    }
 }

@@ -18,6 +18,7 @@ use App\Enum\ItemSubType;
 use App\Enum\TransactionType;
 use App\Exception\UserFacingException;
 use App\Repository\Item\ItemRepository;
+use App\Service\Calendar\TickClock;
 use App\Service\Config\RaceConfig;
 use App\Service\Economy\EconomyService;
 use App\Service\TeamChronicle\TeamChronicleService;
@@ -62,6 +63,7 @@ class ItemService
         private readonly EconomyService $economyService,
         private readonly TeamChronicleService $teamChronicleService,
         private readonly RaceConfig $raceConfig,
+        private readonly TickClock $tickClock,
     ) {
     }
 
@@ -765,7 +767,7 @@ class ItemService
         $this->teamChronicleService->recordItemPurchased($team, $item, null, $cost);
 
         // Record marketplace transaction
-        $transaction = new MarketplaceTransaction();
+        $transaction = new MarketplaceTransaction($this->tickClock->getCurrentTime());
         $transaction->setBuyerTeam($team);
         $transaction->setSellerTeam(null);
         $transaction->setListing(null);

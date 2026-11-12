@@ -6,6 +6,7 @@ namespace App\Service\Translation;
 
 use App\Entity\Auth\User;
 use App\Exception\UserFacingException;
+use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -35,6 +36,10 @@ final class UserMessageTranslator
 
     public function fromException(\Throwable $exception, ?string $locale = null): string
     {
+        if ($exception instanceof OptimisticLockException) {
+            return $this->trans('error.concurrent_change', [], $locale);
+        }
+
         if ($exception instanceof UserFacingException) {
             return $this->trans($exception->getTranslationKey(), $exception->getParameters(), $locale);
         }

@@ -10,7 +10,7 @@ Single source of truth for **design questions** that must not be invented in cod
 
 | ID | Area | Issue | Severity | Status |
 |----|------|-------|----------|--------|
-| — | — | None. Next new question is **#18**. | — | — |
+| 18 | League configuration | Which group sizes and changes to league structure between seasons should be supported, and which configurations should be rejected? The current scheduler assumes 10 teams and season transition requires matching tier counts. See [league-system.md](../systems/league-system.md#remaining-work). | Medium | Open |
 
 When an Open row is decided, record Cut vs Implement. Mark **Decided — Implement** until that code lands, then **Resolved** and move the lock into the matching system or screen doc. Cut decisions may go straight to Resolved.
 

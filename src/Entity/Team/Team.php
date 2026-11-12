@@ -54,6 +54,10 @@ class Team
     #[ORM\Column(options: ['default' => 0])]
     private int $gold = 0;
 
+    #[ORM\Version]
+    #[ORM\Column(type: 'integer')]
+    private int $version = 1;
+
     #[ORM\Column(options: ['default' => false])]
     private bool $isNpc = false;
 

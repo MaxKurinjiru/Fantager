@@ -65,6 +65,7 @@ class GraveyardPresenterTest extends TestCase
                 $this->createMock(\App\Service\Hero\HeroRatingCalculator::class),
                 $this->createMock(\App\Service\Hero\HeroChronicleService::class),
                 $this->createMock(\App\Service\Marketplace\MarketplaceService::class),
+                new \App\Service\Calendar\TickClock(),
             ),
         );
 

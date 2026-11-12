@@ -18,19 +18,20 @@ use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Service\Auth\PlayerInactivityService;
 use App\Service\Calendar\KingdomTickOrchestrator;
 use App\Service\Calendar\TickClock;
+use App\Service\Calendar\TickScheduleCalculator;
 use App\Service\Economy\ArenaRevenueService;
 use App\Service\Economy\FinancialCrisisService;
 use App\Service\Economy\RoyalTreasuryService;
 use App\Service\Formation\FixtureFormationService;
 use App\Service\Headquarters\HeadquartersService;
 use App\Service\Kingdom\KingdomPace;
-use App\Service\Marketplace\MarketplaceService;
 use App\Service\Team\FanClubService;
 use App\Service\Team\NpcSimulationService;
 use App\Service\Team\TeamMoraleReputationService;
 use App\Service\TeamChronicle\TeamChronicleService;
 use App\Service\Training\TrainingService;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -50,7 +51,6 @@ class ExecuteSingleTickHandler
         private readonly \App\Service\Economy\TeamPayrollService $teamPayrollService,
         private readonly PlayerInactivityService $playerInactivityService,
         private readonly FixtureFormationService $fixtureFormationService,
-        private readonly MarketplaceService $marketplaceService,
         private readonly \App\Service\League\LeagueMatchResolutionService $leagueMatchResolutionService,
         private readonly \App\Service\FriendlyMatch\FriendlyMatchResolutionService $friendlyMatchResolutionService,
         private readonly EntityManagerInterface $em,
@@ -61,10 +61,31 @@ class ExecuteSingleTickHandler
         private readonly NpcSimulationService $npcSimulationService,
         private readonly KingdomTickOrchestrator $orchestrator,
         private readonly \App\Service\Hero\HeroMasteryService $heroMasteryService,
+        private readonly TickScheduleCalculator $scheduleCalculator,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: 'monolog.logger.tick_metrics')]
+        private readonly ?LoggerInterface $metricsLogger = null,
     ) {
     }
 
-    public function __invoke(ExecuteSingleTickMessage $message): void
+    public function __invoke(ExecuteSingleTickMessage $message, bool $synchronous = false): void
+    {
+        $connection = $this->em->getConnection();
+        $acquired = $connection->fetchOne('SELECT GET_LOCK(?, 0)', [$message->getLockName()]);
+        if (0 === (int) $acquired && null !== $acquired && false !== $acquired) {
+            throw new \Symfony\Component\Messenger\Exception\RecoverableMessageHandlingException('Tick execution is already in progress.', retryDelay: 1000);
+        }
+        if (1 !== (int) $acquired) {
+            throw new \RuntimeException('Unable to acquire the tick execution lock.');
+        }
+
+        try {
+            $this->processTick($message, $synchronous);
+        } finally {
+            $connection->fetchOne('SELECT RELEASE_LOCK(?)', [$message->getLockName()]);
+        }
+    }
+
+    private function processTick(ExecuteSingleTickMessage $message, bool $synchronous): void
     {
         $tickLogId = $message->getTickLogId();
         /** @var KingdomTickLog|null $log */
@@ -109,6 +130,8 @@ class ExecuteSingleTickHandler
         }
 
         // Now we can execute it.
+        $startedAt = hrtime(true);
+        $memoryAtStart = memory_get_usage();
         $this->tickClock->setCustomTime($log->getScheduledAt());
         $this->em->beginTransaction();
         try {
@@ -133,39 +156,44 @@ class ExecuteSingleTickHandler
                 $log->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
                 $log->setErrorMessage(null);
             } else {
-                $log->setStatus('processing');
+                $log->setStatus('awaiting_combat');
                 $log->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
                 $log->setErrorMessage(null);
             }
 
             $this->em->flush();
             $this->em->commit();
-
-            if (!$isSimulatingLeagueMatch) {
-                $this->logger->info(sprintf('Tick %s completed successfully for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
-            } else {
-                $this->logger->info(sprintf('Tick %s initiated asynchronous battle simulation for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
-            }
         } catch (\Throwable $e) {
             $this->em->rollback();
+            $this->em->clear();
 
-            // Start a new independent transaction to record the failure
-            $this->em->beginTransaction();
-            try {
-                /** @var KingdomTickLog|null $refreshedLog */
-                $refreshedLog = $this->tickLogRepository->find($log->getId());
-                if (null !== $refreshedLog) {
-                    $refreshedLog->setStatus('failed');
-                    $refreshedLog->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
-                    $refreshedLog->setErrorMessage($e->getMessage()."\n".$e->getTraceAsString());
-                    $this->em->flush();
+            if (!$synchronous && $e instanceof OptimisticLockException) {
+                try {
+                    if ($this->orchestrator->retryOptimisticConflict($tickLogId)) {
+                        $this->logger->info(sprintf('Tick ID %d requeued after an optimistic-lock conflict.', $tickLogId));
+
+                        return;
+                    }
+                } catch (\Throwable $retryException) {
+                    $this->logger->error('Could not requeue an optimistic-lock conflict.', ['exception' => $retryException, 'tick_id' => $tickLogId]);
                 }
-                $this->em->commit();
-            } catch (\Throwable) {
-                $this->em->rollback();
             }
 
-            $this->logger->error(sprintf('Tick %s failed for Kingdom %s: %s', $log->getTickType()->value, $kingdom->getName(), $e->getMessage()), ['exception' => $e]);
+            try {
+                $this->em->getConnection()->executeStatement(
+                    'UPDATE kingdom_tick_log SET status = ?, executed_at = ?, error_message = ? WHERE id = ? AND status = ?',
+                    ['failed', gmdate('Y-m-d H:i:s'), $e->getMessage()."\n".$e->getTraceAsString(), $tickLogId, 'processing'],
+                );
+            } catch (\Throwable $recordingException) {
+                $this->logger->error('Could not record tick failure.', ['exception' => $recordingException, 'tick_id' => $tickLogId]);
+            }
+
+            $this->logger->error(sprintf('Tick %s failed for Kingdom %s: %s', $log->getTickType()->value, $kingdom->getName(), $e->getMessage()), [
+                'exception' => $e,
+                'tick_id' => $tickLogId,
+                'duration_ms' => (hrtime(true) - $startedAt) / 1_000_000,
+                'memory_delta_bytes' => memory_get_usage() - $memoryAtStart,
+            ]);
 
             // Halt the Messenger queue execution until repaired by re-throwing exception
             throw $e;
@@ -173,8 +201,27 @@ class ExecuteSingleTickHandler
             $this->tickClock->setCustomTime(null);
         }
 
-        // 2. Trigger the orchestrator to check if the group is done and proceed to the next step
-        $this->orchestrator->orchestrate($kingdom);
+        $this->metricsLogger?->info('Tick execution metrics.', [
+            'tick_id' => $tickLogId,
+            'kingdom_id' => $kingdom->getId(),
+            'tick_type' => $log->getTickType()->value,
+            'team_id' => $log->getTeam()?->getId(),
+            'fixture_id' => $log->getFixture()?->getId(),
+            'friendly_match_id' => $log->getFriendlyMatch()?->getId(),
+            'marketplace_batch' => $log->getMarketplaceBatch(),
+            'duration_ms' => (hrtime(true) - $startedAt) / 1_000_000,
+            'memory_delta_bytes' => memory_get_usage() - $memoryAtStart,
+            'process_peak_memory_bytes' => memory_get_peak_usage(),
+        ]);
+        if (!$isSimulatingLeagueMatch) {
+            $this->logger->info(sprintf('Tick %s completed successfully for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
+        } else {
+            $this->logger->info(sprintf('Tick %s initiated asynchronous battle simulation for Kingdom %s at scheduled time %s', $log->getTickType()->value, $kingdom->getName(), $log->getScheduledAt()->format('Y-m-d H:i:s')));
+        }
+
+        if (!$synchronous || $isSimulatingLeagueMatch) {
+            $this->orchestrator->orchestrate($kingdom);
+        }
     }
 
     private function executeTick(Kingdom $kingdom, KingdomTickLog $log): void
@@ -232,6 +279,8 @@ class ExecuteSingleTickHandler
             case TickType::DailyReset:
                 if (null !== $team) {
                     $this->processDailyResetForTeam($team, $scheduledAt);
+                } else {
+                    $this->orchestrator->processDailyKingdomPhase($kingdom, $log);
                 }
                 break;
 
@@ -242,7 +291,7 @@ class ExecuteSingleTickHandler
                         $this->npcSimulationService->simulateTactics($kingdom, $scheduledAt, $fixture->getAwayTeam());
                         $this->arenaRevenueService->payFixtureRevenue($fixture);
                     }
-                    $this->leagueMatchResolutionService->resolveFixture($fixture, $scheduledAt);
+                    $this->leagueMatchResolutionService->resolveFixture($fixture, $scheduledAt, false);
 
                     $this->logger->debug(sprintf('Processed league match tick for fixture ID %d', $fixture->getId()));
                 }
@@ -252,15 +301,65 @@ class ExecuteSingleTickHandler
                 $friendlyMatch = $log->getFriendlyMatch();
                 if (null !== $friendlyMatch) {
                     // No NPC tactics simulation and no arena revenue for friendly matches
-                    $this->friendlyMatchResolutionService->resolveMatch($friendlyMatch, $scheduledAt);
+                    $this->friendlyMatchResolutionService->resolveMatch($friendlyMatch, $scheduledAt, false);
 
                     $this->logger->debug(sprintf('Processed friendly match tick for friendly match ID %d', $friendlyMatch->getId() ?? 0));
                 }
                 break;
 
             case TickType::SeasonTransition:
+                $this->em->refresh($kingdom, \Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE);
                 $this->seasonTransitionService->executeTransition($kingdom);
+                $this->scheduleNewSeasonTicks($kingdom, $scheduledAt);
                 break;
+        }
+    }
+
+    private function scheduleNewSeasonTicks(Kingdom $kingdom, \DateTimeImmutable $scheduledAt): void
+    {
+        $horizon = $kingdom->getTickPlanningHorizon();
+        if (null === $horizon || $horizon <= $scheduledAt) {
+            return;
+        }
+
+        $season = $this->em->getRepository(\App\Entity\League\LeagueSeason::class)->findOneBy([
+            'kingdom' => $kingdom,
+            'status' => \App\Enum\LeagueSeasonStatus::Active,
+        ]);
+        if (!$season instanceof \App\Entity\League\LeagueSeason) {
+            throw new \RuntimeException('No active season found after transition.');
+        }
+
+        $events = [];
+        foreach ($this->scheduleCalculator->generateOccurrences($scheduledAt, $horizon, $kingdom->getTimezone(), $season->getStartDate()) as $occurrence) {
+            $type = $occurrence['type'];
+            if (TickType::SeasonTransition === $type) {
+                $scopes = [null];
+            } elseif (TickType::LeagueMatch === $type) {
+                $scopes = $this->em->getRepository(\App\Entity\League\LeagueFixture::class)
+                    ->findScheduledFixturesAtTime($kingdom, $occurrence['time']);
+            } else {
+                continue;
+            }
+
+            foreach ($scopes as $fixture) {
+                $criteria = [
+                    'kingdom' => $kingdom,
+                    'tickType' => $type,
+                    'scheduledAt' => $occurrence['time'],
+                    'team' => null,
+                    'fixture' => $fixture,
+                    'friendlyMatch' => null,
+                ];
+                if (null !== $this->tickLogRepository->findOneBy($criteria)) {
+                    continue;
+                }
+
+                $tick = (new KingdomTickLog())->setKingdom($kingdom)->setTickType($type)
+                    ->setScheduledAt($occurrence['time'])->setFixture($fixture)->setStatus('pending');
+                $this->tickLogRepository->attachToEvent($tick, $events);
+                $this->em->persist($tick);
+            }
         }
     }
 
@@ -393,9 +492,7 @@ class ExecuteSingleTickHandler
         }
 
         // Clean up snapshots older than 30 days
-        $snapshotRepo->deleteOlderThan($team, new \DateTimeImmutable('-30 days'));
-
-        $this->marketplaceService->processExpiredListingsForKingdom($kingdom, $scheduledAt, $team);
+        $snapshotRepo->deleteOlderThan($team, $scheduledAt->modify('-30 days'));
 
         // Process pending facility upgrades
         $this->hqService->processFacilityUpgradesTick($kingdom, $scheduledAt, $team);
@@ -424,30 +521,6 @@ class ExecuteSingleTickHandler
         $combatants = $this->heroRepository->findCombatantsByTeam($team);
         foreach ($combatants as $hero) {
             $this->heroMasteryService->processDailyDecayTick($hero, $scheduledAt);
-        }
-
-        // Check if we need to pre-create the next season (Option A: Monday of Week 11)
-        if (1 === (int) $scheduledAt->format('N')) {
-            /** @var \App\Entity\League\LeagueSeason|null $activeSeason */
-            $activeSeason = $this->em->getRepository(\App\Entity\League\LeagueSeason::class)->findOneBy([
-                'kingdom' => $kingdom,
-                'status' => \App\Enum\LeagueSeasonStatus::Active,
-            ]);
-
-            if (null !== $activeSeason) {
-                $startDate = $activeSeason->getStartDate();
-                $prepMonday = (1 === (int) $startDate->format('N'))
-                    ? $startDate->setTime(0, 0, 0)
-                    : $startDate->modify('next monday')->setTime(0, 0, 0);
-
-                // Monday of Week 11 is prepMonday + 10 weeks
-                $mondayWeek11 = $prepMonday->modify('+10 weeks');
-
-                // If scheduledAt is equal to or after the Monday of Week 11
-                if ($scheduledAt->setTime(0, 0, 0) >= $mondayWeek11) {
-                    $this->seasonTransitionService->prepareUpcomingSeason($kingdom);
-                }
-            }
         }
 
         // Run daily NPC simulation actions

@@ -6,10 +6,11 @@ namespace App\Repository\Kingdom;
 
 use App\Entity\FriendlyMatch\FriendlyMatch;
 use App\Entity\Kingdom\Kingdom;
+use App\Entity\Kingdom\KingdomTickEvent;
 use App\Entity\Kingdom\KingdomTickLog;
-use App\Enum\BattleStatus;
 use App\Enum\TickType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -20,6 +21,94 @@ class KingdomTickLogRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, KingdomTickLog::class);
+    }
+
+    /** @param array<string, KingdomTickEvent> $events */
+    public function attachToEvent(KingdomTickLog $log, array &$events): void
+    {
+        $time = $log->getScheduledAt()->setTimezone(new \DateTimeZone('UTC'));
+        $key = $log->getTickType()->value.'|'.$time->format('Y-m-d H:i:s');
+        if (!isset($events[$key])) {
+            $em = $this->getEntityManager();
+            $event = $em->getRepository(KingdomTickEvent::class)->findOneBy([
+                'kingdom' => $log->getKingdom(),
+                'tickType' => $log->getTickType(),
+                'scheduledAt' => $time,
+            ]);
+            if (null === $event) {
+                $event = new KingdomTickEvent($log->getKingdom(), $log->getTickType(), $time);
+                $em->persist($event);
+            }
+            $events[$key] = $event;
+        }
+        $log->setEvent($events[$key]);
+    }
+
+    /**
+     * @param array<string, mixed>                          $criteria
+     * @param array<string, 'ASC'|'DESC'|'asc'|'desc'>|null $orderBy
+     *
+     * @return list<KingdomTickLog>
+     */
+    public function findBy(array $criteria, ?array $orderBy = null, ?int $limit = null, ?int $offset = null): array
+    {
+        $query = $this->queryForCriteria($criteria);
+        foreach ($orderBy ?? [] as $field => $direction) {
+            $alias = in_array($field, ['kingdom', 'tickType', 'scheduledAt'], true) ? 'event' : 'l';
+            $query->addOrderBy($alias.'.'.$field, 'DESC' === strtoupper($direction) ? 'DESC' : 'ASC');
+        }
+        if (null !== $limit) {
+            $query->setMaxResults($limit);
+        }
+        if (null !== $offset) {
+            $query->setFirstResult($offset);
+        }
+
+        return $query->getQuery()->getResult();
+    }
+
+    /**
+     * @param array<string, mixed>                          $criteria
+     * @param array<string, 'ASC'|'DESC'|'asc'|'desc'>|null $orderBy
+     */
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?KingdomTickLog
+    {
+        return $this->findBy($criteria, $orderBy, 1)[0] ?? null;
+    }
+
+    /**
+     * @param array<string, mixed> $criteria
+     *
+     * @return int<0, max>
+     */
+    public function count(array $criteria = []): int
+    {
+        return max(0, (int) $this->queryForCriteria($criteria)->select('COUNT(l.id)')->getQuery()->getSingleScalarResult());
+    }
+
+    /** @param array<string, mixed> $criteria */
+    private function queryForCriteria(array $criteria): QueryBuilder
+    {
+        $query = $this->createQueryBuilder('l')->innerJoin('l.event', 'event');
+        $index = 0;
+        foreach ($criteria as $field => $value) {
+            $alias = in_array($field, ['kingdom', 'tickType', 'scheduledAt'], true) ? 'event' : 'l';
+            $column = $alias.'.'.$field;
+            $parameter = 'criterion'.++$index;
+            if (null === $value) {
+                $query->andWhere($column.' IS NULL');
+            } elseif (is_array($value)) {
+                if ([] === $value) {
+                    $query->andWhere('1 = 0');
+                } else {
+                    $query->andWhere($column.' IN (:'.$parameter.')')->setParameter($parameter, $value);
+                }
+            } else {
+                $query->andWhere($column.' = :'.$parameter)->setParameter($parameter, $value);
+            }
+        }
+
+        return $query;
     }
 
     /**
@@ -33,8 +122,9 @@ class KingdomTickLogRepository extends ServiceEntityRepository
         ?FriendlyMatch $friendlyMatch = null,
     ): ?\DateTimeImmutable {
         $qb = $this->createQueryBuilder('l')
-            ->where('l.kingdom = :kingdom')
-            ->andWhere('l.tickType = :tickType')
+            ->innerJoin('l.event', 'event')
+            ->where('event.kingdom = :kingdom')
+            ->andWhere('event.tickType = :tickType')
             ->andWhere('l.status = :status')
             ->setParameter('kingdom', $kingdom)
             ->setParameter('tickType', $tickType)
@@ -62,7 +152,7 @@ class KingdomTickLogRepository extends ServiceEntityRepository
         }
 
         /** @var KingdomTickLog|null $latest */
-        $latest = $qb->orderBy('l.scheduledAt', \SortDirection::Descending)
+        $latest = $qb->orderBy('event.scheduledAt', \SortDirection::Descending)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -74,7 +164,8 @@ class KingdomTickLogRepository extends ServiceEntityRepository
     {
         $count = $this->createQueryBuilder('l')
             ->select('COUNT(l.id)')
-            ->where('l.kingdom = :kingdom')
+            ->innerJoin('l.event', 'event')
+            ->where('event.kingdom = :kingdom')
             ->andWhere('l.status = :status')
             ->setParameter('kingdom', $kingdom)
             ->setParameter('status', 'failed')
@@ -88,7 +179,8 @@ class KingdomTickLogRepository extends ServiceEntityRepository
     {
         $count = $this->createQueryBuilder('l')
             ->select('COUNT(l.id)')
-            ->where('l.kingdom = :kingdom')
+            ->innerJoin('l.event', 'event')
+            ->where('event.kingdom = :kingdom')
             ->andWhere('l.status IN (:statuses)')
             ->setParameter('kingdom', $kingdom)
             ->setParameter('statuses', ['dispatched', 'processing'])
@@ -98,11 +190,28 @@ class KingdomTickLogRepository extends ServiceEntityRepository
         return (int) $count > 0;
     }
 
+    public function findOldestAwaitingCombat(Kingdom $kingdom): ?KingdomTickLog
+    {
+        return $this->findOneBy(
+            ['kingdom' => $kingdom, 'status' => 'awaiting_combat'],
+            ['scheduledAt' => 'ASC', 'id' => 'ASC'],
+        );
+    }
+
+    /**
+     * @return list<KingdomTickLog>
+     */
+    public function findAwaitingCombatAt(Kingdom $kingdom, \DateTimeImmutable $time): array
+    {
+        return $this->findBy(['kingdom' => $kingdom, 'status' => 'awaiting_combat', 'scheduledAt' => $time]);
+    }
+
     public function getOldestPendingTime(Kingdom $kingdom): ?\DateTimeImmutable
     {
         $result = $this->createQueryBuilder('l')
-            ->select('MIN(l.scheduledAt)')
-            ->where('l.kingdom = :kingdom')
+            ->select('MIN(event.scheduledAt)')
+            ->innerJoin('l.event', 'event')
+            ->where('event.kingdom = :kingdom')
             ->andWhere('l.status = :status')
             ->setParameter('kingdom', $kingdom)
             ->setParameter('status', 'pending')
@@ -120,8 +229,9 @@ class KingdomTickLogRepository extends ServiceEntityRepository
     {
         /** @var list<KingdomTickLog> $logs */
         $logs = $this->createQueryBuilder('l')
-            ->where('l.kingdom = :kingdom')
-            ->andWhere('l.scheduledAt = :time')
+            ->innerJoin('l.event', 'event')
+            ->where('event.kingdom = :kingdom')
+            ->andWhere('event.scheduledAt = :time')
             ->andWhere('l.status = :status')
             ->setParameter('kingdom', $kingdom)
             ->setParameter('time', $time)
@@ -151,13 +261,16 @@ class KingdomTickLogRepository extends ServiceEntityRepository
     {
         /** @var list<KingdomTickLog> $logs */
         $logs = $this->createQueryBuilder('l')
-            ->where('l.kingdom = :kingdom')
-            ->andWhere('l.scheduledAt = :time')
+            ->innerJoin('l.event', 'event')
+            ->where('event.kingdom = :kingdom')
+            ->andWhere('event.scheduledAt = :time')
             ->andWhere('l.status = :status')
             ->setParameter('kingdom', $kingdom)
             ->setParameter('time', $time)
             ->setParameter('status', 'pending')
+            ->orderBy('l.id', \SortDirection::Ascending)
             ->getQuery()
+            ->setHint(\Doctrine\ORM\Query::HINT_REFRESH, true)
             ->getResult();
 
         return array_values(array_filter($logs, static function (KingdomTickLog $log) use ($priority): bool {
@@ -165,59 +278,19 @@ class KingdomTickLogRepository extends ServiceEntityRepository
         }));
     }
 
-    /**
-     * Finds and recovers/fails stale ticks that are stuck in 'dispatched' or 'processing' state.
-     * Ticks are reset to 'pending' (incrementing retry_count) or marked as 'failed' (if maximum retries reached).
-     *
-     * @return int Number of recovered ticks
-     */
     public function recoverStaleTicks(Kingdom $kingdom, \DateTimeImmutable $threshold): int
     {
-        /** @var list<KingdomTickLog> $staleTicks */
-        $staleTicks = $this->createQueryBuilder('l')
-            ->where('l.kingdom = :kingdom')
-            ->andWhere('l.status IN (:statuses)')
-            ->andWhere('l.executedAt < :threshold')
-            ->setParameter('kingdom', $kingdom)
-            ->setParameter('statuses', ['dispatched', 'processing'])
-            ->setParameter('threshold', $threshold)
-            ->getQuery()
-            ->getResult();
-
-        $recoveredCount = 0;
-        foreach ($staleTicks as $tick) {
-            $battle = $tick->getFixture()?->getBattle() ?? $tick->getFriendlyMatch()?->getBattle();
-            if ('processing' === $tick->getStatus() && null !== $battle
-                && in_array($battle->getStatus(), [BattleStatus::Simulating, BattleStatus::Stalled], true)) {
-                continue;
-            }
-
-            $newRetryCount = $tick->getRetryCount() + 1;
-            $tick->setRetryCount($newRetryCount);
-            $tick->setExecutedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
-
-            if ($newRetryCount < 3) {
-                $tick->setStatus('pending');
-                $tick->setErrorMessage(sprintf(
-                    'Worker timeout/crash detected. Auto-retry #%d. (Previous error: %s)',
-                    $newRetryCount,
-                    $tick->getErrorMessage() ?? 'none'
-                ));
-            } else {
-                $tick->setStatus('failed');
-                $tick->setErrorMessage(sprintf(
-                    'Worker timeout/crash detected. Maximum retries reached (3). Last error: %s',
-                    $tick->getErrorMessage() ?? 'none'
-                ));
-            }
-            ++$recoveredCount;
+        if (null === $kingdom->getId()) {
+            return 0;
         }
 
-        if ($recoveredCount > 0) {
-            $this->getEntityManager()->flush();
-        }
-
-        return $recoveredCount;
+        return (int) $this->getEntityManager()->getConnection()->executeStatement(
+            "UPDATE kingdom_tick_log SET status = CASE WHEN retry_count >= 2 THEN 'failed' ELSE 'pending' END, "
+            ."error_message = CASE WHEN retry_count >= 2 THEN 'Dispatch timeout. Maximum retries reached (3).' ELSE 'Dispatch timeout. Automatically rescheduled.' END, "
+            .'executed_at = ?, retry_count = retry_count + 1 '
+            ."WHERE event_id IN (SELECT id FROM kingdom_tick_event WHERE kingdom_id = ?) AND status = 'dispatched' AND executed_at < ?",
+            [gmdate('Y-m-d H:i:s'), $kingdom->getId(), $threshold->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s')],
+        );
     }
 
     /**
@@ -227,7 +300,8 @@ class KingdomTickLogRepository extends ServiceEntityRepository
     {
         $rows = $this->createQueryBuilder('l')
             ->select('l.status AS status, COUNT(l.id) AS cnt')
-            ->where('l.kingdom = :kingdom')
+            ->innerJoin('l.event', 'event')
+            ->where('event.kingdom = :kingdom')
             ->setParameter('kingdom', $kingdom)
             ->groupBy('l.status')
             ->getQuery()
@@ -237,6 +311,7 @@ class KingdomTickLogRepository extends ServiceEntityRepository
             'pending' => 0,
             'dispatched' => 0,
             'processing' => 0,
+            'awaiting_combat' => 0,
             'completed' => 0,
             'failed' => 0,
         ];
@@ -252,11 +327,12 @@ class KingdomTickLogRepository extends ServiceEntityRepository
     {
         /** @var KingdomTickLog|null $log */
         $log = $this->createQueryBuilder('l')
-            ->where('l.kingdom = :kingdom')
+            ->innerJoin('l.event', 'event')
+            ->where('event.kingdom = :kingdom')
             ->andWhere('l.status = :status')
             ->setParameter('kingdom', $kingdom)
             ->setParameter('status', 'completed')
-            ->orderBy('l.scheduledAt', \SortDirection::Descending)
+            ->orderBy('event.scheduledAt', \SortDirection::Descending)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -270,11 +346,12 @@ class KingdomTickLogRepository extends ServiceEntityRepository
     public function findFailed(Kingdom $kingdom, ?int $tickId = null): array
     {
         $qb = $this->createQueryBuilder('l')
-            ->where('l.kingdom = :kingdom')
+            ->innerJoin('l.event', 'event')
+            ->where('event.kingdom = :kingdom')
             ->andWhere('l.status = :status')
             ->setParameter('kingdom', $kingdom)
             ->setParameter('status', 'failed')
-            ->orderBy('l.scheduledAt', \SortDirection::Ascending)
+            ->orderBy('event.scheduledAt', \SortDirection::Ascending)
             ->addOrderBy('l.id', \SortDirection::Ascending);
 
         if (null !== $tickId) {

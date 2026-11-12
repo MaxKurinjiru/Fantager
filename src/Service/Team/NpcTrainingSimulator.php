@@ -57,10 +57,12 @@ class NpcTrainingSimulator
                     if (HeroStatus::Available === $h->getStatus()) {
                         $trainers[] = $h;
                     }
-                } else {
+                } elseif (!\in_array($h->getStatus(), [HeroStatus::Dead, HeroStatus::Retired], true)) {
                     $trainees[] = $h;
                 }
             }
+
+            $liveTrainerCount = $this->countLiveTrainers($teamHeroes);
 
             // Find active formation hero IDs to avoid promoting combatants in active formations
             $activeFormations = $this->em->getRepository(Formation::class)->findBy(['team' => $team]);
@@ -93,8 +95,18 @@ class NpcTrainingSimulator
                 $promotionCandidates[] = $h;
             }
 
-            // Sort candidates by age and level descending
-            usort($promotionCandidates, function (Hero $a, Hero $b): int {
+            $role = $this->getHelperEconomicRole($team);
+            $focuses = $this->npcTrainerFocusAttributes(
+                $role,
+                $this->tacticsSimulator->dominantLineupWeaponAttribute($team)
+            );
+
+            // Prefer the combatant with the highest raw stat among the attributes this team trains.
+            usort($promotionCandidates, function (Hero $a, Hero $b) use ($focuses): int {
+                $statCmp = $this->npcTrainerValue($b, $focuses) <=> $this->npcTrainerValue($a, $focuses);
+                if (0 !== $statCmp) {
+                    return $statCmp;
+                }
                 $ageCompare = $b->getAgeRaw() <=> $a->getAgeRaw();
                 if (0 !== $ageCompare) {
                     return $ageCompare;
@@ -115,8 +127,26 @@ class NpcTrainingSimulator
             }
             // else: fall back to all candidates (better a Slacker trainer than no trainer)
 
+            $liveCombatants = [];
+            foreach ($teamHeroes as $h) {
+                if ($h->isCombatant() && !\in_array($h->getStatus(), [HeroStatus::Dead, HeroStatus::Retired], true)) {
+                    $liveCombatants[] = $h;
+                }
+            }
+            // With a deep roster, never promote a top-6 fighter. Short rosters still need one trainer.
+            if (\count($liveCombatants) > 6) {
+                $protectedIds = $this->npcProtectedIds($liveCombatants, 6);
+                $promotionCandidates = array_values(array_filter(
+                    $promotionCandidates,
+                    static fn (Hero $h): bool => null === $h->getId() || !isset($protectedIds[$h->getId()])
+                ));
+            }
+
             $trainerLimit = $this->trainingService->getTrainerLimit($team);
-            $needed = $trainerLimit - \count($trainers);
+            // Promote at most one combatant, and only when the team has no live trainer
+            // (including listed-for-sale). Remaining target slots are filled by marketplace buys.
+            $needed = 0 === $liveTrainerCount ? 1 : 0;
+            $needed = min($needed, $trainerLimit, $this->getNpcTrainerTarget($role, $trainerLimit));
             for ($i = 0; $i < $needed && $i < \count($promotionCandidates); ++$i) {
                 $candidate = $promotionCandidates[$i];
                 // Use shared applyTrainerPromotion() to ensure chronicle entry (trainer_promoted)
@@ -143,8 +173,12 @@ class NpcTrainingSimulator
                 $trainee->setTrainer(null);
             }
 
-            // Sort trainers to ensure the best active trainers are configured/assigned
-            usort($trainers, function (Hero $a, Hero $b): int {
+            // Sort trainers so the strongest focus-stat trainer is configured first
+            usort($trainers, function (Hero $a, Hero $b) use ($focuses): int {
+                $statCmp = $this->npcTrainerValue($b, $focuses) <=> $this->npcTrainerValue($a, $focuses);
+                if (0 !== $statCmp) {
+                    return $statCmp;
+                }
                 $ageCompare = $b->getAgeRaw() <=> $a->getAgeRaw();
                 if (0 !== $ageCompare) {
                     return $ageCompare;
@@ -155,7 +189,6 @@ class NpcTrainingSimulator
 
             $activeTrainers = array_slice($trainers, 0, $trainerLimit);
 
-            $role = $this->getHelperEconomicRole($team);
             $trainingConfigs = $this->getTrainingConfigsForTeam($team, $role);
 
             // Configure active trainers
@@ -255,7 +288,7 @@ class NpcTrainingSimulator
     private function getTrainingConfigsForTeam(Team $team, string $role): array
     {
         $configs = $this->getTrainingConfigsForRole($role);
-        $lineupAttr = $this->dominantLineupWeaponAttribute($team);
+        $lineupAttr = $this->tacticsSimulator->dominantLineupWeaponAttribute($team);
         if (null !== $lineupAttr) {
             array_unshift($configs, ['type' => TrainingType::Attribute, 'attribute' => $lineupAttr]);
         }
@@ -273,37 +306,6 @@ class NpcTrainingSimulator
         }
 
         return $unique;
-    }
-
-    private function dominantLineupWeaponAttribute(Team $team): ?string
-    {
-        $formation = $this->em->getRepository(Formation::class)->findOneBy([
-            'team' => $team,
-            'isDefault' => true,
-            'isTemporary' => false,
-        ]);
-        if (null === $formation) {
-            return null;
-        }
-
-        $votes = [];
-        foreach ($formation->getSlots() as $slot) {
-            $hero = $slot->getHero();
-            if (null === $hero || $hero->isTrainer()) {
-                continue;
-            }
-            $attr = $this->tacticsSimulator->attributeForWeapon(
-                $this->tacticsSimulator->getPreferredWeaponSubType($hero)
-            );
-            $votes[$attr] = ($votes[$attr] ?? 0) + 1;
-        }
-        if ([] === $votes) {
-            return null;
-        }
-
-        arsort($votes);
-
-        return array_key_first($votes);
     }
 
     /**

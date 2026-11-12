@@ -217,4 +217,26 @@ class CalendarServiceTest extends TestCase
         $this->assertCount(1, $feed);
         $this->assertSame('scheduled', $feed[0]['status']);
     }
+
+    public function testDailyKingdomStatusIncludesUnfinishedMarketplaceBatches(): void
+    {
+        $kingdom = (new Kingdom())->setTimezone('UTC');
+        $scheduledAt = new \DateTimeImmutable('2026-06-11T00:00:00Z');
+        $this->scheduleCalculatorMock->method('generateOccurrences')->willReturn([
+            ['type' => TickType::DailyReset, 'time' => $scheduledAt],
+        ]);
+        $completed = (new \App\Entity\Kingdom\KingdomTickLog())->setStatus('completed');
+        $pending = (new \App\Entity\Kingdom\KingdomTickLog())->setStatus('pending');
+        $this->tickLogRepositoryMock->expects($this->once())->method('findBy')->with([
+            'kingdom' => $kingdom,
+            'tickType' => TickType::DailyReset,
+            'scheduledAt' => $scheduledAt,
+            'team' => null,
+        ])->willReturn([$completed, $pending]);
+
+        $feed = $this->service->getCalendarFeed($kingdom, $scheduledAt, $scheduledAt->modify('+1 day'), null);
+
+        self::assertCount(1, $feed);
+        self::assertSame('pending', $feed[0]['status']);
+    }
 }

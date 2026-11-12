@@ -18,3 +18,21 @@ parameters:
     doctrine:
         objectManagerLoader: bin/object-manager.php
     reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # findBy/findOneBy/count criteria still use kingdom/tickType/scheduledAt; those
+        # columns live on KingdomTickEvent and KingdomTickLogRepository joins them.
+        -
+            identifier: doctrine.findOneByArgument
+            message: '#KingdomTickLog does not have a field named \$(kingdom|scheduledAt|tickType)#'
+        -
+            identifier: doctrine.findByArgument
+            message: '#KingdomTickLog does not have a field named \$(kingdom|scheduledAt|tickType)#'
+        -
+            identifier: doctrine.countArgument
+            message: '#KingdomTickLog does not have a field named \$kingdom#'
+        -
+            identifier: method.nonObject
+            path: tests/Repository/KingdomTickLogRepositoryTest.php
+        -
+            identifier: argument.type
+            path: tests/Repository/KingdomTickLogRepositoryTest.php

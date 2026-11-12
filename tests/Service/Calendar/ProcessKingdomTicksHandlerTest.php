@@ -54,11 +54,12 @@ class ProcessKingdomTicksHandlerTest extends TestCase
     private $playerInactivityServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Formation\FixtureFormationService */
     private $fixtureFormationServiceMock;
-    /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\Marketplace\MarketplaceService */
-    private $marketplaceServiceMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject&\App\Service\League\LeagueMatchResolutionService */
     private $leagueMatchResolutionServiceMock;
     private KingdomTickOrchestrator&MockObject $orchestratorMock;
+    private \App\Service\Calendar\TickScheduleCalculator&MockObject $scheduleCalculatorMock;
+    private \Doctrine\DBAL\Connection&MockObject $connectionMock;
+    private LoggerInterface&MockObject $metricsLoggerMock;
     private ExecuteSingleTickHandler $handler;
 
     protected function setUp(): void
@@ -85,12 +86,16 @@ class ProcessKingdomTicksHandlerTest extends TestCase
         $this->teamPayrollServiceMock = $this->createMock(\App\Service\Economy\TeamPayrollService::class);
         $this->playerInactivityServiceMock = $this->createMock(\App\Service\Auth\PlayerInactivityService::class);
         $this->fixtureFormationServiceMock = $this->createMock(\App\Service\Formation\FixtureFormationService::class);
-        $this->marketplaceServiceMock = $this->createMock(\App\Service\Marketplace\MarketplaceService::class);
         $this->leagueMatchResolutionServiceMock = $this->createMock(\App\Service\League\LeagueMatchResolutionService::class);
         $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
+        $this->connectionMock = $this->createMock(\Doctrine\DBAL\Connection::class);
+        $this->connectionMock->method('fetchOne')->willReturn(1);
+        $this->entityManagerMock->method('getConnection')->willReturn($this->connectionMock);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
+        $this->metricsLoggerMock = $this->createMock(LoggerInterface::class);
         $this->seasonTransitionServiceMock = $this->createMock(\App\Service\League\SeasonTransitionService::class);
         $this->orchestratorMock = $this->createMock(KingdomTickOrchestrator::class);
+        $this->scheduleCalculatorMock = $this->createMock(\App\Service\Calendar\TickScheduleCalculator::class);
 
         $this->handler = new ExecuteSingleTickHandler(
             $this->tickLogRepositoryMock,
@@ -105,7 +110,6 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->teamPayrollServiceMock,
             $this->playerInactivityServiceMock,
             $this->fixtureFormationServiceMock,
-            $this->marketplaceServiceMock,
             $this->leagueMatchResolutionServiceMock,
             $this->createMock(\App\Service\FriendlyMatch\FriendlyMatchResolutionService::class),
             $this->entityManagerMock,
@@ -116,6 +120,8 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             $this->createMock(\App\Service\Team\NpcSimulationService::class),
             $this->orchestratorMock,
             $this->createMock(\App\Service\Hero\HeroMasteryService::class),
+            $this->scheduleCalculatorMock,
+            $this->metricsLoggerMock,
         );
     }
 
@@ -162,18 +168,25 @@ class ProcessKingdomTicksHandlerTest extends TestCase
             ->method('processTrainingTick')
             ->willThrowException(new \RuntimeException('Database connection lost'));
 
-        // One transaction starts to run the tick (then rolls back), and another to save the failure (then commits)
         $this->entityManagerMock
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('beginTransaction');
 
         $this->entityManagerMock
             ->expects($this->exactly(1))
             ->method('rollback');
 
-        $this->entityManagerMock
-            ->expects($this->exactly(1))
-            ->method('commit');
+        $this->entityManagerMock->expects($this->never())->method('commit');
+        $this->entityManagerMock->expects($this->once())->method('clear');
+        $this->entityManagerMock->expects($this->never())->method('flush');
+        $this->connectionMock->expects($this->once())->method('executeStatement')
+            ->with(
+                $this->stringContains('UPDATE kingdom_tick_log'),
+                $this->callback(static fn (array $parameters): bool => 'failed' === $parameters[0]
+                    && str_contains($parameters[2], 'Database connection lost')
+                    && 1 === $parameters[3]
+                    && 'processing' === $parameters[4]),
+            )->willReturn(1);
 
         $this->setupQueryBuilderMock(1);
 
@@ -185,15 +198,7 @@ class ProcessKingdomTicksHandlerTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Database connection lost');
 
-        // Run the handler
-        $message = new ExecuteSingleTickMessage(1);
-        try {
-            $this->handler->__invoke($message);
-        } finally {
-            // Assert log is set to failed before re-throwing
-            $this->assertSame('failed', $log->getStatus());
-            $this->assertStringContainsString('Database connection lost', (string) $log->getErrorMessage());
-        }
+        $this->handler->__invoke(new ExecuteSingleTickMessage(1));
     }
 
     public function testHandlerProcessesSingleTickAndTriggersOrchestrator(): void
@@ -240,5 +245,153 @@ class ProcessKingdomTicksHandlerTest extends TestCase
 
         // Assert log is set to completed
         $this->assertSame('completed', $log->getStatus());
+    }
+
+    public function testMatchKickoffWaitsForOrchestratorToStartCombat(): void
+    {
+        $kingdom = (new Kingdom())->setName('Test Kingdom');
+        $battle = (new \App\Entity\Combat\Battle())->setStatus(\App\Enum\BattleStatus::Simulating);
+        $fixture = (new \App\Entity\League\LeagueFixture())->setBattle($battle);
+        $scheduledAt = new \DateTimeImmutable('2026-06-12 18:00:00 UTC');
+        $log = (new KingdomTickLog())->setKingdom($kingdom)->setTickType(TickType::LeagueMatch)
+            ->setScheduledAt($scheduledAt)->setFixture($fixture)->setStatus('dispatched');
+        $this->tickLogRepositoryMock->method('find')->willReturn($log);
+        $this->leagueMatchResolutionServiceMock->expects($this->once())->method('resolveFixture')
+            ->with($fixture, $scheduledAt, false)->willReturn([]);
+        $this->orchestratorMock->expects($this->once())->method('orchestrate')->with($kingdom);
+        $this->setupQueryBuilderMock(1);
+
+        $this->handler->__invoke(new ExecuteSingleTickMessage(1));
+
+        $this->assertSame('awaiting_combat', $log->getStatus());
+    }
+
+    public function testSynchronousNonMatchTickDoesNotDispatchAsyncWork(): void
+    {
+        $kingdom = (new Kingdom())->setName('Test Kingdom');
+        $team = (new \App\Entity\Team\Team())->setKingdom($kingdom);
+        $log = (new KingdomTickLog())->setKingdom($kingdom)->setTickType(TickType::WeeklyTraining)
+            ->setScheduledAt(new \DateTimeImmutable('2026-06-11 10:00:00 UTC'))->setTeam($team)->setStatus('pending');
+        $this->tickLogRepositoryMock->method('find')->willReturn($log);
+        $this->orchestratorMock->expects($this->never())->method('orchestrate');
+        $this->setupQueryBuilderMock(1);
+
+        $this->handler->__invoke(new ExecuteSingleTickMessage(1), true);
+
+        $this->assertSame('completed', $log->getStatus());
+    }
+
+    public function testAsyncOptimisticConflictRequeuesTheRolledBackTick(): void
+    {
+        $kingdom = (new Kingdom())->setName('Test Kingdom');
+        $team = (new \App\Entity\Team\Team())->setKingdom($kingdom);
+        $log = (new KingdomTickLog())->setKingdom($kingdom)->setTickType(TickType::WeeklyTraining)
+            ->setScheduledAt(new \DateTimeImmutable('2026-06-11 10:00:00 UTC'))->setTeam($team)->setStatus('pending');
+        $this->tickLogRepositoryMock->method('find')->willReturn($log);
+        $this->trainingServiceMock->method('processTrainingTick')->willThrowException(new \Doctrine\ORM\OptimisticLockException('stale', null));
+        $this->entityManagerMock->expects($this->once())->method('rollback');
+        $this->orchestratorMock->expects($this->once())->method('retryOptimisticConflict')->with(1)->willReturn(true);
+        $this->orchestratorMock->expects($this->never())->method('orchestrate');
+        $this->setupQueryBuilderMock(1);
+
+        $this->handler->__invoke(new ExecuteSingleTickMessage(1));
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('optimisticConflictFailureModes')]
+    public function testOptimisticConflictEventuallyFails(bool $synchronous): void
+    {
+        $kingdom = (new Kingdom())->setName('Test Kingdom');
+        $team = (new \App\Entity\Team\Team())->setKingdom($kingdom);
+        $log = (new KingdomTickLog())->setKingdom($kingdom)->setTickType(TickType::WeeklyTraining)
+            ->setScheduledAt(new \DateTimeImmutable('2026-06-11 10:00:00 UTC'))->setTeam($team)->setStatus('pending');
+        $this->tickLogRepositoryMock->method('find')->willReturn($log);
+        $this->trainingServiceMock->method('processTrainingTick')->willThrowException(new \Doctrine\ORM\OptimisticLockException('stale', null));
+        $this->orchestratorMock->expects($synchronous ? $this->never() : $this->once())->method('retryOptimisticConflict')->willReturn(false);
+        $this->connectionMock->expects($this->once())->method('executeStatement')
+            ->with($this->stringContains('UPDATE kingdom_tick_log'), $this->callback(static fn (array $parameters): bool => 'failed' === $parameters[0]))
+            ->willReturn(1);
+        $this->setupQueryBuilderMock(1);
+
+        $this->expectException(\Doctrine\ORM\OptimisticLockException::class);
+        $this->handler->__invoke(new ExecuteSingleTickMessage(1), $synchronous);
+    }
+
+    /** @return iterable<string, array{bool}> */
+    public static function optimisticConflictFailureModes(): iterable
+    {
+        yield 'asynchronous retry budget exhausted' => [false];
+        yield 'synchronous execution' => [true];
+    }
+
+    public function testKingdomDailyResetExecutesItsOwnPhase(): void
+    {
+        $kingdom = (new Kingdom())->setName('Test Kingdom');
+        $scheduledAt = new \DateTimeImmutable('2026-06-11 00:00:00 UTC');
+        $log = (new KingdomTickLog())->setKingdom($kingdom)->setTickType(TickType::DailyReset)
+            ->setScheduledAt($scheduledAt)->setStatus('pending');
+        $this->tickLogRepositoryMock->method('find')->willReturn($log);
+        $this->orchestratorMock->expects($this->once())->method('processDailyKingdomPhase')->with($kingdom, $log);
+        $this->metricsLoggerMock->expects($this->once())->method('info')->with('Tick execution metrics.', $this->callback(
+            static fn (array $context): bool => 1 === $context['tick_id'] && 'daily_reset' === $context['tick_type']
+                && $context['duration_ms'] >= 0 && array_key_exists('memory_delta_bytes', $context),
+        ));
+        $this->setupQueryBuilderMock(1);
+
+        $this->handler->__invoke(new ExecuteSingleTickMessage(1), true);
+
+        $this->assertSame('completed', $log->getStatus());
+    }
+
+    public function testSeasonTransitionSchedulesNewFixturesThroughRequestedHorizon(): void
+    {
+        $kingdom = (new Kingdom())->setName('Test Kingdom')->setTimezone('UTC');
+        $transitionTime = new \DateTimeImmutable('2026-03-20 19:00:00 UTC');
+        $matchTime = new \DateTimeImmutable('2026-03-24 18:00:00 UTC');
+        $nextTransitionTime = new \DateTimeImmutable('2026-06-05 19:00:00 UTC');
+        $horizon = new \DateTimeImmutable('2026-06-06 04:00:00 UTC');
+        $startDate = new \DateTimeImmutable('2026-03-23 00:00:00 UTC');
+        $log = (new KingdomTickLog())->setKingdom($kingdom)->setTickType(TickType::SeasonTransition)
+            ->setScheduledAt($transitionTime)->setStatus('pending');
+        $fixture = new \App\Entity\League\LeagueFixture();
+        $existingFixture = new \App\Entity\League\LeagueFixture();
+        $existing = new KingdomTickLog();
+        $season = (new \App\Entity\League\LeagueSeason())->setStartDate($startDate);
+        $seasonRepository = $this->createMock(\App\Repository\League\LeagueSeasonRepository::class);
+        $seasonRepository->method('findOneBy')->willReturn($season);
+        $fixtureRepository = $this->createMock(\App\Repository\League\LeagueFixtureRepository::class);
+        $fixtureRepository->expects($this->once())->method('findScheduledFixturesAtTime')
+            ->with($kingdom, $matchTime)->willReturn([$fixture, $existingFixture]);
+        $this->entityManagerMock->method('getRepository')->willReturnCallback(static fn (string $class) => match ($class) {
+            \App\Entity\League\LeagueSeason::class => $seasonRepository,
+            \App\Entity\League\LeagueFixture::class => $fixtureRepository,
+            default => throw new \LogicException('Unexpected repository '.$class),
+        });
+        $this->tickLogRepositoryMock->method('find')->willReturn($log);
+        $kingdom->setTickPlanningHorizon($horizon);
+        $this->tickLogRepositoryMock->method('findOneBy')->willReturnCallback(
+            static fn (array $criteria): ?KingdomTickLog => $criteria['fixture'] === $existingFixture ? $existing : null,
+        );
+        $this->scheduleCalculatorMock->expects($this->once())->method('generateOccurrences')
+            ->with($transitionTime, $horizon, 'UTC', $startDate)
+            ->willReturn([
+                ['type' => TickType::LeagueMatch, 'time' => $matchTime],
+                ['type' => TickType::SeasonTransition, 'time' => $nextTransitionTime],
+                ['type' => TickType::DailyReset, 'time' => $horizon],
+            ]);
+        /** @var list<KingdomTickLog> $persisted */
+        $persisted = [];
+        $this->entityManagerMock->expects($this->exactly(2))->method('persist')
+            ->willReturnCallback(static function (object $entity) use (&$persisted): void {
+                self::assertInstanceOf(KingdomTickLog::class, $entity);
+                $persisted[] = $entity;
+            });
+        $this->setupQueryBuilderMock(1);
+
+        $this->handler->__invoke(new ExecuteSingleTickMessage(1), true);
+
+        $this->assertSame($fixture, $persisted[0]->getFixture());
+        $this->assertSame($matchTime, $persisted[0]->getScheduledAt());
+        $this->assertSame(TickType::SeasonTransition, $persisted[1]->getTickType());
+        $this->assertSame($nextTransitionTime, $persisted[1]->getScheduledAt());
     }
 }

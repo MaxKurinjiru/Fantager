@@ -88,7 +88,7 @@ class KingdomSimulationService
     {
         $snapshot = $this->tickRunnerService->getStatusSnapshot($kingdom);
         $counts = $snapshot['counts'];
-        $openTicks = $counts['pending'] + $counts['dispatched'] + $counts['processing'];
+        $openTicks = $counts['pending'] + $counts['dispatched'] + $counts['processing'] + $counts['awaiting_combat'];
         $queue = $this->countMessengerMessages();
 
         $snapshot['messenger_async_count'] = $queue;
@@ -119,7 +119,10 @@ class KingdomSimulationService
      */
     public function isFailed(array $snapshot): bool
     {
-        return [] !== ($snapshot['failed'] ?? []) || null !== ($snapshot['blocked'] ?? null);
+        $blocked = $snapshot['blocked'] ?? null;
+
+        return [] !== ($snapshot['failed'] ?? [])
+            || (null !== $blocked && 'failed' === ($blocked['status'] ?? 'failed'));
     }
 
     public function nextHorizon(Kingdom $kingdom, \DateInterval $step): \DateTimeImmutable

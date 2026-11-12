@@ -124,6 +124,7 @@ flash:
   account_deleted: Your account has been permanently deleted.
 
 error:
+  concurrent_change: The data changed concurrently. Refresh and check the result before trying again.
   no_team: No team assigned to your account.
   no_kingdom: No kingdom assigned to your account.
   access_denied: Access denied.

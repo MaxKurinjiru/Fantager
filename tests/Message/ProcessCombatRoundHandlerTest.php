@@ -12,6 +12,7 @@ use App\Enum\MatchType;
 use App\Message\CombatWave;
 use App\Message\ProcessCombatRound;
 use App\Message\ProcessCombatRoundHandler;
+use App\Service\Calendar\TickClock;
 use App\Service\Combat\CombatEngine;
 use App\Service\Combat\CombatRoundProcessor;
 use App\Service\Combat\CombatWaveProcessor;
@@ -84,6 +85,9 @@ class ProcessCombatRoundHandlerTest extends TestCase
         $scheduledAt = new \DateTimeImmutable('2026-06-17 18:00:00');
 
         $battle = $this->makeBattle(BattleStatus::Simulating, $savedRound, $kingdom, $scheduledAt);
+        $clock = new TickClock();
+        $previousTime = new \DateTimeImmutable('2026-06-16 12:00:00');
+        $clock->setCustomTime($previousTime);
         $battle->setRunState(['status' => 'simulating']);
         $battle->setMatchType($friendly ? MatchType::Friendly : MatchType::League);
 
@@ -131,13 +135,20 @@ class ProcessCombatRoundHandlerTest extends TestCase
             ->method('forceCompleteAtRoundCap')->willReturnCallback($finish);
 
         $league = $this->createMock(LeagueMatchResolutionService::class);
-        $league->expects($friendly ? $this->never() : $this->once())->method('completeBattle')->with($battle);
+        $league->expects($friendly ? $this->never() : $this->once())->method('completeBattle')->with($battle)
+            ->willReturnCallback(static function () use ($clock, $scheduledAt): void {
+                self::assertSame($scheduledAt, $clock->getCurrentTime());
+            });
         $friendlyService = $this->createMock(\App\Service\FriendlyMatch\FriendlyMatchResolutionService::class);
-        $friendlyService->expects($friendly ? $this->once() : $this->never())->method('completeBattle')->with($battle);
+        $friendlyService->expects($friendly ? $this->once() : $this->never())->method('completeBattle')->with($battle)
+            ->willReturnCallback(static function () use ($clock, $scheduledAt): void {
+                self::assertSame($scheduledAt, $clock->getCurrentTime());
+            });
 
-        $handler = $this->handler($em, $combatEngine, $league, $friendlyService);
+        $handler = $this->handler($em, $combatEngine, $league, $friendlyService, $clock);
         $handler->process(42, $savedRound + 1);
 
+        $this->assertSame($previousTime, $clock->getCustomTime());
         $this->assertSame(BattleStatus::Completed, $battle->getStatus());
         $this->assertSame(min($savedRound + 1, CombatEngine::MAX_ROUNDS), $battle->getCurrentRound());
         $this->assertSame(4, $battle->getScoreA());
@@ -190,6 +201,9 @@ class ProcessCombatRoundHandlerTest extends TestCase
     public function testCompletionFailureRestoresLastCheckpointBeforeMarkingStalled(): void
     {
         $battle = $this->makeBattle(BattleStatus::Simulating, 4);
+        $clock = new TickClock();
+        $previousTime = new \DateTimeImmutable('2026-06-16 12:00:00');
+        $clock->setCustomTime($previousTime);
         $battle->setRunState(['status' => 'simulating']);
         $persistedBattle = clone $battle;
         $em = $this->createMock(EntityManagerInterface::class);
@@ -212,8 +226,9 @@ class ProcessCombatRoundHandlerTest extends TestCase
         $league = $this->createMock(LeagueMatchResolutionService::class);
         $league->method('completeBattle')->willThrowException(new \RuntimeException('completion failed'));
 
-        $this->handler($em, $combatEngine, $league)->process(42, 5);
+        $this->handler($em, $combatEngine, $league, null, $clock)->process(42, 5);
 
+        $this->assertSame($previousTime, $clock->getCustomTime());
         $this->assertSame(BattleStatus::Stalled, $persistedBattle->getStatus());
         $this->assertSame(4, $persistedBattle->getCurrentRound());
         $this->assertSame('simulating', $persistedBattle->getRunState()['status'] ?? null);
@@ -225,6 +240,7 @@ class ProcessCombatRoundHandlerTest extends TestCase
         CombatEngine $combatEngine,
         ?LeagueMatchResolutionService $league = null,
         ?\App\Service\FriendlyMatch\FriendlyMatchResolutionService $friendly = null,
+        ?TickClock $clock = null,
     ): CombatRoundProcessor {
         return new CombatRoundProcessor(
             $em,
@@ -232,6 +248,7 @@ class ProcessCombatRoundHandlerTest extends TestCase
             $league ?? $this->createStub(LeagueMatchResolutionService::class),
             $friendly ?? $this->createStub(\App\Service\FriendlyMatch\FriendlyMatchResolutionService::class),
             $this->createStub(LoggerInterface::class),
+            $clock ?? new TickClock(),
         );
     }
 

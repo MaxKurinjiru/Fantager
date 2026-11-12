@@ -14,6 +14,7 @@ use App\Enum\ItemStatus;
 use App\Enum\ItemSubType;
 use App\Enum\Race;
 use App\Enum\ItemCategory;
+use App\Service\Calendar\TickClock;
 use App\Service\Config\RaceConfig;
 use App\Repository\Item\ItemRepository;
 use App\Exception\UserFacingException;
@@ -38,6 +39,7 @@ class ItemServiceTest extends TestCase
     private EconomyService&MockObject $economyServiceMock;
     private TeamChronicleService&MockObject $teamChronicleServiceMock;
     private RaceConfig&MockObject $raceConfigMock;
+    private TickClock $clock;
     private ItemService $itemService;
 
     protected function setUp(): void
@@ -54,16 +56,18 @@ class ItemServiceTest extends TestCase
             });
         $this->teamChronicleServiceMock = $this->createMock(TeamChronicleService::class);
         $this->raceConfigMock = $this->createMock(RaceConfig::class);
-        
+        $this->clock = new TickClock();
+
         $translator = new UserMessageTranslator($this->symfonyTranslatorMock, $this->requestStackMock);
-        
+
         $this->itemService = new ItemService(
             $this->itemRepositoryMock,
             $this->entityManagerMock,
             $translator,
             $this->economyServiceMock,
             $this->teamChronicleServiceMock,
-            $this->raceConfigMock
+            $this->raceConfigMock,
+            $this->clock,
         );
     }
 
@@ -154,6 +158,8 @@ class ItemServiceTest extends TestCase
     {
         $team = new Team();
         $team->setGold(100);
+        $gameTime = new \DateTimeImmutable('2027-01-26 03:00:00', new \DateTimeZone('UTC'));
+        $this->clock->setCustomTime($gameTime);
 
         $this->symfonyTranslatorMock
             ->method('trans')
@@ -171,10 +177,13 @@ class ItemServiceTest extends TestCase
                 return 'Short Sword';
             });
 
-        $this->entityManagerMock
+        $this->entityManagerMock->expects($this->exactly(2))
             ->method('persist')
-            ->willReturnCallback(static function (object $entity): void {
+            ->willReturnCallback(static function (object $entity) use ($gameTime): void {
                 self::assertTrue($entity instanceof Item || $entity instanceof MarketplaceTransaction || $entity instanceof \App\Entity\Team\TeamChronicle);
+                if ($entity instanceof MarketplaceTransaction) {
+                    self::assertSame($gameTime, $entity->getCreatedAt());
+                }
             });
         $this->entityManagerMock->expects($this->exactly(2))
             ->method('flush');

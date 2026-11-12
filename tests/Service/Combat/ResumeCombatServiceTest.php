@@ -12,6 +12,7 @@ use App\Entity\Team\Team;
 use App\Enum\BattleStatus;
 use App\Enum\MatchType;
 use App\Service\Calendar\KingdomTickOrchestrator;
+use App\Service\Calendar\TickClock;
 use App\Service\Combat\CombatEngine;
 use App\Service\Combat\ResumeCombatService;
 use App\Service\FriendlyMatch\FriendlyMatchResolutionService;
@@ -48,6 +49,7 @@ class ResumeCombatServiceTest extends TestCase
             $this->createStub(FriendlyMatchResolutionService::class),
             $this->createStub(KingdomTickOrchestrator::class),
             $this->createStub(LoggerInterface::class),
+            new \App\Service\Calendar\TickClock(),
         );
 
         $service->resume(42);
@@ -58,6 +60,9 @@ class ResumeCombatServiceTest extends TestCase
     public function testResumeAdvancesStalledBattleToCompleted(): void
     {
         $battle = $this->makeBattle(BattleStatus::Stalled, 4);
+        $clock = new TickClock();
+        $previousTime = new \DateTimeImmutable('2026-06-16 12:00:00');
+        $clock->setCustomTime($previousTime);
         $battle->setRunState([
             'status' => 'simulating',
             'error' => 'previous failure',
@@ -92,7 +97,10 @@ class ResumeCombatServiceTest extends TestCase
             });
 
         $league = $this->createMock(LeagueMatchResolutionService::class);
-        $league->expects($this->once())->method('completeBattle')->with($battle);
+        $league->expects($this->once())->method('completeBattle')->with($battle)
+            ->willReturnCallback(static function () use ($clock, $battle): void {
+                self::assertSame($battle->getScheduledAt(), $clock->getCurrentTime());
+            });
 
         $orchestrator = $this->createMock(KingdomTickOrchestrator::class);
         $orchestrator->expects($this->once())->method('orchestrate')->with($battle->getKingdom());
@@ -104,10 +112,12 @@ class ResumeCombatServiceTest extends TestCase
             $this->createStub(FriendlyMatchResolutionService::class),
             $orchestrator,
             $this->createStub(LoggerInterface::class),
+            $clock,
         );
 
         $service->resume(42);
 
+        $this->assertSame($previousTime, $clock->getCustomTime());
         $this->assertSame(BattleStatus::Completed, $battle->getStatus());
         $this->assertSame(5, $battle->getCurrentRound());
         $this->assertSame(4, $battle->getScoreA());
@@ -118,6 +128,7 @@ class ResumeCombatServiceTest extends TestCase
     public function testResumeCompletesStalledFriendlyBattle(): void
     {
         $battle = $this->makeBattle(BattleStatus::Stalled, 4);
+        $clock = new TickClock();
         $battle->setMatchType(MatchType::Friendly);
         $battle->setRunState(['status' => 'simulating']);
 
@@ -150,7 +161,10 @@ class ResumeCombatServiceTest extends TestCase
         $league->expects($this->never())->method('completeBattle');
 
         $friendlyResolution = $this->createMock(FriendlyMatchResolutionService::class);
-        $friendlyResolution->expects($this->once())->method('completeBattle')->with($battle);
+        $friendlyResolution->expects($this->once())->method('completeBattle')->with($battle)
+            ->willReturnCallback(static function () use ($clock, $battle): void {
+                self::assertSame($battle->getScheduledAt(), $clock->getCurrentTime());
+            });
 
         $service = new ResumeCombatService(
             $em,
@@ -159,10 +173,12 @@ class ResumeCombatServiceTest extends TestCase
             $friendlyResolution,
             $this->createStub(KingdomTickOrchestrator::class),
             $this->createStub(LoggerInterface::class),
+            $clock,
         );
 
         $service->resume(7);
 
+        $this->assertNull($clock->getCustomTime());
         $this->assertSame(BattleStatus::Completed, $battle->getStatus());
     }
 
@@ -193,6 +209,7 @@ class ResumeCombatServiceTest extends TestCase
             $this->createStub(FriendlyMatchResolutionService::class),
             $this->createStub(KingdomTickOrchestrator::class),
             $this->createStub(LoggerInterface::class),
+            new \App\Service\Calendar\TickClock(),
         );
 
         $service->resume(99);

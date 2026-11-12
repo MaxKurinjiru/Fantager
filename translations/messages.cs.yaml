@@ -124,6 +124,7 @@ flash:
   account_deleted: Váš účet byl trvale smazán.
 
 error:
+  concurrent_change: Data se mezitím změnila. Obnovte stránku a před dalším pokusem zkontrolujte výsledek.
   no_team: K vašemu účtu není přiřazen žádný tým.
   no_kingdom: K vašemu účtu není přiřazeno žádné království.
   access_denied: Přístup odepřen.

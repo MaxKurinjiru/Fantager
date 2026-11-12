@@ -59,6 +59,13 @@ class MarketplaceListing
     #[ORM\Column(length: 20, enumType: ListingStatus::class)]
     private ListingStatus $status = ListingStatus::Active;
 
+    #[ORM\Version]
+    #[ORM\Column(type: 'integer')]
+    private int $version = 1;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $bidRevision = 0;
+
     /** @var Collection<int, MarketplaceBid> */
     #[ORM\OneToMany(targetEntity: MarketplaceBid::class, mappedBy: 'listing', cascade: ['persist'])]
     private Collection $bids;
@@ -185,6 +192,11 @@ class MarketplaceListing
     public function getBids(): Collection
     {
         return $this->bids;
+    }
+
+    public function recordBid(): void
+    {
+        ++$this->bidRevision;
     }
 
     public function getBuyoutPriceGold(): ?int

@@ -12,6 +12,7 @@ use App\Enum\HeroStatus;
 use App\Enum\HeroTrait;
 use App\Enum\MemorialCause;
 use App\Enum\Race;
+use App\Service\Calendar\TickClock;
 use App\Service\Graveyard\GraveyardService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -29,7 +30,10 @@ class GraveyardServiceTest extends TestCase
 
         $chronicleService = $this->createMock(\App\Service\Hero\HeroChronicleService::class);
         $marketplaceService = $this->createMock(\App\Service\Marketplace\MarketplaceService::class);
-        $service = new GraveyardService($em, $ratingCalculator, $chronicleService, $marketplaceService);
+        $clock = new TickClock();
+        $gameTime = new \DateTimeImmutable('2027-01-26 03:00:00', new \DateTimeZone('UTC'));
+        $clock->setCustomTime($gameTime);
+        $service = new GraveyardService($em, $ratingCalculator, $chronicleService, $marketplaceService, $clock);
 
         $team = new Team();
         $hero = new Hero();
@@ -59,6 +63,9 @@ class GraveyardServiceTest extends TestCase
         $this->assertSame(HeroRole::Combatant, $record->getRoleAtDeparture());
         $this->assertSame(5, $record->getFinalLevel());
         $this->assertSame(MemorialCause::Dismissed, $record->getCause());
+        $this->assertSame($gameTime, $record->getDepartedAt());
+        $explicitDate = new \DateTimeImmutable('2027-01-25 03:00:00', new \DateTimeZone('UTC'));
+        $this->assertSame($explicitDate, $service->createMemorial($hero, $team, MemorialCause::Dismissed, $explicitDate)->getDepartedAt());
         $this->assertSame(5, $record->getFinalStats()['str']);
         $this->assertSame(50, $record->getFinalStats()['base_ovr']);
         $this->assertSame(1200, $record->getFinalStats()['complex_rating']);

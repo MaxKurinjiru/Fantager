@@ -11,6 +11,7 @@ use App\Entity\League\LeagueFixture;
 use App\Enum\BattleResult;
 use App\Enum\BattleStatus;
 use App\Enum\TickType;
+use App\Service\Calendar\TickClock;
 use App\Service\FriendlyMatch\FriendlyMatchResolutionService;
 use App\Service\League\LeagueMatchResolutionService;
 use Doctrine\DBAL\LockMode;
@@ -25,12 +26,14 @@ class CombatRoundProcessor
         private readonly LeagueMatchResolutionService $leagueMatchResolutionService,
         private readonly FriendlyMatchResolutionService $friendlyMatchResolutionService,
         private readonly LoggerInterface $logger,
+        private readonly TickClock $tickClock,
     ) {
     }
 
     public function process(int $battleId, int $round): void
     {
         $startedSimulation = false;
+        $previousTime = $this->tickClock->getCustomTime();
         $this->em->beginTransaction();
         try {
             $battle = $this->em->find(Battle::class, $battleId, LockMode::PESSIMISTIC_WRITE);
@@ -65,6 +68,7 @@ class CombatRoundProcessor
                 $battle->setCombatLog((array) $runState['combatLog']);
                 $battle->setResult($battle->getResult() ?? BattleResult::fromScores($runState['scoreA'], $runState['scoreB']));
                 $battle->setProcessedAt(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+                $this->tickClock->setCustomTime($battle->getScheduledAt() ?? $previousTime);
 
                 $fixture = $this->em->getRepository(LeagueFixture::class)->findOneBy(['battle' => $battle]);
                 if (null !== $fixture) {
@@ -114,6 +118,7 @@ class CombatRoundProcessor
 
             $this->logger->error(sprintf('CombatRoundProcessor: Battle ID %d failed in round %d: %s', $battleId, $round, $exception->getMessage()), ['exception' => $exception]);
         } finally {
+            $this->tickClock->setCustomTime($previousTime);
             $this->em->clear();
         }
     }
