@@ -45,6 +45,14 @@ Status words: [product/glossary.md](product/glossary.md#how-to-read-status-words
 
 Combat batching: [simulation contract](systems/combat-system.md#wave-based-messenger-orchestration), [wave processor](../src/Service/Combat/CombatWaveProcessor.php), [round processor](../src/Service/Combat/CombatRoundProcessor.php). Regression coverage: [wave orchestration](../tests/Service/Combat/CombatWaveOrchestrationTest.php) and [round processing / legacy messages](../tests/Message/ProcessCombatRoundHandlerTest.php).
 
+Season report regression coverage: [report builder](../tests/Service/League/SeasonReportBuilderTest.php).
+
+API optimistic-lock conflicts: [listener](../src/EventListener/OptimisticLockListener.php).
+
+Calendar event identity: [KingdomTickEvent](../src/Entity/Kingdom/KingdomTickEvent.php).
+
+Tick health alerts: [monitor](../src/Service/Calendar/TickHealthMonitor.php), [tests](../tests/Service/Calendar/TickHealthMonitorTest.php).
+
 ## Views
 
 | View | Start here | Contains |

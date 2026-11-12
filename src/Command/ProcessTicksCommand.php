@@ -8,6 +8,7 @@ use App\Repository\Kingdom\KingdomRepository;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Service\Calendar\KingdomTickOrchestrator;
 use App\Service\Calendar\KingdomTickRunnerService;
+use App\Service\Calendar\TickHealthMonitor;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,6 +27,7 @@ class ProcessTicksCommand extends Command
         private readonly KingdomTickRunnerService $tickRunnerService,
         private readonly KingdomTickOrchestrator $tickOrchestrator,
         private readonly KingdomTickLogRepository $tickLogRepository,
+        private readonly ?TickHealthMonitor $tickHealthMonitor = null,
     ) {
         parent::__construct();
     }
@@ -101,6 +103,15 @@ class ProcessTicksCommand extends Command
         $hadBlocked = false;
         $hadError = false;
 
+        if (!$dryRun && !$sync && null !== $this->tickHealthMonitor) {
+            try {
+                $this->tickHealthMonitor->checkQueue();
+            } catch (\Throwable $exception) {
+                $hadError = true;
+                $io->warning('Queue health check failed: '.$exception->getMessage());
+            }
+        }
+
         foreach ($kingdoms as $kingdom) {
             /** @var \App\Entity\Kingdom\Kingdom $kingdom */
             $kingdomId = $kingdom->getId();
@@ -109,6 +120,15 @@ class ProcessTicksCommand extends Command
             }
 
             $io->text(sprintf('Checking Kingdom: %s (ID: %d)', $kingdom->getName(), $kingdomId));
+
+            if (!$dryRun && !$sync && null !== $this->tickHealthMonitor) {
+                try {
+                    $this->tickHealthMonitor->checkKingdom($kingdom);
+                } catch (\Throwable $exception) {
+                    $hadError = true;
+                    $io->warning(sprintf('Tick health check failed for kingdom %d: %s', $kingdomId, $exception->getMessage()));
+                }
+            }
 
             $until = $now;
             if (null !== $advanceInterval) {
@@ -142,13 +162,27 @@ class ProcessTicksCommand extends Command
 
             $blocked = $this->tickRunnerService->findBlockedTick($kingdom);
             if (null !== $blocked) {
+                if (!$dryRun && !$sync && 'awaiting_combat' === $blocked->getStatus()) {
+                    $this->tickOrchestrator->orchestrate($kingdom);
+                } elseif (!$dryRun && !$sync && 'processing' === $blocked->getStatus()) {
+                    $interrupted = $this->tickOrchestrator->recoverInterruptedTicks($kingdom);
+                    if ($interrupted > 0) {
+                        $io->note(sprintf('Recovered %d interrupted tick(s) for Kingdom %s.', $interrupted, $kingdom->getName()));
+                        $this->tickOrchestrator->orchestrate($kingdom);
+                    } elseif ($this->tickOrchestrator->recoverCombatContinuation($kingdom)) {
+                        $io->note(sprintf('Requeued a stale combat continuation for Kingdom %s.', $kingdom->getName()));
+                    }
+                }
                 $hadBlocked = true;
                 $io->warning(sprintf(
-                    'Kingdom ID %d has a blocked tick (ID: %d, type: %s, status: %s). Skipping scheduling. Use app:ticks:retry after fixing the cause.',
+                    'Kingdom ID %d has a blocked tick (ID: %d, type: %s, status: %s). Skipping scheduling. %s',
                     $kingdomId,
                     $blocked->getId(),
                     $blocked->getTickType()->value,
                     $blocked->getStatus(),
+                    'failed' === $blocked->getStatus()
+                        ? 'Use app:ticks:retry after fixing the cause.'
+                        : 'Process Messenger work and inspect app:ticks:status if it remains blocked.',
                 ));
                 continue;
             }

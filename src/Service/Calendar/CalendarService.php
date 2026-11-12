@@ -238,6 +238,18 @@ class CalendarService
 
         if ($type->createsKingdomScopedLogs() || !$type->createsTeamScopedLogs()) {
             $criteria['team'] = null;
+            if (TickType::DailyReset === $type) {
+                $logs = $this->tickLogRepository->findBy($criteria);
+                foreach (['failed', 'processing', 'dispatched', 'pending'] as $status) {
+                    foreach ($logs as $log) {
+                        if ($status === $log->getStatus()) {
+                            return $status;
+                        }
+                    }
+                }
+
+                return [] !== $logs ? 'completed' : 'scheduled';
+            }
             /** @var \App\Entity\Kingdom\KingdomTickLog|null $log */
             $log = $this->tickLogRepository->findOneBy($criteria);
 

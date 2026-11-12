@@ -16,6 +16,7 @@ use App\Message\ExecuteSingleTickHandler;
 use App\Message\ExecuteSingleTickMessage;
 use App\Repository\Kingdom\KingdomTickLogRepository;
 use App\Repository\League\LeagueSeasonRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -47,7 +48,7 @@ class KingdomTickRunnerService
         // A kingdom-level blocked tick (no team, no fixture, no friendly match) blocks everything
         $blockedKingdom = $this->tickLogRepository->findOneBy([
             'kingdom' => $kingdom,
-            'status' => ['dispatched', 'processing', 'failed'],
+            'status' => ['dispatched', 'processing', 'awaiting_combat', 'failed'],
             'team' => null,
             'fixture' => null,
             'friendlyMatch' => null,
@@ -60,7 +61,7 @@ class KingdomTickRunnerService
             // A team-level blocked tick blocks this team
             return $this->tickLogRepository->findOneBy([
                 'kingdom' => $kingdom,
-                'status' => ['dispatched', 'processing', 'failed'],
+                'status' => ['dispatched', 'processing', 'awaiting_combat', 'failed'],
                 'team' => $team,
             ]);
         }
@@ -69,7 +70,7 @@ class KingdomTickRunnerService
             // A fixture-level blocked tick blocks this fixture
             return $this->tickLogRepository->findOneBy([
                 'kingdom' => $kingdom,
-                'status' => ['dispatched', 'processing', 'failed'],
+                'status' => ['dispatched', 'processing', 'awaiting_combat', 'failed'],
                 'fixture' => $fixture,
             ]);
         }
@@ -78,7 +79,7 @@ class KingdomTickRunnerService
             // A friendly-match-scoped blocked tick blocks this friendly match
             return $this->tickLogRepository->findOneBy([
                 'kingdom' => $kingdom,
-                'status' => ['dispatched', 'processing', 'failed'],
+                'status' => ['dispatched', 'processing', 'awaiting_combat', 'failed'],
                 'friendlyMatch' => $friendlyMatch,
             ]);
         }
@@ -86,12 +87,12 @@ class KingdomTickRunnerService
         // Check if there is ANY blocked tick of any scope in the kingdom
         return $this->tickLogRepository->findOneBy([
             'kingdom' => $kingdom,
-            'status' => ['dispatched', 'processing', 'failed'],
+            'status' => ['dispatched', 'processing', 'awaiting_combat', 'failed'],
         ]);
     }
 
     /**
-     * Recovers stale ticks for the kingdom (e.g. processing or dispatched for more than 5 minutes).
+     * Recovers unclaimed dispatches older than five minutes.
      */
     public function recoverStaleTicks(Kingdom $kingdom): int
     {
@@ -119,8 +120,31 @@ class KingdomTickRunnerService
      */
     public function schedulePendingTicks(Kingdom $kingdom, \DateTimeImmutable $until, bool $persist = true): int
     {
+        if (!$persist) {
+            return $this->materializePendingTicks($kingdom, $until, false);
+        }
+        if (null === $kingdom->getId()) {
+            throw new \DomainException('Kingdom must be persisted before scheduling ticks.');
+        }
+
+        $this->em->beginTransaction();
+        try {
+            $this->em->refresh($kingdom, LockMode::PESSIMISTIC_WRITE);
+            $scheduled = $this->materializePendingTicks($kingdom, $until, true);
+            $this->em->commit();
+
+            return $scheduled;
+        } catch (\Throwable $exception) {
+            $this->em->rollback();
+            throw $exception;
+        }
+    }
+
+    private function materializePendingTicks(Kingdom $kingdom, \DateTimeImmutable $until, bool $persist): int
+    {
         $seasonStartDate = $this->resolveSeasonStartDate($kingdom);
         $ticksScheduled = 0;
+        $events = [];
 
         // Fetch active teams in the kingdom
         $teams = $this->em->getRepository(Team::class)->findBy(['kingdom' => $kingdom]);
@@ -136,7 +160,6 @@ class KingdomTickRunnerService
             }
 
             if ($tickType->createsKingdomScopedLogs()) {
-                // WeeklyReset has both team-scoped and kingdom-scoped logs
                 $scopes[] = ['team' => null, 'fixture' => null];
             }
 
@@ -199,6 +222,7 @@ class KingdomTickRunnerService
                     $log->setStatus('pending');
 
                     if ($persist) {
+                        $this->tickLogRepository->attachToEvent($log, $events);
                         $this->em->persist($log);
                     }
                     ++$ticksScheduled;
@@ -267,6 +291,7 @@ class KingdomTickRunnerService
                         $log->setStatus('pending');
 
                         if ($persist) {
+                            $this->tickLogRepository->attachToEvent($log, $events);
                             $this->em->persist($log);
                         }
                         ++$ticksScheduled;
@@ -336,6 +361,7 @@ class KingdomTickRunnerService
                         $log->setStatus('pending');
 
                         if ($persist) {
+                            $this->tickLogRepository->attachToEvent($log, $events);
                             $this->em->persist($log);
                         }
                         ++$ticksScheduled;
@@ -344,7 +370,10 @@ class KingdomTickRunnerService
             }
         }
 
-        if ($persist && $ticksScheduled > 0) {
+        if ($persist) {
+            if (null === $kingdom->getTickPlanningHorizon() || $until > $kingdom->getTickPlanningHorizon()) {
+                $kingdom->setTickPlanningHorizon($until->setTimezone(new \DateTimeZone('UTC')));
+            }
             $this->em->flush();
         }
 
@@ -380,6 +409,28 @@ class KingdomTickRunnerService
         return $logs;
     }
 
+    public function retryInterruptedTick(Kingdom $kingdom, int $tickId): KingdomTickLog
+    {
+        $log = $this->tickLogRepository->findOneBy([
+            'kingdom' => $kingdom,
+            'id' => $tickId,
+            'status' => 'processing',
+        ]);
+        if (null === $log) {
+            throw new \DomainException(sprintf('No processing tick with id=%d in this kingdom.', $tickId));
+        }
+        if (null !== $log->getFixture()?->getBattle() || null !== $log->getFriendlyMatch()?->getBattle()) {
+            throw new \DomainException('Ticks linked to battles require combat recovery, not kickoff retry.');
+        }
+
+        $log->setStatus('pending');
+        $log->setRetryCount(0);
+        $log->setErrorMessage('Operator retry after stopping workers.');
+        $this->em->flush();
+
+        return $log;
+    }
+
     /**
      * @return array{
      *     kingdom_id: int|null,
@@ -389,7 +440,8 @@ class KingdomTickRunnerService
      *     latest_completed_at: string|null,
      *     latest_completed_type: string|null,
      *     oldest_pending_at: string|null,
-     *     failed: list<array<string, mixed>>
+     *     failed: list<array<string, mixed>>,
+     *     combat_recoveries: list<array<string, mixed>>
      * }
      */
     public function getStatusSnapshot(Kingdom $kingdom): array
@@ -401,6 +453,20 @@ class KingdomTickRunnerService
         foreach ($this->tickLogRepository->findFailed($kingdom) as $log) {
             $failed[] = $this->summarizeTickLog($log);
         }
+        $combatRecoveries = [];
+        foreach ($this->tickLogRepository->findBy(['kingdom' => $kingdom, 'status' => 'processing']) as $log) {
+            $battle = $log->getFixture()?->getBattle() ?? $log->getFriendlyMatch()?->getBattle();
+            if ($log->getCombatRecoveryCount() >= 3 && null !== $battle
+                && \App\Enum\BattleStatus::Simulating === $battle->getStatus()
+                && $battle->getCurrentRound() === $log->getCombatRecoveryRound()) {
+                $combatRecoveries[] = [
+                    'tick_id' => $log->getId(),
+                    'battle_id' => $battle->getId(),
+                    'round' => $battle->getCurrentRound(),
+                    'recoveries' => $log->getCombatRecoveryCount(),
+                ];
+            }
+        }
 
         return [
             'kingdom_id' => $kingdom->getId(),
@@ -411,6 +477,7 @@ class KingdomTickRunnerService
             'latest_completed_type' => $latest?->getTickType()->value,
             'oldest_pending_at' => $oldestPending?->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
             'failed' => $failed,
+            'combat_recoveries' => $combatRecoveries,
         ];
     }
 
@@ -439,52 +506,60 @@ class KingdomTickRunnerService
             throw new \DomainException('Kingdom must be persisted before processing ticks.');
         }
 
-        // Fetch all pending ticks
-        /** @var list<KingdomTickLog> $logs */
-        $logs = $this->tickLogRepository->findBy(
-            ['kingdom' => $kingdom, 'status' => 'pending']
-        );
+        do {
+            /** @var list<KingdomTickLog> $logs */
+            $logs = $this->tickLogRepository->findBy(
+                ['kingdom' => $kingdom, 'status' => 'pending']
+            );
 
-        if (empty($logs)) {
-            return;
-        }
-
-        // Sort chronologically, then by priority; kingdom treasury before team WeeklyReset.
-        usort($logs, function (KingdomTickLog $a, KingdomTickLog $b): int {
-            $timeCompare = $a->getScheduledAt() <=> $b->getScheduledAt();
-            if (0 !== $timeCompare) {
-                return $timeCompare;
+            if (empty($logs)) {
+                return;
             }
 
-            $priorityCompare = $a->getTickType()->getPriority() <=> $b->getTickType()->getPriority();
-            if (0 !== $priorityCompare) {
-                return $priorityCompare;
-            }
+            // Sort chronologically, then by priority; kingdom resets before team resets.
+            usort($logs, function (KingdomTickLog $a, KingdomTickLog $b): int {
+                $timeCompare = $a->getScheduledAt() <=> $b->getScheduledAt();
+                if (0 !== $timeCompare) {
+                    return $timeCompare;
+                }
 
-            if (TickType::WeeklyReset === $a->getTickType() && TickType::WeeklyReset === $b->getTickType()) {
-                $aIsKingdom = null === $a->getTeam();
-                $bIsKingdom = null === $b->getTeam();
+                $priorityCompare = $a->getTickType()->getPriority() <=> $b->getTickType()->getPriority();
+                if (0 !== $priorityCompare) {
+                    return $priorityCompare;
+                }
 
-                return ((int) $bIsKingdom) <=> ((int) $aIsKingdom);
-            }
+                $aIsTeamReset = in_array($a->getTickType(), [TickType::DailyReset, TickType::WeeklyReset], true) && null !== $a->getTeam();
+                $bIsTeamReset = in_array($b->getTickType(), [TickType::DailyReset, TickType::WeeklyReset], true) && null !== $b->getTeam();
 
-            return 0;
-        });
+                return ((int) $aIsTeamReset) <=> ((int) $bIsTeamReset);
+            });
 
-        // Execute them one by one synchronously. If one fails, it throws an exception,
-        // which naturally halts synchronous processing.
-        foreach ($logs as $log) {
-            $logId = $log->getId();
-            if (null !== $logId) {
-                ($this->singleTickHandler)(new ExecuteSingleTickMessage($logId));
+            $reloadAfterTransition = false;
+            foreach ($logs as $log) {
+                $logId = $log->getId();
+                if (null !== $logId) {
+                    ($this->singleTickHandler)(new ExecuteSingleTickMessage($logId), true);
 
-                // Check if the tick actually succeeded. If it failed, stop execution.
-                $this->em->refresh($log);
-                if ('failed' === $log->getStatus()) {
-                    throw new \RuntimeException(sprintf('Synchronous tick execution failed for tick ID %d (%s): %s', $logId, $log->getTickType()->value, (string) $log->getErrorMessage()));
+                    // Check if the tick actually succeeded. If it failed, stop execution.
+                    $this->em->refresh($log);
+                    if ('failed' === $log->getStatus()) {
+                        throw new \RuntimeException(sprintf('Synchronous tick execution failed for tick ID %d (%s): %s', $logId, $log->getTickType()->value, (string) $log->getErrorMessage()));
+                    }
+                    if (in_array($log->getTickType(), [TickType::LeagueMatch, TickType::FriendlyMatch], true)
+                        && in_array($log->getStatus(), ['awaiting_combat', 'processing'], true)) {
+                        throw new \RuntimeException(sprintf('Tick ID %d requires asynchronous combat. Consume Messenger messages before continuing catch-up.', $logId));
+                    }
+                    if ('completed' !== $log->getStatus()) {
+                        throw new \RuntimeException(sprintf('Tick ID %d is %s, not completed. Stop other workers before continuing synchronous catch-up.', $logId, $log->getStatus()));
+                    }
+                    if (TickType::SeasonTransition === $log->getTickType()
+                        || (TickType::DailyReset === $log->getTickType() && null === $log->getTeam())) {
+                        $reloadAfterTransition = true;
+                        break;
+                    }
                 }
             }
-        }
+        } while ($reloadAfterTransition);
     }
 
     private function resolveSeasonStartDate(Kingdom $kingdom): ?\DateTimeImmutable

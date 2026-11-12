@@ -74,7 +74,7 @@ class FriendlyMatchResolutionService
      *
      * @return array<string, mixed>
      */
-    public function resolveMatch(FriendlyMatch $match, \DateTimeImmutable $processedAt): array
+    public function resolveMatch(FriendlyMatch $match, \DateTimeImmutable $processedAt, bool $dispatchWave = true): array
     {
         $homeTeam = $match->getHomeTeam();
         $awayTeam = $match->getAwayTeam();
@@ -188,7 +188,7 @@ class FriendlyMatchResolutionService
             ->getSingleScalarResult();
 
         // scheduledCount=0 means this was the last one; friendlyBattles covers all real battles
-        if (0 === $scheduledCount && $friendlyBattles > 0) {
+        if ($dispatchWave && 0 === $scheduledCount && $friendlyBattles > 0) {
             $this->messageBus->dispatch(new \App\Message\CombatWave((int) $kingdom->getId(), $processedAt, 1));
         }
 

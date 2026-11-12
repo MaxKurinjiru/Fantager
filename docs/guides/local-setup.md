@@ -20,7 +20,29 @@ docker exec -it fantager-web composer init-db
 
 After entity mapping changes, either drop and recreate the database then `composer init-db`, or add a Version file (`composer migrate-diff`) and `composer migrate`. Historical `Version*` files were removed; the migrations bundle and commands stay.
 
+The calendar's persisted planning horizon adds `kingdom.tick_planning_horizon`. Calendar events now live in `kingdom_tick_event`, and execution phases in `kingdom_tick_log` reference them through `event_id` and use `kingdom_scope`, `marketplace_batch`, `marketplace_max_listing_id`, `combat_recovery_count`, and `combat_recovery_round`; kingdom, type, and scheduled time are no longer stored on the phase. Optimistic locking also adds `kingdom.version`, `team.version`, `marketplace_listing.version`, and `marketplace_listing.bid_revision`. An existing schema must be updated before running the application; when old data is disposable, recreate the empty database and initialize the schema as above. Recreating the database deletes its contents; migrate existing data separately if it must be retained.
+
+Stop all tick schedulers and Messenger workers before deploying recovery-enabled code and applying its schema changes. Start only workers running the new code afterward: older workers do not hold per-tick advisory locks, so running both versions together can make recovery mistake active work for an interruption. Plan any migration separately for databases whose data must be retained.
+
+### Deploying tick recovery with existing data
+
+1. Prepare and verify a restorable database backup and a staging copy. Identify the exact source schema and queued-message formats; do not generate or apply a schema diff against the live database as a substitute for a reviewed data migration.
+2. Stop every tick scheduler and Messenger worker, and prevent old workers from restarting. Drain or preserve the queue as appropriate; do not purge it. Keep the application stopped during any incompatible schema change. Confirm no old worker connections remain.
+3. On staging, migrate existing calendar events and phase data as needed, then apply the remaining reviewed schema changes and validate both schema and representative data. A database that already has the current event/phase model and all other current mappings, but lacks only the combat recovery columns, needs `combat_recovery_count INT NOT NULL DEFAULT 0` and nullable `combat_recovery_round INT` on `kingdom_tick_log`. An older schema requires a separate data migration; adding only those columns is insufficient. MariaDB DDL is not transactionally rolled back with application work.
+4. Test recovery and queued-message compatibility on staging with only new workers. Agree on a rollback plan that accounts for both the database and application version. Do not mix versions: older workers do not acquire the new per-tick locks.
+5. Only after approving the tested migration and backup, apply the same procedure to the target database. Start new workers and the scheduler, inspect `app:ticks:status --json` and the error logs, and confirm the queue and blocked work are progressing. Recovery requires periodic asynchronous `app:ticks:run` execution.
+
+Use the isolated crash integration tests only with a dedicated test database and an empty Messenger queue. Set `FANTAGER_CRASH_TEST_DATABASE` to that database's exact name alongside its test `DATABASE_URL`; never point these tests at a shared or live database. The tests kill their own Messenger workers and commit temporary fixtures before cleanup.
+
+For a reproducible synthetic performance sample, use the same isolated test setup with `FANTAGER_PERFORMANCE_REPORT=1` and `FANTAGER_BENCHMARK_DATABASE` set to the database name, then run `vendor/bin/phpunit tests/Repository/KingdomTickLogRepositoryTest.php --filter testSyntheticTickAndCombatMetrics` inside the container. It reports two settlement batches (26 test listings total) and a bounded combat batch (two synthetic battles), then rolls back the workload. This is a small local sample, not a production benchmark or percentile distribution; compare production logs over a representative workload before tuning limits. The surrounding test fixture creates and removes a temporary kingdom, so never use a shared or live database.
+
 App: http://localhost:10001
+
+## Development logs
+
+Development logs are written to `var/log/dev-YYYY-MM-DD.log`. Monolog starts a new file each day and keeps up to seven dated files, deleting older matching files when rotation occurs. Ordinary Doctrine SQL debug records are excluded from the file; Doctrine records at info level and above are retained. The other development channels keep their existing levels. Restart long-running workers so they load the updated configuration.
+
+This is time-based rotation, not a file-size limit or compression; one day of heavy logging can still fill the disk. Use externally managed size-based rotation and disk monitoring where a strict capacity limit is needed. The existing undated `var/log/dev.log` is not rotated or deleted by this configuration and continues to occupy disk space until an operator handles it. Production logs continue to use stderr and require separate retention in the hosting environment.
 
 ## Database seeding
 

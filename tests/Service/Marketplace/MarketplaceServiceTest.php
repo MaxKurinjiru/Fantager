@@ -6,7 +6,9 @@ namespace App\Tests\Service\Marketplace;
 
 use App\Entity\Hero\Hero;
 use App\Entity\Item\Item;
+use App\Entity\Marketplace\MarketplaceBid;
 use App\Entity\Marketplace\MarketplaceListing;
+use App\Entity\Marketplace\MarketplaceTransaction;
 use App\Entity\Kingdom\Kingdom;
 use App\Entity\Team\Team;
 use App\Enum\HeroStatus;
@@ -101,6 +103,54 @@ class MarketplaceServiceTest extends TestCase
             $this->createMock(\App\Service\Hero\HeroChronicleService::class),
             $this->createMock(\App\Service\Item\ItemService::class),
         );
+    }
+
+    public function testBuyListingRecordsGameTime(): void
+    {
+        $gameTime = new \DateTimeImmutable('2027-01-25 01:00:00', new \DateTimeZone('UTC'));
+        $seller = $this->createStub(Team::class);
+        $seller->method('getId')->willReturn(1);
+        $buyer = $this->createStub(Team::class);
+        $buyer->method('getId')->willReturn(2);
+        $buyer->method('getGold')->willReturn(1000);
+        $listing = (new MarketplaceListing())->setKingdom(new Kingdom())->setSellerTeam($seller)
+            ->setListingType(ListingType::Item)->setItem(new Item())->setStatus(ListingStatus::Active)->setBuyoutPriceGold(100);
+        $repository = $this->createStub(\Doctrine\ORM\EntityRepository::class);
+        $repository->method('find')->willReturn($listing);
+        $this->entityManagerMock->method('getRepository')->willReturn($repository);
+        $this->entityManagerMock->expects($this->once())->method('persist')
+            ->with($this->callback(static function (object $entity) use ($gameTime): bool {
+                return $entity instanceof MarketplaceTransaction && $entity->getCreatedAt() === $gameTime;
+            }));
+
+        $this->marketplaceService->buyListing($buyer, 1, $gameTime);
+    }
+
+    public function testAuctionSettlementRecordsGameTime(): void
+    {
+        $gameTime = new \DateTimeImmutable('2027-01-25 01:00:00', new \DateTimeZone('UTC'));
+        $seller = $this->createStub(Team::class);
+        $buyer = $this->createStub(Team::class);
+        $listing = (new MarketplaceListing())->setKingdom(new Kingdom())->setSellerTeam($seller)
+            ->setListingType(ListingType::Item)->setItem(new Item())->setStatus(ListingStatus::Active);
+        $listing->getBids()->add((new MarketplaceBid())->setBidderTeam($buyer)->setBidAmount(100));
+
+        $query = $this->createStub(\Doctrine\ORM\Query::class);
+        $query->method('getResult')->willReturn([$listing]);
+        $builder = $this->createStub(\Doctrine\ORM\QueryBuilder::class);
+        $builder->method('where')->willReturnSelf();
+        $builder->method('andWhere')->willReturnSelf();
+        $builder->method('setParameter')->willReturnSelf();
+        $builder->method('getQuery')->willReturn($query);
+        $repository = $this->createStub(\Doctrine\ORM\EntityRepository::class);
+        $repository->method('createQueryBuilder')->willReturn($builder);
+        $this->entityManagerMock->method('getRepository')->willReturn($repository);
+        $this->entityManagerMock->expects($this->once())->method('persist')
+            ->with($this->callback(static function (object $entity) use ($gameTime): bool {
+                return $entity instanceof MarketplaceTransaction && $entity->getCreatedAt() === $gameTime;
+            }));
+
+        $this->marketplaceService->processExpiredListings($gameTime);
     }
 
     public function testCreateListingRejectsNonPositivePrice(): void

@@ -1,16 +1,27 @@
 monolog:
     channels:
         - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
+        - tick_metrics
 
 when@dev:
     monolog:
         handlers:
             main:
-                type: stream
+                type: rotating_file
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
+                max_files: 7
                 level: debug
-                channels: ["!event"]
+                channels: ["!event", "!doctrine"]
                 file_permission: 0666
+                use_locking: true
+            doctrine:
+                type: rotating_file
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                max_files: 7
+                level: info
+                channels: [doctrine]
+                file_permission: 0666
+                use_locking: true
             console:
                 type: console
                 process_psr_3_messages: false
@@ -19,6 +30,7 @@ when@dev:
                 type: service
                 id: Sentry\Monolog\BreadcrumbHandler
                 level: info
+                channels: ["!tick_metrics"]
             sentry:
                 type: service
                 id: Sentry\Monolog\Handler
@@ -47,7 +59,7 @@ when@prod:
                 action_level: error
                 handler: nested
                 excluded_http_codes: [404, 405]
-                channels: ["!deprecation"]
+                channels: ["!deprecation", "!tick_metrics"]
                 buffer_size: 50 # How many messages should be saved? Prevent memory leaks
             nested:
                 type: stream
@@ -57,7 +69,13 @@ when@prod:
             console:
                 type: console
                 process_psr_3_messages: false
-                channels: ["!event", "!doctrine"]
+                channels: ["!event", "!doctrine", "!tick_metrics"]
+            tick_metrics:
+                type: stream
+                channels: [tick_metrics]
+                path: php://stderr
+                level: info
+                formatter: monolog.formatter.json
             deprecation:
                 type: stream
                 channels: [deprecation]
@@ -67,6 +85,7 @@ when@prod:
                 type: service
                 id: Sentry\Monolog\BreadcrumbHandler
                 level: info
+                channels: ["!tick_metrics"]
             sentry:
                 type: service
                 id: Sentry\Monolog\Handler

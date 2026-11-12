@@ -118,14 +118,14 @@ class LeagueMatchResolutionService
     /**
      * @return array<string, mixed>
      */
-    public function resolveFixture(LeagueFixture $fixture, \DateTimeImmutable $processedAt): array
+    public function resolveFixture(LeagueFixture $fixture, \DateTimeImmutable $processedAt, bool $dispatchWave = true): array
     {
         $existingBattle = $fixture->getBattle();
         if (null !== $existingBattle) {
             if (BattleStatus::Stalled === $existingBattle->getStatus()) {
                 throw new \RuntimeException(sprintf('Battle %d is stalled. Resume it after fixing its recorded error.', $existingBattle->getId()));
             }
-            if (BattleStatus::Simulating === $existingBattle->getStatus()) {
+            if ($dispatchWave && BattleStatus::Simulating === $existingBattle->getStatus()) {
                 $this->dispatchCohortWave($fixture, $processedAt);
             }
 
@@ -256,7 +256,9 @@ class LeagueMatchResolutionService
 
         $this->em->flush();
 
-        $this->dispatchCohortWave($fixture, $processedAt);
+        if ($dispatchWave) {
+            $this->dispatchCohortWave($fixture, $processedAt);
+        }
 
         return [
             'fixture_id' => $fixture->getId(),

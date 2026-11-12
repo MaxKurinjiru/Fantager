@@ -52,6 +52,7 @@ enum TickType: string
     public function createsKingdomScopedLogs(): bool
     {
         return match ($this) {
+            self::DailyReset,
             self::SeasonTransition,
             self::InactiveRegistrationCleanup,
             self::WeeklyReset => true,

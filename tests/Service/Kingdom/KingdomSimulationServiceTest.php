@@ -87,6 +87,15 @@ class KingdomSimulationServiceTest extends TestCase
             'failed' => [],
             'blocked' => null,
         ]));
+        $this->assertFalse($service->isFailed([
+            'failed' => [],
+            'blocked' => ['status' => 'awaiting_combat'],
+        ]));
+        $this->assertSame(KingdomSimulationService::EXIT_BUSY, $service->pipelineExitCode([
+            'open_ticks' => 1,
+            'failed' => [],
+            'blocked' => ['status' => 'awaiting_combat'],
+        ]));
     }
 
     public function testNextHorizonAddsStepToLatestCompletedTick(): void

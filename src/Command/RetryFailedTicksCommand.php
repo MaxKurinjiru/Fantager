@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Repository\Kingdom\KingdomRepository;
+use App\Service\Calendar\KingdomTickOrchestrator;
 use App\Service\Calendar\KingdomTickRunnerService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -15,13 +16,14 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:ticks:retry',
-    description: 'Reset failed kingdom ticks to pending after the cause is fixed. Then run app:ticks:run.',
+    description: 'Retry failed or interrupted ticks, or resume a combat cohort after stopping workers.',
 )]
 class RetryFailedTicksCommand extends Command
 {
     public function __construct(
         private readonly KingdomRepository $kingdomRepository,
         private readonly KingdomTickRunnerService $tickRunnerService,
+        private readonly KingdomTickOrchestrator $tickOrchestrator,
     ) {
         parent::__construct();
     }
@@ -30,7 +32,9 @@ class RetryFailedTicksCommand extends Command
     {
         $this
             ->addOption('kingdom-id', null, InputOption::VALUE_REQUIRED, 'Kingdom ID')
-            ->addOption('tick-id', null, InputOption::VALUE_REQUIRED, 'Retry a single failed tick log ID');
+            ->addOption('tick-id', null, InputOption::VALUE_REQUIRED, 'Retry a single tick log ID')
+            ->addOption('interrupted', null, InputOption::VALUE_NONE, 'Retry a processing tick only after all tick workers are stopped')
+            ->addOption('combat', null, InputOption::VALUE_NONE, 'Resume a combat cohort only after all workers are stopped');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -52,9 +56,26 @@ class RetryFailedTicksCommand extends Command
 
         $tickIdRaw = $input->getOption('tick-id');
         $tickId = null !== $tickIdRaw && '' !== $tickIdRaw ? (int) $tickIdRaw : null;
+        $interrupted = (bool) $input->getOption('interrupted');
+        $combat = (bool) $input->getOption('combat');
 
         try {
-            $logs = $this->tickRunnerService->retryFailedTicks($kingdom, $tickId);
+            if ($combat || $interrupted) {
+                if (null === $tickId || $tickId <= 0 || ($interrupted && $combat)) {
+                    $io->error('Pass --tick-id with either --interrupted or --combat, after stopping all workers.');
+
+                    return Command::FAILURE;
+                }
+                if ($combat) {
+                    $this->tickOrchestrator->resumeCombat($kingdom, $tickId);
+                    $io->success('Combat continuation queued. Restart Messenger workers to resume the cohort.');
+
+                    return Command::SUCCESS;
+                }
+                $logs = [$this->tickRunnerService->retryInterruptedTick($kingdom, $tickId)];
+            } else {
+                $logs = $this->tickRunnerService->retryFailedTicks($kingdom, $tickId);
+            }
         } catch (\DomainException $e) {
             $io->error($e->getMessage());
 
@@ -75,7 +96,7 @@ class RetryFailedTicksCommand extends Command
                 $log->getScheduledAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
             ], $logs),
         );
-        $io->success(sprintf('Reset %d failed tick(s) to pending. Run app:ticks:run --kingdom-id=%d next.', count($logs), $kingdom->getId()));
+        $io->success(sprintf('Reset %d tick(s) to pending. Run app:ticks:run --kingdom-id=%d next.', count($logs), $kingdom->getId()));
 
         return Command::SUCCESS;
     }

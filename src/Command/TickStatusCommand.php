@@ -89,6 +89,7 @@ class TickStatusCommand extends Command
                 ['Pending' => (string) $counts['pending']],
                 ['Dispatched' => (string) $counts['dispatched']],
                 ['Processing' => (string) $counts['processing']],
+                ['Awaiting combat' => (string) $counts['awaiting_combat']],
                 ['Completed' => (string) $counts['completed']],
                 ['Failed' => (string) $counts['failed']],
                 ['Latest completed' => null !== $snapshot['latest_completed_at']
@@ -108,6 +109,12 @@ class TickStatusCommand extends Command
                 ));
             } else {
                 $io->success('No blocked tick.');
+            }
+            foreach ($snapshot['combat_recoveries'] as $recovery) {
+                $io->warning(sprintf(
+                    'Battle %s (tick %s) has %d recoveries without progress past round %d.',
+                    (string) $recovery['battle_id'], (string) $recovery['tick_id'], $recovery['recoveries'], $recovery['round'],
+                ));
             }
         }
 

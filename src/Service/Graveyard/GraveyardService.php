@@ -11,6 +11,7 @@ use App\Entity\Team\Team;
 use App\Enum\HeroRole;
 use App\Enum\MemorialCause;
 use App\Exception\UserFacingException;
+use App\Service\Calendar\TickClock;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroRatingCalculator;
 use App\Service\Marketplace\MarketplaceService;
@@ -23,12 +24,13 @@ class GraveyardService
         private readonly HeroRatingCalculator $heroRatingCalculator,
         private readonly HeroChronicleService $heroChronicleService,
         private readonly MarketplaceService $marketplaceService,
+        private readonly TickClock $tickClock,
     ) {
     }
 
     public function createMemorial(Hero $hero, Team $team, MemorialCause $cause, ?\DateTimeImmutable $date = null): GraveyardMemorial
     {
-        $date ??= new \DateTimeImmutable();
+        $date ??= $this->tickClock->getCurrentTime();
 
         $record = new GraveyardMemorial();
         $record->setTeam($team);

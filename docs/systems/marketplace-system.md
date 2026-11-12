@@ -2,9 +2,9 @@
 
 Reference: [product/overview.md](../product/overview.md#marketplace), [MarketplaceService.php](../../src/Service/Marketplace/MarketplaceService.php), [MarketplaceTransaction.php](../../src/Entity/Marketplace/MarketplaceTransaction.php)
 
-Status: Live  
-Screens: [15-marketplace.md](../screens/15-marketplace.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none  
+Status: Live
+Screens: [15-marketplace.md](../screens/15-marketplace.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)
+Open design: none
 Lock: [Locked: listing price band](#locked-listing-price-band)
 
 Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction records, and chronicle integration.
@@ -61,8 +61,10 @@ Purpose: Document listing lifecycle, auctions, fees, limit checks, transaction r
 
 1. Same **roster / trainer limit checks** as buy-now (at bid time, not at settlement).
 2. Bidder must have sufficient gold (amount is reserved/locked).
-3. Settlement runs during the `daily_reset` tick when the listing has expired (`MarketplaceService::processExpiredListingsForKingdom`).
+3. Settlement runs during the `daily_reset` tick when the listing has expired. The kingdom phase processes up to 25 listings per transaction and creates sequential continuation phases as needed; team daily phases wait for them. The initial phase captures an upper listing ID so later-created listings are not pulled into the same daily event. See [calendar-system.md](calendar-system.md#technical-architecture--tick-runner).
 4. For items: `recordItemPurchased` and `recordItemSold` are called on auction settlement.
+
+Listings use optimistic versioning. Each bid changes the listing revision, so a concurrent bid, purchase, cancellation, or expiry based on an older listing fails instead of committing stale work. Asynchronous transactional tick phases retry optimistic conflicts up to three times; web/API operations do not automatically retry.
 
 ---
 

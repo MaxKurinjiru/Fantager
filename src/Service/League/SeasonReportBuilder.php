@@ -8,7 +8,6 @@ use App\Entity\Graveyard\GraveyardMemorial;
 use App\Entity\Headquarters\Headquarters;
 use App\Entity\Hero\Hero;
 use App\Entity\Kingdom\Kingdom;
-use App\Entity\League\LeagueFixture;
 use App\Entity\League\LeagueSeason;
 use App\Entity\League\LeagueStanding;
 use App\Entity\Marketplace\MarketplaceTransaction;
@@ -480,19 +479,16 @@ class SeasonReportBuilder
      */
     private function combatSummary(LeagueSeason $season): array
     {
-        /** @var list<LeagueFixture> $fixtures */
-        $fixtures = $this->em->createQueryBuilder()
-            ->select('f', 'b')
-            ->from(LeagueFixture::class, 'f')
-            ->leftJoin('f.battle', 'b')
-            ->join('f.group', 'g')
-            ->join('g.tier', 't')
-            ->where('t.season = :season')
-            ->andWhere('f.status = :status')
-            ->setParameter('season', $season)
-            ->setParameter('status', LeagueFixtureStatus::Completed)
-            ->getQuery()
-            ->getResult();
+        $fixtures = $this->em->getConnection()->fetchAllAssociative(
+            "SELECT b.id, b.score_a, b.score_b, b.current_round, b.result,
+                    JSON_UNQUOTE(JSON_EXTRACT(b.combat_log, '$.simulator')) AS simulator
+             FROM league_fixture f
+             LEFT JOIN combat_battle b ON b.id = f.battle_id
+             INNER JOIN league_group g ON g.id = f.league_group_id
+             INNER JOIN league_tier t ON t.id = g.tier_id
+             WHERE t.season_id = ? AND f.status = ?",
+            [$season->getId(), LeagueFixtureStatus::Completed->value],
+        );
 
         $matches = count($fixtures);
         $killTotals = [];
@@ -503,24 +499,21 @@ class SeasonReportBuilder
         $round200 = 0;
 
         foreach ($fixtures as $fixture) {
-            $battle = $fixture->getBattle();
-            if (null === $battle) {
+            if (null === $fixture['id']) {
                 continue;
             }
-            $killTotals[] = $battle->getScoreA() + $battle->getScoreB();
-            $log = $battle->getCombatLog();
-            if (($log['simulator'] ?? null) === 'forfeit') {
+            $killTotals[] = (int) $fixture['score_a'] + (int) $fixture['score_b'];
+            if ('forfeit' === $fixture['simulator']) {
                 ++$forfeits;
             }
-            if ($battle->getCurrentRound() >= 200) {
+            if ((int) $fixture['current_round'] >= 200) {
                 ++$round200;
             }
-            $result = $battle->getResult();
-            if (BattleResult::WinA === $result) {
+            if (BattleResult::WinA->value === $fixture['result']) {
                 ++$homeWins;
-            } elseif (BattleResult::WinB === $result) {
+            } elseif (BattleResult::WinB->value === $fixture['result']) {
                 ++$awayWins;
-            } elseif (BattleResult::Draw === $result) {
+            } elseif (BattleResult::Draw->value === $fixture['result']) {
                 ++$draws;
             }
         }

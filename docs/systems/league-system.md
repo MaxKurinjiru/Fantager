@@ -2,9 +2,9 @@
 
 Reference: [product/overview.md](../product/overview.md#league)
 
-Status: Live  
-Screens: [13-league.md](../screens/13-league.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)  
-Open design: none  
+Status: Live
+Screens: [13-league.md](../screens/13-league.md) · Code: [screen-code-map.md](../architecture/screen-code-map.md)
+Open design: none
 Lock: [Locked: no league morale fiction](#locked-no-league-morale-fiction)
 
 Purpose: Document season scheduling, promotion/relegation, fixtures, standings, and rewards.
@@ -51,7 +51,9 @@ The league structure is configured per Kingdom via `league_tiers_config` (JSON f
 Capacity formula: `sum(tier.groups) × teams_per_group` = (1 + 2 + 3) × 10 = **60**.
 *(Note: If `groups` is an array of custom names, the group count is the number of elements in the array.)*
 
-The config can be changed per Kingdom at creation time. The number of tiers, groups per tier, and teams per group are all adjustable. The Kingdom initialization step reads `league_tiers_config` to create the correct number of NPC teams, tiers, and groups.
+Kingdom initialization loads the shared [league defaults](../../config/kingdom/league_tiers.defaults.json) and stores a copy as `league_tiers_config` on the Kingdom. The config describes tiers, groups, and teams per group, but the live scheduler assumes 10 teams per group; other group sizes are not reliably supported. Upcoming seasons read the Kingdom's stored config, while changing the number of tiers between seasons causes transition to fail. The supported configuration range is an [open question](../product/known-issues.md#open).
+
+Each group belongs to a tier, which belongs to a season, which belongs to a Kingdom. Groups, standings, and fixtures therefore belong to a specific Kingdom and season, not to one global league. New group rows are created for each season.
 
 When a new Kingdom is created, the league is set up automatically as part of Kingdom initialization (see [kingdom-system.md](kingdom-system.md#kingdom-initialization)):
 
@@ -232,6 +234,11 @@ Veteran leadership and junior bonus XP are **not live**. Win-streak / derby / re
 See [architecture/routes.md](../architecture/routes.md#league).
 
 Season transition also runs as a **`season_transition` server tick** (not only via the admin API).
+
+## Remaining work
+
+- Resolve [issue #18](../product/known-issues.md#open): define the supported league configurations and how structure changes between seasons should work.
+- Align configuration validation and scheduling with that decision. `LeagueFixtureScheduler` checks for an even group size of at least two but hard-codes nine pairings per leg and 18 rounds; non-default sizes can fail or produce an incomplete schedule. `SeasonTransitionService` rejects different tier counts between current and upcoming seasons.
 
 ## Locked: no league morale fiction
 

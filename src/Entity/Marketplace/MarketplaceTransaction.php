@@ -45,9 +45,9 @@ class MarketplaceTransaction
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
-    public function __construct()
+    public function __construct(?\DateTimeImmutable $createdAt = null)
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = $createdAt ?? new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
     }
 
     public function getId(): ?int
