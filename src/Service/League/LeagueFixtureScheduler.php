@@ -20,7 +20,7 @@ class LeagueFixtureScheduler
     }
 
     /**
-     * Schedules 18 rounds of league fixtures for a group of teams.
+     * Schedules 18 rounds of league fixtures for a group of 10 teams.
      * Ensures weekly home/away balance and double round-robin constraints.
      *
      * Kickoff times are stored in UTC (18:00 kingdom-local converted), aligned with league-match ticks.
@@ -37,18 +37,19 @@ class LeagueFixtureScheduler
         }
 
         $N = count($teams);
-        if ($N < 2 || 0 !== $N % 2) {
-            throw new \InvalidArgumentException('The number of teams in a group must be an even number >= 2.');
+        if (LeagueStructure::TEAMS_PER_GROUP !== $N) {
+            throw new \InvalidArgumentException('A league group must contain exactly 10 teams.');
         }
 
         // 1. Generate 9 rounds of pairings using the standard Circle Method
         $roundsPairings = $this->generateCirclePairings($teams);
 
         // 2. Leg 1 and Leg 2 (Leg 2 rounds are in reverse order to make Home/Away balancing solvable)
+        $leg = LeagueStructure::SINGLE_LEG_ROUNDS;
         $allRoundsPairings = [];
-        for ($r = 0; $r < 9; ++$r) {
-            $allRoundsPairings[$r] = $roundsPairings[$r];          // Leg 1
-            $allRoundsPairings[$r + 9] = $roundsPairings[8 - $r];  // Leg 2 (reversed)
+        for ($r = 0; $r < $leg; ++$r) {
+            $allRoundsPairings[$r] = $roundsPairings[$r];
+            $allRoundsPairings[$r + $leg] = $roundsPairings[$leg - 1 - $r];
         }
 
         // 3. Solve Home/Away assignments using a backtracking solver to satisfy constraints:
@@ -71,7 +72,7 @@ class LeagueFixtureScheduler
             ? $startLocal->setTime(0, 0, 0)
             : $startLocal->modify('next monday')->setTime(0, 0, 0);
 
-        for ($r = 0; $r < 18; ++$r) {
+        for ($r = 0; $r < LeagueStructure::ROUNDS; ++$r) {
             $wPlay = (int) ($r / 2); // 0-indexed week of play (0 to 8)
             $calendarWeek = $wPlay + 2; // Week 1 is prep, play starts in Week 2 (calendar weeks 2 to 10)
 
@@ -155,14 +156,14 @@ class LeagueFixtureScheduler
     private function solveHomeAway(array $roundsPairings, int $N): ?array
     {
         $assignedHome = [];
-        for ($r = 0; $r < 18; ++$r) {
+        for ($r = 0; $r < LeagueStructure::ROUNDS; ++$r) {
             $assignedHome[$r] = array_fill(0, (int) ($N / 2), null);
         }
 
         // State trackers
         $teamHomeCountInWeek = [];
         $teamAwayCountInWeek = [];
-        for ($w = 0; $w < 9; ++$w) {
+        for ($w = 0; $w < LeagueStructure::SINGLE_LEG_ROUNDS; ++$w) {
             $teamHomeCountInWeek[$w] = [];
             $teamAwayCountInWeek[$w] = [];
         }
@@ -194,7 +195,7 @@ class LeagueFixtureScheduler
         int $matchIndex,
         int $N,
     ): bool {
-        if (18 === $roundIndex) {
+        if (LeagueStructure::ROUNDS === $roundIndex) {
             return true;
         }
 
@@ -211,7 +212,7 @@ class LeagueFixtureScheduler
         $weekIndex = (int) ($roundIndex / 2);
 
         $matchupKey = ($idA < $idB) ? "$idA-$idB" : "$idB-$idA";
-        $isSecondLeg = $roundIndex >= 9;
+        $isSecondLeg = $roundIndex >= LeagueStructure::SINGLE_LEG_ROUNDS;
 
         // Try Option 1: Team A is Home, Team B is Away
         if (($teamHomeCountInWeek[$weekIndex][$idA] ?? 0) < 1 && ($teamAwayCountInWeek[$weekIndex][$idB] ?? 0) < 1) {

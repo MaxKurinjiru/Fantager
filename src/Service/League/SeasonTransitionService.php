@@ -69,6 +69,11 @@ class SeasonTransitionService
             $startDate = $latestSeason->getEndDate()->modify('+1 day')->setTime(0, 0, 0);
         }
 
+        LeagueStructure::assertSeasonLength($kingdom->getSeasonLength());
+        if (null === $latestSeason) {
+            LeagueStructure::assertCreationConfig($kingdom->getLeagueTiersConfig());
+        }
+
         // Align end date based on first Monday
         $prepMonday = (1 === (int) $startDate->format('N'))
             ? $startDate
@@ -84,36 +89,10 @@ class SeasonTransitionService
 
         $this->em->persist($season);
 
-        $leagueConfig = $kingdom->getLeagueTiersConfig();
-        /** @var list<array<string, mixed>> $tiers */
-        $tiers = $leagueConfig['tiers'] ?? [];
-
-        foreach ($tiers as $tierDef) {
-            $tier = new LeagueTier();
-            $tier->setSeason($season);
-            $tier->setTierName((string) ($tierDef['name'] ?? 'Tier'));
-            $tier->setPromotionSlots((int) ($tierDef['promotion_slots'] ?? 0));
-            $tier->setRelegationSlots((int) ($tierDef['relegation_slots'] ?? 0));
-            /** @var array<string, mixed> $rewards */
-            $rewards = $tierDef['rewards'] ?? [];
-            $tier->setRewards($rewards);
-            $season->addTier($tier);
-            $this->em->persist($tier);
-
-            $groupsDef = $tierDef['groups'] ?? 0;
-            $groupCount = is_array($groupsDef) ? count($groupsDef) : (int) $groupsDef;
-            $tierName = (string) ($tierDef['name'] ?? 'Tier');
-            for ($g = 1; $g <= $groupCount; ++$g) {
-                $group = new LeagueGroup();
-                $group->setTier($tier);
-                if (is_array($groupsDef) && isset($groupsDef[$g - 1])) {
-                    $group->setGroupName((string) $groupsDef[$g - 1]);
-                } else {
-                    $group->setGroupName(sprintf('%s-G%d', $tierName, $g));
-                }
-                $tier->addGroup($group);
-                $this->em->persist($group);
-            }
+        if (null !== $latestSeason) {
+            $this->cloneStructure($latestSeason, $season);
+        } else {
+            $this->buildStructureFromConfig($season, $kingdom->getLeagueTiersConfig());
         }
 
         $this->em->flush();
@@ -151,12 +130,10 @@ class SeasonTransitionService
         $currentSeasonNumber = $currentSeason->getSeasonNumber();
 
         // Sort both seasons' tiers to match them up (index 0 is highest tier, e.g., T1)
+        LeagueStructure::assertSameShape($currentSeason, $upcomingSeason);
+
         $currentTiers = $this->getSortedTiers($currentSeason);
         $upcomingTiers = $this->getSortedTiers($upcomingSeason);
-
-        if (count($currentTiers) !== count($upcomingTiers)) {
-            throw new \RuntimeException('Mismatch between current and upcoming season tier counts.');
-        }
 
         // Keep track of new tier assignment for each team ID
         // Maps team ID -> upcoming LeagueTier entity
@@ -370,10 +347,67 @@ class SeasonTransitionService
      */
     private function getSortedTiers(LeagueSeason $season): array
     {
-        $tiers = $season->getTiers()->toArray();
-        usort($tiers, fn (LeagueTier $a, LeagueTier $b) => $a->getId() <=> $b->getId());
+        return LeagueStructure::sortedTiers($season);
+    }
 
-        return $tiers;
+    /**
+     * Next season keeps the bracket that just finished. Kingdom JSON is the creation template only.
+     */
+    private function cloneStructure(LeagueSeason $source, LeagueSeason $target): void
+    {
+        foreach (LeagueStructure::sortedTiers($source) as $sourceTier) {
+            $tier = new LeagueTier();
+            $tier->setTierName($sourceTier->getTierName());
+            $tier->setPromotionSlots($sourceTier->getPromotionSlots());
+            $tier->setRelegationSlots($sourceTier->getRelegationSlots());
+            $tier->setRewards($sourceTier->getRewards());
+            $target->addTier($tier);
+            $this->em->persist($tier);
+
+            $groups = $sourceTier->getGroups()->toArray();
+            usort($groups, static fn (LeagueGroup $a, LeagueGroup $b): int => $a->getId() <=> $b->getId());
+            foreach ($groups as $sourceGroup) {
+                $group = new LeagueGroup();
+                $group->setGroupName($sourceGroup->getGroupName());
+                $tier->addGroup($group);
+                $this->em->persist($group);
+            }
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $leagueConfig
+     */
+    private function buildStructureFromConfig(LeagueSeason $season, array $leagueConfig): void
+    {
+        /** @var list<array<string, mixed>> $tiers */
+        $tiers = $leagueConfig['tiers'] ?? [];
+
+        foreach ($tiers as $tierDef) {
+            $tier = new LeagueTier();
+            $tier->setTierName((string) ($tierDef['name'] ?? 'Tier'));
+            $tier->setPromotionSlots((int) ($tierDef['promotion_slots'] ?? 0));
+            $tier->setRelegationSlots((int) ($tierDef['relegation_slots'] ?? 0));
+            /** @var array<string, mixed> $rewards */
+            $rewards = $tierDef['rewards'] ?? [];
+            $tier->setRewards($rewards);
+            $season->addTier($tier);
+            $this->em->persist($tier);
+
+            $groupsDef = $tierDef['groups'] ?? 0;
+            $groupCount = is_array($groupsDef) ? count($groupsDef) : (int) $groupsDef;
+            $tierName = (string) ($tierDef['name'] ?? 'Tier');
+            for ($g = 1; $g <= $groupCount; ++$g) {
+                $group = new LeagueGroup();
+                if (is_array($groupsDef) && isset($groupsDef[$g - 1])) {
+                    $group->setGroupName((string) $groupsDef[$g - 1]);
+                } else {
+                    $group->setGroupName(sprintf('%s-G%d', $tierName, $g));
+                }
+                $tier->addGroup($group);
+                $this->em->persist($group);
+            }
+        }
     }
 
     private function compareStandings(LeagueStanding $a, LeagueStanding $b): int

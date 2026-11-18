@@ -37,7 +37,7 @@ Canonical columns: [entities.md](../architecture/entities.md) § Kingdom Domain.
 
 **Live:** Hero level cap is `HeroProgressionConfig::LEVEL_CAP` (**20**). Marketplace tax is `MarketplaceService::TAX_RATE_PERCENT` (**10**). Neither is a kingdom column. See [hero-system.md](hero-system.md#locked-hero-level-invariant).
 
-Player **capacity** is derived from `league_tiers_config`: `sum(tier.groups) × teams_per_group`. There is no separate `max_players` column.
+Player **capacity** is derived from `league_tiers_config`: `sum(tier.groups) × teams_per_group`. There is no separate `max_players` column. The only valid config is the locked 60-team pyramid ([league-system.md](league-system.md#locked-league-structure)).
 
 `season_length` is **77** days (11 weeks). The entity default, the database column, bootstrap JSON, and the season end date all use that value — [calendar-system.md](calendar-system.md).
 

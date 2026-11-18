@@ -28,6 +28,7 @@ use App\Service\Formation\FormationTacticsNormalizer;
 use App\Service\Hero\HeroChronicleService;
 use App\Service\Hero\HeroGenerator;
 use App\Service\League\LeagueFixtureScheduler;
+use App\Service\League\LeagueStructure;
 use App\Service\Spell\SpellService;
 use App\Service\Team\TeamChemistryService;
 use App\Service\TeamChronicle\TeamChronicleService;
@@ -84,16 +85,12 @@ class KingdomInitializationService
         $npcConfig = $this->initConfig->npcTeams();
         $hqConfig = $this->initConfig->headquarters();
 
-        $teamsPerGroup = (int) ($leagueConfig['teams_per_group'] ?? 0);
-        if ($teamsPerGroup < 1) {
-            throw new \DomainException('league_tiers.defaults.json: teams_per_group must be at least 1.');
-        }
+        LeagueStructure::assertCreationConfig($leagueConfig);
+        LeagueStructure::assertSeasonLength((int) $kingdomSettings['season_length']);
 
+        $teamsPerGroup = LeagueStructure::TEAMS_PER_GROUP;
         /** @var list<array<string, mixed>> $tiers */
-        $tiers = $leagueConfig['tiers'] ?? [];
-        if ([] === $tiers) {
-            throw new \DomainException('league_tiers.defaults.json: tiers must not be empty.');
-        }
+        $tiers = $leagueConfig['tiers'];
 
         $kingdom = $this->createKingdom($name, $kingdomSettings, $leagueConfig, $pacePreset, $pace);
         $season = $this->createSeason($kingdom, $kingdomSettings, $seasonConfig, $testMode, $startOffsetDaysOverride);

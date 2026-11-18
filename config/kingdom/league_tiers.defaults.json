@@ -1,5 +1,5 @@
 {
-    "_comment": "Stored on Kingdom.league_tiers_config; capacity = sum(groups) \u00d7 teams_per_group.",
+    "_comment": "Locked creation template (#18). 10 teams per group, T1/T2/T3. Kingdom init rejects any other shape. Later seasons copy the previous season, not a later edit of this file.",
     "teams_per_group": 10,
     "tiers": [
         {
