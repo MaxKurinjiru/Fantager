@@ -8,9 +8,7 @@ Single source of truth for **design questions** that must not be invented in cod
 
 ## Open
 
-| ID | Area | Issue | Severity | Status |
-|----|------|-------|----------|--------|
-| 18 | League configuration | Which group sizes and changes to league structure between seasons should be supported, and which configurations should be rejected? The current scheduler assumes 10 teams and season transition requires matching tier counts. See [league-system.md](../systems/league-system.md#remaining-work). | Medium | Open |
+None.
 
 When an Open row is decided, record Cut vs Implement. Mark **Decided — Implement** until that code lands, then **Resolved** and move the lock into the matching system or screen doc. Cut decisions may go straight to Resolved.
 
@@ -56,5 +54,6 @@ Deferred features beyond this list (Milestone 8 dungeons/quests/crafting, Milest
 | 17 | Spell payloads | Resolved | [spell-system.md](../systems/spell-system.md#locked-catalog-t1t5) |
 | — | League morale fiction | Resolved (Cut) | [league-system.md](../systems/league-system.md#locked-no-league-morale-fiction) |
 | — | Season report freeze | Resolved | [season-report-system.md](../systems/season-report-system.md#locked-frozen-snapshot-two-consumers) |
+| 18 | League configuration | Resolved | [league-system.md](../systems/league-system.md#locked-league-structure) |
 
 Decision notes for #1–#17 live in the linked specs and in [roadmap/archive/alignment-waves.md](../roadmap/archive/alignment-waves.md) (waves 6–8).

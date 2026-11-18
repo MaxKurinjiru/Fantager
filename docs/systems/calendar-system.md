@@ -43,7 +43,7 @@ To provide players with time to prepare rosters, adjust strategies, and play fri
 Consequently, the entire season spans **11 weeks (77 days)**.
 
 > [!NOTE]
-> `season_length` is **77 days** (11 weeks): the preparation week, 18 rounds of league play, and the post-season transition in Week 11.
+> `season_length` is **77 days** (11 weeks): the preparation week, 18 rounds of league play, and the post-season transition in Week 11. Group size is fixed at 10 by [Locked: league structure](league-system.md#locked-league-structure).
 
 ### Chronological Season Timeline
 

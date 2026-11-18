@@ -53,7 +53,7 @@ Details: [docs/guides/local-setup.md](../../docs/guides/local-setup.md#multi-sea
 |------|---------|
 | `kingdom.defaults.json` | Kingdom entity settings other than the preset (language, timezone, season_length). Hero level cap is `HeroProgressionConfig::LEVEL_CAP`. Marketplace tax is `MarketplaceService::TAX_RATE_PERCENT` |
 | `pace-presets.json` | Required world presets (`classic`, `fast_season`, `short_careers`, `rich_world`, `test`), including `xp_modifier`. `app:kingdom:initialize --pace` copies one set onto the new kingdom |
-| `league_tiers.defaults.json` | `league_tiers_config` — teams_per_group, 3 tiers (T1/T2/T3) with groups, promotion/relegation slots, reward placeholders |
+| `league_tiers.defaults.json` | Locked creation template for `league_tiers_config`: 10 teams per group, T1/T2/T3 (1+2+3 groups). See [league-system.md](../../docs/systems/league-system.md#locked-league-structure) |
 | `season.defaults.json` | First `LeagueSeason` (season_number, start_offset_days, status_when_started, status_when_future) |
 | `team.defaults.json` | NPC team starting state: resources (gold), morale, reputation, chemistry, heroes_per_team, roster_races, default formation |
 | `npc_teams.defaults.json` | NPC team identity: team_races pool, name prefix/suffix pools, emblem placeholder, colors pool |

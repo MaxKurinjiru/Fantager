@@ -29,6 +29,7 @@ Conflict order, Open rows, leftovers: [docs/README.md](docs/README.md) § Canoni
 - **Simulate:** do not ship `POST /api/v1/combat/simulate`. [combat-system.md](docs/systems/combat-system.md#locked-no-race-synergy--no-simulate)
 - **Wiki / extra settings:** `GET /wiki` and session password change stay **Planned**. [00-public-pages.md](docs/screens/00-public-pages.md#locked-public-wiki-stays-planned), [19-player-profile-settings.md](docs/screens/19-player-profile-settings.md#locked-password-change--extra-settings-stay-planned)
 - **Spell payloads:** combat reads row `effects` (`instant_hp` / `apply_effect`), not school × type. Envelope stays T1–T5, 60 spells. [spell-system.md](docs/systems/spell-system.md#locked-catalog-t1t5)
+- **League structure:** 10 teams per group, pyramid T1/T2/T3 (1+2+3), 77-day season. Do not generalize group size or resize the bracket between seasons. [league-system.md](docs/systems/league-system.md#locked-league-structure)
 
 ## Backend (PHP / Symfony)
 

@@ -53,25 +53,7 @@ class SeasonTransitionServiceTest extends TestCase
     {
         $kingdom = new Kingdom();
         $kingdom->setSeasonLength(77);
-        $kingdom->setLeagueTiersConfig([
-            'teams_per_group' => 10,
-            'tiers' => [
-                [
-                    'name' => 'T1',
-                    'groups' => 1,
-                    'promotion_slots' => 0,
-                    'relegation_slots' => 2,
-                    'rewards' => ['gold' => 5000]
-                ],
-                [
-                    'name' => 'T2',
-                    'groups' => 1,
-                    'promotion_slots' => 2,
-                    'relegation_slots' => 0,
-                    'rewards' => ['gold' => 2500]
-                ]
-            ]
-        ]);
+        $kingdom->setLeagueTiersConfig($this->lockedConfig());
 
         $seasonRepoMock = $this->createMock(LeagueSeasonRepository::class);
         $seasonRepoMock->method('findOneBy')
@@ -96,7 +78,11 @@ class SeasonTransitionServiceTest extends TestCase
 
         $this->assertSame(1, $newSeason->getSeasonNumber());
         $this->assertSame(LeagueSeasonStatus::Scheduled, $newSeason->getStatus());
-        $this->assertCount(2, $newSeason->getTiers());
+        $tiers = $newSeason->getTiers()->toArray();
+        $this->assertCount(3, $tiers);
+        $this->assertSame(['1-A'], array_map(static fn (LeagueGroup $group): string => $group->getGroupName(), $tiers[0]->getGroups()->toArray()));
+        $this->assertSame(['2-A', '2-B'], array_map(static fn (LeagueGroup $group): string => $group->getGroupName(), $tiers[1]->getGroups()->toArray()));
+        $this->assertSame(['3-A', '3-B', '3-C'], array_map(static fn (LeagueGroup $group): string => $group->getGroupName(), $tiers[2]->getGroups()->toArray()));
     }
 
     public function testExecuteTransitionWithPromotionRelegationAndRewards(): void
@@ -135,6 +121,7 @@ class SeasonTransitionServiceTest extends TestCase
         $this->setEntityId($t1Current, 1);
         $t1Current->setTierName('T1');
         $t1Current->setRewards(['gold' => 5000]);
+        $t1Current->setPromotionSlots(0);
         $t1Current->setRelegationSlots(1);
         $currentSeason->addTier($t1Current);
 
@@ -166,6 +153,7 @@ class SeasonTransitionServiceTest extends TestCase
         $t2Current->setTierName('T2');
         $t2Current->setRewards(['gold' => 2500]);
         $t2Current->setPromotionSlots(1);
+        $t2Current->setRelegationSlots(0);
         $currentSeason->addTier($t2Current);
 
         $t2GroupCurrent = new LeagueGroup();
@@ -200,6 +188,8 @@ class SeasonTransitionServiceTest extends TestCase
         $t1Upcoming = new LeagueTier();
         $this->setEntityId($t1Upcoming, 3);
         $t1Upcoming->setTierName('T1');
+        $t1Upcoming->setPromotionSlots(0);
+        $t1Upcoming->setRelegationSlots(1);
         $upcomingSeason->addTier($t1Upcoming);
         $t1GroupUpcoming = new LeagueGroup();
         $this->setEntityId($t1GroupUpcoming, 3);
@@ -209,6 +199,8 @@ class SeasonTransitionServiceTest extends TestCase
         $t2Upcoming = new LeagueTier();
         $this->setEntityId($t2Upcoming, 4);
         $t2Upcoming->setTierName('T2');
+        $t2Upcoming->setPromotionSlots(1);
+        $t2Upcoming->setRelegationSlots(0);
         $upcomingSeason->addTier($t2Upcoming);
         $t2GroupUpcoming = new LeagueGroup();
         $this->setEntityId($t2GroupUpcoming, 4);
@@ -248,33 +240,42 @@ class SeasonTransitionServiceTest extends TestCase
         $this->assertSame(LeagueSeasonStatus::Active, $upcomingSeason->getStatus());
     }
 
-    public function testPrepareUpcomingSeasonWithCustomGroupNames(): void
+    public function testPrepareUpcomingSeasonCopiesFinishedSeasonAndIgnoresJson(): void
     {
         $kingdom = new Kingdom();
         $kingdom->setSeasonLength(77);
         $kingdom->setLeagueTiersConfig([
-            'teams_per_group' => 10,
+            'teams_per_group' => 8,
             'tiers' => [
-                [
-                    'name' => 'T1',
-                    'groups' => ['Alpha Group', 'Beta Group'],
-                    'promotion_slots' => 0,
-                    'relegation_slots' => 2,
-                    'rewards' => ['gold' => 5000]
-                ],
-                [
-                    'name' => 'T2',
-                    'groups' => 2,
-                    'promotion_slots' => 2,
-                    'relegation_slots' => 0,
-                    'rewards' => ['gold' => 2500]
-                ]
-            ]
+                ['name' => 'Only', 'groups' => 1, 'promotion_slots' => 0, 'relegation_slots' => 0],
+            ],
         ]);
 
+        $finished = new LeagueSeason();
+        $finished->setKingdom($kingdom);
+        $finished->setSeasonNumber(4);
+        $finished->setStatus(LeagueSeasonStatus::Active);
+        $finished->setEndDate(new \DateTimeImmutable('2026-08-16'));
+
+        $tier = new LeagueTier();
+        $this->setEntityId($tier, 1);
+        $tier->setTierName('Alpha');
+        $tier->setPromotionSlots(0);
+        $tier->setRelegationSlots(2);
+        $tier->setRewards(['gold' => 5000]);
+        $finished->addTier($tier);
+
+        $alpha = new LeagueGroup();
+        $this->setEntityId($alpha, 1);
+        $alpha->setGroupName('Alpha Group');
+        $tier->addGroup($alpha);
+        $beta = new LeagueGroup();
+        $this->setEntityId($beta, 2);
+        $beta->setGroupName('Beta Group');
+        $tier->addGroup($beta);
+
         $seasonRepoMock = $this->createMock(LeagueSeasonRepository::class);
-        $seasonRepoMock->method('findOneBy')
-            ->willReturn(null); // No previous season
+        $seasonRepoMock->method('findOneBy')->willReturn($finished);
 
         $this->entityManagerMock->method('getRepository')
             ->willReturnCallback(function ($className) use ($seasonRepoMock) {
@@ -284,20 +285,96 @@ class SeasonTransitionServiceTest extends TestCase
 
         $newSeason = $this->transitionService->prepareUpcomingSeason($kingdom);
 
-        $tiers = $newSeason->getTiers()->toArray();
-        $this->assertCount(2, $tiers);
+        $this->assertSame(5, $newSeason->getSeasonNumber());
+        $copied = $newSeason->getTiers()->toArray();
+        $this->assertCount(1, $copied);
+        $this->assertSame('Alpha', $copied[0]->getTierName());
+        $this->assertSame(2, $copied[0]->getRelegationSlots());
+        $this->assertSame(
+            ['Alpha Group', 'Beta Group'],
+            array_map(static fn (LeagueGroup $group): string => $group->getGroupName(), $copied[0]->getGroups()->toArray())
+        );
+    }
 
-        // Tier 1 groups (custom names from array)
-        $t1Groups = $tiers[0]->getGroups()->toArray();
-        $this->assertCount(2, $t1Groups);
-        $this->assertSame('Alpha Group', $t1Groups[0]->getGroupName());
-        $this->assertSame('Beta Group', $t1Groups[1]->getGroupName());
+    public function testExecuteTransitionRejectsADifferentGroupCount(): void
+    {
+        $kingdom = new Kingdom();
+        $kingdom->setName('Test Kingdom');
 
-        // Tier 2 groups (default fallback naming from count)
-        $t2Groups = $tiers[1]->getGroups()->toArray();
-        $this->assertCount(2, $t2Groups);
-        $this->assertSame('T2-G1', $t2Groups[0]->getGroupName());
-        $this->assertSame('T2-G2', $t2Groups[1]->getGroupName());
+        $currentSeason = new LeagueSeason();
+        $currentSeason->setKingdom($kingdom);
+        $currentSeason->setSeasonNumber(1);
+        $currentSeason->setStatus(LeagueSeasonStatus::Active);
+        $currentTier = new LeagueTier();
+        $this->setEntityId($currentTier, 1);
+        $currentTier->setTierName('T1');
+        $currentTier->setPromotionSlots(0);
+        $currentTier->setRelegationSlots(0);
+        $currentSeason->addTier($currentTier);
+        $currentTier->addGroup(new LeagueGroup());
+
+        $upcomingSeason = new LeagueSeason();
+        $upcomingSeason->setKingdom($kingdom);
+        $upcomingSeason->setStatus(LeagueSeasonStatus::Scheduled);
+        $upcomingTier = new LeagueTier();
+        $this->setEntityId($upcomingTier, 2);
+        $upcomingTier->setTierName('T1');
+        $upcomingTier->setPromotionSlots(0);
+        $upcomingTier->setRelegationSlots(0);
+        $upcomingSeason->addTier($upcomingTier);
+        $upcomingTier->addGroup(new LeagueGroup());
+        $upcomingTier->addGroup(new LeagueGroup());
+
+        $seasonRepoMock = $this->createMock(LeagueSeasonRepository::class);
+        $seasonRepoMock->method('findOneBy')
+            ->willReturnMap([
+                [['kingdom' => $kingdom, 'status' => LeagueSeasonStatus::Active], null, $currentSeason],
+                [['kingdom' => $kingdom, 'status' => LeagueSeasonStatus::Scheduled], null, $upcomingSeason],
+            ]);
+
+        $this->entityManagerMock->method('getRepository')
+            ->willReturnCallback(function ($className) use ($seasonRepoMock) {
+                $this->assertSame(LeagueSeason::class, $className);
+                return $seasonRepoMock;
+            });
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('group counts');
+
+        $this->transitionService->executeTransition($kingdom);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function lockedConfig(): array
+    {
+        return [
+            'teams_per_group' => 10,
+            'tiers' => [
+                [
+                    'name' => 'T1',
+                    'groups' => ['1-A'],
+                    'promotion_slots' => 0,
+                    'relegation_slots' => 4,
+                    'rewards' => ['gold' => 5000],
+                ],
+                [
+                    'name' => 'T2',
+                    'groups' => ['2-A', '2-B'],
+                    'promotion_slots' => 4,
+                    'relegation_slots' => 6,
+                    'rewards' => ['gold' => 2500],
+                ],
+                [
+                    'name' => 'T3',
+                    'groups' => ['3-A', '3-B', '3-C'],
+                    'promotion_slots' => 6,
+                    'relegation_slots' => 0,
+                    'rewards' => ['gold' => 1000],
+                ],
+            ],
+        ];
     }
 
     private function setEntityId(object $entity, int $id): void

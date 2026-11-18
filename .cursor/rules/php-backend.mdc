@@ -109,6 +109,12 @@ Quick ref: `docs/guides/backend.md`. API spec: `docs/architecture/api.md`. Entit
 - `Item.special_effects` stays unused. Combat reads `bonuses` only. Do not drop the column in this alignment.
 - Spec: `docs/systems/item-system.md` § Locked: no enchanting. A later product decision is required before adding enchanting.
 
+## League structure (locked — #18)
+
+- Groups have exactly 10 teams. Season length is 77 days. Creation accepts only the T1/T2/T3 pyramid (1, 2, and 3 groups; slots 0/4, 4/6, 6/0).
+- The next season copies the finished season's tiers and groups. Do not read `league_tiers_config` to resize a living kingdom.
+- Spec: `docs/systems/league-system.md` § Locked: league structure.
+
 ## Layering
 
 - **Controllers** (`Controller/Web`, `Controller/Api/V1`): routing, auth, input parsing, response only

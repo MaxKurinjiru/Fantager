@@ -175,4 +175,21 @@ class LeagueFixtureSchedulerTest extends TestCase
         $this->assertSame('18:00:00', $local->format('H:i:s'));
         $this->assertContains((int) $local->format('w'), [2, 5]);
     }
+
+    public function testScheduleFixturesRejectsGroupThatIsNotTenTeams(): void
+    {
+        $scheduler = new LeagueFixtureScheduler($this->createMock(EntityManagerInterface::class));
+        $group = new LeagueGroup();
+        for ($i = 1; $i <= 8; ++$i) {
+            $standing = new LeagueStanding();
+            $standing->setGroup($group);
+            $standing->setTeam($this->createStub(Team::class));
+            $group->getStandings()->add($standing);
+        }
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('exactly 10 teams');
+
+        $scheduler->scheduleFixturesForGroup($group, new \DateTimeImmutable('2026-06-04'), 'UTC');
+    }
 }
